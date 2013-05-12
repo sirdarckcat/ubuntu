@@ -422,7 +422,7 @@ static void vc4_hvs_irq_enable_eof(const struct vc4_hvs *hvs,
 				   unsigned int channel)
 {
 	struct vc4_dev *vc4 = hvs->vc4;
-	u32 irq_mask = vc4->is_vc5 ?
+	u32 irq_mask = (vc4->gen == VC4_GEN_5) ?
 		SCALER5_DISPCTRL_DSPEIEOF(channel) :
 		SCALER_DISPCTRL_DSPEIEOF(channel);
 
@@ -434,7 +434,7 @@ static void vc4_hvs_irq_clear_eof(const struct vc4_hvs *hvs,
 				  unsigned int channel)
 {
 	struct vc4_dev *vc4 = hvs->vc4;
-	u32 irq_mask = vc4->is_vc5 ?
+	u32 irq_mask = (vc4->gen == VC4_GEN_5) ?
 		SCALER5_DISPCTRL_DSPEIEOF(channel) :
 		SCALER_DISPCTRL_DSPEIEOF(channel);
 
