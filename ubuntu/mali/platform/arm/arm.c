@@ -261,6 +261,10 @@ static struct mali_gpu_device_data mali_gpu_data = {
 	.dedicated_mem_start = 0x80000000, /* Physical start address (use 0xD0000000 for old indirect setup) */
 	.dedicated_mem_size = 0x10000000, /* 256MB */
 #endif
+#if defined(CONFIG_ARCH_ZYNQ) || defined(CONFIG_ARCH_ZYNQMP)
+	.fb_start = 0x00000000,
+	.fb_size = 0xfffff000,
+#else
 #if defined(CONFIG_ARM64)
 	/* Some framebuffer drivers get the framebuffer dynamically, such as through GEM,
 	* in which the memory resource can't be predicted in advance.
@@ -271,6 +275,7 @@ static struct mali_gpu_device_data mali_gpu_data = {
 	.fb_start = 0xe0000000,
 	.fb_size = 0x01000000,
 #endif
+#endif /* !defined(CONFIG_ARCH_ZYNQ) && !defined(CONFIG_ARCH_ZYNQMP) */
 	.control_interval = 1000, /* 1000ms */
 	.utilization_callback = mali_gpu_utilization_callback,
 	.get_clock_info = NULL,
@@ -505,6 +510,11 @@ int mali_platform_device_init(struct platform_device *device)
 			mali_write_phys(0xC0010020, 0xA); /* Enable direct memory mapping for FPGA */
 		}
 	}
+#elif defined(CONFIG_ARCH_ZYNQ) || defined(CONFIG_ARCH_ZYNQMP)
+
+	MALI_DEBUG_PRINT(4, ("Registering Zynq/ZynqMP Mali-400 device\n"));
+	num_pp_cores = 2;
+
 #endif
 
 	/* After kernel 3.15 device tree will default set dev
