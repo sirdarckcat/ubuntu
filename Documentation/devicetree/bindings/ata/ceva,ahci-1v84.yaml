@@ -134,6 +134,12 @@ properties:
     description: |
       limit to gen1 speed instead of gen2.
 
+  dma-coherent:
+    $ref: /schemas/types.yaml#/definitions/flag
+    description: |
+      Enable this flag if CCI is enabled in design.
+      Adding this flag configures AXI cache control register.
+
   phys:
     maxItems: 1
 
@@ -184,6 +190,7 @@ examples:
         ceva,p1-burst-params = /bits/ 8 <0x0A 0x08 0x4A 0x06>;
         ceva,p1-retry-params = /bits/ 16 <0x0216 0x7F06>;
         ceva,broken-gen2;
+        dma-coherent;
         phys = <&psgtr 1 PHY_TYPE_SATA 1 1>;
         resets = <&zynqmp_reset ZYNQMP_RESET_SATA>;
     };
