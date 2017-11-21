@@ -89,7 +89,11 @@ endif
 # Define host system directory
 KDIR-$(shell uname -m):=/lib/modules/$(shell uname -r)/build
 
-include $(KDIR)/.config
+ifeq ($(O),)
+	-include $(KDIR)/.config
+else
+	-include $(O)/.config
+endif
 
 ifeq ($(ARCH), arm)
 # when compiling for ARM we're cross compiling
@@ -204,8 +208,11 @@ EXTRA_DEFINES += -DMALI_MEM_SWAP_TRACKING=1
 endif
 
 all: $(UMP_SYMVERS_FILE)
-	$(MAKE) ARCH=$(ARCH) -C $(KDIR) M=$(CURDIR) modules
+	$(MAKE) ARCH=$(ARCH) -C $(KDIR) M=$(CURDIR) O=$(O) modules
 	@rm $(FILES_PREFIX)__malidrv_build_info.c $(FILES_PREFIX)__malidrv_build_info.o
+
+modules_install:
+	$(MAKE) ARCH=$(ARCH) -C $(KDIR) M=$(CURDIR) modules_install
 
 clean:
 	$(MAKE) ARCH=$(ARCH) -C $(KDIR) M=$(CURDIR) clean
