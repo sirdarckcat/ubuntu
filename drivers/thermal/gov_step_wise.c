@@ -17,11 +17,11 @@
 #include "thermal_core.h"
 
 /*
- * If the temperature is higher than a trip point,
+ * If the temperature is higher than a hysteresis temperature,
  *    a. if the trend is THERMAL_TREND_RAISING, use higher cooling
  *       state for this trip point
  *    b. if the trend is THERMAL_TREND_DROPPING, do nothing
- * If the temperature is lower than a trip point,
+ * If the temperature is lower than a hysteresis temperature,
  *    a. if the trend is THERMAL_TREND_RAISING, do nothing
  *    b. if the trend is THERMAL_TREND_DROPPING, use lower cooling
  *       state for this trip point, if the cooling state already
@@ -72,6 +72,8 @@ static void thermal_zone_trip_update(struct thermal_zone_device *tz,
 				     const struct thermal_trip *trip)
 {
 	int trip_id = thermal_zone_trip_id(tz, trip);
+	int trip_temp, hyst_temp;
+	enum thermal_trip_type trip_type;
 	enum thermal_trend trend;
 	struct thermal_instance *instance;
 	bool throttle = false;
@@ -84,14 +86,31 @@ static void thermal_zone_trip_update(struct thermal_zone_device *tz,
 		trace_thermal_zone_trip(tz, trip_id, trip->type);
 	}
 
-	dev_dbg(&tz->device, "Trip%d[type=%d,temp=%d]:trend=%d,throttle=%d\n",
-		trip_id, trip->type, trip->temperature, trend, throttle);
+	trip_temp = trip->temperature;
+	hyst_temp = trip->temperature - trip->hysteresis;
+	trip_type = trip->type;
+
+	dev_dbg(&tz->device,
+		"Trip%d[type=%d,temp=%d,hyst=%d]:trend=%d,throttle=%d\n",
+		trip_id, trip_type, trip_temp, hyst_temp, trend, throttle);
 
 	list_for_each_entry(instance, &tz->thermal_instances, tz_node) {
 		if (instance->trip != trip)
 			continue;
 
 		old_target = instance->target;
+		throttle = false;
+		/*
+		 * Lower the mitigation only if the temperature
+		 * goes below the hysteresis temperature.
+		 */
+		if (tz->temperature >= trip_temp ||
+		   (tz->temperature >= hyst_temp &&
+		   old_target == instance->upper)) {
+			throttle = true;
+			trace_thermal_zone_trip(tz, trip_id, trip_type);
+		}
+
 		instance->target = get_target_state(instance, trend, throttle);
 		dev_dbg(&instance->cdev->device, "old_target=%d, target=%d\n",
 					old_target, (int)instance->target);
