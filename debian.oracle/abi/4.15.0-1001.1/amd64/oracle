@@ -6736,6 +6736,7 @@ EXPORT_SYMBOL vmlinux 0x00000000	__nlmsg_put
 EXPORT_SYMBOL vmlinux 0x00000000	__node_distance
 EXPORT_SYMBOL vmlinux 0x00000000	__page_cache_alloc
 EXPORT_SYMBOL vmlinux 0x00000000	__page_frag_cache_drain
+EXPORT_SYMBOL vmlinux 0x00000000	__page_pool_put_page
 EXPORT_SYMBOL vmlinux 0x00000000	__page_symlink
 EXPORT_SYMBOL vmlinux 0x00000000	__pagevec_lru_add
 EXPORT_SYMBOL vmlinux 0x00000000	__pagevec_release
@@ -9680,6 +9681,9 @@ EXPORT_SYMBOL vmlinux 0x00000000	page_get_link
 EXPORT_SYMBOL vmlinux 0x00000000	page_mapped
 EXPORT_SYMBOL vmlinux 0x00000000	page_mapping
 EXPORT_SYMBOL vmlinux 0x00000000	page_offset_base
+EXPORT_SYMBOL vmlinux 0x00000000	page_pool_alloc_pages
+EXPORT_SYMBOL vmlinux 0x00000000	page_pool_create
+EXPORT_SYMBOL vmlinux 0x00000000	page_pool_destroy
 EXPORT_SYMBOL vmlinux 0x00000000	page_put_link
 EXPORT_SYMBOL vmlinux 0x00000000	page_readlink
 EXPORT_SYMBOL vmlinux 0x00000000	page_symlink
@@ -13940,6 +13944,8 @@ EXPORT_SYMBOL_GPL drivers/net/macvlan 0x00000000	macvlan_common_newlink
 EXPORT_SYMBOL_GPL drivers/net/macvlan 0x00000000	macvlan_common_setup
 EXPORT_SYMBOL_GPL drivers/net/macvlan 0x00000000	macvlan_dellink
 EXPORT_SYMBOL_GPL drivers/net/macvlan 0x00000000	macvlan_link_register
+EXPORT_SYMBOL_GPL drivers/net/net_failover 0x00000000	net_failover_create
+EXPORT_SYMBOL_GPL drivers/net/net_failover 0x00000000	net_failover_destroy
 EXPORT_SYMBOL_GPL drivers/net/phy/bcm-phy-lib 0x00000000	bcm54xx_auxctl_read
 EXPORT_SYMBOL_GPL drivers/net/phy/bcm-phy-lib 0x00000000	bcm_phy_ack_intr
 EXPORT_SYMBOL_GPL drivers/net/phy/bcm-phy-lib 0x00000000	bcm_phy_config_intr
@@ -16117,6 +16123,9 @@ EXPORT_SYMBOL_GPL net/core/devlink 0x00000000	devlink_register
 EXPORT_SYMBOL_GPL net/core/devlink 0x00000000	devlink_sb_register
 EXPORT_SYMBOL_GPL net/core/devlink 0x00000000	devlink_sb_unregister
 EXPORT_SYMBOL_GPL net/core/devlink 0x00000000	devlink_unregister
+EXPORT_SYMBOL_GPL net/core/failover 0x00000000	failover_register
+EXPORT_SYMBOL_GPL net/core/failover 0x00000000	failover_slave_unregister
+EXPORT_SYMBOL_GPL net/core/failover 0x00000000	failover_unregister
 EXPORT_SYMBOL_GPL net/dccp/dccp 0x00000000	compat_dccp_getsockopt
 EXPORT_SYMBOL_GPL net/dccp/dccp 0x00000000	compat_dccp_setsockopt
 EXPORT_SYMBOL_GPL net/dccp/dccp 0x00000000	dccp_ackvec_parsed_add
