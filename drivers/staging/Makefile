@@ -27,3 +27,4 @@ obj-$(CONFIG_PI433)		+= pi433/
 obj-$(CONFIG_XIL_AXIS_FIFO)	+= axis-fifo/
 obj-$(CONFIG_FIELDBUS_DEV)     += fieldbus/
 obj-$(CONFIG_XILINX_FCLK)	+= fclk/
+obj-$(CONFIG_XROE_FRAMER)	+= xroeframer/
