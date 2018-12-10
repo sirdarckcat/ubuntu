@@ -190,6 +190,15 @@ ifeq ($(disable_d_i),)
 endif
 endif
 
+	if [ -f '$(DEBIAN)/initramfs-tools.d/$(target_flavour).hook.in' ]; then			\
+		install -d $(pkgdir)/usr/share/initramfs-tools/hooks/; 				\
+		sed -e 's/@abiname@/$(abi_release)/g'						\
+		    -e 's/@localversion@/-$*/g'							\
+			< '$(DEBIAN)/initramfs-tools.d/$(target_flavour).hook.in'		\
+			> '$(pkgdir)/usr/share/initramfs-tools/hooks/linux-$(abi_release)-$*';	\
+		chmod 0755 '$(pkgdir)/usr/share/initramfs-tools/hooks/linux-$(abi_release)-$*';	\
+	fi
+
 ifeq ($(no_dumpfile),)
 	makedumpfile -g $(pkgdir)/boot/vmcoreinfo-$(abi_release)-$* \
 		-x $(builddir)/build-$*/vmlinux
