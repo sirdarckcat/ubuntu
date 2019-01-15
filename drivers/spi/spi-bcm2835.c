@@ -1288,31 +1288,6 @@ static int bcm2835_spi_setup(struct spi_device *spi)
 		return -EINVAL;
 	}
 
-	/*
-	 * Translate native CS to GPIO
-	 *
-	 * FIXME: poking around in the gpiolib internals like this is
-	 * not very good practice. Find a way to locate the real problem
-	 * and fix it. Why is the GPIO descriptor in spi->cs_gpiod
-	 * sometimes not assigned correctly? Erroneous device trees?
-	 */
-
-	/* get the gpio chip for the base */
-	chip = gpiochip_find("pinctrl-bcm2835", chip_match_name);
-	if (!chip)
-		return 0;
-
-	spi->cs_gpiod = gpiochip_request_own_desc(chip, 8 - spi->chip_select,
-						  DRV_NAME,
-						  GPIO_LOOKUP_FLAGS_DEFAULT,
-						  GPIOD_OUT_LOW);
-	if (IS_ERR(spi->cs_gpiod))
-		return PTR_ERR(spi->cs_gpiod);
-
-	/* and set up the "mode" and level */
-	dev_info(&spi->dev, "setting up native-CS%i to use GPIO\n",
-		 spi->chip_select);
-
 	return 0;
 }
 
