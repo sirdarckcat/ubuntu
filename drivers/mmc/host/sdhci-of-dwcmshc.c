@@ -676,6 +676,7 @@ static const struct sdhci_ops sdhci_dwcmshc_ops = {
 	.set_bus_width		= sdhci_set_bus_width,
 	.set_uhs_signaling	= dwcmshc_set_uhs_signaling,
 	.get_max_clock		= dwcmshc_get_max_clock,
+	.get_timeout_clock	= sdhci_pltfm_clk_get_timeout_clock,
 	.reset			= sdhci_reset,
 	.adma_write_desc	= dwcmshc_adma_write_desc,
 };
@@ -871,6 +872,16 @@ static int dwcmshc_probe(struct platform_device *pdev)
 		}
 	}
 
+	pltfm_host->timeout_clk = devm_clk_get(&pdev->dev, "timeout");
+	if (IS_ERR(pltfm_host->timeout_clk)) {
+		err = PTR_ERR(pltfm_host->timeout_clk);
+		dev_err(&pdev->dev, "failed to get timeout clk: %d\n", err);
+		goto free_pltfm;
+	}
+	err = clk_prepare_enable(pltfm_host->timeout_clk);
+	if (err)
+		goto free_pltfm;
+
 	err = mmc_of_parse(host->mmc);
 	if (err)
 		goto err_bus_clk;
@@ -961,6 +972,7 @@ err_bus_clk:
 	clk_disable_unprepare(priv->bus_clk);
 err_clk:
 	clk_disable_unprepare(pltfm_host->clk);
+	clk_disable_unprepare(pltfm_host->timeout_clk);
 	if (rk_priv)
 		clk_bulk_disable_unprepare(RK35xx_MAX_CLKS,
 					   rk_priv->rockchip_clks);
