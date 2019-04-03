@@ -2633,6 +2633,9 @@ int mlx5_eswitch_get_vport_stats(struct mlx5_eswitch *esw,
 	if (IS_ERR(vport))
 		return PTR_ERR(vport);
 
+	if (!vport->enabled)
+		return 0;
+
 	out = kvzalloc(outlen, GFP_KERNEL);
 	if (!out)
 		return -ENOMEM;
