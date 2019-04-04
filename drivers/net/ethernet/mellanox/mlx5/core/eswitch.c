@@ -2220,6 +2220,9 @@ int mlx5_eswitch_set_vport_state(struct mlx5_eswitch *esw,
 
 	mutex_lock(&esw->state_lock);
 
+	if (!evport->enabled && mlx5_eswitch_is_sf_vport(esw, vport))
+		goto unlock;
+
 	err = mlx5_modify_vport_admin_state(esw->dev,
 					    MLX5_VPORT_STATE_OP_MOD_ESW_VPORT,
 					    vport, 1, link_state);
