@@ -1163,10 +1163,8 @@ static int mlx5e_rep_open(struct net_device *dev)
 	if (err)
 		goto unlock;
 
-	if (!mlx5_modify_vport_admin_state(priv->mdev,
-					   MLX5_VPORT_STATE_OP_MOD_ESW_VPORT,
-					   rep->vport, 1,
-					   MLX5_VPORT_ADMIN_STATE_UP))
+	if (!mlx5_eswitch_set_vport_state(priv->mdev->priv.eswitch, rep->vport,
+					  MLX5_VPORT_ADMIN_STATE_UP))
 		netif_carrier_on(dev);
 
 unlock:
@@ -1182,10 +1180,8 @@ static int mlx5e_rep_close(struct net_device *dev)
 	int ret;
 
 	mutex_lock(&priv->state_lock);
-	mlx5_modify_vport_admin_state(priv->mdev,
-				      MLX5_VPORT_STATE_OP_MOD_ESW_VPORT,
-				      rep->vport, 1,
-				      MLX5_VPORT_ADMIN_STATE_DOWN);
+	mlx5_eswitch_set_vport_state(priv->mdev->priv.eswitch, rep->vport,
+				     MLX5_VPORT_ADMIN_STATE_DOWN);
 	ret = mlx5e_close_locked(dev);
 	mutex_unlock(&priv->state_lock);
 	return ret;
