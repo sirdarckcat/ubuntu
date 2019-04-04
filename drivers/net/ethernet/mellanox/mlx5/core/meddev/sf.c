@@ -227,9 +227,159 @@ u16 mlx5_core_max_sfs(const struct mlx5_core_dev *dev,
 	return mlx5_core_is_sf_supported(dev) ? sf_table->max_sfs : 0;
 }
 
+static void *mlx5_sf_dma_alloc(struct device *dev, size_t size,
+			       dma_addr_t *dma_handle, gfp_t gfp,
+			       unsigned long attrs)
+{
+	return dma_alloc_attrs(dev->parent, size, dma_handle, gfp, attrs);
+}
+
+static void
+mlx5_sf_dma_free(struct device *dev, size_t size,
+		 void *vaddr, dma_addr_t dma_handle,
+		 unsigned long attrs)
+{
+	dma_free_attrs(dev->parent, size, vaddr, dma_handle, attrs);
+}
+
+static int
+mlx5_sf_dma_mmap(struct device *dev, struct vm_area_struct *vma,
+		 void *cpu_addr, dma_addr_t dma_addr, size_t size,
+		 unsigned long attrs)
+{
+	return dma_mmap_attrs(dev->parent, vma, cpu_addr,
+			      dma_addr, size, attrs);
+}
+
+static int
+mlx5_sf_dma_get_sgtable(struct device *dev, struct sg_table *sgt,
+			void *cpu_addr, dma_addr_t dma_addr, size_t size,
+			unsigned long attrs)
+{
+	return dma_get_sgtable_attrs(dev->parent, sgt, cpu_addr,
+				     dma_addr, size, attrs);
+}
+
+static dma_addr_t
+mlx5_sf_dma_map_page(struct device *dev, struct page *page,
+		     unsigned long offset, size_t size,
+		     enum dma_data_direction dir,
+		     unsigned long attrs)
+{
+	return dma_map_page_attrs(dev->parent, page, offset, size, dir, attrs);
+}
+
+static void
+mlx5_sf_dma_unmap_page(struct device *dev, dma_addr_t dma_handle,
+		       size_t size, enum dma_data_direction dir,
+		       unsigned long attrs)
+{
+	dma_unmap_page_attrs(dev->parent, dma_handle, size, dir, attrs);
+}
+
+static int
+mlx5_sf_dma_map_sg(struct device *dev, struct scatterlist *sg,
+		   int nents, enum dma_data_direction dir,
+		   unsigned long attrs)
+{
+	return dma_map_sg_attrs(dev->parent, sg, nents, dir, attrs);
+}
+
+static void
+mlx5_sf_dma_unmap_sg(struct device *dev, struct scatterlist *sg, int nents,
+		     enum dma_data_direction dir, unsigned long attrs)
+{
+	dma_unmap_sg_attrs(dev->parent, sg, nents, dir, attrs);
+}
+
+static dma_addr_t
+mlx5_sf_dma_map_resource(struct device *dev, phys_addr_t phys_addr,
+			 size_t size, enum dma_data_direction dir,
+			 unsigned long attrs)
+{
+	return dma_map_resource(dev->parent, phys_addr, size, dir, attrs);
+}
+
+static void
+mlx5_sf_dma_unmap_resource(struct device *dev, dma_addr_t dma_handle,
+			   size_t size, enum dma_data_direction dir,
+			   unsigned long attrs)
+{
+	dma_unmap_resource(dev->parent, dma_handle, size, dir, attrs);
+}
+
+static void
+mlx5_sf_dma_sync_single_for_cpu(struct device *dev,
+				dma_addr_t dma_handle, size_t size,
+				enum dma_data_direction dir)
+{
+	dma_sync_single_for_cpu(dev->parent, dma_handle, size, dir);
+}
+
+static void
+mlx5_sf_dma_sync_single_for_device(struct device *dev,
+				   dma_addr_t dma_handle, size_t size,
+				   enum dma_data_direction dir)
+{
+	dma_sync_single_for_device(dev->parent, dma_handle, size, dir);
+}
+
+static void
+mlx5_sf_dma_sync_sg_for_cpu(struct device *dev,
+			    struct scatterlist *sg, int nents,
+			    enum dma_data_direction dir)
+{
+	dma_sync_sg_for_cpu(dev->parent, sg, nents, dir);
+}
+
+static void
+mlx5_sf_dma_sync_sg_for_device(struct device *dev,
+			       struct scatterlist *sg, int nents,
+			       enum dma_data_direction dir)
+{
+	dma_sync_sg_for_device(dev->parent, sg, nents, dir);
+}
+
+static void
+mlx5_sf_dma_cache_sync(struct device *dev, void *vaddr, size_t size,
+		       enum dma_data_direction dir)
+{
+	dma_cache_sync(dev->parent, vaddr, size, dir);
+}
+
+static const struct dma_map_ops mlx5_sf_dma_ops = {
+	.alloc = mlx5_sf_dma_alloc,
+	.free = mlx5_sf_dma_free,
+	.mmap = mlx5_sf_dma_mmap,
+	.get_sgtable = mlx5_sf_dma_get_sgtable,
+	.map_page = mlx5_sf_dma_map_page,
+	.unmap_page = mlx5_sf_dma_unmap_page,
+	.map_sg = mlx5_sf_dma_map_sg,
+	.unmap_sg = mlx5_sf_dma_unmap_sg,
+	.map_resource = mlx5_sf_dma_map_resource,
+	.unmap_resource = mlx5_sf_dma_unmap_resource,
+	.sync_single_for_cpu = mlx5_sf_dma_sync_single_for_cpu,
+	.sync_sg_for_cpu = mlx5_sf_dma_sync_sg_for_cpu,
+	.sync_sg_for_device = mlx5_sf_dma_sync_sg_for_device,
+	.sync_single_for_device = mlx5_sf_dma_sync_single_for_device,
+	.cache_sync = mlx5_sf_dma_cache_sync,
+};
+
+static void set_dma_params(struct mlx5_core_dev *coredev, struct device *dev)
+{
+	struct pci_dev *pdev = coredev->pdev;
+
+	dev->dma_ops = &mlx5_sf_dma_ops;
+	dev->dma_mask = pdev->dev.dma_mask;
+	dev->dma_parms = pdev->dev.dma_parms;
+	dma_set_coherent_mask(dev, pdev->dev.coherent_dma_mask);
+	dma_set_max_seg_size(dev, dma_get_max_seg_size(&pdev->dev));
+}
+
 int mlx5_sf_load(struct mlx5_sf *sf)
 {
 	struct mlx5_core_dev *dev = &sf->dev;
+	struct mlx5_core_dev *parent_dev;
 	int err;
 
 	dev->iseg = ioremap(dev->iseg_base, sizeof(*dev->iseg));
@@ -237,6 +387,8 @@ int mlx5_sf_load(struct mlx5_sf *sf)
 		mlx5_core_warn(dev, "remap error for sf=%d\n", sf->idx);
 		return -ENOMEM;
 	}
+	parent_dev = sf->parent_dev;
+	set_dma_params(parent_dev, dev->device);
 
 	err = mlx5_mdev_init(dev, MLX5_DEFAULT_PROF);
 	if (err) {
