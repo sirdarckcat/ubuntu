@@ -117,6 +117,10 @@ enum {
 	MLX5E_L2_FT_LEVEL,
 	MLX5E_TTC_FT_LEVEL,
 	MLX5E_INNER_TTC_FT_LEVEL,
+#ifdef CONFIG_MLX5_ACCEL
+	MLX5E_ACCEL_FS_FT_LEVEL,
+	MLX5E_ACCEL_FS_ERR_FT_LEVEL,
+#endif
 #ifdef CONFIG_MLX5_EN_ARFS
 	MLX5E_ARFS_FT_LEVEL
 #endif
@@ -210,6 +214,22 @@ static inline int mlx5e_arfs_enable(struct mlx5e_priv *priv) { return -EOPNOTSUP
 static inline int mlx5e_arfs_disable(struct mlx5e_priv *priv) {	return -EOPNOTSUPP; }
 #endif
 
+#ifdef CONFIG_MLX5_ACCEL
+struct mlx5e_accel_proto {
+	struct mlx5_flow_table *ft;
+	struct mlx5_flow_group *miss_group;
+	struct mlx5_flow_handle *miss_rule;
+	struct mlx5_flow_destination default_dest;
+	void *proto_priv;
+	u32 refcnt;
+	struct mutex prot_mutex;
+};
+
+struct mlx5e_accel_fs {
+	struct mlx5e_accel_proto *prot[MLX5E_NUM_TT];
+};
+#endif
+
 struct mlx5e_flow_steering {
 	struct mlx5_flow_namespace      *ns;
 #ifdef CONFIG_MLX5_EN_RXNFC
@@ -222,6 +242,9 @@ struct mlx5e_flow_steering {
 	struct mlx5e_ttc_table          inner_ttc;
 #ifdef CONFIG_MLX5_EN_ARFS
 	struct mlx5e_arfs_tables        arfs;
+#endif
+#ifdef CONFIG_MLX5_ACCEL
+	struct mlx5e_accel_fs           accel;
 #endif
 };
 
@@ -251,5 +274,9 @@ void mlx5e_destroy_flow_steering(struct mlx5e_priv *priv);
 bool mlx5e_tunnel_proto_supported(struct mlx5_core_dev *mdev, u8 proto_type);
 bool mlx5e_any_tunnel_proto_supported(struct mlx5_core_dev *mdev);
 
+int mlx5e_ttc_fwd_dest(struct mlx5e_priv *priv, enum mlx5e_traffic_types type,
+		       struct mlx5_flow_destination *dest);
+int mlx5e_ttc_get_default_dest(struct mlx5e_priv *priv, enum mlx5e_traffic_types type,
+			       struct mlx5_flow_destination *dest);
 #endif /* __MLX5E_FLOW_STEER_H__ */
 
