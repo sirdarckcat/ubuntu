@@ -36,6 +36,7 @@
 #include <linux/tcp.h>
 #include <linux/mlx5/fs.h>
 #include "en.h"
+#include "en_accel/accel_fs.h"
 #include "lib/mpfs.h"
 
 static int mlx5e_add_l2_flow_rule(struct mlx5e_priv *priv,
@@ -1569,11 +1570,16 @@ int mlx5e_create_flow_steering(struct mlx5e_priv *priv)
 		goto err_destroy_inner_ttc_table;
 	}
 
+	err = mlx5e_accel_fs_create_tables(priv);
+	if (err)
+		netdev_err(priv->netdev, "Failed to create accel_fs tables, err=%d\n",
+			   err);
+
 	err = mlx5e_create_l2_table(priv);
 	if (err) {
 		netdev_err(priv->netdev, "Failed to create l2 table, err=%d\n",
 			   err);
-		goto err_destroy_ttc_table;
+		goto err_destroy_accel_fs_and_ttc_table;
 	}
 
 	err = mlx5e_create_vlan_table(priv);
@@ -1589,7 +1595,8 @@ int mlx5e_create_flow_steering(struct mlx5e_priv *priv)
 
 err_destroy_l2_table:
 	mlx5e_destroy_l2_table(priv);
-err_destroy_ttc_table:
+err_destroy_accel_fs_and_ttc_table:
+	mlx5e_accel_fs_destroy_tables(priv);
 	mlx5e_destroy_ttc_table(priv, &priv->fs.ttc);
 err_destroy_inner_ttc_table:
 	mlx5e_destroy_inner_ttc_table(priv, &priv->fs.inner_ttc);
@@ -1603,8 +1610,44 @@ void mlx5e_destroy_flow_steering(struct mlx5e_priv *priv)
 {
 	mlx5e_destroy_vlan_table(priv);
 	mlx5e_destroy_l2_table(priv);
+	mlx5e_accel_fs_destroy_tables(priv);
 	mlx5e_destroy_ttc_table(priv, &priv->fs.ttc);
 	mlx5e_destroy_inner_ttc_table(priv, &priv->fs.inner_ttc);
 	mlx5e_arfs_destroy_tables(priv);
 	mlx5e_ethtool_cleanup_steering(priv);
+}
+
+int mlx5e_ttc_fwd_dest(struct mlx5e_priv *priv, enum mlx5e_traffic_types type,
+		       struct mlx5_flow_destination *dest)
+{
+	int err;
+
+	if (!priv || !dest)
+		return -EINVAL;
+
+	if (type != MLX5E_TT_IPV4_IPSEC_ESP && type != MLX5E_TT_IPV6_IPSEC_ESP)
+		return -EPROTONOSUPPORT;
+
+	err = mlx5_modify_rule_destination(priv->fs.ttc.rules[type], dest, NULL);
+	if (err)
+		netdev_err(priv->netdev,
+			   "%s: modify ttc destination failed err=%d\n",
+			   __func__, err);
+
+	return err;
+}
+
+int mlx5e_ttc_get_default_dest(struct mlx5e_priv *priv, enum mlx5e_traffic_types type,
+			       struct mlx5_flow_destination *dest)
+{
+	if (!priv || !dest)
+		return -EINVAL;
+
+	if (type != MLX5E_TT_IPV4_IPSEC_ESP && type != MLX5E_TT_IPV6_IPSEC_ESP)
+		return -EPROTONOSUPPORT;
+
+	dest->type = MLX5_FLOW_DESTINATION_TYPE_TIR;
+	dest->tir_num = priv->indir_tir[type].tirn;
+
+	return 0;
 }
