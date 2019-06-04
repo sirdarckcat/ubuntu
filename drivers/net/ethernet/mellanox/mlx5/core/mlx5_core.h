@@ -289,4 +289,8 @@ static inline void mlx5_meddev_unregister_driver(void)
 
 struct mlx5_core_dev *mlx5_get_core_dev(const struct device *dev);
 
+#ifdef CONFIG_MLX5_MDEV
+struct mlx5_sf;
+int mlx5_sf_get_mac(struct mlx5_sf *sf, u8 *mac);
+#endif
 #endif /* __MLX5_CORE_H__ */
