@@ -115,10 +115,18 @@ static int mlx5_meddev_remove(struct mdev_device *meddev)
 static ssize_t
 mac_addr_show(struct device *dev, struct device_attribute *attr, char *buf)
 {
-	if (mdev_from_dev(dev))
-		return sprintf(buf, "This is MDEV %s\n", dev_name(dev));
+	struct mdev_device *meddev = mdev_from_dev(dev);
+	struct mlx5_sf *sf = mdev_get_drvdata(meddev);
+	u8 mac[ETH_ALEN];
+	int ret;
 
-	return sprintf(buf, "\n");
+	ret = mlx5_sf_get_mac(sf, mac);
+	if (ret)
+		return ret;
+
+	ret = sprintf(buf, "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx\n",
+		      mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+	return ret;
 }
 
 static ssize_t
