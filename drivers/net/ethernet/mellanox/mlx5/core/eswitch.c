@@ -2219,6 +2219,20 @@ unlock:
 	return err;
 }
 
+int mlx5_eswitch_get_vport_mac(struct mlx5_eswitch *esw,
+			       u16 vport, u8 *mac)
+{
+	struct mlx5_vport *evport = mlx5_eswitch_get_vport(esw, vport);
+
+	if (IS_ERR(evport))
+		return PTR_ERR(evport);
+
+	mutex_lock(&esw->state_lock);
+	ether_addr_copy(mac, evport->info.mac);
+	mutex_unlock(&esw->state_lock);
+	return 0;
+}
+
 int mlx5_eswitch_set_vport_state(struct mlx5_eswitch *esw,
 				 u16 vport, int link_state)
 {
