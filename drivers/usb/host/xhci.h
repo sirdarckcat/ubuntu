@@ -1873,7 +1873,8 @@ struct xhci_hcd {
 #define XHCI_DEFAULT_PM_RUNTIME_ALLOW	BIT_ULL(33)
 #define XHCI_RESET_PLL_ON_DISCONNECT	BIT_ULL(34)
 #define XHCI_SNPS_BROKEN_SUSPEND    BIT_ULL(35)
-#define XHCI_DISABLE_SPARSE	BIT_ULL(38)
+#define XHCI_EP_CTX_BROKEN_DCS	BIT_ULL(36)
+#define XHCI_DISABLE_SPARSE	    BIT_ULL(37)
 
 	unsigned int		num_active_eps;
 	unsigned int		limit_active_eps;
