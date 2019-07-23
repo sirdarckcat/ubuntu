@@ -507,7 +507,7 @@ static inline u16 mlx5_eswitch_manager_vport(struct mlx5_core_dev *dev)
 static inline bool
 mlx5_esw_is_manager_vport(const struct mlx5_eswitch *esw, u16 vport_num)
 {
-	return esw->manager_vport == vport_num;
+	return esw && esw->manager_vport == vport_num;
 }
 
 static inline u16 mlx5_eswitch_first_host_vport_num(struct mlx5_core_dev *dev)
@@ -763,6 +763,12 @@ static struct mlx5_flow_handle *
 esw_add_restore_rule(struct mlx5_eswitch *esw, u32 tag)
 {
 	return ERR_PTR(-EOPNOTSUPP);
+}
+
+static inline bool
+mlx5_esw_is_manager_vport(const struct mlx5_eswitch *esw, u16 vport_num)
+{
+	return vport_num ? true : false;
 }
 
 #endif /* CONFIG_MLX5_ESWITCH */
