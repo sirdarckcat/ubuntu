@@ -176,7 +176,12 @@ static int mlx5_cmd_update_root_ft(struct mlx5_flow_root_namespace *ns,
 	}
 
 	MLX5_SET(set_flow_table_root_in, in, underlay_qpn, underlay_qpn);
-	if (ft->vport) {
+	if (!mlx5_esw_is_manager_vport(dev->priv.eswitch, ft->vport) &&
+	    (ft->type == FS_FT_ESW_EGRESS_ACL ||
+	     ft->type == FS_FT_ESW_INGRESS_ACL)) {
+		/* FIXME: Honor HCA_CAP.esw_fdb flow_table_root_per_port
+		 * for FDB table type.
+		 */
 		MLX5_SET(set_flow_table_root_in, in, vport_number, ft->vport);
 		MLX5_SET(set_flow_table_root_in, in, other_vport, 1);
 	}
@@ -203,7 +208,9 @@ static int mlx5_cmd_create_flow_table(struct mlx5_flow_root_namespace *ns,
 	MLX5_SET(create_flow_table_in, in, table_type, ft->type);
 	MLX5_SET(create_flow_table_in, in, flow_table_context.level, ft->level);
 	MLX5_SET(create_flow_table_in, in, flow_table_context.log_size, log_size);
-	if (ft->vport) {
+	if (!mlx5_esw_is_manager_vport(dev->priv.eswitch, ft->vport) &&
+	    (ft->type == FS_FT_ESW_EGRESS_ACL ||
+	     ft->type == FS_FT_ESW_INGRESS_ACL)) {
 		MLX5_SET(create_flow_table_in, in, vport_number, ft->vport);
 		MLX5_SET(create_flow_table_in, in, other_vport, 1);
 	}
@@ -257,7 +264,9 @@ static int mlx5_cmd_destroy_flow_table(struct mlx5_flow_root_namespace *ns,
 		 MLX5_CMD_OP_DESTROY_FLOW_TABLE);
 	MLX5_SET(destroy_flow_table_in, in, table_type, ft->type);
 	MLX5_SET(destroy_flow_table_in, in, table_id, ft->id);
-	if (ft->vport) {
+	if (!mlx5_esw_is_manager_vport(dev->priv.eswitch, ft->vport) &&
+	    (ft->type == FS_FT_ESW_EGRESS_ACL ||
+	     ft->type == FS_FT_ESW_INGRESS_ACL)) {
 		MLX5_SET(destroy_flow_table_in, in, vport_number, ft->vport);
 		MLX5_SET(destroy_flow_table_in, in, other_vport, 1);
 	}
@@ -289,7 +298,9 @@ static int mlx5_cmd_modify_flow_table(struct mlx5_flow_root_namespace *ns,
 				 flow_table_context.lag_master_next_table_id, 0);
 		}
 	} else {
-		if (ft->vport) {
+		if (!mlx5_esw_is_manager_vport(dev->priv.eswitch, ft->vport) &&
+		    (ft->type == FS_FT_ESW_EGRESS_ACL ||
+		     ft->type == FS_FT_ESW_INGRESS_ACL)) {
 			MLX5_SET(modify_flow_table_in, in, vport_number,
 				 ft->vport);
 			MLX5_SET(modify_flow_table_in, in, other_vport, 1);
@@ -327,7 +338,9 @@ static int mlx5_cmd_create_flow_group(struct mlx5_flow_root_namespace *ns,
 		 MLX5_CMD_OP_CREATE_FLOW_GROUP);
 	MLX5_SET(create_flow_group_in, in, table_type, ft->type);
 	MLX5_SET(create_flow_group_in, in, table_id, ft->id);
-	if (ft->vport) {
+	if (!mlx5_esw_is_manager_vport(dev->priv.eswitch, ft->vport) &&
+	    (ft->type == FS_FT_ESW_EGRESS_ACL ||
+	     ft->type == FS_FT_ESW_INGRESS_ACL)) {
 		MLX5_SET(create_flow_group_in, in, vport_number, ft->vport);
 		MLX5_SET(create_flow_group_in, in, other_vport, 1);
 	}
@@ -352,7 +365,9 @@ static int mlx5_cmd_destroy_flow_group(struct mlx5_flow_root_namespace *ns,
 	MLX5_SET(destroy_flow_group_in, in, table_type, ft->type);
 	MLX5_SET(destroy_flow_group_in, in, table_id, ft->id);
 	MLX5_SET(destroy_flow_group_in, in, group_id, fg->id);
-	if (ft->vport) {
+	if (!mlx5_esw_is_manager_vport(dev->priv.eswitch, ft->vport) &&
+	    (ft->type == FS_FT_ESW_EGRESS_ACL ||
+	     ft->type == FS_FT_ESW_INGRESS_ACL)) {
 		MLX5_SET(destroy_flow_group_in, in, vport_number, ft->vport);
 		MLX5_SET(destroy_flow_group_in, in, other_vport, 1);
 	}
@@ -435,7 +450,9 @@ static int mlx5_cmd_set_fte(struct mlx5_core_dev *dev,
 	MLX5_SET(set_fte_in, in, ignore_flow_level,
 		 !!(fte->action.flags & FLOW_ACT_IGNORE_FLOW_LEVEL));
 
-	if (ft->vport) {
+	if (!mlx5_esw_is_manager_vport(dev->priv.eswitch, ft->vport) &&
+	    (ft->type == FS_FT_ESW_EGRESS_ACL ||
+	     ft->type == FS_FT_ESW_INGRESS_ACL)) {
 		MLX5_SET(set_fte_in, in, vport_number, ft->vport);
 		MLX5_SET(set_fte_in, in, other_vport, 1);
 	}
@@ -608,7 +625,9 @@ static int mlx5_cmd_delete_fte(struct mlx5_flow_root_namespace *ns,
 	MLX5_SET(delete_fte_in, in, table_type, ft->type);
 	MLX5_SET(delete_fte_in, in, table_id, ft->id);
 	MLX5_SET(delete_fte_in, in, flow_index, fte->index);
-	if (ft->vport) {
+	if (!mlx5_esw_is_manager_vport(dev->priv.eswitch, ft->vport) &&
+	    (ft->type == FS_FT_ESW_EGRESS_ACL ||
+	     ft->type == FS_FT_ESW_INGRESS_ACL)) {
 		MLX5_SET(delete_fte_in, in, vport_number, ft->vport);
 		MLX5_SET(delete_fte_in, in, other_vport, 1);
 	}
