@@ -2277,7 +2277,7 @@ xhci_alloc_interrupter(struct xhci_hcd *xhci, unsigned int intr_num, gfp_t flags
 	struct device *dev = xhci_to_hcd(xhci)->self.sysdev;
 	struct xhci_interrupter *ir;
 	u64 erst_base;
-	u32 erst_size;
+	u32 erst_size, val2;
 	int ret;
 
 	if (intr_num > xhci->max_interrupters) {
@@ -2296,7 +2296,9 @@ xhci_alloc_interrupter(struct xhci_hcd *xhci, unsigned int intr_num, gfp_t flags
 		return NULL;
 
 	ir->ir_set = &xhci->run_regs->ir_set[intr_num];
-	ir->event_ring = xhci_ring_alloc(xhci, ERST_NUM_SEGS, 1, TYPE_EVENT,
+	val2 = 1 << HCS_ERST_MAX(xhci->hcs_params2);
+	val2 = min_t(u32, ERST_MAX_SEGS, val2);
+	ir->event_ring = xhci_ring_alloc(xhci, val2, 1, TYPE_EVENT,
 					0, flags);
 	if (!ir->event_ring) {
 		xhci_warn(xhci, "Failed to allocate interrupter %d event ring\n", intr_num);
@@ -2312,7 +2314,7 @@ xhci_alloc_interrupter(struct xhci_hcd *xhci, unsigned int intr_num, gfp_t flags
 	/* set ERST count with the number of entries in the segment table */
 	erst_size = readl(&ir->ir_set->erst_size);
 	erst_size &= ERST_SIZE_MASK;
-	erst_size |= ERST_NUM_SEGS;
+	erst_size |= val2;
 	writel(erst_size, &ir->ir_set->erst_size);
 
 	erst_base = xhci_read_64(xhci, &ir->ir_set->erst_base);
