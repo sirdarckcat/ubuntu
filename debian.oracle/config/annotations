@@ -1,9 +1,12 @@
 # Menu: HEADER
-# FORMAT: 2
+# FORMAT: 3
 # ARCH: x86
 
 include "../../debian.master/config/annotations"
 
+CONFIG_FAILOVER                                   policy<{'amd64': 'm'}>
 CONFIG_FAILOVER                                   mark<ENFORCED> note<OCI requirement>
+CONFIG_NET_FAILOVER                               policy<{'amd64': 'm'}>
 CONFIG_NET_FAILOVER                               mark<ENFORCED> note<OCI requirement>
+CONFIG_PAGE_POOL                                  policy<{'amd64': 'y'}>
 CONFIG_PAGE_POOL                                  mark<ENFORCED> note<OCI requirement>
