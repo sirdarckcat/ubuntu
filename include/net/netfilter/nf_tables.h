@@ -977,6 +977,12 @@ struct nft_stats {
 	struct u64_stats_sync	syncp;
 };
 
+struct nft_hook {
+	struct list_head	list;
+	struct nf_hook_ops	ops;
+	struct rcu_head		rcu;
+};
+
 /**
  *	struct nft_base_chain - nf_tables base chain
  *
@@ -1187,7 +1193,7 @@ struct nft_flowtable {
 					use:30;
 	u64				handle;
 	/* runtime data below here */
-	struct nf_hook_ops		*ops ____cacheline_aligned;
+	struct list_head		hook_list ____cacheline_aligned;
 	struct nf_flowtable		data;
 };
 
