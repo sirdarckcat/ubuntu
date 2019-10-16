@@ -39,6 +39,7 @@ enum nf_flowtable_flags {
 struct nf_flowtable {
 	struct list_head		list;
 	struct rhashtable		rhashtable;
+	int				priority;
 	const struct nf_flowtable_type	*type;
 	struct delayed_work		gc_work;
 	unsigned int			flags;
