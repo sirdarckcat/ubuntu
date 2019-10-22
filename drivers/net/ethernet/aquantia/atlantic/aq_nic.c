@@ -359,6 +359,14 @@ int aq_nic_init(struct aq_nic_s *self)
 	if (err < 0)
 		goto err_exit;
 
+	err = aq_ptp_ring_alloc(self);
+	if (err < 0)
+		goto err_exit;
+
+	err = aq_ptp_ring_init(self);
+	if (err < 0)
+		goto err_exit;
+
 	netif_carrier_off(self->ndev);
 
 err_exit:
@@ -388,6 +396,10 @@ int aq_nic_start(struct aq_nic_s *self)
 		if (err < 0)
 			goto err_exit;
 	}
+
+	err = aq_ptp_ring_start(self);
+	if (err < 0)
+		goto err_exit;
 
 	err = self->aq_hw_ops->hw_start(self->aq_hw);
 	if (err < 0)
@@ -997,6 +1009,8 @@ int aq_nic_stop(struct aq_nic_s *self)
 		self->aq_vecs > i; ++i, aq_vec = self->aq_vec[i])
 		aq_vec_stop(aq_vec);
 
+	aq_ptp_ring_stop(self);
+
 	return self->aq_hw_ops->hw_stop(self->aq_hw);
 }
 
@@ -1013,6 +1027,8 @@ void aq_nic_deinit(struct aq_nic_s *self)
 		aq_vec_deinit(aq_vec);
 
 	aq_ptp_unregister(self);
+	aq_ptp_ring_deinit(self);
+	aq_ptp_ring_free(self);
 	aq_ptp_free(self);
 
 	if (likely(self->aq_fw_ops->deinit)) {
