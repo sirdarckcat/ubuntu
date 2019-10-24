@@ -133,4 +133,32 @@ mlx5e_accel_handle_tx(struct sk_buff *skb,
 	return skb;
 }
 
+#ifdef CONFIG_MLX5_EN_IPSEC
+static inline bool
+mlx5_ipsec_is_rx_flow(struct mlx5_cqe64 *cqe)
+{
+	return MLX5_IPSEC_METADATA_MARKER_MASK & be32_to_cpu(cqe->ft_metadata);
+}
+
+#else
+static inline bool mlx5_ipsec_is_rx_flow(struct mlx5_cqe64 *cqe) { return false; }
+
+#endif
+
+static inline void
+mlx5e_accel_handle_rx(struct net_device *dev,
+		      struct sk_buff *skb,
+		      struct mlx5_cqe64 *cqe,
+		      u32 *cqe_bcnt)
+{
+#ifdef CONFIG_MLX5_EN_IPSEC
+	if (unlikely(mlx5_ipsec_is_rx_flow(cqe)))
+		mlx5e_ipsec_offload_handle_rx_skb(dev, skb, cqe);
+#endif
+
+#ifdef CONFIG_MLX5_EN_TLS
+	mlx5e_tls_handle_rx_skb(dev, skb, cqe_bcnt);
+#endif
+}
+
 #endif /* __MLX5E_EN_ACCEL_H__ */
