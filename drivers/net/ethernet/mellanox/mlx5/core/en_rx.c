@@ -45,6 +45,7 @@
 #include "ipoib/ipoib.h"
 #include "en_accel/ipsec_rxtx.h"
 #include "en_accel/tls_rxtx.h"
+#include "en_accel/en_accel.h"
 #include "lib/clock.h"
 #include "en/xdp.h"
 #include "en/xsk/rx.h"
@@ -940,8 +941,13 @@ static inline void mlx5e_handle_csum(struct net_device *netdev,
 		goto csum_unnecessary;
 
 	if (likely(is_last_ethertype_ip(skb, &network_depth, &proto))) {
-		if (unlikely(get_ip_proto(skb, network_depth, proto) == IPPROTO_SCTP))
+		u8 ipproto = get_ip_proto(skb, network_depth, proto);
+
+		if (unlikely(ipproto == IPPROTO_SCTP))
 			goto csum_unnecessary;
+
+		if (unlikely(mlx5_ipsec_is_rx_flow(cqe)))
+			goto csum_none;
 
 		stats->csum_complete++;
 		skb->ip_summed = CHECKSUM_COMPLETE;
@@ -986,9 +992,7 @@ static inline void mlx5e_build_rx_skb(struct mlx5_cqe64 *cqe,
 
 	skb->mac_len = ETH_HLEN;
 
-#ifdef CONFIG_MLX5_EN_TLS
-	mlx5e_tls_handle_rx_skb(netdev, skb, &cqe_bcnt);
-#endif
+	mlx5e_accel_handle_rx(netdev, skb, cqe, &cqe_bcnt);
 
 	if (lro_num_seg > 1) {
 		mlx5e_lro_update_hdr(skb, cqe, cqe_bcnt);
