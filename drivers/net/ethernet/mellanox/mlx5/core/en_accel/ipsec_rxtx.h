@@ -34,6 +34,10 @@
 #ifndef __MLX5E_IPSEC_RXTX_H__
 #define __MLX5E_IPSEC_RXTX_H__
 
+#define MLX5_IPSEC_METADATA_MARKER_MASK      (0x80)
+#define MLX5_IPSEC_METADATA_SYNDROM_MASK     (0x7F)
+#define MLX5_IPSEC_METADATA_HANDLE(metadata) (((metadata) >> 8) & 0xFF)
+
 #ifdef CONFIG_MLX5_EN_IPSEC
 
 #include <linux/skbuff.h>
@@ -55,6 +59,9 @@ void mlx5e_ipsec_set_iv(struct sk_buff *skb, struct xfrm_state *x,
 struct sk_buff *mlx5e_ipsec_handle_tx_skb(struct net_device *netdev,
 					  struct mlx5e_tx_wqe *wqe,
 					  struct sk_buff *skb);
+void mlx5e_ipsec_offload_handle_rx_skb(struct net_device *netdev,
+				       struct sk_buff *skb,
+				       struct mlx5_cqe64 *cqe);
 
 #endif /* CONFIG_MLX5_EN_IPSEC */
 
