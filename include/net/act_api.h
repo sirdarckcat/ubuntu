@@ -186,6 +186,13 @@ int tcf_action_dump(struct sk_buff *skb, struct tc_action *actions[], int bind,
 		    int ref);
 int tcf_action_dump_old(struct sk_buff *skb, struct tc_action *a, int, int);
 int tcf_action_dump_1(struct sk_buff *skb, struct tc_action *a, int, int);
+
+static inline void tcf_action_update_bstats(struct tc_action *a,
+					    struct sk_buff *skb)
+{
+	bstats_cpu_update(this_cpu_ptr(a->cpu_bstats), skb);
+}
+
 static inline struct gnet_stats_queue *
 tcf_action_get_qstats(struct tc_action *a)
 {
