@@ -202,6 +202,8 @@ static inline void tcf_action_inc_overlimit_qstats(struct tc_action *a)
 	qstats_overlimit_inc(this_cpu_ptr(a->cpu_qstats));
 }
 
+void tcf_action_update_stats(struct tc_action *a, u64 bytes, u32 packets,
+			     bool drop, bool hw);
 int tcf_action_copy_stats(struct sk_buff *, struct tc_action *, int);
 
 int tcf_action_check_ctrlact(int action, struct tcf_proto *tp,
