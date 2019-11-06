@@ -3269,8 +3269,7 @@ failed_platform_init:
 static int vchiq_remove(struct platform_device *pdev)
 {
 	platform_device_unregister(bcm2835_audio);
-	if (!IS_ERR(bcm2835_camera))
-		platform_device_unregister(bcm2835_camera);
+	platform_device_unregister(bcm2835_camera);
 	platform_device_unregister(bcm2835_codec);
 	platform_device_unregister(vcsm_cma);
 	vchiq_debugfs_deinit();
