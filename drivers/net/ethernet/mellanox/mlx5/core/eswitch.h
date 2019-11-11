@@ -45,9 +45,9 @@
 #include "mlx5_core.h"
 #include "meddev/sf.h"
 
-#define FDB_MAX_CHAIN 3
-#define FDB_SLOW_PATH_CHAIN (FDB_MAX_CHAIN + 1)
-#define FDB_MAX_PRIO 16
+#define FDB_TC_MAX_CHAIN 3
+#define FDB_TC_SLOW_PATH_CHAIN (FDB_TC_MAX_CHAIN + 1)
+#define FDB_TC_MAX_PRIO 16
 
 #ifdef CONFIG_MLX5_ESWITCH
 
@@ -182,7 +182,7 @@ struct mlx5_eswitch_fdb {
 			struct {
 				struct mlx5_flow_table *fdb;
 				u32 num_rules;
-			} fdb_prio[FDB_MAX_CHAIN + 1][FDB_MAX_PRIO + 1][PRIO_LEVELS];
+			} fdb_prio[FDB_TC_MAX_CHAIN + 1][FDB_TC_MAX_PRIO + 1][PRIO_LEVELS];
 			/* Protects fdb_prio table */
 			struct mutex fdb_prio_lock;
 
