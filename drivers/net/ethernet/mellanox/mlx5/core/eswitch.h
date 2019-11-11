@@ -45,6 +45,10 @@
 #include "mlx5_core.h"
 #include "meddev/sf.h"
 
+#define FDB_MAX_CHAIN 3
+#define FDB_SLOW_PATH_CHAIN (FDB_MAX_CHAIN + 1)
+#define FDB_MAX_PRIO 16
+
 #ifdef CONFIG_MLX5_ESWITCH
 
 #define MLX5_MAX_UC_PER_VPORT(dev) \
@@ -60,10 +64,6 @@
 
 #define mlx5_esw_has_fwd_fdb(dev) \
 	MLX5_CAP_ESW_FLOWTABLE(dev, fdb_multi_path_to_table)
-
-#define FDB_MAX_CHAIN 3
-#define FDB_SLOW_PATH_CHAIN (FDB_MAX_CHAIN + 1)
-#define FDB_MAX_PRIO 16
 
 struct vport_ingress {
 	struct mlx5_flow_table *acl;
