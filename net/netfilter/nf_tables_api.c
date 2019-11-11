@@ -5911,6 +5911,7 @@ static const struct nla_policy nft_flowtable_policy[NFTA_FLOWTABLE_MAX + 1] = {
 					    .len = NFT_NAME_MAXLEN - 1 },
 	[NFTA_FLOWTABLE_HOOK]		= { .type = NLA_NESTED },
 	[NFTA_FLOWTABLE_HANDLE]		= { .type = NLA_U64 },
+	[NFTA_FLOWTABLE_FLAGS]		= { .type = NLA_U32 },
 };
 
 struct nft_flowtable *nft_flowtable_lookup(const struct nft_table *table,
@@ -6087,15 +6088,17 @@ static void __nft_unregister_flowtable_net_hooks(struct net *net,
 						 struct nft_flowtable *flowtable,
 						 bool release_netdev)
 {
-	int i;
+	struct nft_hook *hook;
 
-	for (i = 0; i < flowtable->ops_len; i++) {
-		if (!flowtable->ops[i].dev)
-			continue;
+	list_for_each_entry(hook, &flowtable->hook_list, list) {
+		nf_unregister_net_hook(net, &hook->ops);
+		flowtable->data.type->setup(&flowtable->data, hook->ops.dev,
+					    FLOW_BLOCK_UNBIND);
 
-		nf_unregister_net_hook(net, &flowtable->ops[i]);
-		if (release_netdev)
-			flowtable->ops[i].dev = NULL;
+		if (release_netdev) {
+			list_del_rcu(&hook->list);
+			kfree_rcu(hook, rcu);
+		}
 	}
 }
 
@@ -6103,6 +6106,44 @@ static void nft_unregister_flowtable_net_hooks(struct net *net,
 					       struct nft_flowtable *flowtable)
 {
 	__nft_unregister_flowtable_net_hooks(net, flowtable, false);
+}
+
+static int nft_register_flowtable_net_hooks(struct net *net,
+					    struct nft_table *table,
+					    struct nft_flowtable *flowtable)
+{
+	struct nft_hook *hook, *hook2, *next;
+	struct nft_flowtable *ft;
+	int err, i = 0;
+
+	list_for_each_entry(hook, &flowtable->hook_list, list) {
+		list_for_each_entry(ft, &table->flowtables, list) {
+			list_for_each_entry(hook2, &ft->hook_list, list) {
+				if (hook->ops.dev == hook2->ops.dev &&
+				    hook->ops.pf == hook2->ops.pf) {
+					err = -EBUSY;
+					goto err_unregister_net_hooks;
+				}
+			}
+		}
+
+		flowtable->data.type->setup(&flowtable->data, hook->ops.dev,
+					    FLOW_BLOCK_BIND);
+		err = nf_register_net_hook(net, &hook->ops);
+		if (err < 0)
+			goto err_unregister_net_hooks;
+
+		i++;
+	}
+
+	return 0;
+
+err_unregister_net_hooks:
+	nf_unregister_net_hook(net, &hook->ops);
+	flowtable->data.type->setup(&flowtable->data, hook->ops.dev,
+				    FLOW_BLOCK_UNBIND);
+	list_del_rcu(&hook->list);
+	kfree_rcu(hook, rcu);
 }
 
 static int nf_tables_newflowtable(struct net *net, struct sock *nlsk,
@@ -6175,6 +6216,14 @@ static int nf_tables_newflowtable(struct net *net, struct sock *nlsk,
 		goto err2;
 	}
 
+	if (nla[NFTA_FLOWTABLE_FLAGS]) {
+		flowtable->data.flags =
+			ntohl(nla_get_be32(nla[NFTA_FLOWTABLE_FLAGS]));
+		if (flowtable->data.flags & ~NF_FLOWTABLE_HW_OFFLOAD)
+			goto err3;
+	}
+
+	write_pnet(&flowtable->data.net, net);
 	flowtable->data.type = type;
 	err = type->init(&flowtable->data);
 	if (err < 0)
@@ -6305,7 +6354,8 @@ static int nf_tables_fill_flowtable_info(struct sk_buff *skb, struct net *net,
 	    nla_put_string(skb, NFTA_FLOWTABLE_NAME, flowtable->name) ||
 	    nla_put_be32(skb, NFTA_FLOWTABLE_USE, htonl(flowtable->use)) ||
 	    nla_put_be64(skb, NFTA_FLOWTABLE_HANDLE, cpu_to_be64(flowtable->handle),
-			 NFTA_FLOWTABLE_PAD))
+			 NFTA_FLOWTABLE_PAD) ||
+	    nla_put_be32(skb, NFTA_FLOWTABLE_FLAGS, htonl(flowtable->data.flags)))
 		goto nla_put_failure;
 
 	nest = nla_nest_start_noflag(skb, NFTA_FLOWTABLE_HOOK);
