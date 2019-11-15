@@ -6095,6 +6095,15 @@ nft_flowtable_type_get(struct net *net, u8 family)
 	return ERR_PTR(-ENOENT);
 }
 
+static void nft_unregister_flowtable_hook(struct net *net,
+					  struct nft_flowtable *flowtable,
+					  struct nft_hook *hook)
+{
+	nf_unregister_net_hook(net, &hook->ops);
+	flowtable->data.type->setup(&flowtable->data, hook->ops.dev,
+				    FLOW_BLOCK_UNBIND);
+}
+
 static void __nft_unregister_flowtable_net_hooks(struct net *net,
 						 struct nft_flowtable *flowtable,
 						 bool release_netdev)
@@ -6102,10 +6111,7 @@ static void __nft_unregister_flowtable_net_hooks(struct net *net,
 	struct nft_hook *hook;
 
 	list_for_each_entry(hook, &flowtable->hook_list, list) {
-		nf_unregister_net_hook(net, &hook->ops);
-		flowtable->data.type->setup(&flowtable->data, hook->ops.dev,
-					    FLOW_BLOCK_UNBIND);
-
+		nft_unregister_flowtable_hook(net, flowtable, hook);
 		if (release_netdev) {
 			list_del_rcu(&hook->list);
 			kfree_rcu(hook, rcu);
@@ -6158,11 +6164,16 @@ static int nft_register_flowtable_net_hooks(struct net *net,
 	return 0;
 
 err_unregister_net_hooks:
-	nf_unregister_net_hook(net, &hook->ops);
-	flowtable->data.type->setup(&flowtable->data, hook->ops.dev,
-				    FLOW_BLOCK_UNBIND);
-	list_del_rcu(&hook->list);
-	kfree_rcu(hook, rcu);
+	list_for_each_entry_safe(hook, next, &flowtable->hook_list, list) {
+		if (i-- <= 0)
+			break;
+
+		nft_unregister_flowtable_hook(net, flowtable, hook);
+		list_del_rcu(&hook->list);
+		kfree_rcu(hook, rcu);
+	}
+
+	return err;
 }
 
 static int nf_tables_newflowtable(struct net *net, struct sock *nlsk,
@@ -6288,10 +6299,11 @@ static int nf_tables_newflowtable(struct net *net, struct sock *nlsk,
 err6:
 	i = flowtable->ops_len;
 err5:
-	for (k = i - 1; k >= 0; k--)
-		nf_unregister_net_hook(net, &flowtable->ops[k]);
-
-	kfree(flowtable->ops);
+	list_for_each_entry_safe(hook, next, &flowtable->hook_list, list) {
+		nft_unregister_flowtable_hook(net, flowtable, hook);
+		list_del_rcu(&hook->list);
+		kfree_rcu(hook, rcu);
+	}
 err4:
 	flowtable->data.type->free(&flowtable->data);
 err3:
@@ -6628,8 +6640,9 @@ static void nft_flowtable_event(unsigned long event, struct net_device *dev,
 		if (flowtable->ops[i].dev != dev)
 			continue;
 
-		nf_unregister_net_hook(dev_net(dev), &flowtable->ops[i]);
-		flowtable->ops[i].dev = NULL;
+		nft_unregister_flowtable_hook(dev_net(dev), flowtable, hook);
+		list_del_rcu(&hook->list);
+		kfree_rcu(hook, rcu);
 		break;
 	}
 }
