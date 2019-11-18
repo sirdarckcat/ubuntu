@@ -1124,11 +1124,7 @@ static int mlx5_load(struct mlx5_core_dev *dev)
 		goto err_fpga_start;
 	}
 
-	err = mlx5_accel_ipsec_init(dev);
-	if (err) {
-		mlx5_core_err(dev, "IPSec device start failed %d\n", err);
-		goto err_ipsec_start;
-	}
+	mlx5_accel_ipsec_init(dev);
 
 	err = mlx5_accel_tls_init(dev);
 	if (err) {
@@ -1170,7 +1166,6 @@ err_fs:
 	mlx5_accel_tls_cleanup(dev);
 err_tls_start:
 	mlx5_accel_ipsec_cleanup(dev);
-err_ipsec_start:
 	mlx5_fpga_device_stop(dev);
 err_fpga_start:
 	mlx5_hv_vhca_cleanup(dev->hv_vhca);
@@ -1671,7 +1666,7 @@ static int __init init(void)
 	get_random_bytes(&sw_owner_id, sizeof(sw_owner_id));
 
 	mlx5_core_verify_params();
-	mlx5_accel_ipsec_build_fs_cmds();
+	mlx5_fpga_ipsec_build_fs_cmds();
 	mlx5_register_debugfs();
 
 	err = pci_register_driver(&mlx5_core_driver);
