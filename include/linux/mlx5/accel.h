@@ -104,6 +104,7 @@ struct mlx5_accel_esp_xfrm_attrs {
 	} daddr;
 
 	u8 is_ipv6;
+	void *priv;
 };
 
 struct mlx5_accel_esp_xfrm {
