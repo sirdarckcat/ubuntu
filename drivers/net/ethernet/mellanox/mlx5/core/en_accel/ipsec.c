@@ -40,7 +40,7 @@
 #include "en.h"
 #include "en_accel/ipsec.h"
 #include "en_accel/ipsec_rxtx.h"
-
+#include "en_accel/ipsec_fs.h"
 
 static struct mlx5e_ipsec_sa_entry *to_ipsec_sa_entry(struct xfrm_state *x)
 {
@@ -202,6 +202,9 @@ mlx5e_ipsec_build_accel_xfrm_attrs(struct mlx5e_ipsec_sa_entry *sa_entry,
 	memcpy(&attrs->saddr, x->props.saddr.a6, sizeof(attrs->saddr));
 	memcpy(&attrs->daddr, x->id.daddr.a6, sizeof(attrs->daddr));
 	attrs->is_ipv6 = (x->props.family != AF_INET);
+
+	/* netdev priv */
+	attrs->priv = netdev_priv(x->xso.dev);
 }
 
 static inline int mlx5e_xfrm_validate_state(struct xfrm_state *x)
