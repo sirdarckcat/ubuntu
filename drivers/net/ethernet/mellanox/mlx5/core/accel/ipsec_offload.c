@@ -4,18 +4,10 @@
 #include "mlx5_core.h"
 #include "ipsec_offload.h"
 #include "lib/mlx5.h"
+#include "en_accel/ipsec_fs.h"
 
 #define MLX5_IPSEC_DEV_BASIC_CAPS (MLX5_ACCEL_IPSEC_CAP_DEVICE | MLX5_ACCEL_IPSEC_CAP_IPV6 | \
 				   MLX5_ACCEL_IPSEC_CAP_LSO)
-struct mlx5_ipsec_sa_ctx {
-	struct rhash_head hash;
-	u32 enc_key_id;
-	u32 ipsec_obj_id;
-	struct mlx5_flow_handle *ipsec_rule;
-	/* hw ctx */
-	struct mlx5_core_dev *dev;
-	struct mlx5_ipsec_esp_xfrm *mxfrm;
-};
 
 struct mlx5_ipsec_esp_xfrm {
 	/* reference counter of SA ctx */
@@ -29,6 +21,10 @@ u32 mlx5_ipsec_offload_device_caps(struct mlx5_core_dev *mdev)
 	u32 caps = MLX5_IPSEC_DEV_BASIC_CAPS;
 
 	if (!mlx5_is_ipsec_device(mdev))
+		return 0;
+
+	if (!MLX5_CAP_FLOWTABLE_NIC_TX(mdev, ipsec_encrypt) ||
+	    !MLX5_CAP_FLOWTABLE_NIC_RX(mdev, ipsec_decrypt))
 		return 0;
 
 	if (MLX5_CAP_IPSEC(mdev, ipsec_crypto_esp_aes_gcm_128_encrypt) &&
@@ -277,6 +273,8 @@ const struct mlx5_accel_ipsec_ops ipsec_offload_ops = {
 	.device_caps = mlx5_ipsec_offload_device_caps,
 	.create_hw_context = mlx5_ipsec_offload_create_sa_ctx,
 	.free_hw_context = mlx5_ipsec_offload_delete_sa_ctx,
+	.add_steering_rule = mlx5e_ipsec_fs_add_rule,
+	.del_steering_rule = mlx5e_ipsec_fs_del_rule,
 	.init = mlx5_ipsec_offload_init,
 	.esp_create_xfrm = mlx5_ipsec_offload_esp_create_xfrm,
 	.esp_destroy_xfrm = mlx5_ipsec_offload_esp_destroy_xfrm,
