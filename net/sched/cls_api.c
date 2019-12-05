@@ -3635,9 +3635,9 @@ static struct pernet_operations tcf_net_ops = {
 	.size = sizeof(struct tcf_net),
 };
 
-static struct flow_indr_block_entry block_entry = {
+static struct flow_indr_block_entry block_ing_entry = {
 	.cb = tc_indr_block_get_and_cmd,
-	.list = LIST_HEAD_INIT(block_entry.list),
+	.list = LIST_HEAD_INIT(block_ing_entry.list),
 };
 
 static int __init tc_filter_init(void)
@@ -3652,7 +3652,7 @@ static int __init tc_filter_init(void)
 	if (err)
 		goto err_register_pernet_subsys;
 
-	flow_indr_add_block_cb(&block_entry);
+	flow_indr_add_block_cb(&block_ing_entry);
 
 	rtnl_register(PF_UNSPEC, RTM_NEWTFILTER, tc_new_tfilter, NULL,
 		      RTNL_FLAG_DOIT_UNLOCKED);
