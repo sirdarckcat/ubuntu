@@ -1408,7 +1408,7 @@ out:
  *
  * called, if tx hangs. Schedules a task that resets the interface
  */
-void gelic_net_tx_timeout(struct net_device *netdev)
+void gelic_net_tx_timeout(struct net_device *netdev, unsigned int txqueue)
 {
 	struct gelic_card *card;
 
