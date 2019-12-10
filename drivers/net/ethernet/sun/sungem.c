@@ -959,7 +959,18 @@ static irqreturn_t gem_interrupt(int irq, void *dev_id)
 	return IRQ_HANDLED;
 }
 
-static void gem_tx_timeout(struct net_device *dev)
+#ifdef CONFIG_NET_POLL_CONTROLLER
+static void gem_poll_controller(struct net_device *dev)
+{
+	struct gem *gp = netdev_priv(dev);
+
+	disable_irq(gp->pdev->irq);
+	gem_interrupt(gp->pdev->irq, dev);
+	enable_irq(gp->pdev->irq);
+}
+#endif
+
+static void gem_tx_timeout(struct net_device *dev, unsigned int txqueue)
 {
 	struct gem *gp = netdev_priv(dev);
 
