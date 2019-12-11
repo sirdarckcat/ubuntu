@@ -232,6 +232,9 @@ struct mlx5e_accel_fs {
 
 struct mlx5e_flow_steering {
 	struct mlx5_flow_namespace      *ns;
+#ifdef CONFIG_MLX5_EN_IPSEC
+	struct mlx5_flow_namespace      *egress_ns;
+#endif
 #ifdef CONFIG_MLX5_EN_RXNFC
 	struct mlx5e_ethtool_steering   ethtool;
 #endif
