@@ -268,6 +268,42 @@ out_alloc:
 	return err;
 }
 
+/* IPsec TX flow steering */
+int mlx5e_ipsec_create_tx_ft(struct mlx5e_priv *priv)
+{
+	struct mlx5_flow_table_attr ft_attr = {};
+	struct mlx5e_ipsec *ipsec = priv->ipsec;
+	struct mlx5_flow_table *ft;
+
+	if (!mlx5_is_ipsec_device(priv->mdev) || !MLX5_IPSEC_DEV(priv->mdev) || !ipsec)
+		return 0;
+
+	priv->fs.egress_ns = mlx5_get_flow_namespace(priv->mdev, MLX5_FLOW_NAMESPACE_EGRESS_KERNEL);
+	if (!priv->fs.egress_ns)
+		return -EOPNOTSUPP;
+
+	ft_attr.max_fte = NUM_IPSEC_FTE;
+	ft_attr.autogroup.max_num_groups = NUM_IPSEC_FG;
+	ft = mlx5_create_auto_grouped_flow_table(priv->fs.egress_ns, &ft_attr);
+	if (IS_ERR(ft)) {
+		netdev_err(priv->netdev, "fail to create ipsec tx ft\n");
+		return PTR_ERR(ft);
+	}
+	ipsec->ft_tx = ft;
+	return 0;
+}
+
+void mlx5e_ipsec_destroy_tx_ft(struct mlx5e_priv *priv)
+{
+	struct mlx5e_ipsec *ipsec = priv->ipsec;
+
+	if (!ipsec || IS_ERR_OR_NULL(ipsec->ft_tx))
+		return;
+
+	mlx5_destroy_flow_table(ipsec->ft_tx);
+	ipsec->ft_tx = NULL;
+}
+
 /* IPsec XFRM */
 static void ipsec_setup_fte_common(struct mlx5_accel_esp_xfrm_attrs *attrs,
 				   u32 ipsec_obj_id,
@@ -452,4 +488,12 @@ int mlx5e_ipsec_fs_rx_inline_init(struct mlx5e_priv *priv, enum mlx5e_traffic_ty
 {
 	return 0;
 }
+
+int mlx5e_ipsec_create_tx_ft(struct mlx5e_priv *priv)
+{
+	return 0;
+}
+
+void mlx5e_ipsec_destroy_tx_ft(struct mlx5e_priv *priv) {}
+
 #endif /* #ifdef CONFIG_MLX5_EN_IPSEC */
