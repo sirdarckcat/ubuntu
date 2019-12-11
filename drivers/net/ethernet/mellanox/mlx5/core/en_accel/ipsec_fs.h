@@ -14,4 +14,6 @@ int mlx5e_ipsec_fs_rx_inline_remove(struct mlx5e_priv *priv, enum mlx5e_traffic_
 int mlx5e_ipsec_fs_is_supported(struct mlx5e_priv *priv, enum mlx5e_traffic_types type);
 int mlx5e_ipsec_fs_add_rule(void *context);
 void mlx5e_ipsec_fs_del_rule(void *context);
+int mlx5e_ipsec_create_tx_ft(struct mlx5e_priv *priv);
+void mlx5e_ipsec_destroy_tx_ft(struct mlx5e_priv *priv);
 #endif /* __MLX5_IPSEC_STEERING_H__ */
