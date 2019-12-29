@@ -49,34 +49,34 @@ mlx5_ipsec_offload_esp_validate_xfrm_attrs(struct mlx5_core_dev *mdev,
 					   const struct mlx5_accel_esp_xfrm_attrs *attrs)
 {
 	if (attrs->replay_type != MLX5_ACCEL_ESP_REPLAY_NONE) {
-		mlx5_core_err(mdev, "Cannot offload xfrm states with anti replay (replay_type = %d)\n",
-			      attrs->replay_type);
+		mlx5_core_warn(mdev, "Cannot offload xfrm states with anti replay (replay_type = %d)\n",
+			       attrs->replay_type);
 		return -EOPNOTSUPP;
 	}
 
 	if (attrs->keymat_type != MLX5_ACCEL_ESP_KEYMAT_AES_GCM) {
-		mlx5_core_err(mdev, "Only aes gcm keymat is supported (keymat_type = %d)\n",
+		mlx5_core_warn(mdev, "Only aes gcm keymat is supported (keymat_type = %d)\n",
 			      attrs->keymat_type);
 		return -EOPNOTSUPP;
 	}
 
 	if (attrs->keymat.aes_gcm.iv_algo !=
 	    MLX5_ACCEL_ESP_AES_GCM_IV_ALGO_SEQ) {
-		mlx5_core_err(mdev, "Only iv sequence algo is supported (iv_algo = %d)\n",
+		mlx5_core_warn(mdev, "Only iv sequence algo is supported (iv_algo = %d)\n",
 			      attrs->keymat.aes_gcm.iv_algo);
 		return -EOPNOTSUPP;
 	}
 
 	if (attrs->keymat.aes_gcm.key_len != 128 &&
 	    attrs->keymat.aes_gcm.key_len != 256) {
-		mlx5_core_err(mdev, "Cannot offload xfrm states with key length other than 128/256 bit (key length = %d)\n",
+		mlx5_core_warn(mdev, "Cannot offload xfrm states with key length other than 128/256 bit (key length = %d)\n",
 			      attrs->keymat.aes_gcm.key_len);
 		return -EOPNOTSUPP;
 	}
 
 	if ((attrs->flags & MLX5_ACCEL_ESP_FLAGS_ESN_TRIGGERED) &&
 	    !MLX5_CAP_IPSEC(mdev, ipsec_esn)) {
-		mlx5_core_err(mdev, "Cannot offload xfrm states with ESN triggered\n");
+		mlx5_core_warn(mdev, "Cannot offload xfrm states with ESN triggered\n");
 		return -EOPNOTSUPP;
 	}
 
@@ -269,6 +269,94 @@ static int mlx5_ipsec_offload_init(struct mlx5_core_dev *mdev) {
 	return 0;
 }
 
+static int mlx5_modify_ipsec_obj(struct mlx5_core_dev *mdev,
+				 struct mlx5_ipsec_obj_attrs *attrs,
+				 u32 ipsec_id)
+{
+	u32 in[MLX5_ST_SZ_DW(modify_ipsec_obj_in)] = {};
+	u32 out[MLX5_ST_SZ_DW(query_ipsec_obj_out)];
+	u64 modify_field_select = 0;
+	u64 general_obj_types;
+	void *obj;
+	int err;
+
+	if (!(attrs->accel_flags & MLX5_ACCEL_ESP_FLAGS_ESN_TRIGGERED))
+		return 0;
+
+	general_obj_types = MLX5_CAP_GEN_64(mdev, general_obj_types);
+	if (!(general_obj_types & MLX5_HCA_CAP_GENERAL_OBJECT_TYPES_IPSEC))
+		return -EINVAL;
+
+	/* general object fields set */
+	MLX5_SET(general_obj_in_cmd_hdr, in, opcode, MLX5_CMD_OP_QUERY_GENERAL_OBJECT);
+	MLX5_SET(general_obj_in_cmd_hdr, in, obj_type, MLX5_GENERAL_OBJECT_TYPES_IPSEC);
+	MLX5_SET(general_obj_in_cmd_hdr, in, obj_id, ipsec_id);
+	err = mlx5_cmd_exec(mdev, in, sizeof(in), out, sizeof(out));
+	if (err) {
+		mlx5_core_err(mdev, "Query IPsec object failed (Object id %d), err = %d\n",
+			      ipsec_id, err);
+		return err;
+	}
+
+	obj = MLX5_ADDR_OF(query_ipsec_obj_out, out, ipsec_object);
+	modify_field_select = MLX5_GET64(ipsec_obj, obj, modify_field_select);
+
+	/* esn */
+	if (!(modify_field_select & MLX5_MODIFY_IPSEC_BITMASK_ESN_OVERLAP) ||
+	    !(modify_field_select & MLX5_MODIFY_IPSEC_BITMASK_ESN_MSB))
+		return -EOPNOTSUPP;
+
+	obj = MLX5_ADDR_OF(modify_ipsec_obj_in, in, ipsec_object);
+	MLX5_SET(ipsec_obj, obj, esn_msb, htonl(attrs->esn_msb));
+	if (attrs->accel_flags & MLX5_ACCEL_ESP_FLAGS_ESN_STATE_OVERLAP)
+		MLX5_SET(ipsec_obj, obj, esn_overlap, 1);
+
+	/* general object fields set */
+	MLX5_SET(general_obj_in_cmd_hdr, in, opcode, MLX5_CMD_OP_MODIFY_GENERAL_OBJECT);
+
+	return mlx5_cmd_exec(mdev, in, sizeof(in), out, sizeof(out));
+}
+
+static int mlx5_ipsec_offload_esp_modify_xfrm(struct mlx5_accel_esp_xfrm *xfrm,
+					      const struct mlx5_accel_esp_xfrm_attrs *attrs)
+{
+	struct mlx5_ipsec_obj_attrs ipsec_attrs = {0};
+	struct mlx5_core_dev *mdev = xfrm->mdev;
+	struct mlx5_ipsec_esp_xfrm *mxfrm;
+
+	int err = 0;
+
+	if (!memcmp(&xfrm->attrs, attrs, sizeof(xfrm->attrs)))
+		return 0;
+
+	if (mlx5_ipsec_offload_esp_validate_xfrm_attrs(mdev, attrs)) {
+		return -EOPNOTSUPP;
+	}
+
+	mxfrm = container_of(xfrm, struct mlx5_ipsec_esp_xfrm, accel_xfrm);
+
+	mutex_lock(&mxfrm->lock);
+
+	if (!mxfrm->sa_ctx)
+		/* Not bound xfrm, change only sw attrs */
+		goto change_sw_xfrm_attrs;
+
+	/* need to add find and replace in ipsec_rhash_sa the sa_ctx */
+	/* modify device with new hw_sa */
+	ipsec_attrs.accel_flags = attrs->flags;
+	ipsec_attrs.esn_msb = htonl(attrs->esn);
+	err = mlx5_modify_ipsec_obj(mdev,
+				    &ipsec_attrs,
+				    mxfrm->sa_ctx->ipsec_obj_id);
+
+change_sw_xfrm_attrs:
+	if (!err)
+		memcpy(&xfrm->attrs, attrs, sizeof(xfrm->attrs));
+
+	mutex_unlock(&mxfrm->lock);
+	return err;
+}
+
 const struct mlx5_accel_ipsec_ops ipsec_offload_ops = {
 	.device_caps = mlx5_ipsec_offload_device_caps,
 	.create_hw_context = mlx5_ipsec_offload_create_sa_ctx,
@@ -277,6 +365,7 @@ const struct mlx5_accel_ipsec_ops ipsec_offload_ops = {
 	.del_steering_rule = mlx5e_ipsec_fs_del_rule,
 	.init = mlx5_ipsec_offload_init,
 	.esp_create_xfrm = mlx5_ipsec_offload_esp_create_xfrm,
+	.esp_modify_xfrm = mlx5_ipsec_offload_esp_modify_xfrm,
 	.esp_destroy_xfrm = mlx5_ipsec_offload_esp_destroy_xfrm,
 };
 
