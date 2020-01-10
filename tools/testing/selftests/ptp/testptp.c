@@ -181,6 +181,7 @@ static void usage(char *progname)
 		"            1 - external time stamp\n"
 		"            2 - periodic output\n"
 		" -n val     shift the ptp clock time by 'val' nanoseconds\n"
+		" -O         enable single shot output for TGPIO pins\n"
 		" -p val     enable output with a period of 'val' nanoseconds\n"
 		" -H val     set output phase to 'val' nanoseconds (requires -p)\n"
 		" -w val     set output pulse width to 'val' nanoseconds (requires -p)\n"
@@ -233,6 +234,7 @@ int main(int argc, char *argv[])
 	int getextended = 0;
 	int getcross = 0;
 	int n_samples = 0;
+	int single_shot = -1;
 	int new_period = -1;
 	int pin_index = -1, pin_func;
 	int pps = -1;
@@ -251,7 +253,7 @@ int main(int argc, char *argv[])
 
 	progname = strrchr(argv[0], '/');
 	progname = progname ? 1+progname : argv[0];
-	while (EOF != (c = getopt(argc, argv, "a:cd:e:f:F:EGghH:i:k:lL:n:p:P:rsSt:T:w:x:Xy:z"))) {
+	while (EOF != (c = getopt(argc, argv, "a:cd:e:f:F:EGghH:i:k:lL:n:Op:P:rsSt:T:w:x:Xy:z"))) {
 		switch (c) {
 		case 'a':
 			new_period = atoi(optarg);
@@ -301,6 +303,9 @@ int main(int argc, char *argv[])
 			break;
 		case 'n':
 			adjns = atoi(optarg);
+			break;
+		case 'O':
+			single_shot = 1;
 			break;
 		case 'p':
 			perout = atoll(optarg);
