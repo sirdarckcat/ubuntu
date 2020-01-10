@@ -660,14 +660,32 @@ static int ulite_assign(struct device *dev, int id, phys_addr_t base, int irq,
 
 	dev_set_drvdata(dev, port);
 
+#ifdef CONFIG_SERIAL_UARTLITE_CONSOLE
+	/*
+	 * If console hasn't been found yet try to assign this port
+	 * because it is required to be assigned for console setup function.
+	 * If register_console() don't assign value, then console_port pointer
+	 * is cleanup.
+	 */
+	if (!console_port)
+		console_port = port;
+#endif
+
 	/* Register the port */
-	rc = uart_add_one_port(&ulite_uart_driver, port);
+	rc = uart_add_one_port(pdata->ulite_uart_driver, port);
 	if (rc) {
 		dev_err(dev, "uart_add_one_port() failed; err=%i\n", rc);
 		port->mapbase = 0;
 		dev_set_drvdata(dev, NULL);
 		return rc;
 	}
+
+#ifdef CONFIG_SERIAL_UARTLITE_CONSOLE
+	/* This is not port which is used for console that's why clean it up */
+	if (console_port == port &&
+	    !(pdata->ulite_uart_driver->cons->flags & CON_ENABLED))
+		console_port = NULL;
+#endif
 
 	return 0;
 }
@@ -849,6 +867,11 @@ static int ulite_remove(struct platform_device *pdev)
 
 	clk_unprepare(pdata->clk);
 	rc = ulite_release(&pdev->dev);
+#ifdef CONFIG_SERIAL_UARTLITE_CONSOLE
+	if (console_port == port)
+		console_port = NULL;
+#endif
+
 	pm_runtime_disable(&pdev->dev);
 	pm_runtime_set_suspended(&pdev->dev);
 	pm_runtime_dont_use_autosuspend(&pdev->dev);
