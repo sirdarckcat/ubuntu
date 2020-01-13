@@ -1631,7 +1631,7 @@ CONFIG_TCM_USER2                                policy<{'amd64': 'm', 'arm64': '
 CONFIG_LOOPBACK_TARGET                          policy<{'amd64': 'm', 'arm64': 'm', 'armhf': 'm', 'i386': 'm', 'ppc64el': 'm', 's390x': 'm'}>
 CONFIG_TCM_FC                                   policy<{'amd64': 'm', 'arm64': 'm', 'armhf': 'm', 'i386': 'm', 'ppc64el': 'm', 's390x': 'm'}>
 CONFIG_ISCSI_TARGET                             policy<{'amd64': 'm', 'arm64': 'm', 'armhf': 'm', 'i386': 'm', 'ppc64el': 'm', 's390x': 'm'}>
-CONFIG_ISCSI_TARGET_CXGB4                       policy<{'amd64': 'm', 'arm64': 'm', 'armhf': 'm', 'i386': 'm', 'ppc64el': 'm'}>
+CONFIG_ISCSI_TARGET_CXGB4                       policy<{'amd64': 'm', 'arm64': 'm', 'armhf': 'm', 'i386': 'm', 'ppc64el': 'm', 'arm64-bluefield': 'n'}>
 CONFIG_SBP_TARGET                               policy<{'amd64': 'm', 'arm64': 'm', 'armhf': 'm', 'i386': 'm', 'ppc64el': 'm'}>
 
 # Menu: Device Drivers >> Generic Thermal sysfs driver
@@ -3258,7 +3258,7 @@ CONFIG_INFINIBAND_MTHCA                         policy<{'amd64': 'm', 'arm64': '
 CONFIG_INFINIBAND_MTHCA_DEBUG                   policy<{'amd64': 'n', 'arm64': 'n', 'armhf': 'n', 'i386': 'n', 'ppc64el': 'n', 's390x': 'n'}>
 CONFIG_INFINIBAND_QIB                           policy<{'amd64': 'm'}>
 CONFIG_INFINIBAND_QIB_DCA                       policy<{'amd64': 'y'}>
-CONFIG_INFINIBAND_CXGB3                         policy<{'amd64': 'm', 'arm64': 'm', 'armhf': 'm', 'i386': 'm', 'ppc64el': 'm'}>
+CONFIG_INFINIBAND_CXGB3                         policy<{'amd64': 'm', 'arm64': 'm', 'armhf': 'm', 'i386': 'm', 'ppc64el': 'm', 'arm64-bluefield': 'n'}>
 CONFIG_INFINIBAND_EFA                           policy<{'amd64': 'm', 'arm64': 'm', 'ppc64el': 'm'}>
 CONFIG_INFINIBAND_I40IW                         policy<{'amd64': 'm', 'arm64': 'm', 'armhf': 'm', 'i386': 'm', 'ppc64el': 'm'}>
 CONFIG_MLX4_INFINIBAND                          policy<{'amd64': 'm', 'arm64': 'm', 'armhf': 'm', 'i386': 'm', 'ppc64el': 'm', 's390x': 'm'}>
@@ -3275,12 +3275,12 @@ CONFIG_HFI1_DEBUG_SDMA_ORDER                    policy<{'amd64': 'n'}>
 CONFIG_SDMA_VERBOSITY                           policy<{'amd64': 'n'}>
 CONFIG_INFINIBAND_QEDR                          policy<{'amd64': 'm', 'arm64': 'm', 'ppc64el': 'm'}>
 CONFIG_INFINIBAND_RDMAVT                        policy<{'amd64': 'm'}>
-CONFIG_RDMA_RXE                                 policy<{'amd64': 'm', 'arm64': 'm', 'armhf': 'm', 'i386': 'm', 'ppc64el': 'm', 's390x': 'm'}>
+CONFIG_RDMA_RXE                                 policy<{'amd64': 'm', 'arm64': 'm', 'armhf': 'm', 'i386': 'm', 'ppc64el': 'm', 's390x': 'm', 'arm64-bluefield': 'n'}>
 CONFIG_RDMA_SIW                                 policy<{'amd64': 'm', 'arm64': 'm', 'armhf': 'm', 'i386': 'm', 'ppc64el': 'm', 's390x': 'm'}>
 
 # Menu: Device Drivers >> InfiniBand support >> RDMA/CM
 CONFIG_INFINIBAND_ADDR_TRANS                    policy<{'amd64': 'y', 'arm64': 'y', 'armhf': 'y', 'i386': 'y', 'ppc64el': 'y', 's390x': 'y'}>
-CONFIG_INFINIBAND_CXGB4                         policy<{'amd64': 'm', 'arm64': 'm', 'armhf': 'm', 'i386': 'm', 'ppc64el': 'm'}>
+CONFIG_INFINIBAND_CXGB4                         policy<{'amd64': 'm', 'arm64': 'm', 'armhf': 'm', 'i386': 'm', 'ppc64el': 'm', 'arm64-bluefield': 'n'}>
 CONFIG_INFINIBAND_SRP                           policy<{'amd64': 'm', 'arm64': 'm', 'armhf': 'm', 'i386': 'm', 'ppc64el': 'm', 's390x': 'm'}>
 CONFIG_INFINIBAND_SRPT                          policy<{'amd64': 'm', 'arm64': 'm', 'armhf': 'm', 'i386': 'm', 'ppc64el': 'm', 's390x': 'm'}>
 CONFIG_INFINIBAND_ISER                          policy<{'amd64': 'm', 'arm64': 'm', 'armhf': 'm', 'i386': 'm', 'ppc64el': 'm', 's390x': 'm'}>
@@ -5632,9 +5632,9 @@ CONFIG_NFP_DEBUG                                policy<{'amd64': 'n', 'arm64': '
 CONFIG_NET_VENDOR_QLOGIC                        policy<{'amd64': 'y', 'arm64': 'y', 'armhf': 'y', 'i386': 'y', 'ppc64el': 'y', 's390x': 'n'}>
 CONFIG_QLA3XXX                                  policy<{'amd64': 'm', 'arm64': 'm', 'armhf': 'm', 'i386': 'm', 'ppc64el': 'm'}>
 CONFIG_NETXEN_NIC                               policy<{'amd64': 'm', 'arm64': 'm', 'armhf': 'm', 'i386': 'm', 'ppc64el': 'm'}>
-CONFIG_QED                                      policy<{'amd64': 'm', 'arm64': 'm', 'armhf': 'm', 'i386': 'm', 'ppc64el': 'm'}>
+CONFIG_QED                                      policy<{'amd64': 'm', 'arm64': 'm', 'armhf': 'm', 'i386': 'm', 'ppc64el': 'm', 'arm64-bluefield': 'n'}>
 CONFIG_QED_SRIOV                                policy<{'amd64': 'y', 'arm64': 'y', 'armhf': 'y', 'i386': 'y', 'ppc64el': 'y'}>
-CONFIG_QEDE                                     policy<{'amd64': 'm', 'arm64': 'm', 'armhf': 'm', 'i386': 'm', 'ppc64el': 'm'}>
+CONFIG_QEDE                                     policy<{'amd64': 'm', 'arm64': 'm', 'armhf': 'm', 'i386': 'm', 'ppc64el': 'm', 'arm64-bluefield': 'n'}>
 
 # Menu: Device Drivers >> Network device support >> Ethernet driver support >> QLogic devices >> QLOGIC QLCNIC 1/10Gb Converged Ethernet NIC Support
 CONFIG_QLCNIC                                   policy<{'amd64': 'm', 'arm64': 'm', 'armhf': 'm', 'i386': 'm', 'ppc64el': 'm'}>
@@ -7209,8 +7209,8 @@ CONFIG_SCSI_SRP_ATTRS                           policy<{'amd64': 'm', 'arm64': '
 CONFIG_SCSI_LOWLEVEL                            policy<{'amd64': 'y', 'arm64': 'y', 'armhf': 'y', 'i386': 'y', 'ppc64el': 'y', 's390x': 'y'}>
 CONFIG_ISCSI_TCP                                policy<{'amd64': 'm', 'arm64': 'm', 'armhf': 'm', 'i386': 'm', 'ppc64el': 'm', 's390x': 'm'}>
 CONFIG_ISCSI_BOOT_SYSFS                         policy<{'amd64': 'm', 'arm64': 'm', 'armhf': 'm', 'i386': 'm', 'ppc64el': 'm', 's390x': 'm'}>
-CONFIG_SCSI_CXGB3_ISCSI                         policy<{'amd64': 'm', 'arm64': 'm', 'armhf': 'm', 'i386': 'm', 'ppc64el': 'm', 's390x': 'n'}>
-CONFIG_SCSI_CXGB4_ISCSI                         policy<{'amd64': 'm', 'arm64': 'm', 'armhf': 'm', 'i386': 'm', 'ppc64el': 'm', 's390x': 'n'}>
+CONFIG_SCSI_CXGB3_ISCSI                         policy<{'amd64': 'm', 'arm64': 'm', 'armhf': 'm', 'i386': 'm', 'ppc64el': 'm', 's390x': 'n', 'arm64-bluefield': 'n'}>
+CONFIG_SCSI_CXGB4_ISCSI                         policy<{'amd64': 'm', 'arm64': 'm', 'armhf': 'm', 'i386': 'm', 'ppc64el': 'm', 's390x': 'n', 'arm64-bluefield': 'n'}>
 CONFIG_SCSI_BNX2_ISCSI                          policy<{'amd64': 'm', 'arm64': 'm', 'armhf': 'm', 'i386': 'm', 'ppc64el': 'm', 's390x': 'n'}>
 CONFIG_SCSI_BNX2X_FCOE                          policy<{'amd64': 'm', 'arm64': 'm', 'armhf': 'm', 'i386': 'm', 'ppc64el': 'm', 's390x': 'n'}>
 CONFIG_BE2ISCSI                                 policy<{'amd64': 'm', 'arm64': 'm', 'armhf': 'm', 'i386': 'm', 'ppc64el': 'm', 's390x': 'n'}>
