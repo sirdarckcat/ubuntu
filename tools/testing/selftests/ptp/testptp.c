@@ -181,6 +181,8 @@ static void usage(char *progname)
 		"            1 - external time stamp\n"
 		"            2 - periodic output\n"
 		" -n val     shift the ptp clock time by 'val' nanoseconds\n"
+		" -o val     enable Input Event Countrol mode for TGPIO pins\n"
+		"            event will only be reported after 'val' matching internally\n"
 		" -O         enable single shot output for TGPIO pins\n"
 		" -p val     enable output with a period of 'val' nanoseconds\n"
 		" -H val     set output phase to 'val' nanoseconds (requires -p)\n"
@@ -234,6 +236,7 @@ int main(int argc, char *argv[])
 	int getextended = 0;
 	int getcross = 0;
 	int n_samples = 0;
+	int event_count = 0;
 	int single_shot = -1;
 	int new_period = -1;
 	int pin_index = -1, pin_func;
@@ -253,7 +256,7 @@ int main(int argc, char *argv[])
 
 	progname = strrchr(argv[0], '/');
 	progname = progname ? 1+progname : argv[0];
-	while (EOF != (c = getopt(argc, argv, "a:cd:e:f:F:EGghH:i:k:lL:n:Op:P:rsSt:T:w:x:Xy:z"))) {
+	while (EOF != (c = getopt(argc, argv, "a:cd:e:f:F:EGghH:i:k:lL:n:o:Op:P:rsSt:T:w:x:Xy:z"))) {
 		switch (c) {
 		case 'a':
 			new_period = atoi(optarg);
@@ -303,6 +306,9 @@ int main(int argc, char *argv[])
 			break;
 		case 'n':
 			adjns = atoi(optarg);
+			break;
+		case 'o':
+			event_count = atoi(optarg);
 			break;
 		case 'O':
 			single_shot = 1;
@@ -538,12 +544,17 @@ int main(int argc, char *argv[])
 				       event.t.sec, event.t.nsec);
 				fflush(stdout);
 			}
-			if (!readonly) {
-				/* Disable the feature again. */
-				extts_request.flags = 0;
-				if (ioctl(fd, PTP_EXTTS_REQUEST, &extts_request))
-					perror("PTP_EXTTS_REQUEST");
-			}
+		if (event_count) {
+			extts_request.flags |= PTP_EVENT_COUNTER_MODE;
+			extts_request.rsv[0] = event_count;
+			/* Input Event Control only supports 1 event for now */
+			extts = 1;
+		}
+		if (!readonly) {
+			/* Disable the feature again. */
+			extts_request.flags = 0;
+			if (ioctl(fd, PTP_EXTTS_REQUEST, &extts_request))
+				perror("PTP_EXTTS_REQUEST");
 		}
 	}
 
