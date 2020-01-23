@@ -1271,6 +1271,7 @@ struct dwc3 {
 	unsigned		is_hibernated:1;
 
 	unsigned		dis_metastability_quirk:1;
+	unsigned		mask_phy_rst:1;
 
 	unsigned		dis_split_quirk:1;
 
@@ -1461,6 +1462,7 @@ void dwc3_simple_wakeup_capable(struct device *dev, bool wakeup);
 void dwc3_set_simple_data(struct dwc3 *dwc);
 void dwc3_simple_check_quirks(struct dwc3 *dwc);
 int dwc3_set_usb_core_power(struct dwc3 *dwc, bool on);
+void dwc3_mask_phy_reset(struct device *dev, bool mask);
 #else
 static inline int dwc3_enable_hw_coherency(struct device *dev)
 { return 1; }
@@ -1471,6 +1473,8 @@ void dwc3_set_simple_data(struct dwc3 *dwc)
 void dwc3_simple_check_quirks(struct dwc3 *dwc)
 { ; }
 int dwc3_set_usb_core_power(struct dwc3 *dwc, bool on)
+{ ; }
+void dwc3_mask_phy_reset(struct device *dev, bool mask)
 { ; }
 #endif
 
