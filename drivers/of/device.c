@@ -150,11 +150,9 @@ int of_dma_configure(struct device *dev, struct device_node *np, bool force_dma)
 	 */
 	end = dma_addr + size - 1;
 	mask = DMA_BIT_MASK(ilog2(end) + 1);
+	dev->bus_dma_limit = mask;
 	dev->coherent_dma_mask &= mask;
 	*dev->dma_mask &= mask;
-	/* ...but only set bus limit if we found valid dma-ranges earlier */
-	if (!ret)
-		dev->bus_dma_limit = end;
 
 	coherent = of_dma_is_coherent(np);
 	dev_dbg(dev, "device is%sdma coherent\n",
