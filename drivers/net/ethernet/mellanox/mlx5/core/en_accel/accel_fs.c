@@ -3,6 +3,7 @@
 
 #include <linux/netdevice.h>
 #include "accel_fs.h"
+#include "ipsec_fs.h"
 #include "fs_core.h"
 
 typedef int (*mlx5e_accel_prot_cb)(struct mlx5e_priv *priv, enum mlx5e_traffic_types type);
@@ -13,7 +14,18 @@ struct mlx5e_accel_proto_func {
 	mlx5e_accel_prot_cb is_supported;
 };
 
-static struct mlx5e_accel_proto_func proto_funcs[MLX5E_NUM_TT] = {};
+static struct mlx5e_accel_proto_func proto_funcs[MLX5E_NUM_TT] = {
+	[MLX5E_TT_IPV4_IPSEC_ESP] = {
+		.init = mlx5e_ipsec_fs_rx_inline_init,
+		.remove = mlx5e_ipsec_fs_rx_inline_remove,
+		.is_supported = mlx5e_ipsec_fs_is_supported,
+	},
+	[MLX5E_TT_IPV6_IPSEC_ESP] = {
+		.init = mlx5e_ipsec_fs_rx_inline_init,
+		.remove = mlx5e_ipsec_fs_rx_inline_remove,
+		.is_supported = mlx5e_ipsec_fs_is_supported,
+	},
+};
 
 void mlx5e_accel_fs_ref_prot(struct mlx5e_priv *priv, enum mlx5e_traffic_types type, int change)
 {
