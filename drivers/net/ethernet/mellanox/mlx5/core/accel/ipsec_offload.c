@@ -24,7 +24,7 @@ struct mlx5_ipsec_esp_xfrm {
 	struct mlx5_accel_esp_xfrm accel_xfrm;
 };
 
-static u32 mlx5_ipsec_offload_device_caps(struct mlx5_core_dev *mdev)
+u32 mlx5_ipsec_offload_device_caps(struct mlx5_core_dev *mdev)
 {
 	u32 caps = MLX5_IPSEC_DEV_BASIC_CAPS;
 
