@@ -36,10 +36,13 @@
 #include "accel/ipsec.h"
 #include "mlx5_core.h"
 #include "fpga/ipsec.h"
+#include "accel/ipsec_offload.h"
 
 void mlx5_accel_ipsec_init(struct mlx5_core_dev *mdev)
 {
-	const struct mlx5_accel_ipsec_ops *ipsec_ops = mlx5_fpga_ipsec_ops(mdev);
+	const struct mlx5_accel_ipsec_ops *ipsec_ops = (mlx5_ipsec_offload_ops(mdev)) ?
+							mlx5_ipsec_offload_ops(mdev) :
+							mlx5_fpga_ipsec_ops(mdev);
 	int err = 0;
 
 	if (!ipsec_ops || !ipsec_ops->init) {
