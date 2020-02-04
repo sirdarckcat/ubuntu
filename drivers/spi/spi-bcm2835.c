@@ -1234,7 +1234,6 @@ static int bcm2835_spi_setup(struct spi_device *spi)
 {
 	struct spi_controller *ctlr = spi->controller;
 	struct bcm2835_spi *bs = spi_controller_get_devdata(ctlr);
-	struct gpio_chip *chip;
 	u32 cs;
 
 	if (spi->chip_select >= BCM2835_SPI_NUM_CS) {
