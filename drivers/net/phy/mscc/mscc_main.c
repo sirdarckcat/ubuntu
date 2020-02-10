@@ -536,6 +536,7 @@ static int vsc85xx_update_rgmii_cntl(struct phy_device *phydev, u32 rgmii_cntl,
 	u16 reg_val = 0;
 	u16 mask = 0;
 	int rc = 0;
+	struct vsc8531_private *vsc8531 = phydev->priv;
 
 	/* For traffic to pass, the VSC8502 family needs the RX_CLK disable bit
 	 * to be unset for all PHY modes, so do that as part of the paged
@@ -550,6 +551,9 @@ static int vsc85xx_update_rgmii_cntl(struct phy_device *phydev, u32 rgmii_cntl,
 		mask |= rgmii_rx_delay_mask | rgmii_tx_delay_mask;
 
 	mutex_lock(&phydev->lock);
+
+	reg_val = (vsc8531->rx_delay << VSC8502_RGMII_RX_CLK_DELAY_POS) |
+		  vsc8531->tx_delay;
 
 	if (phydev->interface == PHY_INTERFACE_MODE_RGMII_RXID ||
 	    phydev->interface == PHY_INTERFACE_MODE_RGMII_ID)
@@ -1822,6 +1826,17 @@ static int vsc85xx_config_init(struct phy_device *phydev)
 {
 	int rc, i, phy_id;
 	struct vsc8531_private *vsc8531 = phydev->priv;
+	struct device_node *of_node = phydev->mdio.dev.of_node;
+
+	rc = of_property_read_u32(of_node, "vsc8531,rx-delay",
+				  &vsc8531->rx_delay);
+	if (rc < 0)
+		vsc8531->rx_delay = VSC8531_RGMII_CLK_DELAY_1_1_NS;
+
+	rc = of_property_read_u32(of_node, "vsc8531,tx-delay",
+				  &vsc8531->tx_delay);
+	if (rc < 0)
+		vsc8531->tx_delay = VSC8531_RGMII_CLK_DELAY_0_2_NS;
 
 	rc = vsc85xx_default_config(phydev);
 	if (rc)
@@ -2447,6 +2462,30 @@ static struct phy_driver vsc85xx_driver[] = {
 	.get_stats      = &vsc85xx_get_stats,
 },
 {
+	.phy_id		= PHY_ID_VSC8531_02,
+	.name		= "Microsemi VSC8531-02",
+	.phy_id_mask	= 0xfffffff0,
+	/* PHY_GBIT_FEATURES */
+	.soft_reset	= &genphy_soft_reset,
+	.config_init	= &vsc85xx_config_init,
+	.config_aneg	= &vsc85xx_config_aneg,
+	.aneg_done	= &genphy_aneg_done,
+	.read_status	= &vsc85xx_read_status,
+	.config_intr	= &vsc85xx_config_intr,
+	.suspend	= &genphy_suspend,
+	.resume		= &genphy_resume,
+	.probe		= &vsc85xx_probe,
+	.set_wol	= &vsc85xx_wol_set,
+	.get_wol	= &vsc85xx_wol_get,
+	.get_tunable	= &vsc85xx_get_tunable,
+	.set_tunable	= &vsc85xx_set_tunable,
+	.read_page	= &vsc85xx_phy_read_page,
+	.write_page	= &vsc85xx_phy_write_page,
+	.get_sset_count = &vsc85xx_get_sset_count,
+	.get_strings	= &vsc85xx_get_strings,
+	.get_stats	= &vsc85xx_get_stats,
+},
+{
 	.phy_id		= PHY_ID_VSC8540,
 	.name		= "Microsemi FE VSC8540 SyncE",
 	.phy_id_mask	= 0xfffffff0,
@@ -2671,6 +2710,7 @@ static struct mdio_device_id __maybe_unused vsc85xx_tbl[] = {
 	{ PHY_ID_VSC8514, 0xfffffff0, },
 	{ PHY_ID_VSC8530, 0xfffffff0, },
 	{ PHY_ID_VSC8531, 0xfffffff0, },
+	{ PHY_ID_VSC8531_02, 0xfffffff0, },
 	{ PHY_ID_VSC8540, 0xfffffff0, },
 	{ PHY_ID_VSC8541, 0xfffffff0, },
 	{ PHY_ID_VSC8552, 0xfffffff0, },
