@@ -12,6 +12,7 @@
 #include <net/flow_offload.h>
 #include <net/netfilter/nf_flow_table.h>
 #include <linux/workqueue.h>
+#include <linux/debugfs.h>
 #include <linux/xarray.h>
 
 #include "en/tc_ct.h"
@@ -33,6 +34,14 @@
 
 #define ct_dbg(fmt, args...)\
 	netdev_dbg(ct_priv->netdev, "ct_debug: " fmt "\n", ##args)
+
+struct mlx5_tc_ct_debugfs {
+	struct {
+		atomic_t offloaded;
+	} stats;
+
+	struct dentry *root;
+};
 
 struct mlx5_tc_ct_priv {
 	struct mlx5_eswitch *esw;
@@ -406,6 +415,7 @@ mlx5_tc_ct_entry_del_rule(struct mlx5_tc_ct_priv *ct_priv,
 	mlx5_eswitch_del_offloaded_rule(esw, zone_rule->rule, attr);
 	mlx5e_mod_hdr_destroy(netdev_priv(ct_priv->netdev),
 			      &esw->offloads.mod_hdr, zone_rule->mh);
+	atomic_dec(&esw->dev->priv.ct_debugfs->stats.offloaded);
 }
 
 static void
@@ -685,6 +695,7 @@ mlx5_tc_ct_entry_add_rule(struct mlx5_tc_ct_priv *ct_priv,
 
 	ct_dbg("Offloaded ct entry rule in zone %d", entry->tuple.zone);
 
+	atomic_inc(&esw->dev->priv.ct_debugfs->stats.offloaded);
 	return 0;
 
 err_rule:
@@ -1723,4 +1734,28 @@ mlx5e_tc_ct_restore_flow(struct mlx5_rep_uplink_priv *uplink_priv,
 
 	tcf_ct_flow_table_restore_skb(skb, entry->restore_cookie);
 	return true;
+}
+
+void
+mlx5_cmdif_debugfs_init_ct(struct mlx5_core_dev *dev)
+{
+	struct mlx5_tc_ct_debugfs *ct_debugfs;
+
+	ct_debugfs = kzalloc(sizeof(*ct_debugfs), GFP_KERNEL);
+	if (!ct_debugfs)
+		return;
+
+	ct_debugfs->root = debugfs_create_dir("ct", dev->priv.dbg_root);
+	debugfs_create_u32("offloaded", 0400, ct_debugfs->root,
+			   &ct_debugfs->stats.offloaded.counter);
+
+	dev->priv.ct_debugfs = ct_debugfs;
+}
+
+void
+mlx5_cmdif_debugfs_cleanup_ct(struct mlx5_core_dev *dev)
+{
+	struct mlx5_tc_ct_debugfs *ct_debugfs = dev->priv.ct_debugfs;
+
+	debugfs_remove_recursive(ct_debugfs->root);
 }
