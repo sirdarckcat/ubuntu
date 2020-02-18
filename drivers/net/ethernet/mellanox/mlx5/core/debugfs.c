@@ -37,6 +37,7 @@
 #include <linux/mlx5/driver.h>
 #include "mlx5_core.h"
 #include "lib/eq.h"
+#include "en/tc_ct.h"
 
 enum {
 	QP_PID,
@@ -182,10 +183,13 @@ void mlx5_cmdif_debugfs_init(struct mlx5_core_dev *dev)
 			debugfs_create_u64("n", 0400, stats->root, &stats->n);
 		}
 	}
+
+	mlx5_cmdif_debugfs_init_ct(dev);
 }
 
 void mlx5_cmdif_debugfs_cleanup(struct mlx5_core_dev *dev)
 {
+	mlx5_cmdif_debugfs_cleanup_ct(dev);
 	debugfs_remove_recursive(dev->priv.cmdif_debugfs);
 }
 
