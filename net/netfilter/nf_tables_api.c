@@ -3255,25 +3255,14 @@ static int nf_tables_delrule(struct net *net, struct sock *nlsk,
 /*
  * Sets
  */
-
-static LIST_HEAD(nf_tables_set_types);
-
-int nft_register_set(struct nft_set_type *type)
-{
-	nfnl_lock(NFNL_SUBSYS_NFTABLES);
-	list_add_tail_rcu(&type->list, &nf_tables_set_types);
-	nfnl_unlock(NFNL_SUBSYS_NFTABLES);
-	return 0;
-}
-EXPORT_SYMBOL_GPL(nft_register_set);
-
-void nft_unregister_set(struct nft_set_type *type)
-{
-	nfnl_lock(NFNL_SUBSYS_NFTABLES);
-	list_del_rcu(&type->list);
-	nfnl_unlock(NFNL_SUBSYS_NFTABLES);
-}
-EXPORT_SYMBOL_GPL(nft_unregister_set);
+static const struct nft_set_type *nft_set_types[] = {
+	&nft_set_hash_fast_type,
+	&nft_set_hash_type,
+	&nft_set_rhash_type,
+	&nft_set_bitmap_type,
+	&nft_set_rbtree_type,
+	&nft_set_pipapo_type,
+};
 
 #define NFT_SET_FEATURES	(NFT_SET_INTERVAL | NFT_SET_MAP | \
 				 NFT_SET_TIMEOUT | NFT_SET_OBJECT | \
@@ -3300,15 +3289,11 @@ nft_select_set_ops(const struct nft_ctx *ctx,
 	struct nft_set_estimate est, best;
 	const struct nft_set_type *type;
 	u32 flags = 0;
+	int i;
 
 	lockdep_assert_held(&nft_net->commit_mutex);
 	lockdep_nfnl_nft_mutex_not_held();
-#ifdef CONFIG_MODULES
-	if (list_empty(&nf_tables_set_types)) {
-		if (nft_request_module(ctx->net, "nft-set") == -EAGAIN)
-			return ERR_PTR(-EAGAIN);
-	}
-#endif
+
 	if (nla[NFTA_SET_FLAGS] != NULL)
 		flags = ntohl(nla_get_be32(nla[NFTA_SET_FLAGS]));
 
@@ -3317,7 +3302,8 @@ nft_select_set_ops(const struct nft_ctx *ctx,
 	best.lookup = ~0;
 	best.space  = ~0;
 
-	list_for_each_entry(type, &nf_tables_set_types, list) {
+	for (i = 0; i < ARRAY_SIZE(nft_set_types); i++) {
+		type = nft_set_types[i];
 		ops = &type->ops;
 
 		if (!nft_set_ops_candidate(type, flags))
@@ -4382,7 +4368,6 @@ const struct nft_set_ext_type nft_set_ext_types[] = {
 		.align	= __alignof__(u32),
 	},
 };
-EXPORT_SYMBOL_GPL(nft_set_ext_types);
 
 /*
  * Set elements
