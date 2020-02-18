@@ -115,6 +115,11 @@ bool
 mlx5e_tc_ct_restore_flow(struct mlx5_rep_uplink_priv *uplink_priv,
 			 struct sk_buff *skb, u8 zone_restore_id);
 
+void
+mlx5_cmdif_debugfs_init_ct(struct mlx5_core_dev *dev);
+void
+mlx5_cmdif_debugfs_cleanup_ct(struct mlx5_core_dev *dev);
+
 #else /* CONFIG_MLX5_TC_CT */
 
 static inline int
@@ -187,6 +192,16 @@ mlx5e_tc_ct_restore_flow(struct mlx5_rep_uplink_priv *uplink_priv,
 		return true;
 
 	return false;
+}
+
+void
+mlx5_cmdif_debugfs_init_ct(struct mlx5_core_dev *dev)
+{
+}
+
+void
+mlx5_cmdif_debugfs_cleanup_ct(struct mlx5_core_dev *dev)
+{
 }
 
 #endif /* !IS_ENABLED(CONFIG_MLX5_TC_CT) */
