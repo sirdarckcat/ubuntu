@@ -557,6 +557,10 @@ struct mlx5_priv {
 
 	struct mlx5_core_health health;
 
+	/* start: ct debug fs stuff */
+	struct mlx5_tc_ct_debugfs *ct_debugfs;
+	/* end: ct debug fs stuff */
+
 	/* start: qp staff */
 	struct mlx5_qp_table	qp_table;
 	struct dentry	       *qp_debugfs;
