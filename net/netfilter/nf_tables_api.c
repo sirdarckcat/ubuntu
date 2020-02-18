@@ -3276,11 +3276,6 @@ nft_select_set_ops(const struct nft_ctx *ctx,
 			break;
 		}
 
-		if (!try_module_get(type->owner))
-			continue;
-		if (bops != NULL)
-			module_put(to_set_type(bops)->owner);
-
 		bops = ops;
 		best = est;
 	}
@@ -3978,10 +3973,8 @@ static int nf_tables_newset(struct net *net, struct sock *nlsk,
 	if (ops->privsize != NULL)
 		size = ops->privsize(nla, &desc);
 
-	if (!nft_use_inc(&table->use)) {
-		err = -EMFILE;
-		goto err1;
-	}
+	if (!nft_use_inc(&table->use))
+		return -EMFILE;
 
 	set = kvzalloc(sizeof(*set) + size + udlen, GFP_KERNEL);
 	if (!set) {
@@ -4048,8 +4041,6 @@ err2:
 	kvfree(set);
 err_alloc:
 	nft_use_dec_restore(&table->use);
-err1:
-	module_put(to_set_type(ops)->owner);
 	return err;
 }
 
@@ -4059,7 +4050,6 @@ static void nft_set_destroy(struct nft_set *set)
 		return;
 
 	set->ops->destroy(set);
-	module_put(to_set_type(set->ops)->owner);
 	kfree(set->name);
 	kvfree(set);
 }
