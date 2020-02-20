@@ -76,7 +76,7 @@ struct hbucket {
 	DECLARE_BITMAP(used, AHASH_MAX_TUNED);
 	u8 size;		/* size of the array */
 	u8 pos;			/* position of the first free entry */
-	unsigned char value[0]	/* the array of the values */
+	unsigned char value[]	/* the array of the values */
 		__aligned(__alignof__(u64));
 };
 
