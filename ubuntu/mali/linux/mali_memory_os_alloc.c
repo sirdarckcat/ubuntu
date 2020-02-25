@@ -378,9 +378,14 @@ int mali_mem_os_cpu_map(mali_mem_backend *mem_bkend, struct vm_area_struct *vma)
 		ret = vm_insert_page(vma, addr, page);
 		*/
 		page = m_page->page;
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 20, 0)
+		ret = vmf_insert_pfn(vma, addr, page_to_pfn(page));
+		if (unlikely(VM_FAULT_ERROR & ret)) {
+#else
 		ret = vm_insert_pfn(vma, addr, page_to_pfn(page));
-
 		if (unlikely(0 != ret)) {
+#endif
+
 			return -EFAULT;
 		}
 		addr += _MALI_OSK_MALI_PAGE_SIZE;
@@ -416,9 +421,13 @@ _mali_osk_errcode_t mali_mem_os_resize_cpu_map_locked(mali_mem_backend *mem_bken
 
 			vm_end -= _MALI_OSK_MALI_PAGE_SIZE;
 			if (mapping_page_num > 0) {
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 20, 0)
+				ret = vmf_insert_pfn(vma, vm_end, page_to_pfn(m_page->page));
+				if (unlikely(VM_FAULT_ERROR & ret)) {
+#else
 				ret = vm_insert_pfn(vma, vm_end, page_to_pfn(m_page->page));
-
 				if (unlikely(0 != ret)) {
+#endif
 					/*will return -EBUSY If the page has already been mapped into table, but it's OK*/
 					if (-EBUSY == ret) {
 						break;
@@ -439,9 +448,14 @@ _mali_osk_errcode_t mali_mem_os_resize_cpu_map_locked(mali_mem_backend *mem_bken
 		list_for_each_entry(m_page, &os_mem->pages, list) {
 			if (count >= offset) {
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 20, 0)
+				ret = vmf_insert_pfn(vma, vstart, page_to_pfn(m_page->page));
+				if (unlikely(VM_FAULT_ERROR & ret)) {
+#else
 				ret = vm_insert_pfn(vma, vstart, page_to_pfn(m_page->page));
-
 				if (unlikely(0 != ret)) {
+#endif
+
 					/*will return -EBUSY If the page has already been mapped into table, but it's OK*/
 					if (-EBUSY == ret) {
 						break;
