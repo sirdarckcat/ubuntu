@@ -2134,6 +2134,7 @@ int mlx5_eswitch_init(struct mlx5_core_dev *dev)
 	mutex_init(&esw->offloads.mod_hdr.lock);
 	hash_init(esw->offloads.mod_hdr.hlist);
 	atomic64_set(&esw->offloads.num_flows, 0);
+	ida_init(&esw->offloads.vport_metadata_ida);
 	mutex_init(&esw->state_lock);
 
 	mlx5_esw_for_all_vports(esw, i, vport) {
@@ -2169,6 +2170,7 @@ void mlx5_eswitch_cleanup(struct mlx5_eswitch *esw)
 	esw->dev->priv.eswitch = NULL;
 	destroy_workqueue(esw->work_queue);
 	esw_offloads_cleanup_reps(esw);
+	ida_destroy(&esw->offloads.vport_metadata_ida);
 	mutex_destroy(&esw->offloads.mod_hdr.lock);
 	mutex_destroy(&esw->offloads.encap_tbl_lock);
 	kfree(esw->vports);
