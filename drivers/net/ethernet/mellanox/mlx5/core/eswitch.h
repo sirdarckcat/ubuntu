@@ -144,6 +144,8 @@ struct mlx5_vport {
 
 	struct vport_ingress    ingress;
 	struct vport_egress     egress;
+	u32                     default_metadata;
+	u32                     metadata;
 
 	struct mlx5_vport_info  info;
 
@@ -217,6 +219,7 @@ struct mlx5_esw_offload {
 	u8 inline_mode;
 	atomic64_t num_flows;
 	enum devlink_eswitch_encap_mode encap;
+	struct ida vport_metadata_ida;
 };
 
 /* E-Switch MC FDB table hash node */
@@ -295,6 +298,10 @@ void esw_vport_disable_egress_acl(struct mlx5_eswitch *esw,
 				  struct mlx5_vport *vport);
 int mlx5_esw_modify_vport_rate(struct mlx5_eswitch *esw, u16 vport_num,
 			       u32 rate_mbps);
+u32 mlx5_esw_match_metadata_alloc(struct mlx5_eswitch *esw);
+void mlx5_esw_match_metadata_free(struct mlx5_eswitch *esw, u32 metadata);
+int mlx5_esw_acl_ingress_vport_bond_update(struct mlx5_eswitch *esw,
+					   u16 vport_num, u32 metadata);
 
 /* E-Switch API */
 int mlx5_eswitch_init(struct mlx5_core_dev *dev);
