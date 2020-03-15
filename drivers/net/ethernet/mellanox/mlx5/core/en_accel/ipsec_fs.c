@@ -439,14 +439,60 @@ out:
 	return err;
 }
 
-int mlx5e_ipsec_fs_add_rule(struct mlx5e_priv *priv, struct mlx5e_ipsec_sa_entry *sa_entry)
+static int ipsec_add_tx_rule(struct mlx5e_priv *priv, struct mlx5e_ipsec_sa_entry *sa_entry)
+{
+	struct mlx5_accel_esp_xfrm_attrs *attrs = &sa_entry->xfrm->attrs;
+	struct mlx5_ipsec_sa_ctx *sa_ctx = sa_entry->hw_context;
+	struct mlx5_core_dev *mdev = priv->mdev;
+	struct mlx5_flow_act flow_act = {};
+	struct mlx5_flow_handle *rule;
+	struct mlx5_flow_spec *spec;
+	int err = 0;
+
+	if (!mlx5_is_ipsec_device(mdev))
+		return 0;
+
+	spec = kvzalloc(sizeof(*spec), GFP_KERNEL);
+	if (!spec) {
+		err = -ENOMEM;
+		goto out;
+	}
+
+	ipsec_setup_fte_common(attrs, sa_ctx->ipsec_obj_id, spec, &flow_act);
+
+	/* Add IPsec indicator in metadata_reg_a */
+	spec->match_criteria_enable |= MLX5_MATCH_MISC_PARAMETERS_2;
+	MLX5_SET(fte_match_param, spec->match_criteria, misc_parameters_2.metadata_reg_a,
+		 MLX5_ETH_WQE_FT_META_IPSEC);
+	MLX5_SET(fte_match_param, spec->match_value, misc_parameters_2.metadata_reg_a,
+		 MLX5_ETH_WQE_FT_META_IPSEC);
+
+	flow_act.action = MLX5_FLOW_CONTEXT_ACTION_ALLOW |
+			  MLX5_FLOW_CONTEXT_ACTION_IPSEC_ENCRYPT;
+	rule = mlx5_add_flow_rules(priv->ipsec->ft_tx, spec, &flow_act, NULL, 0);
+	if (IS_ERR(rule)) {
+		err = PTR_ERR(rule);
+		netdev_err(priv->netdev, "fail to add ipsec rule attrs->action=0x%x, err=%d\n", attrs->action, err);
+		goto out;
+	}
+
+	sa_ctx->ipsec_rule.rule = rule;
+
+out:
+	kvfree(spec);
+	return err;
+}
+
 int mlx5e_ipsec_fs_add_rule(void *context)
 {
 	struct mlx5e_ipsec_sa_entry *sa_entry = (struct mlx5e_ipsec_sa_entry *)context;
 	struct mlx5_accel_esp_xfrm_attrs *attrs = &sa_entry->xfrm->attrs;
 	struct mlx5e_priv *priv = (struct mlx5e_priv *)attrs->priv;
 
-	return ipsec_add_rx_rule(priv, sa_entry);
+	if (attrs->action == MLX5_ACCEL_ESP_ACTION_DECRYPT)
+		return ipsec_add_rx_rule(priv, sa_entry);
+	else
+		return ipsec_add_tx_rule(priv, sa_entry);
 }
 
 void mlx5e_ipsec_fs_del_rule(void *context)
