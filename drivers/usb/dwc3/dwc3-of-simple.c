@@ -21,11 +21,18 @@
 #include <linux/of_platform.h>
 #include <linux/pm_runtime.h>
 #include <linux/reset.h>
+#include <linux/soc/xilinx/zynqmp/fw.h>
+#include <linux/slab.h>
 
 #include <linux/phy/phy-zynqmp.h>
+#include <linux/of_address.h>
 
 #include "core.h"
 #include "io.h"
+
+/* Xilinx USB 3.0 IP Register */
+#define XLNX_USB_COHERENCY		0x005C
+#define XLNX_USB_COHERENCY_ENABLE	0x1
 
 /* ULPI control registers */
 #define ULPI_OTG_CTRL_SET		0xB
@@ -42,11 +49,35 @@ struct dwc3_of_simple {
 	struct dwc3		*dwc;
 	struct phy		*phy;
 	bool			wakeup_capable;
+	bool			dis_u3_susphy_quirk;
 	bool			enable_d3_suspend;
 	struct reset_control	*resets;
 	bool			pulse_resets;
 	bool			need_reset;
 };
+
+int dwc3_enable_hw_coherency(struct device *dev)
+{
+	struct device_node *node = of_get_parent(dev->of_node);
+
+	if (of_device_is_compatible(node, "xlnx,zynqmp-dwc3")) {
+		struct platform_device *pdev_parent;
+		struct dwc3_of_simple *simple;
+		void __iomem *regs;
+		u32 reg;
+
+		pdev_parent = of_find_device_by_node(node);
+		simple = platform_get_drvdata(pdev_parent);
+		regs = simple->regs;
+
+		reg = readl(regs + XLNX_USB_COHERENCY);
+		reg |= XLNX_USB_COHERENCY_ENABLE;
+		writel(reg, regs + XLNX_USB_COHERENCY);
+	}
+
+	return 0;
+}
+EXPORT_SYMBOL(dwc3_enable_hw_coherency);
 
 void dwc3_set_simple_data(struct dwc3 *dwc)
 {
@@ -65,6 +96,24 @@ void dwc3_set_simple_data(struct dwc3 *dwc)
 	}
 }
 EXPORT_SYMBOL(dwc3_set_simple_data);
+
+void dwc3_simple_check_quirks(struct dwc3 *dwc)
+{
+	struct device_node *node = of_get_parent(dwc->dev->of_node);
+
+	if (node && of_device_is_compatible(node, "xlnx,zynqmp-dwc3")) {
+		struct platform_device *pdev_parent;
+		struct dwc3_of_simple   *simple;
+
+		pdev_parent = of_find_device_by_node(node);
+		simple = platform_get_drvdata(pdev_parent);
+
+		/* Add snps,dis_u3_susphy_quirk */
+		dwc->dis_u3_susphy_quirk = simple->dis_u3_susphy_quirk;
+
+	}
+}
+EXPORT_SYMBOL(dwc3_simple_check_quirks);
 
 void dwc3_simple_wakeup_capable(struct device *dev, bool wakeup)
 {
