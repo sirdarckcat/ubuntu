@@ -1030,6 +1030,9 @@ static void nf_flow_table_indr_block_cb(struct net_device *dev,
 	struct nft_table *table;
 	struct nft_hook *hook;
 
+	if (!net->nft.base_seq)
+		return;
+
 	mutex_lock(&net->nft.commit_mutex);
 	list_for_each_entry(table, &net->nft.tables, list) {
 		list_for_each_entry(nft_ft, &table->flowtables, list) {
