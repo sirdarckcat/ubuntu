@@ -2513,13 +2513,14 @@ int esw_offloads_enable(struct mlx5_eswitch *esw)
 		esw->offloads.encap = DEVLINK_ESWITCH_ENCAP_MODE_NONE;
 
 	mlx5_rdma_enable_roce(esw->dev);
-	err = esw_offloads_steering_init(esw);
-	if (err)
-		goto err_steering_init;
 
 	err = esw_set_passing_vport_metadata(esw, true);
 	if (err)
 		goto err_vport_metadata;
+
+	err = esw_offloads_steering_init(esw);
+	if (err)
+		goto err_steering_init;
 
 	err = mlx5_eswitch_enable_pf_vf_vports(esw, MLX5_VPORT_UC_ADDR_CHANGE);
 	if (err)
@@ -2538,9 +2539,9 @@ err_reps:
 	mlx5_eswitch_disable_pf_vf_vports(esw);
 err_vports:
 	esw_set_passing_vport_metadata(esw, false);
-err_vport_metadata:
-	esw_offloads_steering_cleanup(esw);
 err_steering_init:
+	esw_offloads_steering_cleanup(esw);
+err_vport_metadata:
 	mlx5_rdma_disable_roce(esw->dev);
 	return err;
 }
