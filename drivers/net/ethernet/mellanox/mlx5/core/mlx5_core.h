@@ -260,6 +260,9 @@ int mlx5_unload_one(struct mlx5_core_dev *dev, bool cleanup);
 void mlx5_meddev_init(struct mlx5_core_dev *dev);
 void mlx5_meddev_cleanup(struct mlx5_core_dev *dev);
 bool mlx5_medev_can_and_mark_cleanup(struct mlx5_core_dev *dev);
+
+int mlx5_meddev_register_driver(void);
+void mlx5_meddev_unregister_driver(void);
 #else
 static inline void mlx5_meddev_init(struct mlx5_core_dev *dev)
 {
@@ -272,6 +275,15 @@ static inline void mlx5_meddev_cleanup(struct mlx5_core_dev *dev)
 static inline bool mlx5_medev_can_and_mark_cleanup(struct mlx5_core_dev *dev)
 {
 	return true;
+}
+
+static inline int mlx5_meddev_register_driver(void)
+{
+	return 0;
+}
+
+static inline void mlx5_meddev_unregister_driver(void)
+{
 }
 #endif
 
