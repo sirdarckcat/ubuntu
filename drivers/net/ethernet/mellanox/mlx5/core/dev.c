@@ -334,6 +334,23 @@ struct mlx5_core_dev *mlx5_get_next_phys_dev(struct mlx5_core_dev *dev)
 	return res;
 }
 
+struct mlx5_core_dev *mlx5_get_core_dev(const struct device *dev)
+{
+	struct mlx5_core_dev *found = NULL;
+	struct mlx5_core_dev *tmp_dev;
+	struct mlx5_priv *priv;
+
+	mutex_lock(&mlx5_intf_mutex);
+	list_for_each_entry(priv, &mlx5_dev_list, dev_list) {
+		tmp_dev = container_of(priv, struct mlx5_core_dev, priv);
+		if (tmp_dev->device == dev) {
+			found = tmp_dev;
+			break;
+		}
+	}
+	mutex_unlock(&mlx5_intf_mutex);
+	return found;
+}
 
 void mlx5_dev_list_lock(void)
 {
