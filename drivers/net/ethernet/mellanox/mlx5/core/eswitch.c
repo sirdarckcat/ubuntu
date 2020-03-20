@@ -2034,6 +2034,7 @@ int mlx5_eswitch_enable(struct mlx5_eswitch *esw, int mode)
 	return 0;
 
 abort:
+	esw_destroy_tsar(esw);
 	esw->mode = MLX5_ESWITCH_NONE;
 
 	if (mode == MLX5_ESWITCH_OFFLOADS) {
