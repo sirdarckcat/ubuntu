@@ -226,3 +226,43 @@ u16 mlx5_core_max_sfs(const struct mlx5_core_dev *dev,
 {
 	return mlx5_core_is_sf_supported(dev) ? sf_table->max_sfs : 0;
 }
+
+int mlx5_sf_load(struct mlx5_sf *sf)
+{
+	struct mlx5_core_dev *dev = &sf->dev;
+	int err;
+
+	dev->iseg = ioremap(dev->iseg_base, sizeof(*dev->iseg));
+	if (!dev->iseg) {
+		mlx5_core_warn(dev, "remap error for sf=%d\n", sf->idx);
+		return -ENOMEM;
+	}
+
+	err = mlx5_mdev_init(dev, MLX5_DEFAULT_PROF);
+	if (err) {
+		mlx5_core_warn(dev, "mlx5_mdev_init on sf=%d err=%d\n",
+			       sf->idx, err);
+		goto mdev_err;
+	}
+
+	err = mlx5_load_one(dev, true);
+	if (err) {
+		mlx5_core_warn(dev, "mlx5_load_one sf=%d err=%d\n",
+			       sf->idx, err);
+		goto load_one_err;
+	}
+	return 0;
+
+load_one_err:
+	mlx5_mdev_uninit(dev);
+mdev_err:
+	iounmap(dev->iseg);
+	return err;
+}
+
+void mlx5_sf_unload(struct mlx5_sf *sf)
+{
+	mlx5_unload_one(&sf->dev, true);
+	mlx5_mdev_uninit(&sf->dev);
+	iounmap(sf->dev.iseg);
+}
