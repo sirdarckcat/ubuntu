@@ -442,3 +442,22 @@ int mlx5_sf_get_mac(struct mlx5_sf *sf, u8 *mac)
 					 vport_num, mac);
 	return ret;
 }
+
+struct net_device *mlx5_sf_get_netdev(struct mlx5_sf *sf)
+{
+	struct mlx5_core_dev *parent_dev = sf->parent_dev;
+	struct net_device *ndev;
+	u16 vport_num;
+
+	vport_num = mlx5_sf_hw_id(parent_dev, sf->idx);
+
+	ndev = mlx5_eswitch_get_proto_dev(parent_dev->priv.eswitch,
+					  vport_num, REP_ETH);
+	if (!ndev)
+		return ERR_PTR(-ENODEV);
+	/* FIXME This is racy. get_proto_dev()) is poor API
+	 * without a esw lock.
+	 */
+	dev_hold(ndev);
+	return ndev;
+}
