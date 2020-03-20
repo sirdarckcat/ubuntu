@@ -1780,8 +1780,8 @@ static void esw_vport_cleanup_acl(struct mlx5_eswitch *esw,
 		esw_vport_destroy_offloads_acl_tables(esw, vport);
 }
 
-static int esw_enable_vport(struct mlx5_eswitch *esw, struct mlx5_vport *vport,
-			    enum mlx5_eswitch_vport_event enabled_events)
+int mlx5_eswitch_enable_vport(struct mlx5_eswitch *esw, struct mlx5_vport *vport,
+			      enum mlx5_eswitch_vport_event enabled_events)
 {
 	u16 vport_num = vport->vport;
 	int ret;
@@ -1824,8 +1824,8 @@ done:
 	return ret;
 }
 
-static void esw_disable_vport(struct mlx5_eswitch *esw,
-			      struct mlx5_vport *vport)
+void mlx5_eswitch_disable_vport(struct mlx5_eswitch *esw,
+				struct mlx5_vport *vport)
 {
 	u16 vport_num = vport->vport;
 
@@ -1951,21 +1951,21 @@ mlx5_eswitch_enable_pf_vf_vports(struct mlx5_eswitch *esw,
 
 	/* Enable PF vport */
 	vport = mlx5_eswitch_get_vport(esw, MLX5_VPORT_PF);
-	ret = esw_enable_vport(esw, vport, enabled_events);
+	ret = mlx5_eswitch_enable_vport(esw, vport, enabled_events);
 	if (ret)
 		return ret;
 
 	/* Enable ECPF vport */
 	if (mlx5_ecpf_vport_exists(esw->dev)) {
 		vport = mlx5_eswitch_get_vport(esw, MLX5_VPORT_ECPF);
-		ret = esw_enable_vport(esw, vport, enabled_events);
+		ret = mlx5_eswitch_enable_vport(esw, vport, enabled_events);
 		if (ret)
 			goto ecpf_err;
 	}
 
 	/* Enable VF vports */
 	mlx5_esw_for_each_vf_vport(esw, i, vport, esw->esw_funcs.num_vfs) {
-		ret = esw_enable_vport(esw, vport, enabled_events);
+		ret = mlx5_eswitch_enable_vport(esw, vport, enabled_events);
 		if (ret)
 			goto vf_err;
 	}
@@ -1974,16 +1974,16 @@ mlx5_eswitch_enable_pf_vf_vports(struct mlx5_eswitch *esw,
 vf_err:
 	num_vfs = i - 1;
 	mlx5_esw_for_each_vf_vport_reverse(esw, i, vport, num_vfs)
-		esw_disable_vport(esw, vport);
+		mlx5_eswitch_disable_vport(esw, vport);
 
 	if (mlx5_ecpf_vport_exists(esw->dev)) {
 		vport = mlx5_eswitch_get_vport(esw, MLX5_VPORT_ECPF);
-		esw_disable_vport(esw, vport);
+		mlx5_eswitch_disable_vport(esw, vport);
 	}
 
 ecpf_err:
 	vport = mlx5_eswitch_get_vport(esw, MLX5_VPORT_PF);
-	esw_disable_vport(esw, vport);
+	mlx5_eswitch_disable_vport(esw, vport);
 	return ret;
 }
 
@@ -1996,7 +1996,7 @@ void mlx5_eswitch_disable_pf_vf_vports(struct mlx5_eswitch *esw)
 	int i;
 
 	mlx5_esw_for_all_vports_reverse(esw, i, vport)
-		esw_disable_vport(esw, vport);
+		mlx5_eswitch_disable_vport(esw, vport);
 }
 
 int mlx5_eswitch_enable(struct mlx5_eswitch *esw, int mode)
