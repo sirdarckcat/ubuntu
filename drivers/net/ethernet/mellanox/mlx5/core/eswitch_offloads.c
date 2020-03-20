@@ -1627,6 +1627,69 @@ err_reps:
 	return err;
 }
 
+static int esw_offloads_load_vport_reps(struct mlx5_eswitch *esw, u16 vport_num)
+{
+	struct mlx5_eswitch_rep *rep;
+	u8 rep_type;
+	int err;
+
+	rep = mlx5_eswitch_get_rep(esw, vport_num);
+	for (rep_type = 0; rep_type < NUM_REP_TYPES; rep_type++) {
+		err = __esw_offloads_load_rep(esw, rep, rep_type);
+		if (err) {
+			esw_warn(esw->dev, "Load vport(%d) rep type(%d) err!\n",
+				 vport_num, rep_type);
+			goto err_reps;
+		}
+	}
+
+	return 0;
+
+err_reps:
+	while (rep_type-- > 0)
+		__esw_offloads_unload_rep(esw, rep, rep_type);
+	return err;
+}
+
+static void
+esw_offloads_unload_vport_reps(struct mlx5_eswitch *esw, u16 vport_num)
+{
+	struct mlx5_eswitch_rep *rep;
+	u8 rep_type = NUM_REP_TYPES;
+
+	rep = mlx5_eswitch_get_rep(esw, vport_num);
+	while (rep_type-- > 0)
+		__esw_offloads_unload_rep(esw, rep, rep_type);
+}
+
+int mlx5_eswitch_setup_sf_vport(struct mlx5_eswitch *esw, u16 vport_num)
+{
+	struct mlx5_vport *evport = mlx5_eswitch_get_vport(esw, vport_num);
+	int ret;
+
+	if (IS_ERR(evport))
+		return PTR_ERR(evport);
+
+	esw_debug(esw->dev, "%s: setup vport=0x%x\n", __func__, vport_num);
+	mlx5_eswitch_enable_vport(esw, evport, 0);
+	ret = esw_offloads_load_vport_reps(esw, vport_num);
+	if (ret)
+		mlx5_eswitch_disable_vport(esw, evport);
+	return ret;
+}
+
+void mlx5_eswitch_cleanup_sf_vport(struct mlx5_eswitch *esw, u16 vport_num)
+{
+	struct mlx5_vport *evport = mlx5_eswitch_get_vport(esw, vport_num);
+
+	if (IS_ERR(evport))
+		return;
+
+	esw_debug(esw->dev, "%s: cleanup vport=0x%x\n", __func__, vport_num);
+	esw_offloads_unload_vport_reps(esw, vport_num);
+	mlx5_eswitch_disable_vport(esw, evport);
+}
+
 #define ESW_OFFLOADS_DEVCOM_PAIR	(0)
 #define ESW_OFFLOADS_DEVCOM_UNPAIR	(1)
 
