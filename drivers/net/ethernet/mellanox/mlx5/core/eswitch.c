@@ -1533,8 +1533,7 @@ static void esw_destroy_tsar(struct mlx5_eswitch *esw)
 }
 
 static int esw_vport_enable_qos(struct mlx5_eswitch *esw,
-				struct mlx5_vport *vport,
-				u32 initial_max_rate, u32 initial_bw_share)
+				struct mlx5_vport *vport)
 {
 	u32 sched_ctx[MLX5_ST_SZ_DW(scheduling_context)] = {0};
 	struct mlx5_core_dev *dev = esw->dev;
@@ -1556,8 +1555,8 @@ static int esw_vport_enable_qos(struct mlx5_eswitch *esw,
 	MLX5_SET(scheduling_context, sched_ctx, parent_element_id,
 		 esw->qos.root_tsar_id);
 	MLX5_SET(scheduling_context, sched_ctx, max_average_bw,
-		 initial_max_rate);
-	MLX5_SET(scheduling_context, sched_ctx, bw_share, initial_bw_share);
+		 vport->info.max_rate);
+	MLX5_SET(scheduling_context, sched_ctx, bw_share, vport->qos.bw_share);
 
 	err = mlx5_create_scheduling_element_cmd(dev,
 						 SCHEDULING_HIERARCHY_E_SWITCH,
@@ -1800,8 +1799,7 @@ int mlx5_eswitch_enable_vport(struct mlx5_eswitch *esw, struct mlx5_vport *vport
 		goto done;
 
 	/* Attach vport to the eswitch rate limiter */
-	if (esw_vport_enable_qos(esw, vport, vport->info.max_rate,
-				 vport->qos.bw_share))
+	if (esw_vport_enable_qos(esw, vport))
 		esw_warn(esw->dev, "Failed to attach vport %d to eswitch rate limiter", vport_num);
 
 	/* Sync with current vport context */
