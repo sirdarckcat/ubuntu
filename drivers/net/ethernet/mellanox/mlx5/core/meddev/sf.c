@@ -156,6 +156,10 @@ mlx5_sf_alloc(struct mlx5_core_dev *coredev, struct mlx5_sf_table *sf_table,
 	if (ret)
 		goto enable_err;
 
+	ret = mlx5_eswitch_setup_sf_vport(coredev->priv.eswitch, hw_function_id);
+	if (ret)
+		goto vport_err;
+
 	sf = devlink_priv(devlink);
 	sf->idx = sf_id;
 	sf->dev.device = dev;
@@ -173,6 +177,8 @@ mlx5_sf_alloc(struct mlx5_core_dev *coredev, struct mlx5_sf_table *sf_table,
 	return sf;
 
 devlink_err:
+	mlx5_eswitch_cleanup_sf_vport(coredev->priv.eswitch, hw_function_id);
+vport_err:
 	mlx5_core_disable_sf_hca(coredev, hw_function_id);
 enable_err:
 	mlx5_cmd_dealloc_sf(coredev, hw_function_id);
@@ -191,6 +197,7 @@ void mlx5_sf_free(struct mlx5_core_dev *coredev, struct mlx5_sf_table *sf_table,
 
 	hw_function_id = mlx5_sf_hw_id(coredev, sf->idx);
 	devlink_unregister(devlink);
+	mlx5_eswitch_cleanup_sf_vport(coredev->priv.eswitch, hw_function_id);
 	mlx5_core_disable_sf_hca(coredev, hw_function_id);
 	mlx5_cmd_dealloc_sf(coredev, hw_function_id);
 	free_sf_id(sf_table, sf->idx);
