@@ -418,3 +418,15 @@ void mlx5_sf_unload(struct mlx5_sf *sf)
 	mlx5_mdev_uninit(&sf->dev);
 	iounmap(sf->dev.iseg);
 }
+
+int mlx5_sf_set_mac(struct mlx5_sf *sf, u8 *mac)
+{
+	struct mlx5_core_dev *parent_dev = sf->parent_dev;
+	u16 vport_num;
+	int ret;
+
+	vport_num = mlx5_sf_hw_id(parent_dev, sf->idx);
+	ret = mlx5_eswitch_set_vport_mac(parent_dev->priv.eswitch,
+					 vport_num, mac);
+	return ret;
+}
