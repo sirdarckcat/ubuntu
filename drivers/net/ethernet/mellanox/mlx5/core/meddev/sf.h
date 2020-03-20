@@ -50,6 +50,9 @@ u16 mlx5_core_max_sfs(const struct mlx5_core_dev *dev,
 u16 mlx5_get_free_sfs(struct mlx5_core_dev *dev,
 		      struct mlx5_sf_table *sf_table);
 
+int mlx5_sf_load(struct mlx5_sf *sf);
+void mlx5_sf_unload(struct mlx5_sf *sf);
+
 #else
 static inline u16 mlx5_core_max_sfs(const struct mlx5_core_dev *dev,
 				    const struct mlx5_sf_table *sf_table)
