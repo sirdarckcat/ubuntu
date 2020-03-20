@@ -44,6 +44,24 @@ mlx5_sf_alloc(struct mlx5_core_dev *coredev, struct mlx5_sf_table *sf_table,
 	      struct device *dev);
 void mlx5_sf_free(struct mlx5_core_dev *coredev, struct mlx5_sf_table *sf_table,
 		  struct mlx5_sf *sf);
+u16 mlx5_core_max_sfs(const struct mlx5_core_dev *dev,
+		      const struct mlx5_sf_table *sf_table);
+u16 mlx5_get_free_sfs(struct mlx5_core_dev *dev,
+		      struct mlx5_sf_table *sf_table);
+
+#else
+static inline u16 mlx5_core_max_sfs(const struct mlx5_core_dev *dev,
+				    const struct mlx5_sf_table *sf_table)
+{
+	return 0;
+}
+
+static inline u16 mlx5_get_free_sfs(struct mlx5_core_dev *dev,
+				    struct mlx5_sf_table *sf_table)
+{
+	return 0;
+}
+
 #endif
 
 #endif
