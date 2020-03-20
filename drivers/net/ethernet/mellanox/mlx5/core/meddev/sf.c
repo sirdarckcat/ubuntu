@@ -203,3 +203,25 @@ void mlx5_sf_free(struct mlx5_core_dev *coredev, struct mlx5_sf_table *sf_table,
 	free_sf_id(sf_table, sf->idx);
 	devlink_free(devlink);
 }
+
+u16 mlx5_get_free_sfs(struct mlx5_core_dev *dev, struct mlx5_sf_table *sf_table)
+{
+	u16 free_sfs = 0;
+
+	if (!mlx5_core_is_sf_supported(dev))
+		return 0;
+
+	mutex_lock(&sf_table->lock);
+	if (sf_table->sf_id_bitmap)
+		free_sfs = sf_table->max_sfs -
+				bitmap_weight(sf_table->sf_id_bitmap,
+					      sf_table->max_sfs);
+	mutex_unlock(&sf_table->lock);
+	return free_sfs;
+}
+
+u16 mlx5_core_max_sfs(const struct mlx5_core_dev *dev,
+		      const struct mlx5_sf_table *sf_table)
+{
+	return mlx5_core_is_sf_supported(dev) ? sf_table->max_sfs : 0;
+}
