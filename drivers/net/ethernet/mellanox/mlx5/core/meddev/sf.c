@@ -162,6 +162,7 @@ mlx5_sf_alloc(struct mlx5_core_dev *coredev, struct mlx5_sf_table *sf_table,
 
 	sf = devlink_priv(devlink);
 	sf->idx = sf_id;
+	sf->parent_dev = coredev;
 	sf->dev.device = dev;
 	sf->dev.pdev = coredev->pdev;
 	sf->dev.coredev_type = MLX5_COREDEV_SF;
