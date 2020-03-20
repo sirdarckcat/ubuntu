@@ -161,3 +161,14 @@ config MLX5_SW_STEERING
 	default y
 	help
 	Build support for software-managed steering in the NIC.
+
+config MLX5_MDEV
+	bool "Mellanox Technologies Mediated device support"
+	depends on MLX5_CORE
+	depends on VFIO_MDEV
+	depends on MLX5_ESWITCH
+	default n
+	help
+	  Build support for mediated devices. Mediated devices allow creating
+	  multiple virtual ports, netdev and/or rdma device(s) on
+	  single PCI function.
