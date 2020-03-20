@@ -112,10 +112,58 @@ static int mlx5_meddev_remove(struct mdev_device *meddev)
 	return 0;
 }
 
+static ssize_t
+mac_addr_show(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	if (mdev_from_dev(dev))
+		return sprintf(buf, "This is MDEV %s\n", dev_name(dev));
+
+	return sprintf(buf, "\n");
+}
+
+static ssize_t
+mac_addr_store(struct device *dev, struct device_attribute *attr,
+	       const char *buf, size_t len)
+{
+	struct mdev_device *meddev = mdev_from_dev(dev);
+	struct mlx5_sf *sf = mdev_get_drvdata(meddev);
+	u8 mac[ETH_ALEN];
+	int ret;
+
+	/* length must be account for 00:00:00:00:00:00 and NULL terminator */
+	if (len != 18)
+		return -EINVAL;
+
+	ret = sscanf(buf, "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx",
+		     &mac[0], &mac[1], &mac[2], &mac[3], &mac[4], &mac[5]);
+	if (ret != 6)
+		return -EINVAL;
+
+	ret = mlx5_sf_set_mac(sf, mac);
+	return ret ? ret : len;
+}
+static DEVICE_ATTR_RW(mac_addr);
+
+static struct attribute *mlx5_meddev_dev_attrs[] = {
+	&dev_attr_mac_addr.attr,
+	NULL,
+};
+
+static const struct attribute_group mlx5_meddev_dev_group = {
+	.name  = "devlink-compat-config",
+	.attrs = mlx5_meddev_dev_attrs,
+};
+
+static const struct attribute_group *mlx5_meddev_attr_groups[] = {
+	&mlx5_meddev_dev_group,
+	NULL
+};
+
 static const struct mdev_parent_ops mlx5_meddev_ops = {
 	.create = mlx5_meddev_create,
 	.remove = mlx5_meddev_remove,
 	.supported_type_groups = mlx5_meddev_groups,
+	.mdev_attr_groups = mlx5_meddev_attr_groups
 };
 
 void mlx5_meddev_init(struct mlx5_core_dev *dev)
