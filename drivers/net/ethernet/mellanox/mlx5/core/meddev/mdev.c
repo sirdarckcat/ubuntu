@@ -152,8 +152,27 @@ mac_addr_store(struct device *dev, struct device_attribute *attr,
 }
 static DEVICE_ATTR_RW(mac_addr);
 
+static ssize_t
+netdev_show(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	struct mdev_device *meddev = mdev_from_dev(dev);
+	struct mlx5_sf *sf = mdev_get_drvdata(meddev);
+	struct net_device *ndev;
+	int ret;
+
+	ndev = mlx5_sf_get_netdev(sf);
+	if (IS_ERR(ndev))
+		return PTR_ERR(ndev);
+
+	ret = sprintf(buf, "%s\n", ndev->name);
+	dev_put(ndev);
+	return ret;
+}
+static DEVICE_ATTR_RO(netdev);
+
 static struct attribute *mlx5_meddev_dev_attrs[] = {
 	&dev_attr_mac_addr.attr,
+	&dev_attr_netdev.attr,
 	NULL,
 };
 
