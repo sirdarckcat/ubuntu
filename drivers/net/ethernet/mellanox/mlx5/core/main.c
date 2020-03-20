@@ -80,7 +80,6 @@ unsigned int mlx5_core_debug_mask;
 module_param_named(debug_mask, mlx5_core_debug_mask, uint, 0644);
 MODULE_PARM_DESC(debug_mask, "debug mask: 1 = dump cmd data, 2 = dump cmd exec time, 3 = both. Default=0");
 
-#define MLX5_DEFAULT_PROF	2
 static unsigned int prof_sel = MLX5_DEFAULT_PROF;
 module_param_named(prof_sel, prof_sel, uint, 0444);
 MODULE_PARM_DESC(prof_sel, "profile selector. Valid range 0 - 2");
@@ -1196,7 +1195,7 @@ static void mlx5_unload(struct mlx5_core_dev *dev)
 	mlx5_put_uars_page(dev, dev->priv.uar);
 }
 
-static int mlx5_load_one(struct mlx5_core_dev *dev, bool boot)
+int mlx5_load_one(struct mlx5_core_dev *dev, bool boot)
 {
 	int err = 0;
 
@@ -1264,7 +1263,7 @@ err_function:
 	return err;
 }
 
-static int mlx5_unload_one(struct mlx5_core_dev *dev, bool cleanup)
+int mlx5_unload_one(struct mlx5_core_dev *dev, bool cleanup)
 {
 	int err = 0;
 
@@ -1298,7 +1297,7 @@ out:
 	return err;
 }
 
-static int mlx5_mdev_init(struct mlx5_core_dev *dev, int profile_idx)
+int mlx5_mdev_init(struct mlx5_core_dev *dev, int profile_idx)
 {
 	struct mlx5_priv *priv = &dev->priv;
 	int err;
@@ -1344,7 +1343,7 @@ err_health_init:
 	return err;
 }
 
-static void mlx5_mdev_uninit(struct mlx5_core_dev *dev)
+void mlx5_mdev_uninit(struct mlx5_core_dev *dev)
 {
 	mlx5_pagealloc_cleanup(dev);
 	mlx5_health_cleanup(dev);
