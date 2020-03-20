@@ -2272,7 +2272,7 @@ int esw_offloads_enable(struct mlx5_eswitch *esw)
 
 	esw_offloads_devcom_init(esw);
 	mutex_init(&esw->offloads.termtbl_mutex);
-
+	mlx5_meddev_init(esw->dev);
 	return 0;
 
 err_reps:
@@ -2289,7 +2289,12 @@ err_steering_init:
 static int esw_offloads_stop(struct mlx5_eswitch *esw,
 			     struct netlink_ext_ack *extack)
 {
+	bool can_cleanup;
 	int err, err1;
+
+	can_cleanup = mlx5_medev_can_and_mark_cleanup(esw->dev);
+	if (!can_cleanup)
+		return -EBUSY;
 
 	mlx5_eswitch_disable(esw);
 	err = mlx5_eswitch_enable(esw, MLX5_ESWITCH_LEGACY);
@@ -2307,6 +2312,7 @@ static int esw_offloads_stop(struct mlx5_eswitch *esw,
 
 void esw_offloads_disable(struct mlx5_eswitch *esw)
 {
+	mlx5_meddev_cleanup(esw->dev);
 	esw_offloads_devcom_cleanup(esw);
 	esw_offloads_unload_all_reps(esw);
 	mlx5_eswitch_disable_pf_vf_vports(esw);
