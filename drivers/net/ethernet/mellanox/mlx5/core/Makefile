@@ -78,4 +78,4 @@ mlx5_core-$(CONFIG_MLX5_SW_STEERING) += steering/dr_domain.o steering/dr_table.o
 #
 # Mdev basic
 #
-mlx5_core-$(CONFIG_MLX5_MDEV) += meddev/sf.o
+mlx5_core-$(CONFIG_MLX5_MDEV) += meddev/sf.o meddev/mdev.o
