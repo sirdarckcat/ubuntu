@@ -1470,8 +1470,18 @@ static void esw_offloads_unload_vf_reps(struct mlx5_eswitch *esw, int nvports)
 		__unload_reps_vf_vport(esw, nvports, rep_type);
 }
 
+static void __unload_reps_sf_vport(struct mlx5_eswitch *esw, u8 rep_type)
+{
+	struct mlx5_eswitch_rep *rep;
+	int i;
+
+	mlx5_esw_for_each_sf_rep(esw, i, rep)
+		__esw_offloads_unload_rep(esw, rep, rep_type);
+}
+
 static void __unload_reps_all_vport(struct mlx5_eswitch *esw, u8 rep_type)
 {
+	__unload_reps_sf_vport(esw, rep_type);
 	__unload_reps_vf_vport(esw, esw->esw_funcs.num_vfs, rep_type);
 
 	/* Special vports must be the last to unload. */
