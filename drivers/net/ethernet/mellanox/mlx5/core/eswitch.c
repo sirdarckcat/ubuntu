@@ -1783,7 +1783,8 @@ static int esw_enable_vport(struct mlx5_eswitch *esw, struct mlx5_vport *vport,
 	int ret;
 
 	mutex_lock(&esw->state_lock);
-	WARN_ON(vport->enabled);
+	if (vport->enabled)
+		goto done;
 
 	esw_debug(esw->dev, "Enabling VPORT(%d)\n", vport_num);
 
