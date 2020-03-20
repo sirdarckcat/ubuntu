@@ -687,6 +687,14 @@ void
 esw_vport_destroy_offloads_acl_tables(struct mlx5_eswitch *esw,
 				      struct mlx5_vport *vport);
 
+int mlx5_eswitch_enable_vport(struct mlx5_eswitch *esw,
+			      struct mlx5_vport *vport,
+			      enum mlx5_eswitch_vport_event enable_events);
+void mlx5_eswitch_disable_vport(struct mlx5_eswitch *esw,
+				struct mlx5_vport *vport);
+int mlx5_eswitch_setup_sf_vport(struct mlx5_eswitch *esw, u16 vport_num);
+void mlx5_eswitch_cleanup_sf_vport(struct mlx5_eswitch *esw, u16 vport_num);
+
 #else  /* CONFIG_MLX5_ESWITCH */
 /* eswitch API stubs */
 static inline int  mlx5_eswitch_init(struct mlx5_core_dev *dev) { return 0; }
