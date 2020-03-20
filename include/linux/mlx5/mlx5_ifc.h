@@ -121,6 +121,7 @@ enum {
 	MLX5_CMD_OP_SET_ISSI                      = 0x10b,
 	MLX5_CMD_OP_SET_DRIVER_VERSION            = 0x10d,
 	MLX5_CMD_OP_QUERY_SF_PARTITION            = 0x111,
+	MLX5_CMD_OP_SET_SF_PARTITION              = 0x112,
 	MLX5_CMD_OP_ALLOC_SF                      = 0x113,
 	MLX5_CMD_OP_DEALLOC_SF                    = 0x114,
 	MLX5_CMD_OP_CREATE_MKEY                   = 0x200,
@@ -10306,6 +10307,30 @@ struct mlx5_ifc_tls_progress_params_bits {
 	u8         auth_state[0x2];
 	u8         reserved_at_64[0x4];
 	u8         hw_offset_record_number[0x18];
+};
+
+struct mlx5_ifc_set_sf_partitions_out_bits {
+	u8         status[0x8];
+	u8         reserved_at_8[0x18];
+
+	u8         syndrome[0x20];
+
+	u8         reserved_at_40[0x40];
+};
+
+struct mlx5_ifc_set_sf_partitions_in_bits {
+	u8         opcode[0x10];
+	u8         reserved_at_10[0x10];
+
+	u8         reserved_at_20[0x10];
+	u8         op_mod[0x10];
+
+	u8         reserved_at_40[0x18];
+	u8         num_sf_partitions[0x8];
+
+	u8         reserved_at_60[0x20];
+
+	struct mlx5_ifc_sf_partition_bits sf_partition[0];
 };
 
 #endif /* MLX5_IFC_H */
