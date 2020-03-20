@@ -648,28 +648,51 @@ static int mlx5_core_set_hca_defaults(struct mlx5_core_dev *dev)
 	return ret;
 }
 
-int mlx5_core_enable_hca(struct mlx5_core_dev *dev, u16 func_id)
+static int enable_hca(struct mlx5_core_dev *dev, u16 func_id, bool ecpu)
 {
-	u32 out[MLX5_ST_SZ_DW(enable_hca_out)] = {0};
-	u32 in[MLX5_ST_SZ_DW(enable_hca_in)]   = {0};
+	u32 out[MLX5_ST_SZ_DW(enable_hca_out)] = {};
+	u32 in[MLX5_ST_SZ_DW(enable_hca_in)] = {};
 
 	MLX5_SET(enable_hca_in, in, opcode, MLX5_CMD_OP_ENABLE_HCA);
 	MLX5_SET(enable_hca_in, in, function_id, func_id);
-	MLX5_SET(enable_hca_in, in, embedded_cpu_function,
-		 dev->caps.embedded_cpu);
+	MLX5_SET(enable_hca_in, in, embedded_cpu_function, ecpu);
 	return mlx5_cmd_exec(dev, &in, sizeof(in), &out, sizeof(out));
+}
+
+int mlx5_core_enable_hca(struct mlx5_core_dev *dev, u16 func_id)
+{
+	return enable_hca(dev, func_id, dev->caps.embedded_cpu);
+}
+
+int mlx5_core_enable_sf_hca(struct mlx5_core_dev *dev, u16 sf_func_id)
+{
+	/* When enabling SF, it doesn't matter if is enabled on ECPF or PF,
+	 * embedded_cpu bit must be cleared as expected by device firmware.
+	 * SF function ids are split between ECPF And PF. A given SF is for
+	 * ECPF or for PF is decided by SF's function id by the firmware.
+	 */
+	return enable_hca(dev, sf_func_id, 0);
+}
+
+static int disable_hca(struct mlx5_core_dev *dev, u16 func_id, bool ecpu)
+{
+	u32 out[MLX5_ST_SZ_DW(disable_hca_out)] = {};
+	u32 in[MLX5_ST_SZ_DW(disable_hca_in)] = {};
+
+	MLX5_SET(disable_hca_in, in, opcode, MLX5_CMD_OP_DISABLE_HCA);
+	MLX5_SET(disable_hca_in, in, function_id, func_id);
+	MLX5_SET(enable_hca_in, in, embedded_cpu_function, ecpu);
+	return mlx5_cmd_exec(dev, in, sizeof(in), out, sizeof(out));
 }
 
 int mlx5_core_disable_hca(struct mlx5_core_dev *dev, u16 func_id)
 {
-	u32 out[MLX5_ST_SZ_DW(disable_hca_out)] = {0};
-	u32 in[MLX5_ST_SZ_DW(disable_hca_in)]   = {0};
+	return disable_hca(dev, func_id, dev->caps.embedded_cpu);
+}
 
-	MLX5_SET(disable_hca_in, in, opcode, MLX5_CMD_OP_DISABLE_HCA);
-	MLX5_SET(disable_hca_in, in, function_id, func_id);
-	MLX5_SET(enable_hca_in, in, embedded_cpu_function,
-		 dev->caps.embedded_cpu);
-	return mlx5_cmd_exec(dev, in, sizeof(in), out, sizeof(out));
+int mlx5_core_disable_sf_hca(struct mlx5_core_dev *dev, u16 sf_func_id)
+{
+	return disable_hca(dev, sf_func_id, 0);
 }
 
 u64 mlx5_read_internal_timer(struct mlx5_core_dev *dev,
