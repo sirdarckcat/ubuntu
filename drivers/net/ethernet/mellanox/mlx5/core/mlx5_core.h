@@ -116,6 +116,8 @@ enum mlx5_semaphore_space_address {
 	MLX5_SEMAPHORE_SW_RESET         = 0x20,
 };
 
+#define MLX5_DEFAULT_PROF	2
+
 int mlx5_query_hca_caps(struct mlx5_core_dev *dev);
 int mlx5_query_board_id(struct mlx5_core_dev *dev);
 int mlx5_cmd_init_hca(struct mlx5_core_dev *dev, uint32_t *sw_owner_id);
@@ -248,6 +250,11 @@ void mlx5_set_nic_state(struct mlx5_core_dev *dev, u8 state);
 
 int mlx5_unload_one(struct mlx5_core_dev *dev, bool cleanup);
 int mlx5_load_one(struct mlx5_core_dev *dev, bool boot);
+
+int mlx5_mdev_init(struct mlx5_core_dev *dev, int profile_idx);
+void mlx5_mdev_uninit(struct mlx5_core_dev *dev);
+int mlx5_load_one(struct mlx5_core_dev *dev, bool boot);
+int mlx5_unload_one(struct mlx5_core_dev *dev, bool cleanup);
 
 #ifdef CONFIG_MLX5_MDEV
 void mlx5_meddev_init(struct mlx5_core_dev *dev);
