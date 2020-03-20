@@ -248,4 +248,26 @@ void mlx5_set_nic_state(struct mlx5_core_dev *dev, u8 state);
 
 int mlx5_unload_one(struct mlx5_core_dev *dev, bool cleanup);
 int mlx5_load_one(struct mlx5_core_dev *dev, bool boot);
+
+#ifdef CONFIG_MLX5_MDEV
+void mlx5_meddev_init(struct mlx5_core_dev *dev);
+void mlx5_meddev_cleanup(struct mlx5_core_dev *dev);
+bool mlx5_medev_can_and_mark_cleanup(struct mlx5_core_dev *dev);
+#else
+static inline void mlx5_meddev_init(struct mlx5_core_dev *dev)
+{
+}
+
+static inline void mlx5_meddev_cleanup(struct mlx5_core_dev *dev)
+{
+}
+
+static inline bool mlx5_medev_can_and_mark_cleanup(struct mlx5_core_dev *dev)
+{
+	return true;
+}
+#endif
+
+struct mlx5_core_dev *mlx5_get_core_dev(const struct device *dev);
+
 #endif /* __MLX5_CORE_H__ */
