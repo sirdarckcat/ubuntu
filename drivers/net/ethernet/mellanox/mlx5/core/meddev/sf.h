@@ -9,6 +9,7 @@
 
 struct mlx5_sf {
 	struct mlx5_core_dev dev;
+	struct mlx5_core_dev *parent_dev;
 	u16 idx;	/* Index allocated by the SF table bitmap */
 };
 
@@ -63,5 +64,13 @@ static inline u16 mlx5_get_free_sfs(struct mlx5_core_dev *dev,
 }
 
 #endif
+
+static inline struct mlx5_core_dev *
+mlx5_sf_get_parent_dev(struct mlx5_core_dev *dev)
+{
+	struct mlx5_sf *sf = container_of(dev, struct mlx5_sf, dev);
+
+	return sf->parent_dev;
+}
 
 #endif
