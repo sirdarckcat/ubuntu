@@ -41,6 +41,7 @@
 #include <linux/cpu_rmap.h>
 #endif
 #include "mlx5_core.h"
+#include "meddev/sf.h"
 #include "lib/eq.h"
 #include "fpga/core.h"
 #include "eswitch.h"
@@ -466,7 +467,12 @@ int mlx5_eq_table_init(struct mlx5_core_dev *dev)
 	for (i = 0; i < MLX5_EVENT_TYPE_MAX; i++)
 		ATOMIC_INIT_NOTIFIER_HEAD(&eq_table->nh[i]);
 
-	eq_table->irq_table = dev->priv.irq_table;
+	if (mlx5_core_is_sf(dev))
+		eq_table->irq_table =
+			mlx5_sf_get_parent_dev(dev)->priv.irq_table;
+	else
+		eq_table->irq_table = dev->priv.irq_table;
+
 	return 0;
 }
 
