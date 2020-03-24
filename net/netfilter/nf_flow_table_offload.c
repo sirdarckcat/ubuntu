@@ -754,12 +754,15 @@ static void flow_offload_work_add(struct flow_offload_work *offload)
 	err = flow_offload_rule_add(offload, flow_rule);
 	if (err < 0)
 		set_bit(NF_FLOW_HW_REFRESH, &offload->flow->flags);
+	else
+		set_bit(IPS_HW_OFFLOAD_BIT, &offload->flow->ct->status);
 
 	nf_flow_offload_destroy(flow_rule);
 }
 
 static void flow_offload_work_del(struct flow_offload_work *offload)
 {
+	clear_bit(IPS_HW_OFFLOAD_BIT, &offload->flow->ct->status);
 	flow_offload_tuple_del(offload, FLOW_OFFLOAD_DIR_ORIGINAL);
 	flow_offload_tuple_del(offload, FLOW_OFFLOAD_DIR_REPLY);
 	set_bit(NF_FLOW_HW_DEAD, &offload->flow->flags);
@@ -785,6 +788,9 @@ static void flow_offload_work_stats(struct flow_offload_work *offload)
 	lastused = max_t(u64, stats[0].lastused, stats[1].lastused);
 	offload->flow->timeout = max_t(u64, offload->flow->timeout,
 				       lastused + NF_FLOW_TIMEOUT);
+	/* Clear HW_OFFLOAD right away when hw module is removed. */
+	if (!lastused)
+		clear_bit(IPS_HW_OFFLOAD_BIT, &offload->flow->ct->status);
 }
 
 static void flow_offload_work_handler(struct work_struct *work)
