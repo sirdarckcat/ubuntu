@@ -225,7 +225,8 @@ int flow_offload_add(struct nf_flowtable *flow_table, struct flow_offload *flow)
 {
 	int err;
 
-	flow->timeout = nf_flowtable_time_stamp + NF_FLOW_TIMEOUT;
+	flow->timeout = nf_flowtable_time_stamp +
+			nf_flow_offload_timeout(flow_table);
 
 	err = rhashtable_insert_fast(&flow_table->rhashtable,
 				     &flow->tuplehash[0].node,
@@ -255,7 +256,8 @@ EXPORT_SYMBOL_GPL(flow_offload_add);
 void flow_offload_refresh(struct nf_flowtable *flow_table,
 			  struct flow_offload *flow)
 {
-	flow->timeout = nf_flowtable_time_stamp + NF_FLOW_TIMEOUT;
+	flow->timeout = nf_flowtable_time_stamp +
+			nf_flow_offload_timeout(flow_table);
 
 	if (likely(!nf_flowtable_hw_offload(flow_table) ||
 		   !test_and_clear_bit(NF_FLOW_HW_REFRESH, &flow->flags)))
@@ -550,6 +552,10 @@ EXPORT_SYMBOL_GPL(nf_flow_dnat_port);
 int nf_flow_table_init(struct nf_flowtable *flowtable)
 {
 	int err;
+
+	flowtable->flow_timeout = flowtable->flow_timeout ?
+				  flowtable->flow_timeout * HZ :
+				  NF_DEFAULT_FLOW_TIMEOUT;
 
 	INIT_DEFERRABLE_WORK(&flowtable->gc_work, nf_flow_offload_work_gc);
 	flow_block_init(&flowtable->flow_block);
