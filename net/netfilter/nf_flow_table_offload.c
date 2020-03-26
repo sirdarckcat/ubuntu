@@ -778,6 +778,7 @@ static void flow_offload_tuple_stats(struct flow_offload_work *offload,
 
 static void flow_offload_work_stats(struct flow_offload_work *offload)
 {
+	u64 flow_timeout = nf_flow_offload_timeout(offload->flowtable);
 	struct flow_stats stats[FLOW_OFFLOAD_DIR_MAX] = {};
 	u64 lastused;
 
@@ -786,7 +787,7 @@ static void flow_offload_work_stats(struct flow_offload_work *offload)
 
 	lastused = max_t(u64, stats[0].lastused, stats[1].lastused);
 	offload->flow->timeout = max_t(u64, offload->flow->timeout,
-				       lastused + NF_FLOW_TIMEOUT);
+				       lastused + flow_timeout);
 	/* Clear HW_OFFLOAD right away when hw module is removed. */
 	if (!lastused)
 		clear_bit(IPS_HW_OFFLOAD_BIT, &offload->flow->ct->status);
@@ -877,7 +878,7 @@ void nf_flow_offload_stats(struct nf_flowtable *flowtable,
 	__s32 delta;
 
 	delta = nf_flow_timeout_delta(flow->timeout);
-	if ((delta >= (9 * NF_FLOW_TIMEOUT) / 10))
+	if ((delta >= (9 * nf_flow_offload_timeout(flowtable)) / 10))
 		return;
 
 	offload = nf_flow_offload_work_alloc(flowtable, flow, FLOW_CLS_STATS);
