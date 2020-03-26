@@ -74,6 +74,7 @@ struct nf_flowtable {
 	unsigned int			flags;
 	struct flow_block		flow_block;
 	struct mutex			flow_block_lock; /* Guards flow_block */
+	u32				flow_timeout;
 	possible_net_t			net;
 };
 
@@ -143,12 +144,17 @@ struct flow_offload {
 	struct rcu_head				rcu_head;
 };
 
-#define NF_FLOW_TIMEOUT (30 * HZ)
+#define NF_DEFAULT_FLOW_TIMEOUT (30 * HZ)
 #define nf_flowtable_time_stamp	(u32)jiffies
 
 static inline __s32 nf_flow_timeout_delta(unsigned int timeout)
 {
 	return (__s32)(timeout - nf_flowtable_time_stamp);
+}
+
+static inline __s32 nf_flow_offload_timeout(struct nf_flowtable *flow_table)
+{
+	return flow_table->flow_timeout;
 }
 
 struct nf_flow_route {
