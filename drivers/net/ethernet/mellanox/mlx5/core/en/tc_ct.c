@@ -59,7 +59,6 @@ struct mlx5_ct_flow {
 struct mlx5_ct_zone_rule {
 	struct mlx5_flow_handle *rule;
 	struct mlx5_esw_flow_attr attr;
-	int tupleid;
 	bool nat;
 };
 
@@ -95,7 +94,6 @@ struct mlx5_ct_tuple {
 };
 
 struct mlx5_ct_entry {
-	u16 zone;
 	struct rhash_head node;
 	struct rhash_head tuple_node;
 	struct rhash_head tuple_nat_node;
@@ -398,7 +396,7 @@ mlx5_tc_ct_entry_del_rule(struct mlx5_tc_ct_priv *ct_priv,
 	struct mlx5_esw_flow_attr *attr = &zone_rule->attr;
 	struct mlx5_eswitch *esw = ct_priv->esw;
 
-	ct_dbg("Deleting ct entry rule in zone %d", entry->zone);
+	ct_dbg("Deleting ct entry rule in zone %d", entry->tuple.zone);
 
 	mlx5_eswitch_del_offloaded_rule(esw, zone_rule->rule, attr);
 	mlx5_modify_header_dealloc(esw->dev, attr->modify_hdr);
@@ -436,7 +434,7 @@ mlx5_tc_ct_entry_set_registers(struct mlx5_tc_ct_priv *ct_priv,
 			       u8 ct_state,
 			       u32 mark,
 			       u32 label,
-			       u32 tupleid)
+			       u16 zone)
 {
 	struct mlx5_eswitch *esw = ct_priv->esw;
 	int err;
@@ -457,7 +455,7 @@ mlx5_tc_ct_entry_set_registers(struct mlx5_tc_ct_priv *ct_priv,
 		return err;
 
 	err = mlx5e_tc_match_to_reg_set(esw->dev, mod_acts,
-					TUPLEID_TO_REG, tupleid);
+					ZONE_RESTORE_TO_REG, zone + 1);
 	if (err)
 		return err;
 
@@ -584,8 +582,7 @@ static int
 mlx5_tc_ct_entry_create_mod_hdr(struct mlx5_tc_ct_priv *ct_priv,
 				struct mlx5_esw_flow_attr *attr,
 				struct flow_rule *flow_rule,
-				u32 tupleid,
-				bool nat)
+				u16 zone, bool nat)
 {
 	struct mlx5e_tc_mod_hdr_acts mod_acts = {};
 	struct mlx5_eswitch *esw = ct_priv->esw;
@@ -616,7 +613,7 @@ mlx5_tc_ct_entry_create_mod_hdr(struct mlx5_tc_ct_priv *ct_priv,
 					      MLX5_CT_STATE_TRK_BIT),
 					     meta->ct_metadata.mark,
 					     meta->ct_metadata.labels[0],
-					     tupleid);
+					     zone);
 	if (err)
 		goto err_mapping;
 
@@ -647,27 +644,15 @@ mlx5_tc_ct_entry_add_rule(struct mlx5_tc_ct_priv *ct_priv,
 	struct mlx5_esw_flow_attr *attr = &zone_rule->attr;
 	struct mlx5_eswitch *esw = ct_priv->esw;
 	struct mlx5_flow_spec spec = {};
-	u32 tupleid;
 	int err;
 
 	zone_rule->nat = nat;
 
-	/* Get tuple unique id */
-	err = xa_alloc(&ct_priv->tuple_ids, &tupleid, zone_rule,
-		       XA_LIMIT(1, TUPLE_ID_MAX), GFP_KERNEL);
-
-	if (err) {
-		netdev_warn(ct_priv->netdev,
-			    "Failed to allocate tuple id, err: %d\n", err);
-		return err;
-	}
-	zone_rule->tupleid = tupleid;
-
 	err = mlx5_tc_ct_entry_create_mod_hdr(ct_priv, attr, flow_rule,
-					      tupleid, nat);
+					      entry->tuple.zone, nat);
 	if (err) {
 		ct_dbg("Failed to create ct entry mod hdr");
-		goto err_xa_alloc;
+		goto err_mod_hdr;
 	}
 
 	attr->action = MLX5_FLOW_CONTEXT_ACTION_MOD_HDR |
@@ -682,7 +667,7 @@ mlx5_tc_ct_entry_add_rule(struct mlx5_tc_ct_priv *ct_priv,
 
 	mlx5_tc_ct_set_tuple_match(&spec, flow_rule);
 	mlx5e_tc_match_to_reg_match(&spec, ZONE_TO_REG,
-				    entry->zone & MLX5_CT_ZONE_MASK,
+				    entry->tuple.zone & MLX5_CT_ZONE_MASK,
 				    MLX5_CT_ZONE_MASK);
 
 	zone_rule->rule = mlx5_eswitch_add_offloaded_rule(esw, &spec, attr);
@@ -692,14 +677,13 @@ mlx5_tc_ct_entry_add_rule(struct mlx5_tc_ct_priv *ct_priv,
 		goto err_rule;
 	}
 
-	ct_dbg("Offloaded ct entry rule in zone %d", entry->zone);
+	ct_dbg("Offloaded ct entry rule in zone %d", entry->tuple.zone);
 
 	return 0;
 
 err_rule:
 	mlx5_modify_header_dealloc(esw->dev, attr->modify_hdr);
-err_xa_alloc:
-	xa_erase(&ct_priv->tuple_ids, zone_rule->tupleid);
+err_mod_hdr:
 	return err;
 }
 
@@ -759,7 +743,6 @@ mlx5_tc_ct_block_flow_offload_add(struct mlx5_ct_ft *ft,
 	if (!entry)
 		return -ENOMEM;
 
-	entry->zone = ft->zone;
 	entry->tuple.zone = ft->zone;
 	entry->cookie = flow->cookie;
 	entry->restore_cookie = meta_action->ct_metadata.cookie;
@@ -886,6 +869,139 @@ mlx5_tc_ct_block_flow_offload(enum tc_setup_type type, void *type_data,
 	return -EOPNOTSUPP;
 }
 
+static bool
+mlx5_tc_ct_skb_to_ipv6_tuple(struct sk_buff *skb, struct mlx5_ct_tuple *tuple)
+{
+	struct flow_ports *ports;
+	struct ipv6hdr *ip6h;
+	unsigned int thoff;
+
+	if (!pskb_network_may_pull(skb, sizeof(*ip6h)))
+		return false;
+
+	ip6h = ipv6_hdr(skb);
+	if (ip6h->nexthdr != IPPROTO_TCP &&
+	    ip6h->nexthdr != IPPROTO_UDP)
+		return false;
+
+	thoff = sizeof(*ip6h);
+	if (!pskb_network_may_pull(skb, ip6h->nexthdr == IPPROTO_TCP ?
+				   thoff + sizeof(struct tcphdr) :
+				   thoff + sizeof(*ports)))
+		return false;
+
+	ip6h = ipv6_hdr(skb);
+	ports = (struct flow_ports *)(skb_network_header(skb) + thoff);
+
+	tuple->addr_type = FLOW_DISSECTOR_KEY_IPV6_ADDRS;
+	tuple->ip.src_v6 = ip6h->saddr;
+	tuple->ip.dst_v6 = ip6h->daddr;
+	tuple->port.src = ports->source;
+	tuple->port.dst = ports->dest;
+	tuple->n_proto = ntohs(ETH_P_IPV6);
+	tuple->ip_proto = ip6h->nexthdr;
+
+	return true;
+}
+
+static bool
+mlx5_tc_ct_skb_to_ipv4_tuple(struct sk_buff *skb, struct mlx5_ct_tuple *tuple)
+{
+	struct flow_ports *ports;
+	unsigned int thoff;
+	struct iphdr *iph;
+
+	if (!pskb_network_may_pull(skb, sizeof(*iph)))
+		return false;
+
+	iph = ip_hdr(skb);
+	thoff = iph->ihl * 4;
+
+	if (ip_is_fragment(iph) ||
+	    unlikely(thoff != sizeof(struct iphdr)))
+		return false;
+
+	if (iph->protocol != IPPROTO_TCP &&
+	    iph->protocol != IPPROTO_UDP)
+		return false;
+
+	thoff = iph->ihl * 4;
+	if (!pskb_network_may_pull(skb, thoff + sizeof(*ports)))
+		return false;
+
+	iph = ip_hdr(skb);
+	ports = (struct flow_ports *)(skb_network_header(skb) + thoff);
+
+	tuple->addr_type = FLOW_DISSECTOR_KEY_IPV4_ADDRS;
+	tuple->ip.src = iph->saddr;
+	tuple->ip.dst = iph->daddr;
+	tuple->port.src = ports->source;
+	tuple->port.dst = ports->dest;
+	tuple->n_proto = ntohs(ETH_P_IP);
+	tuple->ip_proto = iph->protocol;
+
+	return true;
+}
+
+static inline __be16 skb_vlan_get_protocol(struct sk_buff *skb)
+{
+	unsigned int off = ETH_HLEN;
+	__be16 proto = skb->protocol;
+
+	if (eth_type_vlan(proto)) {
+		do {
+			struct vlan_hdr *vh;
+
+			if (unlikely(!pskb_may_pull(skb, off + VLAN_HLEN)))
+				return 0;
+
+			vh = (struct vlan_hdr *)(skb_mac_header(skb) + off);
+			proto = vh->h_vlan_encapsulated_proto;
+			off += VLAN_HLEN;
+		} while (eth_type_vlan(proto));
+	}
+
+	return proto;
+}
+
+static bool
+mlx5_tc_ct_skb_to_tuple(struct sk_buff *skb, struct mlx5_ct_tuple *tuple,
+			u16 zone)
+{
+	__be16 protocol = skb_vlan_get_protocol(skb);
+	int nh_ofs;
+
+	skb_reset_network_header(skb);
+	nh_ofs = skb_network_offset(skb);
+	if (nh_ofs > skb->len)
+		goto out;
+
+	skb_pull(skb, nh_ofs);
+
+	tuple->zone = zone;
+	switch (protocol) {
+	case htons(ETH_P_IP):
+		if (!mlx5_tc_ct_skb_to_ipv4_tuple(skb, tuple))
+			goto out_push;
+		break;
+
+	case htons(ETH_P_IPV6):
+		if (!mlx5_tc_ct_skb_to_ipv6_tuple(skb, tuple))
+			goto out_push;
+		break;
+	default:
+		goto out_push;
+	}
+
+	skb_push(skb, nh_ofs);
+	return true;
+
+out_push:
+	skb_push_rcsum(skb, nh_ofs);
+out:
+	return false;
+}
+
 int
 mlx5_tc_ct_add_no_trk_match(struct mlx5e_priv *priv,
 			    struct mlx5_flow_spec *spec)
@@ -971,7 +1087,7 @@ mlx5_tc_ct_parse_match(struct mlx5e_priv *priv,
 	}
 
 	if (mask->ct_zone)
-		mlx5e_tc_match_to_reg_match(spec, ZONE_TO_REG,
+		mlx5e_tc_match_to_reg_match(spec, ZONE_RESTORE_TO_REG,
 					    key->ct_zone, MLX5_CT_ZONE_MASK);
 	if (ctstate_mask)
 		mlx5e_tc_match_to_reg_match(spec, CTSTATE_TO_REG,
@@ -998,6 +1114,18 @@ mlx5_tc_ct_parse_action(struct mlx5e_priv *priv,
 	if (!ct_priv) {
 		NL_SET_ERR_MSG_MOD(extack,
 				   "offload of ct action isn't available");
+		return -EOPNOTSUPP;
+	}
+
+	/* To mark that the need restore ct state on a skb, we mark the
+	 * packet with the zone restore register. To distinguise from an
+	 * uninitalized 0 value for this register, we write zone + 1 on the
+	 * packet.
+	 *
+	 * This restricts us to a max zone of 0xFFFE.
+	 */
+	if (act->ct.zone == (u16)~0) {
+		NL_SET_ERR_MSG_MOD(extack, "Unsupported ct zone");
 		return -EOPNOTSUPP;
 	}
 
@@ -1089,8 +1217,8 @@ mlx5_tc_ct_del_ft_cb(struct mlx5_tc_ct_priv *ct_priv, struct mlx5_ct_ft *ft)
  *                       set chain miss mapping  set mark             original
  *                       set fte_id              set label            filter
  *                       set zone                set established      actions
- *                       set tunnel_id           do nat (if needed)
- *                       do decap
+ *                       set tunnel_id           set zone_restore
+ *                       do decap                do nat (if needed)
  */
 static int
 __mlx5_tc_ct_flow_offload(struct mlx5e_priv *priv,
@@ -1508,7 +1636,6 @@ mlx5_tc_ct_init(struct mlx5_rep_uplink_priv *uplink_priv)
 	}
 
 	idr_init(&ct_priv->fte_ids);
-	xa_init_flags(&ct_priv->tuple_ids, XA_FLAGS_ALLOC1);
 	mutex_init(&ct_priv->control_lock);
 	rhashtable_init(&ct_priv->zone_ht, &zone_params);
 	rhashtable_init(&ct_priv->ct_tuples_ht, &tuples_ht_params);
@@ -1547,7 +1674,6 @@ mlx5_tc_ct_clean(struct mlx5_rep_uplink_priv *uplink_priv)
 	rhashtable_destroy(&ct_priv->ct_tuples_nat_ht);
 	rhashtable_destroy(&ct_priv->zone_ht);
 	mutex_destroy(&ct_priv->control_lock);
-	xa_destroy(&ct_priv->tuple_ids);
 	idr_destroy(&ct_priv->fte_ids);
 	kfree(ct_priv);
 
@@ -1556,22 +1682,26 @@ mlx5_tc_ct_clean(struct mlx5_rep_uplink_priv *uplink_priv)
 
 bool
 mlx5e_tc_ct_restore_flow(struct mlx5_rep_uplink_priv *uplink_priv,
-			 struct sk_buff *skb, u32 tupleid)
+			 struct sk_buff *skb, u16 zone)
 {
 	struct mlx5_tc_ct_priv *ct_priv = uplink_priv->ct_priv;
-	struct mlx5_ct_zone_rule *zone_rule;
+	struct mlx5_ct_tuple tuple = {};
 	struct mlx5_ct_entry *entry;
 
-	if (!ct_priv || !tupleid)
+	if (!ct_priv || !zone)
 		return true;
 
-	zone_rule = xa_load(&ct_priv->tuple_ids, tupleid);
-	if (!zone_rule)
+	if (!mlx5_tc_ct_skb_to_tuple(skb, &tuple, zone - 1))
 		return false;
 
-	entry = container_of(zone_rule, struct mlx5_ct_entry,
-			     zone_rules[zone_rule->nat]);
-	tcf_ct_flow_table_restore_skb(skb, entry->restore_cookie);
+	entry = rhashtable_lookup_fast(&ct_priv->ct_tuples_ht, &tuple,
+				       tuples_ht_params);
+	if (!entry)
+		entry = rhashtable_lookup_fast(&ct_priv->ct_tuples_nat_ht,
+					       &tuple, tuples_nat_ht_params);
+	if (!entry)
+		return false;
 
+	tcf_ct_flow_table_restore_skb(skb, entry->restore_cookie);
 	return true;
 }
