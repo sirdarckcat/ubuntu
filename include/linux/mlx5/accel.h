@@ -35,6 +35,7 @@
 #define __MLX5_ACCEL_H__
 
 #include <linux/mlx5/driver.h>
+#include <linux/mlx5/qp.h>
 
 enum mlx5_accel_esp_aes_gcm_keymat_iv_algo {
 	MLX5_ACCEL_ESP_AES_GCM_IV_ALGO_SEQ,
@@ -128,6 +129,50 @@ enum mlx5_accel_ipsec_cap {
 };
 
 #ifdef CONFIG_MLX5_ACCEL
+#define MLX5_MAX_AUTH_TAG_BIT_NUM 128
+/* up to 128 Authintaction tag data + 5B (up to 3B padding, 1B pad len, 1B next hdr) */
+#define MLX5_MAX_IPSEC_TRAILER_SZ (DIV_ROUND_UP(MLX5_MAX_AUTH_TAG_BIT_NUM, BITS_PER_BYTE) + 5)
+
+struct mlx5_accel_trailer {
+	u32 wqe_params;
+	u8 trbuff[MLX5_MAX_IPSEC_TRAILER_SZ];
+	u8 trbufflen;
+};
+
+static inline u32 mlx5_accel_ipsec_get_bytes_cnt(struct mlx5_accel_trailer *tr)
+{
+	return tr->trbufflen;
+}
+
+static inline u16 mlx5_accel_ipsec_get_ds_cnt(struct mlx5_accel_trailer *tr)
+{
+	if (!tr->trbufflen)
+		return 0;
+
+	return DIV_ROUND_UP(sizeof(struct mlx5_wqe_inline_seg) + tr->trbufflen,
+			    MLX5_SEND_WQE_DS);
+}
+
+/* Nullifies trbufflen */
+static inline u16 mlx5_accel_ipsec_set_tr(struct mlx5_accel_trailer *tr,
+					  struct mlx5_wqe_eth_seg  *eseg,
+					  struct mlx5_wqe_data_seg  *dseg)
+{
+	struct mlx5_wqe_inline_seg *inlseg;
+	u16 ds_cnt;
+
+	if (!tr->trbufflen)
+		return 0;
+
+	ds_cnt = mlx5_accel_ipsec_get_ds_cnt(tr);
+	eseg->trailer |= cpu_to_be32(tr->wqe_params);
+	inlseg = (struct mlx5_wqe_inline_seg *)dseg;
+	inlseg->byte_count = cpu_to_be32(tr->trbufflen | MLX5_INLINE_SEG);
+	memcpy(inlseg->data, tr->trbuff, tr->trbufflen);
+	tr->trbufflen = 0;
+
+	return ds_cnt;
+}
 
 u32 mlx5_accel_ipsec_device_caps(struct mlx5_core_dev *mdev);
 
