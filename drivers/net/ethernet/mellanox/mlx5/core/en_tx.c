@@ -159,8 +159,20 @@ mlx5e_txwqe_build_eseg_csum(struct mlx5e_txqsq *sq, struct sk_buff *skb, struct 
 			eseg->cs_flags |= MLX5_ETH_WQE_L4_CSUM;
 			sq->stats->csum_partial++;
 		}
-	} else
+#ifdef CONFIG_MLX5_IPSEC
+	} else if (unlikely(sq->trailer.trbufflen)) {
+		/* ipsec case */
+		eseg->cs_flags = MLX5_ETH_WQE_L3_CSUM;
+		if (skb->encapsulation) {
+			eseg->cs_flags |= MLX5_ETH_WQE_L3_INNER_CSUM;
+			sq->stats->csum_partial_inner++;
+		} else {
+			sq->stats->csum_partial++;
+		}
+#endif
+	} else {
 		sq->stats->csum_none++;
+	}
 }
 
 static inline u16
@@ -283,6 +295,10 @@ netdev_tx_t mlx5e_sq_xmit(struct mlx5e_txqsq *sq, struct sk_buff *skb,
 	int num_dma;
 	__be16 mss;
 
+#ifdef CONFIG_MLX5_IPSEC
+	struct mlx5_accel_trailer *tr = &sq->trailer;
+#endif
+
 	/* Calc ihs and ds cnt, no writes to wqe yet */
 	ds_cnt = sizeof(*wqe) / MLX5_SEND_WQE_DS;
 	if (skb_is_gso(skb)) {
@@ -301,9 +317,6 @@ netdev_tx_t mlx5e_sq_xmit(struct mlx5e_txqsq *sq, struct sk_buff *skb,
 		stats->packets++;
 	}
 
-	stats->bytes     += num_bytes;
-	stats->xmit_more += xmit_more;
-
 	headlen = skb->len - ihs - skb->data_len;
 	ds_cnt += !!headlen;
 	ds_cnt += skb_shinfo(skb)->nr_frags;
@@ -314,6 +327,14 @@ netdev_tx_t mlx5e_sq_xmit(struct mlx5e_txqsq *sq, struct sk_buff *skb,
 		ds_cnt_inl = DIV_ROUND_UP(ihs - INL_HDR_START_SZ, MLX5_SEND_WQE_DS);
 		ds_cnt += ds_cnt_inl;
 	}
+
+#ifdef CONFIG_MLX5_IPSEC
+	ds_cnt += mlx5_accel_ipsec_get_ds_cnt(tr);
+	num_bytes += mlx5_accel_ipsec_get_bytes_cnt(tr);
+#endif
+
+	stats->bytes     += num_bytes;
+	stats->xmit_more += xmit_more;
 
 	num_wqebbs = DIV_ROUND_UP(ds_cnt, MLX5_SEND_WQEBB_NUM_DS);
 	contig_wqebbs_room = mlx5_wq_cyc_get_contig_wqebbs(wq, pi);
@@ -365,6 +386,11 @@ netdev_tx_t mlx5e_sq_xmit(struct mlx5e_txqsq *sq, struct sk_buff *skb,
 		eseg->insert.vlan_tci = cpu_to_be16(skb_vlan_tag_get(skb));
 		stats->added_vlan_packets++;
 	}
+
+#ifdef CONFIG_MLX5_IPSEC
+	/* Trailer insertion */
+	dseg += mlx5_accel_ipsec_set_tr(tr, eseg, dseg);
+#endif
 
 	num_dma = mlx5e_txwqe_build_dsegs(sq, skb, skb->data + ihs, headlen, dseg);
 	if (unlikely(num_dma < 0))
