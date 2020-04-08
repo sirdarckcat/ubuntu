@@ -50,6 +50,9 @@
 #include <net/xdp.h>
 #include <linux/dim.h>
 #include <linux/bits.h>
+#ifdef CONFIG_MLX5_IPSEC
+#include <linux/mlx5/accel.h>
+#endif
 #include "wq.h"
 #include "mlx5_core.h"
 #include "en_stats.h"
@@ -398,6 +401,9 @@ struct mlx5e_txqsq {
 	/* dirtied @xmit */
 	u16                        pc ____cacheline_aligned_in_smp;
 	u32                        dma_fifo_pc;
+#ifdef CONFIG_MLX5_IPSEC
+	struct mlx5_accel_trailer  trailer;
+#endif
 
 	struct mlx5e_cq            cq;
 
