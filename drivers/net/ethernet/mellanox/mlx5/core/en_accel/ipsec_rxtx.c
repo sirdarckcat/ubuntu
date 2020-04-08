@@ -233,10 +233,68 @@ static void mlx5e_ipsec_set_metadata(struct sk_buff *skb,
 		   ntohs(mdata->content.tx.seq));
 }
 
+#ifdef CONFIG_MLX5_IPSEC
+static void mlx5e_ipsec_set_ft_metadata(struct mlx5e_tx_wqe *wqe)
+{
+	struct mlx5_wqe_eth_seg *eseg = &wqe->eth;
+
+	eseg->flow_table_metadata |= cpu_to_be32(MLX5_ETH_WQE_FT_META_IPSEC);
+}
+
+static int mlx5e_ipsec_set_trailer(struct sk_buff *skb,
+				   struct mlx5_accel_trailer *tr,
+				   struct xfrm_state *x,
+				   struct xfrm_offload *xo)
+{
+	struct xfrm_encap_tmpl  *encap = x->encap;
+	unsigned int blksize, clen, alen, plen;
+	struct crypto_aead *aead;
+	unsigned int tailen;
+	__u8 proto;
+
+	aead = x->data;
+	alen = crypto_aead_authsize(aead);
+	blksize = ALIGN(crypto_aead_blocksize(aead), 4);
+	clen = ALIGN(skb->len + 2, blksize);
+	plen = max_t(u32, clen - skb->len, 4);
+	tailen = plen + alen;
+	proto = (x->props.family == AF_INET) ?
+		((struct iphdr *)skb_network_header(skb))->protocol :
+		((struct ipv6hdr *)skb_network_header(skb))->nexthdr;
+	tr->wqe_params = MLX5_ETH_WQE_INSERT_TRAILER;
+	if (!encap) {
+		tr->wqe_params |= (proto == IPPROTO_ESP) ?
+				  MLX5_ETH_WQE_TRAILER_HDR_OUTER_IP_ASSOC :
+				  MLX5_ETH_WQE_TRAILER_HDR_OUTER_L4_ASSOC;
+	} else if (encap->encap_type == UDP_ENCAP_ESPINUDP) {
+		tr->wqe_params |= (proto == IPPROTO_ESP) ?
+				  MLX5_ETH_WQE_TRAILER_HDR_INNER_IP_ASSOC :
+				  MLX5_ETH_WQE_TRAILER_HDR_INNER_L4_ASSOC;
+	} else {
+		goto err_tr;
+	}
+
+	if (WARN_ON(tailen > MLX5_MAX_IPSEC_TRAILER_SZ))
+		goto err_tr;
+
+	esp_output_fill_trailer(tr->trbuff, 0, plen, (u8)xo->proto);
+	tr->trbufflen = tailen;
+
+	return 0;
+
+err_tr:
+	return -EOPNOTSUPP;
+}
+#endif
+
 struct sk_buff *mlx5e_ipsec_handle_tx_skb(struct net_device *netdev,
+					  struct mlx5e_txqsq *sq,
 					  struct mlx5e_tx_wqe *wqe,
 					  struct sk_buff *skb)
 {
+#ifdef CONFIG_MLX5_IPSEC
+	struct mlx5_accel_trailer  *tr = &sq->trailer;
+#endif
 	struct mlx5e_priv *priv = netdev_priv(netdev);
 	struct xfrm_offload *xo = xfrm_offload(skb);
 	struct mlx5e_ipsec_metadata *mdata;
@@ -271,15 +329,29 @@ struct sk_buff *mlx5e_ipsec_handle_tx_skb(struct net_device *netdev,
 			atomic64_inc(&priv->ipsec->sw_stats.ipsec_tx_drop_trailer);
 			goto drop;
 		}
-	mdata = mlx5e_ipsec_add_metadata(skb);
-	if (IS_ERR(mdata)) {
-		atomic64_inc(&priv->ipsec->sw_stats.ipsec_tx_drop_metadata);
-		goto drop;
+
+	if (MLX5_CAP_GEN(priv->mdev, fpga)) {
+		mdata = mlx5e_ipsec_add_metadata(skb);
+		if (IS_ERR(mdata)) {
+			atomic64_inc(&priv->ipsec->sw_stats.ipsec_tx_drop_metadata);
+			goto drop;
+		}
 	}
+
 	mlx5e_ipsec_set_swp(skb, &wqe->eth, x->props.mode, xo);
 	sa_entry = (struct mlx5e_ipsec_sa_entry *)x->xso.offload_handle;
 	sa_entry->set_iv_op(skb, x, xo);
-	mlx5e_ipsec_set_metadata(skb, mdata, xo);
+	if (MLX5_CAP_GEN(priv->mdev, fpga)) {
+		mlx5e_ipsec_set_metadata(skb, mdata, xo);
+#ifdef CONFIG_MLX5_IPSEC
+	} else {
+		/* Must be cx ipsec device */
+		if (mlx5e_ipsec_set_trailer(skb, tr, x, xo))
+			goto drop;
+
+		mlx5e_ipsec_set_ft_metadata(wqe);
+#endif
+	}
 
 	return skb;
 
