@@ -121,7 +121,7 @@ mlx5e_accel_handle_tx(struct sk_buff *skb,
 
 #ifdef CONFIG_MLX5_EN_IPSEC
 	if (test_bit(MLX5E_SQ_STATE_IPSEC, &sq->state)) {
-		skb = mlx5e_ipsec_handle_tx_skb(dev, *wqe, skb);
+		skb = mlx5e_ipsec_handle_tx_skb(dev, sq, *wqe, skb);
 		if (unlikely(!skb))
 			return NULL;
 	}
