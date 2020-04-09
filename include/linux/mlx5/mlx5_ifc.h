@@ -414,8 +414,16 @@ struct mlx5_ifc_flow_table_prop_layout_bits {
 	u8         reserved_at_16[0x1];
 	u8	   table_miss_action_domain[0x1];
 	u8         termination_table[0x1];
-	u8         reserved_at_19[0x7];
-	u8         reserved_at_20[0x2];
+
+	u8         reformat_and_fwd_to_table[0x1];
+	u8         forward_vhca_rx[0x1];
+	u8         forward_vhca_tx[0x1];
+	u8         ipsec_encrypt[0x1];
+	u8         ipsec_decrypt[0x1];
+	u8         reserved_at_1e[0x2];
+	u8         termination_table_raw_traffic[0x1];
+	u8         reserved_at_21[0x1];
+
 	u8         log_max_ft_size[0x6];
 	u8         log_max_modify_header_context[0x8];
 	u8         max_modify_header_actions[0x8];
@@ -2813,6 +2821,8 @@ enum {
 	MLX5_FLOW_CONTEXT_ACTION_VLAN_PUSH = 0x100,
 	MLX5_FLOW_CONTEXT_ACTION_VLAN_POP_2  = 0x400,
 	MLX5_FLOW_CONTEXT_ACTION_VLAN_PUSH_2 = 0x800,
+	MLX5_FLOW_CONTEXT_ACTION_IPSEC_DECRYPT = 0x1000,
+	MLX5_FLOW_CONTEXT_ACTION_IPSEC_ENCRYPT = 0x2000,
 };
 
 enum {
@@ -2854,7 +2864,8 @@ struct mlx5_ifc_flow_context_bits {
 
 	struct mlx5_ifc_vlan_bits push_vlan_2;
 
-	u8         reserved_at_120[0xe0];
+	u8         ipsec_obj_id[0x20];
+	u8         reserved_at_140[0xc0];
 
 	struct mlx5_ifc_fte_match_param_bits match_value;
 
@@ -5583,6 +5594,7 @@ enum {
 	MLX5_ACTION_IN_FIELD_METADATA_REG_C_7  = 0x58,
 	MLX5_ACTION_IN_FIELD_OUT_TCP_SEQ_NUM   = 0x59,
 	MLX5_ACTION_IN_FIELD_OUT_TCP_ACK_NUM   = 0x5B,
+	MLX5_ACTION_IN_FIELD_IPSEC_SYNDROME    = 0x5D,
 };
 
 struct mlx5_ifc_alloc_modify_header_context_out_bits {
