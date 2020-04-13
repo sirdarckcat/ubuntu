@@ -1284,6 +1284,38 @@ static bool mlx5e_rep_has_offload_stats(const struct net_device *dev, int attr_i
 	return false;
 }
 
+static u32 get_sf_phys_port_num(const struct mlx5_core_dev *dev, u16 vport_num)
+{
+	return (MLX5_CAP_GEN(dev, vhca_id) << 16) | vport_num;
+}
+
+static int mlx5e_rep_sf_port_parent_id(struct net_device *dev,
+				       struct netdev_phys_item_id *ppid)
+{
+	mlx5e_rep_get_port_parent_id(dev, ppid);
+	return 0;
+}
+
+static int mlx5e_rep_sf_get_phys_port_name(struct net_device *dev,
+					   char *buf, size_t len)
+{
+	struct mlx5e_priv *priv = netdev_priv(dev);
+	struct mlx5e_rep_priv *rpriv = priv->ppriv;
+	struct mlx5_eswitch_rep *rep = rpriv->rep;
+	struct mlx5_eswitch *esw;
+	unsigned int fn;
+	int ret;
+
+	fn = PCI_FUNC(priv->mdev->pdev->devfn);
+	esw = priv->mdev->priv.eswitch;
+
+	ret = snprintf(buf, len, "pf%dp%d", fn,
+		       get_sf_phys_port_num(priv->mdev, rep->vport));
+	if (ret >= len)
+		return -EOPNOTSUPP;
+	return 0;
+}
+
 static int
 mlx5e_get_sw_stats64(const struct net_device *dev,
 		     struct rtnl_link_stats64 *stats)
@@ -1390,10 +1422,24 @@ static const struct net_device_ops mlx5e_netdev_ops_uplink_rep = {
 	.ndo_set_features        = mlx5e_set_features,
 };
 
+static const struct net_device_ops mlx5e_netdev_ops_rep_sf = {
+	.ndo_open                = mlx5e_rep_open,
+	.ndo_stop                = mlx5e_rep_close,
+	.ndo_start_xmit          = mlx5e_xmit,
+	.ndo_setup_tc            = mlx5e_rep_setup_tc,
+	.ndo_get_port_parent_id  = mlx5e_rep_sf_port_parent_id,
+	.ndo_get_phys_port_name  = mlx5e_rep_sf_get_phys_port_name,
+	.ndo_get_stats64         = mlx5e_rep_get_stats,
+	.ndo_has_offload_stats	 = mlx5e_rep_has_offload_stats,
+	.ndo_get_offload_stats	 = mlx5e_rep_get_offload_stats,
+	.ndo_change_mtu          = mlx5e_rep_change_mtu,
+};
+
 bool mlx5e_eswitch_rep(struct net_device *netdev)
 {
 	if (netdev->netdev_ops == &mlx5e_netdev_ops_rep ||
-	    netdev->netdev_ops == &mlx5e_netdev_ops_uplink_rep)
+	    netdev->netdev_ops == &mlx5e_netdev_ops_uplink_rep ||
+	    netdev->netdev_ops == &mlx5e_netdev_ops_rep_sf)
 		return true;
 
 	return false;
@@ -1457,7 +1503,10 @@ static void mlx5e_build_rep_netdev(struct net_device *netdev)
 			netdev->dcbnl_ops = &mlx5e_dcbnl_ops;
 #endif
 	} else {
-		netdev->netdev_ops = &mlx5e_netdev_ops_rep;
+		if (mlx5_eswitch_is_sf_vport(mdev->priv.eswitch, rep->vport))
+			netdev->netdev_ops = &mlx5e_netdev_ops_rep_sf;
+		else
+			netdev->netdev_ops = &mlx5e_netdev_ops_rep;
 		eth_hw_addr_random(netdev);
 		netdev->ethtool_ops = &mlx5e_rep_ethtool_ops;
 	}
