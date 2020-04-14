@@ -1700,6 +1700,17 @@ static void esw_apply_vport_conf(struct mlx5_eswitch *esw,
 			       flags);
 }
 
+static void esw_query_vport_conf(struct mlx5_eswitch *esw,
+				 struct mlx5_vport *vport)
+{
+	u16 vport_num = vport->vport;
+
+	/* Update vport info with host PF mac */
+	if ((vport_num == MLX5_VPORT_PF) && mlx5_core_is_ecpf(esw->dev))
+		mlx5_query_nic_vport_mac_address(esw->dev, 0, 1,
+						 vport->info.mac);
+}
+
 static int esw_vport_create_legacy_acl_tables(struct mlx5_eswitch *esw,
 					      struct mlx5_vport *vport)
 {
@@ -1797,6 +1808,9 @@ int mlx5_eswitch_enable_vport(struct mlx5_eswitch *esw, struct mlx5_vport *vport
 		goto done;
 
 	esw_debug(esw->dev, "Enabling VPORT(%d)\n", vport_num);
+
+	/* Update cached vport properties */
+	esw_query_vport_conf(esw, vport);
 
 	/* Restore old vport configuration */
 	esw_apply_vport_conf(esw, vport);
