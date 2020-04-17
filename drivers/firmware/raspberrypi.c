@@ -22,7 +22,6 @@
 #define MBOX_CHAN_PROPERTY		8
 
 static struct platform_device *rpi_hwmon;
-static struct platform_device *rpi_clk;
 
 struct rpi_firmware {
 	struct mbox_client cl;
@@ -302,12 +301,6 @@ rpi_register_hwmon_driver(struct device *dev, struct rpi_firmware *fw)
 	}
 }
 
-static void rpi_register_clk_driver(struct device *dev)
-{
-	rpi_clk = platform_device_register_data(dev, "raspberrypi-clk",
-						-1, NULL, 0);
-}
-
 static void rpi_firmware_delete(struct kref *kref)
 {
 	struct rpi_firmware *fw = container_of(kref, struct rpi_firmware,
@@ -365,7 +358,6 @@ static int rpi_firmware_probe(struct platform_device *pdev)
 	rpi_firmware_print_firmware_revision(fw);
 	rpi_firmware_print_firmware_hash(fw);
 	rpi_register_hwmon_driver(dev, fw);
-	rpi_register_clk_driver(dev);
 
 	return 0;
 }
@@ -386,8 +378,6 @@ static int rpi_firmware_remove(struct platform_device *pdev)
 
 	platform_device_unregister(rpi_hwmon);
 	rpi_hwmon = NULL;
-	platform_device_unregister(rpi_clk);
-	rpi_clk = NULL;
 	rpi_firmware_put(fw);
 	g_pdev = NULL;
 
