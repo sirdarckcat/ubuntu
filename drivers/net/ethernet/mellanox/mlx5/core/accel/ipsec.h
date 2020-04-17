@@ -50,6 +50,8 @@ void *mlx5_accel_esp_create_hw_context(struct mlx5_core_dev *mdev,
 				       struct mlx5_accel_esp_xfrm *xfrm,
 				       u32 *sa_handle);
 void mlx5_accel_esp_free_hw_context(struct mlx5_core_dev *mdev, void *context);
+int mlx5_accel_esp_add_rule(struct mlx5_core_dev *mdev, void *context);
+void mlx5_accel_esp_del_rule(struct mlx5_core_dev *mdev, void *context);
 
 void mlx5_accel_ipsec_init(struct mlx5_core_dev *mdev);
 void mlx5_accel_ipsec_cleanup(struct mlx5_core_dev *mdev);
@@ -62,6 +64,8 @@ struct mlx5_accel_ipsec_ops {
 				   const __be32 saddr[4], const __be32 daddr[4],
 				   const __be32 spi, bool is_ipv6, u32 *sa_handle);
 	void (*free_hw_context)(void *context);
+	int (*add_steering_rule)(void *context);
+	void (*del_steering_rule)(void *context);
 	int (*init)(struct mlx5_core_dev *mdev);
 	void (*cleanup)(struct mlx5_core_dev *mdev);
 	struct mlx5_accel_esp_xfrm* (*esp_create_xfrm)(struct mlx5_core_dev *mdev,
@@ -85,6 +89,10 @@ mlx5_accel_esp_create_hw_context(struct mlx5_core_dev *mdev,
 }
 
 static inline void mlx5_accel_esp_free_hw_context(struct mlx5_core_dev *mdev, void *context) {}
+
+static inline int mlx5_accel_esp_add_rule(struct mlx5_core_dev *mdev, void *context) { return 0; }
+
+static inline void mlx5_accel_esp_del_rule(struct mlx5_core_dev *mdev, void *context) {}
 
 static inline void mlx5_accel_ipsec_init(struct mlx5_core_dev *mdev) {}
 
