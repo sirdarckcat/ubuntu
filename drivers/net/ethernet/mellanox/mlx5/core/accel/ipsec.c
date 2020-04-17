@@ -132,6 +132,26 @@ void mlx5_accel_esp_free_hw_context(struct mlx5_core_dev *mdev, void *context)
 	ipsec_ops->free_hw_context(context);
 }
 
+int mlx5_accel_esp_add_rule(struct mlx5_core_dev *mdev, void *context)
+{
+	const struct mlx5_accel_ipsec_ops *ipsec_ops = mdev->ipsec_ops;
+
+	if (!ipsec_ops || !ipsec_ops->add_steering_rule)
+		return 0;
+
+	return ipsec_ops->add_steering_rule(context);
+}
+
+void mlx5_accel_esp_del_rule(struct mlx5_core_dev *mdev, void *context)
+{
+	const struct mlx5_accel_ipsec_ops *ipsec_ops = mdev->ipsec_ops;
+
+	if (!ipsec_ops || !ipsec_ops->del_steering_rule)
+		return;
+
+	ipsec_ops->del_steering_rule(context);
+}
+
 struct mlx5_accel_esp_xfrm *
 mlx5_accel_esp_create_xfrm(struct mlx5_core_dev *mdev,
 			   const struct mlx5_accel_esp_xfrm_attrs *attrs,
