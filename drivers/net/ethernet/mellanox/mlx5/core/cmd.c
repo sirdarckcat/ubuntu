@@ -1929,6 +1929,9 @@ static void destroy_msg_cache(struct mlx5_core_dev *dev)
 	struct mlx5_cmd_msg *n;
 	int i;
 
+	if (mlx5_core_is_sf(dev))
+		return;
+
 	for (i = 0; i < MLX5_NUM_COMMAND_CACHES; i++) {
 		ch = &dev->cmd.cache[i];
 		list_for_each_entry_safe(msg, n, &ch->head, list) {
@@ -1957,6 +1960,9 @@ static void create_msg_cache(struct mlx5_core_dev *dev)
 	struct mlx5_cmd_msg *msg;
 	int i;
 	int k;
+
+	if (mlx5_core_is_sf(dev))
+		return;
 
 	/* Initialize and fill the caches with initial entries */
 	for (k = 0; k < MLX5_NUM_COMMAND_CACHES; k++) {
