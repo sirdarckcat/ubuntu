@@ -907,13 +907,15 @@ void mlx5_core_eq_free_irqs(struct mlx5_core_dev *dev)
 	mutex_unlock(&table->lock);
 }
 
+#define MLX5_MAX_SF_EQS	4
 int mlx5_eq_table_create(struct mlx5_core_dev *dev)
 {
 	struct mlx5_eq_table *eq_table = dev->priv.eq_table;
 	int err;
 
-	eq_table->num_comp_eqs =
-		mlx5_irq_get_num_comp(eq_table->irq_table);
+	eq_table->num_comp_eqs = mlx5_irq_get_num_comp(eq_table->irq_table);
+	if (mlx5_core_is_sf(dev) && eq_table->num_comp_eqs > MLX5_MAX_SF_EQS)
+		eq_table->num_comp_eqs = MLX5_MAX_SF_EQS;
 
 	err = create_async_eqs(dev);
 	if (err) {
