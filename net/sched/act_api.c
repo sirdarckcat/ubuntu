@@ -867,14 +867,14 @@ static struct tc_cookie *nla_memdup_cookie(struct nlattr **tb)
 }
 
 static const u32 tca_act_flags_allowed = TCA_ACT_FLAGS_NO_PERCPU_STATS;
+
 static const struct nla_policy tcf_action_policy[TCA_ACT_MAX + 1] = {
 	[TCA_ACT_KIND]		= { .type = NLA_STRING },
 	[TCA_ACT_INDEX]		= { .type = NLA_U32 },
 	[TCA_ACT_COOKIE]	= { .type = NLA_BINARY,
 				    .len = TC_COOKIE_MAX_SIZE },
 	[TCA_ACT_OPTIONS]	= { .type = NLA_NESTED },
-	[TCA_ACT_FLAGS]		= { .type = NLA_BITFIELD32,
-				    .validation_data = &tca_act_flags_allowed },
+	[TCA_ACT_FLAGS]		= NLA_POLICY_BITFIELD32(TCA_ACT_FLAGS_NO_PERCPU_STATS),
 };
 
 void tcf_idr_insert_many(struct tc_action *actions[])
@@ -1457,10 +1457,8 @@ static int tcf_action_add(struct net *net, struct nlattr *nla,
 	return ret;
 }
 
-static u32 tcaa_root_flags_allowed = TCA_FLAG_LARGE_DUMP_ON;
 static const struct nla_policy tcaa_policy[TCA_ROOT_MAX + 1] = {
-	[TCA_ROOT_FLAGS] = { .type = NLA_BITFIELD32,
-			     .validation_data = &tcaa_root_flags_allowed },
+	[TCA_ROOT_FLAGS] = NLA_POLICY_BITFIELD32(TCA_FLAG_LARGE_DUMP_ON),
 	[TCA_ROOT_TIME_DELTA]      = { .type = NLA_U32 },
 };
 
