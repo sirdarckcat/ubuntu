@@ -247,9 +247,10 @@ err_exit:
 	return err;
 }
 
-static int hw_atl_b0_hw_offload_set(struct aq_hw_s *self,
-				    struct aq_nic_cfg_s *aq_nic_cfg)
+int hw_atl_b0_hw_offload_set(struct aq_hw_s *self,
+			     struct aq_nic_cfg_s *aq_nic_cfg)
 {
+	u64 rxcsum = !!(aq_nic_cfg->features & NETIF_F_RXCSUM);
 	unsigned int i;
 
 	/* TX checksums offloads*/
@@ -257,10 +258,8 @@ static int hw_atl_b0_hw_offload_set(struct aq_hw_s *self,
 	hw_atl_tpo_tcp_udp_crc_offload_en_set(self, 1);
 
 	/* RX checksums offloads*/
-	hw_atl_rpo_ipv4header_crc_offload_en_set(self, !!(aq_nic_cfg->features &
-						 NETIF_F_RXCSUM));
-	hw_atl_rpo_tcp_udp_crc_offload_en_set(self, !!(aq_nic_cfg->features &
-					      NETIF_F_RXCSUM));
+	hw_atl_rpo_ipv4header_crc_offload_en_set(self, rxcsum);
+	hw_atl_rpo_tcp_udp_crc_offload_en_set(self, rxcsum);
 
 	/* LSO offloads*/
 	hw_atl_tdm_large_send_offload_en_set(self, 0xFFFFFFFFU);
@@ -268,7 +267,7 @@ static int hw_atl_b0_hw_offload_set(struct aq_hw_s *self,
 	/* Outer VLAN tag offload */
 	hw_atl_rpo_outer_vlan_tag_mode_set(self, 1U);
 
-/* LRO offloads */
+	/* LRO offloads */
 	{
 		unsigned int val = (8U < HW_ATL_B0_LRO_RXD_MAX) ? 0x3U :
 			((4U < HW_ATL_B0_LRO_RXD_MAX) ? 0x2U :
@@ -379,7 +378,7 @@ static int hw_atl_b0_hw_init_rx_path(struct aq_hw_s *self)
 	return aq_hw_err_from_flags(self);
 }
 
-static int hw_atl_b0_hw_mac_addr_set(struct aq_hw_s *self, u8 *mac_addr)
+int hw_atl_b0_hw_mac_addr_set(struct aq_hw_s *self, u8 *mac_addr)
 {
 	int err = 0;
 	unsigned int h = 0U;
@@ -473,15 +472,13 @@ err_exit:
 	return err;
 }
 
-static int hw_atl_b0_hw_ring_tx_start(struct aq_hw_s *self,
-				      struct aq_ring_s *ring)
+int hw_atl_b0_hw_ring_tx_start(struct aq_hw_s *self, struct aq_ring_s *ring)
 {
 	hw_atl_tdm_tx_desc_en_set(self, 1, ring->idx);
 	return aq_hw_err_from_flags(self);
 }
 
-static int hw_atl_b0_hw_ring_rx_start(struct aq_hw_s *self,
-				      struct aq_ring_s *ring)
+int hw_atl_b0_hw_ring_rx_start(struct aq_hw_s *self, struct aq_ring_s *ring)
 {
 	hw_atl_rdm_rx_desc_en_set(self, 1, ring->idx);
 	return aq_hw_err_from_flags(self);
@@ -501,9 +498,8 @@ static int hw_atl_b0_hw_tx_ring_tail_update(struct aq_hw_s *self,
 	return 0;
 }
 
-static int hw_atl_b0_hw_ring_tx_xmit(struct aq_hw_s *self,
-				     struct aq_ring_s *ring,
-				     unsigned int frags)
+int hw_atl_b0_hw_ring_tx_xmit(struct aq_hw_s *self, struct aq_ring_s *ring,
+			      unsigned int frags)
 {
 	struct aq_ring_buff_s *buff = NULL;
 	struct hw_atl_txd_s *txd = NULL;
@@ -588,9 +584,8 @@ static int hw_atl_b0_hw_ring_tx_xmit(struct aq_hw_s *self,
 	return aq_hw_err_from_flags(self);
 }
 
-static int hw_atl_b0_hw_ring_rx_init(struct aq_hw_s *self,
-				     struct aq_ring_s *aq_ring,
-				     struct aq_ring_param_s *aq_ring_param)
+int hw_atl_b0_hw_ring_rx_init(struct aq_hw_s *self, struct aq_ring_s *aq_ring,
+			      struct aq_ring_param_s *aq_ring_param)
 {
 	u32 dma_desc_addr_lsw = (u32)aq_ring->dx_ring_pa;
 	u32 dma_desc_addr_msw = (u32)(((u64)aq_ring->dx_ring_pa) >> 32);
@@ -631,9 +626,8 @@ static int hw_atl_b0_hw_ring_rx_init(struct aq_hw_s *self,
 	return aq_hw_err_from_flags(self);
 }
 
-static int hw_atl_b0_hw_ring_tx_init(struct aq_hw_s *self,
-				     struct aq_ring_s *aq_ring,
-				     struct aq_ring_param_s *aq_ring_param)
+int hw_atl_b0_hw_ring_tx_init(struct aq_hw_s *self, struct aq_ring_s *aq_ring,
+			      struct aq_ring_param_s *aq_ring_param)
 {
 	u32 dma_desc_lsw_addr = (u32)aq_ring->dx_ring_pa;
 	u32 dma_desc_msw_addr = (u32)(((u64)aq_ring->dx_ring_pa) >> 32);
@@ -661,9 +655,8 @@ static int hw_atl_b0_hw_ring_tx_init(struct aq_hw_s *self,
 	return aq_hw_err_from_flags(self);
 }
 
-static int hw_atl_b0_hw_ring_rx_fill(struct aq_hw_s *self,
-				     struct aq_ring_s *ring,
-				     unsigned int sw_tail_old)
+int hw_atl_b0_hw_ring_rx_fill(struct aq_hw_s *self, struct aq_ring_s *ring,
+			      unsigned int sw_tail_old)
 {
 	for (; sw_tail_old != ring->sw_tail;
 		sw_tail_old = aq_ring_next_dx(ring, sw_tail_old)) {
@@ -682,8 +675,8 @@ static int hw_atl_b0_hw_ring_rx_fill(struct aq_hw_s *self,
 	return aq_hw_err_from_flags(self);
 }
 
-static int hw_atl_b0_hw_ring_tx_head_update(struct aq_hw_s *self,
-					    struct aq_ring_s *ring)
+int hw_atl_b0_hw_ring_tx_head_update(struct aq_hw_s *self,
+				     struct aq_ring_s *ring)
 {
 	int err = 0;
 	unsigned int hw_head_ = hw_atl_tdm_tx_desc_head_ptr_get(self, ring->idx);
@@ -699,8 +692,7 @@ err_exit:
 	return err;
 }
 
-static int hw_atl_b0_hw_ring_rx_receive(struct aq_hw_s *self,
-					struct aq_ring_s *ring)
+int hw_atl_b0_hw_ring_rx_receive(struct aq_hw_s *self, struct aq_ring_s *ring)
 {
 	for (; ring->hw_head != ring->sw_tail;
 		ring->hw_head = aq_ring_next_dx(ring, ring->hw_head)) {
@@ -1009,15 +1001,13 @@ err_exit:
 	return err;
 }
 
-static int hw_atl_b0_hw_ring_tx_stop(struct aq_hw_s *self,
-				     struct aq_ring_s *ring)
+int hw_atl_b0_hw_ring_tx_stop(struct aq_hw_s *self, struct aq_ring_s *ring)
 {
 	hw_atl_tdm_tx_desc_en_set(self, 0U, ring->idx);
 	return aq_hw_err_from_flags(self);
 }
 
-static int hw_atl_b0_hw_ring_rx_stop(struct aq_hw_s *self,
-				     struct aq_ring_s *ring)
+int hw_atl_b0_hw_ring_rx_stop(struct aq_hw_s *self, struct aq_ring_s *ring)
 {
 	hw_atl_rdm_rx_desc_en_set(self, 0U, ring->idx);
 	return aq_hw_err_from_flags(self);
