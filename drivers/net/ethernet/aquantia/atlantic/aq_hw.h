@@ -149,6 +149,7 @@ struct aq_hw_s {
 	u32 rpc_tid;
 	struct hw_atl_utils_fw_rpc rpc;
 	u16 phy_id;
+	void *priv;
 };
 
 struct aq_ring_s;
