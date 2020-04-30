@@ -322,7 +322,7 @@ int hw_atl_utils_fw_downld_dwords(struct aq_hw_s *self, u32 a,
 	for (++cnt; --cnt && !err;) {
 		aq_hw_write_reg(self, HW_ATL_MIF_CMD, 0x00008000U);
 
-		if (IS_CHIP_FEATURE(REVISION_B1))
+		if (ATL_HW_IS_CHIP_FEATURE(self, REVISION_B1))
 			err = readx_poll_timeout_atomic(hw_atl_utils_mif_addr_get,
 					self, val, val != a,
 					1U, 1000U);
@@ -354,7 +354,7 @@ static int hw_atl_utils_fw_upload_dwords(struct aq_hw_s *self, u32 a, u32 *p,
 	if (err < 0)
 		goto err_exit;
 
-	if (IS_CHIP_FEATURE(REVISION_B1)) {
+	if (ATL_HW_IS_CHIP_FEATURE(self, REVISION_B1)) {
 		u32 offset = 0;
 
 		for (; offset < cnt; ++offset) {
@@ -455,7 +455,7 @@ int hw_atl_utils_fw_rpc_call(struct aq_hw_s *self, unsigned int rpc_size)
 	int err = 0;
 	struct aq_hw_atl_utils_fw_rpc_tid_s sw;
 
-	if (!IS_CHIP_FEATURE(MIPS)) {
+	if (!ATL_HW_IS_CHIP_FEATURE(self, MIPS)) {
 		err = -1;
 		goto err_exit;
 	}
@@ -572,7 +572,7 @@ void hw_atl_utils_mpi_read_stats(struct aq_hw_s *self,
 	if (err < 0)
 		goto err_exit;
 
-	if (IS_CHIP_FEATURE(REVISION_A0)) {
+	if (ATL_HW_IS_CHIP_FEATURE(self, REVISION_A0)) {
 		unsigned int mtu = self->aq_nic_cfg ?
 					self->aq_nic_cfg->mtu : 1514U;
 		pmbox->stats.ubrc = pmbox->stats.uprc * mtu;
@@ -766,22 +766,24 @@ void hw_atl_utils_hw_chip_features_init(struct aq_hw_s *self, u32 *p)
 	u32 val = hw_atl_reg_glb_mif_id_get(self);
 	u32 mif_rev = val & 0xFFU;
 
+	chip_features |= ATL_HW_CHIP_ATLANTIC;
+
 	if ((0xFU & mif_rev) == 1U) {
-		chip_features |= HAL_ATLANTIC_UTILS_CHIP_REVISION_A0 |
-			HAL_ATLANTIC_UTILS_CHIP_MPI_AQ |
-			HAL_ATLANTIC_UTILS_CHIP_MIPS;
+		chip_features |= ATL_HW_CHIP_REVISION_A0 |
+			ATL_HW_CHIP_MPI_AQ |
+			ATL_HW_CHIP_MIPS;
 	} else if ((0xFU & mif_rev) == 2U) {
-		chip_features |= HAL_ATLANTIC_UTILS_CHIP_REVISION_B0 |
-			HAL_ATLANTIC_UTILS_CHIP_MPI_AQ |
-			HAL_ATLANTIC_UTILS_CHIP_MIPS |
-			HAL_ATLANTIC_UTILS_CHIP_TPO2 |
-			HAL_ATLANTIC_UTILS_CHIP_RPF2;
+		chip_features |= ATL_HW_CHIP_REVISION_B0 |
+			ATL_HW_CHIP_MPI_AQ |
+			ATL_HW_CHIP_MIPS |
+			ATL_HW_CHIP_TPO2 |
+			ATL_HW_CHIP_RPF2;
 	} else if ((0xFU & mif_rev) == 0xAU) {
-		chip_features |= HAL_ATLANTIC_UTILS_CHIP_REVISION_B1 |
-			HAL_ATLANTIC_UTILS_CHIP_MPI_AQ |
-			HAL_ATLANTIC_UTILS_CHIP_MIPS |
-			HAL_ATLANTIC_UTILS_CHIP_TPO2 |
-			HAL_ATLANTIC_UTILS_CHIP_RPF2;
+		chip_features |= ATL_HW_CHIP_REVISION_B1 |
+			ATL_HW_CHIP_MPI_AQ |
+			ATL_HW_CHIP_MIPS |
+			ATL_HW_CHIP_TPO2 |
+			ATL_HW_CHIP_RPF2;
 	}
 
 	*p = chip_features;
