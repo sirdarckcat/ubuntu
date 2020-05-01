@@ -2483,7 +2483,8 @@ static int esw_offloads_steering_init(struct mlx5_eswitch *esw)
 	if (mlx5_core_is_ecpf_esw_manager(esw->dev))
 		total_vports = esw->total_vports;
 	else
-		total_vports = num_vfs + MLX5_SPECIAL_VPORTS(esw->dev);
+		total_vports = num_vfs + MLX5_SPECIAL_VPORTS(esw->dev) +
+					mlx5_eswitch_max_sfs(esw->dev);
 
 	memset(&esw->fdb_table.offloads, 0, sizeof(struct offloads_fdb));
 
