@@ -2538,8 +2538,10 @@ static void esw_offloads_steering_cleanup(struct mlx5_eswitch *esw)
 static void
 esw_vfs_changed_event_handler(struct mlx5_eswitch *esw, const u32 *out)
 {
+	struct mlx5_vport *vport;
 	bool host_pf_disabled;
 	u16 new_num_vfs;
+	int i;
 
 	new_num_vfs = MLX5_GET(query_esw_functions_out, out,
 			       host_params_context.host_num_of_vfs);
@@ -2549,17 +2551,27 @@ esw_vfs_changed_event_handler(struct mlx5_eswitch *esw, const u32 *out)
 	if (new_num_vfs == esw->esw_funcs.num_vfs || host_pf_disabled)
 		return;
 
-	/* Number of VFs can only change from "0 to x" or "x to 0". */
-	if (esw->esw_funcs.num_vfs > 0) {
-		esw_offloads_unload_vf_reps(esw, esw->esw_funcs.num_vfs);
-	} else {
-		int err;
+        /* Number of VFs can only change from "0 to x" or "x to 0". */
+        if (esw->esw_funcs.num_vfs > 0) {
+                esw_offloads_unload_vf_reps(esw, esw->esw_funcs.num_vfs);
+                mlx5_esw_for_each_vf_vport_reverse(esw, i, vport, esw->esw_funcs.num_vfs)
+                        mlx5_eswitch_disable_vport(esw, vport);
+        } else {
+                int err;
+                mlx5_esw_for_each_vf_vport(esw, i, vport, new_num_vfs)
+                        mlx5_eswitch_enable_vport(esw, vport, vport->enabled_events);
 
-		err = esw_offloads_load_vf_reps(esw, new_num_vfs);
-		if (err)
-			return;
-	}
-	esw->esw_funcs.num_vfs = new_num_vfs;
+                err = esw_offloads_load_vf_reps(esw, new_num_vfs);
+                if (err)
+                        goto err_rep;
+        }
+        esw->esw_funcs.num_vfs = new_num_vfs;
+
+        return;
+
+err_rep:
+        mlx5_esw_for_each_vf_vport_reverse(esw, i, vport, new_num_vfs)
+                mlx5_eswitch_disable_vport(esw, vport);
 }
 
 static void esw_functions_changed_event_handler(struct work_struct *work)
