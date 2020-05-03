@@ -3036,13 +3036,16 @@ static bool actions_match_supported(struct mlx5e_priv *priv,
 				    struct netlink_ext_ack *extack)
 {
 	struct net_device *filter_dev = parse_attr->filter_dev;
-	bool drop_action, pop_action, ct_flow;
+	bool ct_flow = false, ct_clear = false;
+	bool drop_action, pop_action;
 	u32 actions;
 
-	ct_flow = flow_flag_test(flow, CT);
 	if (mlx5e_is_eswitch_flow(flow)) {
 		actions = flow->esw_attr->action;
 
+		ct_clear = flow->esw_attr->ct_attr.ct_action &
+			   TCA_CT_ACT_CLEAR;
+		ct_flow = flow_flag_test(flow, CT) && !ct_clear;
 		if (flow->esw_attr->split_count && ct_flow) {
 			/* All registers used by ct are cleared when using
 			 * split rules.
