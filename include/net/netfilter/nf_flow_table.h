@@ -126,6 +126,7 @@ enum nf_flow_flags {
 	NF_FLOW_HW_DYING,
 	NF_FLOW_HW_DEAD,
 	NF_FLOW_HW_REFRESH,
+	NF_FLOW_HW_PENDING,
 };
 
 enum flow_offload_type {
