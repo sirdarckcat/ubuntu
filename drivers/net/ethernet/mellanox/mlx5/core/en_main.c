@@ -49,6 +49,7 @@
 #include "en_accel/en_accel.h"
 #include "en_accel/tls.h"
 #include "accel/ipsec.h"
+#include "fpga/ipsec.h"
 #include "accel/tls.h"
 #include "lib/vxlan.h"
 #include "lib/clock.h"
@@ -555,8 +556,9 @@ static int mlx5e_alloc_rq(struct mlx5e_channel *c,
 		rq->post_wqes = mlx5e_post_rx_wqes;
 		rq->dealloc_wqe = mlx5e_dealloc_rx_wqe;
 
-#ifdef CONFIG_MLX5_EN_IPSEC
-		if (c->priv->ipsec)
+#ifdef CONFIG_MLX5_FPGA_IPSEC
+		if ((mlx5_fpga_ipsec_device_caps(mdev) & MLX5_ACCEL_IPSEC_CAP_DEVICE) &&
+		    c->priv->ipsec)
 			rq->handle_rx_cqe = mlx5e_ipsec_handle_rx_cqe;
 		else
 #endif
