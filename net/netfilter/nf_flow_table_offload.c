@@ -811,6 +811,7 @@ static void flow_offload_work_handler(struct work_struct *work)
 			WARN_ON_ONCE(1);
 	}
 
+	clear_bit(NF_FLOW_HW_PENDING, &offload->flow->flags);
 	kfree(offload);
 }
 
@@ -825,9 +826,14 @@ nf_flow_offload_work_alloc(struct nf_flowtable *flowtable,
 {
 	struct flow_offload_work *offload;
 
-	offload = kmalloc(sizeof(struct flow_offload_work), GFP_ATOMIC);
-	if (!offload)
+	if (test_and_set_bit(NF_FLOW_HW_PENDING, &flow->flags))
 		return NULL;
+
+	offload = kmalloc(sizeof(struct flow_offload_work), GFP_ATOMIC);
+	if (!offload) {
+		clear_bit(NF_FLOW_HW_PENDING, &flow->flags);
+		return NULL;
+	}
 
 	offload->cmd = cmd;
 	offload->flow = flow;
