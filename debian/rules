@@ -1,0 +1,59 @@
+#!/usr/bin/make -f
+
+SERIES=$(shell dpkg-parsechangelog -SDistribution | sed -e 's/-\(security\|updates\|proposed\)$$//')
+SOURCE=$(shell dpkg-parsechangelog -SSource)
+KERNEL_SOURCE=$(shell echo "$(SOURCE)" | sed -e 's/-uc20-efi//')
+
+VERSION=$(shell dpkg-parsechangelog -SVersion)
+KERNEL_ABI_VERSION=$(shell echo "$(VERSION)" | sed -ne 's/\([0-9]*\.[0-9]*\.[0-9]*\-[0-9]*\)\..*/\1/p')
+
+ARCH=$(DEB_HOST_ARCH)
+
+FLAVOURS=generic lowlatency
+
+clean: debian/control
+	dh_testdir
+	dh_testroot
+	rm -rf debian/tmp SIGNING
+	dh_clean
+
+debian/control:
+	sed <debian/control.stub >debian/control			\
+		-e 's/@SERIES@/$(SERIES)/g'				\
+		-e 's/@KERNEL_ABI_VERSION@/$(KERNEL_ABI_VERSION)/g'	\
+		-e 's/@SRCPKGNAME@/$(SOURCE)/g'				\
+		-e 's/@KERNEL_SOURCE@/$(KERNEL_SOURCE)/g'
+
+.PHONY: debian/control
+
+%:
+	dh $@
+
+override_dh_auto_build: signing = $(CURDIR)/SIGNING
+override_dh_auto_build: signingv = $(signing)/$(VERSION)
+override_dh_auto_build: signing_tar = $(SOURCE)_$(VERSION)_$(ARCH).tar.gz
+override_dh_auto_build: outdir = $(CURDIR)/debian/tmp
+override_dh_auto_build: initrd = $(outdir)/initramfs.img
+override_dh_auto_build: efi = $(outdir)/kernel.efi
+override_dh_auto_build:
+	install -d $(signingv)/control
+	mkdir -p $(outdir)
+	for flavour in $(FLAVOURS); do						\
+		pkg="linux-image-unsigned-$(KERNEL_ABI_VERSION)-$$flavour";	\
+		(								\
+			cd $(outdir);						\
+			apt-get download $$pkg;					\
+			dpkg-deb -x $${pkg}_*.deb $$flavour;			\
+		);								\
+		ubuntu-core-initramfs create-initrd --output $(initrd)		\
+			--kernelver $(KERNEL_ABI_VERSION)-$$flavour;		\
+		ubuntu-core-initramfs create-efi --unsigned --output $(efi)	\
+			--kernel $(outdir)/$$flavour/boot/vmlinuz		\
+			--kernelver $(KERNEL_ABI_VERSION)-$$flavour		\
+			--initrd $(initrd);					\
+		cp -p $(efi)-$(KERNEL_ABI_VERSION)-$$flavour			\
+			$(signingv)/vmlinuz-$(VERSION)-$$flavour.efi;		\
+	done
+	{ echo "tarball"; } >$(signingv)/control/options
+	cd $(signing) && tar czvf ../../$(signing_tar) .
+	dpkg-distaddfile $(signing_tar) raw-signing -
