@@ -1319,8 +1319,7 @@ static netdev_tx_t bond_do_alb_xmit(struct sk_buff *skb, struct bonding *bond,
 					tx_slave->dev->dev_addr);
 		}
 
-		bond_dev_queue_xmit(bond, skb, tx_slave->dev);
-		goto out;
+		return bond_dev_queue_xmit(bond, skb, tx_slave->dev);
 	}
 
 	if (tx_slave && bond->params.tlb_dynamic_lb) {
@@ -1330,9 +1329,7 @@ static netdev_tx_t bond_do_alb_xmit(struct sk_buff *skb, struct bonding *bond,
 	}
 
 	/* no suitable interface, frame not sent */
-	bond_tx_drop(bond->dev, skb);
-out:
-	return NETDEV_TX_OK;
+	return bond_tx_drop(bond->dev, skb);
 }
 
 netdev_tx_t bond_tlb_xmit(struct sk_buff *skb, struct net_device *bond_dev)
