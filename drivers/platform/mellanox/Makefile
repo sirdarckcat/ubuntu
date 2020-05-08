@@ -5,5 +5,6 @@
 #
 obj-$(CONFIG_MLXBF_BOOTCTL)	+= mlx-bootctl.o
 obj-$(CONFIG_MLXBF_TMFIFO)	+= mlxbf-tmfifo.o
+obj-$(CONFIG_MLXBF_LIVEFISH)	+= mlxbf-livefish.o
 obj-$(CONFIG_MLXREG_HOTPLUG)	+= mlxreg-hotplug.o
 obj-$(CONFIG_MLXREG_IO) += mlxreg-io.o
