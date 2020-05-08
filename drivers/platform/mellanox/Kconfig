@@ -56,4 +56,13 @@ config MLXBF_BOOTCTL
           to the userspace tools, to be used in conjunction with the eMMC
           device driver to do necessary initial swap of the boot partition.
 
+config MLXBF_LIVEFISH
+        tristate "Mellanox BlueField livefish firmware update driver"
+        depends on ARM64
+        help
+          If you say yes to this option, support will added for the
+          mlxbf-livefish driver.  This driver allows MFT tools to
+          update ConnectX HCA firmware on a Mellanox BlueField SoC
+          when it is in livefish mode.
+
 endif # MELLANOX_PLATFORM
