@@ -44,6 +44,13 @@ config MLXBF_TMFIFO
           platform driver support for the TmFifo which supports console
           and networking based on the virtio framework.
 
+config MLXBF_TRIO
+        tristate "Mellanox TRIO driver"
+        depends on ARM64
+        help
+          This driver supports the TRIO PCIe root complex interface on
+          Mellanox BlueField SoCs.
+
 config MLXBF_BOOTCTL
 	tristate "Mellanox BlueField Firmware Boot Control driver"
 	depends on ARM64
