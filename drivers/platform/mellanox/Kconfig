@@ -51,6 +51,13 @@ config MLXBF_TRIO
           This driver supports the TRIO PCIe root complex interface on
           Mellanox BlueField SoCs.
 
+config MLXBF_PMC
+       tristate "Mellanox BlueField performance counter driver"
+       depends on ARM64 && HWMON
+       help
+         This driver supports the performance counters of Mellanox
+         Bluefield SoC.
+
 config MLXBF_BOOTCTL
 	tristate "Mellanox BlueField Firmware Boot Control driver"
 	depends on ARM64
