@@ -1,13 +1,17 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
- * BCM2835 Unicam capture Driver
+ * BCM2835 Unicam Capture Driver
  *
- * Copyright (C) 2017 - Raspberry Pi (Trading) Ltd.
+ * Copyright (C) 2017-2020 - Raspberry Pi (Trading) Ltd.
  *
- * Dave Stevenson <dave.stevenson@raspberrypi.org>
+ * Dave Stevenson <dave.stevenson@raspberrypi.com>
  *
- * Based on TI am437x driver by Benoit Parrot and Lad, Prabhakar and
- * TI CAL camera interface driver by Benoit Parrot.
+ * Based on TI am437x driver by
+ *   Benoit Parrot <bparrot@ti.com>
+ *   Lad, Prabhakar <prabhakar.csengg@gmail.com>
+ *
+ * and TI CAL camera interface driver by
+ *    Benoit Parrot <bparrot@ti.com>
  *
  *
  * There are two camera drivers in the kernel for BCM283x - this one
@@ -38,20 +42,6 @@
  * If it finds device tree nodes called csi0 or csi1 it will block the
  * firmware from accessing the peripheral, and bcm2835-camera will
  * not be able to stream data.
- *
- *
- * This program is free software; you may redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; version 2 of the License.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
- * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
- * BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
- * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
- * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
  */
 
 #include <linux/clk.h>
@@ -103,9 +93,9 @@ MODULE_PARM_DESC(debug, "Debug level 0-3");
 #define MAX_ENUM_MBUS_CODE	128
 
 /*
- * Stride is a 16 bit register, but also has to be a multiple of 16.
+ * Stride is a 16 bit register, but also has to be a multiple of 32.
  */
-#define BPL_ALIGNMENT		16
+#define BPL_ALIGNMENT		32
 #define MAX_BYTESPERLINE	((1 << 16) - BPL_ALIGNMENT)
 /*
  * Max width is therefore determined by the max stride divided by
@@ -119,14 +109,6 @@ MODULE_PARM_DESC(debug, "Debug level 0-3");
 /* Define a nominal minimum image size */
 #define MIN_WIDTH	16
 #define MIN_HEIGHT	16
-/*
- * Whilst Unicam doesn't require any additional padding on the image
- * height, various other parts of the BCM283x frameworks require a multiple
- * of 16.
- * Seeing as image buffers are significantly larger than this extra
- * padding, add it in order to simplify integration.
- */
-#define HEIGHT_ALIGNMENT	16
 
 /*
  * struct unicam_fmt - Unicam media bus format information
@@ -471,11 +453,7 @@ static inline void reg_write_field(struct unicam_cfg *dev, u32 offset,
 /* Power management functions */
 static inline int unicam_runtime_get(struct unicam_device *dev)
 {
-	int r;
-
-	r = pm_runtime_get_sync(&dev->pdev->dev);
-
-	return r;
+	return pm_runtime_get_sync(&dev->pdev->dev);
 }
 
 static inline void unicam_runtime_put(struct unicam_device *dev)
@@ -486,11 +464,11 @@ static inline void unicam_runtime_put(struct unicam_device *dev)
 /* Format setup functions */
 static const struct unicam_fmt *find_format_by_code(u32 code)
 {
-	unsigned int k;
+	unsigned int i;
 
-	for (k = 0; k < ARRAY_SIZE(formats); k++) {
-		if (formats[k].code == code)
-			return &formats[k];
+	for (i = 0; i < ARRAY_SIZE(formats); i++) {
+		if (formats[i].code == code)
+			return &formats[i];
 	}
 
 	return NULL;
@@ -506,6 +484,7 @@ static int check_mbus_format(struct unicam_device *dev,
 	for (i = 0; !ret && i < MAX_ENUM_MBUS_CODE; i++) {
 		memset(&mbus_code, 0, sizeof(mbus_code));
 		mbus_code.index = i;
+		mbus_code.which = V4L2_SUBDEV_FORMAT_ACTIVE;
 
 		ret = v4l2_subdev_call(dev->sensor, pad, enum_mbus_code,
 				       NULL, &mbus_code);
@@ -520,15 +499,15 @@ static int check_mbus_format(struct unicam_device *dev,
 static const struct unicam_fmt *find_format_by_pix(struct unicam_device *dev,
 						   u32 pixelformat)
 {
-	unsigned int k;
+	unsigned int i;
 
-	for (k = 0; k < ARRAY_SIZE(formats); k++) {
-		if (formats[k].fourcc == pixelformat ||
-		    formats[k].repacked_fourcc == pixelformat) {
-			if (formats[k].check_variants &&
-			    !check_mbus_format(dev, &formats[k]))
+	for (i = 0; i < ARRAY_SIZE(formats); i++) {
+		if (formats[i].fourcc == pixelformat ||
+		    formats[i].repacked_fourcc == pixelformat) {
+			if (formats[i].check_variants &&
+			    !check_mbus_format(dev, &formats[i]))
 				continue;
-			return &formats[k];
+			return &formats[i];
 		}
 	}
 
@@ -549,19 +528,17 @@ static inline unsigned int bytes_per_line(u32 width,
 static int __subdev_get_format(struct unicam_device *dev,
 			       struct v4l2_mbus_framefmt *fmt)
 {
-	struct v4l2_subdev_format sd_fmt = {0};
-	struct v4l2_mbus_framefmt *mbus_fmt = &sd_fmt.format;
+	struct v4l2_subdev_format sd_fmt = {
+		.which = V4L2_SUBDEV_FORMAT_ACTIVE,
+	};
 	int ret;
-
-	sd_fmt.which = V4L2_SUBDEV_FORMAT_ACTIVE;
-	sd_fmt.pad = 0;
 
 	ret = v4l2_subdev_call(dev->sensor, pad, get_fmt, dev->sensor_config,
 			       &sd_fmt);
 	if (ret < 0)
 		return ret;
 
-	*fmt = *mbus_fmt;
+	*fmt = sd_fmt.format;
 
 	unicam_dbg(1, dev, "%s %dx%d code:%04x\n", __func__,
 		   fmt->width, fmt->height, fmt->code);
@@ -575,10 +552,9 @@ static int __subdev_set_format(struct unicam_device *dev,
 	struct v4l2_subdev_format sd_fmt = {
 		.which = V4L2_SUBDEV_FORMAT_ACTIVE,
 	};
-	struct v4l2_mbus_framefmt *mbus_fmt = &sd_fmt.format;
 	int ret;
 
-	*mbus_fmt = *fmt;
+	sd_fmt.format = *fmt;
 
 	ret = v4l2_subdev_call(dev->sensor, pad, set_fmt, dev->sensor_config,
 			       &sd_fmt);
@@ -611,13 +587,11 @@ static int unicam_calc_format_size_bpl(struct unicam_device *dev,
 	else
 		f->fmt.pix.bytesperline = min_bytesperline;
 
-	/* Align height up for compatibility with other hardware blocks */
-	f->fmt.pix.sizeimage = ALIGN(f->fmt.pix.height, HEIGHT_ALIGNMENT) *
-			       f->fmt.pix.bytesperline;
+	f->fmt.pix.sizeimage = f->fmt.pix.height * f->fmt.pix.bytesperline;
 
-	unicam_dbg(3, dev, "%s: fourcc: " V4L2_FOURCC_CONV " size: %dx%d bpl:%d img_size:%d\n",
+	unicam_dbg(3, dev, "%s: fourcc: %08X size: %dx%d bpl:%d img_size:%d\n",
 		   __func__,
-		   V4L2_FOURCC_CONV_ARGS(f->fmt.pix.pixelformat),
+		   f->fmt.pix.pixelformat,
 		   f->fmt.pix.width, f->fmt.pix.height,
 		   f->fmt.pix.bytesperline, f->fmt.pix.sizeimage);
 
@@ -651,13 +625,31 @@ static int unicam_reset_format(struct unicam_device *dev)
 	return 0;
 }
 
-static void unicam_wr_dma_addr(struct unicam_device *dev, unsigned int dmaaddr)
+static void unicam_wr_dma_addr(struct unicam_device *dev, dma_addr_t dmaaddr)
 {
-	unicam_dbg(1, dev, "wr_dma_addr %08x-%08x\n",
-		   dmaaddr, dmaaddr + dev->v_fmt.fmt.pix.sizeimage);
+	/*
+	 * dmaaddr should be a 32-bit address with the top two bits set to 0x3
+	 * to signify uncached access through the Videocore memory controller.
+	 */
+	BUG_ON((dmaaddr >> 30) != 0x3);
+
 	reg_write(&dev->cfg, UNICAM_IBSA0, dmaaddr);
 	reg_write(&dev->cfg, UNICAM_IBEA0,
 		  dmaaddr + dev->v_fmt.fmt.pix.sizeimage);
+}
+
+static inline unsigned int unicam_get_lines_done(struct unicam_device *dev)
+{
+	dma_addr_t start_addr, cur_addr;
+	unsigned int stride = dev->v_fmt.fmt.pix.bytesperline;
+	struct unicam_buffer *frm = dev->cur_frm;
+
+	if (!frm)
+		return 0;
+
+	start_addr = vb2_dma_contig_plane_dma_addr(&frm->vb.vb2_buf, 0);
+	cur_addr = reg_read(&dev->cfg, UNICAM_IBWP);
+	return (unsigned int)(cur_addr - start_addr) / stride;
 }
 
 static inline void unicam_schedule_next_buffer(struct unicam_device *dev)
@@ -696,6 +688,8 @@ static irqreturn_t unicam_isr(int irq, void *dev)
 	struct unicam_device *unicam = (struct unicam_device *)dev;
 	struct unicam_cfg *cfg = &unicam->cfg;
 	struct unicam_dmaqueue *dma_q = &unicam->dma_queue;
+	unsigned int lines_done = unicam_get_lines_done(dev);
+	unsigned int sequence = unicam->sequence;
 	int ista, sta;
 
 	/*
@@ -714,6 +708,9 @@ static irqreturn_t unicam_isr(int irq, void *dev)
 	ista = reg_read(cfg, UNICAM_ISTA);
 	/* Write value back to clear the interrupts */
 	reg_write(cfg, UNICAM_ISTA, ista);
+
+	unicam_dbg(3, unicam, "ISR: ISTA: 0x%X, STA: 0x%X, sequence %d, lines done %d",
+		   ista, sta, sequence, lines_done);
 
 	if (!(sta && (UNICAM_IS | UNICAM_PI0)))
 		return IRQ_HANDLED;
@@ -736,7 +733,11 @@ static irqreturn_t unicam_isr(int irq, void *dev)
 			unicam_process_buffer_complete(unicam);
 	}
 
-	if (ista & (UNICAM_FSI | UNICAM_LCI)) {
+	/* Cannot swap buffer at frame end, there may be a race condition
+	 * where the HW does not actually swap it if the new frame has
+	 * already started.
+	 */
+	if (ista & (UNICAM_FSI | UNICAM_LCI) && !(ista & UNICAM_FEI)) {
 		spin_lock(&unicam->dma_queue_lock);
 		if (!list_empty(&dma_q->active) &&
 		    unicam->cur_frm == unicam->next_frm)
@@ -841,11 +842,11 @@ const struct unicam_fmt *get_first_supported_format(struct unicam_device *dev)
 			continue;
 		}
 
-		unicam_dbg(2, dev, "subdev %s: code: %04x idx: %d\n",
+		unicam_dbg(2, dev, "subdev %s: code: 0x%08x idx: %d\n",
 			   dev->sensor->name, mbus_code.code, j);
 
 		fmt = find_format_by_code(mbus_code.code);
-		unicam_dbg(2, dev, "fmt %04x returned as %p, V4L2 FOURCC %04x, csi_dt %02X\n",
+		unicam_dbg(2, dev, "fmt 0x%08x returned as %p, V4L2 FOURCC 0x%08x, csi_dt 0x%02x\n",
 			   mbus_code.code, fmt, fmt ? fmt->fourcc : 0,
 			   fmt ? fmt->csi_dt : 0);
 		if (fmt)
@@ -854,15 +855,16 @@ const struct unicam_fmt *get_first_supported_format(struct unicam_device *dev)
 
 	return NULL;
 }
+
 static int unicam_try_fmt_vid_cap(struct file *file, void *priv,
 				  struct v4l2_format *f)
 {
 	struct unicam_device *dev = video_drvdata(file);
-	const struct unicam_fmt *fmt;
 	struct v4l2_subdev_format sd_fmt = {
 		.which = V4L2_SUBDEV_FORMAT_TRY,
 	};
 	struct v4l2_mbus_framefmt *mbus_fmt = &sd_fmt.format;
+	const struct unicam_fmt *fmt;
 	int ret;
 
 	fmt = find_format_by_pix(dev, f->fmt.pix.pixelformat);
@@ -939,8 +941,8 @@ static int unicam_s_fmt_vid_cap(struct file *file, void *priv,
 {
 	struct unicam_device *dev = video_drvdata(file);
 	struct vb2_queue *q = &dev->buffer_queue;
-	const struct unicam_fmt *fmt;
 	struct v4l2_mbus_framefmt mbus_fmt = {0};
+	const struct unicam_fmt *fmt;
 	int ret;
 
 	if (vb2_is_busy(q))
@@ -988,10 +990,10 @@ static int unicam_s_fmt_vid_cap(struct file *file, void *priv,
 	dev->v_fmt.fmt.pix.bytesperline = f->fmt.pix.bytesperline;
 	unicam_reset_format(dev);
 
-	unicam_dbg(3, dev, "%s %dx%d, mbus_fmt %08X, V4L2 pix " V4L2_FOURCC_CONV ".\n",
+	unicam_dbg(3, dev, "%s %dx%d, mbus_fmt 0x%08X, V4L2 pix 0x%08X.\n",
 		   __func__, dev->v_fmt.fmt.pix.width,
 		   dev->v_fmt.fmt.pix.height, mbus_fmt.code,
-		   V4L2_FOURCC_CONV_ARGS(dev->v_fmt.fmt.pix.pixelformat));
+		   dev->v_fmt.fmt.pix.pixelformat);
 
 	*f = dev->v_fmt;
 
@@ -1054,16 +1056,9 @@ static void unicam_buffer_queue(struct vb2_buffer *vb)
 	struct unicam_dmaqueue *dma_queue = &dev->dma_queue;
 	unsigned long flags = 0;
 
-	/* recheck locking */
 	spin_lock_irqsave(&dev->dma_queue_lock, flags);
 	list_add_tail(&buf->list, &dma_queue->active);
 	spin_unlock_irqrestore(&dev->dma_queue_lock, flags);
-}
-
-static void unicam_wr_dma_config(struct unicam_device *dev,
-				 unsigned int stride)
-{
-	reg_write(&dev->cfg, UNICAM_IBLS, stride);
 }
 
 static void unicam_set_packing_config(struct unicam_device *dev)
@@ -1101,7 +1096,6 @@ static void unicam_set_packing_config(struct unicam_device *dev)
 	}
 
 	val = 0;
-	set_field(&val, 2, UNICAM_DEBL_MASK);
 	set_field(&val, unpack, UNICAM_PUM_MASK);
 	set_field(&val, pack, UNICAM_PPM_MASK);
 	reg_write(&dev->cfg, UNICAM_IPIPE, val);
@@ -1272,7 +1266,7 @@ static void unicam_start_rx(struct unicam_device *dev, unsigned long addr)
 		reg_write(cfg, UNICAM_DAT3, val);
 	}
 
-	unicam_wr_dma_config(dev, dev->v_fmt.fmt.pix.bytesperline);
+	reg_write(&dev->cfg, UNICAM_IBLS, dev->v_fmt.fmt.pix.bytesperline);
 	unicam_wr_dma_addr(dev, addr);
 	unicam_set_packing_config(dev);
 	unicam_cfg_image_id(dev);
@@ -1724,8 +1718,8 @@ static int unicam_log_status(struct file *file, void *fh)
 	unicam_info(dev, "V4L2 width/height:   %ux%u\n",
 		    dev->v_fmt.fmt.pix.width, dev->v_fmt.fmt.pix.height);
 	unicam_info(dev, "Mediabus format:     %08x\n", dev->fmt->code);
-	unicam_info(dev, "V4L2 format:         " V4L2_FOURCC_CONV "\n",
-		    V4L2_FOURCC_CONV_ARGS(dev->v_fmt.fmt.pix.pixelformat));
+	unicam_info(dev, "V4L2 format:         %08x\n",
+		    dev->v_fmt.fmt.pix.pixelformat);
 	reg = reg_read(&dev->cfg, UNICAM_IPIPE);
 	unicam_info(dev, "Unpacking/packing:   %u / %u\n",
 		    get_field(reg, UNICAM_PUM_MASK),
@@ -1792,6 +1786,8 @@ static int unicam_open(struct file *file)
 		v4l2_fh_release(file);
 		goto unlock;
 	}
+
+	ret = 0;
 
 unlock:
 	mutex_unlock(&dev->lock);
@@ -2017,12 +2013,6 @@ static int unicam_probe_complete(struct unicam_device *unicam)
 	video_set_drvdata(vdev, unicam);
 	vdev->entity.flags |= MEDIA_ENT_FL_DEFAULT;
 
-	ret = video_register_device(vdev, VFL_TYPE_GRABBER, -1);
-	if (ret) {
-		unicam_err(unicam, "Unable to register video device.\n");
-		return ret;
-	}
-
 	if (!v4l2_subdev_has_op(unicam->sensor, video, s_std)) {
 		v4l2_disable_ioctl(&unicam->video_dev, VIDIOC_S_STD);
 		v4l2_disable_ioctl(&unicam->video_dev, VIDIOC_G_STD);
@@ -2050,7 +2040,13 @@ static int unicam_probe_complete(struct unicam_device *unicam)
 	if (!v4l2_subdev_has_op(unicam->sensor, pad, enum_frame_size))
 		v4l2_disable_ioctl(&unicam->video_dev, VIDIOC_ENUM_FRAMESIZES);
 
-	ret = v4l2_device_register_subdev_nodes(&unicam->v4l2_dev);
+	ret = video_register_device(vdev, VFL_TYPE_GRABBER, -1);
+	if (ret) {
+		unicam_err(unicam, "Unable to register video device.\n");
+		return ret;
+	}
+
+	ret = v4l2_device_register_ro_subdev_nodes(&unicam->v4l2_dev);
 	if (ret) {
 		unicam_err(unicam,
 			   "Unable to register subdev nodes.\n");
@@ -2274,7 +2270,8 @@ static int unicam_probe(struct platform_device *pdev)
 		sizeof(unicam->mdev.model));
 	strscpy(unicam->mdev.serial, "", sizeof(unicam->mdev.serial));
 	snprintf(unicam->mdev.bus_info, sizeof(unicam->mdev.bus_info),
-		 "platform:%s", pdev->name);
+		 "platform:%s %s",
+		 pdev->dev.driver->name, dev_name(&pdev->dev));
 	unicam->mdev.hw_revision = 1;
 
 	media_entity_pads_init(&unicam->video_dev.entity, 1, &unicam->pad);
@@ -2366,7 +2363,7 @@ static struct platform_driver unicam_driver = {
 
 module_platform_driver(unicam_driver);
 
-MODULE_AUTHOR("Dave Stevenson <dave.stevenson@raspberrypi.org>");
+MODULE_AUTHOR("Dave Stevenson <dave.stevenson@raspberrypi.com>");
 MODULE_DESCRIPTION("BCM2835 Unicam driver");
 MODULE_LICENSE("GPL");
 MODULE_VERSION(UNICAM_VERSION);
