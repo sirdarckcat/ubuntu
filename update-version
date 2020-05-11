@@ -39,13 +39,10 @@ fi
 
 # Work out a sensible new version based on the primary kernel version.
 if dpkg --compare-versions "$here_version" lt "$master_version"; then
-	here_newversion="$master_version"
-
-elif dpkg --compare-versions "$here_version" eq "$master_version"; then
-	here_newversion="$master_version+1"
+	here_newversion="$master_version.1"
 else
-	minor=$(( ${here_version#*+} + 1 ))
-	here_newversion="$master_version+$minor"
+	minor=$(( ${here_version##*.} + 1 ))
+	here_newversion="$master_version.$minor"
 fi
 
 # First insert any primary changes.
