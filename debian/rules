@@ -52,7 +52,7 @@ override_dh_auto_build:
 			--kernelver $(KERNEL_ABI_VERSION)-$$flavour		\
 			--initrd $(initrd);					\
 		cp -p $(efi)-$(KERNEL_ABI_VERSION)-$$flavour			\
-			$(signingv)/vmlinuz-$(VERSION)-$$flavour.efi;		\
+			$(signingv)/vmlinuz-$(KERNEL_ABI_VERSION)-$$flavour.efi;\
 	done
 	{ echo "tarball"; } >$(signingv)/control/options
 	cd $(signing) && tar czvf ../../$(signing_tar) .
