@@ -7356,7 +7356,9 @@ CONFIG_CGROUP_DEBUG                             policy<{'riscv64': 'n'}>
 CONFIG_CGROUP_SCHED                             policy<{'riscv64': 'y'}>
 CONFIG_FAIR_GROUP_SCHED                         policy<{'riscv64': 'y'}>
 CONFIG_CFS_BANDWIDTH                            policy<{'riscv64': 'y'}>
-CONFIG_RT_GROUP_SCHED                           policy<{'riscv64': 'y'}>
+CONFIG_RT_GROUP_SCHED                           policy<{'riscv64': 'n'}>
+#
+CONFIG_RT_GROUP_SCHED                           mark<ENFORCED> note<LP:#1875665>
 
 # Menu: General setup >> IRQ subsystem
 CONFIG_SPARSE_IRQ                               policy<{'riscv64': 'y'}>
