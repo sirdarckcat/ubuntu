@@ -2388,17 +2388,6 @@ esw_check_vport_match_metadata_supported(const struct mlx5_eswitch *esw)
 	return true;
 }
 
-static int esw_offloads_vport_metadata_setup(struct mlx5_eswitch *esw,
-					     struct mlx5_vport *vport)
-{
-	if (vport->vport == MLX5_VPORT_UPLINK)
-		return 0;
-
-	vport->default_metadata = mlx5_esw_match_metadata_alloc(esw);
-	vport->metadata = vport->default_metadata;
-	return vport->metadata ? 0 : -ENOSPC;
-}
-
 static void esw_offloads_vport_metadata_cleanup(struct mlx5_eswitch *esw,
 						struct mlx5_vport *vport)
 {
@@ -2414,10 +2403,6 @@ esw_vport_create_offloads_acl_tables(struct mlx5_eswitch *esw,
 				     struct mlx5_vport *vport)
 {
 	int err;
-
-	err = esw_offloads_vport_metadata_setup(esw, vport);
-	if (err)
-		return err;
 
 	err = esw_vport_ingress_config(esw, vport);
 	if (err) {
