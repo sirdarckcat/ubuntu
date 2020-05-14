@@ -2084,6 +2084,17 @@ void mlx5_eswitch_disable(struct mlx5_eswitch *esw)
 	}
 }
 
+static int esw_offloads_vport_metadata_setup(struct mlx5_eswitch *esw,
+					     struct mlx5_vport *vport)
+{
+	if (vport->vport == MLX5_VPORT_UPLINK)
+		return 0;
+
+	vport->default_metadata = mlx5_esw_match_metadata_alloc(esw);
+	vport->metadata = vport->default_metadata;
+	return vport->metadata ? 0 : -ENOSPC;
+}
+
 int mlx5_eswitch_init(struct mlx5_core_dev *dev)
 {
 	struct mlx5_eswitch *esw;
@@ -2141,6 +2152,10 @@ int mlx5_eswitch_init(struct mlx5_core_dev *dev)
 		vport->vport = mlx5_eswitch_index_to_vport_num(esw, i);
 		vport->info.link_state = MLX5_VPORT_ADMIN_STATE_AUTO;
 		vport->dev = dev;
+		err = esw_offloads_vport_metadata_setup(esw, vport);
+		if (err)
+			esw_warn(esw->dev, "Failed to generate metadata for vport 0x%x", vport->vport);
+
 		INIT_WORK(&vport->vport_change_handler,
 			  esw_vport_change_handler);
 	}
