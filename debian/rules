@@ -60,6 +60,21 @@ override_dh_auto_build:
 	cd $(signing) && tar czvf ../../$(signing_tar) .
 	dpkg-distaddfile $(signing_tar) raw-signing -
 
+printchanges:
+	@prev_ver=$$(dpkg-parsechangelog -ldebian/changelog -o1 -c1 -SVersion);		\
+	base_commit=$$(git log --format="%H %s" | 					\
+		gawk '/UBUNTU: '".*Ubuntu-.*$$prev_ver"'$$/ { print $$1; exit }');	\
+	if [ -z "$$base_commit" ]; then							\
+		echo "WARNING: couldn't find a commit for the previous version. Using the latest one." >&2; \
+		base_commit=$$(git log --format="%H %s" | 				\
+			gawk '/UBUNTU:\s*Ubuntu-.*$$/ { print $$1; exit }');		\
+	fi;										\
+	git log "$$base_commit"..HEAD |							\
+		debian/scripts/misc/git-ubuntu-log
+
+insertchanges:
+	@perl -w -f debian/scripts/misc/insert-changes.pl debian debian
+
 startnewrelease:
 	dh_testdir
 	@flavour=$$(echo "$(FLAVOURS)" | cut -f1 -d' ');				\
