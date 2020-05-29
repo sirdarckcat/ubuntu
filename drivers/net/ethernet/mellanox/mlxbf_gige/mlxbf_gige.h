@@ -13,9 +13,6 @@
 #include <linux/irqreturn.h>
 #include <linux/netdevice.h>
 
-/* Always define this for internal Mellanox use */
-#define MLXBF_GIGE_INTERNAL
-
 #define MLXBF_GIGE_MIN_RXQ_SZ     32
 #define MLXBF_GIGE_MAX_RXQ_SZ     32768
 #define MLXBF_GIGE_DEFAULT_RXQ_SZ 128
@@ -28,26 +25,6 @@
 
 /* Known pattern for initial state of RX buffers */
 #define MLXBF_GIGE_INIT_BYTE_RX_BUF 0x10
-
-#ifdef MLXBF_GIGE_INTERNAL
-/* Number of bytes in packet to be displayed by debug routines */
-#define MLXBF_GIGE_NUM_BYTES_IN_PKT_DUMP 64
-
-/* Known pattern for fake destination MAC. This
- * value should be different from the value of
- * MLXBF_GIGE_INIT_BYTE_RX_BUF in order to track RX.
- */
-#define MLXBF_GIGE_FAKE_DMAC_BYTE 0x20
-
-/* Known pattern for fake source MAC. */
-#define MLXBF_GIGE_FAKE_SMAC_BYTE 0xFF
-
-/* Number of packets to transmit with verbose debugging on */
-#define MLXBF_GIGE_MAX_TX_PKTS_VERBOSE 5
-
-/* Default TX packet size used in 'start_tx_store' */
-#define MLXBF_GIGE_DEFAULT_TX_PKT_SIZE 60
-#endif /* MLXBF_GIGE_INTERNAL */
 
 /* There are four individual MAC RX filters. Currently
  * two of them are being used: one for the broadcast MAC
@@ -121,11 +98,6 @@ struct mlxbf_gige {
 	bool promisc_enabled;
 	struct napi_struct napi;
 	struct mlxbf_gige_stats stats;
-
-#ifdef MLXBF_GIGE_INTERNAL
-	/* Starting seed for data in loopback packets */
-	u8 tx_data_seed;
-#endif /* MLXBF_GIGE_INTERNAL */
 };
 
 /* Rx Work Queue Element definitions */
@@ -139,12 +111,6 @@ struct mlxbf_gige {
 #define MLXBF_GIGE_RX_CQE_PKT_STATUS_MAC_ERR   GENMASK(12, 12)
 #define MLXBF_GIGE_RX_CQE_PKT_STATUS_TRUNCATED GENMASK(13, 13)
 #define MLXBF_GIGE_RX_CQE_CHKSUM_MASK          GENMASK(31, 16)
-#ifdef MLXBF_GIGE_INTERNAL
-#define MLXBF_GIGE_RX_CQE_PKT_LEN_SHIFT        0
-#define MLXBF_GIGE_RX_CQE_VALID_SHIFT          11
-#define MLXBF_GIGE_RX_CQE_PKT_STATUS_SHIFT     12
-#define MLXBF_GIGE_RX_CQE_CHKSUM_SHIFT         16
-#endif
 
 /* Tx Work Queue Element definitions */
 #define MLXBF_GIGE_TX_WQE_SZ_QWORDS            2
@@ -154,13 +120,6 @@ struct mlxbf_gige {
 #define MLXBF_GIGE_TX_WQE_CHKSUM_LEN_MASK      GENMASK(42, 32)
 #define MLXBF_GIGE_TX_WQE_CHKSUM_START_MASK    GENMASK(55, 48)
 #define MLXBF_GIGE_TX_WQE_CHKSUM_OFFSET_MASK   GENMASK(63, 56)
-#ifdef MLXBF_GIGE_INTERNAL
-#define MLXBF_GIGE_TX_WQE_PKT_LEN_SHIFT        0
-#define MLXBF_GIGE_TX_WQE_UPDATE_SHIFT         31
-#define MLXBF_GIGE_TX_WQE_CHKSUM_LEN_SHIFT     32
-#define MLXBF_GIGE_TX_WQE_CHKSUM_START_SHIFT   48
-#define MLXBF_GIGE_TX_WQE_CHKSUM_OFFSET_SHIFT  56
-#endif
 
 /* Macro to return packet length of specified TX WQE */
 #define MLXBF_GIGE_TX_WQE_PKT_LEN(tx_wqe_addr) \
