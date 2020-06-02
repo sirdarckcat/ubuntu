@@ -961,6 +961,9 @@ struct net_device_context {
 
 	/* completion variable to confirm vf association */
 	struct completion vf_add;
+
+	/* Used to temporarily save the config info across hibernation */
+	struct netvsc_device_info *saved_netvsc_dev_info;
 };
 
 /* Per channel data */
