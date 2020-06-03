@@ -7,6 +7,7 @@ build_image_bluefield	= Image
 kernel_file_bluefield	= arch/$(build_arch)/boot/Image
 install_file	= vmlinuz
 no_dumpfile = true
+uefi_signed	= true
 
 loader		= grub
 vdso		= vdso_install
