@@ -20,10 +20,10 @@ do_tools_perf_jvmti = true
 do_tools_bpftool = true
 
 do_dtbs		= true
-do_zfs		= true
+do_zfs		= false
 do_dkms_nvidia	= false
 do_dkms_vbox	= false
-do_dkms_wireguard = true
+do_dkms_wireguard = false
 
 disable_d_i = true
 do_source_package = false
