@@ -616,7 +616,7 @@ CONFIG_BCMA_DRIVER_GPIO                         policy<{'amd64': 'y', 'arm64': '
 CONFIG_BCMA_DEBUG                               policy<{'amd64': 'n', 'arm64': 'n', 'armhf': 'n', 'i386': 'n', 'ppc64el': 'n'}>
 
 # Menu: Device Drivers >> Bus devices
-CONFIG_BRCMSTB_GISB_ARB                         policy<{'arm64': 'y', 'armhf': 'y'}>
+CONFIG_BRCMSTB_GISB_ARB                         policy<{'arm64': 'n'}>
 CONFIG_MOXTET                                   policy<{'arm64': 'm', 'armhf': 'm', 'ppc64el': 'm'}>
 CONFIG_HISILICON_LPC                            policy<{'arm64': 'y'}>
 CONFIG_IMX_WEIM                                 policy<{'arm64': 'y', 'armhf-generic': 'y'}>
@@ -1497,7 +1497,6 @@ CONFIG_GPIO_ALTERA                              policy<{'arm64': 'm', 'armhf': '
 CONFIG_GPIO_AMDPT                               policy<{'amd64': 'm', 'arm64': 'm', 'i386': 'm'}>
 CONFIG_GPIO_ASPEED                              policy<{'armhf': 'm'}>
 CONFIG_GPIO_RASPBERRYPI_EXP                     policy<{'arm64': 'm'}>
-CONFIG_GPIO_BRCMSTB                             policy<{'arm64': 'm'}>
 CONFIG_GPIO_CADENCE                             policy<{'arm64': 'm', 'armhf': 'm', 'ppc64el': 'm'}>
 CONFIG_GPIO_DAVINCI                             policy<{'arm64': 'y'}>
 CONFIG_GPIO_DWAPB                               policy<{'amd64': 'm', 'arm64': 'm', 'armhf': 'm', 'i386': 'm', 'ppc64el': 'm', 's390x': 'n'}>
@@ -2463,7 +2462,6 @@ CONFIG_I2C_ASPEED                               policy<{'armhf': 'm'}>
 CONFIG_I2C_AXXIA                                policy<{'armhf-generic-lpae': 'm'}>
 CONFIG_I2C_BCM2835                              policy<{'arm64': 'm'}>
 CONFIG_I2C_BCM_IPROC                            policy<{'arm64': 'm'}>
-CONFIG_I2C_BRCMSTB                              policy<{'arm64': 'm'}>
 CONFIG_I2C_CADENCE                              policy<{'arm64': 'n'}>
 CONFIG_I2C_CBUS_GPIO                            policy<{'amd64': 'm', 'arm64': 'm', 'armhf': 'm', 'i386': 'm', 'ppc64el': 'm', 's390x': 'n'}>
 CONFIG_I2C_DESIGNWARE_PLATFORM                  policy<{'amd64': 'y', 'arm64': 'y', 'armhf': 'y', 'i386': 'y', 'ppc64el': 'y', 's390x': 'n'}>
@@ -3631,7 +3629,6 @@ CONFIG_MMC_SDHCI_F_SDH30                        policy<{'amd64': 'm', 'arm64': '
 CONFIG_MMC_SDHCI_IPROC                          policy<{'arm64': 'm'}>
 CONFIG_MMC_SDHCI_MSM                            policy<{'arm64': 'm', 'arm64-snapdragon': 'y', 'armhf': 'm'}>
 CONFIG_MMC_SDHCI_SPRD                           policy<{'arm64': 'm'}>
-CONFIG_MMC_SDHCI_BRCMSTB                        policy<{'arm64': 'm'}>
 CONFIG_MMC_SDHCI_XENON                          policy<{'amd64': 'm', 'arm64': 'm', 'armhf': 'm', 'i386': 'm', 'ppc64el': 'm'}>
 CONFIG_MMC_SDHCI_OMAP                           policy<{'arm64': 'm', 'armhf': 'm', 'ppc64el': 'm'}>
 CONFIG_MMC_SDHCI_AM654                          policy<{'arm64': 'm', 'armhf': 'm', 'ppc64el': 'm'}>
@@ -6610,7 +6607,6 @@ CONFIG_PWM_ATMEL_HLCDC_PWM                      policy<{'arm64': 'm', 'armhf': '
 CONFIG_PWM_BCM_IPROC                            policy<{'arm64': 'm'}>
 CONFIG_PWM_BCM2835                              policy<{'arm64': 'm'}>
 CONFIG_PWM_BERLIN                               policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_PWM_BRCMSTB                              policy<{'arm64': 'm'}>
 CONFIG_PWM_CRC                                  policy<{'amd64': 'y', 'i386': 'y'}>
 CONFIG_PWM_CROS_EC                              policy<{'amd64': 'm', 'arm64': 'm', 'armhf': 'm', 'i386': 'm'}>
 CONFIG_PWM_FSL_FTM                              policy<{'arm64': 'm', 'armhf': 'm', 'ppc64el': 'm'}>
@@ -6677,7 +6673,6 @@ CONFIG_RTC_DRV_88PM80X                          policy<{'amd64': 'm', 'arm64': '
 CONFIG_RTC_DRV_ABB5ZES3                         policy<{'amd64': 'm', 'arm64': 'm', 'armhf': 'm', 'i386': 'm', 'ppc64el': 'm'}>
 CONFIG_RTC_DRV_ABEOZ9                           policy<{'amd64': 'm', 'arm64': 'm', 'armhf': 'm', 'i386': 'm', 'ppc64el': 'm'}>
 CONFIG_RTC_DRV_ABX80X                           policy<{'amd64': 'm', 'arm64': 'm', 'armhf': 'm', 'i386': 'm', 'ppc64el': 'm'}>
-CONFIG_RTC_DRV_BRCMSTB                          policy<{'arm64': 'm'}>
 CONFIG_RTC_DRV_AS3722                           policy<{'arm64': 'm', 'armhf': 'm', 'ppc64el': 'm'}>
 CONFIG_RTC_DRV_DS1307                           policy<{'amd64': 'm', 'arm64': 'm', 'armhf': 'm', 'i386': 'm', 'ppc64el': 'm'}>
 CONFIG_RTC_DRV_DS1307_CENTURY                   policy<{'amd64': 'y', 'arm64': 'y', 'armhf': 'y', 'i386': 'y', 'ppc64el': 'y'}>
@@ -6890,7 +6885,6 @@ CONFIG_QCOM_WCNSS_PIL                           policy<{'arm64': 'n', 'armhf': '
 # Menu: Device Drivers >> Reset Controller Support
 CONFIG_RESET_CONTROLLER                         policy<{'amd64': 'y', 'arm64': 'y', 'armhf': 'y', 'i386': 'y', 'ppc64el': 'y', 's390x': 'n'}>
 CONFIG_RESET_BERLIN                             policy<{'arm64': 'y', 'armhf': 'y'}>
-CONFIG_RESET_BRCMSTB                            policy<{'arm64': 'm'}>
 CONFIG_RESET_IMX7                               policy<{'arm64': 'y', 'armhf-generic': 'y'}>
 CONFIG_RESET_MESON                              policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_RESET_MESON_AUDIO_ARB                    policy<{'arm64': 'm', 'armhf': 'm'}>
@@ -7109,43 +7103,17 @@ CONFIG_SLIM_QCOM_CTRL                           policy<{'amd64': 'm', 'arm64': '
 CONFIG_SLIM_QCOM_NGD_CTRL                       policy<{'arm64': 'm', 'armhf': 'm'}>
 
 # Menu: Device Drivers >> SOC (System On Chip) specific Drivers
-CONFIG_OWL_PM_DOMAINS                           policy<{'arm64': 'y', 'armhf': 'y'}>
-CONFIG_ROCKCHIP_PM_DOMAINS                      policy<{'arm64': 'y', 'armhf': 'y'}>
-CONFIG_ARCH_TEGRA_2x_SOC                        policy<{'armhf-generic': 'y'}>
-CONFIG_ARCH_TEGRA_3x_SOC                        policy<{'armhf-generic': 'y'}>
-CONFIG_ARCH_TEGRA_114_SOC                       policy<{'armhf-generic': 'y'}>
-CONFIG_ARCH_TEGRA_124_SOC                       policy<{'armhf-generic': 'y'}>
-CONFIG_ARCH_K3_AM6_SOC                          policy<{'arm64': 'y'}>
-CONFIG_ARCH_K3_J721E_SOC                        policy<{'arm64': 'y'}>
 
 # Menu: Device Drivers >> SOC (System On Chip) specific Drivers >> Amlogic SoC drivers
-CONFIG_MESON_CANVAS                             policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_MESON_CLK_MEASURE                        policy<{'arm64': 'y', 'armhf': 'y'}>
-CONFIG_MESON_GX_SOCINFO                         policy<{'arm64': 'y', 'armhf': 'y'}>
-CONFIG_MESON_GX_PM_DOMAINS                      policy<{'arm64': 'y', 'armhf': 'y'}>
-CONFIG_MESON_EE_PM_DOMAINS                      policy<{'arm64': 'y', 'armhf': 'y'}>
-CONFIG_MESON_MX_SOCINFO                         policy<{'arm64': 'y', 'armhf': 'y'}>
 
 # Menu: Device Drivers >> SOC (System On Chip) specific Drivers >> Aspeed SoC drivers
-CONFIG_ASPEED_LPC_CTRL                          policy<{'armhf': 'm'}>
-CONFIG_ASPEED_LPC_SNOOP                         policy<{'armhf': 'm'}>
-CONFIG_ASPEED_P2A_CTRL                          policy<{'armhf': 'm'}>
 
 # Menu: Device Drivers >> SOC (System On Chip) specific Drivers >> Broadcom SoC drivers
-CONFIG_BCM2835_POWER                            policy<{'arm64': 'y'}>
-CONFIG_RASPBERRYPI_POWER                        policy<{'arm64': 'y'}>
-CONFIG_SOC_BRCMSTB                              policy<{'arm64': 'y', 'armhf': 'n'}>
-CONFIG_BRCMSTB_PM                               policy<{'arm64': 'y'}>
+CONFIG_SOC_BRCMSTB                              policy<{'arm64': 'n'}>
 
 # Menu: Device Drivers >> SOC (System On Chip) specific Drivers >> IXP4xx SoC drivers
-CONFIG_IXP4XX_QMGR                              policy<{'amd64': 'm', 'arm64': 'm', 'armhf': 'm', 'i386': 'm', 'ppc64el': 'm', 's390x': 'n'}>
-CONFIG_IXP4XX_NPE                               policy<{'amd64': 'm', 'arm64': 'm', 'armhf': 'm', 'i386': 'm', 'ppc64el': 'm', 's390x': 'n'}>
 
 # Menu: Device Drivers >> SOC (System On Chip) specific Drivers >> MediaTek SoC drivers
-CONFIG_MTK_CMDQ                                 policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_MTK_INFRACFG                             policy<{'arm64': 'y', 'armhf': 'y'}>
-CONFIG_MTK_PMIC_WRAP                            policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_MTK_SCPSYS                               policy<{'arm64': 'y', 'armhf': 'y'}>
 
 # Menu: Device Drivers >> SOC (System On Chip) specific Drivers >> NXP/Freescale QorIQ SoC drivers
 CONFIG_FSL_MC_DPIO                              policy<{'arm64': 'm'}>
@@ -7241,16 +7209,10 @@ CONFIG_EXYNOS_PMU_ARM_DRIVERS                   policy<{'armhf': 'y'}>
 CONFIG_EXYNOS_PM_DOMAINS                        policy<{'armhf': 'y'}>
 
 # Menu: Device Drivers >> SOC (System On Chip) specific Drivers >> TI SOC drivers support
-CONFIG_SOC_TI                                   policy<{'amd64': 'y', 'arm64': 'y', 'armhf': 'y', 'i386': 'y', 'ppc64el': 'y', 's390x': 'n'}>
-CONFIG_WKUP_M3_IPC                              policy<{'armhf-generic': 'n'}>
-CONFIG_TI_SCI_PM_DOMAINS                        policy<{'arm64': 'm'}>
-#
-CONFIG_SOC_TI                                   flag<REVIEW>
+CONFIG_SOC_TI                                   policy<{'arm64': 'n'}>
 
 # Menu: Device Drivers >> SOC (System On Chip) specific Drivers >> Xilinx SoC drivers
-CONFIG_XILINX_VCU                               policy<{'amd64': 'm', 'arm64': 'm', 'armhf': 'm', 'i386': 'm', 'ppc64el': 'm', 's390x': 'm'}>
-CONFIG_ZYNQMP_POWER                             policy<{'arm64': 'y'}>
-CONFIG_ZYNQMP_PM_DOMAINS                        policy<{'arm64': 'y'}>
+CONFIG_XILINX_VCU                               policy<{'arm64': 'n'}>
 
 # Menu: Device Drivers >> SOC (System On Chip) specific Drivers >> ZTE SoC driver support
 
@@ -11216,34 +11178,31 @@ CONFIG_CFG80211_REQUIRE_SIGNED_REGDB            policy<{'amd64': 'y', 'arm64': '
 CONFIG_CFG80211_USE_KERNEL_REGDB_KEYS           policy<{'amd64': 'y', 'arm64': 'y', 'armhf': 'y', 'i386': 'y', 'ppc64el': 'y'}>
 
 # Menu: Platform selection
-CONFIG_ARCH_ACTIONS                             policy<{'arm64': 'y', 'armhf': 'y'}>
-CONFIG_ARCH_SUNXI                               policy<{'arm64': 'y', 'armhf': 'n'}>
-CONFIG_ARCH_ALPINE                              policy<{'arm64': 'n', 'armhf': 'y'}>
-CONFIG_ARCH_BCM2835                             policy<{'arm64': 'y'}>
-CONFIG_ARCH_BERLIN                              policy<{'arm64': 'y', 'armhf': 'y'}>
-CONFIG_ARCH_BRCMSTB                             policy<{'arm64': 'y'}>
-CONFIG_ARCH_EXYNOS                              policy<{'arm64': 'n', 'armhf': 'y'}>
-CONFIG_ARCH_HISI                                policy<{'arm64': 'y', 'armhf': 'y'}>
-CONFIG_ARCH_MEDIATEK                            policy<{'arm64': 'y', 'armhf': 'y'}>
-CONFIG_ARCH_MESON                               policy<{'arm64': 'y', 'armhf': 'y'}>
-CONFIG_ARCH_MVEBU                               policy<{'arm64': 'y', 'armhf': 'y'}>
-CONFIG_ARCH_MXC                                 policy<{'arm64': 'y', 'armhf-generic': 'y', 'armhf-generic-lpae': 'n'}>
-CONFIG_ARCH_QCOM                                policy<{'arm64': 'y', 'armhf': 'y'}>
-CONFIG_ARCH_RENESAS                             policy<{'arm64': 'y', 'armhf': 'y'}>
-CONFIG_ARCH_ROCKCHIP                            policy<{'arm64': 'y', 'armhf': 'y'}>
-CONFIG_ARCH_TEGRA                               policy<{'arm64': 'n', 'armhf-generic': 'y', 'armhf-generic-lpae': 'n'}>
-CONFIG_ARCH_UNIPHIER                            policy<{'arm64': 'n', 'armhf': 'y'}>
-CONFIG_ARCH_VEXPRESS                            policy<{'arm64': 'y', 'armhf': 'y'}>
-CONFIG_ARCH_ZX                                  policy<{'arm64': 'n', 'armhf': 'n'}>
-#
-CONFIG_ARCH_ROCKCHIP                            note<LP:1566283 / LP:1825222>
-CONFIG_ARCH_ZX                                  note<LP:1628503>
+CONFIG_ARCH_ACTIONS                             policy<{'arm64': 'n'}>
+CONFIG_ARCH_SUNXI                               policy<{'arm64': 'n'}>
+CONFIG_ARCH_ALPINE                              policy<{'arm64': 'n'}>
+CONFIG_ARCH_BCM2835                             policy<{'arm64': 'n'}>
+CONFIG_ARCH_BERLIN                              policy<{'arm64': 'n'}>
+CONFIG_ARCH_BRCMSTB                             policy<{'arm64': 'n'}>
+CONFIG_ARCH_EXYNOS                              policy<{'arm64': 'n'}>
+CONFIG_ARCH_HISI                                policy<{'arm64': 'n'}>
+CONFIG_ARCH_MEDIATEK                            policy<{'arm64': 'n'}>
+CONFIG_ARCH_MESON                               policy<{'arm64': 'n'}>
+CONFIG_ARCH_MVEBU                               policy<{'arm64': 'n'}>
+CONFIG_ARCH_MXC                                 policy<{'arm64': 'y'}>
+CONFIG_ARCH_QCOM                                policy<{'arm64': 'n'}>
+CONFIG_ARCH_RENESAS                             policy<{'arm64': 'n'}>
+CONFIG_ARCH_ROCKCHIP                            policy<{'arm64': 'n'}>
+CONFIG_ARCH_TEGRA                               policy<{'arm64': 'n'}>
+CONFIG_ARCH_UNIPHIER                            policy<{'arm64': 'n'}>
+CONFIG_ARCH_VEXPRESS                            policy<{'arm64': 'n'}>
+CONFIG_ARCH_ZX                                  policy<{'arm64': 'n'}>
 
 # Menu: Platform selection >> Architecture: arm64
 CONFIG_ARCH_AGILEX                              policy<{'arm64': 'y'}>
-CONFIG_ARCH_BCM_IPROC                           policy<{'arm64': 'y'}>
-CONFIG_ARCH_BITMAIN                             policy<{'arm64': 'y'}>
-CONFIG_ARCH_K3                                  policy<{'arm64': 'y'}>
+CONFIG_ARCH_BCM_IPROC                           policy<{'arm64': 'n'}>
+CONFIG_ARCH_BITMAIN                             policy<{'arm64': 'n'}>
+CONFIG_ARCH_K3                                  policy<{'arm64': 'n'}>
 CONFIG_ARCH_LAYERSCAPE                          policy<{'arm64': 'y'}>
 CONFIG_ARCH_LG1K                                policy<{'arm64': 'y'}>
 CONFIG_ARCH_REALTEK                             policy<{'arm64': 'y'}>
