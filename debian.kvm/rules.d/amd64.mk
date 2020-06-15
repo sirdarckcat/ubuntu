@@ -8,6 +8,7 @@ kernel_file	= arch/$(build_arch)/boot/bzImage
 install_file	= vmlinuz
 loader		= grub
 vdso		= vdso_install
+uefi_signed	= true
 no_dumpfile	= true
 do_tools_usbip	= true
 do_tools_cpupower = true
