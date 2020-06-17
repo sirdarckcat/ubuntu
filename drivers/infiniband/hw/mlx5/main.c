@@ -2281,6 +2281,17 @@ static inline int check_dm_type_support(struct mlx5_ib_dev *dev,
 		      MLX5_CAP_FLOWTABLE_NIC_TX(dev->mdev, sw_owner)))
 			return -EOPNOTSUPP;
 		break;
+	case MLX5_IB_UAPI_DM_TYPE_HEADER_MODIFY_PATTERN_SW_ICM:
+		if (!capable(CAP_SYS_RAWIO) ||
+		    !capable(CAP_NET_RAW))
+			return -EPERM;
+
+		if (!(MLX5_CAP_FLOWTABLE_NIC_RX(dev->mdev, sw_owner_v2) ||
+		      MLX5_CAP_FLOWTABLE_NIC_TX(dev->mdev, sw_owner_v2)))
+			return -EOPNOTSUPP;
+		break;
+	default:
+		return -EOPNOTSUPP;
 	}
 
 	return 0;
@@ -2409,6 +2420,11 @@ struct ib_dm *mlx5_ib_alloc_dm(struct ib_device *ibdev,
 					     attr, attrs,
 					     MLX5_SW_ICM_TYPE_HEADER_MODIFY);
 		break;
+	case MLX5_IB_UAPI_DM_TYPE_HEADER_MODIFY_PATTERN_SW_ICM:
+		err = handle_alloc_dm_sw_icm(context, dm,
+					     attr, attrs,
+					     MLX5_SW_ICM_TYPE_HEADER_MODIFY_PATTERN);
+		break;
 	default:
 		err = -EOPNOTSUPP;
 	}
@@ -2459,6 +2475,14 @@ int mlx5_ib_dealloc_dm(struct ib_dm *ibdm, struct uverbs_attr_bundle *attrs)
 		if (ret)
 			return ret;
 		break;
+	case MLX5_IB_UAPI_DM_TYPE_HEADER_MODIFY_PATTERN_SW_ICM:
+		ret = mlx5_dm_sw_icm_dealloc(dev, MLX5_SW_ICM_TYPE_HEADER_MODIFY_PATTERN,
+					     dm->size, ctx->devx_uid, dm->dev_addr,
+					     dm->icm_dm.obj_id);
+		if (ret)
+			return ret;
+		break;
+
 	default:
 		return -EOPNOTSUPP;
 	}
