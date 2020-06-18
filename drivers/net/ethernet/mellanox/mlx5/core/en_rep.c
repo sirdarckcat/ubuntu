@@ -1293,11 +1293,6 @@ static bool mlx5e_rep_has_offload_stats(const struct net_device *dev, int attr_i
 	return false;
 }
 
-static u32 get_sf_phys_port_num(const struct mlx5_core_dev *dev, u16 vport_num)
-{
-	return (MLX5_CAP_GEN(dev, vhca_id) << 16) | vport_num;
-}
-
 static int mlx5e_rep_sf_port_parent_id(struct net_device *dev,
 				       struct netdev_phys_item_id *ppid)
 {
@@ -1314,12 +1309,12 @@ static int mlx5e_rep_sf_get_phys_port_name(struct net_device *dev,
 	struct mlx5_eswitch *esw;
 	unsigned int fn;
 	int ret;
-
+	
 	fn = PCI_FUNC(priv->mdev->pdev->devfn);
 	esw = priv->mdev->priv.eswitch;
-
-	ret = snprintf(buf, len, "pf%dp%d", fn,
-		       get_sf_phys_port_num(priv->mdev, rep->vport));
+	
+	ret = snprintf(buf, len, "pf%dsf%d", fn,
+		       mlx5_sf_vport_to_id(priv->mdev, rep->vport));
 	if (ret >= len)
 		return -EOPNOTSUPP;
 	return 0;
