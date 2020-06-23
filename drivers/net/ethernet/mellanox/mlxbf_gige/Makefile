@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: GPL-2.0-only
+# SPDX-License-Identifier: GPL-2.0-only OR Linux-OpenIB
 
 obj-$(CONFIG_MLXBF_GIGE) += mlxbf_gige.o
 
