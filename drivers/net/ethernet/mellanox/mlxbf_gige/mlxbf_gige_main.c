@@ -18,7 +18,7 @@
 #include "mlxbf_gige_regs.h"
 
 #define DRV_NAME    "mlxbf_gige"
-#define DRV_VERSION "1.0"
+#define DRV_VERSION "1.1"
 
 static void mlxbf_gige_set_mac_rx_filter(struct mlxbf_gige *priv,
 					 unsigned int index, u64 dmac)
@@ -431,6 +431,9 @@ static void mlxbf_gige_get_ethtool_stats(struct net_device *netdev,
 					 u64 *data)
 {
 	struct mlxbf_gige *priv = netdev_priv(netdev);
+	unsigned long flags;
+
+	spin_lock_irqsave(&priv->lock, flags);
 
 	/* Fill data array with interface statistics
 	 *
@@ -466,6 +469,8 @@ static void mlxbf_gige_get_ethtool_stats(struct net_device *netdev,
 		   readq(priv->base + MLXBF_GIGE_RX_PASS_COUNTER_ALL));
 	*data++ = (priv->stats.rx_filter_discard_pkts +
 		   readq(priv->base + MLXBF_GIGE_RX_DISC_COUNTER_ALL));
+
+	spin_unlock_irqrestore(&priv->lock, flags);
 }
 
 static const struct ethtool_ops mlxbf_gige_ethtool_ops = {
@@ -506,9 +511,8 @@ static irqreturn_t mlxbf_gige_error_intr(int irq, void *dev_id)
 
 	int_status = readq(priv->base + MLXBF_GIGE_INT_STATUS);
 
-	if (int_status & MLXBF_GIGE_INT_STATUS_HW_ACCESS_ERROR) {
+	if (int_status & MLXBF_GIGE_INT_STATUS_HW_ACCESS_ERROR)
 		priv->stats.hw_access_errors++;
-	}
 
 	if (int_status & MLXBF_GIGE_INT_STATUS_TX_CHECKSUM_INPUTS) {
 		priv->stats.tx_invalid_checksums++;
@@ -533,17 +537,14 @@ static irqreturn_t mlxbf_gige_error_intr(int irq, void *dev_id)
 		 */
 	}
 
-	if (int_status & MLXBF_GIGE_INT_STATUS_TX_PI_CI_EXCEED_WQ_SIZE) {
+	if (int_status & MLXBF_GIGE_INT_STATUS_TX_PI_CI_EXCEED_WQ_SIZE)
 		priv->stats.tx_index_errors++;
-	}
 
-	if (int_status & MLXBF_GIGE_INT_STATUS_SW_CONFIG_ERROR) {
+	if (int_status & MLXBF_GIGE_INT_STATUS_SW_CONFIG_ERROR)
 		priv->stats.sw_config_errors++;
-	}
 
-	if (int_status & MLXBF_GIGE_INT_STATUS_SW_ACCESS_ERROR) {
+	if (int_status & MLXBF_GIGE_INT_STATUS_SW_ACCESS_ERROR)
 		priv->stats.sw_access_errors++;
-	}
 
 	/* Clear all error interrupts by writing '1' back to
 	 * all the asserted bits in INT_STATUS.  Do not write
@@ -611,13 +612,19 @@ static irqreturn_t mlxbf_gige_llu_plu_intr(int irq, void *dev_id)
  */
 static u16 mlxbf_gige_tx_buffs_avail(struct mlxbf_gige *priv)
 {
+	unsigned long flags;
 	u16 avail;
+
+	spin_lock_irqsave(&priv->lock, flags);
 
 	if (priv->prev_tx_ci == priv->tx_pi)
 		avail = priv->tx_q_entries - 1;
 	else
 		avail = (((priv->tx_q_entries + priv->prev_tx_ci - priv->tx_pi)
 			  % priv->tx_q_entries) - 1);
+
+	spin_unlock_irqrestore(&priv->lock, flags);
+
 	return avail;
 }
 
@@ -693,28 +700,29 @@ static bool mlxbf_gige_rx_packet(struct mlxbf_gige *priv, int *rx_pkts)
 		/* Packet is OK, increment stats */
 		netdev->stats.rx_packets++;
 		netdev->stats.rx_bytes += datalen;
+
+		skb = dev_alloc_skb(datalen);
+		if (!skb) {
+			netdev->stats.rx_dropped++;
+			return false;
+		}
+
+		memcpy(skb_put(skb, datalen), pktp, datalen);
+
+		skb->dev = netdev;
+		skb->protocol = eth_type_trans(skb, netdev);
+		skb->ip_summed = CHECKSUM_NONE; /* device did not checksum packet */
+
+		netif_receive_skb(skb);
 	} else if (rx_cqe & MLXBF_GIGE_RX_CQE_PKT_STATUS_MAC_ERR) {
 		priv->stats.rx_mac_errors++;
 	} else if (rx_cqe & MLXBF_GIGE_RX_CQE_PKT_STATUS_TRUNCATED) {
 		priv->stats.rx_truncate_errors++;
 	}
 
-	skb = dev_alloc_skb(datalen);
-	if (!skb) {
-		netdev->stats.rx_dropped++;
-		return false;
-	}
-
-	memcpy(skb_put(skb, datalen), pktp, datalen);
-
 	/* Let hardware know we've replenished one buffer */
 	writeq(rx_pi + 1, priv->base + MLXBF_GIGE_RX_WQE_PI);
 
-	skb->dev = netdev;
-	skb->protocol = eth_type_trans(skb, netdev);
-	skb->ip_summed = CHECKSUM_NONE; /* device did not checksum packet */
-
-	netif_receive_skb(skb);
 	(*rx_pkts)++;
 	rx_pi = readq(priv->base + MLXBF_GIGE_RX_WQE_PI);
 	rx_pi_rem = rx_pi % priv->rx_q_entries;
@@ -794,92 +802,29 @@ static void mlxbf_gige_free_irqs(struct mlxbf_gige *priv)
 	devm_free_irq(priv->dev, priv->llu_plu_irq, priv);
 }
 
-static int mlxbf_gige_open(struct net_device *netdev)
+static void mlxbf_gige_cache_stats(struct mlxbf_gige *priv)
 {
-	struct mlxbf_gige *priv = netdev_priv(netdev);
-	struct phy_device *phydev;
-	u64 int_en;
-	int err;
+	struct mlxbf_gige_stats *p;
 
-	memset(&priv->stats, 0, sizeof(priv->stats));
-
-	mlxbf_gige_rx_init(priv);
-	mlxbf_gige_tx_init(priv);
-	netif_napi_add(netdev, &priv->napi, mlxbf_gige_poll, NAPI_POLL_WEIGHT);
-	napi_enable(&priv->napi);
-	netif_start_queue(netdev);
-
-	err = mlxbf_gige_request_irqs(priv);
-	if (err)
-		return err;
-
-	phydev = phy_find_first(priv->mdiobus);
-	if (!phydev)
-		return -EIO;
-
-	/* Sets netdev->phydev to phydev; which will eventually
-	 * be used in ioctl calls.
-	 */
-	err = phy_connect_direct(netdev, phydev,
-				 mlxbf_gige_handle_link_change,
-				 PHY_INTERFACE_MODE_GMII);
-	if (err) {
-		netdev_err(netdev, "Could not attach to PHY\n");
-		return err;
-	}
-
-	/* MAC only supports 1000T full duplex mode */
-	phy_remove_link_mode(phydev, ETHTOOL_LINK_MODE_1000baseT_Half_BIT);
-	phy_remove_link_mode(phydev, ETHTOOL_LINK_MODE_100baseT_Full_BIT);
-	phy_remove_link_mode(phydev, ETHTOOL_LINK_MODE_100baseT_Half_BIT);
-	phy_remove_link_mode(phydev, ETHTOOL_LINK_MODE_10baseT_Full_BIT);
-	phy_remove_link_mode(phydev, ETHTOOL_LINK_MODE_10baseT_Half_BIT);
-
-	/* MAC supports symmetric flow control */
-	phy_support_sym_pause(phydev);
-	phy_start(phydev);
-	err = phy_start_aneg(phydev);
-	if (err < 0) {
-		netdev_err(netdev, "phy_start_aneg failure: 0x%x\n", err);
-		return err;
-	}
-
-	/* Display information about attached PHY device */
-	phy_attached_info(phydev);
-
-
-	/* Set bits in INT_EN that we care about */
-	int_en = MLXBF_GIGE_INT_EN_HW_ACCESS_ERROR |
-		 MLXBF_GIGE_INT_EN_TX_CHECKSUM_INPUTS |
-		 MLXBF_GIGE_INT_EN_TX_SMALL_FRAME_SIZE |
-		 MLXBF_GIGE_INT_EN_TX_PI_CI_EXCEED_WQ_SIZE |
-		 MLXBF_GIGE_INT_EN_SW_CONFIG_ERROR |
-		 MLXBF_GIGE_INT_EN_SW_ACCESS_ERROR |
-		 MLXBF_GIGE_INT_EN_RX_RECEIVE_PACKET;
-	writeq(int_en, priv->base + MLXBF_GIGE_INT_EN);
-
-	return 0;
+	/* Cache stats that will be cleared by clean port operation */
+	p = &priv->stats;
+	p->rx_din_dropped_pkts += readq(priv->base +
+					MLXBF_GIGE_RX_DIN_DROP_COUNTER);
+	p->rx_filter_passed_pkts += readq(priv->base +
+					  MLXBF_GIGE_RX_PASS_COUNTER_ALL);
+	p->rx_filter_discard_pkts += readq(priv->base +
+					   MLXBF_GIGE_RX_DISC_COUNTER_ALL);
 }
 
 static void mlxbf_gige_clean_port(struct mlxbf_gige *priv)
 {
-	struct mlxbf_gige_stats *p;
 	u64 control, status;
 	int cnt;
-
-	/* Cache stats that will be cleared by clean port operation */
-	p = &priv->stats;
-	p->rx_din_dropped_pkts = readq(priv->base + MLXBF_GIGE_RX_DIN_DROP_COUNTER);
-	p->rx_filter_passed_pkts = readq(priv->base + MLXBF_GIGE_RX_PASS_COUNTER_ALL);
-	p->rx_filter_discard_pkts = readq(priv->base + MLXBF_GIGE_RX_DISC_COUNTER_ALL);
 
 	/* Set the CLEAN_PORT_EN bit to trigger SW reset */
 	control = readq(priv->base + MLXBF_GIGE_CONTROL);
 	control |= MLXBF_GIGE_CONTROL_CLEAN_PORT_EN;
 	writeq(control, priv->base + MLXBF_GIGE_CONTROL);
-
-	/* Create memory barrier before reading status */
-	wmb();
 
 	/* Loop waiting for status ready bit to assert */
 	cnt = 1000;
@@ -896,6 +841,40 @@ static void mlxbf_gige_clean_port(struct mlxbf_gige *priv)
 	writeq(control, priv->base + MLXBF_GIGE_CONTROL);
 }
 
+static int mlxbf_gige_open(struct net_device *netdev)
+{
+	struct mlxbf_gige *priv = netdev_priv(netdev);
+	struct phy_device *phydev = netdev->phydev;
+	u64 int_en;
+	int err;
+
+	mlxbf_gige_cache_stats(priv);
+	mlxbf_gige_clean_port(priv);
+	mlxbf_gige_rx_init(priv);
+	mlxbf_gige_tx_init(priv);
+	netif_napi_add(netdev, &priv->napi, mlxbf_gige_poll, NAPI_POLL_WEIGHT);
+	napi_enable(&priv->napi);
+	netif_start_queue(netdev);
+
+	err = mlxbf_gige_request_irqs(priv);
+	if (err)
+		return err;
+
+	phy_start(phydev);
+
+	/* Set bits in INT_EN that we care about */
+	int_en = MLXBF_GIGE_INT_EN_HW_ACCESS_ERROR |
+		 MLXBF_GIGE_INT_EN_TX_CHECKSUM_INPUTS |
+		 MLXBF_GIGE_INT_EN_TX_SMALL_FRAME_SIZE |
+		 MLXBF_GIGE_INT_EN_TX_PI_CI_EXCEED_WQ_SIZE |
+		 MLXBF_GIGE_INT_EN_SW_CONFIG_ERROR |
+		 MLXBF_GIGE_INT_EN_SW_ACCESS_ERROR |
+		 MLXBF_GIGE_INT_EN_RX_RECEIVE_PACKET;
+	writeq(int_en, priv->base + MLXBF_GIGE_INT_EN);
+
+	return 0;
+}
+
 static int mlxbf_gige_stop(struct net_device *netdev)
 {
 	struct mlxbf_gige *priv = netdev_priv(netdev);
@@ -906,11 +885,12 @@ static int mlxbf_gige_stop(struct net_device *netdev)
 	netif_napi_del(&priv->napi);
 	mlxbf_gige_free_irqs(priv);
 
-	phy_stop(netdev->phydev);
-	phy_disconnect(netdev->phydev);
+	if (netdev->phydev)
+		phy_stop(netdev->phydev);
 
 	mlxbf_gige_rx_deinit(priv);
 	mlxbf_gige_tx_deinit(priv);
+	mlxbf_gige_cache_stats(priv);
 	mlxbf_gige_clean_port(priv);
 
 	return 0;
@@ -983,9 +963,6 @@ static netdev_tx_t mlxbf_gige_start_xmit(struct sk_buff *skb,
 
 	priv->tx_pi++;
 
-	/* Create memory barrier before write to TX PI */
-	wmb();
-
 	writeq(priv->tx_pi, priv->base + MLXBF_GIGE_TX_PRODUCER_INDEX);
 
 	/* Free incoming skb, contents already copied to HW */
@@ -1016,11 +993,10 @@ static void mlxbf_gige_set_rx_mode(struct net_device *netdev)
 	if (new_promisc_enabled != priv->promisc_enabled) {
 		priv->promisc_enabled = new_promisc_enabled;
 
-		if (new_promisc_enabled) {
+		if (new_promisc_enabled)
 			mlxbf_gige_enable_promisc(priv);
-		} else {
+		else
 			mlxbf_gige_disable_promisc(priv);
-		}
 	}
 }
 
@@ -1082,6 +1058,7 @@ static void mlxbf_gige_initial_mac(struct mlxbf_gige *priv)
 
 static int mlxbf_gige_probe(struct platform_device *pdev)
 {
+	struct phy_device *phydev;
 	struct net_device *netdev;
 	struct resource *mac_res;
 	struct resource *llu_res;
@@ -1123,9 +1100,8 @@ static int mlxbf_gige_probe(struct platform_device *pdev)
 	writeq(control, base + MLXBF_GIGE_CONTROL);
 
 	netdev = devm_alloc_etherdev(&pdev->dev, sizeof(*priv));
-	if (!netdev) {
+	if (!netdev)
 		return -ENOMEM;
-	}
 
 	SET_NETDEV_DEV(netdev, &pdev->dev);
 	netdev->netdev_ops = &mlxbf_gige_netdev_ops;
@@ -1133,12 +1109,12 @@ static int mlxbf_gige_probe(struct platform_device *pdev)
 	priv = netdev_priv(netdev);
 	priv->netdev = netdev;
 
-	/* Initialize feature set supported by hardware (skbuff.h) */
-	netdev->hw_features = NETIF_F_RXCSUM | NETIF_F_HW_CSUM;
-
 	platform_set_drvdata(pdev, priv);
 	priv->dev = &pdev->dev;
 	priv->pdev = pdev;
+
+	spin_lock_init(&priv->lock);
+	spin_lock_init(&priv->gpio_lock);
 
 	/* Attach MDIO device */
 	err = mlxbf_gige_mdio_probe(pdev, priv);
@@ -1165,6 +1141,34 @@ static int mlxbf_gige_probe(struct platform_device *pdev)
 	priv->rx_irq = platform_get_irq(pdev, MLXBF_GIGE_RECEIVE_PKT_INTR_IDX);
 	priv->llu_plu_irq = platform_get_irq(pdev, MLXBF_GIGE_LLU_PLU_INTR_IDX);
 
+	phydev = phy_find_first(priv->mdiobus);
+	if (!phydev)
+		return -EIO;
+
+	/* Sets netdev->phydev to phydev; which will eventually
+	 * be used in ioctl calls.
+	 */
+	err = phy_connect_direct(netdev, phydev,
+				 mlxbf_gige_handle_link_change,
+				 PHY_INTERFACE_MODE_GMII);
+	if (err) {
+		dev_err(&pdev->dev, "Could not attach to PHY\n");
+		return err;
+	}
+
+	/* MAC only supports 1000T full duplex mode */
+	phy_remove_link_mode(phydev, ETHTOOL_LINK_MODE_1000baseT_Half_BIT);
+	phy_remove_link_mode(phydev, ETHTOOL_LINK_MODE_100baseT_Full_BIT);
+	phy_remove_link_mode(phydev, ETHTOOL_LINK_MODE_100baseT_Half_BIT);
+	phy_remove_link_mode(phydev, ETHTOOL_LINK_MODE_10baseT_Full_BIT);
+	phy_remove_link_mode(phydev, ETHTOOL_LINK_MODE_10baseT_Half_BIT);
+
+	/* MAC supports symmetric flow control */
+	phy_support_sym_pause(phydev);
+
+	/* Display information about attached PHY device */
+	phy_attached_info(phydev);
+
 	err = register_netdev(netdev);
 	if (err) {
 		dev_err(&pdev->dev, "Failed to register netdev\n");
@@ -1174,21 +1178,24 @@ static int mlxbf_gige_probe(struct platform_device *pdev)
 	return 0;
 }
 
-/* Device remove function. */
 static int mlxbf_gige_remove(struct platform_device *pdev)
 {
-	struct mlxbf_gige *priv;
+	struct mlxbf_gige *priv = platform_get_drvdata(pdev);
 
-	priv = platform_get_drvdata(pdev);
-
+	phy_disconnect(priv->netdev->phydev);
 	unregister_netdev(priv->netdev);
-
-	/* Remove mdio */
 	mlxbf_gige_mdio_remove(priv);
-
 	platform_set_drvdata(pdev, NULL);
 
 	return 0;
+}
+
+static void mlxbf_gige_shutdown(struct platform_device *pdev)
+{
+	struct mlxbf_gige *priv = platform_get_drvdata(pdev);
+
+	writeq(0, priv->base + MLXBF_GIGE_INT_EN);
+	mlxbf_gige_clean_port(priv);
 }
 
 static const struct acpi_device_id mlxbf_gige_acpi_match[] = {
@@ -1200,6 +1207,7 @@ MODULE_DEVICE_TABLE(acpi, mlxbf_gige_acpi_match);
 static struct platform_driver mlxbf_gige_driver = {
 	.probe = mlxbf_gige_probe,
 	.remove = mlxbf_gige_remove,
+	.shutdown = mlxbf_gige_shutdown,
 	.driver = {
 		.name = DRV_NAME,
 		.acpi_match_table = ACPI_PTR(mlxbf_gige_acpi_match),
@@ -1211,5 +1219,5 @@ module_platform_driver(mlxbf_gige_driver);
 MODULE_DESCRIPTION("Mellanox BlueField SoC Gigabit Ethernet Driver");
 MODULE_AUTHOR("David Thompson <dthompson@mellanox.com>");
 MODULE_AUTHOR("Asmaa Mnebhi <asmaa@mellanox.com>");
-MODULE_LICENSE("GPL v2");
+MODULE_LICENSE("Dual BSD/GPL");
 MODULE_VERSION(DRV_VERSION);
