@@ -13,8 +13,13 @@
 #include <linux/irqreturn.h>
 #include <linux/netdevice.h>
 
+/* The silicon design supports a maximum RX ring size of
+ * 32K entries. Based on current testing this maximum size
+ * is not required to be supported.  Instead the RX ring
+ * will be capped at a realistic value of 1024 entries.
+ */
 #define MLXBF_GIGE_MIN_RXQ_SZ     32
-#define MLXBF_GIGE_MAX_RXQ_SZ     32768
+#define MLXBF_GIGE_MAX_RXQ_SZ     1024
 #define MLXBF_GIGE_DEFAULT_RXQ_SZ 128
 
 #define MLXBF_GIGE_MIN_TXQ_SZ     4
@@ -22,9 +27,6 @@
 #define MLXBF_GIGE_DEFAULT_TXQ_SZ 128
 
 #define MLXBF_GIGE_DEFAULT_BUF_SZ 2048
-
-/* Known pattern for initial state of RX buffers */
-#define MLXBF_GIGE_INIT_BYTE_RX_BUF 0x10
 
 /* There are four individual MAC RX filters. Currently
  * two of them are being used: one for the broadcast MAC
@@ -73,6 +75,7 @@ struct mlxbf_gige {
 	void __iomem *gpio_io;
 	void __iomem *cause_rsh_coalesce0_io;
 	void __iomem *cause_gpio_arm_coalesce0_io;
+	spinlock_t lock;
 	spinlock_t gpio_lock;
 	u16 rx_q_entries;
 	u16 tx_q_entries;
@@ -90,8 +93,8 @@ struct mlxbf_gige {
 	u64 error_intr_count;
 	u64 rx_intr_count;
 	u64 llu_plu_intr_count;
-	u8 *rx_buf[MLXBF_GIGE_DEFAULT_RXQ_SZ];
-	u8 *tx_buf[MLXBF_GIGE_DEFAULT_TXQ_SZ];
+	u8 *rx_buf[MLXBF_GIGE_MAX_RXQ_SZ];
+	u8 *tx_buf[MLXBF_GIGE_MAX_TXQ_SZ];
 	int error_irq;
 	int rx_irq;
 	int llu_plu_irq;
