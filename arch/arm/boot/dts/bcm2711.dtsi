@@ -127,7 +127,7 @@
 		};
 
 		uart2: serial@7e201400 {
-			compatible = "arm,pl011", "arm,primecell";
+			compatible = "brcm,bcm2835-pl011", "arm,pl011", "arm,primecell";  /* UBUNTU: "brcm,bcm2835-pl011" is required for u-boot 2019.07 */
 			reg = <0x7e201400 0x200>;
 			interrupts = <GIC_SPI 121 IRQ_TYPE_LEVEL_HIGH>;
 			clocks = <&clocks BCM2835_CLOCK_UART>,
@@ -138,7 +138,7 @@
 		};
 
 		uart3: serial@7e201600 {
-			compatible = "arm,pl011", "arm,primecell";
+			compatible = "brcm,bcm2835-pl011", "arm,pl011", "arm,primecell";  /* UBUNTU: "brcm,bcm2835-pl011" is required for u-boot 2019.07 */
 			reg = <0x7e201600 0x200>;
 			interrupts = <GIC_SPI 121 IRQ_TYPE_LEVEL_HIGH>;
 			clocks = <&clocks BCM2835_CLOCK_UART>,
@@ -149,7 +149,7 @@
 		};
 
 		uart4: serial@7e201800 {
-			compatible = "arm,pl011", "arm,primecell";
+			compatible = "brcm,bcm2835-pl011", "arm,pl011", "arm,primecell";  /* UBUNTU: "brcm,bcm2835-pl011" is required for u-boot 2019.07 */
 			reg = <0x7e201800 0x200>;
 			interrupts = <GIC_SPI 121 IRQ_TYPE_LEVEL_HIGH>;
 			clocks = <&clocks BCM2835_CLOCK_UART>,
@@ -160,7 +160,7 @@
 		};
 
 		uart5: serial@7e201a00 {
-			compatible = "arm,pl011", "arm,primecell";
+			compatible = "brcm,bcm2835-pl011", "arm,pl011", "arm,primecell";  /* UBUNTU: "brcm,bcm2835-pl011" is required for u-boot 2019.07 */
 			reg = <0x7e201a00 0x200>;
 			interrupts = <GIC_SPI 121 IRQ_TYPE_LEVEL_HIGH>;
 			clocks = <&clocks BCM2835_CLOCK_UART>,
