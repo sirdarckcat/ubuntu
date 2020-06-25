@@ -365,10 +365,10 @@ static int ipsec_add_rx_rule(struct mlx5e_priv *priv, struct mlx5e_ipsec_sa_entr
 	struct mlx5_accel_esp_xfrm_attrs *attrs = &sa_entry->xfrm->attrs;
 	u8 action[MLX5_UN_SZ_BYTES(set_add_copy_action_in_auto)] = {};
 	struct mlx5_ipsec_sa_ctx *sa_ctx = sa_entry->hw_context;
+	struct mlx5_modify_hdr *modify_hdr = NULL;
 	struct mlx5_core_dev *mdev = priv->mdev;
 	struct mlx5_flow_destination dest = {};
 	struct mlx5_flow_act flow_act = {};
-	struct mlx5_modify_hdr *modify_hdr;
 	struct mlx5e_accel_proto *prot;
 	enum mlx5e_traffic_types type;
 	struct mlx5_flow_handle *rule;
