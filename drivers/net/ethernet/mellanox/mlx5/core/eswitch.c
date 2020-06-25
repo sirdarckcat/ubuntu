@@ -1787,7 +1787,7 @@ int mlx5_eswitch_enable_vport(struct mlx5_eswitch *esw, struct mlx5_vport *vport
 			      enum mlx5_eswitch_vport_event enabled_events)
 {
 	u16 vport_num = vport->vport;
-	int ret;
+	int ret = 0;
 
 	mutex_lock(&esw->state_lock);
 	if (vport->enabled)
