@@ -1,1 +1,11 @@
-# Annotations enforcement disabled
+# Menu: HEADER
+# FORMAT: 3
+# ARCH: x86
+
+# include "../../debian.master/config/annotations"
+
+CONFIG_BLK_DEV_RAM				policy<{'amd64': 'm'}>
+CONFIG_BLK_DEV_RAM				mark<ENFORCED> note<LP: #1873809>
+
+CONFIG_BLK_DEV_RAM_SIZE				policy<{'amd64': '65536'}>
+CONFIG_BLK_DEV_RAM_SIZE				mark<ENFORCED> note<LP: #1873809>
