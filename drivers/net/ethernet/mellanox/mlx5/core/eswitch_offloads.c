@@ -2213,35 +2213,6 @@ static void esw_vport_destroy_ingress_acl_group(struct mlx5_vport *vport)
 	}
 }
 
-u32 mlx5_esw_match_metadata_alloc(struct mlx5_eswitch *esw)
-{
-	u32 num_vports = GENMASK(ESW_VPORT_BITS - 1, 0) - 1;
-	u32 vhca_id_mask = GENMASK(ESW_VHCA_ID_BITS - 1, 0);
-	u32 vhca_id = MLX5_CAP_GEN(esw->dev, vhca_id);
-	u32 start;
-	u32 end;
-	int id;
-
-	/* Make sure the vhca_id fits the ESW_VHCA_ID_BITS */
-	WARN_ON_ONCE(vhca_id >= BIT(ESW_VHCA_ID_BITS));
-
-	/* Trim vhca_id to ESW_VHCA_ID_BITS */
-	vhca_id &= vhca_id_mask;
-
-	start = (vhca_id << ESW_VPORT_BITS);
-	end = start + num_vports;
-	if (!vhca_id)
-		start += 1; /* zero is reserved/invalid metadata */
-	id = ida_alloc_range(&esw->offloads.vport_metadata_ida, start, end, GFP_KERNEL);
-
-	return (id < 0) ? 0 : id;
-}
-
-void mlx5_esw_match_metadata_free(struct mlx5_eswitch *esw, u32 metadata)
-{
-	ida_free(&esw->offloads.vport_metadata_ida, metadata);
-}
-
 /* Caller must hold rtnl_lock */
 int mlx5_esw_acl_ingress_vport_bond_update(struct mlx5_eswitch *esw, u16 vport_num,
 					   u32 metadata)
@@ -2388,16 +2359,6 @@ esw_check_vport_match_metadata_supported(const struct mlx5_eswitch *esw)
 	return true;
 }
 
-static void esw_offloads_vport_metadata_cleanup(struct mlx5_eswitch *esw,
-						struct mlx5_vport *vport)
-{
-	if (vport->vport == MLX5_VPORT_UPLINK || !vport->default_metadata)
-		return;
-
-	WARN_ON(vport->metadata != vport->default_metadata);
-	mlx5_esw_match_metadata_free(esw, vport->default_metadata);
-}
-
 int
 esw_vport_create_offloads_acl_tables(struct mlx5_eswitch *esw,
 				     struct mlx5_vport *vport)
@@ -2405,10 +2366,8 @@ esw_vport_create_offloads_acl_tables(struct mlx5_eswitch *esw,
 	int err;
 
 	err = esw_vport_ingress_config(esw, vport);
-	if (err) {
-		esw_offloads_vport_metadata_cleanup(esw, vport);
+	if (err)
 		return err;
-	}
 
 	if (mlx5_eswitch_is_vf_vport(esw, vport->vport)) {
 		err = esw_vport_egress_config(esw, vport);
@@ -2417,7 +2376,6 @@ esw_vport_create_offloads_acl_tables(struct mlx5_eswitch *esw,
 			esw_vport_del_ingress_acl_modify_metadata(esw, vport);
 			esw_vport_destroy_ingress_acl_group(vport);
 			esw_vport_destroy_ingress_acl_table(vport);
-			esw_offloads_vport_metadata_cleanup(esw, vport);
 		}
 	}
 	return err;
@@ -2432,7 +2390,6 @@ esw_vport_destroy_offloads_acl_tables(struct mlx5_eswitch *esw,
 	esw_vport_del_ingress_acl_modify_metadata(esw, vport);
 	esw_vport_destroy_ingress_acl_group(vport);
 	esw_vport_destroy_ingress_acl_table(vport);
-	esw_offloads_vport_metadata_cleanup(esw, vport);
 }
 
 static int esw_create_uplink_offloads_acl_tables(struct mlx5_eswitch *esw)
