@@ -219,7 +219,6 @@ struct mlx5_esw_offload {
 	u8 inline_mode;
 	atomic64_t num_flows;
 	enum devlink_eswitch_encap_mode encap;
-	struct ida vport_metadata_ida;
 };
 
 /* E-Switch MC FDB table hash node */
