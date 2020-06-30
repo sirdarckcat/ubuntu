@@ -59,6 +59,9 @@ struct vport_addr {
 	bool mc_promisc;
 };
 
+DEFINE_IDA(mlx5e_vport_match_ida);
+DEFINE_MUTEX(mlx5e_vport_match_ida_mutex);
+
 static void esw_destroy_legacy_fdb_table(struct mlx5_eswitch *esw);
 static void esw_cleanup_vepa_rules(struct mlx5_eswitch *esw);
 
@@ -2085,8 +2088,28 @@ void mlx5_eswitch_disable(struct mlx5_eswitch *esw)
 	}
 }
 
-static int esw_offloads_vport_metadata_setup(struct mlx5_eswitch *esw,
-					     struct mlx5_vport *vport)
+#define VHCA_VPORT_MATCH_ID_SIZE BIT(ESW_SOURCE_PORT_METADATA_BITS)
+
+u32 mlx5_esw_match_metadata_alloc(struct mlx5_eswitch *esw)
+{
+	int id;
+
+	mutex_lock(&mlx5e_vport_match_ida_mutex);
+	id = ida_simple_get(&mlx5e_vport_match_ida, 1, VHCA_VPORT_MATCH_ID_SIZE,
+			    GFP_KERNEL);
+	mutex_unlock(&mlx5e_vport_match_ida_mutex);
+	return (id < 0) ? 0 : id;
+}
+
+void mlx5_esw_match_metadata_free(struct mlx5_eswitch *esw, u32 metadata)
+{
+	mutex_lock(&mlx5e_vport_match_ida_mutex);
+	ida_simple_remove(&mlx5e_vport_match_ida, metadata);
+	mutex_unlock(&mlx5e_vport_match_ida_mutex);
+}
+
+static int esw_vport_metadata_setup(struct mlx5_eswitch *esw,
+				    struct mlx5_vport *vport)
 {
 	if (vport->vport == MLX5_VPORT_UPLINK)
 		return 0;
@@ -2096,12 +2119,22 @@ static int esw_offloads_vport_metadata_setup(struct mlx5_eswitch *esw,
 	return vport->metadata ? 0 : -ENOSPC;
 }
 
+static void esw_vport_metadata_cleanup(struct mlx5_eswitch *esw,
+				       struct mlx5_vport *vport)
+{
+	if (vport->vport == MLX5_VPORT_UPLINK || !vport->default_metadata)
+		return;
+
+	WARN_ON(vport->metadata != vport->default_metadata);
+	mlx5_esw_match_metadata_free(esw, vport->default_metadata);
+}
+
 int mlx5_eswitch_init(struct mlx5_core_dev *dev)
 {
 	struct mlx5_eswitch *esw;
 	struct mlx5_vport *vport;
+	int err, i = 0, j;
 	int total_vports;
-	int err, i;
 
 	if (!MLX5_VPORT_MANAGER(dev))
 		return 0;
@@ -2145,16 +2178,15 @@ int mlx5_eswitch_init(struct mlx5_core_dev *dev)
 	hash_init(esw->offloads.encap_tbl);
 	mlx5e_mod_hdr_tbl_init(&esw->offloads.mod_hdr);
 	atomic64_set(&esw->offloads.num_flows, 0);
-	ida_init(&esw->offloads.vport_metadata_ida);
 	mutex_init(&esw->state_lock);
 
 	mlx5_esw_for_all_vports(esw, i, vport) {
 		vport->vport = mlx5_eswitch_index_to_vport_num(esw, i);
 		vport->info.link_state = MLX5_VPORT_ADMIN_STATE_AUTO;
 		vport->dev = dev;
-		err = esw_offloads_vport_metadata_setup(esw, vport);
+		err = esw_vport_metadata_setup(esw, vport);
 		if (err)
-			esw_warn(esw->dev, "Failed to generate metadata for vport 0x%x", vport->vport);
+			goto abort;
 
 		INIT_WORK(&vport->vport_change_handler,
 			  esw_vport_change_handler);
@@ -2170,6 +2202,11 @@ abort:
 	if (esw->work_queue)
 		destroy_workqueue(esw->work_queue);
 	esw_offloads_cleanup_reps(esw);
+	mlx5_esw_for_all_vports(esw, j, vport) {
+		if (j == i)
+			break;
+		esw_vport_metadata_cleanup(esw, vport);
+	}
 	kfree(esw->vports);
 	kfree(esw);
 	return err;
@@ -2177,15 +2214,19 @@ abort:
 
 void mlx5_eswitch_cleanup(struct mlx5_eswitch *esw)
 {
+	struct mlx5_vport *vport;
+	int i;
+
 	if (!esw || !MLX5_VPORT_MANAGER(esw->dev))
 		return;
 
 	esw_info(esw->dev, "cleanup\n");
 
 	esw->dev->priv.eswitch = NULL;
+	mlx5_esw_for_all_vports(esw, i, vport)
+		esw_vport_metadata_cleanup(esw, vport);
 	destroy_workqueue(esw->work_queue);
 	esw_offloads_cleanup_reps(esw);
-	ida_destroy(&esw->offloads.vport_metadata_ida);
 	mlx5e_mod_hdr_tbl_destroy(&esw->offloads.mod_hdr);
 	mutex_destroy(&esw->offloads.encap_tbl_lock);
 	kfree(esw->vports);
