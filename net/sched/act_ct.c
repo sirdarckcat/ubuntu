@@ -33,6 +33,10 @@
 #include <net/netfilter/ipv6/nf_defrag_ipv6.h>
 #include <uapi/linux/netfilter/nf_nat.h>
 
+static unsigned long offload_timeout = NF_DEFAULT_FLOW_TIMEOUT;
+module_param(offload_timeout, ulong, 0644);
+MODULE_PARM_DESC(offload_timeout, "Flow offload timeout in seconds");
+
 static struct workqueue_struct *act_ct_wq;
 static struct rhashtable zones_ht;
 static DEFINE_MUTEX(zones_mutex);
@@ -293,6 +297,7 @@ static int tcf_ct_flow_table_get(struct tcf_ct_params *params)
 
 	ct_ft->nf_ft.type = &flowtable_ct;
 	ct_ft->nf_ft.flags |= NF_FLOWTABLE_HW_OFFLOAD;
+	ct_ft->nf_ft.flow_timeout = offload_timeout;
 	err = nf_flow_table_init(&ct_ft->nf_ft);
 	if (err)
 		goto err_init;
