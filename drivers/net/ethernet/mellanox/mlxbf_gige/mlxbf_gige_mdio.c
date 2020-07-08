@@ -20,8 +20,6 @@
 
 #include "mlxbf_gige.h"
 
-#define MLXBF_GIGE_DEFAULT_PHY_ADDR	0x3
-
 #define MLXBF_GIGE_POLL_BUSY_TIMEOUT	100 /* ms */
 #define MLXBF_GIGE_POLL_DELAY_USEC	100 /* microsec */
 
