@@ -717,6 +717,26 @@ int xfrm_output(struct sock *sk, struct sk_buff *skb)
 		break;
 	}
 
+	if ((x->xso.flags & XFRM_OFFLOAD_FULL)) {
+		struct dst_entry *dst = skb_dst_pop(skb);
+
+		if (!dst) {
+			return -EHOSTUNREACH;
+		}
+		skb_dst_set(skb, dst);
+
+		err = skb_dst(skb)->ops->local_out(net, skb->sk, skb);
+		if (unlikely(err != 1)) {
+			return err;
+		}
+
+		if (!skb_dst(skb)->xfrm) {
+			return dst_output(net, skb->sk, skb);
+		}
+
+		return 0;
+	}
+
 	secpath_reset(skb);
 
 	if (xfrm_dev_offload_ok(skb, x)) {
