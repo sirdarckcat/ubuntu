@@ -48,6 +48,8 @@
 #define MLXBF_GIGE_LLU_PLU_INTR_IDX     2
 #define MLXBF_GIGE_PHY_INT_N            3
 
+#define MLXBF_GIGE_DEFAULT_PHY_ADDR	0x3
+
 struct mlxbf_gige_stats {
 	u64 hw_access_errors;
 	u64 tx_invalid_checksums;
