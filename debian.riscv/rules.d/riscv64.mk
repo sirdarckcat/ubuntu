@@ -11,6 +11,7 @@ loader		= grub
 vdso		= vdso_install
 no_dumpfile	= true
 
+do_libc_dev_package = false
 do_extras_package   = true
 do_tools_usbip      = true
 do_tools_cpupower   = true
