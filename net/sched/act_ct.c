@@ -33,7 +33,7 @@
 #include <net/netfilter/ipv6/nf_defrag_ipv6.h>
 #include <uapi/linux/netfilter/nf_nat.h>
 
-static unsigned long offload_timeout = NF_DEFAULT_FLOW_TIMEOUT;
+static unsigned long offload_timeout = 30;
 module_param(offload_timeout, ulong, 0644);
 MODULE_PARM_DESC(offload_timeout, "Flow offload timeout in seconds");
 
