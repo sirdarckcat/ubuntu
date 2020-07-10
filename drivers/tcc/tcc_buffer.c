@@ -742,11 +742,6 @@ static int tcc_parse_ptct(void)
 		tbl_swap = tbl_swap + entry_size / sizeof(u32);
 	} while ((offset < (acpi_ptct_tbl->length) / sizeof(u32)) && entry_size);
  
-	if (p_tcc_config->num_of_psram < 1) {
-		pr_err("No psram found!\n");
-		return -EPERM;
-	}
-
 	dprintk("ptct_format = %s\n", (ptct_format == FORMAT_V1) ? "FORMAT_V1":"FORMAT_V2");
 
 	/* Parse and save memory latency and errer log buffer address */
