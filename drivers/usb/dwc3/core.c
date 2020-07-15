@@ -1452,7 +1452,8 @@ static void dwc3_get_properties(struct dwc3 *dwc)
 				&tx_de_emphasis);
 	device_property_read_string(dev, "snps,hsphy_interface",
 				    &dwc->hsphy_interface);
-	device_property_read_u32(dev, "snps,quirk-frame-length-adjustment",
+	(void)device_property_read_u32(dev,
+				"snps,quirk-frame-length-adjustment",
 				 &dwc->fladj);
 
 	dwc->refclk_fladj = device_property_read_bool(dev,
@@ -1709,7 +1710,7 @@ static int dwc3_remove(struct platform_device *pdev)
 {
 	struct dwc3	*dwc = platform_get_drvdata(pdev);
 
-	pm_runtime_get_sync(&pdev->dev);
+	(void)pm_runtime_get_sync(&pdev->dev);
 
 	dwc3_core_exit_mode(dwc);
 	dwc3_debugfs_exit(dwc);
@@ -1718,6 +1719,7 @@ static int dwc3_remove(struct platform_device *pdev)
 	dwc3_core_exit(dwc);
 	dwc3_ulpi_exit(dwc);
 
+	(void)pm_runtime_put_sync(&pdev->dev);
 	pm_runtime_allow(&pdev->dev);
 	pm_runtime_disable(&pdev->dev);
 	pm_runtime_put_noidle(&pdev->dev);
