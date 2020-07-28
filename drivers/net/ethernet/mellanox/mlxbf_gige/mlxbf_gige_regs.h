@@ -2,7 +2,7 @@
 
 /* Header file for Mellanox BlueField GigE register defines
  *
- * Copyright (c) 2020, Mellanox Technologies
+ * Copyright (c) 2020 Mellanox Technologies Ltd.
  */
 
 #ifndef __MLXBF_GIGE_REGS_H__
