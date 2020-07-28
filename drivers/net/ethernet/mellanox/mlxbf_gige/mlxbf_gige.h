@@ -4,7 +4,7 @@
  * - this file contains software data structures and any chip-specific
  *   data structures (e.g. TX WQE format) that are memory resident.
  *
- * Copyright (c) 2020, Mellanox Technologies
+ * Copyright (c) 2020 Mellanox Technologies Ltd.
  */
 
 #ifndef __MLXBF_GIGE_H__
@@ -48,7 +48,7 @@
 #define MLXBF_GIGE_LLU_PLU_INTR_IDX     2
 #define MLXBF_GIGE_PHY_INT_N            3
 
-#define MLXBF_GIGE_DEFAULT_PHY_ADDR	0x3
+#define MLXBF_GIGE_MDIO_DEFAULT_PHY_ADDR 0x3
 
 struct mlxbf_gige_stats {
 	u64 hw_access_errors;
@@ -77,6 +77,7 @@ struct mlxbf_gige {
 	void __iomem *gpio_io;
 	void __iomem *cause_rsh_coalesce0_io;
 	void __iomem *cause_gpio_arm_coalesce0_io;
+	u32 phy_int_gpio_mask;
 	spinlock_t lock;
 	spinlock_t gpio_lock;
 	u16 rx_q_entries;
