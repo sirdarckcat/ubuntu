@@ -164,7 +164,7 @@ struct mlxbf_pmc_events mlxbf_pcie_events[] = {
 {-1, NULL}
 };
 
-struct mlxbf_pmc_events mlxbf_triogen_events[] = {
+struct mlxbf_pmc_events mlxbf_smgen_events[] = {
 {0x0,  "AW_REQ"},
 {0x1,  "AW_BEATS"},
 {0x2,  "AW_TRANS"},
