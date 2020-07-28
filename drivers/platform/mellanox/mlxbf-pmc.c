@@ -230,7 +230,7 @@ struct mlxbf_pmc_events *mlxbf_pmc_event_list(char *blk)
 	else if (strstr(blk, "tile"))
 		events = mlxbf_hnf_events;
 	else if (strstr(blk, "triogen"))
-		events = mlxbf_triogen_events;
+		events = mlxbf_smgen_events;
 	else if (strstr(blk, "trio"))
 		switch (pmc->event_set) {
 		case MLNX_EVENT_SET_BF1:
@@ -251,6 +251,10 @@ struct mlxbf_pmc_events *mlxbf_pmc_event_list(char *blk)
 		events = mlxbf_pcie_events;
 	else if (strstr(blk, "l3cache"))
 		events = mlxbf_l3cache_events;
+        else if (strstr(blk, "gic"))
+		events = mlxbf_smgen_events;
+        else if (strstr(blk, "smmu"))
+		events = mlxbf_smgen_events;
 	else
 		events = NULL;
 
@@ -348,20 +352,25 @@ int mlxbf_program_l3_counter(int blk_num, uint32_t cnt_num, uint32_t evt)
 
 	switch (cnt_num) {
 	case 0:
+		perfcnt_sel &= ~MLXBF_L3C_PERF_CNT_SEL__CNT_0;
 		perfcnt_sel |= FIELD_PREP(MLXBF_L3C_PERF_CNT_SEL__CNT_0, evt);
 		break;
 	case 1:
+		perfcnt_sel &= ~MLXBF_L3C_PERF_CNT_SEL__CNT_1;
 		perfcnt_sel |= FIELD_PREP(MLXBF_L3C_PERF_CNT_SEL__CNT_1, evt);
 		break;
 	case 2:
+		perfcnt_sel &= ~MLXBF_L3C_PERF_CNT_SEL__CNT_2;
 		perfcnt_sel |= FIELD_PREP(MLXBF_L3C_PERF_CNT_SEL__CNT_2, evt);
 		break;
 	case 3:
+		perfcnt_sel &= ~MLXBF_L3C_PERF_CNT_SEL__CNT_3;
 		perfcnt_sel |= FIELD_PREP(MLXBF_L3C_PERF_CNT_SEL__CNT_3, evt);
 		break;
 	case 4:
-		perfcnt_sel |= FIELD_PREP(MLXBF_L3C_PERF_CNT_SEL_1__CNT_4,
-					  evt);
+		perfcnt_sel_1 &= ~MLXBF_L3C_PERF_CNT_SEL_1__CNT_4;
+		perfcnt_sel_1 |= FIELD_PREP(MLXBF_L3C_PERF_CNT_SEL_1__CNT_4,
+					    evt);
 		break;
 	default:
 		return -EINVAL;
@@ -538,7 +547,8 @@ int mlxbf_read_l3_event(int blk_num, uint32_t cnt_num, uint64_t *result)
 		evt = FIELD_GET(MLXBF_L3C_PERF_CNT_SEL__CNT_3, perfcnt_sel);
 		break;
 	case 4:
-		evt = FIELD_GET(MLXBF_L3C_PERF_CNT_SEL_1__CNT_4, perfcnt_sel);
+		evt = FIELD_GET(MLXBF_L3C_PERF_CNT_SEL_1__CNT_4,
+				perfcnt_sel_1);
 		break;
 	default:
 		return -EINVAL;
