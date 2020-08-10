@@ -145,6 +145,7 @@ enum flow_action_id {
 	FLOW_ACTION_MPLS_PUSH,
 	FLOW_ACTION_MPLS_POP,
 	FLOW_ACTION_MPLS_MANGLE,
+	FLOW_ACTION_PRIORITY,
 	NUM_FLOW_ACTIONS,
 };
 
@@ -184,6 +185,7 @@ struct flow_action_entry {
 		struct ip_tunnel_info	*tunnel;	/* FLOW_ACTION_TUNNEL_ENCAP */
 		u32			csum_flags;	/* FLOW_ACTION_CSUM */
 		u32			mark;		/* FLOW_ACTION_MARK */
+		u32			prio;		/* FLOW_ACTION_PRIORITY */
 		u16                     ptype;          /* FLOW_ACTION_PTYPE */
 		struct {				/* FLOW_ACTION_QUEUE */
 			u32		ctx;
