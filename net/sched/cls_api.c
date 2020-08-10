@@ -3594,6 +3594,9 @@ int tc_setup_flow_action(struct flow_action *flow_action,
 		} else if (is_tcf_skbedit_mark(act)) {
 			entry->id = FLOW_ACTION_MARK;
 			entry->mark = tcf_skbedit_mark(act);
+		} else if (is_tcf_skbedit_prio(act)) {
+			entry->id = FLOW_ACTION_PRIORITY;
+			entry->prio = tcf_skbedit_prio(act);
 		} else if (is_tcf_sample(act)) {
 			entry->id = FLOW_ACTION_SAMPLE;
 			entry->sample.trunc_size = tcf_sample_trunc_size(act);
