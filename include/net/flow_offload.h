@@ -185,7 +185,7 @@ struct flow_action_entry {
 		struct ip_tunnel_info	*tunnel;	/* FLOW_ACTION_TUNNEL_ENCAP */
 		u32			csum_flags;	/* FLOW_ACTION_CSUM */
 		u32			mark;		/* FLOW_ACTION_MARK */
-		u32			prio;		/* FLOW_ACTION_PRIORITY */
+		u32			priority;	/* FLOW_ACTION_PRIORITY */
 		u16                     ptype;          /* FLOW_ACTION_PTYPE */
 		struct {				/* FLOW_ACTION_QUEUE */
 			u32		ctx;
