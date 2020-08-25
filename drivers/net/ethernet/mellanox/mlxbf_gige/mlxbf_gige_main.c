@@ -18,7 +18,7 @@
 #include "mlxbf_gige_regs.h"
 
 #define DRV_NAME    "mlxbf_gige"
-#define DRV_VERSION "1.1"
+#define DRV_VERSION "1.2"
 
 static void mlxbf_gige_set_mac_rx_filter(struct mlxbf_gige *priv,
 					 unsigned int index, u64 dmac)
@@ -36,16 +36,14 @@ static void mlxbf_gige_set_mac_rx_filter(struct mlxbf_gige *priv,
 	writeq(control, base + MLXBF_GIGE_CONTROL);
 }
 
-static int mlxbf_gige_get_mac_rx_filter(struct mlxbf_gige *priv,
-					unsigned int index, u64 *dmac)
+static void mlxbf_gige_get_mac_rx_filter(struct mlxbf_gige *priv,
+					 unsigned int index, u64 *dmac)
 {
 	void __iomem *base = priv->base;
 
 	/* Read destination MAC from specified MAC RX filter */
 	*dmac = readq(base + MLXBF_GIGE_RX_MAC_FILTER +
 		      (index * MLXBF_GIGE_RX_MAC_FILTER_STRIDE));
-
-	return 0;
 }
 
 static void mlxbf_gige_enable_promisc(struct mlxbf_gige *priv)
@@ -254,9 +252,9 @@ static void mlxbf_gige_rx_deinit(struct mlxbf_gige *priv)
 	dma_free_coherent(priv->dev, size,
 			  priv->rx_cqe_base, priv->rx_cqe_base_dma);
 
-	priv->rx_wqe_base = 0;
+	priv->rx_wqe_base = NULL;
 	priv->rx_wqe_base_dma = 0;
-	priv->rx_cqe_base = 0;
+	priv->rx_cqe_base = NULL;
 	priv->rx_cqe_base_dma = 0;
 	writeq(0, priv->base + MLXBF_GIGE_RX_WQ_BASE);
 	writeq(0, priv->base + MLXBF_GIGE_RX_CQ_BASE);
@@ -290,11 +288,11 @@ static void mlxbf_gige_tx_deinit(struct mlxbf_gige *priv)
 	dma_free_coherent(priv->dev, MLXBF_GIGE_TX_CC_SZ,
 			  priv->tx_cc, priv->tx_cc_dma);
 
-	priv->tx_wqe_base = 0;
+	priv->tx_wqe_base = NULL;
 	priv->tx_wqe_base_dma = 0;
-	priv->tx_cc = 0;
+	priv->tx_cc = NULL;
 	priv->tx_cc_dma = 0;
-	priv->tx_wqe_next = 0;
+	priv->tx_wqe_next = NULL;
 	writeq(0, priv->base + MLXBF_GIGE_TX_WQ_BASE);
 	writeq(0, priv->base + MLXBF_GIGE_TX_CI_UPDATE_ADDRESS);
 }
@@ -314,7 +312,7 @@ static void mlxbf_gige_get_regs(struct net_device *netdev,
 				struct ethtool_regs *regs, void *p)
 {
 	struct mlxbf_gige *priv = netdev_priv(netdev);
-	u64 *buff = p;
+	__be64 *buff = p;
 	int reg;
 
 	regs->version = MLXBF_GIGE_REGS_VERSION;
@@ -1056,10 +1054,9 @@ static void mlxbf_gige_initial_mac(struct mlxbf_gige *priv)
 {
 	u8 mac[ETH_ALEN];
 	u64 local_mac;
-	int status;
 
-	status = mlxbf_gige_get_mac_rx_filter(priv, MLXBF_GIGE_LOCAL_MAC_FILTER_IDX,
-					      &local_mac);
+	mlxbf_gige_get_mac_rx_filter(priv, MLXBF_GIGE_LOCAL_MAC_FILTER_IDX,
+				     &local_mac);
 	mlxbf_gige_u64_to_mac(mac, local_mac);
 
 	if (is_valid_ether_addr(mac)) {
@@ -1192,6 +1189,7 @@ static int mlxbf_gige_probe(struct platform_device *pdev)
 	err = register_netdev(netdev);
 	if (err) {
 		dev_err(&pdev->dev, "Failed to register netdev\n");
+		phy_disconnect(phydev);
 		return err;
 	}
 
@@ -1202,8 +1200,8 @@ static int mlxbf_gige_remove(struct platform_device *pdev)
 {
 	struct mlxbf_gige *priv = platform_get_drvdata(pdev);
 
-	phy_disconnect(priv->netdev->phydev);
 	unregister_netdev(priv->netdev);
+	phy_disconnect(priv->netdev->phydev);
 	mlxbf_gige_mdio_remove(priv);
 	platform_set_drvdata(pdev, NULL);
 
