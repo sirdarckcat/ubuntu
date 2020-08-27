@@ -9150,7 +9150,7 @@ CONFIG_DPM_WATCHDOG                             policy<{'riscv64': 'n'}>
 CONFIG_PM_DEBUG                                 flag<REVIEW>
 
 # Menu: Security options
-CONFIG_SECURITY_DMESG_RESTRICT                  policy<{'riscv64': 'n'}>
+CONFIG_SECURITY_DMESG_RESTRICT                  policy<{'riscv64': 'y'}>
 CONFIG_SECURITY_PERF_EVENTS_RESTRICT            policy<{'riscv64': 'y'}>
 CONFIG_SECURITYFS                               policy<{'riscv64': 'y'}>
 CONFIG_HARDENED_USERCOPY                        policy<{'riscv64': 'y'}>
@@ -9159,6 +9159,7 @@ CONFIG_HARDENED_USERCOPY_PAGESPAN               policy<{'riscv64': 'n'}>
 CONFIG_STATIC_USERMODEHELPER                    policy<{'riscv64': 'n'}>
 CONFIG_LSM                                      policy<{'riscv64': '"lockdown,yama,integrity,apparmor"'}>
 #
+CONFIG_SECURITY_DMESG_RESTRICT                  mark<ENFORCED>
 CONFIG_LSM                                      mark<ENFORCED>
 
 # Menu: Security options >> Enable access key retention support
