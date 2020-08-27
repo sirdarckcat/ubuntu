@@ -7723,12 +7723,11 @@ CONFIG_DEBUG_INFO_REDUCED                       policy<{'riscv64': 'n'}>
 CONFIG_DEBUG_INFO_COMPRESSED                    policy<{'riscv64': 'n'}>
 CONFIG_DEBUG_INFO_SPLIT                         policy<{'riscv64': 'n'}>
 CONFIG_DEBUG_INFO_DWARF4                        policy<{'riscv64': 'y'}>
-CONFIG_DEBUG_INFO_BTF                           policy<{'riscv64': 'n'}>
+CONFIG_DEBUG_INFO_BTF                           policy<{'riscv64': 'y'}>
 CONFIG_GDB_SCRIPTS                              policy<{'riscv64': 'y'}>
 #
 CONFIG_DEBUG_INFO                               mark<ENFORCED> note<required for debug packages>
 CONFIG_DEBUG_INFO_SPLIT                         note<LP:1413646 and LP:1413664>
-CONFIG_DEBUG_INFO_BTF                           flag<REVIEW> note<Might be useful for bpf, reuquires pahole to build>
 
 # Menu: Kernel hacking >> Debug Oops, Lockups and Hangs
 CONFIG_PANIC_ON_OOPS                            policy<{'riscv64': 'n'}>
