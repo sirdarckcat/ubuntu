@@ -19,6 +19,8 @@
 
 #include <linux/mmc/host.h>
 
+#include <soc/tegra/fuse.h>
+
 /*
  * Controller registers
  */
@@ -675,6 +677,8 @@ struct sdhci_ops {
 
 static inline void sdhci_writel(struct sdhci_host *host, u32 val, int reg)
 {
+	if ((tegra_get_platform() == TEGRA_PLATFORM_VSP) && (reg > SDHCI_HOST_VERSION))
+		return;
 	if (unlikely(host->ops->write_l))
 		host->ops->write_l(host, val, reg);
 	else
@@ -683,6 +687,8 @@ static inline void sdhci_writel(struct sdhci_host *host, u32 val, int reg)
 
 static inline void sdhci_writew(struct sdhci_host *host, u16 val, int reg)
 {
+	if ((tegra_get_platform() == TEGRA_PLATFORM_VSP) && (reg > SDHCI_HOST_VERSION))
+		return;
 	if (unlikely(host->ops->write_w))
 		host->ops->write_w(host, val, reg);
 	else
@@ -691,6 +697,8 @@ static inline void sdhci_writew(struct sdhci_host *host, u16 val, int reg)
 
 static inline void sdhci_writeb(struct sdhci_host *host, u8 val, int reg)
 {
+	if ((tegra_get_platform() == TEGRA_PLATFORM_VSP) && (reg > SDHCI_HOST_VERSION))
+		return;
 	if (unlikely(host->ops->write_b))
 		host->ops->write_b(host, val, reg);
 	else
@@ -699,6 +707,8 @@ static inline void sdhci_writeb(struct sdhci_host *host, u8 val, int reg)
 
 static inline u32 sdhci_readl(struct sdhci_host *host, int reg)
 {
+	if ((tegra_get_platform() == TEGRA_PLATFORM_VSP) && (reg > SDHCI_HOST_VERSION))
+		return 0;
 	if (unlikely(host->ops->read_l))
 		return host->ops->read_l(host, reg);
 	else
@@ -707,6 +717,8 @@ static inline u32 sdhci_readl(struct sdhci_host *host, int reg)
 
 static inline u16 sdhci_readw(struct sdhci_host *host, int reg)
 {
+	if ((tegra_get_platform() == TEGRA_PLATFORM_VSP) && (reg > SDHCI_HOST_VERSION))
+		return 0;
 	if (unlikely(host->ops->read_w))
 		return host->ops->read_w(host, reg);
 	else
@@ -715,6 +727,8 @@ static inline u16 sdhci_readw(struct sdhci_host *host, int reg)
 
 static inline u8 sdhci_readb(struct sdhci_host *host, int reg)
 {
+	if ((tegra_get_platform() == TEGRA_PLATFORM_VSP) && (reg > SDHCI_HOST_VERSION))
+		return 0;
 	if (unlikely(host->ops->read_b))
 		return host->ops->read_b(host, reg);
 	else
@@ -725,31 +739,43 @@ static inline u8 sdhci_readb(struct sdhci_host *host, int reg)
 
 static inline void sdhci_writel(struct sdhci_host *host, u32 val, int reg)
 {
+	if ((tegra_get_platform() == TEGRA_PLATFORM_VSP) && (reg > SDHCI_HOST_VERSION))
+		return;
 	writel(val, host->ioaddr + reg);
 }
 
 static inline void sdhci_writew(struct sdhci_host *host, u16 val, int reg)
 {
+	if ((tegra_get_platform() == TEGRA_PLATFORM_VSP) && (reg > SDHCI_HOST_VERSION))
+		return;
 	writew(val, host->ioaddr + reg);
 }
 
 static inline void sdhci_writeb(struct sdhci_host *host, u8 val, int reg)
 {
+	if ((tegra_get_platform() == TEGRA_PLATFORM_VSP) && (reg > SDHCI_HOST_VERSION))
+		return;
 	writeb(val, host->ioaddr + reg);
 }
 
 static inline u32 sdhci_readl(struct sdhci_host *host, int reg)
 {
+	if ((tegra_get_platform() == TEGRA_PLATFORM_VSP) && (reg > SDHCI_HOST_VERSION))
+		return 0;
 	return readl(host->ioaddr + reg);
 }
 
 static inline u16 sdhci_readw(struct sdhci_host *host, int reg)
 {
+	if ((tegra_get_platform() == TEGRA_PLATFORM_VSP) && (reg > SDHCI_HOST_VERSION))
+		return 0;
 	return readw(host->ioaddr + reg);
 }
 
 static inline u8 sdhci_readb(struct sdhci_host *host, int reg)
 {
+	if ((tegra_get_platform() == TEGRA_PLATFORM_VSP) && (reg > SDHCI_HOST_VERSION))
+		return 0;
 	return readb(host->ioaddr + reg);
 }
 
