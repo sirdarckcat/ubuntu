@@ -1,9 +1,9 @@
-# SPDX-License-Identifier: GPL-2.0
+# SPDX-License-Identifier: GPL-2.0-only OR Linux-OpenIB
 #
 # Makefile for Mellanox BlueField PKA Driver
 #
 
-obj-m += pka-mlxbf.o
+obj-m += mlxbf-pka.o
 
-pka-mlxbf-y := pka_drv_mlxbf.o
-pka-mlxbf-y += pka_dev.o
+mlxbf-pka-y := mlxbf_pka_drv.o
+mlxbf-pka-y += mlxbf_pka_dev.o
