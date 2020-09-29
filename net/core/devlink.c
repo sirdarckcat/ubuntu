@@ -9222,6 +9222,7 @@ devlink_trap_report_metadata_set(struct devlink_trap_metadata *metadata,
 	metadata->trap_name = trap_item->trap->name;
 	metadata->trap_group_name = trap_item->group_item->group->name;
 	metadata->fa_cookie = fa_cookie;
+	metadata->trap_type = trap_item->trap->type;
 
 	spin_lock(&in_devlink_port->type_lock);
 	if (in_devlink_port->type == DEVLINK_PORT_TYPE_ETH)
