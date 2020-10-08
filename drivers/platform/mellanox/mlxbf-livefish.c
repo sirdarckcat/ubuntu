@@ -37,7 +37,10 @@
 #include <linux/platform_device.h>
 #include <linux/uaccess.h>
 
-#define HCA_SIZE (1024 * 1024UL)
+#define DRIVER_VERSION		2.0
+#define STRINGIFY(s)		#s
+
+static size_t hca_size;
 static phys_addr_t hca_pa;
 static __iomem void *hca_va;
 
@@ -45,6 +48,10 @@ static __iomem void *hca_va;
 #define TYU_OFFSET 0x1c1600
 static phys_addr_t tyu_pa;
 static __iomem void *tyu_va;
+
+#define MLXBF_LF_BF1    1
+#define MLXBF_LF_BF2    2
+static int chip_version;
 
 #define CRSPACE_SIZE (2 * 1024 * 1024)
 
@@ -59,7 +66,7 @@ static bool valid_range(loff_t offset, size_t len)
 {
 	if (offset % 4 != 0 || len % 4 != 0)
 		return false;  /* unaligned */
-	if (offset >= 0 && offset + len <= HCA_SIZE)
+	if (offset >= 0 && offset + len <= hca_size)
 		return true;   /* inside the HCA space */
 	if (offset >= TYU_OFFSET && offset + len <= TYU_OFFSET + TYU_SIZE)
 		return true;   /* inside the TYU space */
@@ -74,18 +81,28 @@ static bool valid_range(loff_t offset, size_t len)
 
 static u32 crspace_readl(int offset)
 {
-	if (offset < TYU_OFFSET)
-		return swab32(readl_relaxed(hca_va + offset));
-	else
-		return readl_relaxed(tyu_va + offset - TYU_OFFSET);
+	u32 data;
+	if (chip_version == MLXBF_LF_BF1) {
+		if (offset < TYU_OFFSET)
+			return swab32(readl_relaxed(hca_va + offset));
+		else
+			return readl_relaxed(tyu_va + offset - TYU_OFFSET);
+	} else {
+		data = readl_relaxed(hca_va + offset);
+	}
+	return data;
 }
 
 static void crspace_writel(u32 data, int offset)
 {
-	if (offset < TYU_OFFSET)
-		writel_relaxed(swab32(data), hca_va + offset);
-	else
-		writel_relaxed(data, tyu_va + offset - TYU_OFFSET);
+	if (chip_version == MLXBF_LF_BF1) {
+		if (offset < TYU_OFFSET)
+			writel_relaxed(swab32(data), hca_va + offset);
+		else
+			writel_relaxed(data, tyu_va + offset - TYU_OFFSET);
+	} else {
+		writel_relaxed(data, hca_va + offset);
+	}
 }
 
 /*
@@ -160,7 +177,7 @@ static void livefish_cleanup_mappings(void)
 	if (hca_va)
 		iounmap(hca_va);
 	if (hca_pa)
-		release_mem_region(hca_pa, HCA_SIZE);
+		release_mem_region(hca_pa, hca_size);
 	if (tyu_va)
 		iounmap(tyu_va);
 	if (tyu_pa)
@@ -171,40 +188,52 @@ static int livefish_probe(struct platform_device *pdev)
 {
 	struct resource *res;
 	int ret = -EINVAL;
+	struct acpi_device *acpi_dev = ACPI_COMPANION(&pdev->dev);
+	const char *hid = acpi_device_hid(acpi_dev);
+
+	if (strcmp(hid, "MLNXBF05") == 0)
+		chip_version = MLXBF_LF_BF1;
+	else if (strcmp(hid, "MLNXBF25") == 0)
+		chip_version = MLXBF_LF_BF2;
+	else {
+		dev_err(&pdev->dev, "Invalid device ID %s\n", hid);
+		return -ENODEV;
+	}
 
 	/* Find and map the HCA region */
 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
 	if (res == NULL)
 		return -ENODEV;
-	if (resource_size(res) < HCA_SIZE) {
-		dev_warn(&pdev->dev, "HCA space too small: %#lx, not %#lx\n",
-			 (long)resource_size(res), HCA_SIZE);
-		return -EINVAL;
-	}
 
-	if (request_mem_region(res->start, HCA_SIZE, "LiveFish (HCA)") == NULL)
+	if (request_mem_region(res->start, resource_size(res),
+			       "LiveFish (HCA)") == NULL)
 		return -EINVAL;
 	hca_pa = res->start;
-	hca_va = ioremap(res->start, HCA_SIZE);
+	hca_va = ioremap(res->start, resource_size(res));
+	hca_size = resource_size(res);
+        dev_info(&pdev->dev, "HCA Region PA: 0x%llx Size: 0x%llx\n",
+                 res->start, resource_size(res));
 	if (hca_va == NULL)
 		goto err;
 
-	/* Find and map the TYU efuse region */
-	res = platform_get_resource(pdev, IORESOURCE_MEM, 1);
-	if (res == NULL)
-		goto err;
-	if (resource_size(res) < TYU_SIZE) {
-		dev_warn(&pdev->dev, "TYU space too small: %#lx, not %#lx\n",
-			 (long)resource_size(res), TYU_SIZE);
-		goto err;
+	if (chip_version == MLXBF_LF_BF1) {
+		/* Find and map the TYU efuse region */
+		res = platform_get_resource(pdev, IORESOURCE_MEM, 1);
+		if (res == NULL)
+			goto err;
+		if (resource_size(res) < TYU_SIZE) {
+			dev_warn(&pdev->dev, "TYU space too small: %#lx, not %#lx\n",
+				 (long)resource_size(res), TYU_SIZE);
+			goto err;
+		}
+		if (request_mem_region(res->start, TYU_SIZE,
+				       "LiveFish (TYU)") == NULL)
+			goto err;
+		tyu_pa = res->start;
+		tyu_va = ioremap(res->start, TYU_SIZE);
+		if (tyu_va == NULL)
+			goto err;
 	}
-
-	if (request_mem_region(res->start, TYU_SIZE, "LiveFish (TYU)") == NULL)
-		goto err;
-	tyu_pa = res->start;
-	tyu_va = ioremap(res->start, TYU_SIZE);
-	if (tyu_va == NULL)
-		goto err;
 
 	ret = misc_register(&livefish_dev);
 	if (ret)
@@ -235,6 +264,7 @@ MODULE_DEVICE_TABLE(of, livefish_of_match);
 
 static const struct acpi_device_id livefish_acpi_match[] = {
 	{ "MLNXBF05", 0 },
+	{ "MLNXBF25", 0 },
 	{},
 };
 MODULE_DEVICE_TABLE(acpi, livefish_acpi_match);
@@ -254,3 +284,4 @@ module_platform_driver(livefish_driver);
 MODULE_LICENSE("GPL v2");
 MODULE_DESCRIPTION("Mellanox BlueField LiveFish driver");
 MODULE_AUTHOR("Mellanox Technologies Inc.");
+MODULE_VERSION(STRINGIFY(DRIVER_VERSION));
