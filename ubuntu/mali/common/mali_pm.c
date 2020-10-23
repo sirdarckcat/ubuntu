@@ -301,6 +301,7 @@ void mali_pm_init_end(void)
 	}
 
 	_mali_osk_pm_dev_ref_put();
+	_mali_osk_pm_dev_barrier();
 }
 
 void mali_pm_update_sync(void)
