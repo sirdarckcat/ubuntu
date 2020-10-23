@@ -947,7 +947,17 @@ _mali_osk_errcode_t _mali_osk_notification_queue_dequeue(_mali_osk_notification_
  * asked for.
  *
  * @{ */
-
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)
+/** @brief Initialize a timer
+ *
+ * Allocates resources for a new timer, and initializes them. This does not
+ * start the timer.
+ *
+ * @param callback Function to call when timer expires
+ * @return a pointer to the allocated timer object, or NULL on failure.
+ */
+_mali_osk_timer_t *_mali_osk_timer_init(_mali_osk_timer_callback_t callback);
+#else
 /** @brief Initialize a timer
  *
  * Allocates resources for a new timer, and initializes them. This does not
@@ -956,6 +966,7 @@ _mali_osk_errcode_t _mali_osk_notification_queue_dequeue(_mali_osk_notification_
  * @return a pointer to the allocated timer object, or NULL on failure.
  */
 _mali_osk_timer_t *_mali_osk_timer_init(void);
+#endif
 
 /** @brief Start a timer
  *
@@ -1034,6 +1045,7 @@ void _mali_osk_timer_del_async(_mali_osk_timer_t *tim);
  */
 mali_bool _mali_osk_timer_pending(_mali_osk_timer_t *tim);
 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 14, 0)
 /** @brief Set a timer's callback parameters.
  *
  * This must be called at least once before a timer is started/modified.
@@ -1047,6 +1059,7 @@ mali_bool _mali_osk_timer_pending(_mali_osk_timer_t *tim);
  * @param data Function-specific data to supply to the function on expiry.
  */
 void _mali_osk_timer_setcallback(_mali_osk_timer_t *tim, _mali_osk_timer_callback_t callback, void *data);
+#endif
 
 /** @brief Terminate a timer, and deallocate resources.
  *
