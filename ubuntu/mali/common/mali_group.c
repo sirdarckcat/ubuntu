@@ -65,9 +65,15 @@ struct mali_group *mali_group_create(struct mali_l2_cache_core *core,
 
 	group = _mali_osk_calloc(1, sizeof(struct mali_group));
 	if (NULL != group) {
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)
+		group->timeout_timer = _mali_osk_timer_init(mali_group_timeout);
+#else
 		group->timeout_timer = _mali_osk_timer_init();
+#endif
 		if (NULL != group->timeout_timer) {
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 14, 0)
 			_mali_osk_timer_setcallback(group->timeout_timer, mali_group_timeout, (void *)group);
+#endif
 
 			group->l2_cache_core[0] = core;
 			_mali_osk_list_init(&group->group_list);
