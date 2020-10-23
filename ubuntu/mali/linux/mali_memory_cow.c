@@ -532,9 +532,14 @@ int mali_mem_cow_cpu_map(mali_mem_backend *mem_bkend, struct vm_area_struct *vma
 		 * flush which makes it way slower than remap_pfn_range or vm_insert_pfn.
 		ret = vm_insert_page(vma, addr, page);
 		*/
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 20, 0)
+		ret = vmf_insert_pfn(vma, addr, _mali_page_node_get_pfn(m_page));
+		if (unlikely(VM_FAULT_ERROR & ret)) {
+#else
 		ret = vm_insert_pfn(vma, addr, _mali_page_node_get_pfn(m_page));
-
 		if (unlikely(0 != ret)) {
+#endif
+
 			return ret;
 		}
 		addr += _MALI_OSK_MALI_PAGE_SIZE;
@@ -569,9 +574,14 @@ _mali_osk_errcode_t mali_mem_cow_cpu_map_pages_locked(mali_mem_backend *mem_bken
 
 	list_for_each_entry(m_page, &cow->pages, list) {
 		if ((count >= offset) && (count < offset + num)) {
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 20, 0)
+			ret = vmf_insert_pfn(vma, vaddr, _mali_page_node_get_pfn(m_page));
+			if (unlikely(VM_FAULT_ERROR & ret)) {
+#else
 			ret = vm_insert_pfn(vma, vaddr, _mali_page_node_get_pfn(m_page));
-
 			if (unlikely(0 != ret)) {
+#endif
+
 				if (count == offset) {
 					return _MALI_OSK_ERR_FAULT;
 				} else {
