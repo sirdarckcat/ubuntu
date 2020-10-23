@@ -529,8 +529,9 @@ int mali_platform_device_init(struct platform_device *device)
 	 */
 	if (!device->dev.dma_mask)
 		device->dev.dma_mask = &device->dev.coherent_dma_mask;
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(4, 8, 0))
 	device->dev.archdata.dma_ops = dma_ops;
-
+#endif
 	err = platform_device_add_data(device, &mali_gpu_data, sizeof(mali_gpu_data));
 
 	if (0 == err) {
