@@ -23,7 +23,7 @@
 #include "zocl_xclbin.h"
 #include "xclbin.h"
 
-#define SCHED_VERBOSE 1
+/* #define SCHED_VERBOSE */
 
 #if defined(__GNUC__)
 #define SCHED_UNUSED __attribute__((unused))
@@ -892,14 +892,10 @@ configure(struct sched_cmd *cmd)
 				return 1;
 			}
 			update_cu_idx_in_apt(zdev, apt_idx, i);
-			if (is_legacy_intr) {
-				DRM_WARN("shane is legacy intr, i = %d\n", i);
+			if (is_legacy_intr)
 				irq_id = i;
-			} else {
+			else
 				irq_id = zocl_xclbin_intr_id(zdev, apt_idx);
-				DRM_WARN("shane xclbin intr, irq_id = %d\n", irq_id);
-			}
-			DRM_WARN("shane set irq[%d] = %d\n", irq_id, zdev->irq[irq_id]);
 			exec->zcu[i].irq = zdev->irq[irq_id];
 		}
 
@@ -957,10 +953,8 @@ configure(struct sched_cmd *cmd)
 
 		exec->zcu[i].irq_name = kzalloc(20, GFP_KERNEL);
 		sprintf(exec->zcu[i].irq_name, "zocl_cu[%d]", i);
-//		exec->zcu[i].irq = 41;
 		ret = request_irq(exec->zcu[i].irq, sched_exec_isr, 0,
 				  exec->zcu[i].irq_name, zdev);
-		DRM_WARN("shane request: %d, name: %s, ret: %d\n", exec->zcu[i].irq, exec->zcu[i].irq_name, ret);
 		if (ret) {
 			/* Fail to install at least one interrupt
 			 * handler. We need to free the handler(s)
