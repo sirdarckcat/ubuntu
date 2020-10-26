@@ -189,7 +189,6 @@ static inline u32 xclbin_intr_enable(u32 prop)
 
 static inline u32 xclbin_intr_id(u32 prop)
 {
-	DRM_WARN("shane id mask: 0x%x, shift: 0x%x\n", IP_INTERRUPT_ID_MASK, IP_INTERRUPT_ID_SHIFT);
 	u32 intr_id = prop & IP_INTERRUPT_ID_MASK;
 
 	return intr_id >> IP_INTERRUPT_ID_SHIFT;
@@ -926,7 +925,7 @@ u32
 zocl_xclbin_intr_id(struct drm_zocl_dev *zdev, u32 idx)
 {
 	u32 prop = zdev->apertures[idx].prop;
-	DRM_WARN("shane in %s prop: 0x%x, xclbin_intr_id: %d\n", __func__, prop, xclbin_intr_id(prop));
+
 	return xclbin_intr_id(prop);
 }
 
