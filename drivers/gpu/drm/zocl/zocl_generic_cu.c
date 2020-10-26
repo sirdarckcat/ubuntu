@@ -195,7 +195,6 @@ int zocl_open_gcu(struct drm_zocl_dev *zdev, struct drm_zocl_ctx *ctx,
 	info->name = name;
 	info->cu_idx = ctx->cu_index;
 	/* TODO: We have better not use exec here. Refine this in new KDS */
-	DRM_WARN("shane 2 set index: %d, irq: %d\n", ctx->cu_index, zdev->exec->zcu[ctx->cu_index].irq);
 	info->irq    = zdev->exec->zcu[ctx->cu_index].irq;
 
 	return _open_generic_cu(zdev, info);

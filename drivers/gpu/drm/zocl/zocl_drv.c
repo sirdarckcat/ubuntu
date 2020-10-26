@@ -822,7 +822,7 @@ static int zocl_drm_platform_probe(struct platform_device *pdev)
 		irq = platform_get_irq(pdev, index);
 		if (irq < 0)
 			break;
-		DRM_WARN("shane CU(%d) IRQ %d\n", index, irq);
+		DRM_DEBUG("CU(%d) IRQ %d\n", index, irq);
 		zdev->irq[index] = irq;
 	}
 	zdev->cu_num = index;
@@ -1043,4 +1043,3 @@ MODULE_VERSION(__stringify(ZOCL_DRIVER_MAJOR) "."
 MODULE_DESCRIPTION(ZOCL_DRIVER_DESC);
 MODULE_AUTHOR("Sonal Santan <sonal.santan@xilinx.com>");
 MODULE_LICENSE("GPL");
-
