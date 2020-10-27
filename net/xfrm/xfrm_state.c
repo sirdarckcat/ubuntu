@@ -547,6 +547,9 @@ static enum hrtimer_restart xfrm_timer_handler(struct hrtimer *me)
 	int warn = 0;
 	int err = 0;
 
+	if (x->xso.flags & XFRM_OFFLOAD_FULL)
+		return ret;
+
 	spin_lock(&x->lock);
 	if (x->km.state == XFRM_STATE_DEAD)
 		goto out;
@@ -625,6 +628,27 @@ out:
 	spin_unlock(&x->lock);
 	return ret;
 }
+
+void xfrm_state_expire(struct xfrm_state *x, int hard)
+{
+	int err;
+
+	spin_lock(&x->lock);
+
+	if (hard) {
+		x->km.state = XFRM_STATE_EXPIRED;
+		err = __xfrm_state_delete(x);
+		if (!err)
+			km_state_expired(x, 1, 0);
+		xfrm_audit_state_delete(x, err ? 0 : 1, true);
+	} else {
+		x->km.dying = 1;
+		km_state_expired(x, 0, 0);
+	}
+
+	spin_unlock(&x->lock);
+}
+EXPORT_SYMBOL(xfrm_state_expire);
 
 static void xfrm_replay_timer_handler(struct timer_list *t);
 
@@ -1785,6 +1809,9 @@ EXPORT_SYMBOL(xfrm_state_update);
 
 int xfrm_state_check_expire(struct xfrm_state *x)
 {
+	if ((x->xso.flags & XFRM_OFFLOAD_FULL))
+		return 0;
+
 	if (!x->curlft.use_time)
 		x->curlft.use_time = ktime_get_real_seconds();
 
