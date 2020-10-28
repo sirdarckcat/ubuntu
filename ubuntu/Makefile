@@ -33,6 +33,10 @@ obj-y += xilinx-hdmi/
 ##
 ##
 ##
+obj-y += xilinx-vcu/
+##
+##
+##
 ##
 ##
 ##
