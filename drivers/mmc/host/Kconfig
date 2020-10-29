@@ -1039,6 +1039,7 @@ config MMC_SDHCI_BRCMSTB
 	tristate "Broadcom SDIO/SD/MMC support"
 	depends on ARCH_BRCMSTB || BMIPS_GENERIC || COMPILE_TEST
 	depends on MMC_SDHCI_PLTFM
+	select MMC_SDHCI_IO_ACCESSORS
 	select MMC_CQHCI
 	default ARCH_BRCMSTB || BMIPS_GENERIC
 	help
