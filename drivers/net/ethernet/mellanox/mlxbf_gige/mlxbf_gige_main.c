@@ -10,6 +10,7 @@
 #include <linux/etherdevice.h>
 #include <linux/interrupt.h>
 #include <linux/io-64-nonatomic-lo-hi.h>
+#include <linux/iopoll.h>
 #include <linux/module.h>
 #include <linux/phy.h>
 #include <linux/platform_device.h>
@@ -18,7 +19,7 @@
 #include "mlxbf_gige_regs.h"
 
 #define DRV_NAME    "mlxbf_gige"
-#define DRV_VERSION "1.3"
+#define DRV_VERSION "1.4"
 
 static void mlxbf_gige_set_mac_rx_filter(struct mlxbf_gige *priv,
 					 unsigned int index, u64 dmac)
@@ -145,9 +146,6 @@ static int mlxbf_gige_rx_init(struct mlxbf_gige *priv)
 	/* Write RX_WQE_PI with current number of replenished buffers */
 	writeq(priv->rx_q_entries, priv->base + MLXBF_GIGE_RX_WQE_PI);
 
-	/* Enable RX DMA to write new packets to memory */
-	writeq(MLXBF_GIGE_RX_DMA_EN, priv->base + MLXBF_GIGE_RX_DMA);
-
 	/* Enable removal of CRC during RX */
 	data = readq(priv->base + MLXBF_GIGE_RX);
 	data |= MLXBF_GIGE_RX_STRIP_CRC_EN;
@@ -160,11 +158,14 @@ static int mlxbf_gige_rx_init(struct mlxbf_gige *priv)
 	       priv->base + MLXBF_GIGE_RX_MAC_FILTER_COUNT_PASS);
 
 	/* Clear MLXBF_GIGE_INT_MASK 'receive pkt' bit to
-	 * indicate readiness to receive pkts
+	 * indicate readiness to receive interrupts
 	 */
 	data = readq(priv->base + MLXBF_GIGE_INT_MASK);
 	data &= ~MLXBF_GIGE_INT_MASK_RX_RECEIVE_PACKET;
 	writeq(data, priv->base + MLXBF_GIGE_INT_MASK);
+
+	/* Enable RX DMA to write new packets to memory */
+	writeq(MLXBF_GIGE_RX_DMA_EN, priv->base + MLXBF_GIGE_RX_DMA);
 
 	writeq(ilog2(priv->rx_q_entries),
 	       priv->base + MLXBF_GIGE_RX_WQE_SIZE_LOG2);
@@ -206,7 +207,6 @@ static int mlxbf_gige_tx_init(struct mlxbf_gige *priv)
 	/* Allocate address for TX completion count */
 	priv->tx_cc = dma_alloc_coherent(priv->dev, MLXBF_GIGE_TX_CC_SZ,
 					 &priv->tx_cc_dma, GFP_KERNEL);
-
 	if (!priv->tx_cc) {
 		dma_free_coherent(priv->dev, size,
 				  priv->tx_wqe_base, priv->tx_wqe_base_dma);
@@ -300,20 +300,13 @@ static void mlxbf_gige_tx_deinit(struct mlxbf_gige *priv)
 /* Start of struct ethtool_ops functions */
 static int mlxbf_gige_get_regs_len(struct net_device *netdev)
 {
-	/* Return size of MMIO register space (in bytes).
-	 *
-	 * NOTE: MLXBF_GIGE_MAC_CFG is the last defined register offset,
-	 * so use that plus size of single register to derive total size
-	 */
-	return MLXBF_GIGE_MAC_CFG + 8;
+	return MLXBF_GIGE_MMIO_REG_SZ;
 }
 
 static void mlxbf_gige_get_regs(struct net_device *netdev,
 				struct ethtool_regs *regs, void *p)
 {
 	struct mlxbf_gige *priv = netdev_priv(netdev);
-	__be64 *buff = p;
-	int reg;
 
 	regs->version = MLXBF_GIGE_REGS_VERSION;
 
@@ -324,8 +317,7 @@ static void mlxbf_gige_get_regs(struct net_device *netdev,
 	 * NOTE: by design, a read to an offset without an existing
 	 *       register will be acknowledged and return zero.
 	 */
-	for (reg = 0; reg <= MLXBF_GIGE_MAC_CFG; reg += 8)
-		*buff++ = cpu_to_be64(readq(priv->base + reg));
+	memcpy_fromio(p, priv->base, MLXBF_GIGE_MMIO_REG_SZ);
 }
 
 static void mlxbf_gige_get_ringparam(struct net_device *netdev,
@@ -333,7 +325,6 @@ static void mlxbf_gige_get_ringparam(struct net_device *netdev,
 {
 	struct mlxbf_gige *priv = netdev_priv(netdev);
 
-	memset(ering, 0, sizeof(*ering));
 	ering->rx_max_pending = MLXBF_GIGE_MAX_RXQ_SZ;
 	ering->tx_max_pending = MLXBF_GIGE_MAX_TXQ_SZ;
 	ering->rx_pending = priv->rx_q_entries;
@@ -355,11 +346,9 @@ static int mlxbf_gige_set_ringparam(struct net_device *netdev,
 	new_rx_q_entries = roundup_pow_of_two(ering->rx_pending);
 	new_tx_q_entries = roundup_pow_of_two(ering->tx_pending);
 
-	/* Range check the new values */
+	/* Check against min values, core checks against max values */
 	if (new_tx_q_entries < MLXBF_GIGE_MIN_TXQ_SZ ||
-	    new_tx_q_entries > MLXBF_GIGE_MAX_TXQ_SZ ||
-	    new_rx_q_entries < MLXBF_GIGE_MIN_RXQ_SZ ||
-	    new_rx_q_entries > MLXBF_GIGE_MAX_RXQ_SZ)
+	    new_rx_q_entries < MLXBF_GIGE_MIN_RXQ_SZ)
 		return -EINVAL;
 
 	/* If queue sizes did not change, exit now */
@@ -379,21 +368,9 @@ static int mlxbf_gige_set_ringparam(struct net_device *netdev,
 	return 0;
 }
 
-static void mlxbf_gige_get_drvinfo(struct net_device *netdev,
-				   struct ethtool_drvinfo *info)
-{
-	strlcpy(info->driver, DRV_NAME, sizeof(info->driver));
-	strlcpy(info->version, DRV_VERSION, sizeof(info->version));
-	strlcpy(info->bus_info, dev_name(&netdev->dev), sizeof(info->bus_info));
-}
-
 static const struct {
 	const char string[ETH_GSTRING_LEN];
 } mlxbf_gige_ethtool_stats_keys[] = {
-	{ "rx_bytes" },
-	{ "rx_packets" },
-	{ "tx_bytes" },
-	{ "tx_packets" },
 	{ "hw_access_errors" },
 	{ "tx_invalid_checksums" },
 	{ "tx_small_frames" },
@@ -431,8 +408,6 @@ static void mlxbf_gige_get_ethtool_stats(struct net_device *netdev,
 	struct mlxbf_gige *priv = netdev_priv(netdev);
 	unsigned long flags;
 
-	spin_lock_irqsave(&priv->lock, flags);
-
 	/* Fill data array with interface statistics
 	 *
 	 * NOTE: the data writes must be in
@@ -448,10 +423,6 @@ static void mlxbf_gige_get_ethtool_stats(struct net_device *netdev,
 	 *          rx_filter_passed_pkts
 	 *          rx_filter_discard_pkts
 	 */
-	*data++ = netdev->stats.rx_bytes;
-	*data++ = netdev->stats.rx_packets;
-	*data++ = netdev->stats.tx_bytes;
-	*data++ = netdev->stats.tx_packets;
 	*data++ = priv->stats.hw_access_errors;
 	*data++ = priv->stats.tx_invalid_checksums;
 	*data++ = priv->stats.tx_small_frames;
@@ -467,8 +438,6 @@ static void mlxbf_gige_get_ethtool_stats(struct net_device *netdev,
 		   readq(priv->base + MLXBF_GIGE_RX_PASS_COUNTER_ALL));
 	*data++ = (priv->stats.rx_filter_discard_pkts +
 		   readq(priv->base + MLXBF_GIGE_RX_DISC_COUNTER_ALL));
-
-	spin_unlock_irqrestore(&priv->lock, flags);
 }
 
 static void mlxbf_gige_get_pauseparam(struct net_device *netdev,
@@ -482,7 +451,6 @@ static void mlxbf_gige_get_pauseparam(struct net_device *netdev,
 }
 
 static const struct ethtool_ops mlxbf_gige_ethtool_ops = {
-	.get_drvinfo		= mlxbf_gige_get_drvinfo,
 	.get_link		= ethtool_op_get_link,
 	.get_ringparam		= mlxbf_gige_get_ringparam,
 	.set_ringparam		= mlxbf_gige_set_ringparam,
@@ -564,18 +532,12 @@ static irqreturn_t mlxbf_gige_rx_intr(int irq, void *dev_id)
 
 	priv->rx_intr_count++;
 
-	/* Driver has been interrupted because a new packet is available,
-	 * but do not process packets at this time.  Instead, disable any
-	 * further "packet rx" interrupts and tell the networking subsystem
-	 * to poll the driver to pick up all available packets.
-	 *
-	 * NOTE: GigE silicon automatically disables "packet rx" interrupt by
+	/* NOTE: GigE silicon automatically disables "packet rx" interrupt by
 	 *       setting MLXBF_GIGE_INT_MASK bit0 upon triggering the interrupt
 	 *       to the ARM cores.  Software needs to re-enable "packet rx"
 	 *       interrupts by clearing MLXBF_GIGE_INT_MASK bit0.
 	 */
 
-	/* Tell networking subsystem to poll GigE driver */
 	napi_schedule(&priv->napi);
 
 	return IRQ_HANDLED;
@@ -666,9 +628,8 @@ static bool mlxbf_gige_handle_tx_complete(struct mlxbf_gige *priv)
 	 * available the TX queue can be awakened.
 	 */
 	if (netif_queue_stopped(priv->netdev) &&
-	    mlxbf_gige_tx_buffs_avail(priv)) {
+	    mlxbf_gige_tx_buffs_avail(priv))
 		netif_wake_queue(priv->netdev);
-	}
 
 	return true;
 }
@@ -765,25 +726,22 @@ static int mlxbf_gige_request_irqs(struct mlxbf_gige *priv)
 {
 	int err;
 
-	err = devm_request_irq(priv->dev, priv->error_irq,
-			       mlxbf_gige_error_intr, 0, "mlxbf_gige_error",
-			       priv);
+	err = request_irq(priv->error_irq, mlxbf_gige_error_intr, 0,
+			  "mlxbf_gige_error", priv);
 	if (err) {
 		dev_err(priv->dev, "Request error_irq failure\n");
 		return err;
 	}
 
-	err = devm_request_irq(priv->dev, priv->rx_irq,
-			       mlxbf_gige_rx_intr, 0, "mlxbf_gige_rx",
-			       priv);
+	err = request_irq(priv->rx_irq, mlxbf_gige_rx_intr, 0,
+			  "mlxbf_gige_rx", priv);
 	if (err) {
 		dev_err(priv->dev, "Request rx_irq failure\n");
 		return err;
 	}
 
-	err = devm_request_irq(priv->dev, priv->llu_plu_irq,
-			       mlxbf_gige_llu_plu_intr, 0, "mlxbf_gige_llu_plu",
-			       priv);
+	err = request_irq(priv->llu_plu_irq, mlxbf_gige_llu_plu_intr, 0,
+			  "mlxbf_gige_llu_plu", priv);
 	if (err) {
 		dev_err(priv->dev, "Request llu_plu_irq failure\n");
 		return err;
@@ -803,9 +761,9 @@ static int mlxbf_gige_request_irqs(struct mlxbf_gige *priv)
 
 static void mlxbf_gige_free_irqs(struct mlxbf_gige *priv)
 {
-	devm_free_irq(priv->dev, priv->error_irq, priv);
-	devm_free_irq(priv->dev, priv->rx_irq, priv);
-	devm_free_irq(priv->dev, priv->llu_plu_irq, priv);
+	free_irq(priv->error_irq, priv);
+	free_irq(priv->rx_irq, priv);
+	free_irq(priv->llu_plu_irq, priv);
 	free_irq(priv->phy_irq, priv);
 }
 
@@ -825,22 +783,18 @@ static void mlxbf_gige_cache_stats(struct mlxbf_gige *priv)
 
 static void mlxbf_gige_clean_port(struct mlxbf_gige *priv)
 {
-	u64 control, status;
-	int cnt;
+	u64 control;
+	u64 temp;
+	int ret;
 
 	/* Set the CLEAN_PORT_EN bit to trigger SW reset */
 	control = readq(priv->base + MLXBF_GIGE_CONTROL);
 	control |= MLXBF_GIGE_CONTROL_CLEAN_PORT_EN;
 	writeq(control, priv->base + MLXBF_GIGE_CONTROL);
 
-	/* Loop waiting for status ready bit to assert */
-	cnt = 1000;
-	do {
-		status = readq(priv->base + MLXBF_GIGE_STATUS);
-		if (status & MLXBF_GIGE_STATUS_READY)
-			break;
-		usleep_range(50, 100);
-	} while (--cnt > 0);
+	ret = readq_poll_timeout_atomic(priv->base + MLXBF_GIGE_STATUS, temp,
+					(temp & MLXBF_GIGE_STATUS_READY),
+					100, 100000);
 
 	/* Clear the CLEAN_PORT_EN bit at end of this loop */
 	control = readq(priv->base + MLXBF_GIGE_CONTROL);
@@ -1066,28 +1020,6 @@ static const struct net_device_ops mlxbf_gige_netdev_ops = {
 	.ndo_set_rx_mode        = mlxbf_gige_set_rx_mode,
 };
 
-static u64 mlxbf_gige_mac_to_u64(u8 *addr)
-{
-	u64 mac = 0;
-	int i;
-
-	for (i = 0; i < ETH_ALEN; i++) {
-		mac <<= 8;
-		mac |= addr[i];
-	}
-	return mac;
-}
-
-static void mlxbf_gige_u64_to_mac(u8 *addr, u64 mac)
-{
-	int i;
-
-	for (i = ETH_ALEN; i > 0; i--) {
-		addr[i - 1] = mac & 0xFF;
-		mac >>= 8;
-	}
-}
-
 static void mlxbf_gige_initial_mac(struct mlxbf_gige *priv)
 {
 	u8 mac[ETH_ALEN];
@@ -1095,7 +1027,7 @@ static void mlxbf_gige_initial_mac(struct mlxbf_gige *priv)
 
 	mlxbf_gige_get_mac_rx_filter(priv, MLXBF_GIGE_LOCAL_MAC_FILTER_IDX,
 				     &local_mac);
-	mlxbf_gige_u64_to_mac(mac, local_mac);
+	u64_to_ether_addr(local_mac, mac);
 
 	if (is_valid_ether_addr(mac)) {
 		ether_addr_copy(priv->netdev->dev_addr, mac);
@@ -1106,7 +1038,7 @@ static void mlxbf_gige_initial_mac(struct mlxbf_gige *priv)
 		eth_hw_addr_random(priv->netdev);
 	}
 
-	local_mac = mlxbf_gige_mac_to_u64(priv->netdev->dev_addr);
+	local_mac = ether_addr_to_u64(priv->netdev->dev_addr);
 	mlxbf_gige_set_mac_rx_filter(priv, MLXBF_GIGE_LOCAL_MAC_FILTER_IDX,
 				     local_mac);
 }
@@ -1290,7 +1222,7 @@ static struct platform_driver mlxbf_gige_driver = {
 module_platform_driver(mlxbf_gige_driver);
 
 MODULE_DESCRIPTION("Mellanox BlueField SoC Gigabit Ethernet Driver");
-MODULE_AUTHOR("David Thompson <dthompson@mellanox.com>");
-MODULE_AUTHOR("Asmaa Mnebhi <asmaa@mellanox.com>");
+MODULE_AUTHOR("David Thompson <davthompson@nvidia.com>");
+MODULE_AUTHOR("Asmaa Mnebhi <asmaa@nvidia.com>");
 MODULE_LICENSE("Dual BSD/GPL");
 MODULE_VERSION(DRV_VERSION);
