@@ -1,10 +1,10 @@
-/* SPDX-License-Identifier: GPL-2.0-only OR Linux-OpenIB */
+/* SPDX-License-Identifier: GPL-2.0-only OR BSD-3-Clause */
 
 /* Header file for Gigabit Ethernet driver for Mellanox BlueField SoC
  * - this file contains software data structures and any chip-specific
  *   data structures (e.g. TX WQE format) that are memory resident.
  *
- * Copyright (c) 2020 Mellanox Technologies Ltd.
+ * Copyright (c) 2020, NVIDIA Corporation. All rights reserved.
  */
 
 #ifndef __MLXBF_GIGE_H__
@@ -101,9 +101,13 @@ struct mlxbf_gige {
 	int error_irq;
 	int rx_irq;
 	int llu_plu_irq;
+	int phy_irq;
 	bool promisc_enabled;
 	struct napi_struct napi;
 	struct mlxbf_gige_stats stats;
+	u32 tx_pause;
+	u32 rx_pause;
+	u32 aneg_pause;
 };
 
 /* Rx Work Queue Element definitions */
@@ -151,6 +155,6 @@ enum mlxbf_gige_res {
 int mlxbf_gige_mdio_probe(struct platform_device *pdev,
 			  struct mlxbf_gige *priv);
 void mlxbf_gige_mdio_remove(struct mlxbf_gige *priv);
-irqreturn_t mlxbf_gige_mdio_handle_phy_interrupt(struct mlxbf_gige *priv);
+irqreturn_t mlxbf_gige_mdio_handle_phy_interrupt(int irq, void *dev_id);
 
 #endif /* !defined(__MLXBF_GIGE_H__) */
