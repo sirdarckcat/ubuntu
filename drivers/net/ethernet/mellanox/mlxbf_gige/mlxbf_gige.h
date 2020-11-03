@@ -75,8 +75,6 @@ struct mlxbf_gige {
 	void __iomem *mdio_io;
 	struct mii_bus *mdiobus;
 	void __iomem *gpio_io;
-	void __iomem *cause_rsh_coalesce0_io;
-	void __iomem *cause_gpio_arm_coalesce0_io;
 	u32 phy_int_gpio_mask;
 	spinlock_t lock;
 	spinlock_t gpio_lock;
@@ -143,8 +141,6 @@ enum mlxbf_gige_res {
 	MLXBF_GIGE_RES_MAC,
 	MLXBF_GIGE_RES_MDIO9,
 	MLXBF_GIGE_RES_GPIO0,
-	MLXBF_GIGE_RES_CAUSE_RSH_COALESCE0,
-	MLXBF_GIGE_RES_CAUSE_GPIO_ARM_COALESCE0,
 	MLXBF_GIGE_RES_LLU,
 	MLXBF_GIGE_RES_PLU
 };

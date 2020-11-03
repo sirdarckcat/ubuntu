@@ -71,16 +71,6 @@
 				 FIELD_PREP(MLXBF_GIGE_MDIO_CFG_MDIO_IN_SAMP_MASK, 6) | \
 				 FIELD_PREP(MLXBF_GIGE_MDIO_CFG_MDIO_OUT_SAMP_MASK, 13))
 
-/* The PHY interrupt line is shared with other interrupt lines such
- * as GPIO and SMBus. So use YU registers to determine whether the
- * interrupt comes from the PHY.
- */
-#define MLXBF_GIGE_CAUSE_RSH_COALESCE0_GPIO_CAUSE_MASK	0x10
-#define MLXBF_GIGE_GPIO_CAUSE_IRQ_IS_SET(val) \
-	((val) & MLXBF_GIGE_CAUSE_RSH_COALESCE0_GPIO_CAUSE_MASK)
-
-#define MLXBF_GIGE_GPIO_BLOCK0_MASK	BIT(0)
-
 #define MLXBF_GIGE_GPIO_CAUSE_FALL_EN		0x48
 #define MLXBF_GIGE_GPIO_CAUSE_OR_CAUSE_EVTEN0	0x80
 #define MLXBF_GIGE_GPIO_CAUSE_OR_EVTEN0		0x94
@@ -221,10 +211,6 @@ irqreturn_t mlxbf_gige_mdio_handle_phy_interrupt(int irq, void *dev_id)
 
 	/* Clear interrupt when done, otherwise, no further interrupt
 	 * will be triggered.
-	 * Writing 0x1 to the clear cause register also clears the
-	 * following registers:
-	 * cause_gpio_arm_coalesce0
-	 * cause_rsh_coalesce0
 	 */
 	val = readl(priv->gpio_io +
 			MLXBF_GIGE_GPIO_CAUSE_OR_CLRCAUSE);
@@ -259,26 +245,6 @@ int mlxbf_gige_mdio_probe(struct platform_device *pdev, struct mlxbf_gige *priv)
 
 	priv->gpio_io = devm_ioremap(dev, res->start, resource_size(res));
 	if (!priv->gpio_io)
-		return -ENOMEM;
-
-	res = platform_get_resource(pdev, IORESOURCE_MEM,
-				    MLXBF_GIGE_RES_CAUSE_RSH_COALESCE0);
-	if (!res)
-		return -ENODEV;
-
-	priv->cause_rsh_coalesce0_io =
-		devm_ioremap(dev, res->start, resource_size(res));
-	if (!priv->cause_rsh_coalesce0_io)
-		return -ENOMEM;
-
-	res = platform_get_resource(pdev, IORESOURCE_MEM,
-				    MLXBF_GIGE_RES_CAUSE_GPIO_ARM_COALESCE0);
-	if (!res)
-		return -ENODEV;
-
-	priv->cause_gpio_arm_coalesce0_io =
-		devm_ioremap(dev, res->start, resource_size(res));
-	if (!priv->cause_gpio_arm_coalesce0_io)
 		return -ENOMEM;
 
 	/* Configure mdio parameters */
