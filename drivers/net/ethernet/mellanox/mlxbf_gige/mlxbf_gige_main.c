@@ -19,7 +19,7 @@
 #include "mlxbf_gige_regs.h"
 
 #define DRV_NAME    "mlxbf_gige"
-#define DRV_VERSION "1.4"
+#define DRV_VERSION "1.5"
 
 static void mlxbf_gige_set_mac_rx_filter(struct mlxbf_gige *priv,
 					 unsigned int index, u64 dmac)
@@ -406,7 +406,6 @@ static void mlxbf_gige_get_ethtool_stats(struct net_device *netdev,
 					 u64 *data)
 {
 	struct mlxbf_gige *priv = netdev_priv(netdev);
-	unsigned long flags;
 
 	/* Fill data array with interface statistics
 	 *
@@ -1010,6 +1009,24 @@ static void mlxbf_gige_set_rx_mode(struct net_device *netdev)
 		}
 	}
 
+static void mlxbf_gige_get_stats64(struct net_device *netdev,
+				   struct rtnl_link_stats64 *stats)
+{
+	struct mlxbf_gige *priv = netdev_priv(netdev);
+
+	netdev_stats_to_stats64(stats, &netdev->stats);
+
+	stats->rx_length_errors = priv->stats.rx_truncate_errors;
+	stats->rx_fifo_errors = priv->stats.rx_din_dropped_pkts;
+	stats->rx_crc_errors = priv->stats.rx_mac_errors;
+	stats->rx_errors = stats->rx_length_errors +
+			   stats->rx_fifo_errors +
+			   stats->rx_crc_errors;
+
+	stats->tx_fifo_errors = priv->stats.tx_fifo_full;
+	stats->tx_errors = stats->tx_fifo_errors;
+}
+
 static const struct net_device_ops mlxbf_gige_netdev_ops = {
 	.ndo_open		= mlxbf_gige_open,
 	.ndo_stop		= mlxbf_gige_stop,
@@ -1018,6 +1035,7 @@ static const struct net_device_ops mlxbf_gige_netdev_ops = {
 	.ndo_validate_addr	= eth_validate_addr,
 	.ndo_do_ioctl		= mlxbf_gige_do_ioctl,
 	.ndo_set_rx_mode        = mlxbf_gige_set_rx_mode,
+	.ndo_get_stats64        = mlxbf_gige_get_stats64,
 };
 
 static void mlxbf_gige_initial_mac(struct mlxbf_gige *priv)
