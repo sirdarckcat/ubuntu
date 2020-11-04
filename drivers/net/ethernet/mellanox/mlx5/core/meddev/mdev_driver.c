@@ -5,6 +5,7 @@
 #include <net/devlink.h>
 #include <linux/mdev.h>
 
+#include "devlink.h"
 #include "mlx5_core.h"
 #include "meddev/sf.h"
 
@@ -18,7 +19,7 @@ static int mlx5_meddev_probe(struct device *dev)
 	struct devlink *devlink;
 	int ret;
 
-	devlink = devlink_alloc(&sf_devlink_ops, sizeof(*coredev));
+	devlink = mlx5_devlink_alloc();
 	if (!devlink)
 		return -ENOMEM;
 
@@ -37,7 +38,7 @@ static int mlx5_meddev_probe(struct device *dev)
 	return 0;
 
 load_err:
-	devlink_free(devlink);
+	mlx5_devlink_free(devlink);
 	return ret;
 }
 
@@ -49,7 +50,7 @@ static void mlx5_meddev_remove(struct device *dev)
 
 	devlink = priv_to_devlink(sf->dev);
 	mlx5_sf_unload(sf);
-	devlink_free(devlink);
+	mlx5_devlink_free(devlink);
 }
 
 static struct mdev_driver mlx5_meddev_driver = {
