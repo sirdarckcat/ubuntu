@@ -54,7 +54,15 @@ static char lifecycle_states[][16] = {
 	[3] = "RMA",
 };
 
-static void __iomem *boot_data, *boot_cnt;
+/* ctl/data register within the resource. */
+#define RSH_SCRATCH_BUF_CTL_OFF		0
+#define RSH_SCRATCH_BUF_DATA_OFF	0x10
+
+static void __iomem *rsh_boot_data;
+static void __iomem *rsh_boot_cnt;
+static void __iomem *rsh_semaphore;
+static void __iomem *rsh_scratch_buf_ctl;
+static void __iomem *rsh_scratch_buf_data;
 
 /*
  * Objects are stored within the MFG partition per type. Type 0 is not
@@ -438,6 +446,103 @@ static ssize_t mfg_lock_store(struct device_driver *drv, const char *buf,
 	return count;
 }
 
+/* Log header format. */
+#define RSH_LOG_TYPE_SHIFT	56
+#define RSH_LOG_LEN_SHIFT	48
+#define RSH_LOG_LEVEL_SHIFT	0
+
+/* Module ID and type used here. */
+#define RSH_LOG_TYPE		0x04ULL	/* message */
+
+/* Log message level. */
+enum {
+	RSH_LOG_INFO,
+	RSH_LOG_WARN,
+	RSH_LOG_ERR
+};
+
+const char *rsh_log_level[] = {"INFO", "WARN", "ERR"};
+
+/* Size(8-byte words) of the log buffer. */
+#define RSH_SCRATCH_BUF_CTL_IDX_MAX	0x7f
+
+static ssize_t rsh_log_store(struct device_driver *drv, const char *buf,
+			     size_t count)
+{
+	int idx, num, len, size = (int)count, level = RSH_LOG_INFO;
+	unsigned long timeout;
+	u64 data;
+
+	if (!size)
+		return -EINVAL;
+
+	if (!rsh_semaphore || !rsh_scratch_buf_ctl)
+		return -EOPNOTSUPP;
+
+	/* Ignore line break at the end. */
+	if (buf[size-1] == 0xa)
+		size--;
+
+	/* Check the message prefix. */
+	for (idx = 0; idx < ARRAY_SIZE(rsh_log_level); idx++) {
+		len = strlen(rsh_log_level[idx]);
+		if (len + 1 < size && !strncmp(buf, rsh_log_level[idx], len)) {
+			buf += len + 1;
+			size -= len + 1;
+			level = idx;
+			break;
+		}
+	}
+
+	/* Ignore leading spaces. */
+	while (size > 0 && buf[0] == ' ') {
+		size--;
+		buf++;
+	}
+
+	/* Take the semaphore. */
+	timeout = jiffies + msecs_to_jiffies(100);
+	while (readq(rsh_semaphore)) {
+		if (time_after(jiffies, timeout))
+			return -ETIMEDOUT;
+	}
+
+	/* Calculate how many words are available. */
+	num = (size + sizeof(u64) - 1) / sizeof(u64);
+	idx = readq(rsh_scratch_buf_ctl);
+	if (idx + num >= RSH_SCRATCH_BUF_CTL_IDX_MAX)
+		num = RSH_SCRATCH_BUF_CTL_IDX_MAX - idx;
+	if (!num)
+		goto done;
+
+	/* Write Header. */
+	data = (RSH_LOG_TYPE << RSH_LOG_TYPE_SHIFT) |
+		((u64)num << RSH_LOG_LEN_SHIFT) |
+		((u64)level << RSH_LOG_LEVEL_SHIFT);
+	writeq(data, rsh_scratch_buf_data);
+
+	/* Write message. */
+	for (idx = 0, len = size; idx < num && len > 0; idx++) {
+		if (len <= sizeof(u64)) {
+			data = 0;
+			memcpy(&data, buf, len);
+			len = 0;
+		} else {
+			memcpy (&data, buf, sizeof(u64));
+			len -= sizeof(u64);
+			buf += sizeof(u64);
+		}
+		writeq(data, rsh_scratch_buf_data);
+	}
+
+done:
+	/* Release the semaphore. */
+	writeq(0, rsh_semaphore);
+
+	/* Ignore the rest if no more space. */
+	return count;
+}
+
 #define MBC_DRV_ATTR(_name) DRIVER_ATTR_RW(_name)
 
 static MBC_DRV_ATTR(post_reset_wdog);
@@ -449,6 +554,7 @@ static DRIVER_ATTR_WO(fw_reset);
 static MBC_DRV_ATTR(oob_mac);
 static MBC_DRV_ATTR(opn_str);
 static DRIVER_ATTR_WO(mfg_lock);
+static DRIVER_ATTR_WO(rsh_log);
 
 static struct attribute *mbc_dev_attrs[] = {
 	&driver_attr_post_reset_wdog.attr,
@@ -460,6 +566,7 @@ static struct attribute *mbc_dev_attrs[] = {
 	&driver_attr_oob_mac.attr,
 	&driver_attr_opn_str.attr,
 	&driver_attr_mfg_lock.attr,
+	&driver_attr_rsh_log.attr,
 	NULL
 };
 
@@ -498,7 +605,7 @@ static ssize_t mbc_bootfifo_read_raw(struct file *filp, struct kobject *kobj,
 	/* Give up reading if no more data within 500ms. */
 	while (count >= sizeof(data)) {
 		if (!cnt) {
-			cnt = readq(boot_cnt);
+			cnt = readq(rsh_boot_cnt);
 			if (!cnt) {
 				if (time_after(jiffies, timeout))
 					break;
@@ -507,7 +614,7 @@ static ssize_t mbc_bootfifo_read_raw(struct file *filp, struct kobject *kobj,
 			}
 		}
 
-		data = readq(boot_data);
+		data = readq(rsh_boot_data);
 		memcpy(p, &data, sizeof(data));
 		count -= sizeof(data);
 		p += sizeof(data);
@@ -527,17 +634,38 @@ static int mbc_probe(struct platform_device *pdev)
 {
 	struct resource *resource;
 	struct arm_smccc_res res;
+	void __iomem *data;
 	int err;
 
 	resource = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-	boot_data = devm_ioremap_resource(&pdev->dev, resource);
-	if (IS_ERR(boot_data))
-		return PTR_ERR(boot_data);
+	if (!resource)
+		return -ENODEV;
+	rsh_boot_data = devm_ioremap_resource(&pdev->dev, resource);
+	if (IS_ERR(rsh_boot_data))
+		return PTR_ERR(rsh_boot_data);
 
 	resource = platform_get_resource(pdev, IORESOURCE_MEM, 1);
-	boot_cnt = devm_ioremap_resource(&pdev->dev, resource);
-	if (IS_ERR(boot_cnt))
-		return PTR_ERR(boot_cnt);
+	if (!resource)
+		return -ENODEV;
+	rsh_boot_cnt = devm_ioremap_resource(&pdev->dev, resource);
+	if (IS_ERR(rsh_boot_cnt))
+		return PTR_ERR(rsh_boot_cnt);
+
+	resource = platform_get_resource(pdev, IORESOURCE_MEM, 2);
+	if (resource) {
+		data = devm_ioremap_resource(&pdev->dev, resource);
+		if (!IS_ERR(data))
+			rsh_semaphore = data;
+	}
+
+	resource = platform_get_resource(pdev, IORESOURCE_MEM, 3);
+	if (resource) {
+		data = devm_ioremap_resource(&pdev->dev, resource);
+		if (!IS_ERR(data)) {
+			rsh_scratch_buf_ctl = data + RSH_SCRATCH_BUF_CTL_OFF;
+			rsh_scratch_buf_data = data + RSH_SCRATCH_BUF_DATA_OFF;
+		}
+	}
 
 	/*
 	 * Ensure we have the UUID we expect for this service.
