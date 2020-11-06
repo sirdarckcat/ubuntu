@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0
+// SPDX-License-Identifier: GPL-2.0 or BSD-3-Clause
 
 #include <linux/acpi.h>
 #include <linux/arm-smccc.h>
@@ -12,7 +12,7 @@
 #include <linux/module.h>
 #include <linux/platform_device.h>
 #include <linux/sched.h>
-#include <linux/string.h>
+#include <linux/stringify.h>
 #include <linux/sysfs.h>
 #include <linux/version.h>
 #include <uapi/linux/psci.h>
@@ -20,7 +20,6 @@
 #include "mlxbf-pmc.h"
 
 #define DRIVER_VERSION		2.2
-#define STRINGIFY(s)		#s
 
 static struct mlxbf_pmc_context *pmc;
 
@@ -1250,5 +1249,5 @@ module_platform_driver(pmc_driver);
 
 MODULE_AUTHOR("Mellanox Technologies");
 MODULE_DESCRIPTION("Mellanox PMC driver");
-MODULE_LICENSE("GPL");
-MODULE_VERSION(STRINGIFY(DRIVER_VERSION));
+MODULE_LICENSE("Dual BSD/GPL");
+MODULE_VERSION(__stringify(DRIVER_VERSION));
