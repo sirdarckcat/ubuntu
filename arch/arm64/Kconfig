@@ -206,6 +206,11 @@ config ARM64_CONT_SHIFT
 	default 7 if ARM64_16K_PAGES
 	default 4
 
+config ARCH_DMA_MINALIGN
+	int
+	default 64 if MELLANOX_PLATFORM
+	default 128
+
 config ARCH_MMAP_RND_BITS_MIN
        default 14 if ARM64_64K_PAGES
        default 16 if ARM64_16K_PAGES
