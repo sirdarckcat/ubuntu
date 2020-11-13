@@ -223,6 +223,10 @@ irqreturn_t mlxbf_gige_mdio_handle_phy_interrupt(int irq, void *dev_id)
 	if (phydev->drv->ack_interrupt)
 		phydev->drv->ack_interrupt(phydev);
 
+	phydev->interrupts = PHY_INTERRUPT_ENABLED;
+	if (phydev->drv->config_intr)
+		phydev->drv->config_intr(phydev);
+
 	return IRQ_HANDLED;
 }
 
