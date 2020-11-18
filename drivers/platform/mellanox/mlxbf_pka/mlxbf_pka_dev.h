@@ -42,6 +42,7 @@
 /// "southband interface" for communication with PKA hardware resources.
 ///
 
+#include <linux/mutex.h>
 #include <linux/types.h>
 #include "mlxbf_pka_firmware.h"
 
@@ -192,6 +193,8 @@ struct pka_dev_shim_s
                                           ///  enabled.
 
     int8_t              status;           ///< status of the shim
+
+    struct mutex        mutex;            ///< mutex lock for sharing shim
 };
 
 /// defines for pka_dev_shim->status
