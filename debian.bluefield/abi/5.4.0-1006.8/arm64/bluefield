@@ -450,11 +450,11 @@ EXPORT_SYMBOL	 drivers/md/dm-log 0x00000000	dm_dirty_log_type_unregister
 EXPORT_SYMBOL	 drivers/mfd/axp20x 0x00000000	axp20x_device_probe
 EXPORT_SYMBOL	 drivers/mfd/axp20x 0x00000000	axp20x_device_remove
 EXPORT_SYMBOL	 drivers/mfd/axp20x 0x00000000	axp20x_match_device
+EXPORT_SYMBOL	 drivers/mmc/host/cqhci 0x00000000	cqhci_deactivate
 EXPORT_SYMBOL	 drivers/mmc/host/cqhci 0x00000000	cqhci_init
 EXPORT_SYMBOL	 drivers/mmc/host/cqhci 0x00000000	cqhci_irq
 EXPORT_SYMBOL	 drivers/mmc/host/cqhci 0x00000000	cqhci_pltfm_init
 EXPORT_SYMBOL	 drivers/mmc/host/cqhci 0x00000000	cqhci_resume
-EXPORT_SYMBOL	 drivers/mmc/host/cqhci 0x00000000	cqhci_suspend
 EXPORT_SYMBOL	 drivers/mmc/host/dw_mmc 0x00000000	dw_mci_probe
 EXPORT_SYMBOL	 drivers/mmc/host/dw_mmc 0x00000000	dw_mci_remove
 EXPORT_SYMBOL	 drivers/mmc/host/dw_mmc 0x00000000	dw_mci_runtime_resume
@@ -3638,6 +3638,7 @@ EXPORT_SYMBOL	 vmlinux 0x00000000	ktime_get_real_ts64
 EXPORT_SYMBOL	 vmlinux 0x00000000	kvasprintf
 EXPORT_SYMBOL	 vmlinux 0x00000000	kvasprintf_const
 EXPORT_SYMBOL	 vmlinux 0x00000000	kvfree
+EXPORT_SYMBOL	 vmlinux 0x00000000	kvfree_sensitive
 EXPORT_SYMBOL	 vmlinux 0x00000000	kvmalloc_node
 EXPORT_SYMBOL	 vmlinux 0x00000000	kzfree
 EXPORT_SYMBOL	 vmlinux 0x00000000	laptop_mode
@@ -8096,6 +8097,7 @@ EXPORT_SYMBOL_GPL	 net/sunrpc/sunrpc 0x00000000	svc_create_pooled
 EXPORT_SYMBOL_GPL	 net/sunrpc/sunrpc 0x00000000	svc_create_xprt
 EXPORT_SYMBOL_GPL	 net/sunrpc/sunrpc 0x00000000	svc_destroy
 EXPORT_SYMBOL_GPL	 net/sunrpc/sunrpc 0x00000000	svc_drop
+EXPORT_SYMBOL_GPL	 net/sunrpc/sunrpc 0x00000000	svc_encode_read_payload
 EXPORT_SYMBOL_GPL	 net/sunrpc/sunrpc 0x00000000	svc_exit_thread
 EXPORT_SYMBOL_GPL	 net/sunrpc/sunrpc 0x00000000	svc_fill_symlink_pathname
 EXPORT_SYMBOL_GPL	 net/sunrpc/sunrpc 0x00000000	svc_fill_write_vector
@@ -8412,6 +8414,7 @@ EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	__mnt_is_readonly
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	__module_address
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	__module_text_address
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	__ndisc_fill_addr_option
+EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	__netdev_watchdog_up
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	__netif_set_xps_queue
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	__netpoll_cleanup
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	__netpoll_free
@@ -8557,7 +8560,9 @@ EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	__udp_enqueue_schedule_skb
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	__udp_gso_segment
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	__usb_create_hcd
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	__usb_get_extra_descriptor
+EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	__vfs_removexattr_locked
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	__vfs_removexattr_noperm
+EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	__vfs_setxattr_locked
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	__vfs_setxattr_noperm
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	__vring_new_virtqueue
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	__wait_rcu_gp
@@ -9314,6 +9319,7 @@ EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	cpu_have_feature
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	cpu_hotplug_disable
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	cpu_hotplug_enable
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	cpu_is_hotpluggable
+EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	cpu_logical_map
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	cpu_mitigations_auto_nosmt
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	cpu_mitigations_off
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	cpu_pm_enter
@@ -10017,6 +10023,7 @@ EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	dm_internal_suspend_fast
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	dm_internal_suspend_noflush
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	dm_noflush_suspending
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	dm_per_bio_data
+EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	dm_post_suspending
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	dm_put
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	dm_remap_zone_report
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	dm_set_target_max_io_len
@@ -12427,6 +12434,7 @@ EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	sk_psock_destroy
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	sk_psock_drop
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	sk_psock_init
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	sk_psock_msg_verdict
+EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	sk_psock_tls_strp_read
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	sk_set_memalloc
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	sk_set_peek_off
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	sk_setup_caps
