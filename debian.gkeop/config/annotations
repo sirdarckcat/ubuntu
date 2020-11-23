@@ -1,0 +1,15 @@
+# Menu: HEADER
+# FORMAT: 3
+# ARCH: x86
+
+include "../../debian.master/config/annotations"
+
+# Below configs were defined by flavour for amd64. As gkeop only has one
+# flavour, we replace those options with an arch only definition.
+CONFIG_IRQ_FORCED_THREADING_DEFAULT             policy<{'amd64': 'n'}>
+CONFIG_PREEMPT_VOLUNTARY                        policy<{'amd64': 'y'}>
+CONFIG_PREEMPT                                  policy<{'amd64': 'n'}>
+CONFIG_LATENCYTOP                               policy<{'amd64': 'n'}> mark<ENFORCED>
+CONFIG_LATENCYTOP                               note<https://lists.ubuntu.com/archives/kernel-team/2014-July/045006.html, LP#1655986>
+CONFIG_HZ_250                                   policy<{'amd64': 'y'}>
+CONFIG_HZ_1000                                  policy<{'amd64': 'n'}>
