@@ -78,10 +78,6 @@
 #define MLXBF_GIGE_GPIO_CAUSE_OR_CLRCAUSE	0x98
 
 #define MLXBF_GIGE_GPIO12_BIT			12
-#define MLXBF_GIGE_CAUSE_OR_CAUSE_EVTEN0_MASK	BIT(MLXBF_GIGE_GPIO12_BIT)
-#define MLXBF_GIGE_CAUSE_OR_EVTEN0_MASK		BIT(MLXBF_GIGE_GPIO12_BIT)
-#define MLXBF_GIGE_CAUSE_FALL_EN_MASK		BIT(MLXBF_GIGE_GPIO12_BIT)
-#define MLXBF_GIGE_CAUSE_OR_CLRCAUSE_MASK	BIT(MLXBF_GIGE_GPIO12_BIT)
 
 static u32 mlxbf_gige_mdio_create_cmd(u16 data, int phy_add,
 				      int phy_reg, u32 opcode)
@@ -160,7 +156,7 @@ static void mlxbf_gige_mdio_disable_phy_int(struct mlxbf_gige *priv)
 
 	spin_lock_irqsave(&priv->gpio_lock, flags);
 	val = readl(priv->gpio_io + MLXBF_GIGE_GPIO_CAUSE_OR_EVTEN0);
-	val &= ~MLXBF_GIGE_CAUSE_OR_EVTEN0_MASK;
+	val &= ~priv->phy_int_gpio_mask;
 	writel(val, priv->gpio_io + MLXBF_GIGE_GPIO_CAUSE_OR_EVTEN0);
 	spin_unlock_irqrestore(&priv->gpio_lock, flags);
 }
@@ -176,13 +172,13 @@ static void mlxbf_gige_mdio_enable_phy_int(struct mlxbf_gige *priv)
 	 * state goes low.
 	 */
 	val = readl(priv->gpio_io + MLXBF_GIGE_GPIO_CAUSE_FALL_EN);
-	val |= MLXBF_GIGE_CAUSE_FALL_EN_MASK;
+	val |= priv->phy_int_gpio_mask;
 	writel(val, priv->gpio_io + MLXBF_GIGE_GPIO_CAUSE_FALL_EN);
 
 	/* Enable PHY interrupt by setting the priority level */
 	val = readl(priv->gpio_io +
 			MLXBF_GIGE_GPIO_CAUSE_OR_EVTEN0);
-	val |= MLXBF_GIGE_CAUSE_OR_EVTEN0_MASK;
+	val |= priv->phy_int_gpio_mask;
 	writel(val, priv->gpio_io +
 			MLXBF_GIGE_GPIO_CAUSE_OR_EVTEN0);
 	spin_unlock_irqrestore(&priv->gpio_lock, flags);
@@ -205,7 +201,7 @@ irqreturn_t mlxbf_gige_mdio_handle_phy_interrupt(int irq, void *dev_id)
 	 */
 	val = readl(priv->gpio_io +
 			MLXBF_GIGE_GPIO_CAUSE_OR_CAUSE_EVTEN0);
-	if (!(val & MLXBF_GIGE_CAUSE_OR_CAUSE_EVTEN0_MASK))
+	if (!(val & priv->phy_int_gpio_mask))
 		return IRQ_NONE;
 
 	phy_mac_interrupt(phydev);
@@ -215,7 +211,7 @@ irqreturn_t mlxbf_gige_mdio_handle_phy_interrupt(int irq, void *dev_id)
 	 */
 	val = readl(priv->gpio_io +
 			MLXBF_GIGE_GPIO_CAUSE_OR_CLRCAUSE);
-	val |= MLXBF_GIGE_CAUSE_OR_CLRCAUSE_MASK;
+	val |= priv->phy_int_gpio_mask;
 	writel(val, priv->gpio_io +
 			MLXBF_GIGE_GPIO_CAUSE_OR_CLRCAUSE);
 
@@ -234,6 +230,7 @@ int mlxbf_gige_mdio_probe(struct platform_device *pdev, struct mlxbf_gige *priv)
 {
 	struct device *dev = &pdev->dev;
 	struct resource *res;
+	u32 phy_int_gpio;
 	int ret;
 
 	res = platform_get_resource(pdev, IORESOURCE_MEM, MLXBF_GIGE_RES_MDIO9);
@@ -255,6 +252,11 @@ int mlxbf_gige_mdio_probe(struct platform_device *pdev, struct mlxbf_gige *priv)
 	/* Configure mdio parameters */
 	writel(MLXBF_GIGE_MDIO_CFG_VAL,
 	       priv->mdio_io + MLXBF_GIGE_MDIO_CFG_OFFSET);
+
+	ret = device_property_read_u32(dev, "phy-int-gpio", &phy_int_gpio);
+	if (ret < 0)
+		phy_int_gpio = MLXBF_GIGE_GPIO12_BIT;
+	priv->phy_int_gpio_mask = BIT(phy_int_gpio);
 
 	mlxbf_gige_mdio_enable_phy_int(priv);
 
