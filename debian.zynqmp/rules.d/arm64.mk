@@ -20,8 +20,8 @@ do_tools_bpftool = true
 do_tools_host = false
 
 do_dtbs		= true
-do_zfs		= true
-do_dkms_wireguard = true
+do_zfs		= false
+do_dkms_wireguard = false
 do_dkms_nvidia = false
 
 disable_d_i = true
