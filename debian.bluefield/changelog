@@ -1,4 +1,4 @@
-linux-bluefield (5.4.0-1007.9) focal; urgency=medium
+linux-bluefield (5.4.0-1007.10) focal; urgency=medium
 
   * Apply patches from Mellanox for the next release (LP: #1904992)
     - SAUCE: Address upstream comments from patch v6 for PHY driver
@@ -19,6 +19,7 @@ linux-bluefield (5.4.0-1007.9) focal; urgency=medium
     - SAUCE: pka: Sync ubuntu branch with bfdev-5.4.60
     - [Config] updateconfigs
     - [Config] import config changes from Mellanox
+    - SAUCE: mlxbf_gige_mdio.c: Support PHY interrupt on Bluesphere
 
   * make rshim console built-in
     - [Config] CONFIG_MLXBF_TMFIFO=y
@@ -1429,7 +1430,7 @@ linux-bluefield (5.4.0-1007.9) focal; urgency=medium
     - ovl: call secutiry hook in ovl_real_ioctl()
     - ovl: check permission to open real file
 
- -- Wen-chien Jesse Sung <jesse.sung@canonical.com>  Fri, 20 Nov 2020 19:19:48 +0800
+ -- Wen-chien Jesse Sung <jesse.sung@canonical.com>  Fri, 27 Nov 2020 21:11:56 +0800
 
 linux-bluefield (5.4.0-1006.8) focal; urgency=medium
 
