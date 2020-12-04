@@ -244,7 +244,7 @@ struct brcm_msi {
 	struct mutex		lock; /* guards the alloc/free operations */
 	u64			target_addr;
 	int			irq;
-	DECLARE_BITMAP(used, BRCM_INT_PCI_MSI_NR);
+	DECLARE_BITMAP(used, 64);
 	bool			legacy;
 	/* Some chips have MSIs in bits [31..24] of a shared register. */
 	int			legacy_shift;
@@ -459,7 +459,7 @@ static struct msi_domain_info brcm_msi_domain_info = {
 static void brcm_pcie_msi_isr(struct irq_desc *desc)
 {
 	struct irq_chip *chip = irq_desc_get_chip(desc);
-	unsigned long status;
+	unsigned long status, virq;
 	struct brcm_msi *msi;
 	struct device *dev;
 	u32 bit;
@@ -471,10 +471,22 @@ static void brcm_pcie_msi_isr(struct irq_desc *desc)
 	status = readl(msi->intr_base + MSI_INT_STATUS);
 	status >>= msi->legacy_shift;
 
-	for_each_set_bit(bit, &status, msi->nr) {
-		int ret;
-		ret = generic_handle_domain_irq(msi->inner_domain, bit);
-		if (ret)
+	for_each_set_bit(bit, &status, BRCM_INT_PCI_MSI_NR/*msi->nr*/) {
+		bool found = false;
+
+		virq = irq_find_mapping(msi->inner_domain, bit);
+		if (virq) {
+			found = true;
+			dev_dbg(dev, "MSI -> %ld\n", virq);
+			generic_handle_irq(virq);
+		}
+		virq = irq_find_mapping(msi->inner_domain, bit + 32);
+		if (virq) {
+			found = true;
+			dev_dbg(dev, "MSI -> %ld\n", virq);
+			generic_handle_irq(virq);
+		}
+		if (!found)
 			dev_dbg(dev, "unexpected MSI\n");
 	}
 
@@ -487,7 +499,7 @@ static void brcm_msi_compose_msi_msg(struct irq_data *data, struct msi_msg *msg)
 
 	msg->address_lo = lower_32_bits(msi->target_addr);
 	msg->address_hi = upper_32_bits(msi->target_addr);
-	msg->data = (0xffff & PCIE_MISC_MSI_DATA_CONFIG_VAL_32) | data->hwirq;
+	msg->data = (0xffff & PCIE_MISC_MSI_DATA_CONFIG_VAL_32) | (data->hwirq & 0x1f);
 }
 
 static int brcm_msi_set_affinity(struct irq_data *irq_data,
@@ -499,7 +511,7 @@ static int brcm_msi_set_affinity(struct irq_data *irq_data,
 static void brcm_msi_ack_irq(struct irq_data *data)
 {
 	struct brcm_msi *msi = irq_data_get_irq_chip_data(data);
-	const int shift_amt = data->hwirq + msi->legacy_shift;
+	const int shift_amt = (data->hwirq & 0x1f) + msi->legacy_shift;
 
 	writel(1 << shift_amt, msi->intr_base + MSI_INT_CLR);
 }
@@ -660,7 +672,7 @@ static int brcm_pcie_enable_msi(struct brcm_pcie *pcie)
 		msi->legacy_shift = 24;
 	} else {
 		msi->intr_base = msi->base + PCIE_MSI_INTR2_BASE;
-		msi->nr = BRCM_INT_PCI_MSI_NR;
+		msi->nr = 64; //BRCM_INT_PCI_MSI_NR;
 		msi->legacy_shift = 0;
 	}
 
