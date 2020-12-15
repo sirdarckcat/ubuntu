@@ -1,3 +1,21 @@
+linux-riscv (5.8.0-12.14) groovy; urgency=medium
+
+  * groovy/linux-riscv: 5.8.0-12.14 -proposed tracker (LP: #1907406)
+
+  [ Ubuntu: 5.8.0-33.36 ]
+
+  * groovy/linux: 5.8.0-33.36 -proposed tracker (LP: #1907408)
+  * raid10: discard leads to corrupted file system (LP: #1907262)
+    - Revert "dm raid: remove unnecessary discard limits for raid10"
+    - Revert "dm raid: fix discard limits for raid1 and raid10"
+    - Revert "md/raid10: improve discard request for far layout"
+    - Revert "md/raid10: improve raid10 discard request"
+    - Revert "md/raid10: pull codes that wait for blocked dev into one function"
+    - Revert "md/raid10: extend r10bio devs to raid disks"
+    - Revert "md: add md_submit_discard_bio() for submitting discard bio"
+
+ -- Andrea Righi <andrea.righi@canonical.com>  Wed, 09 Dec 2020 15:21:02 +0100
+
 linux-riscv (5.8.0-11.13) groovy; urgency=medium
 
   * groovy/linux-riscv: 5.8.0-11.13 -proposed tracker (LP: #1905863)
