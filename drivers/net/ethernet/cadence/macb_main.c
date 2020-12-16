@@ -4472,7 +4472,7 @@ static int macb_probe(struct platform_device *pdev)
 		     (unsigned long)bp);
 
 	if (bp->caps & MACB_CAPS_WOL)
-		device_set_wakeup_capable(&bp->dev->dev, 1);
+		device_set_wakeup_capable(&pdev->dev, 1);
 
 	phy_attached_info(phydev);
 
@@ -4553,7 +4553,7 @@ static int __maybe_unused macb_suspend(struct device *dev)
 	if (!netif_running(netdev))
 		return 0;
 
-	if (device_may_wakeup(&bp->dev->dev)) {
+	if (device_may_wakeup(dev)) {
 		spin_lock_irqsave(&bp->lock, flags);
 		ctrl = macb_readl(bp, NCR);
 		ctrl &= ~(MACB_BIT(TE) | MACB_BIT(RE));
@@ -4635,7 +4635,7 @@ static int __maybe_unused macb_resume(struct device *dev)
 	if (!device_may_wakeup(dev))
 		pm_runtime_force_resume(dev);
 
-	if (device_may_wakeup(&bp->dev->dev)) {
+	if (device_may_wakeup(dev)) {
 		spin_lock_irqsave(&bp->lock, flags);
 		macb_writel(bp, IDR, MACB_BIT(WOL));
 		gem_writel(bp, WOL, 0);
@@ -4689,7 +4689,7 @@ static int __maybe_unused macb_runtime_suspend(struct device *dev)
 		clk_disable_unprepare(bp->rx_clk);
 	}
 
-	if (!(device_may_wakeup(&bp->dev->dev) &&
+	if (!(device_may_wakeup(dev) &&
 	      (bp->caps & MACB_CAPS_NEED_TSUCLK)))
 		clk_disable_unprepare(bp->tsu_clk);
 
@@ -4708,7 +4708,7 @@ static int __maybe_unused macb_runtime_resume(struct device *dev)
 		clk_prepare_enable(bp->rx_clk);
 	}
 
-	if (!(device_may_wakeup(&bp->dev->dev) &&
+	if (!(device_may_wakeup(dev) &&
 	      (bp->caps & MACB_CAPS_NEED_TSUCLK)))
 		clk_prepare_enable(bp->tsu_clk);
 
