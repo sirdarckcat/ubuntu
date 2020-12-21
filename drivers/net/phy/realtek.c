@@ -347,6 +347,7 @@ static int rtl8211f_config_init(struct phy_device *phydev)
 	struct rtl821x_priv *priv = phydev->priv;
 	struct device *dev = &phydev->mdio.dev;
 	u16 val_txdly, val_rxdly;
+	u16 val;
 	int ret;
 
 	ret = phy_modify_paged_changed(phydev, 0xa43, RTL8211F_PHYCR1,
@@ -357,6 +358,9 @@ static int rtl8211f_config_init(struct phy_device *phydev)
 			ERR_PTR(ret));
 		return ret;
 	}
+
+	val = phy_read_paged(phydev, 0xa43, RTL8211F_PHYCR2);
+	phy_modify_paged_changed(phydev, 0xa43, RTL8211F_PHYCR2, 0, (val & ~BIT(0)));
 
 	switch (phydev->interface) {
 	case PHY_INTERFACE_MODE_RGMII:
