@@ -14,6 +14,7 @@
 #include <linux/fpga/fpga-mgr.h>
 #include "sched_exec.h"
 #include "zocl_xclbin.h"
+#include "zocl_aie.h"
 #include "xrt_xclbin.h"
 #include "xclbin.h"
 
@@ -22,7 +23,7 @@
 extern int kds_mode;
 
 static int
-zocl_fpga_mgr_load(struct drm_zocl_dev *zdev, const char *data, int size)
+zocl_fpga_mgr_load(struct drm_zocl_dev *zdev, const char *data, int size, u32 flags)
 {
 	struct drm_device *ddev = zdev->ddev;
 	struct device *dev = ddev->dev;
@@ -42,7 +43,7 @@ zocl_fpga_mgr_load(struct drm_zocl_dev *zdev, const char *data, int size)
 	if (!info)
 		return -ENOMEM;
 
-	info->flags = FPGA_MGR_PARTIAL_RECONFIG;
+	info->flags = flags;
 	info->buf = data;
 	info->count = size;
 
@@ -77,7 +78,7 @@ zocl_load_partial(struct drm_zocl_dev *zdev, const char *buffer, int length)
 
 	/* Freeze PR ISOLATION IP for bitstream download */
 	iowrite32(0x0, map);
-	err = zocl_fpga_mgr_load(zdev, buffer, length);
+	err = zocl_fpga_mgr_load(zdev, buffer, length, FPGA_MGR_PARTIAL_RECONFIG);
 	/* Unfreeze PR ISOLATION IP */
 	iowrite32(0x3, map);
 
@@ -119,7 +120,13 @@ zocl_load_bitstream(struct drm_zocl_dev *zdev, char *buffer, int length)
 		data[i+2] = temp;
 	}
 
-	return zocl_load_partial(zdev, data, bit_header.BitstreamLength);
+	/* On pr platofrm load partial bitstream and on Flat platform load full bitstream */
+	if (zdev->pr_isolation_addr)
+		return zocl_load_partial(zdev, data, bit_header.BitstreamLength);
+	else {
+		/* 0 is for full bitstream */
+		return zocl_fpga_mgr_load(zdev, buffer, length, 0);
+	}
 }
 
 static int
@@ -273,6 +280,8 @@ zocl_create_cu(struct drm_zocl_dev *zdev)
 {
 	struct ip_data *ip;
 	struct xrt_cu_info info;
+	char kname[64];
+	char *kname_p;
 	int err;
 	int i;
 
@@ -289,22 +298,32 @@ zocl_create_cu(struct drm_zocl_dev *zdev)
 		if (ip->m_base_address == -1)
 			continue;
 
-		/* TODO: use HLS CU as default.
-		 * don't know how to distinguish HLS CU and other CU
-		 */
-		info.model = XCU_HLS;
 		info.num_res = 1;
 		info.addr = ip->m_base_address;
 		info.intr_enable = xclbin_intr_enable(ip->properties);
 		info.protocol = xclbin_protocol(ip->properties);
 		info.intr_id = xclbin_intr_id(ip->properties);
 
-		/* TODO: Consider where should we determine CU index in
-		 * the driver.. Right now, user space determine it and let
-		 * driver known by configure command
-		 */
-		info.cu_idx = -1;
+		switch (info.protocol) {
+		case CTRL_HS:
+		case CTRL_CHAIN:
+			info.model = XCU_HLS;
+			break;
+		case CTRL_FA:
+			info.model = XCU_FA;
+			break;
+		default:
+			return -EINVAL;
+		}
+
 		info.inst_idx = i;
+		/* ip_data->m_name format "<kernel name>:<instance name>",
+		 * where instance name is so called CU name.
+		 */
+		strcpy(kname, ip->m_name);
+		kname_p = &kname[0];
+		strcpy(info.kname, strsep(&kname_p, ":"));
+		strcpy(info.iname, strsep(&kname_p, ":"));
 
 		/* CU sub device is a virtual device, which means there is no
 		 * device tree nodes
@@ -411,8 +430,15 @@ zocl_load_aie_only_pdi(struct drm_zocl_dev *zdev, struct axlf *axlf,
 	if (size == 0)
 		return 0;
 
-	ret = zocl_fpga_mgr_load(zdev, pdi_buf, size);
+	ret = zocl_fpga_mgr_load(zdev, pdi_buf, size, FPGA_MGR_PARTIAL_RECONFIG);
 	vfree(pdi_buf);
+
+	/* Mark AIE out of reset state after load PDI */
+	if (zdev->aie) {
+		mutex_lock(&zdev->aie_lock);
+		zdev->aie->aie_reset = false;
+		mutex_unlock(&zdev->aie_lock);
+	}
 
 	return ret;
 }
@@ -468,6 +494,7 @@ zocl_xclbin_read_axlf(struct drm_zocl_dev *zdev, struct drm_zocl_axlf *axlf_obj)
 	char __user *xclbin = NULL;
 	size_t size_of_header;
 	size_t num_of_sections;
+	void *kernels;
 	uint64_t size = 0;
 	int ret = 0;
 
@@ -516,6 +543,8 @@ zocl_xclbin_read_axlf(struct drm_zocl_dev *zdev, struct drm_zocl_axlf *axlf_obj)
 			ret = zocl_load_aie_only_pdi(zdev, axlf, xclbin);
 			if (ret)
 				DRM_WARN("read xclbin: fail to load AIE");
+			else
+				zocl_create_aie(zdev, axlf);
 		} else {
 			DRM_INFO("%s The XCLBIN already loaded", __func__);
 		}
@@ -578,6 +607,17 @@ zocl_xclbin_read_axlf(struct drm_zocl_dev *zdev, struct drm_zocl_axlf *axlf_obj)
 		ret = zocl_load_aie_only_pdi(zdev, axlf, xclbin);
 		if (ret)
 			goto out0;
+	} else if (axlf_obj->za_flags == DRM_ZOCL_PLATFORM_FLAT && 
+		   axlf_head.m_header.m_mode == XCLBIN_FLAT && 
+		   axlf_head.m_header.m_mode != XCLBIN_HW_EMU &&
+		   axlf_head.m_header.m_mode != XCLBIN_HW_EMU_PR) {
+		/* 
+		 * Load full bitstream, enabled in xrt runtime config
+		 * and xclbin has full bitstream and its not hw emulation
+		 */
+		ret = zocl_load_sect(zdev, axlf, xclbin, BITSTREAM);
+		if (ret)
+			goto out0;
 	}
 
 	/* Populating IP_LAYOUT sections */
@@ -605,12 +645,42 @@ zocl_xclbin_read_axlf(struct drm_zocl_dev *zdev, struct drm_zocl_axlf *axlf_obj)
 	if (ret)
 		goto out0;
 
+	if (zdev->kernels != NULL) {
+		vfree(zdev->kernels);
+		zdev->kernels = NULL;
+	}
+
+	if (axlf_obj->za_ksize > 0) {
+		kernels = vmalloc(axlf_obj->za_ksize);
+		if (!kernels) {
+			ret = -ENOMEM;
+			goto out0;
+		}
+		if (copy_from_user(kernels, axlf_obj->za_kernels,
+		    axlf_obj->za_ksize)) {
+			ret = -EFAULT;
+			goto out0;
+		}
+		zdev->ksize = axlf_obj->za_ksize;
+		zdev->kernels = kernels;
+	}
+
 	if (kds_mode == 1) {
 		subdev_destroy_cu(zdev);
 		ret = zocl_create_cu(zdev);
 		if (ret)
 			goto out0;
+		ret = zocl_kds_update(zdev);
+		if (ret)
+			goto out0;
 	}
+
+	/* Populating AIE_METADATA sections */
+	size = zocl_read_sect(AIE_METADATA, &zdev->aie_data.data, axlf, xclbin);
+	if (size < 0) {
+		goto out0;
+	}
+	zdev->aie_data.size = size;
 
 	/* Populating CONNECTIVITY sections */
 	size = zocl_read_sect(CONNECTIVITY, &zdev->connectivity, axlf, xclbin);
@@ -634,6 +704,9 @@ zocl_xclbin_read_axlf(struct drm_zocl_dev *zdev, struct drm_zocl_axlf *axlf_obj)
 
 	zocl_clear_mem(zdev);
 	zocl_init_mem(zdev, zdev->topology);
+
+	/* Createing AIE Partition */
+	zocl_create_aie(zdev, axlf);
 
 	/*
 	 * Remember xclbin_uuid for opencontext.
@@ -793,15 +866,19 @@ zocl_xclbin_ctx(struct drm_zocl_dev *zdev, struct drm_zocl_ctx *ctx,
 		if (cu_idx != ZOCL_CTX_VIRT_CU_INDEX) {
 			/* Try clear exclusive CU */
 			ret = test_and_clear_bit(cu_idx, client->excus);
-			if (!ret)
+			if (!ret) {
 				/* Maybe it is shared CU */
-				ret = test_and_clear_bit(cu_idx, client->shcus) ?
-                                  0 : -EINVAL;
-			if (ret) {
+				ret = test_and_clear_bit(cu_idx, client->shcus);
+			}
+			if (!ret) {
 				DRM_ERROR("can not remove unreserved cu");
+        			ret = -EINVAL;
 				goto out;
 			}
 		}
+
+		/* revert the meaning of return value. 0 means succesfull */
+		ret = 0;
 
 		--client->num_cus;
 		if (CLIENT_NUM_CU_CTX(client) == 0)
