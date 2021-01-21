@@ -1,10 +1,13 @@
-// SPDX-License-Identifier: GPL-2.0
+/* SPDX-License-Identifier: GPL-2.0 OR Apache-2.0 */
 /*
  * Xilinx Kernel Driver Scheduler
  *
- * Copyright (C) 2020 Xilinx, Inc.
+ * Copyright (C) 2020 Xilinx, Inc. All rights reserved.
  *
  * Authors: min.ma@xilinx.com
+ *
+ * This file is dual-licensed; you may select either the GNU General Public
+ * License version 2 or Apache License, Version 2.0.
  */
 
 #ifndef _KDS_CORE_H
@@ -98,6 +101,8 @@ struct kds_cu_mgmt {
 	struct xrt_cu		 *xcus[MAX_CUS];
 	struct mutex		  lock;
 	int			  num_cus;
+	int			  num_cdma;
+	u32			  cu_intr[MAX_CUS];
 	u32			  cu_refs[MAX_CUS];
 	u64			  cu_usage[MAX_CUS];
 	int			  configured;
@@ -105,7 +110,16 @@ struct kds_cu_mgmt {
 
 /* ERT core */
 struct kds_ert {
-	int (* submit)(struct kds_command *xcmd);
+	void (* submit)(struct kds_ert *ert, struct kds_command *xcmd);
+};
+
+struct plram_info {
+	/* This is use for free bo, do not use it in shared code */
+	void		       *bo;
+	u64			bar_paddr;
+	u64			dev_paddr;
+	void __iomem		*vaddr;
+	u32			size;
 };
 
 /**
@@ -116,6 +130,10 @@ struct kds_ert {
  * @num_client: Number of clients
  * @lock: Mutex to protect client list
  * @cu_mgmt: hardware CUs management data structure
+ * @ert: remote scheduler
+ * @ert_disable: remote scheduler is disabled or not
+ * @cu_intr_cap: capbility of CU interrupt support
+ * @cu_intr: CU or ERT interrupt. 1 for CU, 0 for ERT.
  */
 struct kds_sched {
 	struct list_head	clients;
@@ -124,7 +142,11 @@ struct kds_sched {
 	bool			bad_state;
 	struct kds_cu_mgmt	cu_mgmt;
 	struct kds_ert	       *ert;
+	bool			ini_disable;
 	bool			ert_disable;
+	u32			cu_intr_cap;
+	u32			cu_intr;
+	struct plram_info	plram;
 };
 
 int kds_init_sched(struct kds_sched *kds);
@@ -134,6 +156,7 @@ void kds_fini_sched(struct kds_sched *kds);
 int kds_fini_ert(struct kds_sched *kds);
 void kds_fini_client(struct kds_sched *kds, struct kds_client *client);
 void kds_reset(struct kds_sched *kds);
+int kds_cfg_update(struct kds_sched *kds);
 int is_bad_state(struct kds_sched *kds);
 u32 kds_live_clients(struct kds_sched *kds, pid_t **plist);
 u32 kds_live_clients_nolock(struct kds_sched *kds, pid_t **plist);
@@ -153,4 +176,5 @@ void kds_free_command(struct kds_command *xcmd);
 int store_kds_echo(struct kds_sched *kds, const char *buf, size_t count,
 		   int kds_mode, u32 clients, int *echo);
 ssize_t show_kds_stat(struct kds_sched *kds, char *buf);
+ssize_t show_kds_custat_raw(struct kds_sched *kds, char *buf);
 #endif
