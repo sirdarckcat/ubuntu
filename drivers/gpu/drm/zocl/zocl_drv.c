@@ -29,16 +29,16 @@
 #include <linux/spinlock.h>
 #include "zocl_drv.h"
 #include "zocl_sk.h"
+#include "zocl_aie.h"
 #include "zocl_bo.h"
 #include "sched_exec.h"
 #include "zocl_xclbin.h"
+#include "zocl_error.h"
 
 #define ZOCL_DRIVER_NAME        "zocl"
 #define ZOCL_DRIVER_DESC        "Zynq BO manager"
-#define ZOCL_DRIVER_DATE        "20180313"
-#define ZOCL_DRIVER_MAJOR       2018
-#define ZOCL_DRIVER_MINOR       2
-#define ZOCL_DRIVER_PATCHLEVEL  1
+
+static char driver_date[9];
 
 /* This should be the same as DRM_FILE_PAGE_OFFSET_START in drm_gem.c */
 #if defined(CONFIG_ARM64)
@@ -732,6 +732,16 @@ static const struct drm_ioctl_desc zocl_ioctls[] = {
 			DRM_AUTH|DRM_UNLOCKED|DRM_RENDER_ALLOW),
 	DRM_IOCTL_DEF_DRV(ZOCL_CTX, zocl_ctx_ioctl,
 			DRM_AUTH|DRM_UNLOCKED|DRM_RENDER_ALLOW),
+	DRM_IOCTL_DEF_DRV(ZOCL_ERROR_INJECT, zocl_error_ioctl,
+			DRM_AUTH|DRM_UNLOCKED|DRM_RENDER_ALLOW),
+	DRM_IOCTL_DEF_DRV(ZOCL_AIE_FD, zocl_aie_fd_ioctl,
+			DRM_AUTH|DRM_UNLOCKED|DRM_RENDER_ALLOW),
+	DRM_IOCTL_DEF_DRV(ZOCL_AIE_RESET, zocl_aie_reset_ioctl,
+			DRM_AUTH|DRM_UNLOCKED|DRM_RENDER_ALLOW),
+	DRM_IOCTL_DEF_DRV(ZOCL_AIE_GETCMD, zocl_aie_getcmd_ioctl,
+			DRM_AUTH|DRM_UNLOCKED|DRM_RENDER_ALLOW),
+	DRM_IOCTL_DEF_DRV(ZOCL_AIE_PUTCMD, zocl_aie_putcmd_ioctl,
+			DRM_AUTH|DRM_UNLOCKED|DRM_RENDER_ALLOW),
 };
 
 static const struct file_operations zocl_driver_fops = {
@@ -769,10 +779,7 @@ static struct drm_driver zocl_driver = {
 	.fops                      = &zocl_driver_fops,
 	.name                      = ZOCL_DRIVER_NAME,
 	.desc                      = ZOCL_DRIVER_DESC,
-	.date                      = ZOCL_DRIVER_DATE,
-	.major                     = ZOCL_DRIVER_MAJOR,
-	.minor                     = ZOCL_DRIVER_MINOR,
-	.patchlevel                = ZOCL_DRIVER_PATCHLEVEL,
+	.date                      = driver_date,
 };
 
 static const struct zdev_data zdev_data_mpsoc = {
@@ -805,6 +812,7 @@ static int zocl_drm_platform_probe(struct platform_device *pdev)
 	int index;
 	int irq;
 	int ret;
+	int year, mon, day;
 
 	id = of_match_node(zocl_drm_of_match, pdev->dev.of_node);
 	DRM_INFO("Probing for %s\n", id->compatible);
@@ -898,6 +906,16 @@ static int zocl_drm_platform_probe(struct platform_device *pdev)
 
 	platform_set_drvdata(pdev, zdev);
 
+	sscanf(XRT_DRIVER_VERSION, "%d.%d.%d",
+		&zocl_driver.major,
+		&zocl_driver.minor,
+		&zocl_driver.patchlevel);
+	sscanf(XRT_DATE, "%d-%d-%d ", &year, &mon, &day);
+        //e.g HASH_DATE ==> Wed, 4 Nov 2020 08:46:44 -0800
+        //e.g XRT_DATE ==> 2020-11-04
+	snprintf(driver_date, sizeof(driver_date),
+		"%d%02d%02d", year, mon, day);
+
 	/* Create and register DRM device */
 	drm = drm_dev_alloc(&zocl_driver, &pdev->dev);
 	if (IS_ERR(drm))
@@ -920,11 +938,17 @@ static int zocl_drm_platform_probe(struct platform_device *pdev)
 	drm->dev_private = zdev;
 	zdev->ddev       = drm;
 
+	ret = zocl_init_error(zdev);
+	if (ret)
+		goto err_sysfs;
+
+	mutex_init(&zdev->aie_lock);
+
 	/* Initial sysfs */
 	rwlock_init(&zdev->attr_rwlock);
 	ret = zocl_init_sysfs(drm->dev);
 	if (ret)
-		goto err_sysfs;
+		goto err_err;
 
 	/* Now initial kds */
 	if (kds_mode == 1) {
@@ -942,6 +966,9 @@ static int zocl_drm_platform_probe(struct platform_device *pdev)
 /* error out in exact reverse order of init */
 err_sched:
 	zocl_fini_sysfs(drm->dev);
+err_err:
+	mutex_destroy(&zdev->aie_lock);
+	zocl_fini_error(zdev);
 err_sysfs:
 	zocl_xclbin_fini(zdev);
 	mutex_destroy(&zdev->zdev_xclbin_lock);
@@ -978,17 +1005,18 @@ static int zocl_drm_platform_remove(struct platform_device *pdev)
 	zocl_free_sections(zdev);
 	zocl_xclbin_fini(zdev);
 	mutex_destroy(&zdev->zdev_xclbin_lock);
+	zocl_destroy_aie(zdev);
+	mutex_destroy(&zdev->aie_lock);
 	zocl_fini_sysfs(drm->dev);
+	zocl_fini_error(zdev);
 
 	if (kds_mode == 1)
 		zocl_fini_sched(zdev);
 
 	kfree(zdev->apertures);
 
-	if (drm) {
-		drm_dev_unregister(drm);
-		ZOCL_DRM_DEV_PUT(drm);
-	}
+	drm_dev_unregister(drm);
+	ZOCL_DRM_DEV_PUT(drm);
 
 	return 0;
 }
