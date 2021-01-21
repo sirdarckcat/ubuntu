@@ -160,6 +160,26 @@ zocl_bo_execbuf(const struct drm_zocl_bo *bo)
 	return (bo->flags & ZOCL_BO_FLAGS_EXECBUF);
 }
 
+static inline struct kernel_info *
+zocl_query_kernel(struct drm_zocl_dev *zdev, const char *name)
+{
+	struct kernel_info *kernel;
+	int off = 0;
+
+	while (off < zdev->ksize) {
+		kernel = (struct kernel_info *)(zdev->kernels + off);
+		if (!strcmp(kernel->name, name))
+			break;
+		off += sizeof(struct kernel_info);
+		off += sizeof(struct argument_info) * kernel->anums;
+	}
+
+	if (off < zdev->ksize)
+		return kernel;
+
+	return NULL;
+}
+
 static inline int
 zocl_kds_add_cu(struct drm_zocl_dev *zdev, struct xrt_cu *xcu)
 {
@@ -190,10 +210,23 @@ int zocl_init_sysfs(struct device *dev);
 void zocl_fini_sysfs(struct device *dev);
 void zocl_free_sections(struct drm_zocl_dev *zdev);
 void zocl_free_bo(struct drm_gem_object *obj);
+void zocl_drm_free_bo(struct drm_zocl_bo *bo);
+struct drm_zocl_bo *zocl_drm_create_bo(struct drm_device *dev,
+		uint64_t unaligned_size, unsigned user_flags);
 void zocl_update_mem_stat(struct drm_zocl_dev *zdev, u64 size,
 		int count, uint32_t bank);
 void zocl_init_mem(struct drm_zocl_dev *zdev, struct mem_topology *mtopo);
 void zocl_clear_mem(struct drm_zocl_dev *zdev);
+int zocl_create_aie(struct drm_zocl_dev *zdev, struct axlf *axlf);
+void zocl_destroy_aie(struct drm_zocl_dev *zdev);
+int zocl_aie_request_part_fd(struct drm_zocl_dev *zdev, void *data);
+int zocl_aie_reset(struct drm_zocl_dev *zdev);
+
+int zocl_inject_error(struct drm_zocl_dev *zdev, void *data,
+		struct drm_file *filp);
+int zocl_init_error(struct drm_zocl_dev *zdev);
+void zocl_fini_error(struct drm_zocl_dev *zdev);
+int zocl_insert_error_record(struct drm_zocl_dev *zdev, xrtErrorCode err_code);
 
 /* zocl_kds.c */
 int zocl_init_sched(struct drm_zocl_dev *zdev);
