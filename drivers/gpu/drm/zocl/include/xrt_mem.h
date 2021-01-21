@@ -29,15 +29,27 @@ extern "C" {
  * bits  0 ~ 15: DDR BANK index
  * bits 24 ~ 31: BO flags
  */
-
 #define XRT_BO_FLAGS_MEMIDX_MASK	(0xFFFFFFUL)
 #define	XCL_BO_FLAGS_NONE		(0)
 #define	XCL_BO_FLAGS_CACHEABLE		(1U << 24)
+#define	XCL_BO_FLAGS_KERNBUF		(1U << 25)
+#define	XCL_BO_FLAGS_SGL		(1U << 26)
 #define	XCL_BO_FLAGS_SVM		(1U << 27)
 #define	XCL_BO_FLAGS_DEV_ONLY		(1U << 28)
 #define	XCL_BO_FLAGS_HOST_ONLY		(1U << 29)
 #define	XCL_BO_FLAGS_P2P		(1U << 30)
 #define	XCL_BO_FLAGS_EXECBUF		(1U << 31)
+
+/**
+ * XRT Native BO flags
+ *
+ * These flags are simple aliases for use with XRT native BO APIs.
+ */
+#define XRT_BO_FLAGS_NONE      XCL_BO_FLAGS_NONE
+#define XRT_BO_FLAGS_CACHEABLE XCL_BO_FLAGS_CACHEABLE
+#define XRT_BO_FLAGS_DEV_ONLY  XCL_BO_FLAGS_DEV_ONLY
+#define XRT_BO_FLAGS_HOST_ONLY XCL_BO_FLAGS_HOST_ONLY
+#define XRT_BO_FLAGS_P2P       XCL_BO_FLAGS_P2P
 
 /**
  * This is the legacy usage of XCL DDR Flags.
