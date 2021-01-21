@@ -60,6 +60,8 @@
     ((struct ert_configure_cmd *)(pkg))
 #define to_start_krnl_pkg(pkg) \
     ((struct ert_start_kernel_cmd *)(pkg))
+#define to_copybo_pkg(pkg) \
+    ((struct ert_start_copybo_cmd *)(pkg))
 
 /**
  * struct ert_packet: ERT generic packet format
@@ -178,7 +180,7 @@ struct ert_start_copybo_cmd {
   uint32_t state:4;          /* [3-0], must be ERT_CMD_STATE_NEW */
   uint32_t unused:6;         /* [9-4] */
   uint32_t extra_cu_masks:2; /* [11-10], = 3 */
-  uint32_t count:11;         /* [22-12], = 15, exclude 'arg' */
+  uint32_t count:11;         /* [22-12], = 16, exclude 'arg' */
   uint32_t opcode:5;         /* [27-23], = ERT_START_COPYBO */
   uint32_t type:4;           /* [31-27], = ERT_DEFAULT */
   uint32_t cu_mask[4];       /* mandatory cu masks */
@@ -189,7 +191,8 @@ struct ert_start_copybo_cmd {
   uint32_t dst_addr_lo;      /* low 32 bit of dst addr */
   uint32_t dst_addr_hi;      /* high 32 bit of dst addr */
   uint32_t dst_bo_hdl;       /* dst bo handle, cleared by driver */
-  uint32_t size;             /* size in bytes */
+  uint32_t size;             /* size in bytes low 32 bit*/
+  uint32_t size_hi;          /* size in bytes high 32 bit*/
   void     *arg;             /* pointer to aux data for KDS */
 };
 
@@ -243,7 +246,11 @@ struct ert_configure_cmd {
   uint32_t cq_int:1;
   uint32_t cdma:1;
   uint32_t dataflow:1;
-  uint32_t unusedf:24;
+  /* WORKAROUND: allow xclRegWrite/xclRegRead access shared CU */
+  uint32_t rw_shared:1;
+  uint32_t kds_30:1;
+  uint32_t dmsg:1;
+  uint32_t unusedf:21;
   uint32_t dsa52:1;
 
   /* cu address map size is num_cus */
@@ -391,6 +398,7 @@ enum ert_cmd_opcode {
   ERT_SK_START      = 9,
   ERT_SK_UNCONFIG   = 10,
   ERT_INIT_CU       = 11,
+  ERT_START_FA      = 12,
 };
 
 /**
@@ -430,6 +438,11 @@ uint32_t ert_base_addr = 0;
 # define ERT_BASE_ADDR                     0x01F30008
 #endif
 
+#if defined(ERT_BUILD_V30)
+uint32_t ert_base_addr = 0;
+# define ERT_BASE_ADDR                     0x01F30008
+#endif
+
 /**
  * Address constants per spec
  */
@@ -440,6 +453,9 @@ uint32_t ert_base_addr = 0;
 # define ERT_CSR_ADDR                      0x360000
 #elif defined(ERT_BUILD_V20)
 # define ERT_CQ_BASE_ADDR                  (0x000000 + ert_base_addr)
+# define ERT_CSR_ADDR                      (0x010000 + ert_base_addr)
+#elif defined(ERT_BUILD_V30)
+# define ERT_CQ_BASE_ADDR                  0x1F60000
 # define ERT_CSR_ADDR                      (0x010000 + ert_base_addr)
 #else
 # define ERT_CQ_BASE_ADDR                  0x190000
@@ -549,8 +565,18 @@ uint32_t ert_base_addr = 0;
 # define ERT_INTC_ADDR                     0x00310000
 #elif defined(ERT_BUILD_V20)
 # define ERT_INTC_ADDR                     0x01F20000
+#elif defined(ERT_BUILD_V30)
+# define ERT_INTC_ADDR                     0x01F20000
+# define ERT_INTC_CU_0_31_ADDR             (0x0000 + ert_base_addr)
+# define ERT_INTC_CU_32_63_ADDR            (0x1000 + ert_base_addr)
+# define ERT_INTC_CU_64_95_ADDR            (0x2000 + ert_base_addr)
+# define ERT_INTC_CU_96_127_ADDR           (0x3000 + ert_base_addr)
 #else
 # define ERT_INTC_ADDR                     0x41200000
+# define ERT_INTC_CU_0_31_ADDR             0x0000
+# define ERT_INTC_CU_32_63_ADDR            0x1000
+# define ERT_INTC_CU_64_95_ADDR            0x2000
+# define ERT_INTC_CU_96_127_ADDR           0x3000
 #endif
 
 /**
@@ -581,6 +607,26 @@ uint32_t ert_base_addr = 0;
 #define ERT_INTC_IAR_ADDR                 (ERT_INTC_ADDR + 0x0C) /* acknowledge */
 #define ERT_INTC_MER_ADDR                 (ERT_INTC_ADDR + 0x1C) /* master enable */
 
+#define ERT_INTC_CU_0_31_IPR              (ERT_INTC_CU_0_31_ADDR + 0x4)  /* pending */
+#define ERT_INTC_CU_0_31_IER              (ERT_INTC_CU_0_31_ADDR + 0x8)  /* enable */
+#define ERT_INTC_CU_0_31_IAR              (ERT_INTC_CU_0_31_ADDR + 0x0C) /* acknowledge */
+#define ERT_INTC_CU_0_31_MER              (ERT_INTC_CU_0_31_ADDR + 0x1C) /* master enable */
+
+#define ERT_INTC_CU_32_63_IPR             (ERT_INTC_CU_32_63_ADDR + 0x4)  /* pending */
+#define ERT_INTC_CU_32_63_IER             (ERT_INTC_CU_32_63_ADDR + 0x8)  /* enable */
+#define ERT_INTC_CU_32_63_IAR             (ERT_INTC_CU_32_63_ADDR + 0x0C) /* acknowledge */
+#define ERT_INTC_CU_32_63_MER             (ERT_INTC_CU_32_63_ADDR + 0x1C) /* master enable */
+
+#define ERT_INTC_CU_64_95_IPR             (ERT_INTC_CU_64_95_ADDR + 0x4)  /* pending */
+#define ERT_INTC_CU_64_95_IER             (ERT_INTC_CU_64_95_ADDR + 0x8)  /* enable */
+#define ERT_INTC_CU_64_95_IAR             (ERT_INTC_CU_64_95_ADDR + 0x0C) /* acknowledge */
+#define ERT_INTC_CU_64_95_MER             (ERT_INTC_CU_64_95_ADDR + 0x1C) /* master enable */
+
+#define ERT_INTC_CU_96_127_IPR            (ERT_INTC_CU_96_127_ADDR + 0x4)  /* pending */
+#define ERT_INTC_CU_96_127_IER            (ERT_INTC_CU_96_127_ADDR + 0x8)  /* enable */
+#define ERT_INTC_CU_96_127_IAR            (ERT_INTC_CU_96_127_ADDR + 0x0C) /* acknowledge */
+#define ERT_INTC_CU_96_127_MER            (ERT_INTC_CU_96_127_ADDR + 0x1C) /* master enable */
+
 /*
 * Used in driver and user space code
 * Upper limit on number of dependencies in execBuf waitlist
@@ -596,7 +642,7 @@ ert_fill_copybo_cmd(struct ert_start_copybo_cmd *pkt, uint32_t src_bo,
 {
   pkt->state = ERT_CMD_STATE_NEW;
   pkt->extra_cu_masks = 3;
-  pkt->count = 15;
+  pkt->count = 16;
   pkt->opcode = ERT_START_COPYBO;
   pkt->type = ERT_DEFAULT;
   pkt->cu_mask[0] = 0;
@@ -610,6 +656,7 @@ ert_fill_copybo_cmd(struct ert_start_copybo_cmd *pkt, uint32_t src_bo,
   pkt->dst_addr_hi = (dst_offset >> 32) & 0xFFFFFFFF;
   pkt->dst_bo_hdl = dst_bo;
   pkt->size = size;
+  pkt->size_hi = 0; /* set to 0 explicitly */
   pkt->arg = 0;
 }
 static inline uint64_t
