@@ -13,6 +13,7 @@
 #define _ZOCL_UTIL_H_
 
 #include "kds_core.h"
+#include "zocl_error.h"
 
 #define zocl_err(dev, fmt, args...)     \
 	dev_err(dev, "%s: "fmt, __func__, ##args)
@@ -63,7 +64,7 @@ struct addr_aperture {
 
 enum zocl_mem_type {
 	ZOCL_MEM_TYPE_CMA	= 0,
-	ZOCL_MEM_TYPE_PLDDR	= 1,
+	ZOCL_MEM_TYPE_PL_LP_DDR	= 1,
 	ZOCL_MEM_TYPE_STREAMING = 2,
 };
 
@@ -89,6 +90,11 @@ struct zdev_data {
 	char fpga_driver_name[64];
 };
 
+struct aie_metadata {
+	size_t size;
+	void *data;
+};
+
 struct drm_zocl_dev {
 	struct drm_device       *ddev;
 	struct fpga_manager     *fpga_mgr;
@@ -104,6 +110,7 @@ struct drm_zocl_dev {
 	unsigned int		 num_mem;
 	struct zocl_mem		*mem;
 	struct mutex		 mm_lock;
+	struct mutex		 aie_lock;
 
 	struct list_head	 ctx_list;
 
@@ -112,6 +119,7 @@ struct drm_zocl_dev {
 	struct debug_ip_layout	*debug_ip;
 	struct connectivity	*connectivity;
 	struct addr_aperture	*apertures;
+	struct aie_metadata	 aie_data;
 	unsigned int		 num_apts;
 
 	struct kds_sched	 kds;
@@ -128,6 +136,7 @@ struct drm_zocl_dev {
 	rwlock_t		attr_rwlock;
 
 	struct soft_krnl	*soft_kernel;
+	struct aie_info		*aie_information;
 	struct dma_chan		*zdev_dma_chan;
 	struct mailbox		*zdev_mailbox;
 	const struct zdev_data	*zdev_data_info;
@@ -135,6 +144,11 @@ struct drm_zocl_dev {
 	struct zocl_xclbin	*zdev_xclbin;
 	struct mutex		zdev_xclbin_lock;
 	struct generic_cu	*generic_cu;
+	int			 ksize;
+	char			*kernels;
+	struct zocl_error	zdev_error;
+	struct zocl_aie		*aie;
 };
 
+int zocl_kds_update(struct drm_zocl_dev *zdev);
 #endif
