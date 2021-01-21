@@ -1,10 +1,13 @@
-// SPDX-License-Identifier: GPL-2.0
+/* SPDX-License-Identifier: GPL-2.0 OR Apache-2.0 */
 /*
  * Xilinx Kernel Driver Scheduler
  *
- * Copyright (C) 2020 Xilinx, Inc.
+ * Copyright (C) 2020 Xilinx, Inc. All rights reserved.
  *
  * Authors: min.ma@xilinx.com
+ *
+ * This file is dual-licensed; you may select either the GNU General Public
+ * License version 2 or Apache License, Version 2.0.
  */
 
 #ifndef _KDS_COMMAND_H
@@ -35,6 +38,13 @@ struct kds_cmd_ops {
 	void (*free)(struct kds_command *xcmd);
 };
 
+struct in_kernel_cb {
+	struct work_struct work;
+	void (*func)(unsigned long cb_data, int err);
+	void *data;
+	int  cmd_state;
+};
+
 /**
  * struct kds_command: KDS command struct
  * @client: the client that the command belongs to
@@ -42,6 +52,7 @@ struct kds_cmd_ops {
  */
 struct kds_command {
 	struct kds_client	*client;
+	u32			cu_idx;
 	u32			 type;
 	u32			 opcode;
 	struct list_head	 list;
@@ -61,6 +72,8 @@ struct kds_command {
 	 */
 	u32			*execbuf;
 	void			*gem_obj;
+	/* to notify inkernel exec completion */
+	struct in_kernel_cb	*inkern_cb;
 };
 
 /* execbuf command related funtions */
@@ -68,6 +81,8 @@ void cfg_ecmd2xcmd(struct ert_configure_cmd *ecmd,
 		   struct kds_command *xcmd);
 void start_krnl_ecmd2xcmd(struct ert_start_kernel_cmd *ecmd,
 			  struct kds_command *xcmd);
+void start_fa_ecmd2xcmd(struct ert_start_kernel_cmd *ecmd,
+			struct kds_command *xcmd);
 int cu_mask_to_cu_idx(struct kds_command *xcmd, uint8_t *cus);
 
 #endif
