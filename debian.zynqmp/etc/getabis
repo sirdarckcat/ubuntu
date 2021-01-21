@@ -1,14 +1,14 @@
 repo_list=(
-	"http://archive.ubuntu.com/ubuntu/pool/main/l/linux-zynqmp"
-	"http://ports.ubuntu.com/ubuntu-ports/pool/main/l/linux-zynqmp"
-	"http://archive.ubuntu.com/ubuntu/pool/universe/l/linux-zynqmp"
-	"http://ports.ubuntu.com/ubuntu-ports/pool/universe/l/linux-zynqmp"
-	"http://ppa.launchpad.net/canonical-kernel-team/ppa/ubuntu/pool/main/l/linux-zynqmp"
-	"http://ppa.launchpad.net/canonical-kernel-team/unstable/ubuntu/pool/main/l/linux-zynqmp"
-	"http://ppa.launchpad.net/canonical-kernel-team/bootstrap/ubuntu/pool/main/l/linux-zynqmp"
+	"http://archive.ubuntu.com/ubuntu/pool/main/l/linux-xilinx-zynqmp"
+	"http://ports.ubuntu.com/ubuntu-ports/pool/main/l/linux-xilinx-zynqmp"
+	"http://archive.ubuntu.com/ubuntu/pool/universe/l/linux-xilinx-zynqmp"
+	"http://ports.ubuntu.com/ubuntu-ports/pool/universe/l/linux-xilinx-zynqmp"
+	"http://ppa.launchpad.net/canonical-kernel-team/ppa/ubuntu/pool/main/l/linux-xilinx-zynqmp"
+	"http://ppa.launchpad.net/canonical-kernel-team/unstable/ubuntu/pool/main/l/linux-xilinx-zynqmp"
+	"http://ppa.launchpad.net/canonical-kernel-team/bootstrap/ubuntu/pool/main/l/linux-xilinx-zynqmp"
 )
 
-getabis_ppa="${HOME}/.getabis.focal-zynqmp"
+getabis_ppa="${HOME}/.getabis.focal-xilinx-zynqmp"
 
 if ! [ -e "${getabis_ppa}" ] ; then
 	cat <<EOF >&2
@@ -26,9 +26,9 @@ EOF
 	exit 1
 fi
 
-readarray -t repo_list < <(sed "s,\s*$,/pool/main/l/linux-zynqmp," \
+readarray -t repo_list < <(sed "s,\s*$,/pool/main/l/linux-xilinx-zynqmp," \
 		"${getabis_ppa}")
 
 package_prefixes linux-buildinfo
 
-getall arm64 zynqmp
+getall arm64 xilinx-zynqmp
