@@ -1,10 +1,13 @@
-// SPDX-License-Identifier: GPL-2.0
+/* SPDX-License-Identifier: GPL-2.0 OR Apache-2.0 */
 /*
  * Xilinx Kernel Driver Scheduler
  *
- * Copyright (C) 2020 Xilinx, Inc.
+ * Copyright (C) 2020 Xilinx, Inc. All rights reserved.
  *
  * Authors: min.ma@xilinx.com
+ *
+ * This file is dual-licensed; you may select either the GNU General Public
+ * License version 2 or Apache License, Version 2.0.
  */
 
 #include <linux/slab.h>
@@ -42,28 +45,67 @@ int store_kds_echo(struct kds_sched *kds, const char *buf, size_t count,
 	return count;
 }
 
+/* Each line is a CU, format:
+ * "cu_idx kernel_name:cu_name address status usage"
+ */
+ssize_t show_kds_custat_raw(struct kds_sched *kds, char *buf)
+{
+	struct kds_cu_mgmt *cu_mgmt = &kds->cu_mgmt;
+	struct xrt_cu *xcu = NULL;
+	char *cu_fmt = "%d,%s:%s,0x%llx,0x%x,%llu\n";
+	ssize_t sz = 0;
+	int i;
+
+	mutex_lock(&cu_mgmt->lock);
+	for (i = 0; i < cu_mgmt->num_cus; ++i) {
+		xcu = cu_mgmt->xcus[i];
+		sz += scnprintf(buf+sz, PAGE_SIZE - sz, cu_fmt, i,
+				xcu->info.kname, xcu->info.iname,
+				xcu->info.addr, xcu->status,
+				cu_mgmt->cu_usage[i]);
+	}
+	mutex_unlock(&cu_mgmt->lock);
+
+	if (sz < PAGE_SIZE - 1)
+		buf[sz++] = 0;
+	else
+		buf[PAGE_SIZE - 1] = 0;
+
+	return sz;
+}
+
 ssize_t show_kds_stat(struct kds_sched *kds, char *buf)
 {
 	struct kds_cu_mgmt *cu_mgmt = &kds->cu_mgmt;
+	char *cu_fmt = "  CU[%d] usage(%llu) shared(%d) refcnt(%d) intr(%s)\n";
 	ssize_t sz = 0;
 	bool shared;
 	int ref;
 	int i;
 
 	mutex_lock(&cu_mgmt->lock);
-	sz += sprintf(buf+sz, "Kernel Driver Scheduler(KDS)\n");
-	sz += sprintf(buf+sz, "Configured: %d\n", cu_mgmt->configured);
-	sz += sprintf(buf+sz, "Number of CUs: %d\n", cu_mgmt->num_cus);
+	sz += scnprintf(buf+sz, PAGE_SIZE - sz,
+			"CU to host interrupt capability: %d\n",
+			kds->cu_intr_cap);
+	sz += scnprintf(buf+sz, PAGE_SIZE - sz, "Interrupt mode: %s\n",
+			(kds->cu_intr)? "cu" : "ert");
+	sz += scnprintf(buf+sz, PAGE_SIZE - sz, "Configured: %d\n",
+			cu_mgmt->configured);
+	sz += scnprintf(buf+sz, PAGE_SIZE - sz, "Number of CUs: %d\n",
+			cu_mgmt->num_cus);
 	for (i = 0; i < cu_mgmt->num_cus; ++i) {
 		shared = !(cu_mgmt->cu_refs[i] & CU_EXCLU_MASK);
 		ref = cu_mgmt->cu_refs[i] & ~CU_EXCLU_MASK;
-		sz += sprintf(buf+sz, "  CU[%d] usage(%llu) shared(%d) ref(%d)\n",
-			      i, cu_mgmt->cu_usage[i], shared, ref);
+		sz += scnprintf(buf+sz, PAGE_SIZE - sz, cu_fmt,
+				i, cu_mgmt->cu_usage[i], shared, ref,
+				(cu_mgmt->cu_intr[i])? "enable" : "disable");
 	}
 	mutex_unlock(&cu_mgmt->lock);
 
-	if (sz)
+	if (sz < PAGE_SIZE - 1)
 		buf[sz++] = 0;
+	else
+		buf[PAGE_SIZE - 1] = 0;
 
 	return sz;
 }
@@ -77,7 +119,7 @@ ssize_t show_kds_stat(struct kds_sched *kds, char *buf)
  *
  * Returns CU index if found. Returns an out of range number if not found.
  */
-static int
+static __attribute__((unused)) int
 get_cu_by_addr(struct kds_cu_mgmt *cu_mgmt, u32 addr)
 {
 	int i;
@@ -95,51 +137,21 @@ static int
 kds_cu_config(struct kds_cu_mgmt *cu_mgmt, struct kds_command *xcmd)
 {
 	struct kds_client *client = xcmd->client;
-	u32 *cus_addr = (u32 *)xcmd->info;
-	size_t num_cus = xcmd->isize / sizeof(u32);
-	struct xrt_cu *tmp;
-	int i, j;
 	int ret = 0;
 
-	mutex_lock(&cu_mgmt->lock);
-	/* I don't care if the configure command claim less number of cus */
-	if (unlikely(num_cus > cu_mgmt->num_cus)) {
-		ret = -EINVAL;
-		goto out;
-	}
-
-	/* If the configure command is sent by xclLoadXclbin(), the command
-	 * content should be the same and it is okay to let it go through.
+	/* This is no-op. The new KDS doesn't need configure command.
+	 * But ERT 2.0 flow still need configure command.
 	 *
-	 * But it still has chance that user would manually construct a config
-	 * command, which could be wrong.
-	 *
-	 * So, do not allow reconfigure. This is still not totally safe, since
-	 * configure command and load xclbin are not atomic.
-	 *
-	 * The configured flag would be reset once the last one client finished.
+	 * KDS could construct ERT configure command but not sure when.
+	 * Before figure this out, keep this function.
 	 */
+	mutex_lock(&cu_mgmt->lock);
+
 	if (cu_mgmt->configured) {
 		kds_info(client, "CU already configured in KDS\n");
 		goto out;
 	}
 
-	/* Now we need to make CU index right */
-	for (i = 0; i < num_cus; i++) {
-		j = get_cu_by_addr(cu_mgmt, cus_addr[i]);
-		if (j == cu_mgmt->num_cus) {
-			ret = -EINVAL;
-			goto out;
-		}
-
-		/* Ordering CU index */
-		if (j != i) {
-			tmp = cu_mgmt->xcus[i];
-			cu_mgmt->xcus[i] = cu_mgmt->xcus[j];
-			cu_mgmt->xcus[j] = tmp;
-		}
-		cu_mgmt->xcus[i]->info.cu_idx = i;
-	}
 	cu_mgmt->configured = 1;
 
 out:
@@ -206,36 +218,32 @@ out:
 	return index;
 }
 
-static void
+static int
 kds_cu_dispatch(struct kds_cu_mgmt *cu_mgmt, struct kds_command *xcmd)
 {
 	int cu_idx;
 
 	cu_idx = acquire_cu_idx(cu_mgmt, xcmd);
-	if (cu_idx < 0) {
-		xcmd->cb.notify_host(xcmd, KDS_ERROR);
-		xcmd->cb.free(xcmd);
-		return;
-	}
+	if (cu_idx < 0)
+		return cu_idx;
 
 	xrt_cu_submit(cu_mgmt->xcus[cu_idx], xcmd);
+	return 0;
 }
 
 static int
 kds_submit_cu(struct kds_cu_mgmt *cu_mgmt, struct kds_command *xcmd)
 {
 	int ret = 0;
-	u32 status = KDS_COMPLETED;
 
 	if (xcmd->opcode != OP_CONFIG)
-		kds_cu_dispatch(cu_mgmt, xcmd);
+		ret = kds_cu_dispatch(cu_mgmt, xcmd);
 	else {
 		ret = kds_cu_config(cu_mgmt, xcmd);
-		if (ret)
-			status = KDS_ERROR;
-
-		xcmd->cb.notify_host(xcmd, status);
-		xcmd->cb.free(xcmd);
+		if (ret == 0) {
+			xcmd->cb.notify_host(xcmd, KDS_COMPLETED);
+			xcmd->cb.free(xcmd);
+		}
 	}
 
 	return ret;
@@ -254,33 +262,17 @@ kds_submit_ert(struct kds_sched *kds, struct kds_command *xcmd)
 		/* KDS should select a CU and set it in cu_mask */
 		cu_idx = acquire_cu_idx(&kds->cu_mgmt, xcmd);
 		if (cu_idx < 0)
-			goto err;
-
-		/* write kds selected cu index in the first cumask
-		 * (first word after header of execbuf)
-		 * TODO: I dislike modify the content of the execbuf
-		 * in this place. Let's refine this later.
-		 */
-		xcmd->execbuf[1] = cu_idx;
+			return cu_idx;
+		xcmd->cu_idx = cu_idx;
 	} else {
 		/* Configure command define CU index */
 		ret = kds_cu_config(&kds->cu_mgmt, xcmd);
 		if (ret)
-			goto err;
+			return ret;
 	}
 
-	/* TODO: remove */
-	xcmd->cb.notify_host(xcmd, KDS_COMPLETED);
-	xcmd->cb.free(xcmd);
+	ert->submit(ert, xcmd);
 	return 0;
-
-	ert->submit(xcmd);
-	return 0;
-
-err:
-	xcmd->cb.notify_host(xcmd, KDS_ERROR);
-	xcmd->cb.free(xcmd);
-	return ret;
 }
 
 static int
@@ -398,7 +390,9 @@ int kds_init_sched(struct kds_sched *kds)
 	mutex_init(&kds->cu_mgmt.lock);
 	kds->num_client = 0;
 	kds->bad_state = 0;
-	kds->ert_disable = 1;
+	/* At this point, I don't know if ERT subdev exist or not */
+	kds->ert_disable = true;
+	kds->ini_disable = false;
 
 	return 0;
 }
@@ -454,6 +448,7 @@ void kds_free_command(struct kds_command *xcmd)
 	if (xcmd) {
 		kfree(xcmd->info);
 		kfree(xcmd);
+		xcmd = NULL;
 	}
 #endif
 }
@@ -463,10 +458,8 @@ int kds_add_command(struct kds_sched *kds, struct kds_command *xcmd)
 	struct kds_client *client = xcmd->client;
 	int err = 0;
 
-	if (!xcmd->cb.notify_host || !xcmd->cb.free) {
-		kds_dbg(client, "Command callback empty");
-		return -EINVAL;
-	}
+	BUG_ON(!xcmd->cb.notify_host);
+	BUG_ON(!xcmd->cb.free);
 
 	/* TODO: Check if command is blocked */
 
@@ -480,11 +473,13 @@ int kds_add_command(struct kds_sched *kds, struct kds_command *xcmd)
 		break;
 	default:
 		kds_err(client, "Unknown type");
-		xcmd->cb.notify_host(xcmd, KDS_ERROR);
-		xcmd->cb.free(xcmd);
 		err = -EINVAL;
 	}
 
+	if (err) {
+		xcmd->cb.notify_host(xcmd, KDS_ERROR);
+		xcmd->cb.free(xcmd);
+	}
 	return err;
 }
 
@@ -573,6 +568,7 @@ int kds_add_context(struct kds_sched *kds, struct kds_client *client,
 {
 	u32 cu_idx = info->cu_idx;
 	bool shared = (info->flags != CU_CTX_EXCLUSIVE);
+	int i;
 
 	BUG_ON(!mutex_is_locked(&client->lock));
 
@@ -585,6 +581,14 @@ int kds_add_context(struct kds_sched *kds, struct kds_client *client,
 		if (!shared) {
 			kds_err(client, "Only allow share virtual CU");
 			return -EINVAL;
+		}
+		/* a special handling for m2m cu :( */
+		if (kds->cu_mgmt.num_cdma && !client->virt_cu_ref) {
+			i = kds->cu_mgmt.num_cus - kds->cu_mgmt.num_cdma;
+			test_and_set_bit(i, client->cu_bitmap);
+			mutex_lock(&kds->cu_mgmt.lock);
+			++kds->cu_mgmt.cu_refs[i];
+			mutex_unlock(&kds->cu_mgmt.lock);
 		}
 		++client->virt_cu_ref;
 	} else {
@@ -602,6 +606,7 @@ int kds_del_context(struct kds_sched *kds, struct kds_client *client,
 		    struct kds_ctx_info *info)
 {
 	u32 cu_idx = info->cu_idx;
+	int i;
 
 	BUG_ON(!mutex_is_locked(&client->lock));
 
@@ -611,6 +616,17 @@ int kds_del_context(struct kds_sched *kds, struct kds_client *client,
 			return -EINVAL;
 		}
 		--client->virt_cu_ref;
+		/* a special handling for m2m cu :( */
+		if (kds->cu_mgmt.num_cdma && !client->virt_cu_ref) {
+			i = kds->cu_mgmt.num_cus - kds->cu_mgmt.num_cdma;
+			if (!test_and_clear_bit(i, client->cu_bitmap)) {
+				kds_err(client, "never reserved cmda");
+				return -EINVAL;
+			}
+			mutex_lock(&kds->cu_mgmt.lock);
+			--kds->cu_mgmt.cu_refs[i];
+			mutex_unlock(&kds->cu_mgmt.lock);
+		}
 	} else {
 		if (kds_del_cu_context(kds, client, info))
 			return -EINVAL;
@@ -622,20 +638,73 @@ int kds_del_context(struct kds_sched *kds, struct kds_client *client,
 	return 0;
 }
 
+static inline void
+insert_cu(struct kds_cu_mgmt *cu_mgmt, int i, struct xrt_cu *xcu)
+{
+	cu_mgmt->xcus[i] = xcu;
+	xcu->info.cu_idx = i;
+	/* m2m cu */
+	if (xcu->info.intr_id == M2M_CU_ID)
+		cu_mgmt->num_cdma++;
+}
+
 int kds_add_cu(struct kds_sched *kds, struct xrt_cu *xcu)
 {
 	struct kds_cu_mgmt *cu_mgmt = &kds->cu_mgmt;
+	struct xrt_cu *prev_cu;
 	int i;
 
 	if (cu_mgmt->num_cus >= MAX_CUS)
 		return -ENOMEM;
 
-	/* Find a slot xcus[] */
-	for (i = 0; i < MAX_CUS; i++) {
-		if (cu_mgmt->xcus[i] != NULL)
-			continue;
+	/* Determin CUs ordering:
+	 * Sort CU in interrupt ID increase order.
+	 * If interrupt ID is the same, sort CU in address
+	 * increase order.
+	 * This strategy is good for both legacy xclbin and latest xclbin.
+	 *
+	 * - For legacy xclbin, all of the interrupt IDs are 0. The
+	 * interrupt is wiring by CU address increase order.
+	 * - For latest xclbin, the interrupt ID is from 0 ~ 127.
+	 *   -- One exception is if only 1 CU, the interrupt ID would be 1.
+	 *
+	 * Do NOT add code in KDS to check if xclbin is legacy. We don't
+	 * want to coupling KDS and xclbin parsing.
+	 */
+	if (cu_mgmt->num_cus == 0) {
+		insert_cu(cu_mgmt, 0, xcu);
+		++cu_mgmt->num_cus;
+		return 0;
+	}
 
-		cu_mgmt->xcus[i] = xcu;
+	/* Insertion sort */
+	for (i = cu_mgmt->num_cus; i > 0; i--) {
+		prev_cu = cu_mgmt->xcus[i-1];
+		if (prev_cu->info.intr_id < xcu->info.intr_id) {
+			insert_cu(cu_mgmt, i, xcu);
+			++cu_mgmt->num_cus;
+			return 0;
+		} else if (prev_cu->info.intr_id > xcu->info.intr_id) {
+			insert_cu(cu_mgmt, i, prev_cu);
+			continue;
+		}
+
+		// Same intr ID.
+		if (prev_cu->info.addr < xcu->info.addr) {
+			insert_cu(cu_mgmt, i, xcu);
+			++cu_mgmt->num_cus;
+			return 0;
+		} else if (prev_cu->info.addr > xcu->info.addr) {
+			insert_cu(cu_mgmt, i, prev_cu);
+			continue;
+		}
+
+		/* Same CU address? Something wrong */
+		break;
+	}
+
+	if (i == 0) {
+		insert_cu(cu_mgmt, 0, xcu);
 		++cu_mgmt->num_cus;
 		return 0;
 	}
@@ -655,9 +724,14 @@ int kds_del_cu(struct kds_sched *kds, struct xrt_cu *xcu)
 		if (cu_mgmt->xcus[i] != xcu)
 			continue;
 
+		--cu_mgmt->num_cus;
 		cu_mgmt->xcus[i] = NULL;
 		cu_mgmt->cu_usage[i] = 0;
-		--cu_mgmt->num_cus;
+
+		/* m2m cu */
+		if (xcu->info.intr_id == M2M_CU_ID)
+			cu_mgmt->num_cdma--;
+
 		return 0;
 	}
 
@@ -667,19 +741,108 @@ int kds_del_cu(struct kds_sched *kds, struct xrt_cu *xcu)
 int kds_init_ert(struct kds_sched *kds, struct kds_ert *ert)
 {
 	kds->ert = ert;
-	/* Do anything necessary */
+	/* By default enable ERT if it exist */
+	kds->ert_disable = false;
 	return 0;
 }
 
 int kds_fini_ert(struct kds_sched *kds)
 {
-	/* TODO: implement this */
 	return 0;
 }
 
 void kds_reset(struct kds_sched *kds)
 {
 	kds->bad_state = 0;
+	kds->ert_disable = true;
+	kds->ini_disable = false;
+}
+
+static int kds_fa_assign_plram(struct kds_sched *kds)
+{
+	struct kds_cu_mgmt *cu_mgmt = &kds->cu_mgmt;
+	u32 total_sz = 0;
+	u32 num_slots;
+	u32 size;
+	u64 bar_addr;
+	u64 dev_addr;
+	int ret = 0;
+	int i;
+	void __iomem *vaddr;
+
+	for (i = 0; i < cu_mgmt->num_cus; i++) {
+		if (!xrt_is_fa(cu_mgmt->xcus[i], &size))
+			continue;
+
+		total_sz += size;
+		/* Release old resoruces if exist */
+		xrt_fa_cfg_update(cu_mgmt->xcus[i], 0, 0, 0, 0);
+	}
+
+	total_sz = round_up_to_next_power2(total_sz);
+
+	if (kds->plram.size < total_sz)
+		return -EINVAL;
+
+	num_slots = kds->plram.size / total_sz;
+
+	bar_addr = kds->plram.bar_paddr;
+	dev_addr = kds->plram.dev_paddr;
+	vaddr = kds->plram.vaddr;
+	for (i = 0; i < cu_mgmt->num_cus; i++) {
+		if (!xrt_is_fa(cu_mgmt->xcus[i], &size))
+			continue;
+
+		/* The updated FA CU would release when it is removed */
+		ret = xrt_fa_cfg_update(cu_mgmt->xcus[i], bar_addr, dev_addr, vaddr, num_slots);
+		if (ret)
+			return ret;
+		bar_addr += size * num_slots;
+		dev_addr += size * num_slots;
+		vaddr += size * num_slots;
+	}
+
+	return 0;
+}
+
+int kds_cfg_update(struct kds_sched *kds)
+{
+	struct kds_cu_mgmt *cu_mgmt = &kds->cu_mgmt;
+	struct xrt_cu *xcu;
+	int ret = 0;
+	int i;
+
+	/* Update PLRAM CU */
+	if (kds->plram.dev_paddr) {
+		ret = kds_fa_assign_plram(kds);
+		if (ret)
+			return -EINVAL;
+		/* ERT doesn't understand Fast adapter
+		 * Host crash at around configure command if ERT is enabled.
+		 * TODO: Support fast adapter in ERT?
+		 */
+		kds->ert_disable = true;
+	}
+
+	/* Update CU interrupt mode */
+	if (kds->cu_intr_cap) {
+		for (i = 0; i < cu_mgmt->num_cus; i++) {
+			if (cu_mgmt->cu_intr[i] == kds->cu_intr)
+				continue;
+
+			xcu = cu_mgmt->xcus[i];
+			ret = xrt_cu_cfg_update(xcu, kds->cu_intr);
+			if (!ret)
+				cu_mgmt->cu_intr[i] = kds->cu_intr;
+			else if (ret == -ENOSYS) {
+				/* CU doesn't support interrupt */
+				cu_mgmt->cu_intr[i] = 0;
+				ret = 0;
+			}
+		}
+	}
+
+	return ret;
 }
 
 int is_bad_state(struct kds_sched *kds)
@@ -745,6 +908,11 @@ void cfg_ecmd2xcmd(struct ert_configure_cmd *ecmd,
 {
 	int i;
 
+	/* To let ERT 3.0 firmware aware new KDS is talking to it,
+	 * set kds_30 bit. This is no harm for ERT 2.0 firmware.
+	 */
+	ecmd->kds_30 = 1;
+
 	xcmd->opcode = OP_CONFIG;
 
 	xcmd->execbuf = (u32 *)ecmd;
@@ -771,9 +939,35 @@ void start_krnl_ecmd2xcmd(struct ert_start_kernel_cmd *ecmd,
 	memcpy(&xcmd->cu_mask[1], ecmd->data, ecmd->extra_cu_masks);
 	xcmd->num_mask = 1 + ecmd->extra_cu_masks;
 
-	/* Skip first 4 control registers */
+	/* Copy resigter map into info and isize is the size of info in bytes.
+	 *
+	 * Based on ert.h, ecmd->count is the number of words following header.
+	 * In ert_start_kernel_cmd, the CU register map size is
+	 * (count - (1 + extra_cu_masks)) and I would like to Skip
+	 * first 4 control registers
+	 */
 	xcmd->isize = (ecmd->count - xcmd->num_mask - 4) * sizeof(u32);
-	memcpy(xcmd->info, &ecmd->data[4], xcmd->isize);
+	memcpy(xcmd->info, &ecmd->data[4 + ecmd->extra_cu_masks], xcmd->isize);
+}
+
+void start_fa_ecmd2xcmd(struct ert_start_kernel_cmd *ecmd,
+			  struct kds_command *xcmd)
+{
+	xcmd->opcode = OP_START;
+
+	xcmd->execbuf = (u32 *)ecmd;
+
+	xcmd->cu_mask[0] = ecmd->cu_mask;
+	memcpy(&xcmd->cu_mask[1], ecmd->data, ecmd->extra_cu_masks);
+	xcmd->num_mask = 1 + ecmd->extra_cu_masks;
+
+	/* Copy descriptor into info and isize is the size of info in bytes.
+	 *
+	 * Based on ert.h, ecmd->count is the number of words following header.
+	 * The descriptor size is (count - (1 + extra_cu_masks)).
+	 */
+	xcmd->isize = (ecmd->count - xcmd->num_mask) * sizeof(u32);
+	memcpy(xcmd->info, &ecmd->data[ecmd->extra_cu_masks], xcmd->isize);
 }
 
 /**
