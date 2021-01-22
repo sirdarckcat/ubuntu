@@ -830,12 +830,12 @@ static int xemaclite_mdio_setup(struct net_local *lp, struct device *dev)
 		return -ENODEV;
 	}
 	npp = of_get_parent(np);
+
 	ret = of_address_to_resource(npp, 0, &res);
-	of_node_put(npp);
 	if (ret) {
 		dev_err(dev, "%s resource error!\n",
 			dev->of_node->full_name);
-		of_node_put(np);
+		of_node_put(lp->phy_node);
 		return ret;
 	}
 	if (lp->ndev->mem_start != res.start) {
