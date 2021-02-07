@@ -711,9 +711,10 @@ void dwmac5_est_irq_status(void __iomem *ioaddr, struct net_device *dev,
 }
 
 void dwmac5_fpe_configure(void __iomem *ioaddr, struct stmmac_fpe_cfg *cfg,
-			  u32 num_txq, u32 num_rxq,
+			  u32 num_txq, u32 num_rxq, u32 txqpec,
 			  bool enable)
 {
+	u32 txqmask = (1 << num_txq) - 1;
 	u32 value;
 
 	if (enable) {
@@ -725,7 +726,22 @@ void dwmac5_fpe_configure(void __iomem *ioaddr, struct stmmac_fpe_cfg *cfg,
 	} else {
 		cfg->fpe_csr = 0;
 	}
+
 	writel(cfg->fpe_csr, ioaddr + MAC_FPE_CTRL_STS);
+
+	value = readl(ioaddr + GMAC_RXQ_CTRL1);
+	value &= ~GMAC_RXQCTRL_FPRQ;
+	value |= (num_rxq - 1) << GMAC_RXQCTRL_FPRQ_SHIFT;
+	writel(value, ioaddr + GMAC_RXQ_CTRL1);
+
+	value = readl(ioaddr + MTL_FPE_CTRL_STS);
+	value &= ~(txqmask << PEC_SHIFT);
+	value |= (txqpec << PEC_SHIFT);
+	writel(value, ioaddr + MTL_FPE_CTRL_STS);
+
+	value = readl(ioaddr + MAC_FPE_CTRL_STS);
+	value |= EFPE;
+	writel(value, ioaddr + MAC_FPE_CTRL_STS);
 }
 
 int dwmac5_fpe_irq_status(void __iomem *ioaddr, struct net_device *dev)
