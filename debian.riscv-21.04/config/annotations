@@ -287,7 +287,6 @@ CONFIG_BCMA_DEBUG                               policy<{'riscv64': 'n'}>
 
 # Menu: Device Drivers >> Bus devices
 CONFIG_MOXTET                                   policy<{'riscv64': 'm'}>
-CONFIG_SIMPLE_PM_BUS                            policy<{'riscv64': 'y'}>
 CONFIG_MHI_BUS                                  policy<{'riscv64': 'm'}>
 
 # Menu: Device Drivers >> Character devices
@@ -507,7 +506,7 @@ CONFIG_COMMON_CLK_FIXED_MMIO                    policy<{'riscv64': 'y'}>
 
 # Menu: Device Drivers >> Common Clock Framework >> SiFive SoC driver support
 CONFIG_CLK_SIFIVE                               policy<{'riscv64': 'y'}>
-CONFIG_CLK_SIFIVE_FU540_PRCI                    policy<{'riscv64': 'y'}>
+CONFIG_CLK_SIFIVE_PRCI                          policy<{'riscv64': 'y'}>
 
 # Menu: Device Drivers >> Common Clock Framework >> Support for Qualcomm's clock controllers
 
@@ -4474,7 +4473,6 @@ CONFIG_ATH9K_AHB                                policy<{'riscv64': 'y'}>
 CONFIG_ATH9K_DEBUGFS                            policy<{'riscv64': 'y'}>
 CONFIG_ATH9K_STATION_STATISTICS                 policy<{'riscv64': 'y'}>
 CONFIG_ATH9K_DYNACK                             policy<{'riscv64': 'n'}>
-CONFIG_ATH9K_WOW                                policy<{'riscv64': 'y'}>
 CONFIG_ATH9K_RFKILL                             policy<{'riscv64': 'y'}>
 CONFIG_ATH9K_CHANNEL_CONTEXT                    policy<{'riscv64': 'y'}>
 CONFIG_ATH9K_PCOEM                              policy<{'riscv64': 'y'}>
@@ -5864,7 +5862,6 @@ CONFIG_SND_HDA_CODEC_CA0132_DSP                 policy<{'riscv64': 'y'}>
 CONFIG_SND_HDA_CODEC_CMEDIA                     policy<{'riscv64': 'm'}>
 CONFIG_SND_HDA_CODEC_SI3054                     policy<{'riscv64': 'm'}>
 CONFIG_SND_HDA_GENERIC                          policy<{'riscv64': 'm'}>
-CONFIG_SND_HDA_POWER_SAVE_DEFAULT               policy<{'riscv64': '1'}>
 #
 CONFIG_SND_HDA_RECONFIG                         note<allows fixes to be tested live>
 CONFIG_SND_HDA_POWER_SAVE_DEFAULT               note<LP:1804265>
@@ -6349,7 +6346,6 @@ CONFIG_USB                                      policy<{'riscv64': 'y'}>
 CONFIG_USB_ANNOUNCE_NEW_DEVICES                 policy<{'riscv64': 'y'}>
 CONFIG_USB_DEFAULT_PERSIST                      policy<{'riscv64': 'y'}>
 CONFIG_USB_DYNAMIC_MINORS                       policy<{'riscv64': 'y'}>
-CONFIG_USB_OTG                                  policy<{'riscv64': 'n'}>
 CONFIG_USB_OTG_WHITELIST                        policy<{'riscv64': 'n'}>
 CONFIG_USB_OTG_BLACKLIST_HUB                    policy<{'riscv64': 'n'}>
 CONFIG_USB_LEDS_TRIGGER_USBPORT                 policy<{'riscv64': 'm'}>
@@ -6483,7 +6479,6 @@ CONFIG_USB_XUSBATM                              policy<{'riscv64': 'm'}>
 CONFIG_USB_STORAGE                              policy<{'riscv64': 'm'}>
 CONFIG_USB_STORAGE_DEBUG                        policy<{'riscv64': 'n'}>
 CONFIG_USB_STORAGE_REALTEK                      policy<{'riscv64': 'm'}>
-CONFIG_REALTEK_AUTOPM                           policy<{'riscv64': 'y'}>
 CONFIG_USB_STORAGE_DATAFAB                      policy<{'riscv64': 'm'}>
 CONFIG_USB_STORAGE_FREECOM                      policy<{'riscv64': 'm'}>
 CONFIG_USB_STORAGE_ISD200                       policy<{'riscv64': 'm'}>
@@ -7669,6 +7664,7 @@ CONFIG_RCU_EXPERT                               flag<REVIEW>
 
 # Menu: General setup >> Scheduler features
 #
+CONFIG_UCLAMP_TASK                              policy<{'riscv64': 'n'}>
 CONFIG_UCLAMP_TASK                              flag<REVIEW>
 
 # Menu: General setup >> Timers subsystem
@@ -7781,7 +7777,6 @@ CONFIG_KUNIT                                    policy<{'riscv64': 'n'}>
 
 # Menu: Kernel hacking >> Kernel Testing and Coverage >> Notifier error injection
 CONFIG_NOTIFIER_ERROR_INJECTION                 policy<{'riscv64': 'm'}>
-CONFIG_PM_NOTIFIER_ERROR_INJECT                 policy<{'riscv64': 'm'}>
 CONFIG_OF_RECONFIG_NOTIFIER_ERROR_INJECT        policy<{'riscv64': 'n'}>
 CONFIG_NETDEV_NOTIFIER_ERROR_INJECT             policy<{'riscv64': 'n'}>
 
@@ -8210,7 +8205,6 @@ CONFIG_BT_MTKUART                               policy<{'riscv64': 'm'}>
 # Menu: Networking support >> Bluetooth subsystem support >> Bluetooth device drivers >> HCI UART driver
 CONFIG_BT_HCIUART                               policy<{'riscv64': 'm'}>
 CONFIG_BT_HCIUART_H4                            policy<{'riscv64': 'y'}>
-CONFIG_BT_HCIUART_NOKIA                         policy<{'riscv64': 'm'}>
 CONFIG_BT_HCIUART_BCSP                          policy<{'riscv64': 'y'}>
 CONFIG_BT_HCIUART_ATH3K                         policy<{'riscv64': 'y'}>
 CONFIG_BT_HCIUART_3WIRE                         policy<{'riscv64': 'y'}>
@@ -9131,19 +9125,14 @@ CONFIG_MAXPHYSMEM_128GB                         policy<{'riscv64': 'y'}>
 CONFIG_RISCV_BASE_PMU                           policy<{'riscv64': 'y'}>
 
 # Menu: Power management options
-CONFIG_PM                                       policy<{'riscv64': 'y'}>
-CONFIG_WQ_POWER_EFFICIENT_DEFAULT               policy<{'riscv64': 'y'}>
+CONFIG_PM                                       policy<{'riscv64': 'n'}>
 #
 CONFIG_PM                                       mark<ENFORCED> note<LP:1867753>
 
 # Menu: Power management options >> Architecture: riscv
 
 # Menu: Power management options >> Power Management Debug Support
-CONFIG_PM_DEBUG                                 policy<{'riscv64': 'y'}>
-CONFIG_PM_ADVANCED_DEBUG                        policy<{'riscv64': 'y'}>
-CONFIG_DPM_WATCHDOG                             policy<{'riscv64': 'n'}>
 #
-CONFIG_PM_DEBUG                                 flag<REVIEW>
 
 # Menu: Security options
 CONFIG_SECURITY_DMESG_RESTRICT                  policy<{'riscv64': 'y'}>
