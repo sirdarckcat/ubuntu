@@ -7923,7 +7923,14 @@ CONFIG_DEBUG_VM                                 policy<{'riscv64': 'n'}>
 CONFIG_DEBUG_OBJECTS                            policy<{'riscv64': 'n'}>
 
 # Menu: Kernel hacking >> Memory Debugging >> KASAN: runtime memory debugger
-CONFIG_KASAN                                    policy<{'riscv64': 'n'}>
+
+#
+# NOTE: temporarily comment out CONFIG_KASAN to prevent build failures We need
+# to comment out this option, because the cross-compiler supports KASAN (option
+# -fsanitize=kernel-address with gcc), but the native compiler doesn't and we
+# don't have a way to specify that either 'n' or '-' are fine.
+#
+# CONFIG_KASAN                                    policy<{'riscv64': 'n'}>
 
 # Menu: Kernel hacking >> Memory Debugging >> KASAN: runtime memory debugger >> Instrumentation type
 
