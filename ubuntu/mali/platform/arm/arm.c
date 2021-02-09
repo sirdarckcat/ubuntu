@@ -98,7 +98,11 @@ static int mali_secure_mode_init_juno(void)
 
 	MALI_DEBUG_ASSERT(NULL == secure_mode_mapped_addr);
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 6, 0)
+	secure_mode_mapped_addr = ioremap(phys_addr_page, map_size);
+#else
 	secure_mode_mapped_addr = ioremap_nocache(phys_addr_page, map_size);
+#endif
 	if (NULL != secure_mode_mapped_addr) {
 		return mali_gpu_reset_and_secure_mode_disable_juno();
 	}
@@ -588,7 +592,11 @@ static u32 mali_read_phys(u32 phys_addr)
 	u32 phys_offset    = phys_addr & 0x00001FFF;
 	u32 map_size       = phys_offset + sizeof(u32);
 	u32 ret = 0xDEADBEEF;
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 6, 0)
+	void *mem_mapped = ioremap(phys_addr_page, map_size);
+#else
 	void *mem_mapped = ioremap_nocache(phys_addr_page, map_size);
+#endif
 	if (NULL != mem_mapped) {
 		ret = (u32)ioread32(((u8 *)mem_mapped) + phys_offset);
 		iounmap(mem_mapped);
@@ -604,7 +612,11 @@ static void mali_write_phys(u32 phys_addr, u32 value)
 	u32 phys_addr_page = phys_addr & 0xFFFFE000;
 	u32 phys_offset    = phys_addr & 0x00001FFF;
 	u32 map_size       = phys_offset + sizeof(u32);
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 6, 0)
+	void *mem_mapped = ioremap(phys_addr_page, map_size);
+#else
 	void *mem_mapped = ioremap_nocache(phys_addr_page, map_size);
+#endif
 	if (NULL != mem_mapped) {
 		iowrite32(value, ((u8 *)mem_mapped) + phys_offset);
 		iounmap(mem_mapped);
