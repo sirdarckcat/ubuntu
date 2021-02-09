@@ -33,7 +33,11 @@ void _mali_osk_write_mem_barrier(void)
 
 mali_io_address _mali_osk_mem_mapioregion(uintptr_t phys, u32 size, const char *description)
 {
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 6, 0)
+	return (mali_io_address)ioremap(phys, size);
+#else
 	return (mali_io_address)ioremap_nocache(phys, size);
+#endif
 }
 
 void _mali_osk_mem_unmapioregion(uintptr_t phys, u32 size, mali_io_address virt)
