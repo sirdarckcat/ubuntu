@@ -1073,6 +1073,7 @@ struct netvsc_device {
 
 	/* Receive buffer allocated by us but manages by NetVSP */
 	void *recv_buf;
+	void *recv_original_buf;
 	u32 recv_buf_size; /* allocated bytes */
 	u32 recv_buf_gpadl_handle;
 	u32 recv_section_cnt;
@@ -1081,7 +1082,9 @@ struct netvsc_device {
 
 	/* Send buffer allocated by us */
 	void *send_buf;
+	void *send_original_buf;
 	u32 send_buf_gpadl_handle;
+	u32 send_buf_size;
 	u32 send_section_cnt;
 	u32 send_section_size;
 	unsigned long *send_section_map;
