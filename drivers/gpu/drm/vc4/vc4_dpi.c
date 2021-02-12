@@ -200,8 +200,8 @@ static void vc4_dpi_encoder_enable(struct drm_encoder *encoder)
 		if (connector->display_info.bus_flags & DRM_BUS_FLAG_DE_LOW)
 			dpi_c |= DPI_OUTPUT_ENABLE_INVERT;
 	} else {
-		/* Default to 24bit if no connector found. */
-		dpi_c |= VC4_SET_FIELD(DPI_FORMAT_24BIT_888_RGB, DPI_FORMAT);
+		/* Default to 18bit if no connector found. */
+		dpi_c |= VC4_SET_FIELD(DPI_FORMAT_18BIT_666_RGB_1, DPI_FORMAT);
 	}
 
 	if (mode->flags & DRM_MODE_FLAG_NHSYNC)
