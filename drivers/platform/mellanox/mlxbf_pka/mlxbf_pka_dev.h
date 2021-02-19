@@ -157,11 +157,30 @@ typedef struct
     uint8_t        res_cnt;
 } pka_dev_gbl_shim_res_info_t;
 
+struct pka_dev_mem_res
+{
+    uint64_t eip154_base;         ///< base address for eip154 mmio registers
+    uint64_t eip154_size;         ///< eip154 mmio register region size
+
+    uint64_t wndw_ram_off_mask;   ///< common offset mask for alt window ram and window ram
+    uint64_t wndw_ram_base;       ///< base address for window ram
+    uint64_t wndw_ram_size;       ///< window ram region size
+
+    uint64_t alt_wndw_ram_0_base; ///< base address for alternate window ram 0
+    uint64_t alt_wndw_ram_1_base; ///< base address for alternate window ram 1
+    uint64_t alt_wndw_ram_2_base; ///< base address for alternate window ram 2
+    uint64_t alt_wndw_ram_3_base; ///< base address for alternate window ram 3
+    uint64_t alt_wndw_ram_size;   ///< alternate window ram regions size
+
+    uint64_t csr_base;            ///< base address for csr registers
+    uint64_t csr_size;            ///< csr area size
+};
+
+
 /// PKA Shim structure
 struct pka_dev_shim_s
 {
-    uint64_t            base;             ///< shim base address
-    uint64_t            size;             ///< shim io memory size
+    struct pka_dev_mem_res mem_res;
 
     uint64_t            trng_err_cycle;   ///< TRNG error cycle
 
@@ -250,8 +269,8 @@ int pka_dev_unregister_ring(pka_dev_ring_t *ring);
 
 /// Register PKA IO block. This function initializes a shim and configures its
 /// related resources, and returns a pointer to that ring.
-pka_dev_shim_t *pka_dev_register_shim(uint32_t shim_id, uint64_t shim_base,
-                           uint64_t shim_size, uint8_t shim_fw_id);
+pka_dev_shim_t *pka_dev_register_shim(uint32_t shim_id, uint8_t shim_fw_id,
+                                      struct pka_dev_mem_res *mem_res);
 
 /// Unregister PKA IO block
 int pka_dev_unregister_shim(pka_dev_shim_t *shim);
