@@ -308,20 +308,20 @@ static int pka_drv_ring_open(void *device_data)
 	if (!try_module_get(info->module))
 		return -ENODEV;
 
-	/* Initialize regions */
-	error = pka_drv_ring_regions_init(ring_dev);
+	ring_info.ring_id = ring_dev->device_id;
+	error = pka_dev_open_ring(&ring_info);
 	if (error) {
-		PKA_ERROR(PKA_DRIVER, "failed to initialize regions\n");
+		PKA_DEBUG(PKA_DRIVER,
+			  "failed to open ring %u\n", ring_dev->device_id);
 		module_put(info->module);
 		return error;
 	}
 
-	ring_info.ring_id = ring_dev->device_id;
-	error = pka_dev_open_ring(&ring_info);
+	/* Initialize regions */
+	error = pka_drv_ring_regions_init(ring_dev);
 	if (error) {
-		PKA_ERROR(PKA_DRIVER,
-			  "failed to open ring %u\n", ring_dev->device_id);
-		pka_drv_ring_regions_cleanup(ring_dev);
+		PKA_DEBUG(PKA_DRIVER, "failed to initialize regions\n");
+		pka_dev_close_ring(&ring_info);
 		module_put(info->module);
 		return error;
 	}
@@ -341,14 +341,15 @@ static void pka_drv_ring_release(void *device_data)
 		  "release ring device %u (device_data:%p)\n",
 		  ring_dev->device_id, ring_dev);
 
+	pka_drv_ring_regions_cleanup(ring_dev);
+
 	ring_info.ring_id = ring_dev->device_id;
 	error = pka_dev_close_ring(&ring_info);
 	if (error)
-		PKA_ERROR(PKA_DRIVER,
+		PKA_DEBUG(PKA_DRIVER,
 			  "failed to close ring %u\n",
 			  ring_dev->device_id);
 
-	pka_drv_ring_regions_cleanup(ring_dev);
 	module_put(info->module);
 }
 
