@@ -28,10 +28,29 @@
 #define PKA_DEVICE_COMPAT       "mlx,mlxbf-pka"
 #define PKA_RING_DEVICE_COMPAT	"mlx,mlxbf-pka-ring"
 
-#define PKA_DEVICE_ACPIHID      "MLNXBF10"
-#define PKA_RING_DEVICE_ACPIHID "MLNXBF11"
+#define PKA_DEVICE_ACPIHID_BF1      "MLNXBF10"
+#define PKA_RING_DEVICE_ACPIHID_BF1 "MLNXBF11"
+
+#define PKA_DEVICE_ACPIHID_BF2      "MLNXBF20"
+#define PKA_RING_DEVICE_ACPIHID_BF2 "MLNXBF21"
 
 #define PKA_DEVICE_ACCESS_MODE  0666
+
+#define PKA_DEVICE_RES_CNT      7
+enum pka_mem_res_idx {
+	PKA_ACPI_EIP154_IDX = 0,
+	PKA_ACPI_WNDW_RAM_IDX,
+	PKA_ACPI_ALT_WNDW_RAM_0_IDX,
+	PKA_ACPI_ALT_WNDW_RAM_1_IDX,
+	PKA_ACPI_ALT_WNDW_RAM_2_IDX,
+	PKA_ACPI_ALT_WNDW_RAM_3_IDX,
+	PKA_ACPI_CSR_IDX
+};
+
+enum pka_plat_type {
+	PKA_PLAT_TYPE_BF1 = 0, /* Platform type Bluefield-1 */
+	PKA_PLAT_TYPE_BF2      /* Platform type Bluefield-2 */
+};
 
 static DEFINE_MUTEX(pka_drv_lock);
 
@@ -41,8 +60,35 @@ static uint32_t pka_ring_device_cnt;
 const char pka_compat[]      = PKA_DEVICE_COMPAT;
 const char pka_ring_compat[] = PKA_RING_DEVICE_COMPAT;
 
-const char pka_acpihid[]      = PKA_DEVICE_ACPIHID;
-const char pka_ring_acpihid[] = PKA_RING_DEVICE_ACPIHID;
+const char pka_acpihid_bf1[]      = PKA_DEVICE_ACPIHID_BF1;
+const char pka_ring_acpihid_bf1[] = PKA_RING_DEVICE_ACPIHID_BF1;
+
+const char pka_acpihid_bf2[]      = PKA_DEVICE_ACPIHID_BF2;
+const char pka_ring_acpihid_bf2[] = PKA_RING_DEVICE_ACPIHID_BF2;
+
+struct pka_drv_plat_info {
+	enum pka_plat_type type;
+	uint8_t fw_id;
+};
+
+static struct pka_drv_plat_info pka_drv_plat[] = {
+	[PKA_PLAT_TYPE_BF1] = {
+		.type = PKA_PLAT_TYPE_BF1,
+		.fw_id = PKA_FIRMWARE_IMAGE_0_ID
+	},
+	[PKA_PLAT_TYPE_BF2] = {
+		.type = PKA_PLAT_TYPE_BF2,
+		.fw_id = PKA_FIRMWARE_IMAGE_1_ID
+	}
+};
+
+static const struct acpi_device_id pka_drv_acpi_ids[] = {
+	{ PKA_DEVICE_ACPIHID_BF1, (kernel_ulong_t)&pka_drv_plat[PKA_PLAT_TYPE_BF1] },
+	{ PKA_RING_DEVICE_ACPIHID_BF1, 0 },
+	{ PKA_DEVICE_ACPIHID_BF2, (kernel_ulong_t)&pka_drv_plat[PKA_PLAT_TYPE_BF2] },
+	{ PKA_RING_DEVICE_ACPIHID_BF2, 0 },
+	{},
+};
 
 struct pka_info {
 	struct device *dev;	/* the device this info belongs to */
@@ -58,11 +104,6 @@ struct pka_info {
 /* defines for pka_info->flags */
 #define PKA_DRIVER_FLAG_RING_DEVICE        1
 #define PKA_DRIVER_FLAG_DEVICE             2
-
-enum {
-	PKA_REVISION_1 = 1,
-	PKA_REVISION_2,
-};
 
 struct pka_platdata {
 	struct platform_device *pdev;
@@ -138,7 +179,7 @@ struct pka_device {
 	uint32_t         device_id;
 	uint8_t          fw_id;         /* firmware identifier */
 	struct mutex     mutex;
-	struct resource *resource;
+	struct resource *resource[PKA_DEVICE_RES_CNT];
 	pka_dev_shim_t  *shim;
 	long             irq;		/* interrupt number */
 	struct hwrng     rng;
@@ -189,7 +230,6 @@ static int pka_drv_ring_regions_init(struct pka_ring_device *ring_dev)
 	struct pka_ring_region *region;
 	pka_dev_ring_t *ring;
 	pka_dev_res_t  *res;
-	uint64_t        shim_base;
 	uint32_t        num_regions;
 
 	ring = ring_dev->ring;
@@ -204,15 +244,13 @@ static int pka_drv_ring_regions_init(struct pka_ring_device *ring_dev)
 	if (!ring_dev->regions)
 		return -ENOMEM;
 
-	shim_base = ring->shim->base;
-
 	/* Information words region */
 	res    = &ring->resources.info_words;
 	region = &ring_dev->regions[PKA_RING_REGION_WORDS_IDX];
 	/* map offset to the physical address */
 	region->off    =
 		PKA_RING_REGION_INDEX_TO_OFFSET(PKA_RING_REGION_WORDS_IDX);
-	region->addr   = res->base + shim_base;
+	region->addr   = res->base;
 	region->size   = res->size;
 	region->type   = PKA_RING_RES_TYPE_WORDS;
 	region->flags |= (PKA_RING_REGION_FLAG_MMAP |
@@ -225,7 +263,7 @@ static int pka_drv_ring_regions_init(struct pka_ring_device *ring_dev)
 	/* map offset to the physical address */
 	region->off    =
 		PKA_RING_REGION_INDEX_TO_OFFSET(PKA_RING_REGION_CNTRS_IDX);
-	region->addr   = res->base + shim_base;
+	region->addr   = res->base;
 	region->size   = res->size;
 	region->type   = PKA_RING_RES_TYPE_CNTRS;
 	region->flags |= (PKA_RING_REGION_FLAG_MMAP |
@@ -238,7 +276,7 @@ static int pka_drv_ring_regions_init(struct pka_ring_device *ring_dev)
 	/* map offset to the physical address */
 	region->off    =
 		PKA_RING_REGION_INDEX_TO_OFFSET(PKA_RING_REGION_MEM_IDX);
-	region->addr   = res->base + shim_base;
+	region->addr   = res->base;
 	region->size   = res->size;
 	region->type   = PKA_RING_RES_TYPE_MEM;
 	region->flags |= (PKA_RING_REGION_FLAG_MMAP |
@@ -713,30 +751,80 @@ static void pka_drv_destroy_class(void)
 }
 #endif
 
+static void pka_drv_get_mem_res(struct pka_device *pka_dev,
+				struct pka_dev_mem_res *mem_res,
+				uint64_t wndw_ram_off_mask)
+{
+	enum pka_mem_res_idx acpi_mem_idx;
+
+	acpi_mem_idx = PKA_ACPI_EIP154_IDX;
+	mem_res->wndw_ram_off_mask = wndw_ram_off_mask;
+
+	/* PKA EIP154 MMIO base address*/
+	mem_res->eip154_base = pka_dev->resource[acpi_mem_idx]->start;
+	mem_res->eip154_size = pka_dev->resource[acpi_mem_idx]->end -
+			       mem_res->eip154_base + 1;
+	acpi_mem_idx++;
+
+	/* PKA window ram base address*/
+	mem_res->wndw_ram_base = pka_dev->resource[acpi_mem_idx]->start;
+	mem_res->wndw_ram_size = pka_dev->resource[acpi_mem_idx]->end -
+				 mem_res->wndw_ram_base + 1;
+	acpi_mem_idx++;
+
+	/* PKA alternate window ram base address
+	 * Note: Here the size of all the alt window ram is same, depicted by
+	 * 'alt_wndw_ram_size' variable. All alt window ram resources are read
+	 * here even though not all of them are used currently.
+	 */
+	mem_res->alt_wndw_ram_0_base = pka_dev->resource[acpi_mem_idx]->start;
+	mem_res->alt_wndw_ram_size   = pka_dev->resource[acpi_mem_idx]->end -
+				       mem_res->alt_wndw_ram_0_base + 1;
+
+	if (mem_res->alt_wndw_ram_size != PKA_WINDOW_RAM_REGION_SIZE)
+		PKA_ERROR(PKA_DRIVER,
+		"Alternate Window RAM size read from ACPI is incorrect.\n");
+
+	acpi_mem_idx++;
+
+	mem_res->alt_wndw_ram_1_base = pka_dev->resource[acpi_mem_idx]->start;
+	acpi_mem_idx++;
+
+	mem_res->alt_wndw_ram_2_base = pka_dev->resource[acpi_mem_idx]->start;
+	acpi_mem_idx++;
+
+	mem_res->alt_wndw_ram_3_base = pka_dev->resource[acpi_mem_idx]->start;
+	acpi_mem_idx++;
+
+	/* PKA CSR base address*/
+	mem_res->csr_base = pka_dev->resource[acpi_mem_idx]->start;
+	mem_res->csr_size = pka_dev->resource[acpi_mem_idx]->end -
+			    mem_res->csr_base + 1;
+}
+
 /*
  * Note that this function must be serialized because it calls
  * 'pka_dev_register_shim' which manipulates common counters for
  * pka devices.
  */
-static int pka_drv_register_device(struct pka_device *pka_dev)
+static int pka_drv_register_device(struct pka_device *pka_dev,
+				   uint64_t wndw_ram_off_mask)
 {
 	uint32_t pka_shim_id;
-	uint64_t pka_shim_base;
-	uint64_t pka_shim_size;
 	uint8_t  pka_shim_fw_id;
+	struct pka_dev_mem_res mem_res;
 
 	/* Register Shim */
 	pka_shim_id    = pka_dev->device_id;
-	pka_shim_base  = pka_dev->resource->start;
-	pka_shim_size  = pka_dev->resource->end - pka_shim_base;
 	pka_shim_fw_id = pka_dev->fw_id;
 
-	pka_dev->shim = pka_dev_register_shim(pka_shim_id, pka_shim_base,
-					      pka_shim_size, pka_shim_fw_id);
+	pka_drv_get_mem_res(pka_dev, &mem_res, wndw_ram_off_mask);
+
+	pka_dev->shim = pka_dev_register_shim(pka_shim_id, pka_shim_fw_id,
+					      &mem_res);
 	if (!pka_dev->shim) {
 		PKA_DEBUG(PKA_DRIVER,
-		  "failed to register shim id=%u, base=0x%llx, size=0x%llx\n",
-		  pka_shim_id, pka_shim_base, pka_shim_size);
+		  "failed to register shim id=%u\n", pka_shim_id);
 		return -EFAULT;
 	}
 
@@ -829,9 +917,11 @@ static int pka_drv_probe_device(struct pka_info *info)
 	struct device_node *of_node = dev->of_node;
 	struct platform_device *pdev = to_platform_device(dev);
 	struct hwrng *trng;
-
-	u8  revision;
+	const struct acpi_device_id *aid;
+	struct pka_drv_plat_info *plat_info;
+	uint64_t wndw_ram_off_mask;
 	int ret;
+	enum pka_mem_res_idx acpi_mem_idx;
 
 	if (!info)
 		return -EINVAL;
@@ -857,8 +947,25 @@ static int pka_drv_probe_device(struct pka_info *info)
 	info->flag      = PKA_DRIVER_FLAG_DEVICE;
 	mutex_init(&pka_dev->mutex);
 
-	pka_dev->resource =
-		platform_get_resource(pdev, IORESOURCE_MEM, 0);
+	for (acpi_mem_idx = PKA_ACPI_EIP154_IDX;
+		acpi_mem_idx < PKA_DEVICE_RES_CNT; acpi_mem_idx++) {
+		pka_dev->resource[acpi_mem_idx] =
+			platform_get_resource(pdev, IORESOURCE_MEM, acpi_mem_idx);
+	}
+
+	/* Window ram offset mask is platform dependent */
+	aid = acpi_match_device(pka_drv_acpi_ids, dev);
+	if (!aid)
+		return -ENODEV;
+
+	plat_info = (struct pka_drv_plat_info *)aid->driver_data;
+	if (plat_info->type <= PKA_PLAT_TYPE_BF2) {
+		wndw_ram_off_mask = PKA_WINDOW_RAM_OFFSET_MASK1;
+	} else {
+		PKA_ERROR(PKA_DRIVER, "Invalid platform type: %d\n",
+				(int)plat_info->type);
+		return -EINVAL;
+	}
 
 	/* Set interrupts */
 	ret = platform_get_irq(pdev, 0);
@@ -880,33 +987,11 @@ static int pka_drv_probe_device(struct pka_info *info)
 		return ret;
 	}
 
-	/*
-	 * Retrieve the firmware identifier based on the device revision.
-	 * Note that old platform firmware of BF1 does not support the
-	 * "revision" property, thus set it by default.
-	 */
-	ret = device_property_read_u8(dev, "rev", &revision);
-	if (ret < 0)
-		revision = PKA_REVISION_1;
-
-	switch (revision) {
-	case PKA_REVISION_1:
-		pka_dev->fw_id = PKA_FIRMWARE_IMAGE_0_ID;
-		break;
-
-	case PKA_REVISION_2:
-		pka_dev->fw_id = PKA_FIRMWARE_IMAGE_1_ID;
-		break;
-
-	default:
-		PKA_ERROR(PKA_DRIVER,
-			  "device %u revision %u is not supported\n",
-			  pka_dev->device_id, revision);
-		return -EINVAL;
-	}
+	/* Firmware version */
+	pka_dev->fw_id = plat_info->fw_id;
 
 	mutex_lock(&pka_drv_lock);
-	ret = pka_drv_register_device(pka_dev);
+	ret = pka_drv_register_device(pka_dev, wndw_ram_off_mask);
 	if (ret) {
 		PKA_DEBUG(PKA_DRIVER, "failed to register shim id=%u\n",
 			  pka_dev->device_id);
@@ -1118,7 +1203,8 @@ static int pka_drv_acpi_probe(struct platform_device *pdev,
 	if (WARN_ON(!info->acpihid))
 		return -EINVAL;
 
-	if (!strcmp(info->acpihid, pka_ring_acpihid)) {
+	if (!strcmp(info->acpihid, pka_ring_acpihid_bf1)
+	|| !strcmp(info->acpihid, pka_ring_acpihid_bf2)) {
 		error = pka_drv_probe_ring_device(info);
 		if (error) {
 			PKA_DEBUG(PKA_DRIVER,
@@ -1129,7 +1215,8 @@ static int pka_drv_acpi_probe(struct platform_device *pdev,
 		PKA_DEBUG(PKA_DRIVER, "ring device %s probed\n",
 			  pdev->name);
 
-	} else if (!strcmp(info->acpihid, pka_acpihid)) {
+	} else if (!strcmp(info->acpihid, pka_acpihid_bf1)
+		|| !strcmp(info->acpihid, pka_acpihid_bf2)) {
 		error = pka_drv_probe_device(info);
 		if (error) {
 			PKA_DEBUG(PKA_DRIVER,
@@ -1260,12 +1347,6 @@ static const struct of_device_id pka_drv_match[] = {
 };
 
 MODULE_DEVICE_TABLE(of, pka_drv_match);
-
-static const struct acpi_device_id pka_drv_acpi_ids[] = {
-	{ PKA_DEVICE_ACPIHID,      0 },
-	{ PKA_RING_DEVICE_ACPIHID, 0 },
-	{},
-};
 
 MODULE_DEVICE_TABLE(acpi, pka_drv_acpi_ids);
 
