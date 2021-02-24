@@ -6935,11 +6935,13 @@ CONFIG_MODULES                                  policy<{'riscv64': 'y'}>
 CONFIG_MODULE_FORCE_LOAD                        policy<{'riscv64': 'n'}>
 CONFIG_MODULE_UNLOAD                            policy<{'riscv64': 'y'}>
 CONFIG_MODULE_FORCE_UNLOAD                      policy<{'riscv64': 'n'}>
-CONFIG_MODVERSIONS                              policy<{'riscv64': 'n'}>
+CONFIG_MODVERSIONS                              policy<{'riscv64': 'y'}>
 CONFIG_MODULE_SRCVERSION_ALL                    policy<{'riscv64': 'y'}>
 CONFIG_MODULE_COMPRESS                          policy<{'riscv64': 'n'}>
 CONFIG_MODULE_ALLOW_MISSING_NAMESPACE_IMPORTS   policy<{'riscv64': 'n'}>
 CONFIG_UNUSED_SYMBOLS                           policy<{'riscv64': 'y'}>
+#
+CONFIG_MODVERSIONS                              mark<ENFORCED> note<LP:1898716 -- required as we have a livepatch/drivers modules signing key>
 
 # Menu: Enable loadable module support >> Compression algorithm
 
