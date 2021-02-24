@@ -142,7 +142,7 @@ CONFIG_SYSTEM_BLACKLIST_KEYRING                 mark<ENFORCED>
 
 # Menu: Cryptographic API >> Certificates for signature checking >> Provide system-wide ring of trusted keys
 CONFIG_SYSTEM_TRUSTED_KEYRING                   policy<{'riscv64': 'y'}>
-CONFIG_SYSTEM_TRUSTED_KEYS                      policy<{'riscv64': '""'}>
+CONFIG_SYSTEM_TRUSTED_KEYS                      policy<{'riscv64': '"debian/canonical-certs.pem"'}>
 CONFIG_SYSTEM_EXTRA_CERTIFICATE                 policy<{'riscv64': 'y'}>
 CONFIG_SYSTEM_EXTRA_CERTIFICATE_SIZE            policy<{'riscv64': '4096'}>
 CONFIG_SECONDARY_TRUSTED_KEYRING                policy<{'riscv64': 'y'}>
