@@ -462,6 +462,7 @@ EXPORT_SYMBOL	 net/netfilter/x_tables 0x00000000	xt_register_match
 EXPORT_SYMBOL	 net/netfilter/x_tables 0x00000000	xt_register_matches
 EXPORT_SYMBOL	 net/netfilter/x_tables 0x00000000	xt_register_target
 EXPORT_SYMBOL	 net/netfilter/x_tables 0x00000000	xt_register_targets
+EXPORT_SYMBOL	 net/netfilter/x_tables 0x00000000	xt_table_get_private_protected
 EXPORT_SYMBOL	 net/netfilter/x_tables 0x00000000	xt_unregister_match
 EXPORT_SYMBOL	 net/netfilter/x_tables 0x00000000	xt_unregister_matches
 EXPORT_SYMBOL	 net/netfilter/x_tables 0x00000000	xt_unregister_target
@@ -2872,6 +2873,7 @@ EXPORT_SYMBOL	 vmlinux 0x00000000	mpage_readpage
 EXPORT_SYMBOL	 vmlinux 0x00000000	mpage_readpages
 EXPORT_SYMBOL	 vmlinux 0x00000000	mpage_writepage
 EXPORT_SYMBOL	 vmlinux 0x00000000	mpage_writepages
+EXPORT_SYMBOL	 vmlinux 0x00000000	msi_desc_to_pci_dev
 EXPORT_SYMBOL	 vmlinux 0x00000000	msleep
 EXPORT_SYMBOL	 vmlinux 0x00000000	msleep_interruptible
 EXPORT_SYMBOL	 vmlinux 0x00000000	msrs_alloc
@@ -3256,6 +3258,7 @@ EXPORT_SYMBOL	 vmlinux 0x00000000	pci_add_resource
 EXPORT_SYMBOL	 vmlinux 0x00000000	pci_add_resource_offset
 EXPORT_SYMBOL	 vmlinux 0x00000000	pci_alloc_dev
 EXPORT_SYMBOL	 vmlinux 0x00000000	pci_alloc_host_bridge
+EXPORT_SYMBOL	 vmlinux 0x00000000	pci_alloc_irq_vectors_affinity
 EXPORT_SYMBOL	 vmlinux 0x00000000	pci_assign_resource
 EXPORT_SYMBOL	 vmlinux 0x00000000	pci_back_from_sleep
 EXPORT_SYMBOL	 vmlinux 0x00000000	pci_biosrom_size
@@ -3285,10 +3288,14 @@ EXPORT_SYMBOL	 vmlinux 0x00000000	pci_dev_put
 EXPORT_SYMBOL	 vmlinux 0x00000000	pci_disable_device
 EXPORT_SYMBOL	 vmlinux 0x00000000	pci_disable_link_state
 EXPORT_SYMBOL	 vmlinux 0x00000000	pci_disable_link_state_locked
+EXPORT_SYMBOL	 vmlinux 0x00000000	pci_disable_msi
+EXPORT_SYMBOL	 vmlinux 0x00000000	pci_disable_msix
 EXPORT_SYMBOL	 vmlinux 0x00000000	pci_enable_atomic_ops_to_root
 EXPORT_SYMBOL	 vmlinux 0x00000000	pci_enable_device
 EXPORT_SYMBOL	 vmlinux 0x00000000	pci_enable_device_io
 EXPORT_SYMBOL	 vmlinux 0x00000000	pci_enable_device_mem
+EXPORT_SYMBOL	 vmlinux 0x00000000	pci_enable_msi
+EXPORT_SYMBOL	 vmlinux 0x00000000	pci_enable_msix_range
 EXPORT_SYMBOL	 vmlinux 0x00000000	pci_enable_wake
 EXPORT_SYMBOL	 vmlinux 0x00000000	pci_find_bus
 EXPORT_SYMBOL	 vmlinux 0x00000000	pci_find_capability
@@ -3300,6 +3307,7 @@ EXPORT_SYMBOL	 vmlinux 0x00000000	pci_fixup_cardbus
 EXPORT_SYMBOL	 vmlinux 0x00000000	pci_fixup_device
 EXPORT_SYMBOL	 vmlinux 0x00000000	pci_free_host_bridge
 EXPORT_SYMBOL	 vmlinux 0x00000000	pci_free_irq
+EXPORT_SYMBOL	 vmlinux 0x00000000	pci_free_irq_vectors
 EXPORT_SYMBOL	 vmlinux 0x00000000	pci_free_resource_list
 EXPORT_SYMBOL	 vmlinux 0x00000000	pci_get_class
 EXPORT_SYMBOL	 vmlinux 0x00000000	pci_get_device
@@ -3309,11 +3317,17 @@ EXPORT_SYMBOL	 vmlinux 0x00000000	pci_get_subsys
 EXPORT_SYMBOL	 vmlinux 0x00000000	pci_iomap
 EXPORT_SYMBOL	 vmlinux 0x00000000	pci_iomap_range
 EXPORT_SYMBOL	 vmlinux 0x00000000	pci_iounmap
+EXPORT_SYMBOL	 vmlinux 0x00000000	pci_irq_get_affinity
+EXPORT_SYMBOL	 vmlinux 0x00000000	pci_irq_get_node
+EXPORT_SYMBOL	 vmlinux 0x00000000	pci_irq_vector
 EXPORT_SYMBOL	 vmlinux 0x00000000	pci_lost_interrupt
 EXPORT_SYMBOL	 vmlinux 0x00000000	pci_map_biosrom
 EXPORT_SYMBOL	 vmlinux 0x00000000	pci_map_rom
 EXPORT_SYMBOL	 vmlinux 0x00000000	pci_match_id
 EXPORT_SYMBOL	 vmlinux 0x00000000	pci_mem_start
+EXPORT_SYMBOL	 vmlinux 0x00000000	pci_msi_enabled
+EXPORT_SYMBOL	 vmlinux 0x00000000	pci_msi_vec_count
+EXPORT_SYMBOL	 vmlinux 0x00000000	pci_msix_vec_count
 EXPORT_SYMBOL	 vmlinux 0x00000000	pci_pci_problems
 EXPORT_SYMBOL	 vmlinux 0x00000000	pci_pme_active
 EXPORT_SYMBOL	 vmlinux 0x00000000	pci_pme_capable
@@ -5713,6 +5727,7 @@ EXPORT_SYMBOL_GPL	 net/netfilter/nf_tables 0x00000000	nf_tables_bind_set
 EXPORT_SYMBOL_GPL	 net/netfilter/nf_tables 0x00000000	nf_tables_deactivate_flowtable
 EXPORT_SYMBOL_GPL	 net/netfilter/nf_tables 0x00000000	nf_tables_deactivate_set
 EXPORT_SYMBOL_GPL	 net/netfilter/nf_tables 0x00000000	nf_tables_destroy_set
+EXPORT_SYMBOL_GPL	 net/netfilter/nf_tables 0x00000000	nf_tables_trans_destroy_flush_work
 EXPORT_SYMBOL_GPL	 net/netfilter/nf_tables 0x00000000	nft_chain_validate
 EXPORT_SYMBOL_GPL	 net/netfilter/nf_tables 0x00000000	nft_chain_validate_dependency
 EXPORT_SYMBOL_GPL	 net/netfilter/nf_tables 0x00000000	nft_chain_validate_hooks
@@ -7736,6 +7751,7 @@ EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	generic_fh_to_dentry
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	generic_fh_to_parent
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	generic_handle_irq
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	generic_xdp_tx
+EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	get_cached_msi_msg
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	get_compat_bpf_fprog
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	get_compat_sigset
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	get_cpu_device
@@ -8047,7 +8063,7 @@ EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	irq_chip_set_wake_parent
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	irq_chip_unmask_parent
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	irq_create_direct_mapping
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	irq_create_fwspec_mapping
-EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	irq_create_mapping
+EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	irq_create_mapping_affinity
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	irq_create_of_mapping
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	irq_create_strict_mappings
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	irq_dispose_mapping
@@ -8581,6 +8597,7 @@ EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	mpi_read_raw_data
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	mpi_read_raw_from_sgl
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	mpi_write_to_sgl
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	ms_hyperv
+EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	msi_desc_to_pci_sysdata
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	mutex_lock_io
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	mxcsr_feature_mask
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	n_tty_inherit_ops
@@ -8775,6 +8792,11 @@ EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	pci_ioremap_wc_bar
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	pci_load_and_free_saved_state
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	pci_load_saved_state
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	pci_lock_rescan_remove
+EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	pci_msi_create_irq_domain
+EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	pci_msi_mask_irq
+EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	pci_msi_prepare
+EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	pci_msi_set_desc
+EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	pci_msi_unmask_irq
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	pci_power_names
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	pci_pr3_present
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	pci_probe_reset_bus
@@ -8784,6 +8806,7 @@ EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	pci_rescan_bus
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	pci_reset_bus
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	pci_reset_function
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	pci_reset_function_locked
+EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	pci_restore_msi_state
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	pci_scan_child_bus
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	pci_set_cacheline_size
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	pci_set_host_bridge_release
@@ -8804,6 +8827,7 @@ EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	pci_user_write_config_word
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	pci_vpd_find_info_keyword
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	pci_vpd_find_tag
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	pci_walk_bus
+EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	pci_write_msi_msg
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	pcibios_scan_specific_bus
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	pcie_aspm_enabled
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	pcie_bus_configure_settings
@@ -8928,6 +8952,8 @@ EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	platform_get_irq_optional
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	platform_get_resource
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	platform_get_resource_byname
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	platform_irq_count
+EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	platform_msi_domain_alloc_irqs
+EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	platform_msi_domain_free_irqs
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	platform_unregister_drivers
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	play_idle
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	pm_clk_add_notifier
