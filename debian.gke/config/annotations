@@ -98,3 +98,6 @@ CONFIG_SND_SOC_AMD_RENOIR                       policy<{'amd64': 'n'}>
 CONFIG_SND_SOC_AMD_RENOIR                       note<Unnecessary for linux-gke>
 CONFIG_SND_SOC_AMD_RENOIR_MACH                  policy<{'amd64': 'n'}>
 CONFIG_SND_SOC_AMD_RENOIR_MACH                  note<Unnecessary for linux-gke>
+
+CONFIG_MODVERSIONS				policy<{'amd64': 'y'}>
+CONFIG_MODVERSIONS				mark<ENFORCED> note<LP:1898716 -- required as we have a livepatch/drivers modules signing key>
