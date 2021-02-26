@@ -142,7 +142,7 @@ CONFIG_SYSTEM_BLACKLIST_KEYRING                 mark<ENFORCED>
 
 # Menu: Cryptographic API >> Certificates for signature checking >> Provide system-wide ring of trusted keys
 CONFIG_SYSTEM_TRUSTED_KEYRING                   policy<{'riscv64': 'y'}>
-CONFIG_SYSTEM_TRUSTED_KEYS                      policy<{'riscv64': '""'}>
+CONFIG_SYSTEM_TRUSTED_KEYS                      policy<{'riscv64': '"debian/canonical-certs.pem"'}>
 CONFIG_SYSTEM_EXTRA_CERTIFICATE                 policy<{'riscv64': 'y'}>
 CONFIG_SYSTEM_EXTRA_CERTIFICATE_SIZE            policy<{'riscv64': '4096'}>
 CONFIG_SECONDARY_TRUSTED_KEYRING                policy<{'riscv64': 'y'}>
@@ -6384,7 +6384,6 @@ CONFIG_USB_FTDI_ELAN                            policy<{'riscv64': 'm'}>
 CONFIG_USB_APPLEDISPLAY                         policy<{'riscv64': 'm'}>
 CONFIG_APPLE_MFI_FASTCHARGE                     policy<{'riscv64': 'm'}>
 CONFIG_USB_SISUSBVGA                            policy<{'riscv64': 'm'}>
-CONFIG_USB_SISUSBVGA_CON                        policy<{'riscv64': 'n'}>
 CONFIG_USB_LD                                   policy<{'riscv64': 'm'}>
 CONFIG_USB_TRANCEVIBRATOR                       policy<{'riscv64': 'm'}>
 CONFIG_USB_IOWARRIOR                            policy<{'riscv64': 'm'}>
@@ -6936,11 +6935,13 @@ CONFIG_MODULES                                  policy<{'riscv64': 'y'}>
 CONFIG_MODULE_FORCE_LOAD                        policy<{'riscv64': 'n'}>
 CONFIG_MODULE_UNLOAD                            policy<{'riscv64': 'y'}>
 CONFIG_MODULE_FORCE_UNLOAD                      policy<{'riscv64': 'n'}>
-CONFIG_MODVERSIONS                              policy<{'riscv64': 'n'}>
+CONFIG_MODVERSIONS                              policy<{'riscv64': 'y'}>
 CONFIG_MODULE_SRCVERSION_ALL                    policy<{'riscv64': 'y'}>
 CONFIG_MODULE_COMPRESS                          policy<{'riscv64': 'n'}>
 CONFIG_MODULE_ALLOW_MISSING_NAMESPACE_IMPORTS   policy<{'riscv64': 'n'}>
 CONFIG_UNUSED_SYMBOLS                           policy<{'riscv64': 'y'}>
+#
+CONFIG_MODVERSIONS                              mark<ENFORCED> note<LP:1898716 -- required as we have a livepatch/drivers modules signing key>
 
 # Menu: Enable loadable module support >> Compression algorithm
 
@@ -7922,14 +7923,7 @@ CONFIG_DEBUG_VM                                 policy<{'riscv64': 'n'}>
 CONFIG_DEBUG_OBJECTS                            policy<{'riscv64': 'n'}>
 
 # Menu: Kernel hacking >> Memory Debugging >> KASAN: runtime memory debugger
-
-#
-# NOTE: temporarily comment out CONFIG_KASAN to prevent build failures We need
-# to comment out this option, because the cross-compiler supports KASAN (option
-# -fsanitize=kernel-address with gcc), but the native compiler doesn't and we
-# don't have a way to specify that either 'n' or '-' are fine.
-#
-# CONFIG_KASAN                                    policy<{'riscv64': 'n'}>
+CONFIG_KASAN                                    policy<{'riscv64': 'n'}>
 
 # Menu: Kernel hacking >> Memory Debugging >> KASAN: runtime memory debugger >> Instrumentation type
 
@@ -8104,7 +8098,6 @@ CONFIG_ZPOOL                                    policy<{'riscv64': 'y'}>
 CONFIG_ZBUD                                     policy<{'riscv64': 'y'}>
 CONFIG_Z3FOLD                                   policy<{'riscv64': 'm'}>
 CONFIG_ZSMALLOC                                 policy<{'riscv64': 'y'}>
-CONFIG_ZSMALLOC_PGTABLE_MAPPING                 policy<{'riscv64': 'n'}>
 CONFIG_ZSMALLOC_STAT                            policy<{'riscv64': 'n'}>
 CONFIG_DEFERRED_STRUCT_PAGE_INIT                policy<{'riscv64': 'n'}>
 CONFIG_IDLE_PAGE_TRACKING                       policy<{'riscv64': 'y'}>
