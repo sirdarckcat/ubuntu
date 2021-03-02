@@ -7665,8 +7665,9 @@ CONFIG_RCU_EXPERT                               flag<REVIEW>
 
 # Menu: General setup >> Scheduler features
 #
-CONFIG_UCLAMP_TASK                              policy<{'riscv64': 'n'}>
+CONFIG_UCLAMP_TASK                              policy<{'riscv64': '-'}>
 CONFIG_UCLAMP_TASK                              flag<REVIEW>
+CONFIG_UCLAMP_TASK                              <LP:1917433> mark<ENFORCED>
 
 # Menu: General setup >> Timers subsystem
 CONFIG_NO_HZ                                    policy<{'riscv64': 'y'}>
