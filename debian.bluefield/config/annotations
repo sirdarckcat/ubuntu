@@ -1,6 +1,55 @@
 # Menu: HEADER
-# FORMAT: 2
+# FORMAT: 3
 # ARCH: arm64
 
+include ../../debian.master/config/annotations
+
 #
+# Policy overrides (unset/unreachable)
 #
+CONFIG_IPDDP				policy<{'arm64': '-'}>
+CONFIG_SND_SOC_SOF_NOCODEC_SUPPORT	policy<{'arm64': '-'}>
+CONFIG_SOUND_OSS_CORE_PRECLAIM		policy<{'arm64': '-'}>
+CONFIG_BT_HS				policy<{'arm64': '-'}>
+CONFIG_SETEND_EMULATION			policy<{'arm64': '-'}>
+CONFIG_CP15_BARRIER_EMULATION		policy<{'arm64': '-'}>
+CONFIG_GPIO_TWL4030			policy<{'arm64': '-'}>
+CONFIG_REGULATOR_TWL4030		policy<{'arm64': '-'}>
+CONFIG_SWP_EMULATION			policy<{'arm64': '-'}>
+CONFIG_DRM_HISI_HIBMC			policy<{'arm64': '-'}>
+CONFIG_PAGE_POISONING_NO_SANITY		policy<{'arm64': '-'}>
+CONFIG_PAGE_POISONING_ZERO		policy<{'arm64': '-'}>
+CONFIG_REGULATOR_TPS65217		policy<{'arm64': '-'}>
+
+#
+# Deviations (Target Platform)
+#
+CONFIG_ARM_SMMU_DISABLE_BYPASS_BY_DEFAULT	policy<{'arm64': 'y'}>		# from 'n'
+CONFIG_ARMV8_DEPRECATED				policy<{'arm64': 'n'}>		# from 'y'
+CONFIG_BLK_DEV_RAM_SIZE				policy<{'arm64': '4096'}>	# from '65536'
+CONFIG_USB_EHCI_HCD_PLATFORM			policy<{'arm64': 'y'}>		# from 'm'
+CONFIG_USB_UHCI_HCD				policy<{'arm64': 'n'}>		# from 'y'
+CONFIG_VFIO					policy<{'arm64': 'y'}>		# from 'm'
+CONFIG_VFIO_PCI					policy<{'arm64': 'y'}>		# from 'm'
+
+#
+# Deviations (drivers/hardware which is not present or needed)
+#
+CONFIG_ATA_PIIX					policy<{'arm64': 'n'}>		# from 'm'
+CONFIG_BLK_DEV_SR				policy<{'arm64': 'n'}>		# from 'y'
+CONFIG_ECRYPT_FS				policy<{'arm64': 'n'}>		# from 'y'
+CONFIG_SOUNDWIRE				policy<{'arm64': 'n'}>		# from 'm'
+CONFIG_TOUCHSCREEN_ELAN				policy<{'arm64': 'n'}>		# from 'm'
+CONFIG_INPUT_UINPUT				policy<{'arm64': 'n'}>		# from 'y'
+
+
+#
+# Deviations (for review). Those seem to be coming from Mellanox but we should really
+# double checking why those are done. For example our annotations mention that when
+# CONFIG_IPV6 is set to 'm' there would be a module load messaged for every IPv6 packet.
+#
+CONFIG_IPV6					policy<{'arm64': 'm'}>		# from 'y'
+CONFIG_PAGE_POISONING				policy<{'arm64': 'n'}>		# from 'y'
+CONFIG_FW_LOADER_USER_HELPER_FALLBACK		policy<{'arm64': 'y'}>		# from 'n'
+CONFIG_TMPFS_POSIX_ACL				policy<{'arm64': 'n'}>		# from 'y'
+
