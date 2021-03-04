@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0
 
-#ccflags-y := -I$(src)/include -I$(src)/../include -I$(src)/../../include -I$(src)/../../../include -I$(src)/../../../common/drv/include
+export XRT_DRIVER_VERSION := 2.8.0
 ccflags-y := -I $(srctree)/$(src)/include -I $(srctree)/$(src)/../include -I $(src)/include -I $(src)/../include -DXRT_HASH=\"$(GIT_HASH)\" -DXRT_HASH_DATE=\"$(GIT_HASH_DATE)\" -DXRT_BRANCH=\"$(GIT_BRANCH)\" -DXRT_MODIFIED_FILES=\"$(GIT_MODIFIED_FILES)\" -DXRT_DATE=\"$(DATE_NOW)\" -DXRT_DRIVER_VERSION=\"$(XRT_DRIVER_VERSION)\"
 
 common_dir = common
