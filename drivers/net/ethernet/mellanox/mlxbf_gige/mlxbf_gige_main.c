@@ -21,7 +21,7 @@
 #include "mlxbf_gige_regs.h"
 
 #define DRV_NAME    "mlxbf_gige"
-#define DRV_VERSION "1.14"
+#define DRV_VERSION "1.10"
 
 static void mlxbf_gige_set_mac_rx_filter(struct mlxbf_gige *priv,
 					 unsigned int index, u64 dmac)
@@ -862,18 +862,34 @@ static int mlxbf_gige_clean_port(struct mlxbf_gige *priv)
 	return err;
 }
 
+static int mlxbf_gige_phy_enable_interrupt(struct phy_device *phydev)
+{
+	int err = 0;
+
+	if (phydev->drv->ack_interrupt)
+		err = phydev->drv->ack_interrupt(phydev);
+	if (err < 0)
+		return err;
+
+	phydev->interrupts = PHY_INTERRUPT_ENABLED;
+	if (phydev->drv->config_intr)
+		err = phydev->drv->config_intr(phydev);
+
+	return err;
+}
+
 static int mlxbf_gige_phy_disable_interrupt(struct phy_device *phydev)
 {
 	int err = 0;
 
-	phydev->interrupts = PHY_INTERRUPT_DISABLED;
-	if (phydev->drv->config_intr)
-		err = phydev->drv->config_intr(phydev);
+	if (phydev->drv->ack_interrupt)
+		err = phydev->drv->ack_interrupt(phydev);
 	if (err < 0)
 		return err;
 
-	if (phydev->drv->ack_interrupt)
-		err = phydev->drv->ack_interrupt(phydev);
+	phydev->interrupts = PHY_INTERRUPT_DISABLED;
+	if (phydev->drv->config_intr)
+		err = phydev->drv->config_intr(phydev);
 
 	return err;
 }
@@ -899,10 +915,15 @@ static int mlxbf_gige_open(struct net_device *netdev)
 	if (err)
 		return err;
 
-	phydev->irq = priv->phy_irq;
-	mlxbf_gige_mdio_enable_phy_int(priv);
-
 	phy_start(phydev);
+	/* Always make sure interrupts are enabled since phy_start calls
+	 * __phy_resume which may reset the PHY interrupt control reg.
+	 * __phy_resume only reenables the interrupts if
+	 * phydev->irq != IRQ_IGNORE_INTERRUPT.
+	 */
+	err = mlxbf_gige_phy_enable_interrupt(phydev);
+	if (err)
+		return err;
 
 	netif_napi_add(netdev, &priv->napi, mlxbf_gige_poll, NAPI_POLL_WEIGHT);
 	napi_enable(&priv->napi);
@@ -1271,8 +1292,6 @@ static int mlxbf_gige_remove(struct platform_device *pdev)
 	struct mlxbf_gige *priv = platform_get_drvdata(pdev);
 
 	unregister_netdev(priv->netdev);
-	priv->netdev->phydev->irq = PHY_IGNORE_INTERRUPT;
-	mlxbf_gige_phy_disable_interrupt(priv->netdev->phydev);
 	phy_disconnect(priv->netdev->phydev);
 	mlxbf_gige_mdio_remove(priv);
 	platform_set_drvdata(pdev, NULL);
