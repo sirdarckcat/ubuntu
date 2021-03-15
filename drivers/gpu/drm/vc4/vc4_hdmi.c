@@ -1,4 +1,4 @@
-	// SPDX-License-Identifier: GPL-2.0-only
+// SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (C) 2015 Broadcom
  * Copyright (c) 2014 The Linux Foundation. All rights reserved.
