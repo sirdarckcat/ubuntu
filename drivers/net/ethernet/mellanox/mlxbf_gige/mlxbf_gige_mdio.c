@@ -2,7 +2,7 @@
 
 /* MDIO support for Mellanox Gigabit Ethernet driver
  *
- * Copyright (c) 2020 NVIDIA Corporation.
+ * Copyright (c) 2020-2021 NVIDIA Corporation.
  */
 
 #include <linux/acpi.h>
@@ -68,16 +68,9 @@
 				 FIELD_PREP(MLXBF_GIGE_MDIO_CFG_MDIO3_3_MASK, 1) | \
 				 FIELD_PREP(MLXBF_GIGE_MDIO_CFG_MDIO_FULL_DRIVE_MASK, 1) | \
 				 FIELD_PREP(MLXBF_GIGE_MDIO_CFG_MDC_PERIOD_MASK, \
-					    MLXBF_GIGE_MDIO_PERIOD) |   \
+					    MLXBF_GIGE_MDIO_PERIOD) | \
 				 FIELD_PREP(MLXBF_GIGE_MDIO_CFG_MDIO_IN_SAMP_MASK, 6) | \
 				 FIELD_PREP(MLXBF_GIGE_MDIO_CFG_MDIO_OUT_SAMP_MASK, 13))
-
-#define MLXBF_GIGE_GPIO_CAUSE_FALL_EN		0x48
-#define MLXBF_GIGE_GPIO_CAUSE_OR_CAUSE_EVTEN0	0x80
-#define MLXBF_GIGE_GPIO_CAUSE_OR_EVTEN0		0x94
-#define MLXBF_GIGE_GPIO_CAUSE_OR_CLRCAUSE	0x98
-
-#define MLXBF_GIGE_GPIO12_BIT			12
 
 static u32 mlxbf_gige_mdio_create_cmd(u16 data, int phy_add,
 				      int phy_reg, u32 opcode)
@@ -149,88 +142,10 @@ static int mlxbf_gige_mdio_write(struct mii_bus *bus, int phy_add,
 	return ret;
 }
 
-static void mlxbf_gige_mdio_disable_phy_int(struct mlxbf_gige *priv)
-{
-	unsigned long flags;
-	u32 val;
-
-	spin_lock_irqsave(&priv->gpio_lock, flags);
-	val = readl(priv->gpio_io + MLXBF_GIGE_GPIO_CAUSE_OR_EVTEN0);
-	val &= ~priv->phy_int_gpio_mask;
-	writel(val, priv->gpio_io + MLXBF_GIGE_GPIO_CAUSE_OR_EVTEN0);
-	spin_unlock_irqrestore(&priv->gpio_lock, flags);
-}
-
-static void mlxbf_gige_mdio_enable_phy_int(struct mlxbf_gige *priv)
-{
-	unsigned long flags;
-	u32 val;
-
-	spin_lock_irqsave(&priv->gpio_lock, flags);
-	/* The INT_N interrupt level is active low.
-	 * So enable cause fall bit to detect when GPIO
-	 * state goes low.
-	 */
-	val = readl(priv->gpio_io + MLXBF_GIGE_GPIO_CAUSE_FALL_EN);
-	val |= priv->phy_int_gpio_mask;
-	writel(val, priv->gpio_io + MLXBF_GIGE_GPIO_CAUSE_FALL_EN);
-
-	/* Enable PHY interrupt by setting the priority level */
-	val = readl(priv->gpio_io +
-			MLXBF_GIGE_GPIO_CAUSE_OR_EVTEN0);
-	val |= priv->phy_int_gpio_mask;
-	writel(val, priv->gpio_io +
-			MLXBF_GIGE_GPIO_CAUSE_OR_EVTEN0);
-	spin_unlock_irqrestore(&priv->gpio_lock, flags);
-}
-
-/* Interrupt handler is called from mlxbf_gige_main.c
- * driver whenever a phy interrupt is received.
- */
-irqreturn_t mlxbf_gige_mdio_handle_phy_interrupt(int irq, void *dev_id)
-{
-	struct phy_device *phydev;
-	struct mlxbf_gige *priv;
-	u32 val;
-
-	priv = dev_id;
-	phydev = priv->netdev->phydev;
-
-	/* Check if this interrupt is from PHY device.
-	 * Return if it is not.
-	 */
-	val = readl(priv->gpio_io +
-			MLXBF_GIGE_GPIO_CAUSE_OR_CAUSE_EVTEN0);
-	if (!(val & priv->phy_int_gpio_mask))
-		return IRQ_NONE;
-
-	phy_mac_interrupt(phydev);
-
-	/* Clear interrupt when done, otherwise, no further interrupt
-	 * will be triggered.
-	 */
-	val = readl(priv->gpio_io +
-			MLXBF_GIGE_GPIO_CAUSE_OR_CLRCAUSE);
-	val |= priv->phy_int_gpio_mask;
-	writel(val, priv->gpio_io +
-			MLXBF_GIGE_GPIO_CAUSE_OR_CLRCAUSE);
-
-	/* Make sure to clear the PHY device interrupt */
-	if (phydev->drv->ack_interrupt)
-		phydev->drv->ack_interrupt(phydev);
-
-	phydev->interrupts = PHY_INTERRUPT_ENABLED;
-	if (phydev->drv->config_intr)
-		phydev->drv->config_intr(phydev);
-
-	return IRQ_HANDLED;
-}
-
 int mlxbf_gige_mdio_probe(struct platform_device *pdev, struct mlxbf_gige *priv)
 {
 	struct device *dev = &pdev->dev;
 	struct resource *res;
-	u32 phy_int_gpio;
 	int ret;
 
 	res = platform_get_resource(pdev, IORESOURCE_MEM, MLXBF_GIGE_RES_MDIO9);
@@ -241,24 +156,9 @@ int mlxbf_gige_mdio_probe(struct platform_device *pdev, struct mlxbf_gige *priv)
 	if (IS_ERR(priv->mdio_io))
 		return PTR_ERR(priv->mdio_io);
 
-	res = platform_get_resource(pdev, IORESOURCE_MEM, MLXBF_GIGE_RES_GPIO0);
-	if (!res)
-		return -ENODEV;
-
-	priv->gpio_io = devm_ioremap(dev, res->start, resource_size(res));
-	if (!priv->gpio_io)
-		return -ENOMEM;
-
 	/* Configure mdio parameters */
 	writel(MLXBF_GIGE_MDIO_CFG_VAL,
 	       priv->mdio_io + MLXBF_GIGE_MDIO_CFG_OFFSET);
-
-	ret = device_property_read_u32(dev, "phy-int-gpio", &phy_int_gpio);
-	if (ret < 0)
-		phy_int_gpio = MLXBF_GIGE_GPIO12_BIT;
-	priv->phy_int_gpio_mask = BIT(phy_int_gpio);
-
-	mlxbf_gige_mdio_enable_phy_int(priv);
 
 	priv->mdiobus = devm_mdiobus_alloc(dev);
 	if (!priv->mdiobus) {
@@ -283,6 +183,5 @@ int mlxbf_gige_mdio_probe(struct platform_device *pdev, struct mlxbf_gige *priv)
 
 void mlxbf_gige_mdio_remove(struct mlxbf_gige *priv)
 {
-	mlxbf_gige_mdio_disable_phy_int(priv);
 	mdiobus_unregister(priv->mdiobus);
 }
