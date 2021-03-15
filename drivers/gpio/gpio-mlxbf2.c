@@ -1,25 +1,26 @@
 // SPDX-License-Identifier: GPL-2.0-only or BSD-3-Clause
 
 /*
- *  Copyright (c) 2020 NVIDIA Corporation.
+ *  Copyright (c) 2020-2021 NVIDIA Corporation.
  */
 
 #include <linux/acpi.h>
 #include <linux/bitfield.h>
 #include <linux/bitops.h>
 #include <linux/device.h>
+#include <linux/gpio/consumer.h>
 #include <linux/gpio/driver.h>
 #include <linux/io.h>
 #include <linux/ioport.h>
 #include <linux/kernel.h>
-#include <linux/kmod.h>
 #include <linux/module.h>
 #include <linux/platform_device.h>
 #include <linux/pm.h>
 #include <linux/resource.h>
 #include <linux/spinlock.h>
 #include <linux/types.h>
-#include <linux/version.h>
+
+#define DRV_VERSION "1.2"
 
 /*
  * There are 3 YU GPIO blocks:
@@ -29,6 +30,13 @@
  * yu.gpio[16]: HOST_GPIO70
  */
 #define MLXBF2_GPIO_MAX_PINS_PER_BLOCK 32
+
+typedef enum {
+	GPIO_BLOCK0 = 0,
+	GPIO_BLOCK1 = 1,
+	GPIO_BLOCK2 = 2,
+	GPIO_BLOCK16 = 16
+} yu_gpio_block;
 
 /*
  * arm_gpio_lock register:
@@ -42,6 +50,9 @@
 #define YU_ARM_GPIO_LOCK_ACQUIRE	0xd42f
 #define YU_ARM_GPIO_LOCK_RELEASE	0x0
 
+#define YU_CAUSE_GPIO_ADDR		0x2801530
+#define YU_CAUSE_GPIO_ADDR_SIZE		0x4
+
 /*
  * gpio[x] block registers and their offset
  */
@@ -50,6 +61,8 @@
 #define YU_GPIO_MODE0			0x0c
 #define YU_GPIO_DATASET			0x14
 #define YU_GPIO_DATACLEAR		0x18
+#define YU_GPIO_FUNCTIONAL_ENABLE1	0x24
+#define YU_GPIO_FUNCTIONAL_ENABLE0	0x28
 #define YU_GPIO_CAUSE_RISE_EN		0x44
 #define YU_GPIO_CAUSE_FALL_EN		0x48
 #define YU_GPIO_MODE1_CLEAR		0x50
@@ -59,16 +72,6 @@
 #define YU_GPIO_CAUSE_OR_CAUSE_EVTEN0	0x80
 #define YU_GPIO_CAUSE_OR_EVTEN0		0x94
 #define YU_GPIO_CAUSE_OR_CLRCAUSE	0x98
-#define YU_GPIO16_LOW_PWR_BIT		0
-#define YU_GPIO0_RST_BIT		7
-#define YU_GPIO_CAUSE_OR_CAUSE_EVTEN0_MASK(gpio_bit)	BIT(gpio_bit)
-#define YU_GPIO_CAUSE_OR_EVTEN0_MASK(gpio_bit)		BIT(gpio_bit)
-#define YU_GPIO_CAUSE_RISE_EN_MASK(gpio_bit)		BIT(gpio_bit)
-#define YU_GPIO_CAUSE_FALL_EN_MASK(gpio_bit)		BIT(gpio_bit)
-#define YU_GPIO_CAUSE_OR_CLRCAUSE_MASK(gpio_bit)	BIT(gpio_bit)
-#define YU_CAUSE_RSH_COALESCE0_GPIO_CAUSE_MASK	0x10
-#define YU_GPIO_CAUSE_IRQ_IS_SET(val) \
-	(val & YU_CAUSE_RSH_COALESCE0_GPIO_CAUSE_MASK)
 
 #ifdef CONFIG_PM
 struct mlxbf2_gpio_context_save_regs {
@@ -77,28 +80,28 @@ struct mlxbf2_gpio_context_save_regs {
 };
 #endif
 
-#define RST_GPIO_PIN 7
-#define LOW_PWR_GPIO_PIN 71
-#define MAX_HOST_GPIOS LOW_PWR_GPIO_PIN
-
 /* BlueField-2 gpio block context structure. */
 struct mlxbf2_gpio_context {
 	struct gpio_chip gc;
+	struct irq_chip irq_chip;
 
 	/* YU GPIO blocks address */
 	void __iomem *gpio_io;
 
-	/* GPIO pin responsible for low power mode */
+	/* YU cause gpio arm coalesce0 address */
+	void __iomem *cause_gpio_arm_coalesce0_io;
+
+	/* YU GPIO pin responsible for low power mode */
 	unsigned long low_pwr_pin;
 
-	/* GPIO pin responsible for soft reset */
+	/* YU GPIO pin responsible for soft reset */
 	unsigned long rst_pin;
 
-	/*
-	 * Bit within the YU GPIO block that's conifgued
-	 * as an interrupt.
-	 */
-	u32 gpio_int_bit;
+	/* YU GPIO pin connected to PHY INT_N signal */
+	unsigned long phy_int_pin;
+
+	/* YU GPIO block interrupt mask */
+	u32 gpio_int_mask;
 
 	/* Worker function */
 	struct work_struct send_work;
@@ -128,6 +131,19 @@ static struct mlxbf2_gpio_param yu_arm_gpio_lock_param = {
 	.lock = &yu_arm_gpio_lock_mutex,
 };
 
+static struct resource yu_cause_gpio_res = {
+	.start = YU_CAUSE_GPIO_ADDR,
+	.end   = YU_CAUSE_GPIO_ADDR + YU_CAUSE_GPIO_ADDR_SIZE - 1,
+	.name  = "YU_CAUSE_GPIO",
+};
+
+static DEFINE_MUTEX(yu_cause_gpio_mutex);
+
+static struct mlxbf2_gpio_param yu_cause_gpio_param = {
+	.res = &yu_cause_gpio_res,
+	.lock = &yu_cause_gpio_mutex,
+};
+
 /* Request memory region and map yu_arm_gpio_lock resource */
 static int mlxbf2_gpio_get_lock_res(struct platform_device *pdev)
 {
@@ -151,11 +167,43 @@ static int mlxbf2_gpio_get_lock_res(struct platform_device *pdev)
 	}
 
 	yu_arm_gpio_lock_param.io = devm_ioremap(dev, res->start, size);
-	if (IS_ERR(yu_arm_gpio_lock_param.io))
-		ret = PTR_ERR(yu_arm_gpio_lock_param.io);
+	if (!yu_arm_gpio_lock_param.io)
+		ret = -ENOMEM;
 
 exit:
 	mutex_unlock(yu_arm_gpio_lock_param.lock);
+
+	return ret;
+}
+
+/* Request memory region and map yu cause_gpio_arm.coalesce0 resource */
+static int mlxbf2_gpio_get_yu_cause_gpio_res(struct platform_device *pdev)
+{
+	struct device *dev = &pdev->dev;
+	struct resource *res;
+	resource_size_t size;
+	int ret = 0;
+
+	mutex_lock(yu_cause_gpio_param.lock);
+
+	/* Check if the memory map already exists */
+	if (yu_cause_gpio_param.io)
+		goto exit;
+
+	res = yu_cause_gpio_param.res;
+	size = resource_size(res);
+
+	if (!devm_request_mem_region(dev, res->start, size, res->name)) {
+		ret = -EFAULT;
+		goto exit;
+	}
+
+	yu_cause_gpio_param.io = devm_ioremap(dev, res->start, size);
+	if (!yu_cause_gpio_param.io)
+		ret = -ENOMEM;
+
+exit:
+	mutex_unlock(yu_cause_gpio_param.lock);
 
 	return ret;
 }
@@ -191,6 +239,8 @@ static int mlxbf2_gpio_lock_acquire(struct mlxbf2_gpio_context *gs)
  * Release the YU arm_gpio_lock after changing the direction mode.
  */
 static void mlxbf2_gpio_lock_release(struct mlxbf2_gpio_context *gs)
+	__releases(&gs->gc.bgpio_lock)
+	__releases(yu_arm_gpio_lock_param.lock)
 {
 	writel(YU_ARM_GPIO_LOCK_RELEASE, yu_arm_gpio_lock_param.io);
 	spin_unlock(&gs->gc.bgpio_lock);
@@ -247,6 +297,7 @@ static int mlxbf2_gpio_direction_output(struct gpio_chip *chip,
 {
 	struct mlxbf2_gpio_context *gs = gpiochip_get_data(chip);
 	int ret = 0;
+	u32 val;
 
 	/*
 	 * Although the arm_gpio_lock was set in the probe function,
@@ -260,99 +311,88 @@ static int mlxbf2_gpio_direction_output(struct gpio_chip *chip,
 	writel(BIT(offset), gs->gpio_io + YU_GPIO_MODE1_CLEAR);
 	writel(BIT(offset), gs->gpio_io + YU_GPIO_MODE0_SET);
 
+	/*
+	 * Set {functional_enable1,functional_enable0}={0,0}
+	 * to give control to software over these GPIOs.
+	 */
+	val = readl(gs->gpio_io + YU_GPIO_FUNCTIONAL_ENABLE1);
+	val &= ~BIT(offset);
+	writel(val, gs->gpio_io + YU_GPIO_FUNCTIONAL_ENABLE1);
+	val = readl(gs->gpio_io + YU_GPIO_FUNCTIONAL_ENABLE0);
+	val &= ~BIT(offset);
+	writel(val, gs->gpio_io + YU_GPIO_FUNCTIONAL_ENABLE0);
+
 	mlxbf2_gpio_lock_release(gs);
 
 	return ret;
 }
 
-static void mlxbf2_gpio_irq_disable(struct mlxbf2_gpio_context *gs)
-{
-	u32 val;
-
-	spin_lock(&gs->gc.bgpio_lock);
-	val = readl(gs->gpio_io + YU_GPIO_CAUSE_OR_EVTEN0);
-	if (!val) {
-		spin_unlock(&gs->gc.bgpio_lock);
-		/* There is no enabled interrupt */
-		return;
-	}
-
-	val &= ~YU_GPIO_CAUSE_OR_EVTEN0_MASK(gs->gpio_int_bit);
-	writel(val, gs->gpio_io + YU_GPIO_CAUSE_OR_EVTEN0);
-	spin_unlock(&gs->gc.bgpio_lock);
-}
-
-static void mlxbf2_gpio_irq_set_type(struct mlxbf2_gpio_context *gs)
-{
-	u32 val;
-
-	spin_lock(&gs->gc.bgpio_lock);
-
-	/*
-	 * The power state gpio interrupt should be detected at rising
-	 * and falling edges.
-	 *
-	 * In the case of low power mode interrupt:
-	 * When it goes from 0 to 1, system should go into low power state
-	 * When it goes from 1 to 0, system should revert to normal state
-	 *
-	 * In the case of soft reset interrupt, trigger interrupt off
-	 * falling edge since it is active low.
-	 */
-	if (gs->low_pwr_pin == LOW_PWR_GPIO_PIN) {
-		val = readl(gs->gpio_io + YU_GPIO_CAUSE_RISE_EN);
-		val |= YU_GPIO_CAUSE_RISE_EN_MASK(gs->gpio_int_bit);
-		writel(val, gs->gpio_io + YU_GPIO_CAUSE_RISE_EN);
-	}
-
-	val = readl(gs->gpio_io + YU_GPIO_CAUSE_FALL_EN);
-	val |= YU_GPIO_CAUSE_FALL_EN_MASK(gs->gpio_int_bit);
-	writel(val, gs->gpio_io + YU_GPIO_CAUSE_FALL_EN);
-
-	spin_unlock(&gs->gc.bgpio_lock);
-}
-
-static void mlxbf2_gpio_irq_enable(struct mlxbf2_gpio_context *gs)
-{
-	u32 val;
-
-	spin_lock(&gs->gc.bgpio_lock);
-
-	/*
-	 * Setting the priority for the GPIO interrupt enables the
-	 * interrupt as well
-	 */
-	val = readl(gs->gpio_io + YU_GPIO_CAUSE_OR_EVTEN0);
-	val |= YU_GPIO_CAUSE_OR_EVTEN0_MASK(gs->gpio_int_bit);
-	writel(val, gs->gpio_io + YU_GPIO_CAUSE_OR_EVTEN0);
-
-	spin_unlock(&gs->gc.bgpio_lock);
-}
-
 static void mlxbf2_gpio_send_work(struct work_struct *work)
 {
-	struct mlxbf2_gpio_context *gs;
+#ifdef  CONFIG_ACPI
+	acpi_bus_generate_netlink_event("button/power.*", "Power Button",
+					0x80, 1);
+#endif
+}
 
-	gs = container_of(work, struct mlxbf2_gpio_context, send_work);
+static u32 mlxbf2_gpio_get_int_mask(struct mlxbf2_gpio_context *gs)
+{
+	u32 gpio_int_mask = 0;
 
-	acpi_bus_generate_netlink_event("button/power.*", "Power Button", 0x80, 1);
+	/*
+	 * Determine bit mask within the yu gpio block.
+	 */
+	if (gs->phy_int_pin != MLXBF2_GPIO_MAX_PINS_PER_BLOCK)
+		gpio_int_mask = BIT(gs->phy_int_pin);
+	if (gs->rst_pin != MLXBF2_GPIO_MAX_PINS_PER_BLOCK)
+		gpio_int_mask |= BIT(gs->rst_pin);
+	if (gs->low_pwr_pin != MLXBF2_GPIO_MAX_PINS_PER_BLOCK)
+		gpio_int_mask = BIT(gs->low_pwr_pin);
+
+	return gpio_int_mask;
+}
+
+static bool mlxbf2_gpio_is_acpi_event(u32 gpio_block, unsigned long gpio_pin,
+			  struct mlxbf2_gpio_context *gs)
+{
+	if (gpio_block & BIT(GPIO_BLOCK0)) {
+		if (gpio_pin & BIT(gs->rst_pin))
+			return true;
+	}
+	if (gpio_block & BIT(GPIO_BLOCK16)) {
+		if (gpio_pin & BIT(gs->low_pwr_pin))
+			return true;
+	}
+
+	return false;
 }
 
 static irqreturn_t mlxbf2_gpio_irq_handler(int irq, void *ptr)
 {
 	struct mlxbf2_gpio_context *gs = ptr;
+	unsigned long gpio_pin;
+	u32 gpio_block, val;
 	unsigned long flags;
-	u32 val;
 
 	spin_lock_irqsave(&gs->gc.bgpio_lock, flags);
 
 	/*
-	 * Check if this interrupt is for bit 0 of yu.gpio[16]
-	 * or bit 7 of yu.gpio[0].
-	 * Return if it is not.
+	 * Determine which yu gpio block this interrupt is for.
+	 * Return if the interrupt is not for gpio block 0 or
+	 * gpio block 16.
 	 */
-	val = readl(gs->gpio_io + YU_GPIO_CAUSE_OR_CAUSE_EVTEN0);
-	if (!(val & YU_GPIO_CAUSE_OR_CAUSE_EVTEN0_MASK(gs->gpio_int_bit))) {
+	gpio_block = readl(yu_cause_gpio_param.io);
+	if (!(gpio_block & BIT(GPIO_BLOCK0)) &&
+	    !(gpio_block & BIT(GPIO_BLOCK16))) {
+		spin_unlock_irqrestore(&gs->gc.bgpio_lock, flags);
+		return IRQ_NONE;
+	}
+
+	/*
+	 * Check if the interrupt signaled by this yu gpio block is supported.
+	 */
+	gpio_pin = readl(gs->gpio_io + YU_GPIO_CAUSE_OR_CAUSE_EVTEN0);
+	if (!(gpio_pin & gs->gpio_int_mask)) {
 		spin_unlock_irqrestore(&gs->gc.bgpio_lock, flags);
 		return IRQ_NONE;
 	}
@@ -362,13 +402,83 @@ static irqreturn_t mlxbf2_gpio_irq_handler(int irq, void *ptr)
 	 * will be triggered.
 	 */
 	val = readl(gs->gpio_io + YU_GPIO_CAUSE_OR_CLRCAUSE);
-	val |= YU_GPIO_CAUSE_OR_CLRCAUSE_MASK(gs->gpio_int_bit);
+	val |= gpio_pin;
 	writel(val, gs->gpio_io + YU_GPIO_CAUSE_OR_CLRCAUSE);
+
+	if ((gpio_block & BIT(GPIO_BLOCK0)) && (gpio_pin & BIT(gs->phy_int_pin)))
+		generic_handle_irq(irq_find_mapping(gs->gc.irq.domain, gs->phy_int_pin));
+
 	spin_unlock_irqrestore(&gs->gc.bgpio_lock, flags);
 
-	schedule_work(&gs->send_work);
+	if (mlxbf2_gpio_is_acpi_event(gpio_block, gpio_pin, gs))
+		schedule_work(&gs->send_work);
 
 	return IRQ_HANDLED;
+}
+
+static void mlxbf2_gpio_irq_unmask(struct irq_data *data)
+{
+}
+
+static void mlxbf2_gpio_irq_mask(struct irq_data *data)
+{
+}
+
+static int mlxbf2_gpio_init_hw(struct gpio_chip *gc)
+{
+	struct mlxbf2_gpio_context *gs = gpiochip_get_data(gc);
+	unsigned long flags;
+	u32 val;
+
+	spin_lock_irqsave(&gs->gc.bgpio_lock, flags);
+
+	/* Clear all interrupts */
+	val = readl(gs->gpio_io + YU_GPIO_CAUSE_OR_CLRCAUSE);
+	val |= gs->gpio_int_mask;
+	writel(val, gs->gpio_io + YU_GPIO_CAUSE_OR_CLRCAUSE);
+
+	if (gs->low_pwr_pin != MLXBF2_GPIO_MAX_PINS_PER_BLOCK) {
+		val = readl(gs->gpio_io + YU_GPIO_CAUSE_RISE_EN);
+		val |= gs->gpio_int_mask;
+		writel(val, gs->gpio_io + YU_GPIO_CAUSE_RISE_EN);
+	}
+
+	val = readl(gs->gpio_io + YU_GPIO_CAUSE_FALL_EN);
+	val |= gs->gpio_int_mask;
+	writel(val, gs->gpio_io + YU_GPIO_CAUSE_FALL_EN);
+
+	/*
+	 * Setting the priority for the GPIO interrupt enables the
+	 * interrupt as well
+	 */
+	val = readl(gs->gpio_io + YU_GPIO_CAUSE_OR_EVTEN0);
+	val |= gs->gpio_int_mask;
+	writel(val, gs->gpio_io + YU_GPIO_CAUSE_OR_EVTEN0);
+
+	spin_unlock_irqrestore(&gs->gc.bgpio_lock, flags);
+
+	return 0;
+}
+
+static void mlxbf2_gpio_disable_int(struct mlxbf2_gpio_context *gs)
+{
+	unsigned long flags;
+	u32 val;
+
+	spin_lock_irqsave(&gs->gc.bgpio_lock, flags);
+	val = readl(gs->gpio_io + YU_GPIO_CAUSE_OR_EVTEN0);
+	val &= ~gs->gpio_int_mask;
+	writel(val, gs->gpio_io + YU_GPIO_CAUSE_OR_EVTEN0);
+	spin_unlock_irqrestore(&gs->gc.bgpio_lock, flags);
+}
+
+static int mlxbf2_gpio_to_irq(struct gpio_chip *chip, unsigned gpio)
+{
+	struct mlxbf2_gpio_context *gs;
+
+	gs = gpiochip_get_data(chip);
+
+	return irq_create_mapping(gs->gc.irq.domain, gpio);
 }
 
 /* BlueField-2 GPIO driver initialization routine. */
@@ -377,12 +487,17 @@ mlxbf2_gpio_probe(struct platform_device *pdev)
 {
 	struct mlxbf2_gpio_context *gs;
 	struct device *dev = &pdev->dev;
+	struct gpio_irq_chip *girq;
 	unsigned int low_pwr_pin;
+	unsigned int phy_int_pin;
 	unsigned int rst_pin;
 	struct gpio_chip *gc;
 	struct resource *res;
 	unsigned int npins;
+	const char *name;
 	int ret, irq;
+
+	name = dev_name(dev);
 
 	gs = devm_kzalloc(dev, sizeof(*gs), GFP_KERNEL);
 	if (!gs)
@@ -406,6 +521,12 @@ mlxbf2_gpio_probe(struct platform_device *pdev)
 		return ret;
 	}
 
+	ret = mlxbf2_gpio_get_yu_cause_gpio_res(pdev);
+	if (ret) {
+		dev_err(dev, "Failed to get yu cause_gpio_arm.coalesce0 resource\n");
+		return ret;
+	}
+
 	if (device_property_read_u32(dev, "npins", &npins))
 		npins = MLXBF2_GPIO_MAX_PINS_PER_BLOCK;
 
@@ -419,10 +540,66 @@ mlxbf2_gpio_probe(struct platform_device *pdev)
 			NULL,
 			0);
 
+	if (ret) {
+		dev_err(dev, "bgpio_init failed\n");
+		return ret;
+	}
+
 	gc->direction_input = mlxbf2_gpio_direction_input;
 	gc->direction_output = mlxbf2_gpio_direction_output;
 	gc->ngpio = npins;
 	gc->owner = THIS_MODULE;
+	gc->to_irq = mlxbf2_gpio_to_irq;
+
+	/*
+	 * PHY interrupt
+	 */
+	ret = device_property_read_u32(dev, "phy-int-pin", &phy_int_pin);
+	if (ret < 0)
+		phy_int_pin = MLXBF2_GPIO_MAX_PINS_PER_BLOCK;
+
+	/*
+	 * OCP3.0 supports the low power mode interrupt.
+	 */
+	ret = device_property_read_u32(dev, "low-pwr-pin", &low_pwr_pin);
+	if (ret < 0)
+		low_pwr_pin = MLXBF2_GPIO_MAX_PINS_PER_BLOCK;
+
+	/*
+	 * BlueSphere and the PRIS boards support the reset interrupt.
+	 */
+	ret = device_property_read_u32(dev, "rst-pin", &rst_pin);
+	if (ret < 0)
+		rst_pin = MLXBF2_GPIO_MAX_PINS_PER_BLOCK;
+
+	gs->phy_int_pin = phy_int_pin;
+	gs->low_pwr_pin = low_pwr_pin;
+	gs->rst_pin = rst_pin;
+	gs->gpio_int_mask = mlxbf2_gpio_get_int_mask(gs);
+
+	if (gs->gpio_int_mask) {
+		gs->irq_chip.name = name;
+		gs->irq_chip.irq_mask = mlxbf2_gpio_irq_mask;
+		gs->irq_chip.irq_unmask = mlxbf2_gpio_irq_unmask;
+
+		girq = &gs->gc.irq;
+		girq->chip = &gs->irq_chip;
+		/* This will let us handle the parent IRQ in the driver */
+		girq->parent_handler = NULL;
+		girq->num_parents = 0;
+		girq->parents = NULL;
+		girq->default_type = IRQ_TYPE_NONE;
+		girq->handler = handle_simple_irq;
+		girq->init_hw = mlxbf2_gpio_init_hw;
+
+		irq = platform_get_irq(pdev, 0);
+		ret = devm_request_irq(dev, irq, mlxbf2_gpio_irq_handler,
+				       IRQF_ONESHOT | IRQF_SHARED, name, gs);
+		if (ret) {
+			dev_err(dev, "failed to request IRQ");
+			return ret;
+		}
+	}
 
 	ret = devm_gpiochip_add_data(dev, &gs->gc, gs);
 	if (ret) {
@@ -431,41 +608,11 @@ mlxbf2_gpio_probe(struct platform_device *pdev)
 	}
 	platform_set_drvdata(pdev, gs);
 
-	/*
-	 * OCP3.0 supports the AUX power mode interrupt on bit 0 of yu.gpio[16].
-	 * BlueSphere and the PRIS boards support the rebooot interrupt on bit
-	 * 7 of yu.gpio[0].
-	 */
-	ret = device_property_read_u32(dev, "low-pwr-pin", &low_pwr_pin);
-	if (ret < 0)
-		low_pwr_pin = MAX_HOST_GPIOS + 1;
-
-	ret = device_property_read_u32(dev, "rst-pin", &rst_pin);
-	if (ret < 0)
-		rst_pin = MAX_HOST_GPIOS + 1;
-
-	gs->low_pwr_pin = low_pwr_pin;
-	gs->rst_pin = rst_pin;
-
-	if ((low_pwr_pin == LOW_PWR_GPIO_PIN) || (rst_pin == RST_GPIO_PIN)) {
-		if (rst_pin == RST_GPIO_PIN)
-			gs->gpio_int_bit = YU_GPIO0_RST_BIT;
-		else
-			gs->gpio_int_bit = YU_GPIO16_LOW_PWR_BIT;
-
-		irq = platform_get_irq(pdev, 0);
-		/*
-		 * For now, no need to check if interrupt was previously allocated
-		 * by another gpio block.
-		 */
-		ret = devm_request_irq(dev, irq, mlxbf2_gpio_irq_handler,
-			IRQF_ONESHOT | IRQF_SHARED | IRQF_PROBE_SHARED, dev_name(dev), gs);
-		if (ret) {
-			dev_err(dev, "IRQ handler registering failed (%d)\n", ret);
-			return ret;
-		}
-		mlxbf2_gpio_irq_set_type(gs);
-		mlxbf2_gpio_irq_enable(gs);
+	if (phy_int_pin != MLXBF2_GPIO_MAX_PINS_PER_BLOCK) {
+		/* Create phy irq mapping */
+		mlxbf2_gpio_to_irq(&gs->gc, phy_int_pin);
+		/* Enable sharing the irq domain with the PHY driver */
+		irq_set_default_host(gs->gc.irq.domain);
 	}
 
 	return 0;
@@ -477,8 +624,15 @@ mlxbf2_gpio_remove(struct platform_device *pdev)
 	struct mlxbf2_gpio_context *gs;
 
 	gs = platform_get_drvdata(pdev);
-	if ((gs->low_pwr_pin == LOW_PWR_GPIO_PIN) || (gs->rst_pin == RST_GPIO_PIN)) {
-		mlxbf2_gpio_irq_disable(gs);
+
+	if ((gs->phy_int_pin != MLXBF2_GPIO_MAX_PINS_PER_BLOCK) ||
+	    (gs->low_pwr_pin != MLXBF2_GPIO_MAX_PINS_PER_BLOCK) ||
+	    (gs->rst_pin != MLXBF2_GPIO_MAX_PINS_PER_BLOCK)) {
+		mlxbf2_gpio_disable_int(gs);
+	}
+
+	if ((gs->low_pwr_pin != MLXBF2_GPIO_MAX_PINS_PER_BLOCK) ||
+	    (gs->rst_pin != MLXBF2_GPIO_MAX_PINS_PER_BLOCK)) {
 		flush_work(&gs->send_work);
 	}
 
@@ -512,7 +666,7 @@ static int mlxbf2_gpio_resume(struct platform_device *pdev)
 }
 #endif
 
-static const struct acpi_device_id mlxbf2_gpio_acpi_match[] = {
+static const struct acpi_device_id __maybe_unused mlxbf2_gpio_acpi_match[] = {
 	{ "MLNXBF22", 0 },
 	{},
 };
@@ -534,5 +688,6 @@ static struct platform_driver mlxbf2_gpio_driver = {
 module_platform_driver(mlxbf2_gpio_driver);
 
 MODULE_DESCRIPTION("Mellanox BlueField-2 GPIO Driver");
-MODULE_AUTHOR("Mellanox Technologies");
+MODULE_AUTHOR("Asmaa Mnebhi <asmaa@nvidia.com>");
 MODULE_LICENSE("Dual BSD/GPL");
+MODULE_VERSION(DRV_VERSION);
