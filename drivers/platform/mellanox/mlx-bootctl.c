@@ -510,9 +510,9 @@ static ssize_t rsh_log_store(struct device_driver *drv, const char *buf,
 	/* Calculate how many words are available. */
 	num = (size + sizeof(u64) - 1) / sizeof(u64);
 	idx = readq(rsh_scratch_buf_ctl);
-	if (idx + num >= RSH_SCRATCH_BUF_CTL_IDX_MAX)
-		num = RSH_SCRATCH_BUF_CTL_IDX_MAX - idx;
-	if (!num)
+	if (idx + num + 1 >= RSH_SCRATCH_BUF_CTL_IDX_MAX)
+		num = RSH_SCRATCH_BUF_CTL_IDX_MAX - idx - 1;
+	if (num <= 0)
 		goto done;
 
 	/* Write Header. */
