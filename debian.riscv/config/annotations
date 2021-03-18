@@ -4730,7 +4730,6 @@ CONFIG_PCI_EPF_TEST                             policy<{'riscv64': 'n'}>
 # Menu: Device Drivers >> PCI support >> PCI Express Port Bus support
 CONFIG_PCIEPORTBUS                              policy<{'riscv64': 'y'}>
 CONFIG_HOTPLUG_PCI_PCIE                         policy<{'riscv64': 'y'}>
-CONFIG_PCIE_BW                                  policy<{'riscv64': 'n'}>
 #
 CONFIG_PCIEPORTBUS                              mark<ENFORCED> note<LP#1665404>
 CONFIG_HOTPLUG_PCI_PCIE                         mark<ENFORCED> note<LP#1374440>
@@ -5252,8 +5251,6 @@ CONFIG_TCM_QLA2XXX                              policy<{'riscv64': 'm'}>
 CONFIG_TCM_QLA2XXX_DEBUG                        policy<{'riscv64': 'n'}>
 CONFIG_SCSI_QLA_ISCSI                           policy<{'riscv64': 'm'}>
 CONFIG_QEDI                                     policy<{'riscv64': 'm'}>
-CONFIG_SCSI_LPFC                                policy<{'riscv64': 'm'}>
-CONFIG_SCSI_LPFC_DEBUG_FS                       policy<{'riscv64': 'n'}>
 CONFIG_SCSI_DC395x                              policy<{'riscv64': 'm'}>
 CONFIG_SCSI_AM53C974                            policy<{'riscv64': 'm'}>
 CONFIG_SCSI_WD719X                              policy<{'riscv64': 'm'}>
@@ -7582,8 +7579,6 @@ CONFIG_RCU_EXPERT                               flag<REVIEW>
 
 # Menu: General setup >> Scheduler features
 #
-CONFIG_UCLAMP_TASK                              policy<{'riscv64': 'n'}>
-CONFIG_UCLAMP_TASK                              flag<REVIEW>
 
 # Menu: General setup >> Timers subsystem
 CONFIG_NO_HZ                                    policy<{'riscv64': 'y'}>
