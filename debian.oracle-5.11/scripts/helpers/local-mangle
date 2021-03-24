@@ -22,6 +22,15 @@ fi
 # Disable DEBUG_INFO_BTF (pahole version is too old in focal)
 sed -i "/CONFIG_DEBUG_INFO_BTF/d" ${DEBIAN}/config/annotations
 sed -i 's/CONFIG_DEBUG_INFO_BTF=y/# CONFIG_DEBUG_INFO_BTF is not set/' ${DEBIAN}/config/amd64/config.common.amd64
+# The base (groovy:linux-oracle) might not have above annotation at all
+if ! `grep -qF 'CONFIG_DEBUG_INFO_BTF ' ${DEBIAN}/config/annotations` ; then
+       cat <<EOD >>${DEBIAN}/config/annotations
+
+# Menu: Kernel hacking >> Compile-time checks and compiler options >> Compile the kernel with debug info
+CONFIG_DEBUG_INFO_BTF                           policy<{'amd64': 'n', 'arm64': 'n', 'armhf': 'n', 'ppc64el': 'n', 's390x': 'n'}>
+CONFIG_DEBUG_INFO_BTF                           flag<REVIEW> note<Might be useful for bpf, reuquires pahole to build>
+EOD
+fi
 
 # Enable DEBUG_INFO_SPLIT (required to save disk space during build)
 sed -i "s/CONFIG_DEBUG_INFO_SPLIT                         policy<{'amd64': 'n', 'arm64': 'n', 'armhf': 'n', 'ppc64el': 'n', 's390x': 'n'}>/CONFIG_DEBUG_INFO_SPLIT                           policy<{'amd64': 'y', 'arm64': 'y', 'armhf': 'y', 'ppc64el': 'y', 's390x': 'y'}>/" ${DEBIAN}/config/annotations
