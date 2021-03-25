@@ -6645,7 +6645,7 @@ CONFIG_USB_MV_U3D                               policy<{'riscv64': 'm'}>
 CONFIG_USB_SNP_UDC_PLAT                         policy<{'riscv64': 'm'}>
 CONFIG_USB_M66592                               policy<{'riscv64': 'n'}>
 CONFIG_USB_BDC_UDC                              policy<{'riscv64': 'm'}>
-CONFIG_USB_BDC_PCI                              policy<{'riscv64': 'm'}>
+CONFIG_USB_BDC_PCI                              policy<{'riscv64': '-'}>
 CONFIG_USB_AMD5536UDC                           policy<{'riscv64': 'm'}>
 CONFIG_USB_NET2272                              policy<{'riscv64': 'm'}>
 CONFIG_USB_NET2272_DMA                          policy<{'riscv64': 'y'}>
@@ -7665,8 +7665,9 @@ CONFIG_RCU_EXPERT                               flag<REVIEW>
 
 # Menu: General setup >> Scheduler features
 #
-CONFIG_UCLAMP_TASK                              policy<{'riscv64': 'n'}>
+CONFIG_UCLAMP_TASK                              policy<{'riscv64': '-'}>
 CONFIG_UCLAMP_TASK                              flag<REVIEW>
+CONFIG_UCLAMP_TASK                              <LP:1917433> mark<ENFORCED>
 
 # Menu: General setup >> Timers subsystem
 CONFIG_NO_HZ                                    policy<{'riscv64': 'y'}>
