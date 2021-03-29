@@ -4,6 +4,8 @@
 
 include "../../debian.master/config/annotations"
 
+CONFIG_DRM_BOCHS                                  policy<{'amd64': 'n'}>
+CONFIG_DRM_BOCHS                                  note<Unnecessary for oracle>
 CONFIG_FAILOVER                                   policy<{'amd64': 'm'}>
 CONFIG_FAILOVER                                   mark<ENFORCED> note<OCI requirement>
 CONFIG_MODVERSIONS                                policy<{'amd64': 'y'}>
