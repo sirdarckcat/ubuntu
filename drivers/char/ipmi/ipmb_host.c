@@ -3,7 +3,7 @@
 /*
  * Copyright 2020, NVIDIA Corporation. All rights reserved.
  *
- * This was inspired by Brendan Higgins' bt-i2c driver. 
+ * This was inspired by Brendan Higgins' bt-i2c driver.
  *
  */
 
@@ -23,6 +23,8 @@
 #include <linux/types.h>
 
 #define	IPMB_TIMEOUT			(msecs_to_jiffies(20000))
+
+static bool handshake_rsp = false;
 
 /*
  * The least we expect in an IPMB message is:
@@ -44,7 +46,7 @@
 #define	IPMB_MAX_SMI_SIZE		125
 #define	IPMB_SMI_MSG_HEADER_SIZE	2
 
-#define	IPMB_SEQ_MAX			1024
+#define	IPMB_SEQ_MAX			64
 
 #define	MAX_BUF_SIZE			122
 
@@ -132,6 +134,8 @@ struct ipmb_master {
 	struct list_head		rsp_queue;
 	atomic_t			rsp_queue_len;
 	wait_queue_head_t		wait_queue;
+
+	bool				slave_registered;
 };
 
 /* +1 is for the checksum integrated in payload */
@@ -206,25 +210,20 @@ static int ipmb_handle_response(struct ipmb_master *master)
  * i2c_master_send
  */
 static int ipmb_send_request(struct ipmb_master *master,
-				struct request *request)
+				struct request *request, u8 i2c_msg_len)
 {
 	struct i2c_client *client = master->client;
 	unsigned long timeout, read_time;
 	u8 *buf = (u8 *) request;
 	int ret;
-	int msg_len;
 	union i2c_smbus_data data;
 
 	/*
-	 * subtract netfn_rs_lun payload since it is passed as arg
+	 * skip netfn_rs_lun payload since it is passed as arg
 	 * 5 to i2c_smbus_xfer.
 	 */
-	msg_len = ipmi_smi_to_ipmb_len(master->msg_to_send->data_size) - 1;
-	if (msg_len > I2C_SMBUS_BLOCK_MAX)
-		msg_len = I2C_SMBUS_BLOCK_MAX;
-
-	data.block[0] = msg_len;
-	memcpy(&data.block[1], buf + 1, msg_len);
+	data.block[0] = i2c_msg_len;
+	memcpy(&data.block[1], buf + 1, i2c_msg_len);
 
 	timeout = jiffies + msecs_to_jiffies(WRITE_TIMEOUT);
 	do {
@@ -387,11 +386,12 @@ static int ipmb_receive_rsp(struct ipmb_master *master,
 {
 	struct ipmb_rsp_elem	*queue_elem;
 	int			ret = 1;
+	unsigned long		flags;
 
-	spin_lock_irq(&master->lock);
+	spin_lock_irqsave(&master->lock, flags);
 
 	if (list_empty(&master->rsp_queue)) {
-		spin_unlock_irq(&master->lock);
+		spin_unlock_irqrestore(&master->lock, flags);
 
 		ret = wait_event_interruptible_timeout(master->wait_queue,
 			!list_empty(&master->rsp_queue), IPMB_TIMEOUT);
@@ -399,16 +399,17 @@ static int ipmb_receive_rsp(struct ipmb_master *master,
 		if (ret <= 0)
 			return ret;
 
-		spin_lock_irq(&master->lock);
+		spin_lock_irqsave(&master->lock, flags);
 	}
 
 	queue_elem = list_first_entry(&master->rsp_queue,
 			struct ipmb_rsp_elem, list);
+
 	memcpy(ipmb_rsp, &queue_elem->rsp, sizeof(struct response));
 	list_del(&queue_elem->list);
 	kfree(queue_elem);
 	atomic_dec(&master->rsp_queue_len);
-	spin_unlock_irq(&master->lock);
+	spin_unlock_irqrestore(&master->lock, flags);
 
 	return ret;
 }
@@ -438,6 +439,8 @@ static void ipmb_send_workfn(struct work_struct *work)
 	int				rsp_msg_len;
 	u8 				*buf_rsp;
 	u8 				verify_checksum;
+	u8				seq;
+	u8				i2c_msg_len;
 
 	u8 *buf = (u8 *) &ipmb_req_msg;
 
@@ -460,10 +463,12 @@ static void ipmb_send_workfn(struct work_struct *work)
 		return;
 	}
 
-	if (!ipmb_assign_seq(master, req_msg, &ipmb_req_msg.rq_seq_rq_lun)) {
+	if (!ipmb_assign_seq(master, req_msg, &seq)) {
 		ipmb_error_reply(master, req_msg, IPMI_NODE_BUSY_ERR);
 		return;
 	}
+
+	ipmb_req_msg.rq_seq_rq_lun = seq << 2;
 
 	msg_len = ipmi_smi_to_ipmb_len(smi_msg_size);
 
@@ -481,7 +486,15 @@ static void ipmb_send_workfn(struct work_struct *work)
 	ipmb_req_msg.payload[ipmb_payload_len((size_t)msg_len)] =
 		ipmb_checksum(buf + 2, msg_len - 2, 0);
 
-	if (ipmb_send_request(master, &ipmb_req_msg) < 0) {
+	/*
+	 * subtract netfn_rs_lun payload since it is passed as arg
+	 * 5 to i2c_smbus_xfer.
+	 */
+	i2c_msg_len = ipmi_smi_to_ipmb_len(master->msg_to_send->data_size) - 1;
+	if (i2c_msg_len > I2C_SMBUS_BLOCK_MAX)
+		i2c_msg_len = I2C_SMBUS_BLOCK_MAX;
+
+	if (ipmb_send_request(master, &ipmb_req_msg, i2c_msg_len) < 0) {
 		ipmb_free_seq(master, (GET_SEQ(ipmb_req_msg.rq_seq_rq_lun)));
 		ipmb_error_reply(master, req_msg, IPMI_BUS_ERR);
 		spin_lock_irqsave(&master->lock, flags);
@@ -621,6 +634,11 @@ static int ipmb_slave_cb(struct i2c_client *client,
 	struct ipmb_master *master = i2c_get_clientdata(client);
 	u8 *buf;
 
+	if (!handshake_rsp) {
+		handshake_rsp = true;
+		return 0;
+	}
+
 	spin_lock(&master->lock);
 
 	switch (event) {
@@ -665,6 +683,56 @@ static unsigned short slave_add = 0x0;
 module_param(slave_add, ushort, 0);
 MODULE_PARM_DESC(slave_add, "The i2c slave address of the responding device");
 
+#define GET_DEVICE_ID_MSG_LEN 7
+
+static bool ipmb_detect(struct ipmb_master *master)
+{
+	struct ipmb_rsp_elem *q_elem, *tmp_q_elem;
+	struct request request;
+	u8 *buf = (u8 *) &request;
+	struct device dev;
+	int retry = 2000;
+	u8 i2c_msg_len;
+	int ret;
+
+	/* Subtract rs sa and netfn */
+	i2c_msg_len = GET_DEVICE_ID_MSG_LEN - 2;
+
+	dev = master->client->dev;
+
+	request.netfn_rs_lun = IPMI_NETFN_APP_REQUEST << 2;
+	request.checksum1 = ipmb_checksum1((u8)(master->rs_sa << 1),
+						request.netfn_rs_lun);
+	request.rq_sa = (u8)(master->client->addr << 1);
+	request.rq_seq_rq_lun = 0;
+	request.cmd = IPMI_GET_DEVICE_ID_CMD;
+	request.payload[0] = ipmb_checksum(buf + 2, 3, 0);
+
+	ret = ipmb_send_request(master, &request, i2c_msg_len);
+	if (ret < 0) {
+		dev_err(&dev, "ERROR: ipmb_send_request failed during ipmb detection\n");
+		return false;
+	}
+
+	while(!handshake_rsp && (retry > 0)) {
+		mdelay(10);
+		retry--;
+	}
+
+	if (!retry) {
+		dev_err(&dev, "ERROR: Response timed out during ipmb detection\n");
+		return false;
+	}
+
+	list_for_each_entry_safe(q_elem, tmp_q_elem, &master->rsp_queue, list){
+		list_del(&q_elem->list);
+		kfree(q_elem);
+		atomic_dec(&master->rsp_queue_len);
+	}
+
+	return true;
+}
+
 static int ipmb_probe(struct i2c_client *client,
 			const struct i2c_device_id *id)
 {
@@ -702,12 +770,30 @@ static int ipmb_probe(struct i2c_client *client,
 	if (ret)
 		return ret;
 
+	master->slave_registered = true;
+
+	/*
+	 * Send a simple message "get device ID" to detect whether the BMC is responsive or not.
+	 * This is necessary before calling ipmi_register_smi which executes a handshake with the
+	 * slave device and can hold the lock for a very long if the BMC is not up. This long wait
+	 * at boot time causes the system to crash.
+	 */
+	if (!ipmb_detect(master)) {
+		dev_err(&client->dev, "Unable to get response from slave device at this time\n");
+		i2c_slave_unregister(client);
+		master->slave_registered = false;
+		return -ENXIO;
+	}
+
 	ret = ipmi_register_smi(&ipmb_smi_handlers, master,
 				&client->dev,
 				(unsigned char)master->rs_sa);
 
-	if (ret)
+	if (ret) {
+		dev_err(&client->dev, "ipmi_register_smi failed with ret = %d\n", ret);
 		i2c_slave_unregister(client);
+		master->slave_registered = false;
+	}
 
 	return ret;
 }
@@ -717,8 +803,13 @@ static int ipmb_remove(struct i2c_client *client)
 	struct ipmb_master *master;
 
 	master = i2c_get_clientdata(client);
-	ipmi_unregister_smi(master->intf);
-	i2c_slave_unregister(client);
+	if (!master)
+		return 0;
+
+	if (master->slave_registered) {
+		ipmi_unregister_smi(master->intf);
+		i2c_slave_unregister(client);
+	}
 
 	return 0;
 }
