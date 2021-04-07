@@ -298,7 +298,7 @@ static void xlnx_unbind(struct device *dev)
 	struct xlnx_drm *xlnx_drm = dev_get_drvdata(dev);
 	struct drm_device *drm = xlnx_drm->drm;
 
-	drm_dev_unregister(drm);
+	drm_dev_unplug(drm);
 	component_unbind_all(&xlnx_drm->master->dev, drm);
 	if (xlnx_drm->fb) {
 		xlnx_fb_fini(xlnx_drm->fb);
