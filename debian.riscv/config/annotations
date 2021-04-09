@@ -315,7 +315,6 @@ CONFIG_NOZOMI                                   policy<{'riscv64': 'm'}>
 CONFIG_NULL_TTY                                 policy<{'riscv64': 'm'}>
 CONFIG_TRACE_ROUTER                             policy<{'riscv64': 'm'}>
 CONFIG_TRACE_SINK                               policy<{'riscv64': 'm'}>
-CONFIG_HVC_RISCV_SBI                            policy<{'riscv64': 'y'}>
 #
 CONFIG_N_GSM                                    note<LP#1404670>
 
@@ -331,7 +330,6 @@ CONFIG_ISI                                      policy<{'riscv64': 'm'}>
 CONFIG_N_HDLC                                   policy<{'riscv64': 'm'}>
 
 # Menu: Device Drivers >> Character devices >> Enable TTY >> Serial drivers
-CONFIG_SERIAL_EARLYCON_RISCV_SBI                policy<{'riscv64': 'y'}>
 CONFIG_SERIAL_KGDB_NMI                          policy<{'riscv64': 'y'}>
 CONFIG_SERIAL_MAX3100                           policy<{'riscv64': 'm'}>
 CONFIG_SERIAL_MAX310X                           policy<{'riscv64': 'y'}>
@@ -7598,7 +7596,7 @@ CONFIG_NO_HZ_IDLE                               note<LP:1413968>
 
 # Menu: Kernel features >> Architecture: riscv
 CONFIG_SECCOMP                                  policy<{'riscv64': 'y'}>
-CONFIG_RISCV_SBI_V01                            policy<{'riscv64': 'y'}>
+CONFIG_RISCV_SBI_V01                            policy<{'riscv64': 'n'}>
 #
 CONFIG_SECCOMP                                  mark<ENFORCED>
 
