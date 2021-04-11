@@ -15,6 +15,11 @@
 static struct workqueue_struct *nf_flow_offload_add_wq;
 static struct workqueue_struct *nf_flow_offload_del_wq;
 static struct workqueue_struct *nf_flow_offload_stats_wq;
+static atomic_t nf_flow_offload_wq_count;
+
+static uint max_offload_add = 10000;
+module_param(max_offload_add, uint, 0644);
+MODULE_PARM_DESC(max_offload_add, "Limit offload add wq entries");
 
 struct flow_offload_work {
 	struct list_head	list;
@@ -803,6 +808,7 @@ static void flow_offload_work_handler(struct work_struct *work)
 	switch (offload->cmd) {
 		case FLOW_CLS_REPLACE:
 			flow_offload_work_add(offload);
+			atomic_dec(&nf_flow_offload_wq_count);
 			break;
 		case FLOW_CLS_DESTROY:
 			flow_offload_work_del(offload);
@@ -820,12 +826,14 @@ static void flow_offload_work_handler(struct work_struct *work)
 
 static void flow_offload_queue_work(struct flow_offload_work *offload)
 {
-	if (offload->cmd == FLOW_CLS_REPLACE)
+	if (offload->cmd == FLOW_CLS_REPLACE) {
 		queue_work(nf_flow_offload_add_wq, &offload->work);
-	else if (offload->cmd == FLOW_CLS_DESTROY)
+		atomic_inc(&nf_flow_offload_wq_count);
+	} else if (offload->cmd == FLOW_CLS_DESTROY) {
 		queue_work(nf_flow_offload_del_wq, &offload->work);
-	else
+	} else {
 		queue_work(nf_flow_offload_stats_wq, &offload->work);
+	}
 }
 
 static struct flow_offload_work *
@@ -857,6 +865,9 @@ void nf_flow_offload_add(struct nf_flowtable *flowtable,
 			 struct flow_offload *flow)
 {
 	struct flow_offload_work *offload;
+
+	if (atomic_read(&nf_flow_offload_wq_count) >= max_offload_add)
+		return;
 
 	offload = nf_flow_offload_work_alloc(flowtable, flow, FLOW_CLS_REPLACE);
 	if (!offload)
@@ -1084,6 +1095,7 @@ int nf_flow_table_offload_init(void)
 	if (!nf_flow_offload_stats_wq)
 		goto err_stats_wq;
 
+	atomic_set(&nf_flow_offload_wq_count, 0);
 	flow_indr_add_block_cb(&block_ing_entry);
 
 	return 0;
