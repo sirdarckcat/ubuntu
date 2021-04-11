@@ -931,13 +931,14 @@ static int tcf_ct_act(struct sk_buff *skb, const struct tc_action *a,
 	tmpl = p->tmpl;
 
 	if (clear) {
+		qdisc_skb_cb(skb)->post_ct = false;
 		ct = nf_ct_get(skb, &ctinfo);
 		if (ct) {
 			nf_conntrack_put(&ct->ct_general);
 			nf_ct_set(skb, NULL, IP_CT_UNTRACKED);
 		}
 
-		goto out;
+		goto out_clear;
 	}
 
 	family = tcf_ct_skb_nf_family(skb);
@@ -1017,8 +1018,9 @@ out_push:
 	skb_push_rcsum(skb, nh_ofs);
 
 out:
-	tcf_action_update_bstats(&c->common, skb);
 	qdisc_skb_cb(skb)->post_ct = true;
+out_clear:
+	tcf_action_update_bstats(&c->common, skb);
 	return retval;
 
 drop:
