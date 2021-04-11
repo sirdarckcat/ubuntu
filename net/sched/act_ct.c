@@ -1018,6 +1018,7 @@ out_push:
 
 out:
 	tcf_action_update_bstats(&c->common, skb);
+	qdisc_skb_cb(skb)->post_ct = true;
 	return retval;
 
 drop:
