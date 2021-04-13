@@ -15,6 +15,7 @@
 
 struct device;
 struct clk;
+struct clk_request;
 struct device_node;
 struct of_phandle_args;
 
@@ -899,6 +900,26 @@ struct clk *clk_get_parent(struct clk *clk);
  * clk_get_sys should not be called from within interrupt context.
  */
 struct clk *clk_get_sys(const char *dev_id, const char *con_id);
+
+/**
+ * clk_save_context - save clock context for poweroff
+ *
+ * Saves the context of the clock register for powerstates in which the
+ * contents of the registers will be lost. Occurs deep within the suspend
+ * code so locking is not necessary.
+ */
+int clk_save_context(void);
+
+/**
+ * clk_restore_context - restore clock context after poweroff
+ *
+ * This occurs with all clocks enabled. Occurs deep within the resume code
+ * so locking is not necessary.
+ */
+void clk_restore_context(void);
+
+struct clk_request *clk_request_start(struct clk *clk, unsigned long rate);
+void clk_request_done(struct clk_request *req);
 
 #else /* !CONFIG_HAVE_CLK */
 
