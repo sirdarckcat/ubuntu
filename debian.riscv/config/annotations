@@ -2750,8 +2750,8 @@ CONFIG_MTD_NAND_DISKONCHIP_BBTWRITE             note<can be enabled at runtime>
 CONFIG_MTD_SPI_NOR                              policy<{'riscv64': 'm'}>
 CONFIG_MTD_SPI_NOR_USE_4K_SECTORS               policy<{'riscv64': 'y'}>
 #
-CONFIG_SPI_INTEL_SPI_PCI                        mark<ENFORCE> note<LP:1734147>
-CONFIG_SPI_INTEL_SPI_PLATFORM                   mark<ENFORCE> note<LP:1734147>
+CONFIG_SPI_INTEL_SPI_PCI                        mark<ENFORCED> note<LP:1734147>
+CONFIG_SPI_INTEL_SPI_PLATFORM                   mark<ENFORCED> note<LP:1734147>
 
 # Menu: Device Drivers >> Memory Technology Device (MTD) support >> Self-contained MTD device drivers
 CONFIG_MTD_PMC551                               policy<{'riscv64': 'm'}>
@@ -2770,7 +2770,7 @@ CONFIG_MTDRAM_ERASE_SIZE                        policy<{'riscv64': '128'}>
 CONFIG_MTD_BLOCK2MTD                            policy<{'riscv64': 'm'}>
 CONFIG_MTD_DOCG3                                policy<{'riscv64': 'n'}>
 #
-CONFIG_MTD_DOCG3                                mark<ENFORCE> note<LP:1792205>
+CONFIG_MTD_DOCG3                                mark<ENFORCED> note<LP:1792205>
 
 # Menu: Device Drivers >> Microsoft Hyper-V guest support
 
@@ -2957,7 +2957,7 @@ CONFIG_MFD_WCD934X                              policy<{'riscv64': 'm'}>
 CONFIG_RAVE_SP_CORE                             policy<{'riscv64': 'm'}>
 #
 CONFIG_MFD_SM501                                note<boot essential on OMAP4>
-CONFIG_MFD_TPS65217                             mark<ENFORCE> note<boot essential on AM335x>
+CONFIG_MFD_TPS65217                             mark<ENFORCED> note<boot essential on AM335x>
 
 # Menu: Device Drivers >> Multifunction device drivers >> Cirrus Logic Madera codecs
 CONFIG_MFD_MADERA                               policy<{'riscv64': 'm'}>
@@ -4328,7 +4328,7 @@ CONFIG_PPP_SYNC_TTY                             policy<{'riscv64': 'm'}>
 
 # Menu: Device Drivers >> Network device support >> S/390 network device drivers
 #
-CONFIG_ISM                                      mark<ENFORCE> note<LP:1789934>
+CONFIG_ISM                                      mark<ENFORCED> note<LP:1789934>
 
 # Menu: Device Drivers >> Network device support >> S/390 network device drivers >> Gigabit Ethernet device support
 
@@ -5208,8 +5208,8 @@ CONFIG_SCSI_SCAN_ASYNC                          policy<{'riscv64': 'y'}>
 #
 CONFIG_SCSI                                     flag<REVIEW>
 CONFIG_CHR_DEV_SG                               note<not autoloadable>
-CONFIG_BLK_DEV_SD                               mark<ENFORCED> note <LP:1627330>
-CONFIG_BLK_DEV_SR                               mark<ENFORCED> note <LP:1627330>
+CONFIG_BLK_DEV_SD                               mark<ENFORCED> note<LP:1627330>
+CONFIG_BLK_DEV_SR                               mark<ENFORCED> note<LP:1627330>
 
 # Menu: Device Drivers >> SCSI device support >> SCSI device support >> SCSI Device Handlers
 CONFIG_SCSI_DH                                  policy<{'riscv64': 'y'}>
@@ -6735,7 +6735,7 @@ CONFIG_VIRTIO_INPUT                             policy<{'riscv64': 'm'}>
 CONFIG_VIRTIO_MMIO                              policy<{'riscv64': 'y'}>
 CONFIG_VIRTIO_MMIO_CMDLINE_DEVICES              policy<{'riscv64': 'y'}>
 #
-CONFIG_VIRTIO_PCI                               mark<review>
+CONFIG_VIRTIO_PCI                               flag<REVIEW>
 CONFIG_VIRTIO_MMIO                              note<LP:1557689>
 
 # Menu: Device Drivers >> Virtualization drivers
@@ -7958,7 +7958,7 @@ CONFIG_SAMPLE_VFIO_MDEV_MDPY_FB                 policy<{'riscv64': 'n'}>
 CONFIG_SAMPLE_VFIO_MDEV_MBOCHS                  policy<{'riscv64': 'n'}>
 CONFIG_SAMPLE_WATCHDOG                          policy<{'riscv64': 'n'}>
 #
-CONFIG_SAMPLE_TRACE_PRINTK                      mark<ENFORCE> note<Required for ftrace selftests>
+CONFIG_SAMPLE_TRACE_PRINTK                      mark<ENFORCED> note<Required for ftrace selftests>
 
 # Menu: Kernel hacking >> Scheduler Debugging
 CONFIG_SCHED_DEBUG                              policy<{'riscv64': 'y'}>
@@ -9309,5 +9309,5 @@ CONFIG_SOC_VIRT                                 policy<{'riscv64': 'y'}>
 # Menu: Ubuntu Supplied Third-Party Device Drivers
 CONFIG_HIO                                      policy<{'riscv64': 'n'}>
 #
-CONFIG_HIO                                      mark<ENFORCED> note <LP:1635594>
+CONFIG_HIO                                      mark<ENFORCED> note<LP:1635594>
 
