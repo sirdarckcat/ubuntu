@@ -32,3 +32,7 @@ CONFIG_X86_UV                                     policy<{'amd64': 'n'}>
 CONFIG_X86_UV                                     mark<ENFORCED> note<not needed for cloud kernels>
 CONFIG_ATARI_PARTITION                             policy<{'amd64': 'n'}>
 CONFIG_ATARI_PARTITION                             mark<ENFORCED> note<LP:1908264>
+CONFIG_MTD_DOCG3                                  policy<{'amd64': 'm' }>
+CONFIG_MTD_DOCG3                                  mark<ENFORCED> note<LP:1792205>
+CONFIG_SAMPLE_TRACE_PRINTK                        policy<{'amd64': '-'}>
+CONFIG_SAMPLE_TRACE_PRINTK                        mark<ENFORCED> note<Disabled for cloud kernel>
