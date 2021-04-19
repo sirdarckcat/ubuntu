@@ -102,7 +102,12 @@ CONFIG_CRYPTO_AES_ARM64_BS                      policy<{'arm64': 'm'}>
 
 # Menu: Advanced setup >> Architecture: powerpc
 
+# Menu: Advanced setup >> Prompt for advanced kernel configuration options
+CONFIG_PHYSICAL_START                           policy<{'amd64': '0x1000000', 'i386': '0x1000000', 'ppc64el': '0x00000000'}>
+
 # Menu: Advanced setup >> Prompt for advanced kernel configuration options >> Architecture: powerpc
+CONFIG_PAGE_OFFSET                              policy<{'armhf': '0xC0000000', 'i386': '0xC0000000', 'ppc64el': '0xc000000000000000'}>
+CONFIG_KERNEL_START                             policy<{'ppc64el': '0xc000000000000000'}>
 
 # Menu: Advanced setup >> Prompt for advanced kernel configuration options >> Pinned Kernel TLBs (860 ONLY) >> Architecture: powerpc
 
@@ -136,6 +141,8 @@ CONFIG_EFI                                      flag<REVIEW>
 CONFIG_USE_OF                                   policy<{'armhf': 'y'}>
 CONFIG_ATAGS                                    policy<{'armhf': 'y'}>
 CONFIG_DEPRECATED_PARAM_STRUCT                  policy<{'armhf': 'n'}>
+CONFIG_ZBOOT_ROM_TEXT                           policy<{'armhf': '0x0'}>
+CONFIG_ZBOOT_ROM_BSS                            policy<{'armhf': '0x0'}>
 CONFIG_ARM_APPENDED_DTB                         policy<{'armhf': 'y'}>
 CONFIG_ARM_ATAG_DTB_COMPAT                      policy<{'armhf-generic': 'y', 'armhf-generic-lpae': 'n'}>
 CONFIG_ATAGS_PROC                               policy<{'armhf': 'y'}>
@@ -161,6 +168,9 @@ CONFIG_ISA                                      policy<{'i386': 'y'}>
 
 # Menu: Bus options (PCI etc.) >> Architecture: powerpc
 CONFIG_FSL_LBC                                  policy<{'ppc64el': 'y'}>
+CONFIG_PPC_RTAS_FILTER                          policy<{'ppc64el': 'y'}>
+#
+CONFIG_PPC_RTAS_FILTER                          mark<ENFORCED> note<CVE-2020-27777>
 
 # Menu: Bus options (PCI etc.) >> Architecture: s390
 CONFIG_QDIO                                     policy<{'s390x': 'm'}>
@@ -600,12 +610,15 @@ CONFIG_ANDROID                                  policy<{'amd64': 'n', 'arm64': '
 # Menu: Device Drivers >> Auxiliary Display support
 CONFIG_AUXDISPLAY                               policy<{'amd64': 'y', 'arm64': 'y', 'armhf': 'y', 'i386': 'y', 'ppc64el': 'y', 's390x': 'n'}>
 CONFIG_HD44780                                  policy<{'amd64': 'm', 'arm64': 'm', 'armhf': 'm', 'i386': 'm', 'ppc64el': 'm'}>
+CONFIG_IMG_ASCII_LCD                            policy<{'amd64': 'm', 'arm64': 'm', 'armhf': 'm', 'i386': 'm', 'ppc64el': 'm'}>
+CONFIG_HT16K33                                  policy<{'arm64': 'm', 'armhf': 'm', 'ppc64el': 'm'}>
+
+# Menu: Device Drivers >> Auxiliary Display support >> KS0108 LCD Controller
 CONFIG_KS0108                                   policy<{'amd64': 'm', 'armhf': 'm', 'i386': 'm', 'ppc64el': 'm'}>
+CONFIG_KS0108_PORT                              policy<{'amd64': '0x378', 'armhf': '0x378', 'i386': '0x378', 'ppc64el': '0x378'}>
 CONFIG_KS0108_DELAY                             policy<{'amd64': '2', 'armhf': '2', 'i386': '2', 'ppc64el': '2'}>
 CONFIG_CFAG12864B                               policy<{'amd64': 'm', 'i386': 'm'}>
 CONFIG_CFAG12864B_RATE                          policy<{'amd64': '20', 'i386': '20'}>
-CONFIG_IMG_ASCII_LCD                            policy<{'amd64': 'm', 'arm64': 'm', 'armhf': 'm', 'i386': 'm', 'ppc64el': 'm'}>
-CONFIG_HT16K33                                  policy<{'arm64': 'm', 'armhf': 'm', 'ppc64el': 'm'}>
 
 # Menu: Device Drivers >> Block devices
 CONFIG_BLK_DEV                                  policy<{'amd64': 'y', 'arm64': 'y', 'armhf': 'y', 'i386': 'y', 'ppc64el': 'y', 's390x': 'y'}>
@@ -1490,8 +1503,8 @@ CONFIG_DEVTMPFS_MOUNT                           note<ENFORCED> note<upstart requ
 
 # Menu: Device Drivers >> Generic Driver Options >> DMA Contiguous Memory Allocator
 CONFIG_DMA_CMA                                  policy<{'amd64': 'n', 'arm64': 'y', 'armhf': 'y', 'i386': 'n', 's390x': 'n'}>
-CONFIG_CMA_SIZE_MBYTES                          policy<{'arm64': '32', 'armhf': '32', }>
-CONFIG_CMA_ALIGNMENT                            policy<{'arm64': '8', 'armhf': '8', }>
+CONFIG_CMA_SIZE_MBYTES                          policy<{'arm64': '32', 'armhf': '32'}>
+CONFIG_CMA_ALIGNMENT                            policy<{'arm64': '8', 'armhf': '8'}>
 #
 CONFIG_DMA_CMA                                  mark<ENFORCED> note<LP#1362261> note<LP:1803206>
 CONFIG_CMA_SIZE_MBYTES                          mark<ENFORCED> note<LP:1823753>
@@ -2401,6 +2414,7 @@ CONFIG_SENSORS_W83627EHF                        policy<{'amd64': 'm', 'arm64': '
 CONFIG_SENSORS_WM831X                           policy<{'amd64': 'm', 'arm64': 'm', 'armhf': 'm', 'i386': 'm', 'ppc64el': 'm'}>
 CONFIG_SENSORS_WM8350                           policy<{'amd64': 'm', 'arm64': 'm', 'armhf': 'm', 'i386': 'm', 'ppc64el': 'm'}>
 CONFIG_SENSORS_XGENE                            policy<{'amd64': 'm', 'arm64': 'm', 'i386': 'm'}>
+CONFIG_SENSORS_AHC1EC0_HWMON                    policy<{'amd64': 'm'}>
 CONFIG_SENSORS_ACPI_POWER                       policy<{'amd64': 'm', 'arm64': 'm', 'i386': 'm'}>
 CONFIG_SENSORS_ATK0110                          policy<{'amd64': 'm', 'i386': 'm'}>
 
@@ -3730,7 +3744,6 @@ CONFIG_MTD_LPDDR2_NVM                           policy<{'armhf': 'm'}>
 
 # Menu: Device Drivers >> Memory Technology Device (MTD) support >> Mapping drivers for chip access
 CONFIG_MTD_PHYSMAP                              policy<{'amd64': 'm', 'arm64': 'm', 'armhf': 'm', 'i386': 'm', 'ppc64el': 'm'}>
-CONFIG_MTD_PHYSMAP_COMPAT                       policy<{'amd64': 'n', 'arm64': 'n', 'armhf': 'n', 'i386': 'n', 'ppc64el': 'n'}>
 CONFIG_MTD_PHYSMAP_OF                           policy<{'arm64': 'm', 'armhf': 'm', 'ppc64el': 'm'}>
 CONFIG_MTD_PHYSMAP_OF_VERSATILE                 policy<{'arm64': 'y', 'armhf': 'y', 'ppc64el': 'y'}>
 CONFIG_MTD_PHYSMAP_OF_GEMINI                    policy<{'arm64': 'y', 'armhf': 'y', 'ppc64el': 'y'}>
@@ -3745,6 +3758,9 @@ CONFIG_MTD_L440GX                               policy<{'amd64': 'm', 'i386': 'm
 CONFIG_MTD_IMPA7                                policy<{'armhf': 'm'}>
 CONFIG_MTD_INTEL_VR_NOR                         policy<{'amd64': 'm', 'arm64': 'm', 'armhf': 'm', 'i386': 'm', 'ppc64el': 'm'}>
 CONFIG_MTD_PLATRAM                              policy<{'amd64': 'm', 'arm64': 'm', 'armhf': 'm', 'i386': 'm', 'ppc64el': 'm'}>
+
+# Menu: Device Drivers >> Memory Technology Device (MTD) support >> Mapping drivers for chip access >> Flash device in physical memory map >> Physmap compat support
+CONFIG_MTD_PHYSMAP_COMPAT                       policy<{'amd64': 'n', 'arm64': 'n', 'armhf': 'n', 'i386': 'n', 'ppc64el': 'n'}>
 
 # Menu: Device Drivers >> Memory Technology Device (MTD) support >> Mapping drivers for chip access >> Maximum mappable memory available for flash IO
 
@@ -3769,6 +3785,7 @@ CONFIG_MTD_NAND_RICOH                           policy<{'amd64': 'm', 'arm64': '
 CONFIG_MTD_NAND_TANGO                           policy<{'armhf': 'm'}>
 CONFIG_MTD_NAND_DISKONCHIP                      policy<{'amd64': 'm', 'arm64': 'm', 'armhf': 'm', 'i386': 'm', 'ppc64el': 'm'}>
 CONFIG_MTD_NAND_DISKONCHIP_PROBE_ADVANCED       policy<{'amd64': 'n', 'arm64': 'n', 'armhf': 'n', 'i386': 'n', 'ppc64el': 'n'}>
+CONFIG_MTD_NAND_DISKONCHIP_PROBE_ADDRESS        policy<{'amd64': '0', 'arm64': '0', 'armhf': '0', 'i386': '0', 'ppc64el': '0'}>
 CONFIG_MTD_NAND_DISKONCHIP_BBTWRITE             policy<{'amd64': 'n', 'arm64': 'n', 'armhf': 'n', 'i386': 'n', 'ppc64el': 'n'}>
 CONFIG_MTD_NAND_DOCG4                           policy<{'amd64': 'm', 'arm64': 'm', 'armhf': 'm', 'i386': 'm', 'ppc64el': 'm'}>
 CONFIG_MTD_NAND_CAFE                            policy<{'amd64': 'm', 'arm64': 'm', 'armhf': 'm', 'i386': 'm', 'ppc64el': 'm'}>
@@ -8463,6 +8480,7 @@ CONFIG_SBC_EPX_C3_WATCHDOG                      policy<{'amd64': 'm', 'i386': 'm
 CONFIG_INTEL_MEI_WDT                            policy<{'amd64': 'm', 'i386': 'm'}>
 CONFIG_NI903X_WDT                               policy<{'amd64': 'm', 'i386': 'm'}>
 CONFIG_NIC7018_WDT                              policy<{'amd64': 'm', 'i386': 'm'}>
+CONFIG_AHC1EC0_WDT                              policy<{'amd64': 'm'}>
 CONFIG_BCM2835_WDT                              policy<{'arm64': 'm'}>
 CONFIG_BCM7038_WDT                              policy<{'arm64': 'm'}>
 CONFIG_MEN_A21_WDT                              policy<{'amd64': 'm', 'arm64': 'm', 'armhf': 'm', 'i386': 'm', 'ppc64el': 'm', 's390x': 'm'}>
@@ -9155,6 +9173,7 @@ CONFIG_ARM_SCPI_PROTOCOL                        policy<{'arm64': 'm', 'armhf': '
 CONFIG_ARM_SCPI_POWER_DOMAIN                    policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_EDD                                      policy<{'amd64': 'y', 'i386': 'y'}>
 CONFIG_EDD_OFF                                  policy<{'amd64': 'y', 'i386': 'y'}>
+CONFIG_EFI_CUSTOM_SSDT_OVERLAYS                 policy<{'amd64': 'y', 'arm64': 'y', 'i386': 'y'}>
 CONFIG_FIRMWARE_MEMMAP                          policy<{'amd64': 'y', 'arm64': 'y', 'armhf': 'y', 'i386': 'y'}>
 CONFIG_DELL_RBU                                 policy<{'amd64': 'm', 'i386': 'm'}>
 CONFIG_DCDBAS                                   policy<{'amd64': 'm', 'i386': 'm'}>
@@ -9423,6 +9442,7 @@ CONFIG_NO_HZ_IDLE                               note<LP:1413968>
 
 # Menu: Kernel hacking
 CONFIG_MAGIC_SYSRQ                              policy<{'amd64': 'y', 'arm64': 'y', 'armhf': 'y', 'i386': 'y', 'ppc64el': 'y', 's390x': 'y'}>
+CONFIG_MAGIC_SYSRQ_DEFAULT_ENABLE               policy<{'amd64': '0x01b6', 'arm64': '0x01b6', 'armhf': '0x01b6', 'i386': '0x01b6', 'ppc64el': '0x01b6', 's390x': '0x01b6'}>
 CONFIG_MAGIC_SYSRQ_SERIAL                       policy<{'amd64': 'y', 'arm64': 'y', 'armhf': 'y', 'i386': 'y', 'ppc64el': 'y', 's390x': 'y'}>
 CONFIG_KCOV                                     policy<{'amd64': 'n', 'arm64': 'n', 's390x': 'n'}>
 CONFIG_PANIC_ON_OOPS                            policy<{'amd64': 'n', 'arm64': 'n', 'armhf': 'n', 'i386': 'n', 'ppc64el': 'n', 's390x': 'n'}>
@@ -9597,12 +9617,15 @@ CONFIG_KGDB                                     policy<{'amd64': 'y', 'arm64': '
 CONFIG_KGDB_SERIAL_CONSOLE                      policy<{'amd64': 'y', 'arm64': 'y', 'armhf': 'y', 'i386': 'y', 'ppc64el': 'y'}>
 CONFIG_KGDB_TESTS                               policy<{'amd64': 'n', 'arm64': 'n', 'armhf': 'n', 'i386': 'n', 'ppc64el': 'n'}>
 CONFIG_KGDB_LOW_LEVEL_TRAP                      policy<{'amd64': 'y', 'i386': 'y'}>
-CONFIG_KGDB_KDB                                 policy<{'amd64': 'y', 'arm64': 'y', 'armhf': 'y', 'i386': 'y', 'ppc64el': 'y'}>
-CONFIG_KDB_KEYBOARD                             policy<{'amd64': 'y', 'arm64': 'y', 'armhf': 'y', 'i386': 'y', 'ppc64el': 'y'}>
-CONFIG_KDB_CONTINUE_CATASTROPHIC                policy<{'amd64': '0', 'arm64': '0', 'armhf': '0', 'i386': '0', 'ppc64el': '0'}>
 #
 CONFIG_KGDB                                     flag<REVIEW>
 CONFIG_KGDB_SERIAL_CONSOLE                      note<early debugging support>
+
+# Menu: Kernel hacking >> Kernel debugging >> KGDB: kernel debugger >> KGDB_KDB: include kdb frontend for kgdb
+CONFIG_KGDB_KDB                                 policy<{'amd64': 'y', 'arm64': 'y', 'armhf': 'y', 'i386': 'y', 'ppc64el': 'y'}>
+CONFIG_KDB_DEFAULT_ENABLE                       policy<{'amd64': '0x1', 'arm64': '0x1', 'armhf': '0x1', 'i386': '0x1', 'ppc64el': '0x1'}>
+CONFIG_KDB_KEYBOARD                             policy<{'amd64': 'y', 'arm64': 'y', 'armhf': 'y', 'i386': 'y', 'ppc64el': 'y'}>
+CONFIG_KDB_CONTINUE_CATASTROPHIC                policy<{'amd64': '0', 'arm64': '0', 'armhf': '0', 'i386': '0', 'ppc64el': '0'}>
 
 # Menu: Kernel hacking >> Kernel debugging >> Notifier error injection
 CONFIG_NOTIFIER_ERROR_INJECTION                 policy<{'amd64': 'm', 'arm64': 'm', 'armhf': 'm', 'i386': 'm', 'ppc64el': 'm', 's390x': 'm'}>
@@ -9876,6 +9899,7 @@ CONFIG_BT_BNEP_PROTO_FILTER                     policy<{'amd64': 'y', 'arm64': '
 CONFIG_BT_CMTP                                  policy<{'amd64': 'm', 'arm64': 'm', 'armhf': 'm', 'i386': 'm', 'ppc64el': 'm'}>
 CONFIG_BT_HIDP                                  policy<{'amd64': 'm', 'arm64': 'm', 'armhf': 'm', 'i386': 'm', 'ppc64el': 'm'}>
 CONFIG_BT_HS                                    policy<{'amd64': '-', 'arm64': '-', 'armhf': '-', 'i386': '-', 'ppc64el': '-'}>
+#
 CONFIG_BT_HS                                    mark<ENFORCED> note<https://www.intel.com/content/www/us/en/security-center/advisory/intel-sa-00435.html>
 
 # Menu: Networking support >> Bluetooth subsystem support >> Bluetooth device drivers
@@ -11135,6 +11159,7 @@ CONFIG_ARM64_ERRATUM_832075                     policy<{'arm64': 'y'}>
 CONFIG_ARM64_ERRATUM_834220                     policy<{'arm64': 'y'}>
 CONFIG_ARM64_ERRATUM_845719                     policy<{'arm64': 'y'}>
 CONFIG_ARM64_ERRATUM_843419                     policy<{'arm64': 'y'}>
+CONFIG_ARM64_ERRATUM_1542419                    policy<{'arm64': 'y'}>
 CONFIG_CAVIUM_ERRATUM_22375                     policy<{'arm64': 'y'}>
 CONFIG_CAVIUM_ERRATUM_23144                     policy<{'arm64': 'y'}>
 CONFIG_CAVIUM_ERRATUM_23154                     policy<{'arm64': 'y'}>
@@ -11266,7 +11291,9 @@ CONFIG_EFI_MIXED                                policy<{'amd64': 'y'}>
 CONFIG_KEXEC_VERIFY_SIG                         policy<{'amd64': 'y'}>
 CONFIG_KEXEC_BZIMAGE_VERIFY_SIG                 policy<{'amd64': 'y'}>
 CONFIG_KEXEC_JUMP                               policy<{'amd64': 'y', 'i386': 'y'}>
+CONFIG_PHYSICAL_ALIGN                           policy<{'amd64': '0x200000', 'i386': '0x1000000'}>
 CONFIG_RANDOMIZE_MEMORY                         policy<{'amd64': 'y'}>
+CONFIG_RANDOMIZE_MEMORY_PHYSICAL_PADDING        policy<{'amd64': '0xa'}>
 CONFIG_COMPAT_VDSO                              policy<{'amd64': 'n', 'i386': 'n'}>
 CONFIG_MODIFY_LDT_SYSCALL                       policy<{'amd64': 'y', 'i386': 'y'}>
 #
@@ -11854,6 +11881,8 @@ CONFIG_ARCH_R8A73A4                             flag<REVIEW>
 
 # Menu: System Type >> MMU-based Paged Memory Management Support >> ST-Ericsson U8500 Series >> Architecture: arm
 CONFIG_ARCH_U8500                               policy<{'armhf': 'n'}>
+
+# Menu: System Type >> MMU-based Paged Memory Management Support >> Set flash/sdram size and base addr >> Architecture: arm
 
 # Menu: System Type >> MOXA ART SoC >> Architecture: arm
 
