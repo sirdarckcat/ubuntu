@@ -10,6 +10,8 @@ CONFIG_FAILOVER                                   policy<{'amd64': 'm'}>
 CONFIG_FAILOVER                                   mark<ENFORCED> note<OCI requirement>
 CONFIG_MODVERSIONS                                policy<{'amd64': 'y'}>
 CONFIG_MODVERSIONS                                mark<ENFORCED> note<LP:1898716 -- required as we have a livepatch/drivers modules signing key>
+CONFIG_MTD_DOCG3				  policy<{'amd64': 'm'}>
+CONFIG_MTD_DOCG3				  mark<ENFORCED> note<override master annotation>
 CONFIG_NET_FAILOVER                               policy<{'amd64': 'm'}>
 CONFIG_NET_FAILOVER                               mark<ENFORCED> note<OCI requirement>
 CONFIG_PAGE_POOL                                  policy<{'amd64': 'y'}>
@@ -18,6 +20,8 @@ CONFIG_SOUNDWIRE                                  policy<{'amd64': 'n'}>
 CONFIG_SOUNDWIRE                                  mark<ENFORCED> note<not needed for cloud kernels>
 CONFIG_LATENCYTOP                                 policy<{'amd64': 'n'}>
 CONFIG_LATENCYTOP                                 mark<ENFORCED> note<not needed for cloud kernels>
+CONFIG_SAMPLE_TRACE_PRINTK			  policy<{'amd64': '-'}>
+CONFIG_SAMPLE_TRACE_PRINTK			  mark<ENFORCED> note<override master annotation>
 CONFIG_SND_SOC_INTEL_CML_LP                       policy<{'amd64': '-'}>
 CONFIG_SND_SOC_INTEL_CML_LP                       mark<ENFORCED> note<not selectable for linux-oracle>
 CONFIG_SND_SOC_INTEL_SKYLAKE_HDAUDIO_CODEC        policy<{'amd64': '-'}>
