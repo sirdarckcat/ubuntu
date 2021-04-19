@@ -3866,9 +3866,6 @@ CONFIG_SPI_FSL_QUADSPI                          policy<{'arm64': 'm', 'armhf-gen
 CONFIG_SPI_HISI_SFC                             policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_SPI_INTEL_SPI_PCI                        policy<{'amd64': 'n', 'i386': 'n'}>
 CONFIG_SPI_INTEL_SPI_PLATFORM                   policy<{'amd64': 'n', 'i386': 'n'}>
-#
-CONFIG_SPI_INTEL_SPI_PCI                        mark<ENFORCED> note<LP:1734147>
-CONFIG_SPI_INTEL_SPI_PLATFORM                   mark<ENFORCED> note<LP:1734147>
 
 # Menu: Device Drivers >> Memory Technology Device (MTD) support >> Self-contained MTD device drivers
 CONFIG_MTD_PMC551                               policy<{'amd64': 'm', 'arm64': 'm', 'armhf': 'm', 'i386': 'm', 'ppc64el': 'm'}>
@@ -9742,6 +9739,9 @@ CONFIG_TEST_PARMAN                              flag<TESTING>
 
 # Menu: Kernel hacking >> Sample kernel code
 CONFIG_SAMPLES                                  policy<{'amd64': 'n', 'arm64': 'n', 'armhf': 'n', 'i386': 'n', 'ppc64el': 'n', 's390x': 'n'}>
+CONFIG_SAMPLE_TRACE_PRINTK                      policy<{'amd64': '-', 'arm64': '-', 'armhf': '-', 'i386': '-', 'ppc64el': '-', 's390x': '-'}>
+#
+CONFIG_SAMPLE_TRACE_PRINTK                      mark<ENFORCED> note<override master annotation>
 
 # Menu: Kernel hacking >> Tracers
 CONFIG_FTRACE                                   policy<{'amd64': 'y', 'arm64': 'y', 'armhf': 'y', 'i386': 'y', 'ppc64el': 'y', 's390x': 'y'}>
