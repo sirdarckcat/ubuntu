@@ -20,7 +20,7 @@
 #include "mlxbf_pka_dev.h"
 
 
-#define PKA_DRIVER_VERSION      "v2.0"
+#define PKA_DRIVER_VERSION      "v3.0"
 #define PKA_DRIVER_NAME         "pka-mlxbf"
 
 #define PKA_DRIVER_DESCRIPTION  "BlueField PKA driver"
