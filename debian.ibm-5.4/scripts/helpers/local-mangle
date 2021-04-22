@@ -1,0 +1,37 @@
+#!/bin/bash -eu
+
+. debian/debian.env
+
+# Use gzip instead of lz4 for amd64
+sed -i '/CONFIG_KERNEL_LZ4/d' ${DEBIAN}/config/amd64/config.common.amd64
+sed -i '3aCONFIG_KERNEL_GZIP=y\n# CONFIG_KERNEL_LZ4 is not set' ${DEBIAN}/config/amd64/config.common.amd64
+
+# Use the options with the bionic compiler
+sed -i 's/# CONFIG_TUNE_Z13 is not set/CONFIG_TUNE_Z13=y/' ${DEBIAN}/config/config.common.ubuntu
+sed -i 's/CONFIG_TUNE_Z15=y/# CONFIG_TUNE_Z15 is not set/' ${DEBIAN}/config/config.common.ubuntu
+sed -i 's/CONFIG_MARCH_Z15_TUNE=y/CONFIG_MARCH_Z13_TUNE=y/' ${DEBIAN}/config/config.common.ubuntu
+
+# And adjust annotations accordingly
+sed -i "s/CONFIG_KERNEL_LZ4                               policy<{'amd64': 'y'}>/CONFIG_KERNEL_LZ4                               policy<{'amd64': 'n'}>/" ${DEBIAN}/config/annotations
+sed -i "s/CONFIG_KERNEL_GZIP                              policy<{'amd64': 'n'}>/CONFIG_KERNEL_GZIP                              policy<{'amd64': 'y'}>/" ${DEBIAN}/config/annotations
+sed -i "s/CONFIG_KERNEL_XZ                                policy<{'amd64': 'n'}>/CONFIG_KERNEL_XZ                                policy<{'amd64': 'n'}>/" ${DEBIAN}/config/annotations
+
+# This option is not available with the bionic compiler
+sed -i "s/CONFIG_STACKPROTECTOR_PER_TASK                  policy<{'arm64': 'y'}>/CONFIG_STACKPROTECTOR_PER_TASK                  policy<{'arm64': '-'}>/" ${DEBIAN}/config/annotations
+
+# UBUNTU_ODM_DRIVERS is disabled for linux-hwe-5.4 in Bionic. Remove the enforcement
+# for the drivers which depend on it.
+sed -i "/CONFIG_MFD_AHC1EC0                              policy<{'amd64': 'm'}>/d" ${DEBIAN}/config/annotations
+sed -i "/CONFIG_SENSORS_AHC1EC0_HWMON                    policy<{'amd64': 'm'}>/d" ${DEBIAN}/config/annotations
+sed -i "/CONFIG_AHC1EC0_WDT                              policy<{'amd64': 'm'}>/d" ${DEBIAN}/config/annotations
+
+# Override options in rules.d/hooks.mk (normally master does not have this
+# file but it got added for generic annotations enforcement).
+cat <<EOD >>${DEBIAN}/rules.d/hooks.mk
+do_libc_dev_package	= false
+do_doc_package		= false
+do_tools_common		= false
+do_tools_host		= false
+do_odm_drivers		= false
+EOD
+
