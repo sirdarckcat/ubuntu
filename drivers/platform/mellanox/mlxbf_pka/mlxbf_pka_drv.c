@@ -78,7 +78,7 @@ static struct pka_drv_plat_info pka_drv_plat[] = {
 	},
 	[PKA_PLAT_TYPE_BF2] = {
 		.type = PKA_PLAT_TYPE_BF2,
-		.fw_id = PKA_FIRMWARE_IMAGE_1_ID
+		.fw_id = PKA_FIRMWARE_IMAGE_2_ID
 	}
 };
 
