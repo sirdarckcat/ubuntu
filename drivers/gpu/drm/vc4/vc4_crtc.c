@@ -1350,7 +1350,7 @@ int __vc4_crtc_init(struct drm_device *drm,
 
 	drm_crtc_enable_color_mgmt(crtc, 0, false, crtc->gamma_size);
 
-	if (!vc4->is_vc5) {
+	if (!vc4->gen == VC4_GEN_5) {
 		/* We support CTM, but only for one CRTC at a time. It's therefore
 		 * implemented as private driver state in vc4_kms, not here.
 		 */
