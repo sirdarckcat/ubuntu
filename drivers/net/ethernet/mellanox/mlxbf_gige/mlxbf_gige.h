@@ -4,7 +4,7 @@
  * - this file contains software data structures and any chip-specific
  *   data structures (e.g. TX WQE format) that are memory resident.
  *
- * Copyright (c) 2020-2021 NVIDIA Corporation.
+ * Copyright (C) 2020-2021 Mellanox Technologies, Ltd. ALL RIGHTS RESERVED.
  */
 
 #ifndef __MLXBF_GIGE_H__

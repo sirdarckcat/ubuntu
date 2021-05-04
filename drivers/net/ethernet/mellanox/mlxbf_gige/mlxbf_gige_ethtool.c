@@ -2,7 +2,7 @@
 
 /* Ethtool support for Mellanox Gigabit Ethernet driver
  *
- * Copyright (c) 2020-2021 NVIDIA Corporation.
+ * Copyright (C) 2020-2021 Mellanox Technologies, Ltd. ALL RIGHTS RESERVED.
  */
 
 #include <linux/phy.h>
@@ -158,8 +158,8 @@ static void mlxbf_gige_get_pauseparam(struct net_device *netdev,
 	struct mlxbf_gige *priv = netdev_priv(netdev);
 
 	pause->autoneg = priv->aneg_pause;
-	pause->rx_pause = priv->tx_pause;
-	pause->tx_pause = priv->rx_pause;
+	pause->rx_pause = priv->rx_pause;
+	pause->tx_pause = priv->tx_pause;
 }
 
 const struct ethtool_ops mlxbf_gige_ethtool_ops = {
