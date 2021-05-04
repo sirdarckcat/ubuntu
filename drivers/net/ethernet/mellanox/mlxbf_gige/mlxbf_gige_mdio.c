@@ -2,7 +2,7 @@
 
 /* MDIO support for Mellanox Gigabit Ethernet driver
  *
- * Copyright (c) 2020-2021 NVIDIA Corporation.
+ * Copyright (C) 2020-2021 Mellanox Technologies, Ltd. ALL RIGHTS RESERVED.
  */
 
 #include <linux/acpi.h>
