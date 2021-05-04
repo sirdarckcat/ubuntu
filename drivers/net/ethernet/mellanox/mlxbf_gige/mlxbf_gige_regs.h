@@ -2,7 +2,7 @@
 
 /* Header file for Mellanox BlueField GigE register defines
  *
- * Copyright (c) 2020-2021 NVIDIA Corporation.
+ * Copyright (C) 2020-2021 Mellanox Technologies, Ltd. ALL RIGHTS RESERVED.
  */
 
 #ifndef __MLXBF_GIGE_REGS_H__
