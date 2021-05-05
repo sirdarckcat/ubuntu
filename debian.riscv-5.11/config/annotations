@@ -7103,7 +7103,20 @@ CONFIG_UFS_DEBUG                                policy<{'riscv64': 'n'}>
 CONFIG_ECRYPT_FS                                mark<ENFORCED> note<not autoloadable>
 
 # Menu: File systems >> Miscellaneous filesystems >> Aufs (Advanced multi layered unification filesystem) support
-CONFIG_AUFS_FS                                  policy<{'riscv64': 'n'}>
+CONFIG_AUFS_BR_FUSE                             policy<{'riscv64': 'n'}>
+CONFIG_AUFS_BR_HFSPLUS                          policy<{'riscv64': 'y'}>
+CONFIG_AUFS_BR_RAMFS                            policy<{'riscv64': 'n'}>
+CONFIG_AUFS_DEBUG                               policy<{'riscv64': 'n'}>
+CONFIG_AUFS_DIRREN                              policy<{'riscv64': 'y'}>
+CONFIG_AUFS_EXPORT                              policy<{'riscv64': 'y'}>
+CONFIG_AUFS_FHSM                                policy<{'riscv64': 'n'}>
+CONFIG_AUFS_FS                                  policy<{'riscv64': 'm'}>
+CONFIG_AUFS_HNOTIFY                             policy<{'riscv64': 'n'}>
+CONFIG_AUFS_RDU                                 policy<{'riscv64': 'n'}>
+CONFIG_AUFS_SHWH                                policy<{'riscv64': 'n'}>
+CONFIG_AUFS_XATTR                               policy<{'riscv64': 'y'}>
+#
+CONFIG_AUFS_EXPORT                              note<LP:1121699>
 
 # Menu: File systems >> Miscellaneous filesystems >> Aufs (Advanced multi layered unification filesystem) support >> method
 
