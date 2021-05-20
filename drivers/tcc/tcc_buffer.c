@@ -771,6 +771,8 @@ static int tcc_parse_ptct(void)
 			entry_errlog_v2 = (struct tcc_ptct_errlog_v2 *)(tbl_swap + ENTRY_HEADER_SIZE);
 			erraddr = ((u64)(entry_errlog_v2->erraddr_hi) << 32) | entry_errlog_v2->erraddr_lo;
 			errsize = entry_errlog_v2->errsize;
+			dprintk("erraddr   @ %016llx\n", erraddr);
+			dprintk("errsize   @ %08x\n", errsize);
 		}
 
 		offset += entry_size / sizeof(u32);
@@ -1305,6 +1307,7 @@ static long tcc_buffer_ioctl(struct file *filp, unsigned int cmd, unsigned long 
 	u64 register_phyaddr;
 	void *register_data = NULL;
 	void *errlog_buff = NULL;
+	u32 i = 0;
 
 	int cpu, testmask = 0;
 
@@ -1499,6 +1502,10 @@ static long tcc_buffer_ioctl(struct file *filp, unsigned int cmd, unsigned long 
 			pr_err("cannot map this errlog address");
 			return -ENOMEM;
 		}
+
+		for (i = 0; ((i < (errsize/sizeof(int))) && (tccdbg == 1)); i++)
+			pr_err("%08x\t", ((u32 *)errlog_buff)[i]);
+
 		ret = copy_to_user((u32 *)arg, errlog_buff, errsize);
 		memunmap(errlog_buff);
 		if (ret != 0)
