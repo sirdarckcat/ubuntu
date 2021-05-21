@@ -6,19 +6,19 @@ include "../../debian.master/config/annotations"
 
 CONFIG_DRM_BOCHS                                  policy<{'amd64': 'n'}>
 CONFIG_DRM_BOCHS                                  note<Unnecessary for oracle>
-CONFIG_FAILOVER                                   policy<{'amd64': 'm'}>
+CONFIG_FAILOVER                                   policy<{'amd64': 'm', 'arm64': 'm'}>
 CONFIG_FAILOVER                                   mark<ENFORCED> note<OCI requirement>
-CONFIG_MODVERSIONS                                policy<{'amd64': 'y'}>
+CONFIG_MODVERSIONS                                policy<{'amd64': 'y', 'arm64': 'y'}>
 CONFIG_MODVERSIONS                                mark<ENFORCED> note<LP:1898716 -- required as we have a livepatch/drivers modules signing key>
-CONFIG_MTD_DOCG3				  policy<{'amd64': 'm'}>
+CONFIG_MTD_DOCG3				  policy<{'amd64': 'm', 'arm64': 'm'}>
 CONFIG_MTD_DOCG3				  mark<ENFORCED> note<override master annotation>
-CONFIG_NET_FAILOVER                               policy<{'amd64': 'm'}>
+CONFIG_NET_FAILOVER                               policy<{'amd64': 'm', 'arm64': 'm'}>
 CONFIG_NET_FAILOVER                               mark<ENFORCED> note<OCI requirement>
-CONFIG_PAGE_POOL                                  policy<{'amd64': 'y'}>
+CONFIG_PAGE_POOL                                  policy<{'amd64': 'y', 'arm64': 'y'}>
 CONFIG_PAGE_POOL                                  mark<ENFORCED> note<OCI requirement>
-CONFIG_SOUNDWIRE                                  policy<{'amd64': 'n'}>
+CONFIG_SOUNDWIRE                                  policy<{'amd64': 'n', 'arm64': 'n'}>
 CONFIG_SOUNDWIRE                                  mark<ENFORCED> note<not needed for cloud kernels>
-CONFIG_LATENCYTOP                                 policy<{'amd64': 'n'}>
+CONFIG_LATENCYTOP                                 policy<{'amd64': 'n', 'arm64': 'n'}>
 CONFIG_LATENCYTOP                                 mark<ENFORCED> note<not needed for cloud kernels>
 CONFIG_SAMPLE_TRACE_PRINTK			  policy<{'amd64': '-'}>
 CONFIG_SAMPLE_TRACE_PRINTK			  mark<ENFORCED> note<override master annotation>
@@ -37,5 +37,7 @@ CONFIG_SND_SOC_INTEL_CNL                          mark<ENFORCED> note<not select
 CONFIG_SYSTEM_TRUSTED_KEYS                        policy<{'amd64': '"debian/canonical-certs.pem"'}>
 CONFIG_X86_UV                                     policy<{'amd64': 'n'}>
 CONFIG_X86_UV                                     mark<ENFORCED> note<not needed for cloud kernels>
-CONFIG_ATARI_PARTITION                             policy<{'amd64': 'n'}>
+CONFIG_ATARI_PARTITION                             policy<{'amd64': 'n', 'arm64': 'n'}>
 CONFIG_ATARI_PARTITION                             mark<ENFORCED> note<LP:1908264>
+CONFIG_ARM_SMMU_DISABLE_BYPASS_BY_DEFAULT         policy<{'arm64': '-'}>
+CONFIG_ARM_SMMU_DISABLE_BYPASS_BY_DEFAULT         mark<ENFORCED>
