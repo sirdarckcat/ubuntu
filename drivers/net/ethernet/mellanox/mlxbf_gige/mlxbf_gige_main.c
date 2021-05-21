@@ -21,7 +21,7 @@
 #include "mlxbf_gige_regs.h"
 
 #define DRV_NAME    "mlxbf_gige"
-#define DRV_VERSION 1.21
+#define DRV_VERSION 1.23
 
 /* This setting defines the version of the ACPI table
  * content that is compatible with this driver version.
@@ -36,6 +36,7 @@
  * naturally aligned to a 2KB boundary.
  */
 struct sk_buff *mlxbf_gige_alloc_skb(struct mlxbf_gige *priv,
+				     unsigned int map_len,
 				     dma_addr_t *buf_dma,
 				     enum dma_data_direction dir)
 {
@@ -60,8 +61,7 @@ struct sk_buff *mlxbf_gige_alloc_skb(struct mlxbf_gige *priv,
 		skb_reserve(skb, offset);
 
 	/* Return streaming DMA mapping to caller */
-	*buf_dma = dma_map_single(priv->dev, skb->data,
-				  MLXBF_GIGE_DEFAULT_BUF_SZ, dir);
+	*buf_dma = dma_map_single(priv->dev, skb->data, map_len, dir);
 	if (dma_mapping_error(priv->dev, *buf_dma)) {
 		dev_kfree_skb(skb);
 		*buf_dma = (dma_addr_t)0;
@@ -120,6 +120,9 @@ static int mlxbf_gige_clean_port(struct mlxbf_gige *priv)
 	control |= MLXBF_GIGE_CONTROL_CLEAN_PORT_EN;
 	writeq(control, priv->base + MLXBF_GIGE_CONTROL);
 
+	/* Ensure completion of "clean port" write before polling status */
+	mb();
+
 	err = readq_poll_timeout_atomic(priv->base + MLXBF_GIGE_STATUS, temp,
 					(temp & MLXBF_GIGE_STATUS_READY),
 					100, 100000);
@@ -145,13 +148,13 @@ static int mlxbf_gige_open(struct net_device *netdev)
 	mlxbf_gige_cache_stats(priv);
 	err = mlxbf_gige_clean_port(priv);
 	if (err)
-		return err;
+		goto free_irqs;
 	err = mlxbf_gige_rx_init(priv);
 	if (err)
-		return err;
+		goto free_irqs;
 	err = mlxbf_gige_tx_init(priv);
 	if (err)
-		return err;
+		goto rx_deinit;
 
 	phy_start(phydev);
 
@@ -167,9 +170,17 @@ static int mlxbf_gige_open(struct net_device *netdev)
 		 MLXBF_GIGE_INT_EN_SW_CONFIG_ERROR |
 		 MLXBF_GIGE_INT_EN_SW_ACCESS_ERROR |
 		 MLXBF_GIGE_INT_EN_RX_RECEIVE_PACKET;
+	mb();
 	writeq(int_en, priv->base + MLXBF_GIGE_INT_EN);
 
 	return 0;
+
+rx_deinit:
+	mlxbf_gige_rx_deinit(priv);
+
+free_irqs:
+	mlxbf_gige_free_irqs(priv);
+	return err;
 }
 
 static int mlxbf_gige_stop(struct net_device *netdev)
@@ -218,8 +229,8 @@ static void mlxbf_gige_set_rx_mode(struct net_device *netdev)
 			mlxbf_gige_enable_promisc(priv);
 		else
 			mlxbf_gige_disable_promisc(priv);
-		}
 	}
+}
 
 static void mlxbf_gige_get_stats64(struct net_device *netdev,
 				   struct rtnl_link_stats64 *stats)
@@ -230,7 +241,7 @@ static void mlxbf_gige_get_stats64(struct net_device *netdev,
 
 	stats->rx_length_errors = priv->stats.rx_truncate_errors;
 	stats->rx_fifo_errors = priv->stats.rx_din_dropped_pkts +
-		                readq(priv->base + MLXBF_GIGE_RX_DIN_DROP_COUNTER);
+				readq(priv->base + MLXBF_GIGE_RX_DIN_DROP_COUNTER);
 	stats->rx_crc_errors = priv->stats.rx_mac_errors;
 	stats->rx_errors = stats->rx_length_errors +
 			   stats->rx_fifo_errors +
