@@ -105,6 +105,7 @@ struct mlxbf_gige {
 	int llu_plu_irq;
 	int phy_irq;
 	bool promisc_enabled;
+	u8 valid_polarity;
 	struct napi_struct napi;
 	struct mlxbf_gige_stats stats;
 	u32 tx_pause;
@@ -171,6 +172,7 @@ bool mlxbf_gige_handle_tx_complete(struct mlxbf_gige *priv);
 netdev_tx_t mlxbf_gige_start_xmit(struct sk_buff *skb,
 				  struct net_device *netdev);
 struct sk_buff *mlxbf_gige_alloc_skb(struct mlxbf_gige *priv,
+				     unsigned int map_len,
 				     dma_addr_t *buf_dma,
 				     enum dma_data_direction dir);
 int mlxbf_gige_request_irqs(struct mlxbf_gige *priv);
