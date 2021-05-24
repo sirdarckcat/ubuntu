@@ -276,7 +276,7 @@ static inline bool nf_ct_is_expired(const struct nf_conn *ct)
 static inline bool nf_ct_should_gc(const struct nf_conn *ct)
 {
 	return nf_ct_is_expired(ct) && nf_ct_is_confirmed(ct) &&
-	       !nf_ct_is_dying(ct);
+	       !nf_ct_is_dying(ct) && !test_bit(IPS_OFFLOAD_BIT, &ct->status);
 }
 
 #define	NF_CT_DAY	(86400 * HZ)
