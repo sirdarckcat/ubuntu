@@ -16,11 +16,12 @@
 #include <linux/module.h>
 #include <linux/platform_device.h>
 #include <linux/pm.h>
+#include <linux/reboot.h>
 #include <linux/resource.h>
 #include <linux/spinlock.h>
 #include <linux/types.h>
 
-#define DRV_VERSION "1.2"
+#define DRV_VERSION "1.3"
 
 /*
  * There are 3 YU GPIO blocks:
@@ -352,21 +353,6 @@ static u32 mlxbf2_gpio_get_int_mask(struct mlxbf2_gpio_context *gs)
 	return gpio_int_mask;
 }
 
-static bool mlxbf2_gpio_is_acpi_event(u32 gpio_block, unsigned long gpio_pin,
-			  struct mlxbf2_gpio_context *gs)
-{
-	if (gpio_block & BIT(GPIO_BLOCK0)) {
-		if (gpio_pin & BIT(gs->rst_pin))
-			return true;
-	}
-	if (gpio_block & BIT(GPIO_BLOCK16)) {
-		if (gpio_pin & BIT(gs->low_pwr_pin))
-			return true;
-	}
-
-	return false;
-}
-
 static irqreturn_t mlxbf2_gpio_irq_handler(int irq, void *ptr)
 {
 	struct mlxbf2_gpio_context *gs = ptr;
@@ -410,8 +396,15 @@ static irqreturn_t mlxbf2_gpio_irq_handler(int irq, void *ptr)
 
 	spin_unlock_irqrestore(&gs->gc.bgpio_lock, flags);
 
-	if (mlxbf2_gpio_is_acpi_event(gpio_block, gpio_pin, gs))
-		schedule_work(&gs->send_work);
+	if (gpio_block & BIT(GPIO_BLOCK16)) {
+		if (gpio_pin & BIT(gs->low_pwr_pin))
+			schedule_work(&gs->send_work);
+	}
+
+	if (gpio_block & BIT(GPIO_BLOCK0)) {
+		if (gpio_pin & BIT(gs->rst_pin))
+			emergency_restart();
+	}
 
 	return IRQ_HANDLED;
 }
@@ -503,7 +496,6 @@ mlxbf2_gpio_probe(struct platform_device *pdev)
 	if (!gs)
 		return -ENOMEM;
 
-	spin_lock_init(&gs->gc.bgpio_lock);
 	INIT_WORK(&gs->send_work, mlxbf2_gpio_send_work);
 
 	/* YU GPIO block address */
@@ -593,6 +585,8 @@ mlxbf2_gpio_probe(struct platform_device *pdev)
 		girq->init_hw = mlxbf2_gpio_init_hw;
 
 		irq = platform_get_irq(pdev, 0);
+		if (irq < 0)
+			return irq;
 		ret = devm_request_irq(dev, irq, mlxbf2_gpio_irq_handler,
 				       IRQF_ONESHOT | IRQF_SHARED, name, gs);
 		if (ret) {
