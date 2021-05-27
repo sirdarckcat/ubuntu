@@ -30,3 +30,6 @@ obj-$(CONFIG_VIRTIO_IOMMU) += virtio-iommu.o
 obj-$(CONFIG_IOMMU_SVA_LIB) += iommu-sva-lib.o io-pgfault.o
 obj-$(CONFIG_SPRD_IOMMU) += sprd-iommu.o
 obj-$(CONFIG_APPLE_DART) += apple-dart.o
+obj-$(CONFIG_QCOM_IOMMU_UTIL) += qcom_iommu_util.o
+qcom_iommu_util-y += qcom-iommu-util.o
+qcom_iommu_util-$(CONFIG_IOMMU_IO_PGTABLE_LPAE) += qcom-io-pgtable-arm.o
