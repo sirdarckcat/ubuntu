@@ -2159,7 +2159,7 @@ static int imx477_probe(struct i2c_client *client)
 		goto error_handler_free;
 	}
 
-	ret = v4l2_async_register_subdev_sensor_common(&imx477->sd);
+	ret = v4l2_async_register_subdev_sensor(&imx477->sd);
 	if (ret < 0) {
 		dev_err(dev, "failed to register sensor sub-device: %d\n", ret);
 		goto error_media_entity;
