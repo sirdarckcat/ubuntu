@@ -233,6 +233,9 @@ static int (*bpf_send_signal)(unsigned sig) = (void *)BPF_FUNC_send_signal;
 static long long (*bpf_tcp_gen_syncookie)(struct bpf_sock *sk, void *ip,
 					  int ip_len, void *tcp, int tcp_len) =
 	(void *) BPF_FUNC_tcp_gen_syncookie;
+static long (*bpf_ct_lookup_tcp)(void *ctx, struct bpf_sock_tuple *tuple,
+				 __u32 tuple_size, __u64 netns, __u64 flags) =
+	(void *) BPF_FUNC_ct_lookup_tcp;
 
 /* llvm builtin functions that eBPF C program may use to
  * emit BPF_LD_ABS and BPF_LD_IND instructions
