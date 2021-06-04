@@ -1134,7 +1134,8 @@ static int brcm_pcie_start_link(struct brcm_pcie *pcie)
 		tmp &= ~PCIE_MISC_HARD_PCIE_HARD_DEBUG_CLKREQ_L1SS_ENABLE_MASK;
 		tmp |= PCIE_MISC_HARD_PCIE_HARD_DEBUG_CLKREQ_DEBUG_ENABLE_MASK;
 	}
-	writel(tmp, base + PCIE_MISC_HARD_PCIE_HARD_DEBUG);
+	// XXX: this turns off refclk for some reason
+	//writel(tmp, base + PCIE_MISC_HARD_PCIE_HARD_DEBUG);
 
 	return 0;
 }
