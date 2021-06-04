@@ -2750,6 +2750,23 @@ union bpf_attr {
  *		**-EOPNOTSUPP** kernel configuration does not enable SYN cookies
  *
  *		**-EPROTONOSUPPORT** IP packet version is not 4 or 6
+ *
+ * long bpf_ct_lookup_tcp(void *ctx, struct bpf_sock_tuple *tuple, u32 tuple_size, u64 netns, u64 flags)
+ *	Description
+ *		Look for conntrack info for a TCP connection matching *tuple*,
+ *		optionally in a child network namespace *netns*.
+ *
+ *		This helper is available only if the kernel was compiled with
+ *		**CONFIG_NF_CONNTRACK** configuration option as built-in.
+ *	Return
+ *		On success, connection tracking status (see **enum
+ *		ip_conntrack_status**).
+ *
+ *		On failure, the returned value is one of the following:
+ *
+ *		**-EINVAL** input arguments are invalid.
+ *
+ *		**-ENOENT** the connection is not known to conntrack.
  */
 #define __BPF_FUNC_MAPPER(FN)		\
 	FN(unspec),			\
@@ -2862,7 +2879,8 @@ union bpf_attr {
 	FN(sk_storage_get),		\
 	FN(sk_storage_delete),		\
 	FN(send_signal),		\
-	FN(tcp_gen_syncookie),
+	FN(tcp_gen_syncookie),		\
+	FN(ct_lookup_tcp),		\
 
 /* integer value in 'imm' field of BPF_CALL instruction selects which helper
  * function eBPF program intends to call
