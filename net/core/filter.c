@@ -73,6 +73,8 @@
 #include <net/lwtunnel.h>
 #include <net/ipv6_stubs.h>
 #include <net/bpf_sk_storage.h>
+#include <net/netfilter/nf_conntrack.h>
+#include <net/netfilter/nf_conntrack_core.h>
 
 /**
  *	sk_filter_trim_cap - run a packet through a socket filter
@@ -5993,6 +5995,71 @@ static const struct bpf_func_proto bpf_tcp_gen_syncookie_proto = {
 	.arg5_type	= ARG_CONST_SIZE,
 };
 
+#if IS_BUILTIN(CONFIG_NF_CONNTRACK)
+BPF_CALL_5(bpf_xdp_ct_lookup_tcp, struct xdp_buff *, ctx,
+	   struct bpf_sock_tuple *, bpf_tuple, u32, len,
+	   u64, netns_id, u64, flags)
+{
+	struct nf_conntrack_tuple_hash *found;
+	const struct nf_conntrack_zone *zone;
+	struct nf_conntrack_tuple tuple = {};
+	unsigned long status;
+	struct nf_conn *ct;
+	struct net *net;
+
+	if (len == sizeof(bpf_tuple->ipv4)) {
+		tuple.src.l3num = AF_INET;
+		tuple.src.u3.ip = bpf_tuple->ipv4.saddr;
+		tuple.src.u.tcp.port = bpf_tuple->ipv4.sport;
+		tuple.dst.u3.ip = bpf_tuple->ipv4.daddr;
+		tuple.dst.u.tcp.port = bpf_tuple->ipv4.dport;
+#if IS_ENABLED(CONFIG_IPV6)
+	} else if (len == sizeof(bpf_tuple->ipv6)) {
+		tuple.src.l3num = AF_INET6;
+		memcpy(tuple.src.u3.ip6, bpf_tuple->ipv6.saddr, sizeof(bpf_tuple->ipv6.saddr));
+		tuple.src.u.tcp.port = bpf_tuple->ipv6.sport;
+		memcpy(tuple.dst.u3.ip6, bpf_tuple->ipv6.daddr, sizeof(bpf_tuple->ipv6.daddr));
+		tuple.dst.u.tcp.port = bpf_tuple->ipv6.dport;
+#endif
+	} else {
+		return -EINVAL;
+	}
+
+	net = dev_net(ctx->rxq->dev);
+	if ((s32)netns_id >= 0) {
+		if (unlikely(netns_id) > S32_MAX)
+			return -EINVAL;
+		net = get_net_ns_by_id(net, netns_id);
+	}
+
+	zone = &nf_ct_zone_dflt;
+
+	tuple.dst.protonum = IPPROTO_TCP;
+	tuple.dst.dir = IP_CT_DIR_ORIGINAL;
+
+	found = nf_conntrack_find_get(net, zone, &tuple);
+	if (!found)
+		return -ENOENT;
+	ct = nf_ct_tuplehash_to_ctrack(found);
+	status = ct->status;
+	nf_ct_put(ct);
+
+	return status;
+}
+
+static const struct bpf_func_proto bpf_xdp_ct_lookup_tcp_proto = {
+	.func		= bpf_xdp_ct_lookup_tcp,
+	.gpl_only	= true, /* nf_conntrack_find_get is GPL */
+	.pkt_access	= true,
+	.ret_type	= RET_INTEGER,
+	.arg1_type	= ARG_PTR_TO_CTX,
+	.arg2_type	= ARG_PTR_TO_MEM,
+	.arg3_type	= ARG_CONST_SIZE,
+	.arg4_type	= ARG_ANYTHING,
+	.arg5_type	= ARG_ANYTHING,
+};
+#endif
+
 #endif /* CONFIG_INET */
 
 bool bpf_helper_changes_pkt_data(void *func)
@@ -6327,6 +6394,10 @@ xdp_func_proto(enum bpf_func_id func_id, const struct bpf_prog *prog)
 		return &bpf_tcp_check_syncookie_proto;
 	case BPF_FUNC_tcp_gen_syncookie:
 		return &bpf_tcp_gen_syncookie_proto;
+#if IS_BUILTIN(CONFIG_NF_CONNTRACK)
+	case BPF_FUNC_ct_lookup_tcp:
+		return &bpf_xdp_ct_lookup_tcp_proto;
+#endif
 #endif
 	default:
 		return bpf_base_func_proto(func_id);
