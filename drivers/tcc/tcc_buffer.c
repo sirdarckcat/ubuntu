@@ -711,6 +711,8 @@ static int tcc_parse_ptct(void)
 	struct psram *p_tmp_psram;
 	struct tcc_ptct_compatibility *compatibility;
 	u64 l2_start, l2_end, l3_start, l3_end;
+	void *errlog_buff = NULL;
+	u32 i = 0;
 
 	tbl_swap = (u32 *)acpi_ptct_tbl;
 
@@ -771,8 +773,18 @@ static int tcc_parse_ptct(void)
 			entry_errlog_v2 = (struct tcc_ptct_errlog_v2 *)(tbl_swap + ENTRY_HEADER_SIZE);
 			erraddr = ((u64)(entry_errlog_v2->erraddr_hi) << 32) | entry_errlog_v2->erraddr_lo;
 			errsize = entry_errlog_v2->errsize;
-			dprintk("erraddr   @ %016llx\n", erraddr);
-			dprintk("errsize   @ %08x\n", errsize);
+			if (errsize > 0) {
+				errlog_buff = memremap(erraddr, errsize, MEMREMAP_WB);
+				if (!errlog_buff)
+					pr_err("System error. Fail to map this errlog kernel address.");
+				else {
+					pr_err("errlog_addr   @ %016llx\n", erraddr);
+					pr_err("errlog_size   @ %08x\n", errsize);
+					for (i = 0; i < errsize; i += sizeof(int))
+						pr_err("%08x\n", ((u32 *)errlog_buff)[i/sizeof(int)]);
+					memunmap(errlog_buff);
+				}
+			}
 		}
 
 		offset += entry_size / sizeof(u32);
@@ -1307,7 +1319,6 @@ static long tcc_buffer_ioctl(struct file *filp, unsigned int cmd, unsigned long 
 	u64 register_phyaddr;
 	void *register_data = NULL;
 	void *errlog_buff = NULL;
-	u32 i = 0;
 
 	int cpu, testmask = 0;
 
@@ -1502,9 +1513,6 @@ static long tcc_buffer_ioctl(struct file *filp, unsigned int cmd, unsigned long 
 			pr_err("cannot map this errlog address");
 			return -ENOMEM;
 		}
-
-		for (i = 0; ((i < (errsize/sizeof(int))) && (tccdbg == 1)); i++)
-			pr_err("%08x\t", ((u32 *)errlog_buff)[i]);
 
 		ret = copy_to_user((u32 *)arg, errlog_buff, errsize);
 		memunmap(errlog_buff);
