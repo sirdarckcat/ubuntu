@@ -400,6 +400,16 @@ config ARM_SMMU_QCOM
 	  When running on a Qualcomm platform that has the custom variant
 	  of the ARM SMMU, this needs to be built into the SMMU driver.
 
+config ARM_SMMU_SELFTEST
+	bool "ARM SMMU self test support"
+	depends on ARM_SMMU
+	help
+	  Enables self tests for arm smmu. Tests basic hardware
+	  configurations like interrupts. Note that enabling this
+	  option can marginally increase the boot time.
+
+	  If unsure, say N here.
+
 config ARM_SMMU_V3
 	tristate "ARM Ltd. System MMU Version 3 (SMMUv3) Support"
 	depends on ARM64
