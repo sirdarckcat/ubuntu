@@ -126,6 +126,9 @@
 #define  PCIE_BMIPS_MISC_HARD_PCIE_HARD_DEBUG_SERDES_IDDQ_MASK		0x00800000
 #define  PCIE_MISC_HARD_PCIE_HARD_DEBUG_CLKREQ_L1SS_ENABLE_MASK		0x00200000
 
+#define PCIE_MISC_UBUS_BAR2_CONFIG_REMAP	0x40b4
+#define  PCIE_MISC_UBUS_BAR2_CONFIG_REMAP_ACCESS_ENABLE_MASK	BIT(0)
+
 #define PCIE_INTR2_CPU_BASE		(pcie->reg_offsets[INTR2_CPU])
 #define PCIE_MSI_INTR2_BASE		0x4500
 /* Offsets from PCIE_INTR2_CPU_BASE and PCIE_MSI_INTR2_BASE */
@@ -292,8 +295,8 @@ static int brcm_pcie_encode_ibar_size(u64 size)
 	if (log2_in >= 12 && log2_in <= 15)
 		/* Covers 4KB to 32KB (inclusive) */
 		return (log2_in - 12) + 0x1c;
-	else if (log2_in >= 16 && log2_in <= 35)
-		/* Covers 64KB to 32GB, (inclusive) */
+	else if (log2_in >= 16 && log2_in <= 36)
+		/* Covers 64KB to 64GB, (inclusive) */
 		return log2_in - 15;
 	/* Something is awry so disable */
 	return 0;
@@ -968,7 +971,12 @@ static int brcm_pcie_setup(struct brcm_pcie *pcie)
 	writel(upper_32_bits(rc_bar2_offset),
 	       base + PCIE_MISC_RC_BAR2_CONFIG_HI);
 
+	tmp = readl(base + PCIE_MISC_UBUS_BAR2_CONFIG_REMAP);
+	u32p_replace_bits(&tmp, 1, PCIE_MISC_UBUS_BAR2_CONFIG_REMAP_ACCESS_ENABLE_MASK);
+	pr_crit("  write %x -> BAR2_CONFIG_REMAP\n", tmp);
+	writel(tmp, base + PCIE_MISC_UBUS_BAR2_CONFIG_REMAP);
 	tmp = readl(base + PCIE_MISC_MISC_CTRL);
+
 	for (memc = 0; memc < pcie->num_memc; memc++) {
 		u32 scb_size_val = ilog2(pcie->memc_size[memc]) - 15;
 
@@ -979,6 +987,7 @@ static int brcm_pcie_setup(struct brcm_pcie *pcie)
 		else if (memc == 2)
 			u32p_replace_bits(&tmp, scb_size_val, SCB_SIZE_MASK(2));
 	}
+
 	writel(tmp, base + PCIE_MISC_MISC_CTRL);
 
 	/*
