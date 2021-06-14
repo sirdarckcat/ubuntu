@@ -749,6 +749,17 @@ static int sunxi_mmc_calibrate(struct sunxi_mmc_host *host, int reg_off)
 	 */
 	writel(SDXC_CAL_DL_SW_EN, host->reg_base + reg_off);
 
+#if 0
+	writel(SDXC_CAL_START, host->reg_base + reg_off);
+
+	unsigned long expire = jiffies + msecs_to_jiffies(250);
+	u32 rval;
+
+	do {
+		rval = readl(host->reg_base + reg_off);
+	} while (time_before(jiffies, expire) && !(rval & SDXC_CAL_DONE));
+#endif
+
 	return 0;
 }
 
@@ -1203,7 +1214,6 @@ static const struct sunxi_mmc_cfg sun9i_a80_cfg = {
 
 static const struct sunxi_mmc_cfg sun50i_a64_cfg = {
 	.idma_des_size_bits = 16,
-	.clk_delays = NULL,
 	.can_calibrate = true,
 	.mask_data0 = true,
 	.needs_new_timings = true,
@@ -1211,7 +1221,6 @@ static const struct sunxi_mmc_cfg sun50i_a64_cfg = {
 
 static const struct sunxi_mmc_cfg sun50i_a64_emmc_cfg = {
 	.idma_des_size_bits = 13,
-	.clk_delays = NULL,
 	.can_calibrate = true,
 	.needs_new_timings = true,
 };
@@ -1219,7 +1228,6 @@ static const struct sunxi_mmc_cfg sun50i_a64_emmc_cfg = {
 static const struct sunxi_mmc_cfg sun50i_a100_cfg = {
 	.idma_des_size_bits = 16,
 	.idma_des_shift = 2,
-	.clk_delays = NULL,
 	.can_calibrate = true,
 	.mask_data0 = true,
 	.needs_new_timings = true,
@@ -1228,7 +1236,6 @@ static const struct sunxi_mmc_cfg sun50i_a100_cfg = {
 static const struct sunxi_mmc_cfg sun50i_a100_emmc_cfg = {
 	.idma_des_size_bits = 13,
 	.idma_des_shift = 2,
-	.clk_delays = NULL,
 	.can_calibrate = true,
 	.needs_new_timings = true,
 };
