@@ -242,6 +242,9 @@ static __s64 (*bpf_tcp_raw_gen_syncookie)(void *iph, __u32 iph_len,
 static int (*bpf_tcp_raw_check_syncookie)(void *iph, __u32 iph_len,
 					  struct tcphdr *th, __u32 th_len) =
 	(void *) BPF_FUNC_tcp_raw_check_syncookie;
+static int (*bpf_tcp_raw_gen_tscookie)(struct tcphdr *th, __u32 th_len,
+				       __be32 *tsopt, __u32 tsopt_len) =
+	(void *) BPF_FUNC_tcp_raw_gen_tscookie;
 
 /* llvm builtin functions that eBPF C program may use to
  * emit BPF_LD_ABS and BPF_LD_IND instructions
