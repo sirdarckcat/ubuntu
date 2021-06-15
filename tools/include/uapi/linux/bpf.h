@@ -4943,6 +4943,30 @@ union bpf_attr {
  *		**-ENOENT** the packet is not a valid ACK packet
  *
  *		**-EOPNOTSUPP** kernel configuration does not enable SYN cookies
+ *
+ * int bpf_tcp_raw_gen_tscookie(struct tcphdr *th, u32 th_len, __be32 *tsopt, u32 tsopt_len)
+ * 	Description
+ *		Try to generate a timestamp cookie which encodes some of the
+ *		flags sent by the client in the SYN packet: SACK support, ECN
+ *		support, window scale. To be used with SYN cookies.
+ *
+ * 		*th* points to the start of the TCP header of the client's SYN
+ * 		packet, while *th_len* contains **sizeof**\ (**struct tcphdr**).
+ *
+ * 		*tsopt* points to the output location where to put the resulting
+ * 		timestamp values: tsval and tsecr, in the format of the TCP
+ * 		timestamp option.
+ *
+ * 	Return
+ *		On success, 0.
+ *
+ *		On failure, the returned value is one of the following:
+ *
+ *		**-EINVAL** input arguments are invalid
+ *
+ *		**-ENOENT** the TCP header doesn't have the timestamp option
+ *
+ *		**-EOPNOTSUPP** kernel configuration does not enable SYN cookies
  */
 #define __BPF_FUNC_MAPPER(FN)		\
 	FN(unspec),			\
@@ -5124,6 +5148,7 @@ union bpf_attr {
 	FN(ct_lookup_tcp),		\
 	FN(tcp_raw_gen_syncookie),	\
 	FN(tcp_raw_check_syncookie),	\
+	FN(tcp_raw_gen_tscookie),	\
 	/* */
 
 /* integer value in 'imm' field of BPF_CALL instruction selects which helper
