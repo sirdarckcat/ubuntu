@@ -6175,6 +6175,42 @@ static const struct bpf_func_proto bpf_tcp_raw_check_syncookie_proto = {
 	.arg4_type	= ARG_CONST_SIZE,
 };
 
+BPF_CALL_4(bpf_tcp_raw_gen_tscookie, struct tcphdr *, th, u32, th_len,
+	   __be32 *, tsopt, u32, tsopt_len)
+{
+	int err;
+
+#ifdef CONFIG_SYN_COOKIES
+	if (tsopt_len != sizeof(u64)) {
+		err = -EINVAL;
+		goto err;
+	}
+
+	if (!cookie_init_timestamp_raw(th, &tsopt[0], &tsopt[1])) {
+		err = -ENOENT;
+		goto err;
+	}
+
+	return 0;
+#else
+	err = -EOPNOTSUPP;
+#endif
+err:
+	memset(tsopt, 0, tsopt_len);
+	return err;
+}
+
+static const struct bpf_func_proto bpf_tcp_raw_gen_tscookie_proto = {
+	.func		= bpf_tcp_raw_gen_tscookie,
+	.gpl_only	= false,
+	.pkt_access	= true,
+	.ret_type	= RET_INTEGER,
+	.arg1_type	= ARG_PTR_TO_MEM,
+	.arg2_type	= ARG_CONST_SIZE,
+	.arg3_type	= ARG_PTR_TO_UNINIT_MEM,
+	.arg4_type	= ARG_CONST_SIZE,
+};
+
 #endif /* CONFIG_INET */
 
 bool bpf_helper_changes_pkt_data(void *func)
@@ -6517,6 +6553,8 @@ xdp_func_proto(enum bpf_func_id func_id, const struct bpf_prog *prog)
 		return &bpf_tcp_raw_gen_syncookie_proto;
 	case BPF_FUNC_tcp_raw_check_syncookie:
 		return &bpf_tcp_raw_check_syncookie_proto;
+	case BPF_FUNC_tcp_raw_gen_tscookie:
+		return &bpf_tcp_raw_gen_tscookie_proto;
 #endif
 	default:
 		return bpf_base_func_proto(func_id);
