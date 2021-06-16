@@ -226,13 +226,6 @@ run git add "$DEBIAN/changelog"
 # Create the commit
 run git commit -s -F debian/commit-templates/newrelease
 
-# Perform a basic ABI check
-if [ "$dry_run" -eq 0 ]; then
-	version=$(dpkg-parsechangelog -l"$DEBIAN/changelog" -SVersion -c1 -o1)
-	abi_dir="$DEBIAN/abi/$version"
-	[ ! -d "$abi_dir" ] && hl "Warning: ABI directory is missing: $abi_dir"
-fi
-
 # Mimic maint-startnewrelease
 [ "$dry_run" -eq 0 ] && \
     hl "\n***** Now please inspect the commit before pushing *****"
