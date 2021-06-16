@@ -21,7 +21,7 @@ do_tools_bpftool = true
 do_enforce_all      = false
 
 do_dtbs		= true
-do_zfs		= false
+do_zfs		= true
 do_dkms_nvidia	= false
 do_dkms_nvidia_server = false
 do_dkms_vbox	= false
