@@ -130,6 +130,8 @@
 #define  PCIE_MISC_UBUS_CTRL_UBUS_PCIE_REPLY_ERR_DIS_MASK	BIT(13)
 #define  PCIE_MISC_UBUS_CTRL_UBUS_PCIE_REPLY_DECERR_DIS_MASK	BIT(19)
 
+#define PCIE_MISC_UBUS_TIMEOUT	0x40A8
+
 #define PCIE_MISC_UBUS_BAR2_CONFIG_REMAP	0x40b4
 #define  PCIE_MISC_UBUS_BAR2_CONFIG_REMAP_ACCESS_ENABLE_MASK	BIT(0)
 
@@ -1015,6 +1017,13 @@ static int brcm_pcie_setup(struct brcm_pcie *pcie)
 	pr_crit("  write %x -> MISC_UBUS_CTRL\n", tmp);
 	writel(tmp, base + PCIE_MISC_UBUS_CTRL);
 	writel(0xffffffff, base + PCIE_MISC_AXI_READ_ERROR_DATA);
+
+	/* Adjust completion timeout - defaults to a very tight value.
+	 * If a link retrain happens, don't prematurely terminate the transaction.
+	 * The value is specified in core clocks, so for the upper clockspeed of 750MHz
+	 * and a maximum link retrain time of 24ms, timeout = 14.4e6.
+	 */
+	writel(0xdbba00, base + PCIE_MISC_UBUS_TIMEOUT);
 
 	/*
 	 * We ideally want the MSI target address to be located in the 32bit
