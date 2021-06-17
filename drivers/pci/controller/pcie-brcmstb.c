@@ -126,8 +126,14 @@
 #define  PCIE_BMIPS_MISC_HARD_PCIE_HARD_DEBUG_SERDES_IDDQ_MASK		0x00800000
 #define  PCIE_MISC_HARD_PCIE_HARD_DEBUG_CLKREQ_L1SS_ENABLE_MASK		0x00200000
 
+#define PCIE_MISC_UBUS_CTRL	0x40a4
+#define  PCIE_MISC_UBUS_CTRL_UBUS_PCIE_REPLY_ERR_DIS_MASK	BIT(13)
+#define  PCIE_MISC_UBUS_CTRL_UBUS_PCIE_REPLY_DECERR_DIS_MASK	BIT(19)
+
 #define PCIE_MISC_UBUS_BAR2_CONFIG_REMAP	0x40b4
 #define  PCIE_MISC_UBUS_BAR2_CONFIG_REMAP_ACCESS_ENABLE_MASK	BIT(0)
+
+#define PCIE_MISC_AXI_READ_ERROR_DATA	0x4170
 
 #define PCIE_INTR2_CPU_BASE		(pcie->reg_offsets[INTR2_CPU])
 #define PCIE_MSI_INTR2_BASE		0x4500
@@ -1001,6 +1007,14 @@ static int brcm_pcie_setup(struct brcm_pcie *pcie)
 	}
 
 	writel(tmp, base + PCIE_MISC_MISC_CTRL);
+
+	/* Suppress AXI error responses and return 1s for read failures */
+	tmp = readl(base + PCIE_MISC_UBUS_CTRL);
+	u32p_replace_bits(&tmp, 1, PCIE_MISC_UBUS_CTRL_UBUS_PCIE_REPLY_ERR_DIS_MASK);
+	u32p_replace_bits(&tmp, 1, PCIE_MISC_UBUS_CTRL_UBUS_PCIE_REPLY_DECERR_DIS_MASK);
+	pr_crit("  write %x -> MISC_UBUS_CTRL\n", tmp);
+	writel(tmp, base + PCIE_MISC_UBUS_CTRL);
+	writel(0xffffffff, base + PCIE_MISC_AXI_READ_ERROR_DATA);
 
 	/*
 	 * We ideally want the MSI target address to be located in the 32bit
