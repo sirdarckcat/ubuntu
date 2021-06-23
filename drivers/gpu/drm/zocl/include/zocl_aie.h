@@ -13,7 +13,7 @@
 #ifndef _ZOCL_AIE_H_
 #define _ZOCL_AIE_H_
 
-#include "zynq_ioctl.h"
+#include <drm/zynq_ioctl.h>
 
 /* Wait 100 * 1 ms before AIE parition is availabe after reset */
 #define	ZOCL_AIE_RESET_TIMEOUT_INTERVAL	1
