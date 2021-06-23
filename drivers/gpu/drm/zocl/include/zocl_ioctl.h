@@ -15,7 +15,7 @@
 #ifndef _XCL_ZOCL_IOCTL_H_
 #define _XCL_ZOCL_IOCTL_H_
 
-#include "zynq_ioctl.h"
+#include <drm/zynq_ioctl.h>
 
 int zocl_create_bo_ioctl(struct drm_device *dev, void *data,
 		struct drm_file *filp);
