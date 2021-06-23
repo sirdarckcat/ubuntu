@@ -1,4 +1,26 @@
-linux-xilinx-zynqmp (5.4.0-1014.15) focal; urgency=medium
+linux-xilinx-zynqmp (5.4.0-1014.16) focal; urgency=medium
+
+  * Define suspend/resume wake up sources (LP: #1921001)
+    - [Config] Enable keyboard drive
+
+  * Kernel config review (LP: #1925667)
+    - [Config] Disable CONFIG_ARM_PSCI_CPUIDLE
+
+  * Update kernel config for Xilinx SOM (LP: #1927147)
+    - [Config] Support for Xilinx SOM
+
+  * Import changes from Xilinx new kernel release (LP: #1928298)
+    - [Config] Update kernel configs to Xilinx rebase 5.4 branch
+
+  * Enable kernel debug features (LP: #1917874)
+    - [Config] enable kernel features for debug
+
+  * Fixes for wake from USB (LP: #1932244)
+    - usb: dwc3: Corrected wake up capability conditional check for board specific
+    - usb: dwc3: Disable phy suspend after power-on reset
+
+  * Publish zocl ioctl header file (LP: #1931882)
+    - SAUCE: move zynq_ioctl.h to include/drm
 
   * Miscellaneous upstream changes
     - mtd: spi-nor: Fix call trace when qspi driver built as module
@@ -62,7 +84,7 @@ linux-xilinx-zynqmp (5.4.0-1014.15) focal; urgency=medium
     - arm64: xilinx: Enable Xilinx Synchronizer driver
     - xilinx: defconfig: Enable mulitple sensor drivers
 
- -- Hsuan-Yu Lin <shane.lin@canonical.com>  Mon, 14 Jun 2021 17:48:54 +0800
+ -- Wen-chien Jesse Sung <jesse.sung@canonical.com>  Wed, 23 Jun 2021 22:56:41 +0800
 
 linux-xilinx-zynqmp (5.4.0-1013.14) focal; urgency=medium
 
