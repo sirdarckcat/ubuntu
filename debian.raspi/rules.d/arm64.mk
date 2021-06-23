@@ -23,3 +23,4 @@ do_libc_dev_package	= false
 do_doc_package		= false
 do_source_package	= false
 do_zfs			= true
+do_extras_package	= true
