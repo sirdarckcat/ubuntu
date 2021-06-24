@@ -17,6 +17,7 @@
 #include <linux/of_device.h>
 #include <linux/platform_device.h>
 #include <linux/regmap.h>
+#include <linux/regulator/consumer.h>
 #include <linux/reset.h>
 #include <linux/slab.h>
 #include <linux/thermal.h>
@@ -337,6 +338,10 @@ static int sun8i_ths_resource_init(struct ths_device *tmdev)
 	tmdev->regmap = devm_regmap_init_mmio(dev, base, &config);
 	if (IS_ERR(tmdev->regmap))
 		return PTR_ERR(tmdev->regmap);
+
+	ret = devm_regulator_get_enable(dev, "vref");
+	if (ret)
+		return ret;
 
 	tmdev->reset = devm_reset_control_get_optional(dev, NULL);
 	if (IS_ERR(tmdev->reset))
