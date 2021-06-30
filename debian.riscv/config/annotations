@@ -2731,9 +2731,6 @@ CONFIG_MTD_NAND_DISKONCHIP_BBTWRITE             note<can be enabled at runtime>
 # Menu: Device Drivers >> Memory Technology Device (MTD) support >> SPI NOR device support
 CONFIG_MTD_SPI_NOR                              policy<{'riscv64': 'm'}>
 CONFIG_MTD_SPI_NOR_USE_4K_SECTORS               policy<{'riscv64': 'y'}>
-#
-CONFIG_SPI_INTEL_SPI_PCI                        mark<ENFORCED> note<LP:1734147>
-CONFIG_SPI_INTEL_SPI_PLATFORM                   mark<ENFORCED> note<LP:1734147>
 
 # Menu: Device Drivers >> Memory Technology Device (MTD) support >> Self-contained MTD device drivers
 CONFIG_MTD_PMC551                               policy<{'riscv64': 'm'}>
@@ -4298,7 +4295,6 @@ CONFIG_PPP_SYNC_TTY                             policy<{'riscv64': 'm'}>
 
 # Menu: Device Drivers >> Network device support >> S/390 network device drivers
 #
-CONFIG_ISM                                      mark<ENFORCED> note<LP:1789934>
 
 # Menu: Device Drivers >> Network device support >> S/390 network device drivers >> Gigabit Ethernet device support
 
