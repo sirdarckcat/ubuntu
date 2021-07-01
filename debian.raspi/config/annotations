@@ -4,6 +4,9 @@
 
 include "../../debian.master/config/annotations"
 
+CONFIG_HUGETLBFS				policy<{'arm64': 'y', 'armhf': 'y', 'armhf-raspi-nolpae': '-'}> mark<ENFORCED> note<LP: #1933627>
+CONFIG_CGROUP_HUGETLB				policy<{'arm64': 'y', 'armhf': 'y', 'armhf-raspi-nolpae': '-'}> mark<ENFORCED> note<LP: #1933627>
+
 CONFIG_MFD_TPS65217				policy<{'*': 'm'}> mark<ENFORCED> note<not a boot essential for raspi>
 CONFIG_SAMPLE_TRACE_PRINTK			policy<{'*': '-'}> mark<ENFORCED> note<not available due to SAMPLES=n>
 
