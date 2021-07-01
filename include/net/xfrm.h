@@ -346,6 +346,10 @@ int km_query(struct xfrm_state *x, struct xfrm_tmpl *t,
 	     struct xfrm_policy *pol);
 void km_state_expired(struct xfrm_state *x, int hard, u32 portid);
 int __xfrm_state_delete(struct xfrm_state *x);
+struct xfrm_policy *xfrm_policy_lookup_bytype(struct net *net, u8 type,
+					      const struct flowi *fl,
+					      u16 family, u8 dir,
+					      u32 if_id);
 
 struct xfrm_state_afinfo {
 	u8				family;
