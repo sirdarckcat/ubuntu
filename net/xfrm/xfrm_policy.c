@@ -2074,10 +2074,10 @@ xfrm_policy_eval_candidates(struct xfrm_pol_inexact_candidates *cand,
 	return prefer;
 }
 
-static struct xfrm_policy *xfrm_policy_lookup_bytype(struct net *net, u8 type,
-						     const struct flowi *fl,
-						     u16 family, u8 dir,
-						     u32 if_id)
+struct xfrm_policy *xfrm_policy_lookup_bytype(struct net *net, u8 type,
+					      const struct flowi *fl,
+					      u16 family, u8 dir,
+					      u32 if_id)
 {
 	struct xfrm_pol_inexact_candidates cand;
 	const xfrm_address_t *daddr, *saddr;
@@ -2138,6 +2138,7 @@ fail:
 
 	return ret;
 }
+EXPORT_SYMBOL(xfrm_policy_lookup_bytype);
 
 static struct xfrm_policy *xfrm_policy_lookup(struct net *net,
 					      const struct flowi *fl,
