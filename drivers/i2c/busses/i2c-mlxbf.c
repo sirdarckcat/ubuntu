@@ -770,6 +770,8 @@ static int mlx_smbus_start_transaction(struct mlx_i2c_priv *priv,
 		if (flags & I2C_F_WRITE) {
 			write_en   = 1;
 			write_len += operation->length;
+			if (data_idx + operation->length > MASTER_DATA_DESC_SIZE)
+				return -ENOBUFS;
 			memcpy(data_desc + data_idx,
 			       operation->buffer, operation->length);
 			data_idx  += operation->length;
