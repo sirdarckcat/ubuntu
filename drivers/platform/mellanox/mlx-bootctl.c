@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0
+// SPDX-License-Identifier: GPL-2.0 or BSD-3-Clause
 /*
  *  Mellanox boot control driver
  *  This driver provides a sysfs interface for systems management
@@ -25,7 +25,7 @@
 #include "mlx-bootctl.h"
 
 #define DRIVER_NAME		"mlx-bootctl"
-#define DRIVER_VERSION		"1.3"
+#define DRIVER_VERSION		"1.4"
 #define DRIVER_DESCRIPTION	"Mellanox boot control driver"
 
 #define SB_MODE_SECURE_MASK	0x03
@@ -1271,4 +1271,4 @@ module_platform_driver(mbc_driver);
 MODULE_DESCRIPTION(DRIVER_DESCRIPTION);
 MODULE_VERSION(DRIVER_VERSION);
 MODULE_AUTHOR("Mellanox Technologies");
-MODULE_LICENSE("GPL");
+MODULE_LICENSE("Dual BSD/GPL");
