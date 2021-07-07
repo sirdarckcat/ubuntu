@@ -298,8 +298,10 @@ static ssize_t oob_mac_show(struct device_driver *drv, char *buf)
 	struct arm_smccc_res res;
 	u8 *mac_byte_ptr;
 
+	mutex_lock(&mfg_ops_lock);
 	arm_smccc_smc(MLNX_HANDLE_GET_MFG_INFO, MLNX_MFG_TYPE_OOB_MAC, 0, 0, 0,
 		      0, 0, 0, &res);
+	mutex_unlock(&mfg_ops_lock);
 	if (res.a0)
 		return -EPERM;
 
@@ -364,7 +366,9 @@ static int get_opn_data(u64 *data, u8 word)
 	if (!type || !data)
 		return -EINVAL;
 
+	mutex_lock(&mfg_ops_lock);
 	arm_smccc_smc(MLNX_HANDLE_GET_MFG_INFO, type, 0, 0, 0, 0, 0, 0, &res);
+	mutex_unlock(&mfg_ops_lock);
 	if (res.a0)
 		return -EPERM;
 
@@ -382,8 +386,10 @@ static int set_opn_data(u64 data, u8 word)
 	if (!type)
 		return -EINVAL;
 
+	mutex_lock(&mfg_ops_lock);
 	arm_smccc_smc(MLNX_HANDLE_SET_MFG_INFO, type, sizeof(u64), data, 0, 0,
 		      0, 0, &res);
+	mutex_unlock(&mfg_ops_lock);
 	if (res.a0)
 		return -EPERM;
 
