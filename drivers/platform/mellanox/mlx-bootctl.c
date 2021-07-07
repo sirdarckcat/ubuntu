@@ -76,21 +76,41 @@ enum {
 	MLNX_MFG_TYPE_OOB_MAC = 1,
 	MLNX_MFG_TYPE_OPN_0,
 	MLNX_MFG_TYPE_OPN_1,
+	MLNX_MFG_TYPE_OPN_2,
+	MLNX_MFG_TYPE_SKU_0,
+	MLNX_MFG_TYPE_SKU_1,
+	MLNX_MFG_TYPE_SKU_2,
+	MLNX_MFG_TYPE_MODL_0,
+	MLNX_MFG_TYPE_MODL_1,
+	MLNX_MFG_TYPE_MODL_2,
+	MLNX_MFG_TYPE_SN_0,
+	MLNX_MFG_TYPE_SN_1,
+	MLNX_MFG_TYPE_SN_2,
+	MLNX_MFG_TYPE_UUID_0,
+	MLNX_MFG_TYPE_UUID_1,
+	MLNX_MFG_TYPE_UUID_2,
+	MLNX_MFG_TYPE_UUID_3,
+	MLNX_MFG_TYPE_UUID_4,
 };
 
 /* This mutex is used to serialize MFG write and lock operations. */
 static DEFINE_MUTEX(mfg_ops_lock);
 
-#define MLNX_MFG_OPN_VAL_LEN       16
-#define MLNX_MFG_OPN_VAL_WORD_CNT  (MLNX_MFG_OPN_VAL_LEN / 8)
+#define MLNX_MFG_OOB_MAC_LEN         ETH_ALEN
+#define MLNX_MFG_OPN_VAL_LEN         24
+#define MLNX_MFG_SKU_VAL_LEN         24
+#define MLNX_MFG_MODL_VAL_LEN        24
+#define MLNX_MFG_SN_VAL_LEN          24
+#define MLNX_MFG_UUID_VAL_LEN        40
+#define MLNX_MFG_VAL_QWORD_CNT(type) \
+	(MLNX_MFG_##type##_VAL_LEN / sizeof(u64))
 
-#define MLNX_MFG_OOB_MAC_LEN       ETH_ALEN
 /*
  * The MAC address consists of 6 bytes (2 digits each) separated by ':'.
  * The expected format is: "XX:XX:XX:XX:XX:XX"
  */
 #define MLNX_MFG_OOB_MAC_FORMAT_LEN \
-        ((MLNX_MFG_OOB_MAC_LEN * 2) + (MLNX_MFG_OOB_MAC_LEN - 1))
+	((MLNX_MFG_OOB_MAC_LEN * 2) + (MLNX_MFG_OOB_MAC_LEN - 1))
 
 /* The SMC calls in question are atomic, so we don't have to lock here. */
 static int smc_call1(unsigned int smc_op, int smc_arg)
@@ -347,91 +367,254 @@ static ssize_t oob_mac_store(struct device_driver *drv, const char *buf,
 	return res.a0 ? -EPERM : count;
 }
 
-static u8 get_opn_type(u8 word)
+static ssize_t opn_show(struct device_driver *drv, char *buf)
 {
-	switch (word) {
-	case 0:
-		return MLNX_MFG_TYPE_OPN_0;
-	case 1:
-		return MLNX_MFG_TYPE_OPN_1;
-	}
-
-	return 0;
-}
-
-static int get_opn_data(u64 *data, u8 word)
-{
+	u64 opn_data[MLNX_MFG_VAL_QWORD_CNT(OPN)] = { 0 };
+	char opn[MLNX_MFG_OPN_VAL_LEN + 1] = { 0 };
 	struct arm_smccc_res res;
-	u8 type;
-
-	type = get_opn_type(word);
-	if (!type || !data)
-		return -EINVAL;
+	int word;
 
 	mutex_lock(&mfg_ops_lock);
-	arm_smccc_smc(MLNX_HANDLE_GET_MFG_INFO, type, 0, 0, 0, 0, 0, 0, &res);
-	mutex_unlock(&mfg_ops_lock);
-	if (res.a0)
-		return -EPERM;
-
-	*data = res.a1;
-
-	return 0;
-}
-
-static int set_opn_data(u64 data, u8 word)
-{
-	struct arm_smccc_res res;
-	u8 type;
-
-	type = get_opn_type(word);
-	if (!type)
-		return -EINVAL;
-
-	mutex_lock(&mfg_ops_lock);
-	arm_smccc_smc(MLNX_HANDLE_SET_MFG_INFO, type, sizeof(u64), data, 0, 0,
-		      0, 0, &res);
-	mutex_unlock(&mfg_ops_lock);
-	if (res.a0)
-		return -EPERM;
-
-	return 0;
-}
-
-static ssize_t opn_str_show(struct device_driver *drv, char *buf)
-{
-	u64 opn_data[MLNX_MFG_OPN_VAL_WORD_CNT] = { 0 };
-	char opn_str[MLNX_MFG_OPN_VAL_LEN] = { 0 };
-	int word, err;
-
-	for (word = 0; word < MLNX_MFG_OPN_VAL_WORD_CNT; word++) {
-		err = get_opn_data(&opn_data[word], word);
-		if (err)
-			return err;
+	for (word = 0; word < MLNX_MFG_VAL_QWORD_CNT(OPN); word++) {
+		arm_smccc_smc(MLNX_HANDLE_GET_MFG_INFO,
+			      MLNX_MFG_TYPE_OPN_0 + word,
+			      0, 0, 0, 0, 0, 0, &res);
+		if (res.a0) {
+			mutex_unlock(&mfg_ops_lock);
+			return -EPERM;
+		}
+		opn_data[word] = res.a1;
 	}
+	mutex_unlock(&mfg_ops_lock);
+	memcpy(opn, opn_data, MLNX_MFG_OPN_VAL_LEN);
 
-	memcpy(opn_str, opn_data, MLNX_MFG_OPN_VAL_LEN);
-
-	return snprintf(buf, PAGE_SIZE, "%s", opn_str);
+	return snprintf(buf, PAGE_SIZE, "%s", opn);
 }
 
-static ssize_t opn_str_store(struct device_driver *drv, const char *buf,
-			     size_t count)
+static ssize_t opn_store(struct device_driver *drv, const char *buf,
+			 size_t count)
 {
-	u64 opn[MLNX_MFG_OPN_VAL_WORD_CNT] = { 0 };
-	int word, err;
+	u64 opn[MLNX_MFG_VAL_QWORD_CNT(OPN)] = { 0 };
+	struct arm_smccc_res res;
+	int word;
 
 	if (count > MLNX_MFG_OPN_VAL_LEN)
 		return -EINVAL;
 
-	memcpy(opn, buf, strlen(buf));
+	memcpy(opn, buf, count);
 
 	mutex_lock(&mfg_ops_lock);
-	for (word = 0; word < MLNX_MFG_OPN_VAL_WORD_CNT; word++) {
-		err = set_opn_data(opn[word], word);
-		if (err) {
+	for (word = 0; word < MLNX_MFG_VAL_QWORD_CNT(OPN); word++) {
+		arm_smccc_smc(MLNX_HANDLE_SET_MFG_INFO,
+			      MLNX_MFG_TYPE_OPN_0 + word,
+			      sizeof(u64), opn[word], 0, 0, 0, 0, &res);
+		if (res.a0) {
 			mutex_unlock(&mfg_ops_lock);
-			return err;
+			return -EPERM;
+		}
+	}
+	mutex_unlock(&mfg_ops_lock);
+
+	return count;
+}
+
+static ssize_t sku_show(struct device_driver *drv, char *buf)
+{
+	u64 sku_data[MLNX_MFG_VAL_QWORD_CNT(SKU)] = { 0 };
+	char sku[MLNX_MFG_SKU_VAL_LEN + 1] = { 0 };
+	struct arm_smccc_res res;
+	int word;
+
+	mutex_lock(&mfg_ops_lock);
+	for (word = 0; word < MLNX_MFG_VAL_QWORD_CNT(SKU); word++) {
+		arm_smccc_smc(MLNX_HANDLE_GET_MFG_INFO,
+			      MLNX_MFG_TYPE_SKU_0 + word,
+			      0, 0, 0, 0, 0, 0, &res);
+		if (res.a0) {
+			mutex_unlock(&mfg_ops_lock);
+			return -EPERM;
+		}
+		sku_data[word] = res.a1;
+	}
+	mutex_unlock(&mfg_ops_lock);
+	memcpy(sku, sku_data, MLNX_MFG_SKU_VAL_LEN);
+
+	return snprintf(buf, PAGE_SIZE, "%s", sku);
+}
+
+static ssize_t sku_store(struct device_driver *drv, const char *buf,
+			 size_t count)
+{
+	u64 sku[MLNX_MFG_VAL_QWORD_CNT(SKU)] = { 0 };
+	struct arm_smccc_res res;
+	int word;
+
+	if (count > MLNX_MFG_SKU_VAL_LEN)
+		return -EINVAL;
+
+	memcpy(sku, buf, count);
+
+	mutex_lock(&mfg_ops_lock);
+	for (word = 0; word < MLNX_MFG_VAL_QWORD_CNT(SKU); word++) {
+		arm_smccc_smc(MLNX_HANDLE_SET_MFG_INFO,
+			      MLNX_MFG_TYPE_SKU_0 + word,
+			      sizeof(u64), sku[word], 0, 0, 0, 0, &res);
+		if (res.a0) {
+			mutex_unlock(&mfg_ops_lock);
+			return -EPERM;
+		}
+	}
+	mutex_unlock(&mfg_ops_lock);
+
+	return count;
+}
+
+static ssize_t modl_show(struct device_driver *drv, char *buf)
+{
+	u64 modl_data[MLNX_MFG_VAL_QWORD_CNT(MODL)] = { 0 };
+	char modl[MLNX_MFG_MODL_VAL_LEN + 1] = { 0 };
+	struct arm_smccc_res res;
+	int word;
+
+	mutex_lock(&mfg_ops_lock);
+	for (word = 0; word < MLNX_MFG_VAL_QWORD_CNT(MODL); word++) {
+		arm_smccc_smc(MLNX_HANDLE_GET_MFG_INFO,
+			      MLNX_MFG_TYPE_MODL_0 + word,
+			      0, 0, 0, 0, 0, 0, &res);
+		if (res.a0) {
+			mutex_unlock(&mfg_ops_lock);
+			return -EPERM;
+		}
+		modl_data[word] = res.a1;
+	}
+	mutex_unlock(&mfg_ops_lock);
+	memcpy(modl, modl_data, MLNX_MFG_MODL_VAL_LEN);
+
+	return snprintf(buf, PAGE_SIZE, "%s", modl);
+}
+
+static ssize_t modl_store(struct device_driver *drv, const char *buf,
+			  size_t count)
+{
+	u64 modl[MLNX_MFG_VAL_QWORD_CNT(MODL)] = { 0 };
+	struct arm_smccc_res res;
+	int word;
+
+	if (count > MLNX_MFG_MODL_VAL_LEN)
+		return -EINVAL;
+
+	memcpy(modl, buf, count);
+
+	mutex_lock(&mfg_ops_lock);
+	for (word = 0; word < MLNX_MFG_VAL_QWORD_CNT(MODL); word++) {
+		arm_smccc_smc(MLNX_HANDLE_SET_MFG_INFO,
+			      MLNX_MFG_TYPE_MODL_0 + word,
+			      sizeof(u64), modl[word], 0, 0, 0, 0, &res);
+		if (res.a0) {
+			mutex_unlock(&mfg_ops_lock);
+			return -EPERM;
+		}
+	}
+	mutex_unlock(&mfg_ops_lock);
+
+	return count;
+}
+
+static ssize_t sn_show(struct device_driver *drv, char *buf)
+{
+	u64 sn_data[MLNX_MFG_VAL_QWORD_CNT(SN)] = { 0 };
+	char sn[MLNX_MFG_SN_VAL_LEN + 1] = { 0 };
+	struct arm_smccc_res res;
+	int word;
+
+	mutex_lock(&mfg_ops_lock);
+	for (word = 0; word < MLNX_MFG_VAL_QWORD_CNT(SN); word++) {
+		arm_smccc_smc(MLNX_HANDLE_GET_MFG_INFO,
+			      MLNX_MFG_TYPE_SN_0 + word,
+			      0, 0, 0, 0, 0, 0, &res);
+		if (res.a0) {
+			mutex_unlock(&mfg_ops_lock);
+			return -EPERM;
+		}
+		sn_data[word] = res.a1;
+	}
+	mutex_unlock(&mfg_ops_lock);
+	memcpy(sn, sn_data, MLNX_MFG_SN_VAL_LEN);
+
+	return snprintf(buf, PAGE_SIZE, "%s", sn);
+}
+
+static ssize_t sn_store(struct device_driver *drv, const char *buf,
+			size_t count)
+{
+	u64 sn[MLNX_MFG_VAL_QWORD_CNT(SN)] = { 0 };
+	struct arm_smccc_res res;
+	int word;
+
+	if (count > MLNX_MFG_SN_VAL_LEN)
+		return -EINVAL;
+
+	memcpy(sn, buf, count);
+
+	mutex_lock(&mfg_ops_lock);
+	for (word = 0; word < MLNX_MFG_VAL_QWORD_CNT(SN); word++) {
+		arm_smccc_smc(MLNX_HANDLE_SET_MFG_INFO,
+			      MLNX_MFG_TYPE_SN_0 + word,
+			      sizeof(u64), sn[word], 0, 0, 0, 0, &res);
+		if (res.a0) {
+			mutex_unlock(&mfg_ops_lock);
+			return -EPERM;
+		}
+	}
+	mutex_unlock(&mfg_ops_lock);
+
+	return count;
+}
+
+static ssize_t uuid_show(struct device_driver *drv, char *buf)
+{
+	u64 uuid_data[MLNX_MFG_VAL_QWORD_CNT(UUID)] = { 0 };
+	char uuid[MLNX_MFG_UUID_VAL_LEN + 1] = { 0 };
+	struct arm_smccc_res res;
+	int word;
+
+	mutex_lock(&mfg_ops_lock);
+	for (word = 0; word < MLNX_MFG_VAL_QWORD_CNT(UUID); word++) {
+		arm_smccc_smc(MLNX_HANDLE_GET_MFG_INFO,
+			      MLNX_MFG_TYPE_UUID_0 + word,
+			      0, 0, 0, 0, 0, 0, &res);
+		if (res.a0) {
+			mutex_unlock(&mfg_ops_lock);
+			return -EPERM;
+		}
+		uuid_data[word] = res.a1;
+	}
+	mutex_unlock(&mfg_ops_lock);
+	memcpy(uuid, uuid_data, MLNX_MFG_UUID_VAL_LEN);
+
+	return snprintf(buf, PAGE_SIZE, "%s", uuid);
+}
+
+static ssize_t uuid_store(struct device_driver *drv, const char *buf,
+			  size_t count)
+{
+	u64 uuid[MLNX_MFG_VAL_QWORD_CNT(UUID)] = { 0 };
+	struct arm_smccc_res res;
+	int word;
+
+	if (count > MLNX_MFG_UUID_VAL_LEN)
+		return -EINVAL;
+
+	memcpy(uuid, buf, count);
+
+	mutex_lock(&mfg_ops_lock);
+	for (word = 0; word < MLNX_MFG_VAL_QWORD_CNT(UUID); word++) {
+		arm_smccc_smc(MLNX_HANDLE_SET_MFG_INFO,
+			      MLNX_MFG_TYPE_UUID_0 + word,
+			      sizeof(u64), uuid[word], 0, 0, 0, 0, &res);
+		if (res.a0) {
+			mutex_unlock(&mfg_ops_lock);
+			return -EPERM;
 		}
 	}
 	mutex_unlock(&mfg_ops_lock);
@@ -912,7 +1095,11 @@ static DRIVER_ATTR_RO(lifecycle_state);
 static DRIVER_ATTR_RO(secure_boot_fuse_state);
 static DRIVER_ATTR_WO(fw_reset);
 static DRIVER_ATTR_RW(oob_mac);
-static DRIVER_ATTR_RW(opn_str);
+static DRIVER_ATTR_RW(opn);
+static DRIVER_ATTR_RW(sku);
+static DRIVER_ATTR_RW(modl);
+static DRIVER_ATTR_RW(sn);
+static DRIVER_ATTR_RW(uuid);
 static DRIVER_ATTR_WO(mfg_lock);
 static DRIVER_ATTR_RW(rsh_log);
 
@@ -924,7 +1111,11 @@ static struct attribute *mbc_dev_attrs[] = {
 	&driver_attr_secure_boot_fuse_state.attr,
 	&driver_attr_fw_reset.attr,
 	&driver_attr_oob_mac.attr,
-	&driver_attr_opn_str.attr,
+	&driver_attr_opn.attr,
+	&driver_attr_sku.attr,
+	&driver_attr_modl.attr,
+	&driver_attr_sn.attr,
+	&driver_attr_uuid.attr,
 	&driver_attr_mfg_lock.attr,
 	&driver_attr_rsh_log.attr,
 	NULL
