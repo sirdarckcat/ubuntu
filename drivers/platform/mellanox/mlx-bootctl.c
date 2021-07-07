@@ -134,7 +134,8 @@ static const char *reset_action_to_string(int action)
 static ssize_t post_reset_wdog_show(struct device_driver *drv,
 				    char *buf)
 {
-	return sprintf(buf, "%d\n", smc_call0(MLNX_GET_POST_RESET_WDOG));
+	return snprintf(buf, PAGE_SIZE, "%d\n",
+			smc_call0(MLNX_GET_POST_RESET_WDOG));
 }
 
 static ssize_t post_reset_wdog_store(struct device_driver *drv,
@@ -156,8 +157,8 @@ static ssize_t post_reset_wdog_store(struct device_driver *drv,
 static ssize_t reset_action_show(struct device_driver *drv,
 				 char *buf)
 {
-	return sprintf(buf, "%s\n", reset_action_to_string(
-			       smc_call0(MLNX_GET_RESET_ACTION)));
+	return snprintf(buf, PAGE_SIZE, "%s\n", reset_action_to_string(
+			smc_call0(MLNX_GET_RESET_ACTION)));
 }
 
 static ssize_t reset_action_store(struct device_driver *drv,
@@ -177,8 +178,8 @@ static ssize_t reset_action_store(struct device_driver *drv,
 static ssize_t second_reset_action_show(struct device_driver *drv,
 					char *buf)
 {
-	return sprintf(buf, "%s\n", reset_action_to_string(
-			       smc_call0(MLNX_GET_SECOND_RESET_ACTION)));
+	return snprintf(buf, PAGE_SIZE, "%s\n", reset_action_to_string(
+			smc_call0(MLNX_GET_SECOND_RESET_ACTION)));
 }
 
 static ssize_t second_reset_action_store(struct device_driver *drv,
@@ -213,10 +214,11 @@ static ssize_t lifecycle_state_show(struct device_driver *drv,
 
 		lc_state &= SB_MODE_SECURE_MASK;
 
-		return sprintf(buf, "%s(test)\n", lifecycle_states[lc_state]);
+		return snprintf(buf, PAGE_SIZE, "%s(test)\n",
+				lifecycle_states[lc_state]);
 	}
 
-	return sprintf(buf, "%s\n", lifecycle_states[lc_state]);
+	return snprintf(buf, PAGE_SIZE, "%s\n", lifecycle_states[lc_state]);
 }
 
 static ssize_t secure_boot_fuse_state_show(struct device_driver *drv,
@@ -311,7 +313,7 @@ static ssize_t oob_mac_show(struct device_driver *drv, char *buf)
 		mac_byte_ptr[0], mac_byte_ptr[1], mac_byte_ptr[2],
 		mac_byte_ptr[3], mac_byte_ptr[4], mac_byte_ptr[5]);
 
-	return sprintf(buf, "%s\n", mac_str);
+	return snprintf(buf, PAGE_SIZE, "%s", mac_str);
 }
 
 static ssize_t oob_mac_store(struct device_driver *drv, const char *buf,
@@ -410,7 +412,7 @@ static ssize_t opn_str_show(struct device_driver *drv, char *buf)
 
 	memcpy(opn_str, opn_data, MLNX_MFG_OPN_VAL_LEN);
 
-	return sprintf(buf, "%s", opn_str);
+	return snprintf(buf, PAGE_SIZE, "%s", opn_str);
 }
 
 static ssize_t opn_str_store(struct device_driver *drv, const char *buf,
@@ -733,7 +735,7 @@ static char *rsh_log_get_reg_name(u64 opcode)
 	return "unknown";
 }
 
-static int rsh_log_show_crash(u64 hdr, char *buf)
+static int rsh_log_show_crash(u64 hdr, char *buf, int size)
 {
 	int i, module, type, len, n = 0;
 	u32 pc, syndrome, ec;
@@ -749,17 +751,20 @@ static int rsh_log_show_crash(u64 hdr, char *buf)
 	if (type == BF_RSH_LOG_TYPE_EXCEPTION) {
 		syndrome = BF_RSH_LOG_HEADER_GET(SYNDROME, hdr);
 		ec = syndrome >> AARCH64_ESR_ELX_EXCEPTION_CLASS_SHIFT;
-		n = sprintf(p, " Exception(%s): syndrome = 0x%x%s\n",
+		n = snprintf(p, size, " Exception(%s): syndrome = 0x%x%s\n",
 			    rsh_log_mod[module], syndrome,
 			    (ec == 0x24 || ec == 0x25) ? "(Data Abort)" :
 			    (ec == 0x2f) ? "(SError)" : "");
 	} else if (type == BF_RSH_LOG_TYPE_PANIC) {
 		pc = BF_RSH_LOG_HEADER_GET(PC, hdr);
-		n = sprintf(p, " PANIC(%s): PC = 0x%x\n", rsh_log_mod[module],
-			    pc);
+		n = snprintf(p, size,
+			     " PANIC(%s): PC = 0x%x\n", rsh_log_mod[module],
+			     pc);
 	}
-	if (n > 0)
+	if (n > 0) {
 		p += n;
+		size -= n;
+	}
 
 	/*
 	 * Read the registers in a loop. 'len' is the total number of words in
@@ -771,28 +776,31 @@ static int rsh_log_show_crash(u64 hdr, char *buf)
 
 		opcode = (opcode >> AARCH64_MRS_REG_SHIFT) &
 			AARCH64_MRS_REG_MASK;
-		n = sprintf(p, "   %-16s0x%llx\n", rsh_log_get_reg_name(opcode),
-			    (unsigned long long)data);
-		if (n > 0)
+		n = snprintf(p, size,
+			     "   %-16s0x%llx\n", rsh_log_get_reg_name(opcode),
+			     (unsigned long long)data);
+		if (n > 0) {
 			p += n;
+			size -= n;
+		}
 	}
 
 	return p - buf;
 }
 
-static int rsh_log_format_msg(char *buf, const char *msg, ...)
+static int rsh_log_format_msg(char *buf, int size, const char *msg, ...)
 {
 	va_list args;
 	int len;
 
 	va_start(args, msg);
-	len = vsprintf(buf, msg, args);
+	len = vsnprintf(buf, size, msg, args);
 	va_end(args);
 
 	return len;
 }
 
-static int rsh_log_show_msg(u64 hdr, char *buf)
+static int rsh_log_show_msg(u64 hdr, char *buf, int size)
 {
 	int has_arg = BF_RSH_LOG_HEADER_GET(HAS_ARG, hdr);
 	int level = BF_RSH_LOG_HEADER_GET(LEVEL, hdr);
@@ -823,13 +831,13 @@ static int rsh_log_show_msg(u64 hdr, char *buf)
 	}
 	*p = '\0';
 	if (!has_arg) {
-		len = sprintf(buf, " %s[%s]: %s\n", rsh_log_level[level],
-			rsh_log_mod[module], msg);
+		len = snprintf(buf, size, " %s[%s]: %s\n", rsh_log_level[level],
+			       rsh_log_mod[module], msg);
 	} else {
-		len = sprintf(buf, " %s[%s]: ", rsh_log_level[level],
-			rsh_log_mod[module]);
-		len += rsh_log_format_msg(buf + len, msg, arg);
-		len += sprintf(buf + len, "\n");
+		len = snprintf(buf, size, " %s[%s]: ", rsh_log_level[level],
+			       rsh_log_mod[module]);
+		len += rsh_log_format_msg(buf + len, size - len, msg, arg);
+		len += snprintf(buf + len, size - len, "\n");
 	}
 
 	kfree(msg);
@@ -840,7 +848,7 @@ static ssize_t rsh_log_show(struct device_driver *drv, char *buf)
 {
 	u64 hdr;
 	char *p = buf;
-	int i, n, rc, idx, type, len;
+	int i, n, rc, idx, type, len, size = PAGE_SIZE;
 
 	if (!rsh_semaphore || !rsh_scratch_buf_ctl)
 		return -EOPNOTSUPP;
@@ -868,12 +876,14 @@ static ssize_t rsh_log_show(struct device_driver *drv, char *buf)
 		switch (type) {
 		case BF_RSH_LOG_TYPE_PANIC:
 		case BF_RSH_LOG_TYPE_EXCEPTION:
-			n = rsh_log_show_crash(hdr, p);
+			n = rsh_log_show_crash(hdr, p, size);
 			p += n;
+			size -= n;
 			break;
 		case BF_RSH_LOG_TYPE_MSG:
-			n = rsh_log_show_msg(hdr, p);
+			n = rsh_log_show_msg(hdr, p, size);
 			p += n;
+			size -= n;
 			break;
 		default:
 			/* Drain this message. */
