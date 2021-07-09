@@ -2,7 +2,7 @@
 
 /* Gigabit Ethernet driver for Mellanox BlueField SoC
  *
- * Copyright (C) 2020-2021 Mellanox Technologies, Ltd. ALL RIGHTS RESERVED.
+ * Copyright (c) 2020-2021 NVIDIA Corporation.
  */
 
 #include <linux/acpi.h>
@@ -21,12 +21,7 @@
 #include "mlxbf_gige_regs.h"
 
 #define DRV_NAME    "mlxbf_gige"
-#define DRV_VERSION 1.21
-
-/* This setting defines the version of the ACPI table
- * content that is compatible with this driver version.
- */
-#define MLXBF_GIGE_ACPI_TABLE_VERSION 1
+#define DRV_VERSION 1.19
 
 /* Allocate SKB whose payload pointer aligns with the Bluefield
  * hardware DMA limitation, i.e. DMA operation can't cross
@@ -76,7 +71,6 @@ static void mlxbf_gige_initial_mac(struct mlxbf_gige *priv)
 	u8 mac[ETH_ALEN];
 	u64 local_mac;
 
-	memset(mac, 0, ETH_ALEN);
 	mlxbf_gige_get_mac_rx_filter(priv, MLXBF_GIGE_LOCAL_MAC_FILTER_IDX,
 				     &local_mac);
 	u64_to_ether_addr(local_mac, mac);
@@ -218,8 +212,8 @@ static void mlxbf_gige_set_rx_mode(struct net_device *netdev)
 			mlxbf_gige_enable_promisc(priv);
 		else
 			mlxbf_gige_disable_promisc(priv);
-		}
-	}
+        }
+}
 
 static void mlxbf_gige_get_stats64(struct net_device *netdev,
 				   struct rtnl_link_stats64 *stats)
@@ -253,15 +247,7 @@ static const struct net_device_ops mlxbf_gige_netdev_ops = {
 
 static void mlxbf_gige_adjust_link(struct net_device *netdev)
 {
-	struct mlxbf_gige *priv = netdev_priv(netdev);
-	struct phy_device *phydev = netdev->phydev;
-
-	if (phydev->link) {
-		priv->rx_pause = phydev->pause;
-		priv->tx_pause = phydev->pause;
-	}
-
-	phy_print_status(phydev);
+	/* Only one speed and one duplex supported, simply return */
 }
 
 static int mlxbf_gige_probe(struct platform_device *pdev)
@@ -276,21 +262,18 @@ static int mlxbf_gige_probe(struct platform_device *pdev)
 	void __iomem *llu_base;
 	void __iomem *plu_base;
 	void __iomem *base;
-	u32 version;
+	int addr, version;
 	u64 control;
-	int addr;
-	int err;
+	int err = 0;
 
-	version = 0;
-	err = device_property_read_u32(&pdev->dev, "version", &version);
-	if (err) {
-		dev_err(&pdev->dev, "ACPI table version not found\n");
+	if (device_property_read_u32(&pdev->dev, "version", &version)) {
+		dev_err(&pdev->dev, "Version Info not found\n");
 		return -EINVAL;
 	}
 
-	if (version != MLXBF_GIGE_ACPI_TABLE_VERSION) {
-		dev_err(&pdev->dev, "ACPI table version mismatch: expected %d found %d\n",
-			MLXBF_GIGE_ACPI_TABLE_VERSION, version);
+	if (version != (int)DRV_VERSION) {
+		dev_err(&pdev->dev, "Version Mismatch. Expected %d Returned %d\n",
+			(int)DRV_VERSION, version);
 		return -EINVAL;
 	}
 
@@ -384,6 +367,10 @@ static int mlxbf_gige_probe(struct platform_device *pdev)
 	addr = phydev->mdio.addr;
 	phydev->irq = priv->mdiobus->irq[addr] = priv->phy_irq;
 
+	/* Sets netdev->phydev to phydev; which will eventually
+	 * be used in ioctl calls.
+	 * Cannot pass NULL handler.
+	 */
 	err = phy_connect_direct(netdev, phydev,
 				 mlxbf_gige_adjust_link,
 				 PHY_INTERFACE_MODE_GMII);
@@ -403,9 +390,9 @@ static int mlxbf_gige_probe(struct platform_device *pdev)
 	/* MAC supports symmetric flow control */
 	phy_support_sym_pause(phydev);
 
-	/* Initialise pause frame settings */
-	priv->rx_pause = 0;
-	priv->tx_pause = 0;
+	/* Enable pause */
+	priv->rx_pause = phydev->pause;
+	priv->tx_pause = phydev->pause;
 	priv->aneg_pause = AUTONEG_ENABLE;
 
 	/* Display information about attached PHY device */
