@@ -473,58 +473,6 @@ static void mlxbf_gige_get_ethtool_stats(struct net_device *netdev,
 	spin_unlock_irqrestore(&priv->lock, flags);
 }
 
-static void mlxbf_gige_get_pauseparam(struct net_device *netdev,
-				      struct ethtool_pauseparam *pause)
-{
-	pause->autoneg = AUTONEG_ENABLE;
-	pause->rx_pause = 1;
-	pause->tx_pause = 1;
-}
-
-static int mlxbf_gige_get_link_ksettings(struct net_device *netdev,
-					 struct ethtool_link_ksettings *link_ksettings)
-{
-	struct phy_device *phydev = netdev->phydev;
-	u32 supported, advertising;
-	u32 lp_advertising = 0;
-	int status;
-
-	supported = SUPPORTED_TP | SUPPORTED_1000baseT_Full |
-		    SUPPORTED_Autoneg | SUPPORTED_Pause;
-
-	advertising = ADVERTISED_1000baseT_Full | ADVERTISED_Autoneg |
-		     ADVERTISED_Pause;
-
-	status = phy_read(phydev, MII_LPA);
-	if (status >= 0) {
-		lp_advertising = mii_lpa_to_ethtool_lpa_t(status & 0xffff);
-	}
-
-	status = phy_read(phydev, MII_STAT1000);
-	if (status >= 0) {
-		lp_advertising |= mii_stat1000_to_ethtool_lpa_t(status & 0xffff);
-	}
-
-	ethtool_convert_legacy_u32_to_link_mode(link_ksettings->link_modes.supported,
-						supported);
-	ethtool_convert_legacy_u32_to_link_mode(link_ksettings->link_modes.advertising,
-						advertising);
-	ethtool_convert_legacy_u32_to_link_mode(link_ksettings->link_modes.lp_advertising,
-						lp_advertising);
-
-	link_ksettings->base.autoneg = AUTONEG_ENABLE;
-	link_ksettings->base.speed = SPEED_1000;
-	link_ksettings->base.duplex = DUPLEX_FULL;
-	link_ksettings->base.port = PORT_TP;
-	link_ksettings->base.phy_address = MLXBF_GIGE_DEFAULT_PHY_ADDR;
-	link_ksettings->base.transceiver = XCVR_INTERNAL;
-	link_ksettings->base.mdio_support = ETH_MDIO_SUPPORTS_C22;
-	link_ksettings->base.eth_tp_mdix = ETH_TP_MDI_INVALID;
-	link_ksettings->base.eth_tp_mdix_ctrl = ETH_TP_MDI_INVALID;
-
-	return 0;
-}
-
 static const struct ethtool_ops mlxbf_gige_ethtool_ops = {
 	.get_drvinfo		= mlxbf_gige_get_drvinfo,
 	.get_link		= ethtool_op_get_link,
@@ -535,9 +483,6 @@ static const struct ethtool_ops mlxbf_gige_ethtool_ops = {
 	.get_strings            = mlxbf_gige_get_strings,
 	.get_sset_count         = mlxbf_gige_get_sset_count,
 	.get_ethtool_stats      = mlxbf_gige_get_ethtool_stats,
-	.nway_reset		= phy_ethtool_nway_reset,
-	.get_pauseparam		= mlxbf_gige_get_pauseparam,
-	.get_link_ksettings	= mlxbf_gige_get_link_ksettings,
 };
 
 static void mlxbf_gige_handle_link_change(struct net_device *netdev)
