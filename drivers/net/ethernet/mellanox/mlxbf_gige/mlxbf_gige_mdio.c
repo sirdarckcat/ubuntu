@@ -229,22 +229,20 @@ static int mlxbf_gige_mdio_write(struct mii_bus *bus, int phy_add,
 
 static void mlxbf_gige_mdio_disable_gpio12_irq(struct mlxbf_gige *priv)
 {
-	unsigned long flags;
 	u32 val;
 
-	spin_lock_irqsave(&priv->gpio_lock, flags);
+	spin_lock(&priv->gpio_lock);
 	val = readl(priv->gpio_io + MLXBF_GIGE_GPIO_CAUSE_OR_EVTEN0);
 	val &= ~MLXBF_GIGE_CAUSE_OR_EVTEN0_MASK;
 	writel(val, priv->gpio_io + MLXBF_GIGE_GPIO_CAUSE_OR_EVTEN0);
-	spin_unlock_irqrestore(&priv->gpio_lock, flags);
+	spin_unlock(&priv->gpio_lock);
 }
 
 static void mlxbf_gige_mdio_enable_gpio12_irq(struct mlxbf_gige *priv)
 {
-	unsigned long flags;
 	u32 val;
 
-	spin_lock_irqsave(&priv->gpio_lock, flags);
+	spin_lock(&priv->gpio_lock);
 	/* The INT_N interrupt level is active low.
 	 * So enable cause fall bit to detect when GPIO
 	 * state goes low.
@@ -259,7 +257,7 @@ static void mlxbf_gige_mdio_enable_gpio12_irq(struct mlxbf_gige *priv)
 	val |= MLXBF_GIGE_CAUSE_OR_EVTEN0_MASK;
 	writel(val, priv->gpio_io +
 			MLXBF_GIGE_GPIO_CAUSE_OR_EVTEN0);
-	spin_unlock_irqrestore(&priv->gpio_lock, flags);
+	spin_unlock(&priv->gpio_lock);
 }
 
 /* Interrupt handler is called from mlxbf_gige_main.c
@@ -314,6 +312,7 @@ int mlxbf_gige_mdio_probe(struct platform_device *pdev, struct mlxbf_gige *priv)
 	struct resource *res;
 	u32 phy_addr;
 	int ret;
+	int irq;
 
 	res = platform_get_resource(pdev, IORESOURCE_MEM, MLXBF_GIGE_RES_MDIO9);
 	if (!res)
@@ -375,7 +374,12 @@ int mlxbf_gige_mdio_probe(struct platform_device *pdev, struct mlxbf_gige *priv)
 	if (ret < 0)
 		phy_addr = MLXBF_GIGE_DEFAULT_PHY_ADDR;
 
-	priv->mdiobus->irq[phy_addr] = PHY_POLL;
+	irq = platform_get_irq(pdev, MLXBF_GIGE_PHY_INT_N);
+	if (irq < 0) {
+		dev_err(dev, "Failed to retrieve irq\n");
+		return -ENODEV;
+	}
+	priv->mdiobus->irq[phy_addr] = irq;
 
 	/* Auto probe PHY at the corresponding address */
 	priv->mdiobus->phy_mask = ~(1 << phy_addr);
