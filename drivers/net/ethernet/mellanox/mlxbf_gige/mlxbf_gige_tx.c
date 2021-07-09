@@ -66,7 +66,7 @@ void mlxbf_gige_tx_deinit(struct mlxbf_gige *priv)
 	for (i = 0; i < priv->tx_q_entries; i++) {
 		if (priv->tx_skb[i]) {
 			dma_unmap_single(priv->dev, *tx_wqe_addr,
-					 priv->tx_skb[i]->len, DMA_TO_DEVICE);
+					 MLXBF_GIGE_DEFAULT_BUF_SZ, DMA_TO_DEVICE);
 			dev_kfree_skb(priv->tx_skb[i]);
 			priv->tx_skb[i] = NULL;
 		}
@@ -156,11 +156,9 @@ bool mlxbf_gige_handle_tx_complete(struct mlxbf_gige *priv)
 		stats->tx_bytes += MLXBF_GIGE_TX_WQE_PKT_LEN(tx_wqe_addr);
 
 		dma_unmap_single(priv->dev, *tx_wqe_addr,
-				 priv->tx_skb[tx_wqe_index]->len, DMA_TO_DEVICE);
+				 MLXBF_GIGE_DEFAULT_BUF_SZ, DMA_TO_DEVICE);
 		dev_consume_skb_any(priv->tx_skb[tx_wqe_index]);
 		priv->tx_skb[tx_wqe_index] = NULL;
-
-		mb();
 	}
 
 	/* Since the TX ring was likely just drained, check if TX queue
@@ -194,12 +192,11 @@ netdev_tx_t mlxbf_gige_start_xmit(struct sk_buff *skb,
 	long buff_addr, start_dma_page, end_dma_page;
 	struct sk_buff *tx_skb;
 	dma_addr_t tx_buf_dma;
-	unsigned long flags;
 	u64 *tx_wqe_addr;
 	u64 word2;
 
 	/* If needed, linearize TX SKB as hardware DMA expects this */
-	if ((skb->len > MLXBF_GIGE_DEFAULT_BUF_SZ) || skb_linearize(skb)) {
+	if (skb_linearize(skb)) {
 		dev_kfree_skb(skb);
 		netdev->stats.tx_dropped++;
 		return NETDEV_TX_OK;
@@ -214,8 +211,7 @@ netdev_tx_t mlxbf_gige_start_xmit(struct sk_buff *skb,
 	 */
 	if (start_dma_page != end_dma_page) {
 		/* DMA operation would fail as-is, alloc new aligned SKB */
-		tx_skb = mlxbf_gige_alloc_skb(priv, skb->len,
-					      &tx_buf_dma, DMA_TO_DEVICE);
+		tx_skb = mlxbf_gige_alloc_skb(priv, &tx_buf_dma, DMA_TO_DEVICE);
 		if (!tx_skb) {
 			/* Free original skb, could not alloc new aligned SKB */
 			dev_kfree_skb(skb);
@@ -230,13 +226,16 @@ netdev_tx_t mlxbf_gige_start_xmit(struct sk_buff *skb,
 	} else {
 		tx_skb = skb;
 		tx_buf_dma = dma_map_single(priv->dev, skb->data,
-					    skb->len, DMA_TO_DEVICE);
+					    MLXBF_GIGE_DEFAULT_BUF_SZ,
+					    DMA_TO_DEVICE);
 		if (dma_mapping_error(priv->dev, tx_buf_dma)) {
 			dev_kfree_skb(skb);
 			netdev->stats.tx_dropped++;
 			return NETDEV_TX_OK;
 		}
 	}
+
+	priv->tx_skb[priv->tx_pi % priv->tx_q_entries] = tx_skb;
 
 	/* Get address of TX WQE */
 	tx_wqe_addr = priv->tx_wqe_next;
@@ -255,10 +254,7 @@ netdev_tx_t mlxbf_gige_start_xmit(struct sk_buff *skb,
 	/* Write entire 2nd word of TX WQE */
 	*(tx_wqe_addr + 1) = word2;
 
-	spin_lock_irqsave(&priv->lock, flags);
-	priv->tx_skb[priv->tx_pi % priv->tx_q_entries] = tx_skb;
 	priv->tx_pi++;
-	spin_unlock_irqrestore(&priv->lock, flags);
 
 	if (!netdev_xmit_more()) {
 		/* Create memory barrier before write to TX PI */
