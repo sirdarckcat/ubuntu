@@ -161,7 +161,7 @@ static void mlxbf_gige_mdio_disable_phy_int(struct mlxbf_gige *priv)
 	spin_unlock_irqrestore(&priv->gpio_lock, flags);
 }
 
-void mlxbf_gige_mdio_enable_phy_int(struct mlxbf_gige *priv)
+static void mlxbf_gige_mdio_enable_phy_int(struct mlxbf_gige *priv)
 {
 	unsigned long flags;
 	u32 val;
@@ -258,7 +258,7 @@ int mlxbf_gige_mdio_probe(struct platform_device *pdev, struct mlxbf_gige *priv)
 		phy_int_gpio = MLXBF_GIGE_GPIO12_BIT;
 	priv->phy_int_gpio_mask = BIT(phy_int_gpio);
 
-	mlxbf_gige_mdio_disable_phy_int(priv);
+	mlxbf_gige_mdio_enable_phy_int(priv);
 
 	priv->mdiobus = devm_mdiobus_alloc(dev);
 	if (!priv->mdiobus) {
