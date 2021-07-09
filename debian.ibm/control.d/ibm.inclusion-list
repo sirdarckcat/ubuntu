@@ -1,12 +1,5 @@
-arch/*/{crypto,kernel,oprofile}
-arch/*/kvm/kvm.ko
-arch/powerpc/kvm/kvm-hv.ko
-arch/powerpc/kvm/kvm-pr.ko
-arch/powerpc/kvm/vfio.ko
-arch/powerpc/platforms/powernv/opal-prd.ko
-arch/s390/*
-arch/x86/kvm/kvm-amd.ko
-arch/x86/kvm/kvm-intel.ko
+arch/x86/{crypto,kernel,oprofile}
+arch/x86/kvm/*
 crypto/*
 drivers/acpi/*
 drivers/ata/acard-ahci.ko
@@ -17,17 +10,13 @@ drivers/ata/libahci.ko
 drivers/ata/libahci_platform.ko
 drivers/block/brd.ko
 drivers/block/cryptoloop.ko
-drivers/block/floppy.ko
 drivers/block/loop.ko
 drivers/block/nbd.ko
 drivers/block/rbd.ko
 drivers/block/virtio_blk.ko
-drivers/block/xen-blkfront.ko
 drivers/char/hangcheck-timer.ko
-drivers/char/hw_random/powernv-rng.ko
 drivers/char/hw_random/virtio-rng.ko
 drivers/char/ipmi/*
-drivers/char/ipmi/ipmi_msghandler.ko
 drivers/char/lp.ko
 drivers/char/nvram.ko
 drivers/char/ppdev.ko
@@ -45,8 +34,6 @@ drivers/hid/hid-generic.ko
 drivers/hid/hid-hyperv.ko
 drivers/hid/hid.ko
 drivers/hid/usbhid/usbhid.ko
-drivers/hv/*
-drivers/hwmon/ibmpowernv.ko
 drivers/infiniband/core/ib_addr.ko
 drivers/infiniband/core/ib_cm.ko
 drivers/infiniband/core/ib_core.ko
@@ -57,16 +44,12 @@ drivers/infiniband/core/rdma_cm.ko
 drivers/infiniband/ulp/iser/ib_iser.ko
 drivers/infiniband/ulp/isert/ib_isert.ko
 drivers/input/evbug.ko
-drivers/input/gameport/gameport.ko
 drivers/input/input-leds.ko
 drivers/input/joydev.ko
-drivers/input/misc/xen-kbdfront.ko
 drivers/input/mouse/psmouse.ko
-drivers/input/serio/hyperv-keyboard.ko
 drivers/input/serio/serio_raw.ko
 drivers/input/serio/serport.ko
 drivers/input/touchscreen/usbtouchscreen.ko
-drivers/leds/leds-powernv.ko
 drivers/md/*
 drivers/message/fusion*
 drivers/misc/cxl/*
@@ -74,7 +57,6 @@ drivers/misc/eeprom/at24.ko
 drivers/misc/vmw_balloon.ko
 drivers/misc/vmw_vmci/vmw_vmci.ko
 drivers/mtd/cmdlinepart.ko
-drivers/mtd/devices/powernv_flash.ko
 drivers/mtd/ofpart.ko
 drivers/net/appletalk/ipddp.ko
 drivers/net/bonding/bonding.ko
@@ -83,7 +65,6 @@ drivers/net/dummy.ko
 drivers/net/eql.ko
 drivers/net/ethernet/8390/8390.ko
 drivers/net/ethernet/8390/ne2k-pci.ko
-drivers/net/ethernet/amazon/ena/ena.ko
 drivers/net/ethernet/amd/pcnet32.ko
 drivers/net/ethernet/broadcom/bnx2x/*
 drivers/net/ethernet/broadcom/tg3.ko
@@ -100,11 +81,11 @@ drivers/net/ethernet/intel/ixgbe/*
 drivers/net/ethernet/intel/ixgbevf/ixgbevf.ko
 drivers/net/ethernet/mellanox/*
 drivers/net/ethernet/netronome/nfp/nfp.ko
+drivers/net/ethernet/pensando/*
 drivers/net/ethernet/realtek/8139cp.ko
 drivers/net/ethernet/realtek/8139too.ko
 drivers/net/fddi/*
 drivers/net/geneve.ko
-drivers/net/hyperv/hv_netvsc.ko
 drivers/net/ifb.ko
 drivers/net/ipvlan/*
 drivers/net/macvlan.ko
@@ -118,9 +99,7 @@ drivers/net/veth.ko
 drivers/net/virtio_net.ko
 drivers/net/vmxnet3/vmxnet3.ko
 drivers/net/vxlan.ko
-drivers/net/xen-netback/*
-drivers/net/xen-netfront.ko
-drivers/nvme/host/nvme.ko
+drivers/nvme/host/*
 drivers/nvmem/nvmem_core.ko
 drivers/parport/parport.ko
 drivers/parport/parport_pc.ko
@@ -128,8 +107,6 @@ drivers/pci/host/vmd.ko
 drivers/platform/x86/pvpanic.ko
 drivers/pps/pps_core.ko
 drivers/ptp/ptp.ko
-drivers/s390/*
-drivers/s390/block/xpram.ko
 drivers/scsi/aacraid/*
 drivers/scsi/BusLogic.ko
 drivers/scsi/cxlflash/*
@@ -137,7 +114,6 @@ drivers/scsi/device_handler/scsi_dh_alua.ko
 drivers/scsi/device_handler/scsi_dh_emc.ko
 drivers/scsi/device_handler/scsi_dh_hp_sw.ko
 drivers/scsi/device_handler/scsi_dh_rdac.ko
-drivers/scsi/hv_storvsc.ko
 drivers/scsi/ibmvscsi/*
 drivers/scsi/ipr.ko
 drivers/scsi/iscsi_boot_sysfs.ko
@@ -175,7 +151,6 @@ drivers/video/fbdev/*
 drivers/video/vgastate.ko
 drivers/virtio/*
 drivers/watchdog/softdog.ko
-drivers/xen/*
 ! find sound/core -name oss -prune -o -name *.ko -print
 fs/9p/*
 fs/aufs/aufs.ko
