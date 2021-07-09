@@ -70,9 +70,4 @@
 #define MLXBF_GIGE_RX_CQE_PACKET_CI                   0x05b0
 #define MLXBF_GIGE_MAC_CFG                            0x05e8
 
-/* NOTE: MLXBF_GIGE_MAC_CFG is the last defined register offset,
- * so use that plus size of single register to derive total size
- */
-#define MLXBF_GIGE_MMIO_REG_SZ                        (MLXBF_GIGE_MAC_CFG+8)
-
 #endif /* !defined(__MLXBF_GIGE_REGS_H__) */
