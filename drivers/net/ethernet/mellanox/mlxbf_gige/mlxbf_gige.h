@@ -4,13 +4,12 @@
  * - this file contains software data structures and any chip-specific
  *   data structures (e.g. TX WQE format) that are memory resident.
  *
- * Copyright (c) 2020-2021 NVIDIA Corporation.
+ * Copyright (c) 2020 NVIDIA Corporation.
  */
 
 #ifndef __MLXBF_GIGE_H__
 #define __MLXBF_GIGE_H__
 
-#include <linux/io-64-nonatomic-lo-hi.h>
 #include <linux/irqreturn.h>
 #include <linux/netdevice.h>
 
@@ -54,8 +53,6 @@
 
 #define MLXBF_GIGE_MDIO_DEFAULT_PHY_ADDR 0x3
 
-#define MLXBF_GIGE_DEFAULT_PHY_INT_GPIO 12
-
 struct mlxbf_gige_stats {
 	u64 hw_access_errors;
 	u64 tx_invalid_checksums;
@@ -80,6 +77,8 @@ struct mlxbf_gige {
 	struct platform_device *pdev;
 	void __iomem *mdio_io;
 	struct mii_bus *mdiobus;
+	void __iomem *gpio_io;
+	u32 phy_int_gpio_mask;
 	spinlock_t lock;
 	spinlock_t gpio_lock;
 	u16 rx_q_entries;
@@ -144,6 +143,7 @@ struct mlxbf_gige {
 enum mlxbf_gige_res {
 	MLXBF_GIGE_RES_MAC,
 	MLXBF_GIGE_RES_MDIO9,
+	MLXBF_GIGE_RES_GPIO0,
 	MLXBF_GIGE_RES_LLU,
 	MLXBF_GIGE_RES_PLU
 };
@@ -155,28 +155,5 @@ int mlxbf_gige_mdio_probe(struct platform_device *pdev,
 			  struct mlxbf_gige *priv);
 void mlxbf_gige_mdio_remove(struct mlxbf_gige *priv);
 irqreturn_t mlxbf_gige_mdio_handle_phy_interrupt(int irq, void *dev_id);
-void mlxbf_gige_mdio_enable_phy_int(struct mlxbf_gige *priv);
-
-void mlxbf_gige_set_mac_rx_filter(struct mlxbf_gige *priv,
-				  unsigned int index, u64 dmac);
-void mlxbf_gige_get_mac_rx_filter(struct mlxbf_gige *priv,
-				  unsigned int index, u64 *dmac);
-void mlxbf_gige_enable_promisc(struct mlxbf_gige *priv);
-void mlxbf_gige_disable_promisc(struct mlxbf_gige *priv);
-int mlxbf_gige_rx_init(struct mlxbf_gige *priv);
-void mlxbf_gige_rx_deinit(struct mlxbf_gige *priv);
-int mlxbf_gige_tx_init(struct mlxbf_gige *priv);
-void mlxbf_gige_tx_deinit(struct mlxbf_gige *priv);
-bool mlxbf_gige_handle_tx_complete(struct mlxbf_gige *priv);
-netdev_tx_t mlxbf_gige_start_xmit(struct sk_buff *skb,
-				  struct net_device *netdev);
-struct sk_buff *mlxbf_gige_alloc_skb(struct mlxbf_gige *priv,
-				     dma_addr_t *buf_dma,
-				     enum dma_data_direction dir);
-int mlxbf_gige_request_irqs(struct mlxbf_gige *priv);
-void mlxbf_gige_free_irqs(struct mlxbf_gige *priv);
-int mlxbf_gige_poll(struct napi_struct *napi, int budget);
-extern const struct ethtool_ops mlxbf_gige_ethtool_ops;
-void mlxbf_gige_update_tx_wqe_next(struct mlxbf_gige *priv);
 
 #endif /* !defined(__MLXBF_GIGE_H__) */
