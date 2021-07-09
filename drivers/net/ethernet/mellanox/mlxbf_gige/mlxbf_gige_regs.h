@@ -8,8 +8,16 @@
 #ifndef __MLXBF_GIGE_REGS_H__
 #define __MLXBF_GIGE_REGS_H__
 
+#ifdef MLXBF_GIGE_INTERNAL
+#define MLXBF_GIGE_CONFIG                             0x0008
+#define MLXBF_GIGE_CONFIG_MAX_PKT_SZ_SHIFT            16
+#define MLXBF_GIGE_CONFIG_MAX_PKT_SZ_RESET_VAL        1522
+#endif /* MLXBF_GIGE_INTERNAL */
 #define MLXBF_GIGE_STATUS                             0x0010
 #define MLXBF_GIGE_STATUS_READY                       BIT(0)
+#ifdef MLXBF_GIGE_INTERNAL
+#define MLXBF_GIGE_SCRATCHPAD                         0x0020
+#endif /* MLXBF_GIGE_INTERNAL */
 #define MLXBF_GIGE_INT_STATUS                         0x0028
 #define MLXBF_GIGE_INT_STATUS_RX_RECEIVE_PACKET       BIT(0)
 #define MLXBF_GIGE_INT_STATUS_RX_MAC_ERROR            BIT(1)
@@ -50,11 +58,17 @@
 #define MLXBF_GIGE_RX_MAC_FILTER                      0x0240
 #define MLXBF_GIGE_RX_MAC_FILTER_STRIDE               0x0008
 #define MLXBF_GIGE_RX_DIN_DROP_COUNTER                0x0260
+#ifdef MLXBF_GIGE_INTERNAL
+#define MLXBF_GIGE_INT_STATUS_EXP                     0x0308
+#endif /* MLXBF_GIGE_INTERNAL */
 #define MLXBF_GIGE_TX_CONSUMER_INDEX                  0x0310
 #define MLXBF_GIGE_TX_CONTROL                         0x0318
 #define MLXBF_GIGE_TX_CONTROL_GRACEFUL_STOP           BIT(0)
 #define MLXBF_GIGE_TX_STATUS                          0x0388
 #define MLXBF_GIGE_TX_STATUS_DATA_FIFO_FULL           BIT(1)
+#ifdef MLXBF_GIGE_INTERNAL
+#define MLXBF_GIGE_TX_FIFOS_STATUS                    0x0390
+#endif /* MLXBF_GIGE_INTERNAL */
 #define MLXBF_GIGE_RX_MAC_FILTER_DMAC_RANGE_START     0x0520
 #define MLXBF_GIGE_RX_MAC_FILTER_DMAC_RANGE_END       0x0528
 #define MLXBF_GIGE_RX_MAC_FILTER_COUNT_DISC           0x0540
@@ -69,5 +83,9 @@
 #define MLXBF_GIGE_RX_DMA_EN                          BIT(0)
 #define MLXBF_GIGE_RX_CQE_PACKET_CI                   0x05b0
 #define MLXBF_GIGE_MAC_CFG                            0x05e8
+#ifdef MLXBF_GIGE_INTERNAL
+#define MLXBF_GIGE_LLU_MAX_OFFSET                     0xa0fc
+#define MLXBF_GIGE_PLU_MAX_OFFSET                     0x10fc
+#endif /* MLXBF_GIGE_INTERNAL */
 
 #endif /* !defined(__MLXBF_GIGE_REGS_H__) */
