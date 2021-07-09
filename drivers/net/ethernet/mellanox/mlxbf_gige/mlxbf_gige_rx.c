@@ -103,8 +103,7 @@ int mlxbf_gige_rx_init(struct mlxbf_gige *priv)
 	rx_wqe_ptr = priv->rx_wqe_base;
 
 	for (i = 0; i < priv->rx_q_entries; i++) {
-		priv->rx_skb[i] = mlxbf_gige_alloc_skb(priv, MLXBF_GIGE_DEFAULT_BUF_SZ,
-						       &rx_buf_dma, DMA_FROM_DEVICE);
+		priv->rx_skb[i] = mlxbf_gige_alloc_skb(priv, &rx_buf_dma, DMA_FROM_DEVICE);
 		if (!priv->rx_skb[i])
 			goto free_wqe_and_skb;
 		*rx_wqe_ptr++ = rx_buf_dma;
@@ -119,9 +118,6 @@ int mlxbf_gige_rx_init(struct mlxbf_gige *priv)
 					       GFP_KERNEL);
 	if (!priv->rx_cqe_base)
 		goto free_wqe_and_skb;
-
-	for (i = 0; i < priv->rx_q_entries; i++)
-		priv->rx_cqe_base[i] |= MLXBF_GIGE_RX_CQE_VALID_MASK;
 
 	/* Write RX CQE base address into MMIO reg */
 	writeq(priv->rx_cqe_base_dma, priv->base + MLXBF_GIGE_RX_CQ_BASE);
@@ -148,9 +144,7 @@ int mlxbf_gige_rx_init(struct mlxbf_gige *priv)
 	writeq(data, priv->base + MLXBF_GIGE_INT_MASK);
 
 	/* Enable RX DMA to write new packets to memory */
-	data = readq(priv->base + MLXBF_GIGE_RX_DMA);
-	data |= MLXBF_GIGE_RX_DMA_EN;
-	writeq(data, priv->base + MLXBF_GIGE_RX_DMA);
+	writeq(MLXBF_GIGE_RX_DMA_EN, priv->base + MLXBF_GIGE_RX_DMA);
 
 	writeq(ilog2(priv->rx_q_entries),
 	       priv->base + MLXBF_GIGE_RX_WQE_SIZE_LOG2);
@@ -178,13 +172,7 @@ void mlxbf_gige_rx_deinit(struct mlxbf_gige *priv)
 {
 	dma_addr_t *rx_wqe_ptr;
 	size_t size;
-	u64 data;
 	int i;
-
-	/* Disable RX DMA to prevent packet transfers to memory */
-	data = readq(priv->base + MLXBF_GIGE_RX_DMA);
-	data &= ~MLXBF_GIGE_RX_DMA_EN;
-	writeq(data, priv->base + MLXBF_GIGE_RX_DMA);
 
 	rx_wqe_ptr = priv->rx_wqe_base;
 
@@ -214,10 +202,10 @@ void mlxbf_gige_rx_deinit(struct mlxbf_gige *priv)
 static bool mlxbf_gige_rx_packet(struct mlxbf_gige *priv, int *rx_pkts)
 {
 	struct net_device *netdev = priv->netdev;
-	struct sk_buff *skb = NULL, *rx_skb;
 	u16 rx_pi_rem, rx_ci_rem;
 	dma_addr_t *rx_wqe_addr;
 	dma_addr_t rx_buf_dma;
+	struct sk_buff *skb;
 	u64 *rx_cqe_addr;
 	u64 datalen;
 	u64 rx_cqe;
@@ -227,13 +215,13 @@ static bool mlxbf_gige_rx_packet(struct mlxbf_gige *priv, int *rx_pkts)
 	/* Index into RX buffer array is rx_pi w/wrap based on RX_CQE_SIZE */
 	rx_pi = readq(priv->base + MLXBF_GIGE_RX_WQE_PI);
 	rx_pi_rem = rx_pi % priv->rx_q_entries;
-
 	rx_wqe_addr = priv->rx_wqe_base + rx_pi_rem;
+
+	dma_unmap_single(priv->dev, *rx_wqe_addr,
+			 MLXBF_GIGE_DEFAULT_BUF_SZ, DMA_FROM_DEVICE);
+
 	rx_cqe_addr = priv->rx_cqe_base + rx_pi_rem;
 	rx_cqe = *rx_cqe_addr;
-
-	if ((!!(rx_cqe & MLXBF_GIGE_RX_CQE_VALID_MASK)) != priv->valid_polarity)
-		return false;
 
 	if ((rx_cqe & MLXBF_GIGE_RX_CQE_PKT_STATUS_MASK) == 0) {
 		/* Packet is OK, increment stats */
@@ -248,15 +236,16 @@ static bool mlxbf_gige_rx_packet(struct mlxbf_gige *priv, int *rx_pkts)
 		skb->ip_summed = CHECKSUM_NONE; /* device did not checksum packet */
 
 		skb->protocol = eth_type_trans(skb, netdev);
+		netif_receive_skb(skb);
 
 		/* Alloc another RX SKB for this same index */
-		rx_skb = mlxbf_gige_alloc_skb(priv, MLXBF_GIGE_DEFAULT_BUF_SZ,
-					      &rx_buf_dma, DMA_FROM_DEVICE);
-		if (!rx_skb)
+		priv->rx_skb[rx_pi_rem] = mlxbf_gige_alloc_skb(priv, &rx_buf_dma,
+							       DMA_FROM_DEVICE);
+		if (!priv->rx_skb[rx_pi_rem]) {
+			netdev->stats.rx_dropped++;
 			return false;
-		priv->rx_skb[rx_pi_rem] = rx_skb;
-		dma_unmap_single(priv->dev, *rx_wqe_addr,
-				 MLXBF_GIGE_DEFAULT_BUF_SZ, DMA_FROM_DEVICE);
+		}
+
 		*rx_wqe_addr = rx_buf_dma;
 	} else if (rx_cqe & MLXBF_GIGE_RX_CQE_PKT_STATUS_MAC_ERR) {
 		priv->stats.rx_mac_errors++;
@@ -266,19 +255,13 @@ static bool mlxbf_gige_rx_packet(struct mlxbf_gige *priv, int *rx_pkts)
 
 	/* Let hardware know we've replenished one buffer */
 	rx_pi++;
-	wmb();
 	writeq(rx_pi, priv->base + MLXBF_GIGE_RX_WQE_PI);
 
 	(*rx_pkts)++;
 
 	rx_pi_rem = rx_pi % priv->rx_q_entries;
-	if (rx_pi_rem == 0)
-		priv->valid_polarity ^= 1;
 	rx_ci = readq(priv->base + MLXBF_GIGE_RX_CQE_PACKET_CI);
 	rx_ci_rem = rx_ci % priv->rx_q_entries;
-
-	if (skb)
-		netif_receive_skb(skb);
 
 	return rx_pi_rem != rx_ci_rem;
 }
