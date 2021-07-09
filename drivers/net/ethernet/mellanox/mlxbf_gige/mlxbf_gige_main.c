@@ -2,12 +2,11 @@
 
 /* Gigabit Ethernet driver for Mellanox BlueField SoC
  *
- * Copyright (c) 2020 NVIDIA Corporation.
+ * Copyright (c) 2020, NVIDIA Corporation. All rights reserved.
  */
 
 #include <linux/acpi.h>
 #include <linux/device.h>
-#include <linux/dma-mapping.h>
 #include <linux/etherdevice.h>
 #include <linux/interrupt.h>
 #include <linux/io-64-nonatomic-lo-hi.h>
@@ -15,13 +14,12 @@
 #include <linux/module.h>
 #include <linux/phy.h>
 #include <linux/platform_device.h>
-#include <linux/skbuff.h>
 
 #include "mlxbf_gige.h"
 #include "mlxbf_gige_regs.h"
 
 #define DRV_NAME    "mlxbf_gige"
-#define DRV_VERSION "1.8"
+#define DRV_VERSION "1.7"
 
 static void mlxbf_gige_set_mac_rx_filter(struct mlxbf_gige *priv,
 					 unsigned int index, u64 dmac)
@@ -81,49 +79,6 @@ static void mlxbf_gige_disable_promisc(struct mlxbf_gige *priv)
 	 */
 }
 
-/* Allocate SKB whose payload pointer aligns with the Bluefield
- * hardware DMA limitation, i.e. DMA operation can't cross
- * a 4KB boundary.  A maximum packet size of 2KB is assumed in the
- * alignment formula.  The alignment logic overallocates an SKB,
- * and then adjusts the headroom so that the SKB data pointer is
- * naturally aligned to a 2KB boundary.
- */
-static struct sk_buff *mlxbf_gige_alloc_skb(struct mlxbf_gige *priv,
-					    dma_addr_t *buf_dma,
-					    enum dma_data_direction dir)
-{
-	struct sk_buff *skb;
-	u64 addr, offset;
-
-	/* Overallocate the SKB so that any headroom adjustment (to
-	 * provide 2KB natural alignment) does not exceed payload area
-	 */
-	skb = netdev_alloc_skb(priv->netdev, MLXBF_GIGE_DEFAULT_BUF_SZ * 2);
-	if (!skb)
-		return NULL;
-
-	/* Adjust the headroom so that skb->data is naturally aligned to
-	 * a 2KB boundary, which is the maximum packet size supported.
-	 */
-	addr = (u64)skb->data;
-	offset = (addr + MLXBF_GIGE_DEFAULT_BUF_SZ - 1) &
-		~(MLXBF_GIGE_DEFAULT_BUF_SZ - 1);
-	offset -= addr;
-	if (offset)
-		skb_reserve(skb, offset);
-
-	/* Return streaming DMA mapping to caller */
-	*buf_dma = dma_map_single(priv->dev, skb->data,
-				  MLXBF_GIGE_DEFAULT_BUF_SZ, dir);
-	if (dma_mapping_error(priv->dev, *buf_dma)) {
-		dev_kfree_skb(skb);
-		*buf_dma = (dma_addr_t)0;
-		return NULL;
-	}
-
-	return skb;
-}
-
 /* Receive Initialization
  * 1) Configures RX MAC filters via MMIO registers
  * 2) Allocates RX WQE array using coherent DMA mapping
@@ -158,9 +113,19 @@ static int mlxbf_gige_rx_init(struct mlxbf_gige *priv)
 	rx_wqe_ptr = priv->rx_wqe_base;
 
 	for (i = 0; i < priv->rx_q_entries; i++) {
-		priv->rx_skb[i] = mlxbf_gige_alloc_skb(priv, &rx_buf_dma, DMA_FROM_DEVICE);
-		if (!priv->rx_skb[i])
-			goto free_wqe_and_skb;
+		/* Allocate a receive buffer for this RX WQE. The DMA
+		 * form (dma_addr_t) of the receive buffer address is
+		 * stored in the RX WQE array (via 'rx_wqe_ptr') where
+		 * it is accessible by the GigE device. The VA form of
+		 * the receive buffer is stored in 'rx_buf[]' array in
+		 * the driver private storage for housekeeping.
+		 */
+		priv->rx_buf[i] = dma_alloc_coherent(priv->dev,
+						     MLXBF_GIGE_DEFAULT_BUF_SZ,
+						     &rx_buf_dma,
+						     GFP_KERNEL);
+		if (!priv->rx_buf[i])
+			goto free_wqe_and_buf;
 
 		*rx_wqe_ptr++ = rx_buf_dma;
 	}
@@ -173,7 +138,7 @@ static int mlxbf_gige_rx_init(struct mlxbf_gige *priv)
 					       &priv->rx_cqe_base_dma,
 					       GFP_KERNEL);
 	if (!priv->rx_cqe_base)
-		goto free_wqe_and_skb;
+		goto free_wqe_and_buf;
 
 	/* Write RX CQE base address into MMIO reg */
 	writeq(priv->rx_cqe_base_dma, priv->base + MLXBF_GIGE_RX_CQ_BASE);
@@ -207,12 +172,11 @@ static int mlxbf_gige_rx_init(struct mlxbf_gige *priv)
 
 	return 0;
 
-free_wqe_and_skb:
+free_wqe_and_buf:
 	rx_wqe_ptr = priv->rx_wqe_base;
 	for (j = 0; j < i; j++) {
-		dma_unmap_single(priv->dev, *rx_wqe_ptr,
-				 MLXBF_GIGE_DEFAULT_BUF_SZ, DMA_FROM_DEVICE);
-		dev_kfree_skb(priv->rx_skb[j]);
+		dma_free_coherent(priv->dev, MLXBF_GIGE_DEFAULT_BUF_SZ,
+				  priv->rx_buf[j], *rx_wqe_ptr);
 		rx_wqe_ptr++;
 	}
 	dma_free_coherent(priv->dev, wq_size,
@@ -274,9 +238,9 @@ static void mlxbf_gige_rx_deinit(struct mlxbf_gige *priv)
 	rx_wqe_ptr = priv->rx_wqe_base;
 
 	for (i = 0; i < priv->rx_q_entries; i++) {
-		dma_unmap_single(priv->dev, *rx_wqe_ptr, MLXBF_GIGE_DEFAULT_BUF_SZ,
-				 DMA_FROM_DEVICE);
-		dev_kfree_skb(priv->rx_skb[i]);
+		dma_free_coherent(priv->dev, MLXBF_GIGE_DEFAULT_BUF_SZ,
+				  priv->rx_buf[i], *rx_wqe_ptr);
+		priv->rx_buf[i] = NULL;
 		rx_wqe_ptr++;
 	}
 
@@ -302,20 +266,19 @@ static void mlxbf_gige_rx_deinit(struct mlxbf_gige *priv)
  */
 static void mlxbf_gige_tx_deinit(struct mlxbf_gige *priv)
 {
-	u64 *tx_wqe_addr;
+	u64 *tx_wqe_ptr;
 	size_t size;
 	int i;
 
-	tx_wqe_addr = priv->tx_wqe_base;
+	tx_wqe_ptr = priv->tx_wqe_base;
 
 	for (i = 0; i < priv->tx_q_entries; i++) {
-		if (priv->tx_skb[i]) {
-			dma_unmap_single(priv->dev, *tx_wqe_addr,
-					 MLXBF_GIGE_DEFAULT_BUF_SZ, DMA_TO_DEVICE);
-			dev_kfree_skb(priv->tx_skb[i]);
-			priv->tx_skb[i] = NULL;
+		if (priv->tx_buf[i]) {
+			dma_free_coherent(priv->dev, MLXBF_GIGE_DEFAULT_BUF_SZ,
+					  priv->tx_buf[i], *tx_wqe_ptr);
+			priv->tx_buf[i] = NULL;
 		}
-		tx_wqe_addr += 2;
+		tx_wqe_ptr += 2;
 	}
 
 	size = MLXBF_GIGE_TX_WQE_SZ * priv->tx_q_entries;
@@ -654,11 +617,9 @@ static bool mlxbf_gige_handle_tx_complete(struct mlxbf_gige *priv)
 
 		stats->tx_packets++;
 		stats->tx_bytes += MLXBF_GIGE_TX_WQE_PKT_LEN(tx_wqe_addr);
-
-		dma_unmap_single(priv->dev, *tx_wqe_addr,
-				 MLXBF_GIGE_DEFAULT_BUF_SZ, DMA_TO_DEVICE);
-		dev_consume_skb_any(priv->tx_skb[tx_wqe_index]);
-		priv->tx_skb[tx_wqe_index] = NULL;
+		dma_free_coherent(priv->dev, MLXBF_GIGE_DEFAULT_BUF_SZ,
+				  priv->tx_buf[tx_wqe_index], *tx_wqe_addr);
+		priv->tx_buf[tx_wqe_index] = NULL;
 	}
 
 	/* Since the TX ring was likely just drained, check if TX queue
@@ -676,48 +637,40 @@ static bool mlxbf_gige_rx_packet(struct mlxbf_gige *priv, int *rx_pkts)
 {
 	struct net_device *netdev = priv->netdev;
 	u16 rx_pi_rem, rx_ci_rem;
-	dma_addr_t rx_buf_dma;
 	struct sk_buff *skb;
 	u64 *rx_cqe_addr;
-	u64 *rx_wqe_addr;
 	u64 datalen;
 	u64 rx_cqe;
 	u16 rx_ci;
 	u16 rx_pi;
+	u8 *pktp;
 
 	/* Index into RX buffer array is rx_pi w/wrap based on RX_CQE_SIZE */
 	rx_pi = readq(priv->base + MLXBF_GIGE_RX_WQE_PI);
 	rx_pi_rem = rx_pi % priv->rx_q_entries;
-	rx_wqe_addr = priv->rx_wqe_base + rx_pi_rem;
-	dma_unmap_single(priv->dev, *rx_wqe_addr,
-			 MLXBF_GIGE_DEFAULT_BUF_SZ, DMA_FROM_DEVICE);
+	pktp = priv->rx_buf[rx_pi_rem];
 	rx_cqe_addr = priv->rx_cqe_base + rx_pi_rem;
 	rx_cqe = *rx_cqe_addr;
+	datalen = rx_cqe & MLXBF_GIGE_RX_CQE_PKT_LEN_MASK;
 
 	if ((rx_cqe & MLXBF_GIGE_RX_CQE_PKT_STATUS_MASK) == 0) {
 		/* Packet is OK, increment stats */
-		datalen = rx_cqe & MLXBF_GIGE_RX_CQE_PKT_LEN_MASK;
 		netdev->stats.rx_packets++;
 		netdev->stats.rx_bytes += datalen;
 
-		skb = priv->rx_skb[rx_pi_rem];
-
-		skb_put(skb, datalen);
-
-		skb->ip_summed = CHECKSUM_NONE; /* device did not checksum packet */
-
-		skb->protocol = eth_type_trans(skb, netdev);
-		netif_receive_skb(skb);
-
-		/* Alloc another RX SKB for this same index */
-		priv->rx_skb[rx_pi_rem] = mlxbf_gige_alloc_skb(priv, &rx_buf_dma,
-							       DMA_FROM_DEVICE);
-		if (!priv->rx_skb[rx_pi_rem]) {
+		skb = dev_alloc_skb(datalen);
+		if (!skb) {
 			netdev->stats.rx_dropped++;
 			return false;
 		}
 
-		*rx_wqe_addr = rx_buf_dma;
+		memcpy(skb_put(skb, datalen), pktp, datalen);
+
+		skb->dev = netdev;
+		skb->protocol = eth_type_trans(skb, netdev);
+		skb->ip_summed = CHECKSUM_NONE; /* device did not checksum packet */
+
+		netif_receive_skb(skb);
 	} else if (rx_cqe & MLXBF_GIGE_RX_CQE_PKT_STATUS_MAC_ERR) {
 		priv->stats.rx_mac_errors++;
 	} else if (rx_cqe & MLXBF_GIGE_RX_CQE_PKT_STATUS_TRUNCATED) {
@@ -795,9 +748,9 @@ static int mlxbf_gige_request_irqs(struct mlxbf_gige *priv)
 	}
 
 	err = request_threaded_irq(priv->phy_irq, NULL,
-				   mlxbf_gige_mdio_handle_phy_interrupt,
-				   IRQF_ONESHOT | IRQF_SHARED,
-				   "mlxbf_gige_phy", priv);
+			       mlxbf_gige_mdio_handle_phy_interrupt,
+			       IRQF_ONESHOT | IRQF_SHARED, "mlxbf_gige_phy",
+			       priv);
 	if (err) {
 		dev_err(priv->dev, "Request phy_irq failure\n");
 		goto free_llu_plu_irq;
@@ -815,6 +768,7 @@ free_error_irq:
 	free_irq(priv->error_irq, priv);
 
 	return err;
+
 }
 
 static void mlxbf_gige_free_irqs(struct mlxbf_gige *priv)
@@ -839,18 +793,18 @@ static void mlxbf_gige_cache_stats(struct mlxbf_gige *priv)
 					   MLXBF_GIGE_RX_DISC_COUNTER_ALL);
 }
 
-static int mlxbf_gige_clean_port(struct mlxbf_gige *priv)
+static void mlxbf_gige_clean_port(struct mlxbf_gige *priv)
 {
 	u64 control;
 	u64 temp;
-	int err;
+	int ret;
 
 	/* Set the CLEAN_PORT_EN bit to trigger SW reset */
 	control = readq(priv->base + MLXBF_GIGE_CONTROL);
 	control |= MLXBF_GIGE_CONTROL_CLEAN_PORT_EN;
 	writeq(control, priv->base + MLXBF_GIGE_CONTROL);
 
-	err = readq_poll_timeout_atomic(priv->base + MLXBF_GIGE_STATUS, temp,
+	ret = readq_poll_timeout_atomic(priv->base + MLXBF_GIGE_STATUS, temp,
 					(temp & MLXBF_GIGE_STATUS_READY),
 					100, 100000);
 
@@ -858,40 +812,38 @@ static int mlxbf_gige_clean_port(struct mlxbf_gige *priv)
 	control = readq(priv->base + MLXBF_GIGE_CONTROL);
 	control &= ~MLXBF_GIGE_CONTROL_CLEAN_PORT_EN;
 	writeq(control, priv->base + MLXBF_GIGE_CONTROL);
-
-	return err;
 }
 
 static int mlxbf_gige_phy_enable_interrupt(struct phy_device *phydev)
 {
-	int err = 0;
+	int ret = 0;
 
 	if (phydev->drv->ack_interrupt)
-		err = phydev->drv->ack_interrupt(phydev);
-	if (err < 0)
-		return err;
+		ret = phydev->drv->ack_interrupt(phydev);
+	if (ret < 0)
+		return ret;
 
 	phydev->interrupts = PHY_INTERRUPT_ENABLED;
 	if (phydev->drv->config_intr)
-		err = phydev->drv->config_intr(phydev);
+		ret = phydev->drv->config_intr(phydev);
 
-	return err;
+	return ret;
 }
 
 static int mlxbf_gige_phy_disable_interrupt(struct phy_device *phydev)
 {
-	int err = 0;
+	int ret = 0;
 
 	if (phydev->drv->ack_interrupt)
-		err = phydev->drv->ack_interrupt(phydev);
-	if (err < 0)
-		return err;
+		ret = phydev->drv->ack_interrupt(phydev);
+	if (ret < 0)
+		return ret;
 
 	phydev->interrupts = PHY_INTERRUPT_DISABLED;
 	if (phydev->drv->config_intr)
-		err = phydev->drv->config_intr(phydev);
+		ret = phydev->drv->config_intr(phydev);
 
-	return err;
+	return ret;
 }
 
 static int mlxbf_gige_open(struct net_device *netdev)
@@ -905,9 +857,7 @@ static int mlxbf_gige_open(struct net_device *netdev)
 	if (err)
 		return err;
 	mlxbf_gige_cache_stats(priv);
-	err = mlxbf_gige_clean_port(priv);
-	if (err)
-		return err;
+	mlxbf_gige_clean_port(priv);
 	err = mlxbf_gige_rx_init(priv);
 	if (err)
 		return err;
@@ -980,51 +930,31 @@ static netdev_tx_t mlxbf_gige_start_xmit(struct sk_buff *skb,
 					 struct net_device *netdev)
 {
 	struct mlxbf_gige *priv = netdev_priv(netdev);
-	u64 buff_addr, start_dma_page, end_dma_page;
-	struct sk_buff *tx_skb;
 	dma_addr_t tx_buf_dma;
+	u8 *tx_buf = NULL;
 	u64 *tx_wqe_addr;
 	u64 word2;
 
-	/* If needed, linearize TX SKB as hardware DMA expects this */
-	if (skb_linearize(skb)) {
+	/* Allocate ptr for buffer */
+	if (skb->len < MLXBF_GIGE_DEFAULT_BUF_SZ)
+		tx_buf = dma_alloc_coherent(priv->dev, MLXBF_GIGE_DEFAULT_BUF_SZ,
+					    &tx_buf_dma, GFP_KERNEL);
+
+	if (!tx_buf) {
+		/* Free incoming skb, could not alloc TX buffer */
 		dev_kfree_skb(skb);
 		netdev->stats.tx_dropped++;
 		return NET_XMIT_DROP;
 	}
 
-	buff_addr = (u64)skb->data;
-	start_dma_page = buff_addr >> MLXBF_GIGE_DMA_PAGE_SHIFT;
-	end_dma_page   = (buff_addr + skb->len - 1) >> MLXBF_GIGE_DMA_PAGE_SHIFT;
+	priv->tx_buf[priv->tx_pi % priv->tx_q_entries] = tx_buf;
 
-	/* Verify that payload pointer and data length of SKB to be
-	 * transmitted does not violate the hardware DMA limitation.
+	/* Copy data from skb to allocated TX buffer
+	 *
+	 * NOTE: GigE silicon will automatically pad up to
+	 *       minimum packet length if needed.
 	 */
-	if (start_dma_page != end_dma_page) {
-		/* DMA operation would fail as-is, alloc new aligned SKB */
-		tx_skb = mlxbf_gige_alloc_skb(priv, &tx_buf_dma, DMA_TO_DEVICE);
-		if (!tx_skb) {
-			/* Free original skb, could not alloc new aligned SKB */
-			dev_kfree_skb(skb);
-			netdev->stats.tx_dropped++;
-			return NET_XMIT_DROP;
-		}
-
-		skb_put_data(tx_skb, skb->data, skb->len);
-		dev_kfree_skb(skb);
-	} else {
-		tx_skb = skb;
-		tx_buf_dma = dma_map_single(priv->dev, skb->data,
-					    MLXBF_GIGE_DEFAULT_BUF_SZ,
-					    DMA_TO_DEVICE);
-		if (dma_mapping_error(priv->dev, tx_buf_dma)) {
-			dev_kfree_skb(skb);
-			netdev->stats.tx_dropped++;
-			return NET_XMIT_DROP;
-		}
-	}
-
-	priv->tx_skb[priv->tx_pi % priv->tx_q_entries] = tx_skb;
+	skb_copy_bits(skb, 0, tx_buf, skb->len);
 
 	/* Get address of TX WQE */
 	tx_wqe_addr = priv->tx_wqe_next;
@@ -1034,11 +964,8 @@ static netdev_tx_t mlxbf_gige_start_xmit(struct sk_buff *skb,
 	/* Put PA of buffer address into first 64-bit word of TX WQE */
 	*tx_wqe_addr = tx_buf_dma;
 
-	/* Set TX WQE pkt_len appropriately
-	 * NOTE: GigE silicon will automatically pad up to
-	 *       minimum packet length if needed.
-	 */
-	word2 = tx_skb->len & MLXBF_GIGE_TX_WQE_PKT_LEN_MASK;
+	/* Set TX WQE pkt_len appropriately */
+	word2 = skb->len & MLXBF_GIGE_TX_WQE_PKT_LEN_MASK;
 
 	/* Write entire 2nd word of TX WQE */
 	*(tx_wqe_addr + 1) = word2;
@@ -1050,6 +977,11 @@ static netdev_tx_t mlxbf_gige_start_xmit(struct sk_buff *skb,
 		wmb();
 		writeq(priv->tx_pi, priv->base + MLXBF_GIGE_TX_PRODUCER_INDEX);
 	}
+
+	writeq(priv->tx_pi, priv->base + MLXBF_GIGE_TX_PRODUCER_INDEX);
+
+	/* Free incoming skb, contents already copied to HW */
+	dev_kfree_skb(skb);
 
 	/* Check if the last TX entry was just used */
 	if (!mlxbf_gige_tx_buffs_avail(priv)) {
@@ -1150,7 +1082,8 @@ static void mlxbf_gige_initial_mac(struct mlxbf_gige *priv)
 
 static void mlxbf_gige_adjust_link(struct net_device *netdev)
 {
-	/* Only one speed and one duplex supported, simply return */
+	/* Only one speed and one duplex supported */
+	return;
 }
 
 static int mlxbf_gige_probe(struct platform_device *pdev)
