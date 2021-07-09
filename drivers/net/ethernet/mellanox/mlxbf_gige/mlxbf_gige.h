@@ -4,7 +4,7 @@
  * - this file contains software data structures and any chip-specific
  *   data structures (e.g. TX WQE format) that are memory resident.
  *
- * Copyright (c) 2020 NVIDIA Corporation.
+ * Copyright (c) 2020, NVIDIA Corporation. All rights reserved.
  */
 
 #ifndef __MLXBF_GIGE_H__
@@ -27,9 +27,6 @@
 #define MLXBF_GIGE_DEFAULT_TXQ_SZ 128
 
 #define MLXBF_GIGE_DEFAULT_BUF_SZ 2048
-
-#define MLXBF_GIGE_DMA_PAGE_SZ    4096
-#define MLXBF_GIGE_DMA_PAGE_SHIFT 12
 
 /* There are four individual MAC RX filters. Currently
  * two of them are being used: one for the broadcast MAC
@@ -97,8 +94,8 @@ struct mlxbf_gige {
 	u64 error_intr_count;
 	u64 rx_intr_count;
 	u64 llu_plu_intr_count;
-	struct sk_buff *rx_skb[MLXBF_GIGE_MAX_RXQ_SZ];
-	struct sk_buff *tx_skb[MLXBF_GIGE_MAX_TXQ_SZ];
+	u8 *rx_buf[MLXBF_GIGE_MAX_RXQ_SZ];
+	u8 *tx_buf[MLXBF_GIGE_MAX_TXQ_SZ];
 	int error_irq;
 	int rx_irq;
 	int llu_plu_irq;
