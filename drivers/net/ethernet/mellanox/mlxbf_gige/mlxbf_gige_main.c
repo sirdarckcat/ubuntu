@@ -5,6 +5,9 @@
  * Copyright (c) 2020, Mellanox Technologies
  */
 
+/* Standard method to enable kernel debug (e.g. dev_dbg) */
+#define DEBUG
+
 #include <linux/acpi.h>
 #include <linux/device.h>
 #include <linux/etherdevice.h>
@@ -14,17 +17,239 @@
 #include <linux/phy.h>
 #include <linux/platform_device.h>
 
+/* The MLXBF_GIGE_INTERNAL setting is defined in the
+ * "mlxbf_gige.h" header file, so this header file must
+ * be included before any processing of that setting.
+ */
 #include "mlxbf_gige.h"
 #include "mlxbf_gige_regs.h"
 
+#ifdef MLXBF_GIGE_INTERNAL
+#include <linux/version.h>
+/*
+ * Upstreaming guidelines:
+ * =======================
+ * 1) Do not upstream any code that is encapsulated by
+ *    the "MLXBF_GIGE_INTERNAL" tag; that tag is for code
+ *    that is for internal use only.
+ * 2) Remove all code that defines or checks for the
+ *    definition of "FAST_MODELS". The code encapsulated
+ *    by "#ifdef FAST_MODELS" should always be enabled
+ *    in the upstream source since it is PHY related.
+ * 3) Remove all code that defines or checks for the
+ *    definition of "MLXBF_GIGE_LOOPBACK". The code encapsulated
+ *    by "#ifndef MLXBF_GIGE_LOOPBACK" should always be enabled,
+ *    i.e. upstream code should run in non-loopback mode.
+ * 4) Remove any code that checks for current Linux version
+ *    via "LINUX_VERSION_CODE". The upstream code should
+ *    always be tailored to a specific Linux kernel.
+ * 5) Remove "#define DEBUG" at top of this file.
+ */
+
+/* Define to create mmio read/write sysfs entries */
+#define MLXBF_GIGE_MMIO_SYSFS
+
+/* Define this to perform read/write tests to MMIO regs */
+#define MLXBF_GIGE_MMIO_TESTS
+
+/* Define this to perform read/write tests to LLU MMIO regs
+ * NOTE: there is no LLU on FastModels, so don't try it.
+ */
+/* #define LLU_MMIO_TESTS */
+
+/* Define this to perform read/write tests to PLU MMIO regs
+ * NOTE: there is no PLU on FastModels, so don't try it.
+ */
+/* #define PLU_MMIO_TESTS */
+
+/* Define this to put IP networking stack into loopback mode,
+ * where IP stack will not transmit packets out the GigE interface.
+ * Instead use the GigE sysfs entry (e.g. 'echo <n> > start_tx')
+ * to send packets. It is assumed that interface is being put into
+ * loopback mode by one of these methods:
+ *   a) Fast Models loopback
+ *   b) PLU loopback mode
+ *   c) PHY loopback mode
+ */
+/* #define MLXBF_GIGE_LOOPBACK */
+#endif /* MLXBF_GIGE_INTERNAL */
+
+#define FAST_MODELS
+
 #define DRV_NAME    "mlxbf_gige"
 #define DRV_VERSION "1.0"
+
+#ifdef MLXBF_GIGE_INTERNAL
+#define MLXBF_GIGE_MSG_FORMAT \
+	"  %02x %02x %02x %02x %02x %02x %02x %02x" \
+	" %02x %02x %02x %02x %02x %02x %02x %02x\n"
+
+#define MLXBF_GIGE_MSG_ARGS(p) \
+	*p, *(p + 1), *(p + 2), *(p + 3), \
+	*(p + 4), *(p + 5), *(p + 6), *(p + 7), \
+	*(p + 8), *(p + 9), *(p + 10), *(p + 11), \
+	*(p + 12), *(p + 13), *(p + 14), *(p + 15)
+
+static void mlxbf_gige_plu_selftests(struct platform_device *pdev,
+				     struct mlxbf_gige *priv)
+{
+#ifdef PLU_MMIO_TESTS
+	u32 rd_data, exp_data;
+
+	dev_dbg(&pdev->dev, "Running PLU MMIO tests\n");
+
+	/* Read data should match reset value in register header file */
+	rd_data = readl(priv->plu_base + 0x8);
+	exp_data = 0x1ff;
+	dev_dbg(&pdev->dev, "PLU 0x8 equals %x - %s\n",
+		rd_data, (rd_data == exp_data) ? "OK" : "FAIL");
+
+	/* Read data should match reset value in register header file */
+	rd_data = readl(priv->plu_base + 0x140);
+	exp_data = 0xe8001870;
+	dev_dbg(&pdev->dev, "PLU 0x140 equals %x - %s\n",
+		rd_data, (rd_data == exp_data) ? "OK" : "FAIL");
+
+	/* Read data should match reset value in register header file */
+	rd_data = readl(priv->plu_base + 0x610);
+	exp_data = 0x31001;
+	dev_dbg(&pdev->dev, "PLU 0x610 equals %x - %s\n",
+		rd_data, (rd_data == exp_data) ? "OK" : "FAIL");
+
+	/* Read data should match reset value in register header file */
+	rd_data = readl(priv->plu_base + 0x618);
+	exp_data = 0xb0000;
+	dev_dbg(&pdev->dev, "PLU 0x618 equals %x - %s\n",
+		rd_data, (rd_data == exp_data) ? "OK" : "FAIL");
+
+	/* Read data should match reset value in register header file */
+	rd_data = readl(priv->plu_base + 0x890);
+	exp_data = 0x9;
+	dev_dbg(&pdev->dev, "PLU 0x890 equals %x - %s\n",
+		rd_data, (rd_data == exp_data) ? "OK" : "FAIL");
+
+	/* Read data should match reset value in register header file */
+	rd_data = readl(priv->plu_base + 0x894);
+	exp_data = 0x1;
+	dev_dbg(&pdev->dev, "PLU 0x894 equals %x - %s\n",
+		rd_data, (rd_data == exp_data) ? "OK" : "FAIL");
+#endif
+}
+
+static void mlxbf_gige_llu_selftests(struct platform_device *pdev,
+				     struct mlxbf_gige *priv)
+{
+#ifdef LLU_MMIO_TESTS
+	u32 rd_data, exp_data;
+
+	dev_dbg(&pdev->dev, "Running LLU MMIO tests\n");
+
+	/* Read data should match reset value in register header file */
+	rd_data = readl(priv->llu_base + 0x2200);
+	exp_data = 0x91008808;
+	dev_dbg(&pdev->dev, "LLU 0x2200 equals %x - %s\n",
+		rd_data, (rd_data == exp_data) ? "OK" : "FAIL");
+
+	/* Read data should match reset value in register header file */
+	rd_data = readl(priv->llu_base + 0x2204);
+	exp_data = 0x810088a8;
+	dev_dbg(&pdev->dev, "LLU 0x2204 equals %x - %s\n",
+		rd_data, (rd_data == exp_data) ? "OK" : "FAIL");
+
+	/* Read data should match reset value in register header file */
+	rd_data = readl(priv->llu_base + 0x2208);
+	exp_data = 0x22e90000;
+	dev_dbg(&pdev->dev, "LLU 0x2208 equals %x - %s\n",
+		rd_data, (rd_data == exp_data) ? "OK" : "FAIL");
+
+	/* Read data should match reset value in register header file */
+	rd_data = readl(priv->llu_base + 0x220c);
+	exp_data = 0x893f0000;
+	dev_dbg(&pdev->dev, "LLU 0x220c equals %x - %s\n",
+		rd_data, (rd_data == exp_data) ? "OK" : "FAIL");
+
+	/* Read data should match reset value in register header file */
+	rd_data = readl(priv->llu_base + 0x2260);
+	exp_data = 0x8060806;
+	dev_dbg(&pdev->dev, "LLU 0x2260 equals %x - %s\n",
+		rd_data, (rd_data == exp_data) ? "OK" : "FAIL");
+
+	/* Read data should match reset value in register header file */
+	rd_data = readl(priv->llu_base + 0x2264);
+	exp_data = 0x891422e7;
+	dev_dbg(&pdev->dev, "LLU 0x2264 equals %x - %s\n",
+		rd_data, (rd_data == exp_data) ? "OK" : "FAIL");
+#endif
+}
+
+static void mlxbf_gige_selftests(struct platform_device *pdev,
+				 struct mlxbf_gige *priv)
+{
+#ifdef MLXBF_GIGE_MMIO_TESTS
+	u64 rd_data, wr_data, exp_data;
+
+	dev_dbg(&pdev->dev, "Running MLXBF_GIGE MMIO tests\n");
+
+	/* Read data should match reset value in register header file */
+	rd_data = readq(priv->base + MLXBF_GIGE_CONFIG);
+	exp_data = (MLXBF_GIGE_CONFIG_MAX_PKT_SZ_RESET_VAL
+		    << MLXBF_GIGE_CONFIG_MAX_PKT_SZ_SHIFT);
+	dev_dbg(&pdev->dev, "MLXBF_GIGE_CONFIG equals %llx - %s\n",
+		rd_data, (rd_data == exp_data) ? "OK" : "FAIL");
+
+	/* Read data should match reset value in register header file */
+	rd_data = readq(priv->base + MLXBF_GIGE_RX_WQE_SIZE_LOG2);
+	exp_data = MLXBF_GIGE_RX_WQE_SIZE_LOG2_RESET_VAL;
+	dev_dbg(&pdev->dev, "MLXBF_GIGE_RX_WQE_SIZE_LOG2 equals %llx - %s\n",
+		rd_data, (rd_data == exp_data) ? "OK" : "FAIL");
+
+	/* Read data should match reset value in register header file */
+	rd_data = readq(priv->base + MLXBF_GIGE_TX_WQ_SIZE_LOG2);
+	exp_data = MLXBF_GIGE_TX_WQ_SIZE_LOG2_RESET_VAL;
+	dev_dbg(&pdev->dev, "MLXBF_GIGE_TX_WQ_SIZE_LOG2 equals %llx - %s\n",
+		rd_data, (rd_data == exp_data) ? "OK" : "FAIL");
+
+	/* Do some SCRATCHPAD testing */
+	rd_data = readq(priv->base + MLXBF_GIGE_SCRATCHPAD);
+	dev_dbg(&pdev->dev, "MLXBF_GIGE_SCRATCHPAD equals %llx\n", rd_data);
+
+	wr_data = 0x1122334455667788;
+	writeq(wr_data, priv->base + MLXBF_GIGE_SCRATCHPAD);
+	dev_dbg(&pdev->dev, "Will write %llx to MLXBF_GIGE_SCRATCHPAD\n",
+		wr_data);
+
+	rd_data = readq(priv->base + MLXBF_GIGE_SCRATCHPAD);
+	dev_dbg(&pdev->dev, "MLXBF_GIGE_SCRATCHPAD equals %llx - %s\n",
+		rd_data, (rd_data == wr_data) ? "OK" : "FAIL");
+
+	wr_data = 0xaabbccddeeff4321;
+	writeq(wr_data, priv->base + MLXBF_GIGE_SCRATCHPAD);
+	dev_dbg(&pdev->dev, "Will write %llx to MLXBF_GIGE_SCRATCHPAD\n",
+		wr_data);
+
+	rd_data = readq(priv->base + MLXBF_GIGE_SCRATCHPAD);
+	dev_dbg(&pdev->dev, "MLXBF_GIGE_SCRATCHPAD equals %llx - %s\n",
+		rd_data, (rd_data == wr_data) ? "OK" : "FAIL");
+#endif /* MLXBF_GIGE_MMIO_TESTS */
+}
+#endif /* MLXBF_GIGE_INTERNAL */
 
 static void mlxbf_gige_set_mac_rx_filter(struct mlxbf_gige *priv,
 					 unsigned int index, u64 dmac)
 {
 	void __iomem *base = priv->base;
 	u64 control;
+
+#ifdef MLXBF_GIGE_INTERNAL
+	if (index > 3) {
+		dev_err(priv->dev, "%s: invalid index %d\n",
+			__func__, index);
+		return;
+	}
+
+	dev_dbg(priv->dev, "set_mac_rx_filter: index=%d dmac=%llx\n",
+		index, dmac);
+#endif
 
 	/* Write destination MAC to specified MAC RX filter */
 	writeq(dmac, base + MLXBF_GIGE_RX_MAC_FILTER +
@@ -41,9 +266,28 @@ static int mlxbf_gige_get_mac_rx_filter(struct mlxbf_gige *priv,
 {
 	void __iomem *base = priv->base;
 
+#ifdef MLXBF_GIGE_INTERNAL
+	if (index > 3) {
+		dev_err(priv->dev, "%s: invalid index %d\n",
+			__func__, index);
+		return -EINVAL;
+	}
+
+	if (!dmac) {
+		dev_err(priv->dev, "%s: invalid dmac pointer NULL\n",
+			__func__);
+		return -EINVAL;
+	}
+#endif
+
 	/* Read destination MAC from specified MAC RX filter */
 	*dmac = readq(base + MLXBF_GIGE_RX_MAC_FILTER +
 		      (index * MLXBF_GIGE_RX_MAC_FILTER_STRIDE));
+
+#ifdef MLXBF_GIGE_INTERNAL
+	dev_dbg(priv->dev, "get_mac_rx_filter: index=%d dmac=%llx\n",
+		index, *dmac);
+#endif
 
 	return 0;
 }
@@ -52,6 +296,10 @@ static void mlxbf_gige_enable_promisc(struct mlxbf_gige *priv)
 {
 	void __iomem *base = priv->base;
 	u64 control;
+
+#ifdef MLXBF_GIGE_INTERNAL
+	dev_dbg(priv->dev, "%s\n", __func__);
+#endif
 
 	/* Enable MAC_ID_RANGE match functionality */
 	control = readq(base + MLXBF_GIGE_CONTROL);
@@ -69,6 +317,10 @@ static void mlxbf_gige_disable_promisc(struct mlxbf_gige *priv)
 {
 	void __iomem *base = priv->base;
 	u64 control;
+
+#ifdef MLXBF_GIGE_INTERNAL
+	dev_dbg(priv->dev, "%s\n", __func__);
+#endif
 
 	/* Disable MAC_ID_RANGE match functionality */
 	control = readq(base + MLXBF_GIGE_CONTROL);
@@ -107,6 +359,11 @@ static int mlxbf_gige_rx_init(struct mlxbf_gige *priv)
 	if (!priv->rx_wqe_base)
 		return -ENOMEM;
 
+#ifdef MLXBF_GIGE_INTERNAL
+	dev_dbg(priv->dev, "rx_init: RX WQE base 0x%llx 0x%llx\n",
+		(u64)priv->rx_wqe_base, (u64)priv->rx_wqe_base_dma);
+#endif
+
 	/* Initialize 'rx_wqe_ptr' to point to first RX WQE in array
 	 * Each RX WQE is simply a receive buffer pointer, so walk
 	 * the entire array, allocating a 2KB buffer for each element
@@ -114,6 +371,9 @@ static int mlxbf_gige_rx_init(struct mlxbf_gige *priv)
 	rx_wqe_ptr = priv->rx_wqe_base;
 
 	for (i = 0; i < priv->rx_q_entries; i++) {
+#ifdef MLXBF_GIGE_INTERNAL
+		u8 *p;
+#endif
 		/* Allocate a receive buffer for this RX WQE. The DMA
 		 * form (dma_addr_t) of the receive buffer address is
 		 * stored in the RX WQE array (via 'rx_wqe_ptr') where
@@ -128,6 +388,14 @@ static int mlxbf_gige_rx_init(struct mlxbf_gige *priv)
 		if (!priv->rx_buf[i])
 			goto free_wqe_and_buf;
 
+#ifdef MLXBF_GIGE_INTERNAL
+		/* Initialize the first 16 bytes of each RX buffer
+		 * to a known pattern. This will make it easy to
+		 * identify when each receive buffer is populated
+		 */
+		p = priv->rx_buf[i];
+		memset(p, MLXBF_GIGE_INIT_BYTE_RX_BUF, 16);
+#endif
 		*rx_wqe_ptr++ = rx_buf_dma;
 	}
 
@@ -140,6 +408,11 @@ static int mlxbf_gige_rx_init(struct mlxbf_gige *priv)
 					       GFP_KERNEL);
 	if (!priv->rx_cqe_base)
 		goto free_wqe_and_buf;
+
+#ifdef MLXBF_GIGE_INTERNAL
+	dev_dbg(priv->dev, "rx_init: RX CQE base 0x%llx 0x%llx\n",
+		(u64)priv->rx_cqe_base, (u64)priv->rx_cqe_base_dma);
+#endif
 
 	/* Write RX CQE base address into MMIO reg */
 	writeq(priv->rx_cqe_base_dma, priv->base + MLXBF_GIGE_RX_CQ_BASE);
@@ -200,6 +473,11 @@ static int mlxbf_gige_tx_init(struct mlxbf_gige *priv)
 	if (!priv->tx_wqe_base)
 		return -ENOMEM;
 
+#ifdef MLXBF_GIGE_INTERNAL
+	dev_dbg(priv->dev, "tx_init: TX WQE base 0x%llx 0x%llx\n",
+		(u64)priv->tx_wqe_base, (u64)priv->tx_wqe_base_dma);
+#endif
+
 	priv->tx_wqe_next = priv->tx_wqe_base;
 
 	/* Write TX WQE base address into MMIO reg */
@@ -214,6 +492,11 @@ static int mlxbf_gige_tx_init(struct mlxbf_gige *priv)
 				  priv->tx_wqe_base, priv->tx_wqe_base_dma);
 		return -ENOMEM;
 	}
+
+#ifdef MLXBF_GIGE_INTERNAL
+	dev_dbg(priv->dev, "tx_init: TX CC 0x%llx 0x%llx\n",
+		(u64)priv->tx_cc, (u64)priv->tx_cc_dma);
+#endif
 
 	/* Write TX CC base address into MMIO reg */
 	writeq(priv->tx_cc_dma, priv->base + MLXBF_GIGE_TX_CI_UPDATE_ADDRESS);
@@ -369,6 +652,12 @@ static int mlxbf_gige_set_ringparam(struct net_device *netdev,
 	    new_tx_q_entries == priv->tx_q_entries)
 		return 0;
 
+#ifdef MLXBF_GIGE_INTERNAL
+	netdev_printk(KERN_DEBUG, netdev,
+		      "set_ringparam(): new_tx=%x new_rx=%x\n",
+		      new_tx_q_entries, new_rx_q_entries);
+#endif
+
 	if (netif_running(netdev))
 		ops->ndo_stop(netdev);
 
@@ -480,6 +769,7 @@ static const struct ethtool_ops mlxbf_gige_ethtool_ops = {
 	.get_ethtool_stats      = mlxbf_gige_get_ethtool_stats,
 };
 
+#ifdef FAST_MODELS
 static void mlxbf_gige_handle_link_change(struct net_device *netdev)
 {
 	struct mlxbf_gige *priv = netdev_priv(netdev);
@@ -493,6 +783,7 @@ static void mlxbf_gige_handle_link_change(struct net_device *netdev)
 	/* print new link status only if the interrupt came from the PHY */
 	phy_print_status(phydev);
 }
+#endif /* FAST_MODELS */
 
 /* Start of struct net_device_ops functions */
 static irqreturn_t mlxbf_gige_error_intr(int irq, void *dev_id)
@@ -506,12 +797,33 @@ static irqreturn_t mlxbf_gige_error_intr(int irq, void *dev_id)
 
 	int_status = readq(priv->base + MLXBF_GIGE_INT_STATUS);
 
+#ifdef MLXBF_GIGE_INTERNAL
+	/* Trigger kernel log message on first interrupt of each
+	 * type and then service the asserted error condition(s).
+	 */
+#endif
+
 	if (int_status & MLXBF_GIGE_INT_STATUS_HW_ACCESS_ERROR) {
 		priv->stats.hw_access_errors++;
+#ifdef MLXBF_GIGE_INTERNAL
+		if (priv->stats.hw_access_errors == 1) {
+			dev_info(priv->dev,
+				 "%s: hw_access_error triggered\n",
+				 __func__);
+		}
+		/* TODO - add logic to service hw_access_error */
+#endif
 	}
 
 	if (int_status & MLXBF_GIGE_INT_STATUS_TX_CHECKSUM_INPUTS) {
 		priv->stats.tx_invalid_checksums++;
+#ifdef MLXBF_GIGE_INTERNAL
+		if (priv->stats.tx_invalid_checksums == 1) {
+			dev_info(priv->dev,
+				 "%s: tx_invalid_checksum triggered\n",
+				 __func__);
+		}
+#endif
 		/* This error condition is latched into MLXBF_GIGE_INT_STATUS
 		 * when the GigE silicon operates on the offending
 		 * TX WQE. The write to MLXBF_GIGE_INT_STATUS at the bottom
@@ -535,14 +847,38 @@ static irqreturn_t mlxbf_gige_error_intr(int irq, void *dev_id)
 
 	if (int_status & MLXBF_GIGE_INT_STATUS_TX_PI_CI_EXCEED_WQ_SIZE) {
 		priv->stats.tx_index_errors++;
+#ifdef MLXBF_GIGE_INTERNAL
+		if (priv->stats.tx_index_errors == 1) {
+			dev_info(priv->dev,
+				 "%s: tx_index_error triggered\n",
+				 __func__);
+		}
+		/* TODO - add logic to service tx_index_error */
+#endif
 	}
 
 	if (int_status & MLXBF_GIGE_INT_STATUS_SW_CONFIG_ERROR) {
 		priv->stats.sw_config_errors++;
+#ifdef MLXBF_GIGE_INTERNAL
+		if (priv->stats.sw_config_errors == 1) {
+			dev_info(priv->dev,
+				 "%s: sw_config_error triggered\n",
+				 __func__);
+		}
+		/* TODO - add logic to service sw_config_error */
+#endif
 	}
 
 	if (int_status & MLXBF_GIGE_INT_STATUS_SW_ACCESS_ERROR) {
 		priv->stats.sw_access_errors++;
+#ifdef MLXBF_GIGE_INTERNAL
+		if (priv->stats.sw_access_errors == 1) {
+			dev_info(priv->dev,
+				 "%s: sw_access_error triggered\n",
+				 __func__);
+		}
+		/* TODO - add logic to service sw_access_error */
+#endif
 	}
 
 	/* Clear all error interrupts by writing '1' back to
@@ -589,6 +925,14 @@ static irqreturn_t mlxbf_gige_llu_plu_intr(int irq, void *dev_id)
 
 	priv = dev_id;
 	priv->llu_plu_intr_count++;
+
+#ifdef MLXBF_GIGE_INTERNAL
+	/* Trigger kernel log message on first interrupt */
+	if (priv->llu_plu_intr_count == 1)
+		dev_info(priv->dev, "%s: triggered\n", __func__);
+
+	/* TODO - add logic to service LLU and PLU interrupts */
+#endif
 
 	return IRQ_HANDLED;
 }
@@ -652,9 +996,11 @@ static bool mlxbf_gige_handle_tx_complete(struct mlxbf_gige *priv)
 
 		stats->tx_packets++;
 		stats->tx_bytes += MLXBF_GIGE_TX_WQE_PKT_LEN(tx_wqe_addr);
+#ifndef MLXBF_GIGE_LOOPBACK
 		dma_free_coherent(priv->dev, MLXBF_GIGE_DEFAULT_BUF_SZ,
 				  priv->tx_buf[tx_wqe_index], *tx_wqe_addr);
 		priv->tx_buf[tx_wqe_index] = NULL;
+#endif
 	}
 
 	/* Since the TX ring was likely just drained, check if TX queue
@@ -663,6 +1009,9 @@ static bool mlxbf_gige_handle_tx_complete(struct mlxbf_gige *priv)
 	 */
 	if (netif_queue_stopped(priv->netdev) &&
 	    mlxbf_gige_tx_buffs_avail(priv)) {
+#ifdef MLXBF_GIGE_INTERNAL
+		dev_dbg(priv->dev, "%s: waking TX queue", __func__);
+#endif
 		netif_wake_queue(priv->netdev);
 	}
 
@@ -695,8 +1044,14 @@ static bool mlxbf_gige_rx_packet(struct mlxbf_gige *priv, int *rx_pkts)
 		netdev->stats.rx_bytes += datalen;
 	} else if (rx_cqe & MLXBF_GIGE_RX_CQE_PKT_STATUS_MAC_ERR) {
 		priv->stats.rx_mac_errors++;
+#ifdef MLXBF_GIGE_INTERNAL
+		/* TODO - handle error case */
+#endif
 	} else if (rx_cqe & MLXBF_GIGE_RX_CQE_PKT_STATUS_TRUNCATED) {
 		priv->stats.rx_truncate_errors++;
+#ifdef MLXBF_GIGE_INTERNAL
+		/* TODO - handle error case */
+#endif
 	}
 
 	skb = dev_alloc_skb(datalen);
@@ -797,9 +1152,16 @@ static void mlxbf_gige_free_irqs(struct mlxbf_gige *priv)
 static int mlxbf_gige_open(struct net_device *netdev)
 {
 	struct mlxbf_gige *priv = netdev_priv(netdev);
+#ifdef FAST_MODELS
 	struct phy_device *phydev;
+#endif
 	u64 int_en;
 	int err;
+
+#ifdef MLXBF_GIGE_INTERNAL
+	netdev_printk(KERN_DEBUG, netdev, "open: priv=%llx\n",
+		      (u64)priv);
+#endif
 
 	memset(&priv->stats, 0, sizeof(priv->stats));
 
@@ -813,6 +1175,7 @@ static int mlxbf_gige_open(struct net_device *netdev)
 	if (err)
 		return err;
 
+#ifdef FAST_MODELS
 	phydev = phy_find_first(priv->mdiobus);
 	if (!phydev)
 		return -EIO;
@@ -828,6 +1191,7 @@ static int mlxbf_gige_open(struct net_device *netdev)
 		return err;
 	}
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 0, 0)
 	/* MAC only supports 1000T full duplex mode */
 	phy_remove_link_mode(phydev, ETHTOOL_LINK_MODE_1000baseT_Half_BIT);
 	phy_remove_link_mode(phydev, ETHTOOL_LINK_MODE_100baseT_Full_BIT);
@@ -837,6 +1201,18 @@ static int mlxbf_gige_open(struct net_device *netdev)
 
 	/* MAC supports symmetric flow control */
 	phy_support_sym_pause(phydev);
+#else
+	/* MAC only supports 1000T full duplex mode */
+	phydev->supported &= ~SUPPORTED_1000baseT_Half;
+	phydev->supported &= ~SUPPORTED_100baseT_Full;
+	phydev->supported &= ~SUPPORTED_100baseT_Half;
+	phydev->supported &= ~SUPPORTED_10baseT_Full;
+	phydev->supported &= ~SUPPORTED_10baseT_Half;
+
+	/* MAC supports symmetric flow control */
+	phydev->supported |= SUPPORTED_Pause;
+#endif /* LINUX_VERSION_CODE >= KERNEL_VERSION(5, 0, 0) */
+
 	phy_start(phydev);
 	err = phy_start_aneg(phydev);
 	if (err < 0) {
@@ -844,9 +1220,29 @@ static int mlxbf_gige_open(struct net_device *netdev)
 		return err;
 	}
 
+#ifdef MLXBF_GIGE_INTERNAL
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 0, 0)
+	netdev_printk(KERN_DEBUG, netdev, "supported: %*pb, advertising: %*pb,"
+			" speed: 0x%x, duplex: 0x%x, autoneg: 0x%x, pause: 0x%x,"
+			" asym_pause: 0x%x\n",
+			__ETHTOOL_LINK_MODE_MASK_NBITS, phydev->supported,
+			__ETHTOOL_LINK_MODE_MASK_NBITS, phydev->advertising,
+			phydev->speed, phydev->duplex, phydev->autoneg,
+			phydev->pause, phydev->asym_pause);
+#else
+	netdev_printk(KERN_DEBUG, netdev, "supported: 0x%x, advertising: 0x%x,"
+		      " speed: 0x%x, duplex: 0x%x, autoneg: 0x%x, pause: 0x%x,"
+		      " asym_pause: 0x%x\n",
+		      phydev->supported, phydev->advertising, phydev->speed,
+		      phydev->duplex, phydev->autoneg, phydev->pause,
+		      phydev->asym_pause);
+#endif /* LINUX_VERSION_CODE >= KERNEL_VERSION(5, 0, 0) */
+#endif /* MLXBF_GIGE_INTERNAL */
+
 	/* Display information about attached PHY device */
 	phy_attached_info(phydev);
 
+#endif /* FAST_MODELS */
 
 	/* Set bits in INT_EN that we care about */
 	int_en = MLXBF_GIGE_INT_EN_HW_ACCESS_ERROR |
@@ -900,14 +1296,21 @@ static int mlxbf_gige_stop(struct net_device *netdev)
 {
 	struct mlxbf_gige *priv = netdev_priv(netdev);
 
+#ifdef MLXBF_GIGE_INTERNAL
+	netdev_printk(KERN_DEBUG, netdev, "stop: priv=%llx\n",
+		      (u64)priv);
+#endif
+
 	writeq(0, priv->base + MLXBF_GIGE_INT_EN);
 	netif_stop_queue(netdev);
 	napi_disable(&priv->napi);
 	netif_napi_del(&priv->napi);
 	mlxbf_gige_free_irqs(priv);
 
+#ifdef FAST_MODELS
 	phy_stop(netdev->phydev);
 	phy_disconnect(netdev->phydev);
+#endif /* FAST_MODELS */
 
 	mlxbf_gige_rx_deinit(priv);
 	mlxbf_gige_tx_deinit(priv);
@@ -932,6 +1335,7 @@ static void mlxbf_gige_update_tx_wqe_next(struct mlxbf_gige *priv)
 static netdev_tx_t mlxbf_gige_start_xmit(struct sk_buff *skb,
 					 struct net_device *netdev)
 {
+#ifndef MLXBF_GIGE_LOOPBACK
 	struct mlxbf_gige *priv = netdev_priv(netdev);
 	dma_addr_t tx_buf_dma;
 	u8 *tx_buf = NULL;
@@ -941,6 +1345,10 @@ static netdev_tx_t mlxbf_gige_start_xmit(struct sk_buff *skb,
 	/* Check that there is room left in TX ring */
 	if (!mlxbf_gige_tx_buffs_avail(priv)) {
 		/* TX ring is full, inform stack but do not free SKB */
+#ifdef MLXBF_GIGE_INTERNAL
+		dev_dbg(priv->dev, "%s: TX ring is full, stopping TX queue\n",
+			__func__);
+#endif
 		netif_stop_queue(netdev);
 		netdev->stats.tx_dropped++;
 		return NETDEV_TX_BUSY;
@@ -987,6 +1395,7 @@ static netdev_tx_t mlxbf_gige_start_xmit(struct sk_buff *skb,
 	wmb();
 
 	writeq(priv->tx_pi, priv->base + MLXBF_GIGE_TX_PRODUCER_INDEX);
+#endif
 
 	/* Free incoming skb, contents already copied to HW */
 	dev_kfree_skb(skb);
@@ -997,16 +1406,33 @@ static netdev_tx_t mlxbf_gige_start_xmit(struct sk_buff *skb,
 static int mlxbf_gige_do_ioctl(struct net_device *netdev,
 			       struct ifreq *ifr, int cmd)
 {
+#ifdef FAST_MODELS
 	if (!(netif_running(netdev)))
 		return -EINVAL;
 
 	return phy_mii_ioctl(netdev->phydev, ifr, cmd);
+#else
+	return 0;
+
+#endif /* FAST_MODELS*/
 }
+
+#ifdef MLXBF_GIGE_INTERNAL
+static void mlxbf_gige_tx_timeout(struct net_device *netdev)
+{
+	/* TODO - add TX timeout logic */
+}
+#endif
 
 static void mlxbf_gige_set_rx_mode(struct net_device *netdev)
 {
 	struct mlxbf_gige *priv = netdev_priv(netdev);
 	bool new_promisc_enabled;
+
+#ifdef MLXBF_GIGE_INTERNAL
+	netdev_printk(KERN_DEBUG, netdev, "set_rx_mode: priv=%llx flags=%x\n",
+		      (u64)priv, netdev->flags);
+#endif
 
 	new_promisc_enabled = netdev->flags & IFF_PROMISC;
 
@@ -1017,8 +1443,16 @@ static void mlxbf_gige_set_rx_mode(struct net_device *netdev)
 		priv->promisc_enabled = new_promisc_enabled;
 
 		if (new_promisc_enabled) {
+#ifdef MLXBF_GIGE_INTERNAL
+			netdev_printk(KERN_DEBUG, netdev,
+				      "set_rx_mode: enable promisc\n");
+#endif
 			mlxbf_gige_enable_promisc(priv);
 		} else {
+#ifdef MLXBF_GIGE_INTERNAL
+			netdev_printk(KERN_DEBUG, netdev,
+				      "set_rx_mode: disable promisc\n");
+#endif
 			mlxbf_gige_disable_promisc(priv);
 		}
 	}
@@ -1032,7 +1466,685 @@ static const struct net_device_ops mlxbf_gige_netdev_ops = {
 	.ndo_validate_addr	= eth_validate_addr,
 	.ndo_do_ioctl		= mlxbf_gige_do_ioctl,
 	.ndo_set_rx_mode        = mlxbf_gige_set_rx_mode,
+#ifdef MLXBF_GIGE_INTERNAL
+	.ndo_tx_timeout         = mlxbf_gige_tx_timeout,
+#endif
 };
+
+#ifdef MLXBF_GIGE_INTERNAL
+#ifdef MLXBF_GIGE_MMIO_SYSFS
+static ssize_t mmio_read_store(struct device *dev,
+			       struct device_attribute *attr,
+			       const char *buf, size_t len)
+{
+	struct mlxbf_gige *priv;
+	u64 offset;
+	int cnt;
+
+	priv = dev_get_drvdata(dev);
+
+	cnt = sscanf(buf, "%llx\n", &offset);
+
+	if (cnt != 1) {
+		dev_err(dev, "MMIO read: invalid arguments\n");
+		return len;
+	}
+
+	/* Make sure offset is within MAC block and 8-byte aligned */
+	if (offset <= MLXBF_GIGE_MAC_CFG &&
+	    ((offset & 0x7) == 0)) {
+		dev_err(dev,
+			"MMIO read: offset=0x%llx data=0x%llx\n",
+			offset, readq(priv->base + offset));
+	} else {
+		dev_err(dev,
+			"MMIO read: invalid offset 0x%llx\n",
+			offset);
+	}
+
+	return len;
+}
+
+static ssize_t mmio_write_store(struct device *dev,
+				struct device_attribute *attr,
+				const char *buf, size_t len)
+{
+	struct mlxbf_gige *priv;
+	u64 offset, data;
+	int cnt;
+
+	priv = dev_get_drvdata(dev);
+
+	cnt = sscanf(buf, "%llx %llx\n", &offset, &data);
+
+	if (cnt != 2) {
+		dev_err(dev, "MMIO write: invalid arguments\n");
+		return len;
+	}
+
+	/* Make sure offset is within MAC block and 8-byte aligned */
+	if (offset <= MLXBF_GIGE_MAC_CFG &&
+	    ((offset & 0x7) == 0)) {
+		dev_err(dev,
+			"MMIO write: offset=0x%llx data=0x%llx\n",
+			offset, data);
+		writeq(data, priv->base + offset);
+	} else {
+		dev_err(dev,
+			"MMIO write: invalid offset 0x%llx\n",
+			offset);
+	}
+
+	return len;
+}
+
+static ssize_t llu_mmio_read_store(struct device *dev,
+				   struct device_attribute *attr,
+				   const char *buf, size_t len)
+{
+	struct mlxbf_gige *priv;
+	u64 offset;
+	int cnt;
+
+	priv = dev_get_drvdata(dev);
+
+	cnt = sscanf(buf, "%llx\n", &offset);
+
+	if (cnt != 1) {
+		dev_err(dev, "LLU MMIO read: invalid arguments\n");
+		return len;
+	}
+
+	/* Make sure offset is within LLU and 4-byte aligned */
+	if (offset <= MLXBF_GIGE_LLU_MAX_OFFSET &&
+	    ((offset & 0x3) == 0)) {
+		dev_err(dev,
+			"LLU MMIO read: offset=0x%llx data=0x%x\n",
+			offset, readl(priv->llu_base + offset));
+	} else {
+		dev_err(dev,
+			"LLU MMIO read: invalid offset 0x%llx\n",
+			offset);
+	}
+
+	return len;
+}
+
+static ssize_t llu_mmio_write_store(struct device *dev,
+				    struct device_attribute *attr,
+				    const char *buf, size_t len)
+{
+	struct mlxbf_gige *priv;
+	u64 offset;
+	u32 data;
+	int cnt;
+
+	priv = dev_get_drvdata(dev);
+
+	cnt = sscanf(buf, "%llx %x\n", &offset, &data);
+
+	if (cnt != 2) {
+		dev_err(dev, "LLU MMIO write: invalid arguments\n");
+		return len;
+	}
+
+	/* Make sure offset is within LLU and 4-byte aligned */
+	if (offset <= MLXBF_GIGE_LLU_MAX_OFFSET &&
+	    ((offset & 0x3) == 0)) {
+		dev_err(dev,
+			"LLU MMIO write: offset=0x%llx data=0x%x\n",
+			offset, data);
+		writel(data, priv->llu_base + offset);
+	} else {
+		dev_err(dev,
+			"LLU MMIO write: invalid offset 0x%llx\n",
+			offset);
+	}
+
+	return len;
+}
+
+static ssize_t plu_mmio_read_store(struct device *dev,
+				   struct device_attribute *attr,
+				   const char *buf, size_t len)
+{
+	struct mlxbf_gige *priv;
+	u64 offset;
+	int cnt;
+
+	priv = dev_get_drvdata(dev);
+
+	cnt = sscanf(buf, "%llx\n", &offset);
+
+	if (cnt != 1) {
+		dev_err(dev, "PLU MMIO read: invalid arguments\n");
+		return len;
+	}
+
+	/* Make sure offset is within PLU and 4-byte aligned */
+	if (offset <= MLXBF_GIGE_PLU_MAX_OFFSET &&
+	    ((offset & 0x3) == 0)) {
+		dev_err(dev,
+			"PLU MMIO read: offset=0x%llx data=0x%x\n",
+			offset, readl(priv->plu_base + offset));
+	} else {
+		dev_err(dev,
+			"PLU MMIO read: invalid offset 0x%llx\n",
+			offset);
+	}
+
+	return len;
+}
+
+static ssize_t plu_mmio_write_store(struct device *dev,
+				    struct device_attribute *attr,
+				    const char *buf, size_t len)
+{
+	struct mlxbf_gige *priv;
+	u64 offset;
+	u32 data;
+	int cnt;
+
+	priv = dev_get_drvdata(dev);
+
+	cnt = sscanf(buf, "%llx %x\n", &offset, &data);
+
+	if (cnt != 2) {
+		dev_err(dev, "PLU MMIO write: invalid arguments\n");
+		return len;
+	}
+
+	/* Make sure offset is within PLU and 4-byte aligned */
+	if (offset <= MLXBF_GIGE_PLU_MAX_OFFSET &&
+	    ((offset & 0x3) == 0)) {
+		dev_err(dev,
+			"PLU MMIO write: offset=0x%llx data=0x%x\n",
+			offset, data);
+		writel(data, priv->plu_base + offset);
+	} else {
+		dev_err(dev,
+			"PLU MMIO write: invalid offset 0x%llx\n",
+			offset);
+	}
+
+	return len;
+}
+
+DEVICE_ATTR_WO(mmio_read);
+DEVICE_ATTR_WO(mmio_write);
+DEVICE_ATTR_WO(llu_mmio_read);
+DEVICE_ATTR_WO(llu_mmio_write);
+DEVICE_ATTR_WO(plu_mmio_read);
+DEVICE_ATTR_WO(plu_mmio_write);
+#endif /* MLXBF_GIGE_MMIO_SYSFS */
+
+static void oob_dump_tx_wqe(struct device *dev, u64 *tx_wqe_addr)
+{
+	u64 word1, word2;
+
+	/* Sanity check the TX WQE address */
+	if (!tx_wqe_addr)
+		return;
+
+	word1 = *tx_wqe_addr;
+	word2 = *(tx_wqe_addr + 1);
+
+	/* If TX WQE is empty (i.e. both words are 0)
+	 * then don't bother displaying WQE details
+	 */
+	if (word1 == (u64)0 && word2 == (u64)0) {
+		dev_dbg(dev, "%s(%llx)=%llx %llx", __func__,
+			(u64)tx_wqe_addr, word1, word2);
+	} else {
+		dev_dbg(dev, "%s(%llx)", __func__,
+			(u64)tx_wqe_addr);
+
+		dev_dbg(dev, "  buffer addr:  %llx\n", word1);
+
+		dev_dbg(dev, "  pkt_len:      %llx\n",
+			((word2 & MLXBF_GIGE_TX_WQE_PKT_LEN_MASK)
+			 >> MLXBF_GIGE_TX_WQE_PKT_LEN_SHIFT));
+
+		dev_dbg(dev, "  update:       %llx\n",
+			((word2 & MLXBF_GIGE_TX_WQE_UPDATE_MASK)
+			 >> MLXBF_GIGE_TX_WQE_UPDATE_SHIFT));
+
+		dev_dbg(dev, "  cksum_len:    %llx\n",
+			((word2 & MLXBF_GIGE_TX_WQE_CHKSUM_LEN_MASK)
+			 >> MLXBF_GIGE_TX_WQE_CHKSUM_LEN_SHIFT));
+
+		dev_dbg(dev, "  cksum_start:  %llx\n",
+			((word2 & MLXBF_GIGE_TX_WQE_CHKSUM_START_MASK)
+			 >> MLXBF_GIGE_TX_WQE_CHKSUM_START_SHIFT));
+
+		dev_dbg(dev, "  cksum_offset: %llx\n",
+			((word2 & MLXBF_GIGE_TX_WQE_CHKSUM_OFFSET_MASK)
+			 >> MLXBF_GIGE_TX_WQE_CHKSUM_OFFSET_SHIFT));
+	}
+}
+
+/* Handler for sysfs entry 'dump_tx' found at
+ *   /sys/devices/platform/MLNXBF17:00/
+ * Issue 'cat dump_tx' to invoke this routine
+ */
+static ssize_t dump_tx_show(struct device *dev,
+			    struct device_attribute *attr, char *buf)
+{
+	struct mlxbf_gige *priv;
+	u64 data;
+	int i;
+
+	priv = dev_get_drvdata(dev);
+
+	dev_dbg(dev, "============================================\n");
+
+	dev_dbg(dev, "%s: dev_get_drvdata=%llx\n",
+		__func__, (u64)priv);
+
+	/* Loop through 'n' TX WQE entries */
+	for (i = 0;
+	     (priv->netdev->flags & IFF_UP) && (i < priv->tx_q_entries);
+	     i++) {
+		u8 *p;
+
+		oob_dump_tx_wqe(dev,
+				(u64 *)((u64)priv->tx_wqe_base +
+				(i * MLXBF_GIGE_TX_WQE_SZ)));
+
+		p = priv->tx_buf[i];
+		dev_dbg(dev, "  tx_buf[%d] = %llx\n", i, (u64)priv->tx_buf[i]);
+
+		if (p) {
+			int j;
+
+			for (j = 0;
+			     j < (MLXBF_GIGE_NUM_BYTES_IN_PKT_DUMP / 16);
+			     j++, p += 16) {
+				dev_dbg(dev, MLXBF_GIGE_MSG_FORMAT,
+					MLXBF_GIGE_MSG_ARGS(p));
+			}
+		}
+	}
+
+	if (priv->netdev->flags & IFF_UP) {
+		dev_dbg(dev, "tx_cc=%llx *tx_cc=%llx\n",
+			(u64)priv->tx_cc, *(u64 *)priv->tx_cc);
+	}
+
+	/* Display TX producer index */
+	data = readq(priv->base + MLXBF_GIGE_TX_PRODUCER_INDEX);
+	dev_dbg(dev, "tx_producer_index=%llx\n", (u64)data);
+
+	/* Display TX consumer index */
+	data = readq(priv->base + MLXBF_GIGE_TX_CONSUMER_INDEX);
+	dev_dbg(dev, "tx_consumer_index=%llx\n", (u64)data);
+
+	/* Display TX status */
+	data = readq(priv->base + MLXBF_GIGE_TX_STATUS);
+	dev_dbg(dev, "tx_status=%llx\n", (u64)data);
+
+	/* Display TX FIFO status */
+	data = readq(priv->base + MLXBF_GIGE_TX_FIFOS_STATUS);
+	dev_dbg(dev, "tx_fifos_status=%llx\n", (u64)data);
+
+	return strlen(buf);
+}
+
+DEVICE_ATTR_RO(dump_tx);
+
+static void oob_dump_rx_wqe(struct device *dev, u64 *rx_wqe_addr)
+{
+	/* Sanity check the RX WQE address */
+	if (!rx_wqe_addr)
+		return;
+
+	dev_dbg(dev, "%s(%llx)=%llx\n", __func__,
+		(u64)rx_wqe_addr, *rx_wqe_addr);
+}
+
+static void oob_dump_rx_cqe(struct device *dev, u64 *rx_cqe_addr)
+{
+	u64 rx_cqe;
+
+	/* Sanity check the RX CQE address */
+	if (!rx_cqe_addr)
+		return;
+
+	rx_cqe = *rx_cqe_addr;
+
+	/* If RX CQE is empty (i.e. value is 0) then
+	 * don't bother displaying CQE details
+	 */
+	if (rx_cqe == (u64)0) {
+		dev_dbg(dev, "%s(%llx)=%llx", __func__,
+			(u64)rx_cqe_addr, rx_cqe);
+	} else {
+		dev_dbg(dev, "%s(%llx)", __func__,
+			(u64)rx_cqe_addr);
+
+		dev_dbg(dev, "  pkt_len:    %llx\n",
+			(rx_cqe & MLXBF_GIGE_RX_CQE_PKT_LEN_MASK));
+
+		dev_dbg(dev, "  valid:      %llx\n",
+			((rx_cqe & MLXBF_GIGE_RX_CQE_VALID_MASK)
+			 >> MLXBF_GIGE_RX_CQE_VALID_SHIFT));
+
+		dev_dbg(dev, "  pkt_status: %llx\n",
+			((rx_cqe & MLXBF_GIGE_RX_CQE_PKT_STATUS_MASK)
+			 >> MLXBF_GIGE_RX_CQE_PKT_STATUS_SHIFT));
+
+		dev_dbg(dev, "  chksum:     %llx\n",
+			((rx_cqe & MLXBF_GIGE_RX_CQE_CHKSUM_MASK)
+			 >> MLXBF_GIGE_RX_CQE_CHKSUM_SHIFT));
+	}
+}
+
+/* Handler for sysfs entry 'dump_rx' found at
+ *   /sys/devices/platform/MLNXBF17:00/
+ * Issue 'cat dump_rx' to invoke this routine
+ */
+static ssize_t dump_rx_show(struct device *dev,
+			    struct device_attribute *attr, char *buf)
+{
+	struct mlxbf_gige *priv;
+	u64 data;
+	int i;
+
+	priv = dev_get_drvdata(dev);
+
+	dev_dbg(dev, "============================================\n");
+	dev_dbg(dev, "%s: dev_get_drvdata=%llx\n", __func__, (u64)priv);
+
+	/* Loop through 'n' RX WQE entries */
+	for (i = 0;
+	     (priv->netdev->flags & IFF_UP) && (i < priv->rx_q_entries);
+	     i++) {
+		u8 *p;
+
+		oob_dump_rx_wqe(dev, priv->rx_wqe_base + i);
+
+		p = priv->rx_buf[i];
+		dev_dbg(dev, "  rx_buf[%d] = %llx\n", i, (u64)priv->rx_buf[i]);
+
+		/* Only display RX buffer contents if not in initial state */
+		if (p && (*p != MLXBF_GIGE_INIT_BYTE_RX_BUF)) {
+			int j;
+
+			for (j = 0;
+			     j < (MLXBF_GIGE_NUM_BYTES_IN_PKT_DUMP / 16);
+			     j++, p += 16) {
+				dev_dbg(dev, MLXBF_GIGE_MSG_FORMAT,
+					MLXBF_GIGE_MSG_ARGS(p));
+			}
+		}
+	}
+
+	/* Loop through 'n' RX CQE entries */
+	for (i = 0;
+	     (priv->netdev->flags & IFF_UP) && (i < priv->rx_q_entries);
+	     i++) {
+		oob_dump_rx_cqe(dev, priv->rx_cqe_base + i);
+	}
+
+	/* Display RX WQE producer index */
+	data = readq(priv->base + MLXBF_GIGE_RX_WQE_PI);
+	dev_dbg(dev, "rx_wqe_pi=%llx\n", (u64)data);
+
+	/* Display INT_STATUS */
+	data = readq(priv->base + MLXBF_GIGE_INT_STATUS);
+	dev_dbg(dev, "int_status=%llx\n", (u64)data);
+
+	/* Then, clear INT_STATUS */
+	data = 0x1FF;
+	writeq(data, priv->base + MLXBF_GIGE_INT_STATUS);
+
+	/* Display RX_DIN_DROP_COUNTER */
+	data = readq(priv->base + MLXBF_GIGE_RX_DIN_DROP_COUNTER);
+	dev_dbg(dev, "rx_din_drop_counter=%llx\n", (u64)data);
+
+	/* Display INT_STATUS_EXP */
+	data = readq(priv->base + MLXBF_GIGE_INT_STATUS_EXP);
+	dev_dbg(dev, "int_status_exp=%llx\n", (u64)data);
+
+	/* Then, clear INT_STATUS_EXP */
+	data = 0;
+	writeq(data, priv->base + MLXBF_GIGE_INT_STATUS_EXP);
+
+	/* Display RX_MAC_FILTER_PASS_COUNTER_ALL */
+	data = readq(priv->base + MLXBF_GIGE_RX_PASS_COUNTER_ALL);
+	dev_dbg(dev, "rx_mac_filter_pass_counter_all=%llx\n", (u64)data);
+
+	/* Display RX_MAC_FILTER_DISC_COUNTER_ALL */
+	data = readq(priv->base + MLXBF_GIGE_RX_DISC_COUNTER_ALL);
+	dev_dbg(dev, "rx_mac_filter_disc_counter_all=%llx\n", (u64)data);
+
+	/* Display first word of RX_MAC_FILTER */
+	data = readq(priv->base + MLXBF_GIGE_RX_MAC_FILTER);
+	dev_dbg(dev, "rx_mac_filter0=%llx\n", (u64)data);
+
+	/* Display second word of RX_MAC_FILTER */
+	data = readq(priv->base + MLXBF_GIGE_RX_MAC_FILTER + 0x8);
+	dev_dbg(dev, "rx_mac_filter1=%llx\n", (u64)data);
+
+	/* Display third word of RX_MAC_FILTER */
+	data = readq(priv->base + MLXBF_GIGE_RX_MAC_FILTER + 0x10);
+	dev_dbg(dev, "rx_mac_filter2=%llx\n", (u64)data);
+
+	/* Display fourth word of RX_MAC_FILTER */
+	data = readq(priv->base + MLXBF_GIGE_RX_MAC_FILTER + 0x18);
+	dev_dbg(dev, "rx_mac_filter3=%llx\n", (u64)data);
+
+	/* Display MLXBF_GIGE_RX_CQE_PACKET_CI */
+	data = readq(priv->base + MLXBF_GIGE_RX_CQE_PACKET_CI);
+	dev_dbg(dev, "MLXBF_GIGE_RX_CQE_PACKET_CI=%llx\n", (u64)data);
+
+	dev_dbg(dev, "error_intr_count=%llx\n", priv->error_intr_count);
+	dev_dbg(dev, "rx_intr_count=%llx\n", priv->rx_intr_count);
+	dev_dbg(dev, "llu_plu_intr_count=%llx\n", priv->llu_plu_intr_count);
+
+	/* Display INT_EN */
+	data = readq(priv->base + MLXBF_GIGE_INT_EN);
+	dev_dbg(dev, "int_en=%llx\n", (u64)data);
+
+	/* Display INT_MASK */
+	data = readq(priv->base + MLXBF_GIGE_INT_MASK);
+	dev_dbg(dev, "int_mask=%llx\n", (u64)data);
+
+	return strlen(buf);
+}
+
+DEVICE_ATTR_RO(dump_rx);
+
+/* Handler for sysfs entry 'start_tx' found at
+ *   /sys/devices/platform/MLNXBF17:00/
+ * Issue 'echo <N> > start_tx' to invoke this routine
+ * which will send <N> dummy IP packets to GigE port
+ */
+static ssize_t start_tx_store(struct device *dev,
+			      struct device_attribute *attr,
+			      const char *buf, size_t len)
+{
+	struct mlxbf_gige *priv;
+	dma_addr_t tx_buf_dma;
+	u8 oob_tx_data_seed;
+	int oob_tx_pkt_size;
+	long num_pkts = 1;
+	u64 *tx_wqe_addr;
+	u8 *tx_buf;
+	u16 data16;
+	u64 word2;
+	int i, j;
+	int ret;
+
+	priv = dev_get_drvdata(dev);
+
+	oob_tx_pkt_size = MLXBF_GIGE_DEFAULT_TX_PKT_SIZE;
+
+	if (buf) {
+		ret = kstrtol(buf, 10, &num_pkts);
+
+		if (ret == 0) {
+			dev_dbg(dev, "%s: num_pkts %d\n",
+				__func__, (int)num_pkts);
+		}
+	}
+
+	for (i = 0; i < num_pkts; i++) {
+		/* The data seed is used to populate the packet with
+		 * fake, but predictable, data.  The value of seed
+		 * is stored in the first byte after the L2 header,
+		 * then (seed+1) is stored in the second byte, etc.
+		 */
+		oob_tx_data_seed = priv->tx_data_seed;
+		priv->tx_data_seed += 4;
+
+		/* To limit output only perform debug logging if number
+		 * of packets to send is less than some maximum value.
+		 */
+		if (num_pkts < MLXBF_GIGE_MAX_TX_PKTS_VERBOSE) {
+			dev_dbg(dev, "%s: size=%x seed=%x\n",
+				__func__, oob_tx_pkt_size,
+				oob_tx_data_seed);
+		}
+
+		/* Allocate ptr for buffer */
+		tx_buf = dma_alloc_coherent(dev, MLXBF_GIGE_DEFAULT_BUF_SZ,
+					    &tx_buf_dma, GFP_KERNEL);
+
+		if (!tx_buf)
+			return -ENOMEM;
+
+		if (num_pkts < MLXBF_GIGE_MAX_TX_PKTS_VERBOSE) {
+			dev_dbg(dev, "%s: tx_buf %llx %llx\n",
+				__func__, (u64)tx_buf, (u64)tx_buf_dma);
+		}
+
+		if (num_pkts < MLXBF_GIGE_MAX_TX_PKTS_VERBOSE) {
+			dev_dbg(dev, "%s: pkt num %llx buffer index %x\n",
+				__func__, (u64)priv->tx_pi,
+				(priv->tx_pi % priv->tx_q_entries));
+		}
+
+		priv->tx_buf[priv->tx_pi % priv->tx_q_entries] = tx_buf;
+
+		/* Put in four bytes of fake destination MAC, but use real
+		 * value of 'tx_pi' in order to track TX producer index
+		 * in the actual packet contents.
+		 */
+		*tx_buf++ = MLXBF_GIGE_FAKE_DMAC_BYTE;
+		*tx_buf++ = MLXBF_GIGE_FAKE_DMAC_BYTE;
+		*tx_buf++ = MLXBF_GIGE_FAKE_DMAC_BYTE;
+		*tx_buf++ = MLXBF_GIGE_FAKE_DMAC_BYTE;
+		*tx_buf++ = (priv->tx_pi & 0xFF00) >> 8;
+		*tx_buf++ = (priv->tx_pi & 0xFF);
+
+		/* Put in fake source MAC */
+		*tx_buf++ = MLXBF_GIGE_FAKE_SMAC_BYTE;
+		*tx_buf++ = MLXBF_GIGE_FAKE_SMAC_BYTE;
+		*tx_buf++ = MLXBF_GIGE_FAKE_SMAC_BYTE;
+		*tx_buf++ = MLXBF_GIGE_FAKE_SMAC_BYTE;
+		*tx_buf++ = MLXBF_GIGE_FAKE_SMAC_BYTE;
+		*tx_buf++ = MLXBF_GIGE_FAKE_SMAC_BYTE;
+
+		/* Set ethertype for IP (0x0800) */
+		*tx_buf++ = 0x08;
+		*tx_buf++ = 0x00;
+
+		/* Put in fake packet payload */
+		for (j = 0; j < (oob_tx_pkt_size - ETH_HLEN); j++)
+			*tx_buf++ = (u8)(j + oob_tx_data_seed);
+
+		/* TODO - should really reorganize all low-level TX   */
+		/* logic and call it here and in 'xmit' function also */
+
+		/* Get address of TX WQE */
+		tx_wqe_addr = priv->tx_wqe_next;
+
+		if (num_pkts < MLXBF_GIGE_MAX_TX_PKTS_VERBOSE) {
+			dev_dbg(dev, "%s: tx_wqe_addr=%llx\n",
+				__func__, (u64)tx_wqe_addr);
+		}
+
+		mlxbf_gige_update_tx_wqe_next(priv);
+
+		if (num_pkts < MLXBF_GIGE_MAX_TX_PKTS_VERBOSE) {
+			dev_dbg(dev, "%s: tx_wqe_next=%llx\n",
+				__func__, (u64)priv->tx_wqe_next);
+		}
+
+		/* Put PA of buffer address into first 64-bit word of TX WQE */
+		*tx_wqe_addr = tx_buf_dma;
+
+		/* Set TX WQE pkt_len appropriately */
+		word2 = oob_tx_pkt_size & MLXBF_GIGE_TX_WQE_PKT_LEN_MASK;
+
+		if (num_pkts < MLXBF_GIGE_MAX_TX_PKTS_VERBOSE) {
+			dev_dbg(dev, "%s: word2=%llx\n",
+				__func__, (u64)word2);
+		}
+
+		/* Write entire 2nd word of TX WQE */
+		*(tx_wqe_addr + 1) = word2;
+
+		/* Create memory barrier before write to TX PI */
+		wmb();
+
+		priv->tx_pi++;
+
+		writeq(priv->tx_pi, priv->base + MLXBF_GIGE_TX_PRODUCER_INDEX);
+
+		if (priv->tx_pi >= 0x20) {
+			data16 = readq(priv->base + MLXBF_GIGE_RX_WQE_PI) + 1;
+			writeq(data16, priv->base + MLXBF_GIGE_RX_WQE_PI);
+		}
+	} /* end - i loop */
+
+	return len;
+}
+
+DEVICE_ATTR_WO(start_tx);
+
+void mlxbf_gige_create_sysfs(struct device *dev)
+{
+#ifdef MLXBF_GIGE_MMIO_SYSFS
+	if (device_create_file(dev, &dev_attr_mmio_read))
+		dev_info(dev, "failed to create mmio_read sysfs entry\n");
+	if (device_create_file(dev, &dev_attr_mmio_write))
+		dev_info(dev, "failed to create mmio_write sysfs entry\n");
+	if (device_create_file(dev, &dev_attr_llu_mmio_read))
+		dev_info(dev, "failed to create llu_mmio_read sysfs entry\n");
+	if (device_create_file(dev, &dev_attr_llu_mmio_write))
+		dev_info(dev, "failed to create llu_mmio_write sysfs entry\n");
+	if (device_create_file(dev, &dev_attr_plu_mmio_read))
+		dev_info(dev, "failed to create plu_mmio_read sysfs entry\n");
+	if (device_create_file(dev, &dev_attr_plu_mmio_write))
+		dev_info(dev, "failed to create plu_mmio_write sysfs entry\n");
+#endif
+
+	if (device_create_file(dev, &dev_attr_dump_rx))
+		dev_info(dev, "failed to create dump_rx sysfs entry\n");
+	if (device_create_file(dev, &dev_attr_dump_tx))
+		dev_info(dev, "failed to create dump_tx sysfs entry\n");
+	if (device_create_file(dev, &dev_attr_start_tx))
+		dev_info(dev, "failed to create start_tx sysfs entry\n");
+}
+
+void mlxbf_gige_remove_sysfs(struct device *dev)
+{
+#ifdef MLXBF_GIGE_MMIO_SYSFS
+	device_remove_file(dev, &dev_attr_mmio_read);
+	device_remove_file(dev, &dev_attr_mmio_write);
+	device_remove_file(dev, &dev_attr_llu_mmio_read);
+	device_remove_file(dev, &dev_attr_llu_mmio_write);
+	device_remove_file(dev, &dev_attr_plu_mmio_read);
+	device_remove_file(dev, &dev_attr_plu_mmio_write);
+#endif
+
+	device_remove_file(dev, &dev_attr_dump_rx);
+	device_remove_file(dev, &dev_attr_dump_tx);
+	device_remove_file(dev, &dev_attr_start_tx);
+}
+#endif /* MLXBF_GIGE_INTERNAL */
 
 static u64 mlxbf_gige_mac_to_u64(u8 *addr)
 {
@@ -1068,11 +2180,18 @@ static void mlxbf_gige_initial_mac(struct mlxbf_gige *priv)
 
 	if (is_valid_ether_addr(mac)) {
 		ether_addr_copy(priv->netdev->dev_addr, mac);
+#ifdef MLXBF_GIGE_INTERNAL
+		dev_info(priv->dev, "Read MAC address %pM from chip\n", mac);
+#endif
 	} else {
 		/* Provide a random MAC if for some reason the device has
 		 * not been configured with a valid MAC address already.
 		 */
 		eth_hw_addr_random(priv->netdev);
+#ifdef MLXBF_GIGE_INTERNAL
+		dev_info(priv->dev, "Generated random MAC address %pM\n",
+			 priv->netdev->dev_addr);
+#endif
 	}
 
 	local_mac = mlxbf_gige_mac_to_u64(priv->netdev->dev_addr);
@@ -1093,9 +2212,21 @@ static int mlxbf_gige_probe(struct platform_device *pdev)
 	u64 control;
 	int err = 0;
 
+#ifdef MLXBF_GIGE_INTERNAL
+	u64 exp_data;
+
+	dev_dbg(&pdev->dev, "probe: pdev=0x%llx pdev->dev=0x%llx\n",
+		(u64)pdev, (u64)&pdev->dev);
+#endif
+
 	mac_res = platform_get_resource(pdev, IORESOURCE_MEM, MLXBF_GIGE_RES_MAC);
 	if (!mac_res)
 		return -ENXIO;
+
+#ifdef MLXBF_GIGE_INTERNAL
+	dev_dbg(&pdev->dev, "probe: resource %d (MAC) start=0x%llx end=0x%llx\n",
+		MLXBF_GIGE_RES_MAC, mac_res->start, mac_res->end);
+#endif
 
 	base = devm_ioremap_resource(&pdev->dev, mac_res);
 	if (IS_ERR(base))
@@ -1105,6 +2236,11 @@ static int mlxbf_gige_probe(struct platform_device *pdev)
 	if (!llu_res)
 		return -ENXIO;
 
+#ifdef MLXBF_GIGE_INTERNAL
+	dev_dbg(&pdev->dev, "probe: resource %d (LLU) start=0x%llx end=0x%llx\n",
+		MLXBF_GIGE_RES_LLU, llu_res->start, llu_res->end);
+#endif
+
 	llu_base = devm_ioremap_resource(&pdev->dev, llu_res);
 	if (IS_ERR(llu_base))
 		return PTR_ERR(llu_base);
@@ -1113,9 +2249,25 @@ static int mlxbf_gige_probe(struct platform_device *pdev)
 	if (!plu_res)
 		return -ENXIO;
 
+#ifdef MLXBF_GIGE_INTERNAL
+	dev_dbg(&pdev->dev, "probe: resource %d (PLU) start=0x%llx end=0x%llx\n",
+		MLXBF_GIGE_RES_PLU, plu_res->start, plu_res->end);
+#endif
+
 	plu_base = devm_ioremap_resource(&pdev->dev, plu_res);
 	if (IS_ERR(plu_base))
 		return PTR_ERR(plu_base);
+
+#ifdef MLXBF_GIGE_INTERNAL
+	/* Read single MMIO register and compare to expected value */
+	exp_data = (MLXBF_GIGE_CONFIG_MAX_PKT_SZ_RESET_VAL
+		    << MLXBF_GIGE_CONFIG_MAX_PKT_SZ_SHIFT);
+	if (readq(base + MLXBF_GIGE_CONFIG) != exp_data) {
+		dev_err(&pdev->dev,
+			"probe failed, unexpected value in MLXBF_GIGE_CONFIG\n");
+		return -ENODEV;
+	}
+#endif
 
 	/* Perform general init of GigE block */
 	control = readq(base + MLXBF_GIGE_CONTROL);
@@ -1124,8 +2276,15 @@ static int mlxbf_gige_probe(struct platform_device *pdev)
 
 	netdev = devm_alloc_etherdev(&pdev->dev, sizeof(*priv));
 	if (!netdev) {
+#ifdef MLXBF_GIGE_INTERNAL
+		dev_err(&pdev->dev, "Failed to allocate etherdev\n");
+#endif
 		return -ENOMEM;
 	}
+
+#ifdef MLXBF_GIGE_INTERNAL
+	dev_dbg(&pdev->dev, "probe: netdev=%llx\n", (u64)netdev);
+#endif
 
 	SET_NETDEV_DEV(netdev, &pdev->dev);
 	netdev->netdev_ops = &mlxbf_gige_netdev_ops;
@@ -1140,20 +2299,46 @@ static int mlxbf_gige_probe(struct platform_device *pdev)
 	priv->dev = &pdev->dev;
 	priv->pdev = pdev;
 
+#ifdef FAST_MODELS
+	/*
+	 * TODO: Palladium has no connection to the PHY hardware, so
+	 * the MDIO probe will fail.
+	 * This needs to be removed once palladium provides a connection
+	 * to the PHY device.
+	 */
+
 	/* Attach MDIO device */
 	err = mlxbf_gige_mdio_probe(pdev, priv);
 	if (err)
 		return err;
+#endif /* FAST_MODELS */
 
 	priv->base = base;
 	priv->llu_base = llu_base;
 	priv->plu_base = plu_base;
+
+#ifdef MLXBF_GIGE_INTERNAL
+	dev_dbg(&pdev->dev, "probe: priv=0x%llx priv->base=0x%llx\n",
+		(u64)priv, (u64)priv->base);
+	dev_dbg(&pdev->dev, "probe: llu_base=0x%llx plu_base=0x%llx\n",
+		(u64)priv->llu_base, (u64)priv->plu_base);
+
+	/* Perform some self tests on MAC, PLU, LLU */
+	mlxbf_gige_selftests(pdev, priv);
+	mlxbf_gige_plu_selftests(pdev, priv);
+	mlxbf_gige_llu_selftests(pdev, priv);
+#endif
 
 	priv->rx_q_entries = MLXBF_GIGE_DEFAULT_RXQ_SZ;
 	priv->tx_q_entries = MLXBF_GIGE_DEFAULT_TXQ_SZ;
 
 	/* Write initial MAC address to hardware */
 	mlxbf_gige_initial_mac(priv);
+
+#ifdef MLXBF_GIGE_INTERNAL
+	/* Create sysfs entries for driver */
+	mlxbf_gige_create_sysfs(&pdev->dev);
+#endif
 
 	err = dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(64));
 	if (err) {
@@ -1165,11 +2350,22 @@ static int mlxbf_gige_probe(struct platform_device *pdev)
 	priv->rx_irq = platform_get_irq(pdev, MLXBF_GIGE_RECEIVE_PKT_INTR_IDX);
 	priv->llu_plu_irq = platform_get_irq(pdev, MLXBF_GIGE_LLU_PLU_INTR_IDX);
 
+#ifdef MLXBF_GIGE_INTERNAL
+	dev_dbg(&pdev->dev, "probe: irq[] = %d %d %d\n",
+		priv->error_irq, priv->rx_irq, priv->llu_plu_irq);
+#endif
+
 	err = register_netdev(netdev);
 	if (err) {
 		dev_err(&pdev->dev, "Failed to register netdev\n");
 		return err;
 	}
+
+#ifdef MLXBF_GIGE_INTERNAL
+	dev_info(&pdev->dev, "probed\n");
+
+	priv->tx_data_seed = 0xB0;
+#endif
 
 	return 0;
 }
@@ -1179,12 +2375,23 @@ static int mlxbf_gige_remove(struct platform_device *pdev)
 {
 	struct mlxbf_gige *priv;
 
+#ifdef MLXBF_GIGE_INTERNAL
+	dev_dbg(&pdev->dev, "remove: pdev=%llx\n", (u64)pdev);
+#endif
+
 	priv = platform_get_drvdata(pdev);
 
 	unregister_netdev(priv->netdev);
 
+#ifdef MLXBF_GIGE_INTERNAL
+	/* Remove driver sysfs entries */
+	mlxbf_gige_remove_sysfs(&pdev->dev);
+#endif
+
+#ifdef FAST_MODELS
 	/* Remove mdio */
 	mlxbf_gige_mdio_remove(priv);
+#endif /* FAST_MODELS */
 
 	platform_set_drvdata(pdev, NULL);
 
