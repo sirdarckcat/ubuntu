@@ -19,7 +19,7 @@
 #include "mlxbf_gige_regs.h"
 
 #define DRV_NAME    "mlxbf_gige"
-#define DRV_VERSION "1.7"
+#define DRV_VERSION "1.6"
 
 static void mlxbf_gige_set_mac_rx_filter(struct mlxbf_gige *priv,
 					 unsigned int index, u64 dmac)
@@ -678,11 +678,10 @@ static bool mlxbf_gige_rx_packet(struct mlxbf_gige *priv, int *rx_pkts)
 	}
 
 	/* Let hardware know we've replenished one buffer */
-	rx_pi++;
-	writeq(rx_pi, priv->base + MLXBF_GIGE_RX_WQE_PI);
+	writeq(rx_pi + 1, priv->base + MLXBF_GIGE_RX_WQE_PI);
 
 	(*rx_pkts)++;
-
+	rx_pi = readq(priv->base + MLXBF_GIGE_RX_WQE_PI);
 	rx_pi_rem = rx_pi % priv->rx_q_entries;
 	rx_ci = readq(priv->base + MLXBF_GIGE_RX_CQE_PACKET_CI);
 	rx_ci_rem = rx_ci % priv->rx_q_entries;
@@ -737,14 +736,14 @@ static int mlxbf_gige_request_irqs(struct mlxbf_gige *priv)
 			  "mlxbf_gige_rx", priv);
 	if (err) {
 		dev_err(priv->dev, "Request rx_irq failure\n");
-		goto free_error_irq;
+		return err;
 	}
 
 	err = request_irq(priv->llu_plu_irq, mlxbf_gige_llu_plu_intr, 0,
 			  "mlxbf_gige_llu_plu", priv);
 	if (err) {
 		dev_err(priv->dev, "Request llu_plu_irq failure\n");
-		goto free_rx_irq;
+		return err;
 	}
 
 	err = request_threaded_irq(priv->phy_irq, NULL,
@@ -753,22 +752,10 @@ static int mlxbf_gige_request_irqs(struct mlxbf_gige *priv)
 			       priv);
 	if (err) {
 		dev_err(priv->dev, "Request phy_irq failure\n");
-		goto free_llu_plu_irq;
+		return err;
 	}
 
 	return 0;
-
-free_llu_plu_irq:
-	free_irq(priv->llu_plu_irq, priv);
-
-free_rx_irq:
-	free_irq(priv->rx_irq, priv);
-
-free_error_irq:
-	free_irq(priv->error_irq, priv);
-
-	return err;
-
 }
 
 static void mlxbf_gige_free_irqs(struct mlxbf_gige *priv)
@@ -853,15 +840,15 @@ static int mlxbf_gige_open(struct net_device *netdev)
 	u64 int_en;
 	int err;
 
-	err = mlxbf_gige_request_irqs(priv);
-	if (err)
-		return err;
 	mlxbf_gige_cache_stats(priv);
 	mlxbf_gige_clean_port(priv);
-	err = mlxbf_gige_rx_init(priv);
-	if (err)
-		return err;
-	err = mlxbf_gige_tx_init(priv);
+	mlxbf_gige_rx_init(priv);
+	mlxbf_gige_tx_init(priv);
+	netif_napi_add(netdev, &priv->napi, mlxbf_gige_poll, NAPI_POLL_WEIGHT);
+	napi_enable(&priv->napi);
+	netif_start_queue(netdev);
+
+	err = mlxbf_gige_request_irqs(priv);
 	if (err)
 		return err;
 
@@ -874,10 +861,6 @@ static int mlxbf_gige_open(struct net_device *netdev)
 	err = mlxbf_gige_phy_enable_interrupt(phydev);
 	if (err)
 		return err;
-
-	netif_napi_add(netdev, &priv->napi, mlxbf_gige_poll, NAPI_POLL_WEIGHT);
-	napi_enable(&priv->napi);
-	netif_start_queue(netdev);
 
 	/* Set bits in INT_EN that we care about */
 	int_en = MLXBF_GIGE_INT_EN_HW_ACCESS_ERROR |
@@ -935,6 +918,20 @@ static netdev_tx_t mlxbf_gige_start_xmit(struct sk_buff *skb,
 	u64 *tx_wqe_addr;
 	u64 word2;
 
+	/* Check that there is room left in TX ring */
+	if (!mlxbf_gige_tx_buffs_avail(priv)) {
+		/* TX ring is full, inform stack but do not free SKB */
+		netif_stop_queue(netdev);
+		netdev->stats.tx_dropped++;
+		/* Since there is no separate "TX complete" interrupt, need
+		 * to explicitly schedule NAPI poll.  This will trigger logic
+		 * which processes TX completions, and will hopefully drain
+		 * the TX ring allowing the TX queue to be awakened.
+		 */
+		napi_schedule(&priv->napi);
+		return NETDEV_TX_BUSY;
+	}
+
 	/* Allocate ptr for buffer */
 	if (skb->len < MLXBF_GIGE_DEFAULT_BUF_SZ)
 		tx_buf = dma_alloc_coherent(priv->dev, MLXBF_GIGE_DEFAULT_BUF_SZ,
@@ -972,29 +969,13 @@ static netdev_tx_t mlxbf_gige_start_xmit(struct sk_buff *skb,
 
 	priv->tx_pi++;
 
-	if (!netdev_xmit_more()) {
-		/* Create memory barrier before write to TX PI */
-		wmb();
-		writeq(priv->tx_pi, priv->base + MLXBF_GIGE_TX_PRODUCER_INDEX);
-	}
+	/* Create memory barrier before write to TX PI */
+	wmb();
 
 	writeq(priv->tx_pi, priv->base + MLXBF_GIGE_TX_PRODUCER_INDEX);
 
 	/* Free incoming skb, contents already copied to HW */
 	dev_kfree_skb(skb);
-
-	/* Check if the last TX entry was just used */
-	if (!mlxbf_gige_tx_buffs_avail(priv)) {
-		/* TX ring is full, inform stack */
-		netif_stop_queue(netdev);
-
-		/* Since there is no separate "TX complete" interrupt, need
-		 * to explicitly schedule NAPI poll.  This will trigger logic
-		 * which processes TX completions, and will hopefully drain
-		 * the TX ring allowing the TX queue to be awakened.
-		 */
-		napi_schedule(&priv->napi);
-	}
 
 	return NETDEV_TX_OK;
 }
