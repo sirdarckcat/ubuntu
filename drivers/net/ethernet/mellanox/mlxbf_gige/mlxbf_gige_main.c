@@ -2,7 +2,7 @@
 
 /* Gigabit Ethernet driver for Mellanox BlueField SoC
  *
- * Copyright (c) 2020 Mellanox Technologies Ltd.
+ * Copyright (c) 2020, Mellanox Technologies
  */
 
 #include <linux/acpi.h>
@@ -631,8 +631,8 @@ static u16 mlxbf_gige_tx_buffs_avail(struct mlxbf_gige *priv)
 	if (priv->prev_tx_ci == priv->tx_pi)
 		avail = priv->tx_q_entries - 1;
 	else
-		avail = ((priv->tx_q_entries + priv->prev_tx_ci - priv->tx_pi)
-			  % priv->tx_q_entries) - 1;
+		avail = (((priv->tx_q_entries + priv->prev_tx_ci - priv->tx_pi)
+			  % priv->tx_q_entries) - 1);
 
 	spin_unlock_irqrestore(&priv->lock, flags);
 
@@ -665,8 +665,8 @@ static bool mlxbf_gige_handle_tx_complete(struct mlxbf_gige *priv)
 		 * buffer address and the 8 LSB contain information
 		 * about the TX WQE.
 		 */
-		tx_wqe_addr = priv->tx_wqe_base +
-			       (tx_wqe_index * MLXBF_GIGE_TX_WQE_SZ_QWORDS);
+		tx_wqe_addr = (priv->tx_wqe_base +
+			       (tx_wqe_index * MLXBF_GIGE_TX_WQE_SZ_QWORDS));
 
 		stats->tx_packets++;
 		stats->tx_bytes += MLXBF_GIGE_TX_WQE_PKT_LEN(tx_wqe_addr);
@@ -934,12 +934,6 @@ static netdev_tx_t mlxbf_gige_start_xmit(struct sk_buff *skb,
 		/* TX ring is full, inform stack but do not free SKB */
 		netif_stop_queue(netdev);
 		netdev->stats.tx_dropped++;
-		/* Since there is no separate "TX complete" interrupt, need
-		 * to explicitly schedule NAPI poll.  This will trigger logic
-		 * which processes TX completions, and will hopefully drain
-		 * the TX ring allowing the TX queue to be awakened.
-		 */
-		napi_schedule(&priv->napi);
 		return NETDEV_TX_BUSY;
 	}
 
@@ -980,9 +974,6 @@ static netdev_tx_t mlxbf_gige_start_xmit(struct sk_buff *skb,
 
 	priv->tx_pi++;
 
-	/* Create memory barrier before write to TX PI */
-	wmb();
-
 	writeq(priv->tx_pi, priv->base + MLXBF_GIGE_TX_PRODUCER_INDEX);
 
 	/* Free incoming skb, contents already copied to HW */
@@ -1017,8 +1008,8 @@ static void mlxbf_gige_set_rx_mode(struct net_device *netdev)
 			mlxbf_gige_enable_promisc(priv);
 		else
 			mlxbf_gige_disable_promisc(priv);
-		}
 	}
+}
 
 static const struct net_device_ops mlxbf_gige_netdev_ops = {
 	.ndo_open		= mlxbf_gige_open,
