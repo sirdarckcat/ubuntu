@@ -2,15 +2,15 @@
 
 /* Gigabit Ethernet driver for Mellanox BlueField SoC
  *
- * Copyright (c) 2020-2021 NVIDIA Corporation.
+ * Copyright (c) 2020 NVIDIA Corporation.
  */
 
 #include <linux/acpi.h>
 #include <linux/device.h>
 #include <linux/dma-mapping.h>
 #include <linux/etherdevice.h>
-#include <linux/irqdomain.h>
 #include <linux/interrupt.h>
+#include <linux/io-64-nonatomic-lo-hi.h>
 #include <linux/iopoll.h>
 #include <linux/module.h>
 #include <linux/phy.h>
@@ -21,7 +21,65 @@
 #include "mlxbf_gige_regs.h"
 
 #define DRV_NAME    "mlxbf_gige"
-#define DRV_VERSION 1.19
+#define DRV_VERSION "1.10"
+
+static void mlxbf_gige_set_mac_rx_filter(struct mlxbf_gige *priv,
+					 unsigned int index, u64 dmac)
+{
+	void __iomem *base = priv->base;
+	u64 control;
+
+	/* Write destination MAC to specified MAC RX filter */
+	writeq(dmac, base + MLXBF_GIGE_RX_MAC_FILTER +
+	       (index * MLXBF_GIGE_RX_MAC_FILTER_STRIDE));
+
+	/* Enable MAC receive filter mask for specified index */
+	control = readq(base + MLXBF_GIGE_CONTROL);
+	control |= (MLXBF_GIGE_CONTROL_EN_SPECIFIC_MAC << index);
+	writeq(control, base + MLXBF_GIGE_CONTROL);
+}
+
+static void mlxbf_gige_get_mac_rx_filter(struct mlxbf_gige *priv,
+					 unsigned int index, u64 *dmac)
+{
+	void __iomem *base = priv->base;
+
+	/* Read destination MAC from specified MAC RX filter */
+	*dmac = readq(base + MLXBF_GIGE_RX_MAC_FILTER +
+		      (index * MLXBF_GIGE_RX_MAC_FILTER_STRIDE));
+}
+
+static void mlxbf_gige_enable_promisc(struct mlxbf_gige *priv)
+{
+	void __iomem *base = priv->base;
+	u64 control;
+
+	/* Enable MAC_ID_RANGE match functionality */
+	control = readq(base + MLXBF_GIGE_CONTROL);
+	control |= MLXBF_GIGE_CONTROL_MAC_ID_RANGE_EN;
+	writeq(control, base + MLXBF_GIGE_CONTROL);
+
+	/* Set start of destination MAC range check to 0 */
+	writeq(0, base + MLXBF_GIGE_RX_MAC_FILTER_DMAC_RANGE_START);
+
+	/* Set end of destination MAC range check to all FFs */
+	writeq(0xFFFFFFFFFFFF, base + MLXBF_GIGE_RX_MAC_FILTER_DMAC_RANGE_END);
+}
+
+static void mlxbf_gige_disable_promisc(struct mlxbf_gige *priv)
+{
+	void __iomem *base = priv->base;
+	u64 control;
+
+	/* Disable MAC_ID_RANGE match functionality */
+	control = readq(base + MLXBF_GIGE_CONTROL);
+	control &= ~MLXBF_GIGE_CONTROL_MAC_ID_RANGE_EN;
+	writeq(control, base + MLXBF_GIGE_CONTROL);
+
+	/* NOTE: no need to change DMAC_RANGE_START or END;
+	 * those values are ignored since MAC_ID_RANGE_EN=0
+	 */
+}
 
 /* Allocate SKB whose payload pointer aligns with the Bluefield
  * hardware DMA limitation, i.e. DMA operation can't cross
@@ -30,9 +88,9 @@
  * and then adjusts the headroom so that the SKB data pointer is
  * naturally aligned to a 2KB boundary.
  */
-struct sk_buff *mlxbf_gige_alloc_skb(struct mlxbf_gige *priv,
-				     dma_addr_t *buf_dma,
-				     enum dma_data_direction dir)
+static struct sk_buff *mlxbf_gige_alloc_skb(struct mlxbf_gige *priv,
+					    dma_addr_t *buf_dma,
+					    enum dma_data_direction dir)
 {
 	struct sk_buff *skb;
 	u64 addr, offset;
@@ -66,27 +124,705 @@ struct sk_buff *mlxbf_gige_alloc_skb(struct mlxbf_gige *priv,
 	return skb;
 }
 
-static void mlxbf_gige_initial_mac(struct mlxbf_gige *priv)
+/* Receive Initialization
+ * 1) Configures RX MAC filters via MMIO registers
+ * 2) Allocates RX WQE array using coherent DMA mapping
+ * 3) Initializes each element of RX WQE array with a receive
+ *    buffer pointer (also using coherent DMA mapping)
+ * 4) Allocates RX CQE array using coherent DMA mapping
+ * 5) Completes other misc receive initialization
+ */
+static int mlxbf_gige_rx_init(struct mlxbf_gige *priv)
 {
-	u8 mac[ETH_ALEN];
-	u64 local_mac;
+	size_t wq_size, cq_size;
+	dma_addr_t *rx_wqe_ptr;
+	dma_addr_t rx_buf_dma;
+	u64 data;
+	int i, j;
 
-	mlxbf_gige_get_mac_rx_filter(priv, MLXBF_GIGE_LOCAL_MAC_FILTER_IDX,
-				     &local_mac);
-	u64_to_ether_addr(local_mac, mac);
+	/* Configure MAC RX filter #0 to allow RX of broadcast pkts */
+	mlxbf_gige_set_mac_rx_filter(priv, MLXBF_GIGE_BCAST_MAC_FILTER_IDX,
+				     BCAST_MAC_ADDR);
 
-	if (is_valid_ether_addr(mac)) {
-		ether_addr_copy(priv->netdev->dev_addr, mac);
-	} else {
-		/* Provide a random MAC if for some reason the device has
-		 * not been configured with a valid MAC address already.
-		 */
-		eth_hw_addr_random(priv->netdev);
+	wq_size = MLXBF_GIGE_RX_WQE_SZ * priv->rx_q_entries;
+	priv->rx_wqe_base = dma_alloc_coherent(priv->dev, wq_size,
+					       &priv->rx_wqe_base_dma,
+					       GFP_KERNEL);
+	if (!priv->rx_wqe_base)
+		return -ENOMEM;
+
+	/* Initialize 'rx_wqe_ptr' to point to first RX WQE in array
+	 * Each RX WQE is simply a receive buffer pointer, so walk
+	 * the entire array, allocating a 2KB buffer for each element
+	 */
+	rx_wqe_ptr = priv->rx_wqe_base;
+
+	for (i = 0; i < priv->rx_q_entries; i++) {
+		priv->rx_skb[i] = mlxbf_gige_alloc_skb(priv, &rx_buf_dma, DMA_FROM_DEVICE);
+		if (!priv->rx_skb[i])
+			goto free_wqe_and_skb;
+
+		*rx_wqe_ptr++ = rx_buf_dma;
 	}
 
-	local_mac = ether_addr_to_u64(priv->netdev->dev_addr);
-	mlxbf_gige_set_mac_rx_filter(priv, MLXBF_GIGE_LOCAL_MAC_FILTER_IDX,
-				     local_mac);
+	/* Write RX WQE base address into MMIO reg */
+	writeq(priv->rx_wqe_base_dma, priv->base + MLXBF_GIGE_RX_WQ_BASE);
+
+	cq_size = MLXBF_GIGE_RX_CQE_SZ * priv->rx_q_entries;
+	priv->rx_cqe_base = dma_alloc_coherent(priv->dev, cq_size,
+					       &priv->rx_cqe_base_dma,
+					       GFP_KERNEL);
+	if (!priv->rx_cqe_base)
+		goto free_wqe_and_skb;
+
+	/* Write RX CQE base address into MMIO reg */
+	writeq(priv->rx_cqe_base_dma, priv->base + MLXBF_GIGE_RX_CQ_BASE);
+
+	/* Write RX_WQE_PI with current number of replenished buffers */
+	writeq(priv->rx_q_entries, priv->base + MLXBF_GIGE_RX_WQE_PI);
+
+	/* Enable removal of CRC during RX */
+	data = readq(priv->base + MLXBF_GIGE_RX);
+	data |= MLXBF_GIGE_RX_STRIP_CRC_EN;
+	writeq(data, priv->base + MLXBF_GIGE_RX);
+
+	/* Enable RX MAC filter pass and discard counters */
+	writeq(MLXBF_GIGE_RX_MAC_FILTER_COUNT_DISC_EN,
+	       priv->base + MLXBF_GIGE_RX_MAC_FILTER_COUNT_DISC);
+	writeq(MLXBF_GIGE_RX_MAC_FILTER_COUNT_PASS_EN,
+	       priv->base + MLXBF_GIGE_RX_MAC_FILTER_COUNT_PASS);
+
+	/* Clear MLXBF_GIGE_INT_MASK 'receive pkt' bit to
+	 * indicate readiness to receive interrupts
+	 */
+	data = readq(priv->base + MLXBF_GIGE_INT_MASK);
+	data &= ~MLXBF_GIGE_INT_MASK_RX_RECEIVE_PACKET;
+	writeq(data, priv->base + MLXBF_GIGE_INT_MASK);
+
+	/* Enable RX DMA to write new packets to memory */
+	writeq(MLXBF_GIGE_RX_DMA_EN, priv->base + MLXBF_GIGE_RX_DMA);
+
+	writeq(ilog2(priv->rx_q_entries),
+	       priv->base + MLXBF_GIGE_RX_WQE_SIZE_LOG2);
+
+	return 0;
+
+free_wqe_and_skb:
+	rx_wqe_ptr = priv->rx_wqe_base;
+	for (j = 0; j < i; j++) {
+		dma_unmap_single(priv->dev, *rx_wqe_ptr,
+				 MLXBF_GIGE_DEFAULT_BUF_SZ, DMA_FROM_DEVICE);
+		dev_kfree_skb(priv->rx_skb[j]);
+		rx_wqe_ptr++;
+	}
+	dma_free_coherent(priv->dev, wq_size,
+			  priv->rx_wqe_base, priv->rx_wqe_base_dma);
+	return -ENOMEM;
+}
+
+/* Transmit Initialization
+ * 1) Allocates TX WQE array using coherent DMA mapping
+ * 2) Allocates TX completion counter using coherent DMA mapping
+ */
+static int mlxbf_gige_tx_init(struct mlxbf_gige *priv)
+{
+	size_t size;
+
+	size = MLXBF_GIGE_TX_WQE_SZ * priv->tx_q_entries;
+	priv->tx_wqe_base = dma_alloc_coherent(priv->dev, size,
+					       &priv->tx_wqe_base_dma,
+					       GFP_KERNEL);
+	if (!priv->tx_wqe_base)
+		return -ENOMEM;
+
+	priv->tx_wqe_next = priv->tx_wqe_base;
+
+	/* Write TX WQE base address into MMIO reg */
+	writeq(priv->tx_wqe_base_dma, priv->base + MLXBF_GIGE_TX_WQ_BASE);
+
+	/* Allocate address for TX completion count */
+	priv->tx_cc = dma_alloc_coherent(priv->dev, MLXBF_GIGE_TX_CC_SZ,
+					 &priv->tx_cc_dma, GFP_KERNEL);
+	if (!priv->tx_cc) {
+		dma_free_coherent(priv->dev, size,
+				  priv->tx_wqe_base, priv->tx_wqe_base_dma);
+		return -ENOMEM;
+	}
+
+	/* Write TX CC base address into MMIO reg */
+	writeq(priv->tx_cc_dma, priv->base + MLXBF_GIGE_TX_CI_UPDATE_ADDRESS);
+
+	writeq(ilog2(priv->tx_q_entries),
+	       priv->base + MLXBF_GIGE_TX_WQ_SIZE_LOG2);
+
+	priv->prev_tx_ci = 0;
+	priv->tx_pi = 0;
+
+	return 0;
+}
+
+/* Receive Deinitialization
+ * This routine will free allocations done by mlxbf_gige_rx_init(),
+ * namely the RX WQE and RX CQE arrays, as well as all RX buffers
+ */
+static void mlxbf_gige_rx_deinit(struct mlxbf_gige *priv)
+{
+	dma_addr_t *rx_wqe_ptr;
+	size_t size;
+	int i;
+
+	rx_wqe_ptr = priv->rx_wqe_base;
+
+	for (i = 0; i < priv->rx_q_entries; i++) {
+		dma_unmap_single(priv->dev, *rx_wqe_ptr, MLXBF_GIGE_DEFAULT_BUF_SZ,
+				 DMA_FROM_DEVICE);
+		dev_kfree_skb(priv->rx_skb[i]);
+		rx_wqe_ptr++;
+	}
+
+	size = MLXBF_GIGE_RX_WQE_SZ * priv->rx_q_entries;
+	dma_free_coherent(priv->dev, size,
+			  priv->rx_wqe_base, priv->rx_wqe_base_dma);
+
+	size = MLXBF_GIGE_RX_CQE_SZ * priv->rx_q_entries;
+	dma_free_coherent(priv->dev, size,
+			  priv->rx_cqe_base, priv->rx_cqe_base_dma);
+
+	priv->rx_wqe_base = NULL;
+	priv->rx_wqe_base_dma = 0;
+	priv->rx_cqe_base = NULL;
+	priv->rx_cqe_base_dma = 0;
+	writeq(0, priv->base + MLXBF_GIGE_RX_WQ_BASE);
+	writeq(0, priv->base + MLXBF_GIGE_RX_CQ_BASE);
+}
+
+/* Transmit Deinitialization
+ * This routine will free allocations done by mlxbf_gige_tx_init(),
+ * namely the TX WQE array and the TX completion counter
+ */
+static void mlxbf_gige_tx_deinit(struct mlxbf_gige *priv)
+{
+	u64 *tx_wqe_addr;
+	size_t size;
+	int i;
+
+	tx_wqe_addr = priv->tx_wqe_base;
+
+	for (i = 0; i < priv->tx_q_entries; i++) {
+		if (priv->tx_skb[i]) {
+			dma_unmap_single(priv->dev, *tx_wqe_addr,
+					 MLXBF_GIGE_DEFAULT_BUF_SZ, DMA_TO_DEVICE);
+			dev_kfree_skb(priv->tx_skb[i]);
+			priv->tx_skb[i] = NULL;
+		}
+		tx_wqe_addr += 2;
+	}
+
+	size = MLXBF_GIGE_TX_WQE_SZ * priv->tx_q_entries;
+	dma_free_coherent(priv->dev, size,
+			  priv->tx_wqe_base, priv->tx_wqe_base_dma);
+
+	dma_free_coherent(priv->dev, MLXBF_GIGE_TX_CC_SZ,
+			  priv->tx_cc, priv->tx_cc_dma);
+
+	priv->tx_wqe_base = NULL;
+	priv->tx_wqe_base_dma = 0;
+	priv->tx_cc = NULL;
+	priv->tx_cc_dma = 0;
+	priv->tx_wqe_next = NULL;
+	writeq(0, priv->base + MLXBF_GIGE_TX_WQ_BASE);
+	writeq(0, priv->base + MLXBF_GIGE_TX_CI_UPDATE_ADDRESS);
+}
+
+/* Start of struct ethtool_ops functions */
+static int mlxbf_gige_get_regs_len(struct net_device *netdev)
+{
+	return MLXBF_GIGE_MMIO_REG_SZ;
+}
+
+static void mlxbf_gige_get_regs(struct net_device *netdev,
+				struct ethtool_regs *regs, void *p)
+{
+	struct mlxbf_gige *priv = netdev_priv(netdev);
+
+	regs->version = MLXBF_GIGE_REGS_VERSION;
+
+	/* Read entire MMIO register space and store results
+	 * into the provided buffer. Each 64-bit word is converted
+	 * to big-endian to make the output more readable.
+	 *
+	 * NOTE: by design, a read to an offset without an existing
+	 *       register will be acknowledged and return zero.
+	 */
+	memcpy_fromio(p, priv->base, MLXBF_GIGE_MMIO_REG_SZ);
+}
+
+static void mlxbf_gige_get_ringparam(struct net_device *netdev,
+				     struct ethtool_ringparam *ering)
+{
+	struct mlxbf_gige *priv = netdev_priv(netdev);
+
+	ering->rx_max_pending = MLXBF_GIGE_MAX_RXQ_SZ;
+	ering->tx_max_pending = MLXBF_GIGE_MAX_TXQ_SZ;
+	ering->rx_pending = priv->rx_q_entries;
+	ering->tx_pending = priv->tx_q_entries;
+}
+
+static int mlxbf_gige_set_ringparam(struct net_device *netdev,
+				    struct ethtool_ringparam *ering)
+{
+	const struct net_device_ops *ops = netdev->netdev_ops;
+	struct mlxbf_gige *priv = netdev_priv(netdev);
+	int new_rx_q_entries, new_tx_q_entries;
+
+	/* Device does not have separate queues for small/large frames */
+	if (ering->rx_mini_pending || ering->rx_jumbo_pending)
+		return -EINVAL;
+
+	/* Round up to supported values */
+	new_rx_q_entries = roundup_pow_of_two(ering->rx_pending);
+	new_tx_q_entries = roundup_pow_of_two(ering->tx_pending);
+
+	/* Check against min values, core checks against max values */
+	if (new_tx_q_entries < MLXBF_GIGE_MIN_TXQ_SZ ||
+	    new_rx_q_entries < MLXBF_GIGE_MIN_RXQ_SZ)
+		return -EINVAL;
+
+	/* If queue sizes did not change, exit now */
+	if (new_rx_q_entries == priv->rx_q_entries &&
+	    new_tx_q_entries == priv->tx_q_entries)
+		return 0;
+
+	if (netif_running(netdev))
+		ops->ndo_stop(netdev);
+
+	priv->rx_q_entries = new_rx_q_entries;
+	priv->tx_q_entries = new_tx_q_entries;
+
+	if (netif_running(netdev))
+		ops->ndo_open(netdev);
+
+	return 0;
+}
+
+static const struct {
+	const char string[ETH_GSTRING_LEN];
+} mlxbf_gige_ethtool_stats_keys[] = {
+	{ "hw_access_errors" },
+	{ "tx_invalid_checksums" },
+	{ "tx_small_frames" },
+	{ "tx_index_errors" },
+	{ "sw_config_errors" },
+	{ "sw_access_errors" },
+	{ "rx_truncate_errors" },
+	{ "rx_mac_errors" },
+	{ "rx_din_dropped_pkts" },
+	{ "tx_fifo_full" },
+	{ "rx_filter_passed_pkts" },
+	{ "rx_filter_discard_pkts" },
+};
+
+static int mlxbf_gige_get_sset_count(struct net_device *netdev, int stringset)
+{
+	if (stringset != ETH_SS_STATS)
+		return -EOPNOTSUPP;
+	return ARRAY_SIZE(mlxbf_gige_ethtool_stats_keys);
+}
+
+static void mlxbf_gige_get_strings(struct net_device *netdev, u32 stringset,
+				   u8 *buf)
+{
+	if (stringset != ETH_SS_STATS)
+		return;
+	memcpy(buf, &mlxbf_gige_ethtool_stats_keys,
+	       sizeof(mlxbf_gige_ethtool_stats_keys));
+}
+
+static void mlxbf_gige_get_ethtool_stats(struct net_device *netdev,
+					 struct ethtool_stats *estats,
+					 u64 *data)
+{
+	struct mlxbf_gige *priv = netdev_priv(netdev);
+
+	/* Fill data array with interface statistics
+	 *
+	 * NOTE: the data writes must be in
+	 *       sync with the strings shown in
+	 *       the mlxbf_gige_ethtool_stats_keys[] array
+	 *
+	 * NOTE2: certain statistics below are zeroed upon
+	 *        port disable, so the calculation below
+	 *        must include the "cached" value of the stat
+	 *        plus the value read directly from hardware.
+	 *        Cached statistics are currently:
+	 *          rx_din_dropped_pkts
+	 *          rx_filter_passed_pkts
+	 *          rx_filter_discard_pkts
+	 */
+	*data++ = priv->stats.hw_access_errors;
+	*data++ = priv->stats.tx_invalid_checksums;
+	*data++ = priv->stats.tx_small_frames;
+	*data++ = priv->stats.tx_index_errors;
+	*data++ = priv->stats.sw_config_errors;
+	*data++ = priv->stats.sw_access_errors;
+	*data++ = priv->stats.rx_truncate_errors;
+	*data++ = priv->stats.rx_mac_errors;
+	*data++ = (priv->stats.rx_din_dropped_pkts +
+		   readq(priv->base + MLXBF_GIGE_RX_DIN_DROP_COUNTER));
+	*data++ = priv->stats.tx_fifo_full;
+	*data++ = (priv->stats.rx_filter_passed_pkts +
+		   readq(priv->base + MLXBF_GIGE_RX_PASS_COUNTER_ALL));
+	*data++ = (priv->stats.rx_filter_discard_pkts +
+		   readq(priv->base + MLXBF_GIGE_RX_DISC_COUNTER_ALL));
+}
+
+static void mlxbf_gige_get_pauseparam(struct net_device *netdev,
+				      struct ethtool_pauseparam *pause)
+{
+	struct mlxbf_gige *priv = netdev_priv(netdev);
+
+	pause->autoneg = priv->aneg_pause;
+	pause->rx_pause = priv->tx_pause;
+	pause->tx_pause = priv->rx_pause;
+}
+
+static const struct ethtool_ops mlxbf_gige_ethtool_ops = {
+	.get_link		= ethtool_op_get_link,
+	.get_ringparam		= mlxbf_gige_get_ringparam,
+	.set_ringparam		= mlxbf_gige_set_ringparam,
+	.get_regs_len           = mlxbf_gige_get_regs_len,
+	.get_regs               = mlxbf_gige_get_regs,
+	.get_strings            = mlxbf_gige_get_strings,
+	.get_sset_count         = mlxbf_gige_get_sset_count,
+	.get_ethtool_stats      = mlxbf_gige_get_ethtool_stats,
+	.nway_reset		= phy_ethtool_nway_reset,
+	.get_pauseparam		= mlxbf_gige_get_pauseparam,
+	.get_link_ksettings	= phy_ethtool_get_link_ksettings,
+};
+
+/* Start of struct net_device_ops functions */
+static irqreturn_t mlxbf_gige_error_intr(int irq, void *dev_id)
+{
+	struct mlxbf_gige *priv;
+	u64 int_status;
+
+	priv = dev_id;
+
+	priv->error_intr_count++;
+
+	int_status = readq(priv->base + MLXBF_GIGE_INT_STATUS);
+
+	if (int_status & MLXBF_GIGE_INT_STATUS_HW_ACCESS_ERROR)
+		priv->stats.hw_access_errors++;
+
+	if (int_status & MLXBF_GIGE_INT_STATUS_TX_CHECKSUM_INPUTS) {
+		priv->stats.tx_invalid_checksums++;
+		/* This error condition is latched into MLXBF_GIGE_INT_STATUS
+		 * when the GigE silicon operates on the offending
+		 * TX WQE. The write to MLXBF_GIGE_INT_STATUS at the bottom
+		 * of this routine clears this error condition.
+		 */
+	}
+
+	if (int_status & MLXBF_GIGE_INT_STATUS_TX_SMALL_FRAME_SIZE) {
+		priv->stats.tx_small_frames++;
+		/* This condition happens when the networking stack invokes
+		 * this driver's "start_xmit()" method with a packet whose
+		 * size < 60 bytes.  The GigE silicon will automatically pad
+		 * this small frame up to a minimum-sized frame before it is
+		 * sent. The "tx_small_frame" condition is latched into the
+		 * MLXBF_GIGE_INT_STATUS register when the GigE silicon
+		 * operates on the offending TX WQE. The write to
+		 * MLXBF_GIGE_INT_STATUS at the bottom of this routine
+		 * clears this condition.
+		 */
+	}
+
+	if (int_status & MLXBF_GIGE_INT_STATUS_TX_PI_CI_EXCEED_WQ_SIZE)
+		priv->stats.tx_index_errors++;
+
+	if (int_status & MLXBF_GIGE_INT_STATUS_SW_CONFIG_ERROR)
+		priv->stats.sw_config_errors++;
+
+	if (int_status & MLXBF_GIGE_INT_STATUS_SW_ACCESS_ERROR)
+		priv->stats.sw_access_errors++;
+
+	/* Clear all error interrupts by writing '1' back to
+	 * all the asserted bits in INT_STATUS.  Do not write
+	 * '1' back to 'receive packet' bit, since that is
+	 * managed separately.
+	 */
+
+	int_status &= ~MLXBF_GIGE_INT_STATUS_RX_RECEIVE_PACKET;
+
+	writeq(int_status, priv->base + MLXBF_GIGE_INT_STATUS);
+
+	return IRQ_HANDLED;
+}
+
+static irqreturn_t mlxbf_gige_rx_intr(int irq, void *dev_id)
+{
+	struct mlxbf_gige *priv;
+
+	priv = dev_id;
+
+	priv->rx_intr_count++;
+
+	/* NOTE: GigE silicon automatically disables "packet rx" interrupt by
+	 *       setting MLXBF_GIGE_INT_MASK bit0 upon triggering the interrupt
+	 *       to the ARM cores.  Software needs to re-enable "packet rx"
+	 *       interrupts by clearing MLXBF_GIGE_INT_MASK bit0.
+	 */
+
+	napi_schedule(&priv->napi);
+
+	return IRQ_HANDLED;
+}
+
+static irqreturn_t mlxbf_gige_llu_plu_intr(int irq, void *dev_id)
+{
+	struct mlxbf_gige *priv;
+
+	priv = dev_id;
+	priv->llu_plu_intr_count++;
+
+	return IRQ_HANDLED;
+}
+
+/* Function that returns status of TX ring:
+ *          0: TX ring is full, i.e. there are no
+ *             available un-used entries in TX ring.
+ *   non-null: TX ring is not full, i.e. there are
+ *             some available entries in TX ring.
+ *             The non-null value is a measure of
+ *             how many TX entries are available, but
+ *             it is not the exact number of available
+ *             entries (see below).
+ *
+ * The algorithm makes the assumption that if
+ * (prev_tx_ci == tx_pi) then the TX ring is empty.
+ * An empty ring actually has (tx_q_entries-1)
+ * entries, which allows the algorithm to differentiate
+ * the case of an empty ring vs. a full ring.
+ */
+static u16 mlxbf_gige_tx_buffs_avail(struct mlxbf_gige *priv)
+{
+	unsigned long flags;
+	u16 avail;
+
+	spin_lock_irqsave(&priv->lock, flags);
+
+	if (priv->prev_tx_ci == priv->tx_pi)
+		avail = priv->tx_q_entries - 1;
+	else
+		avail = ((priv->tx_q_entries + priv->prev_tx_ci - priv->tx_pi)
+			  % priv->tx_q_entries) - 1;
+
+	spin_unlock_irqrestore(&priv->lock, flags);
+
+	return avail;
+}
+
+static bool mlxbf_gige_handle_tx_complete(struct mlxbf_gige *priv)
+{
+	struct net_device_stats *stats;
+	u16 tx_wqe_index;
+	u64 *tx_wqe_addr;
+	u64 tx_status;
+	u16 tx_ci;
+
+	tx_status = readq(priv->base + MLXBF_GIGE_TX_STATUS);
+	if (tx_status & MLXBF_GIGE_TX_STATUS_DATA_FIFO_FULL)
+		priv->stats.tx_fifo_full++;
+	tx_ci = readq(priv->base + MLXBF_GIGE_TX_CONSUMER_INDEX);
+	stats = &priv->netdev->stats;
+
+	/* Transmit completion logic needs to loop until the completion
+	 * index (in SW) equals TX consumer index (from HW).  These
+	 * parameters are unsigned 16-bit values and the wrap case needs
+	 * to be supported, that is TX consumer index wrapped from 0xFFFF
+	 * to 0 while TX completion index is still < 0xFFFF.
+	 */
+	for (; priv->prev_tx_ci != tx_ci; priv->prev_tx_ci++) {
+		tx_wqe_index = priv->prev_tx_ci % priv->tx_q_entries;
+		/* Each TX WQE is 16 bytes. The 8 MSB store the 2KB TX
+		 * buffer address and the 8 LSB contain information
+		 * about the TX WQE.
+		 */
+		tx_wqe_addr = priv->tx_wqe_base +
+			       (tx_wqe_index * MLXBF_GIGE_TX_WQE_SZ_QWORDS);
+
+		stats->tx_packets++;
+		stats->tx_bytes += MLXBF_GIGE_TX_WQE_PKT_LEN(tx_wqe_addr);
+
+		dma_unmap_single(priv->dev, *tx_wqe_addr,
+				 MLXBF_GIGE_DEFAULT_BUF_SZ, DMA_TO_DEVICE);
+		dev_consume_skb_any(priv->tx_skb[tx_wqe_index]);
+		priv->tx_skb[tx_wqe_index] = NULL;
+	}
+
+	/* Since the TX ring was likely just drained, check if TX queue
+	 * had previously been stopped and now that there are TX buffers
+	 * available the TX queue can be awakened.
+	 */
+	if (netif_queue_stopped(priv->netdev) &&
+	    mlxbf_gige_tx_buffs_avail(priv))
+		netif_wake_queue(priv->netdev);
+
+	return true;
+}
+
+static bool mlxbf_gige_rx_packet(struct mlxbf_gige *priv, int *rx_pkts)
+{
+	struct net_device *netdev = priv->netdev;
+	u16 rx_pi_rem, rx_ci_rem;
+	dma_addr_t rx_buf_dma;
+	struct sk_buff *skb;
+	u64 *rx_cqe_addr;
+	u64 *rx_wqe_addr;
+	u64 datalen;
+	u64 rx_cqe;
+	u16 rx_ci;
+	u16 rx_pi;
+
+	/* Index into RX buffer array is rx_pi w/wrap based on RX_CQE_SIZE */
+	rx_pi = readq(priv->base + MLXBF_GIGE_RX_WQE_PI);
+	rx_pi_rem = rx_pi % priv->rx_q_entries;
+	rx_wqe_addr = priv->rx_wqe_base + rx_pi_rem;
+	dma_unmap_single(priv->dev, *rx_wqe_addr,
+			 MLXBF_GIGE_DEFAULT_BUF_SZ, DMA_FROM_DEVICE);
+	rx_cqe_addr = priv->rx_cqe_base + rx_pi_rem;
+	rx_cqe = *rx_cqe_addr;
+
+	if ((rx_cqe & MLXBF_GIGE_RX_CQE_PKT_STATUS_MASK) == 0) {
+		/* Packet is OK, increment stats */
+		datalen = rx_cqe & MLXBF_GIGE_RX_CQE_PKT_LEN_MASK;
+		netdev->stats.rx_packets++;
+		netdev->stats.rx_bytes += datalen;
+
+		skb = priv->rx_skb[rx_pi_rem];
+
+		skb_put(skb, datalen);
+
+		skb->ip_summed = CHECKSUM_NONE; /* device did not checksum packet */
+
+		skb->protocol = eth_type_trans(skb, netdev);
+		netif_receive_skb(skb);
+
+		/* Alloc another RX SKB for this same index */
+		priv->rx_skb[rx_pi_rem] = mlxbf_gige_alloc_skb(priv, &rx_buf_dma,
+							       DMA_FROM_DEVICE);
+		if (!priv->rx_skb[rx_pi_rem]) {
+			netdev->stats.rx_dropped++;
+			return false;
+		}
+
+		*rx_wqe_addr = rx_buf_dma;
+	} else if (rx_cqe & MLXBF_GIGE_RX_CQE_PKT_STATUS_MAC_ERR) {
+		priv->stats.rx_mac_errors++;
+	} else if (rx_cqe & MLXBF_GIGE_RX_CQE_PKT_STATUS_TRUNCATED) {
+		priv->stats.rx_truncate_errors++;
+	}
+
+	/* Let hardware know we've replenished one buffer */
+	rx_pi++;
+	writeq(rx_pi, priv->base + MLXBF_GIGE_RX_WQE_PI);
+
+	(*rx_pkts)++;
+
+	rx_pi_rem = rx_pi % priv->rx_q_entries;
+	rx_ci = readq(priv->base + MLXBF_GIGE_RX_CQE_PACKET_CI);
+	rx_ci_rem = rx_ci % priv->rx_q_entries;
+
+	return rx_pi_rem != rx_ci_rem;
+}
+
+/* Driver poll() function called by NAPI infrastructure */
+static int mlxbf_gige_poll(struct napi_struct *napi, int budget)
+{
+	struct mlxbf_gige *priv;
+	bool remaining_pkts;
+	int work_done = 0;
+	u64 data;
+
+	priv = container_of(napi, struct mlxbf_gige, napi);
+
+	mlxbf_gige_handle_tx_complete(priv);
+
+	do {
+		remaining_pkts = mlxbf_gige_rx_packet(priv, &work_done);
+	} while (remaining_pkts && work_done < budget);
+
+	/* If amount of work done < budget, turn off NAPI polling
+	 * via napi_complete_done(napi, work_done) and then
+	 * re-enable interrupts.
+	 */
+	if (work_done < budget && napi_complete_done(napi, work_done)) {
+		/* Clear MLXBF_GIGE_INT_MASK 'receive pkt' bit to
+		 * indicate receive readiness
+		 */
+		data = readq(priv->base + MLXBF_GIGE_INT_MASK);
+		data &= ~MLXBF_GIGE_INT_MASK_RX_RECEIVE_PACKET;
+		writeq(data, priv->base + MLXBF_GIGE_INT_MASK);
+	}
+
+	return work_done;
+}
+
+static int mlxbf_gige_request_irqs(struct mlxbf_gige *priv)
+{
+	int err;
+
+	err = request_irq(priv->error_irq, mlxbf_gige_error_intr, 0,
+			  "mlxbf_gige_error", priv);
+	if (err) {
+		dev_err(priv->dev, "Request error_irq failure\n");
+		return err;
+	}
+
+	err = request_irq(priv->rx_irq, mlxbf_gige_rx_intr, 0,
+			  "mlxbf_gige_rx", priv);
+	if (err) {
+		dev_err(priv->dev, "Request rx_irq failure\n");
+		goto free_error_irq;
+	}
+
+	err = request_irq(priv->llu_plu_irq, mlxbf_gige_llu_plu_intr, 0,
+			  "mlxbf_gige_llu_plu", priv);
+	if (err) {
+		dev_err(priv->dev, "Request llu_plu_irq failure\n");
+		goto free_rx_irq;
+	}
+
+	err = request_threaded_irq(priv->phy_irq, NULL,
+				   mlxbf_gige_mdio_handle_phy_interrupt,
+				   IRQF_ONESHOT | IRQF_SHARED,
+				   "mlxbf_gige_phy", priv);
+	if (err) {
+		dev_err(priv->dev, "Request phy_irq failure\n");
+		goto free_llu_plu_irq;
+	}
+
+	return 0;
+
+free_llu_plu_irq:
+	free_irq(priv->llu_plu_irq, priv);
+
+free_rx_irq:
+	free_irq(priv->rx_irq, priv);
+
+free_error_irq:
+	free_irq(priv->error_irq, priv);
+
+	return err;
+}
+
+static void mlxbf_gige_free_irqs(struct mlxbf_gige *priv)
+{
+	free_irq(priv->error_irq, priv);
+	free_irq(priv->rx_irq, priv);
+	free_irq(priv->llu_plu_irq, priv);
+	free_irq(priv->phy_irq, priv);
 }
 
 static void mlxbf_gige_cache_stats(struct mlxbf_gige *priv)
@@ -126,6 +862,38 @@ static int mlxbf_gige_clean_port(struct mlxbf_gige *priv)
 	return err;
 }
 
+static int mlxbf_gige_phy_enable_interrupt(struct phy_device *phydev)
+{
+	int err = 0;
+
+	if (phydev->drv->ack_interrupt)
+		err = phydev->drv->ack_interrupt(phydev);
+	if (err < 0)
+		return err;
+
+	phydev->interrupts = PHY_INTERRUPT_ENABLED;
+	if (phydev->drv->config_intr)
+		err = phydev->drv->config_intr(phydev);
+
+	return err;
+}
+
+static int mlxbf_gige_phy_disable_interrupt(struct phy_device *phydev)
+{
+	int err = 0;
+
+	if (phydev->drv->ack_interrupt)
+		err = phydev->drv->ack_interrupt(phydev);
+	if (err < 0)
+		return err;
+
+	phydev->interrupts = PHY_INTERRUPT_DISABLED;
+	if (phydev->drv->config_intr)
+		err = phydev->drv->config_intr(phydev);
+
+	return err;
+}
+
 static int mlxbf_gige_open(struct net_device *netdev)
 {
 	struct mlxbf_gige *priv = netdev_priv(netdev);
@@ -148,6 +916,14 @@ static int mlxbf_gige_open(struct net_device *netdev)
 		return err;
 
 	phy_start(phydev);
+	/* Always make sure interrupts are enabled since phy_start calls
+	 * __phy_resume which may reset the PHY interrupt control reg.
+	 * __phy_resume only reenables the interrupts if
+	 * phydev->irq != IRQ_IGNORE_INTERRUPT.
+	 */
+	err = mlxbf_gige_phy_enable_interrupt(phydev);
+	if (err)
+		return err;
 
 	netif_napi_add(netdev, &priv->napi, mlxbf_gige_poll, NAPI_POLL_WEIGHT);
 	napi_enable(&priv->napi);
@@ -177,6 +953,7 @@ static int mlxbf_gige_stop(struct net_device *netdev)
 	mlxbf_gige_free_irqs(priv);
 
 	phy_stop(netdev->phydev);
+	mlxbf_gige_phy_disable_interrupt(netdev->phydev);
 
 	mlxbf_gige_rx_deinit(priv);
 	mlxbf_gige_tx_deinit(priv);
@@ -184,6 +961,110 @@ static int mlxbf_gige_stop(struct net_device *netdev)
 	mlxbf_gige_clean_port(priv);
 
 	return 0;
+}
+
+/* Function to advance the tx_wqe_next pointer to next TX WQE */
+static void mlxbf_gige_update_tx_wqe_next(struct mlxbf_gige *priv)
+{
+	/* Advance tx_wqe_next pointer */
+	priv->tx_wqe_next += MLXBF_GIGE_TX_WQE_SZ_QWORDS;
+
+	/* Check if 'next' pointer is beyond end of TX ring */
+	/* If so, set 'next' back to 'base' pointer of ring */
+	if (priv->tx_wqe_next == (priv->tx_wqe_base +
+				  (priv->tx_q_entries * MLXBF_GIGE_TX_WQE_SZ_QWORDS)))
+		priv->tx_wqe_next = priv->tx_wqe_base;
+}
+
+static netdev_tx_t mlxbf_gige_start_xmit(struct sk_buff *skb,
+					 struct net_device *netdev)
+{
+	struct mlxbf_gige *priv = netdev_priv(netdev);
+	u64 buff_addr, start_dma_page, end_dma_page;
+	struct sk_buff *tx_skb;
+	dma_addr_t tx_buf_dma;
+	u64 *tx_wqe_addr;
+	u64 word2;
+
+	/* If needed, linearize TX SKB as hardware DMA expects this */
+	if (skb_linearize(skb)) {
+		dev_kfree_skb(skb);
+		netdev->stats.tx_dropped++;
+		return NET_XMIT_DROP;
+	}
+
+	buff_addr = (u64)skb->data;
+	start_dma_page = buff_addr >> MLXBF_GIGE_DMA_PAGE_SHIFT;
+	end_dma_page   = (buff_addr + skb->len - 1) >> MLXBF_GIGE_DMA_PAGE_SHIFT;
+
+	/* Verify that payload pointer and data length of SKB to be
+	 * transmitted does not violate the hardware DMA limitation.
+	 */
+	if (start_dma_page != end_dma_page) {
+		/* DMA operation would fail as-is, alloc new aligned SKB */
+		tx_skb = mlxbf_gige_alloc_skb(priv, &tx_buf_dma, DMA_TO_DEVICE);
+		if (!tx_skb) {
+			/* Free original skb, could not alloc new aligned SKB */
+			dev_kfree_skb(skb);
+			netdev->stats.tx_dropped++;
+			return NET_XMIT_DROP;
+		}
+
+		skb_put_data(tx_skb, skb->data, skb->len);
+		dev_kfree_skb(skb);
+	} else {
+		tx_skb = skb;
+		tx_buf_dma = dma_map_single(priv->dev, skb->data,
+					    MLXBF_GIGE_DEFAULT_BUF_SZ,
+					    DMA_TO_DEVICE);
+		if (dma_mapping_error(priv->dev, tx_buf_dma)) {
+			dev_kfree_skb(skb);
+			netdev->stats.tx_dropped++;
+			return NET_XMIT_DROP;
+		}
+	}
+
+	priv->tx_skb[priv->tx_pi % priv->tx_q_entries] = tx_skb;
+
+	/* Get address of TX WQE */
+	tx_wqe_addr = priv->tx_wqe_next;
+
+	mlxbf_gige_update_tx_wqe_next(priv);
+
+	/* Put PA of buffer address into first 64-bit word of TX WQE */
+	*tx_wqe_addr = tx_buf_dma;
+
+	/* Set TX WQE pkt_len appropriately
+	 * NOTE: GigE silicon will automatically pad up to
+	 *       minimum packet length if needed.
+	 */
+	word2 = tx_skb->len & MLXBF_GIGE_TX_WQE_PKT_LEN_MASK;
+
+	/* Write entire 2nd word of TX WQE */
+	*(tx_wqe_addr + 1) = word2;
+
+	priv->tx_pi++;
+
+	if (!netdev_xmit_more()) {
+		/* Create memory barrier before write to TX PI */
+		wmb();
+		writeq(priv->tx_pi, priv->base + MLXBF_GIGE_TX_PRODUCER_INDEX);
+	}
+
+	/* Check if the last TX entry was just used */
+	if (!mlxbf_gige_tx_buffs_avail(priv)) {
+		/* TX ring is full, inform stack */
+		netif_stop_queue(netdev);
+
+		/* Since there is no separate "TX complete" interrupt, need
+		 * to explicitly schedule NAPI poll.  This will trigger logic
+		 * which processes TX completions, and will hopefully drain
+		 * the TX ring allowing the TX queue to be awakened.
+		 */
+		napi_schedule(&priv->napi);
+	}
+
+	return NETDEV_TX_OK;
 }
 
 static int mlxbf_gige_do_ioctl(struct net_device *netdev,
@@ -212,8 +1093,8 @@ static void mlxbf_gige_set_rx_mode(struct net_device *netdev)
 			mlxbf_gige_enable_promisc(priv);
 		else
 			mlxbf_gige_disable_promisc(priv);
-        }
-}
+		}
+	}
 
 static void mlxbf_gige_get_stats64(struct net_device *netdev,
 				   struct rtnl_link_stats64 *stats)
@@ -223,8 +1104,7 @@ static void mlxbf_gige_get_stats64(struct net_device *netdev,
 	netdev_stats_to_stats64(stats, &netdev->stats);
 
 	stats->rx_length_errors = priv->stats.rx_truncate_errors;
-	stats->rx_fifo_errors = priv->stats.rx_din_dropped_pkts +
-		                readq(priv->base + MLXBF_GIGE_RX_DIN_DROP_COUNTER);
+	stats->rx_fifo_errors = priv->stats.rx_din_dropped_pkts;
 	stats->rx_crc_errors = priv->stats.rx_mac_errors;
 	stats->rx_errors = stats->rx_length_errors +
 			   stats->rx_fifo_errors +
@@ -245,6 +1125,29 @@ static const struct net_device_ops mlxbf_gige_netdev_ops = {
 	.ndo_get_stats64        = mlxbf_gige_get_stats64,
 };
 
+static void mlxbf_gige_initial_mac(struct mlxbf_gige *priv)
+{
+	u8 mac[ETH_ALEN];
+	u64 local_mac;
+
+	mlxbf_gige_get_mac_rx_filter(priv, MLXBF_GIGE_LOCAL_MAC_FILTER_IDX,
+				     &local_mac);
+	u64_to_ether_addr(local_mac, mac);
+
+	if (is_valid_ether_addr(mac)) {
+		ether_addr_copy(priv->netdev->dev_addr, mac);
+	} else {
+		/* Provide a random MAC if for some reason the device has
+		 * not been configured with a valid MAC address already.
+		 */
+		eth_hw_addr_random(priv->netdev);
+	}
+
+	local_mac = ether_addr_to_u64(priv->netdev->dev_addr);
+	mlxbf_gige_set_mac_rx_filter(priv, MLXBF_GIGE_LOCAL_MAC_FILTER_IDX,
+				     local_mac);
+}
+
 static void mlxbf_gige_adjust_link(struct net_device *netdev)
 {
 	/* Only one speed and one duplex supported, simply return */
@@ -252,7 +1155,6 @@ static void mlxbf_gige_adjust_link(struct net_device *netdev)
 
 static int mlxbf_gige_probe(struct platform_device *pdev)
 {
-	unsigned int phy_int_gpio;
 	struct phy_device *phydev;
 	struct net_device *netdev;
 	struct resource *mac_res;
@@ -262,20 +1164,9 @@ static int mlxbf_gige_probe(struct platform_device *pdev)
 	void __iomem *llu_base;
 	void __iomem *plu_base;
 	void __iomem *base;
-	int addr, version;
 	u64 control;
 	int err = 0;
-
-	if (device_property_read_u32(&pdev->dev, "version", &version)) {
-		dev_err(&pdev->dev, "Version Info not found\n");
-		return -EINVAL;
-	}
-
-	if (version != (int)DRV_VERSION) {
-		dev_err(&pdev->dev, "Version Mismatch. Expected %d Returned %d\n",
-			(int)DRV_VERSION, version);
-		return -EINVAL;
-	}
+	int addr;
 
 	mac_res = platform_get_resource(pdev, IORESOURCE_MEM, MLXBF_GIGE_RES_MAC);
 	if (!mac_res)
@@ -341,31 +1232,20 @@ static int mlxbf_gige_probe(struct platform_device *pdev)
 	err = dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(64));
 	if (err) {
 		dev_err(&pdev->dev, "DMA configuration failed: 0x%x\n", err);
-		mlxbf_gige_mdio_remove(priv);
 		return err;
 	}
 
 	priv->error_irq = platform_get_irq(pdev, MLXBF_GIGE_ERROR_INTR_IDX);
 	priv->rx_irq = platform_get_irq(pdev, MLXBF_GIGE_RECEIVE_PKT_INTR_IDX);
 	priv->llu_plu_irq = platform_get_irq(pdev, MLXBF_GIGE_LLU_PLU_INTR_IDX);
+	priv->phy_irq = platform_get_irq(pdev, MLXBF_GIGE_PHY_INT_N);
 
-	err = device_property_read_u32(&pdev->dev, "phy-int-gpio", &phy_int_gpio);
-	if (err < 0)
-		phy_int_gpio = MLXBF_GIGE_DEFAULT_PHY_INT_GPIO;
-
-	priv->phy_irq = irq_find_mapping(NULL, phy_int_gpio);
-	if (priv->phy_irq == 0) {
-		mlxbf_gige_mdio_remove(priv);
-		return -ENODEV;
-	}
 	phydev = phy_find_first(priv->mdiobus);
-	if (!phydev) {
-		mlxbf_gige_mdio_remove(priv);
+	if (!phydev)
 		return -ENODEV;
-	}
 
 	addr = phydev->mdio.addr;
-	phydev->irq = priv->mdiobus->irq[addr] = priv->phy_irq;
+	phydev->irq = priv->mdiobus->irq[addr] = PHY_IGNORE_INTERRUPT;
 
 	/* Sets netdev->phydev to phydev; which will eventually
 	 * be used in ioctl calls.
@@ -376,7 +1256,6 @@ static int mlxbf_gige_probe(struct platform_device *pdev)
 				 PHY_INTERFACE_MODE_GMII);
 	if (err) {
 		dev_err(&pdev->dev, "Could not attach to PHY\n");
-		mlxbf_gige_mdio_remove(priv);
 		return err;
 	}
 
@@ -402,7 +1281,6 @@ static int mlxbf_gige_probe(struct platform_device *pdev)
 	if (err) {
 		dev_err(&pdev->dev, "Failed to register netdev\n");
 		phy_disconnect(phydev);
-		mlxbf_gige_mdio_remove(priv);
 		return err;
 	}
 
@@ -447,9 +1325,8 @@ static struct platform_driver mlxbf_gige_driver = {
 
 module_platform_driver(mlxbf_gige_driver);
 
-MODULE_SOFTDEP("pre: gpio_mlxbf2");
 MODULE_DESCRIPTION("Mellanox BlueField SoC Gigabit Ethernet Driver");
 MODULE_AUTHOR("David Thompson <davthompson@nvidia.com>");
 MODULE_AUTHOR("Asmaa Mnebhi <asmaa@nvidia.com>");
 MODULE_LICENSE("Dual BSD/GPL");
-MODULE_VERSION(__stringify(DRV_VERSION));
+MODULE_VERSION(DRV_VERSION);
