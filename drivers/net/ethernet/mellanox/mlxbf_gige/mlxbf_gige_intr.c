@@ -2,7 +2,7 @@
 
 /* Interrupt related logic for Mellanox Gigabit Ethernet driver
  *
- * Copyright (C) 2020-2021 Mellanox Technologies, Ltd. ALL RIGHTS RESERVED.
+ * Copyright (c) 2020-2021 NVIDIA Corporation.
  */
 
 #include <linux/interrupt.h>
