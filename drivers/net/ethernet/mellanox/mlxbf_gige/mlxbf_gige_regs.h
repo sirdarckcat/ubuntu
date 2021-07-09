@@ -1,8 +1,8 @@
-/* SPDX-License-Identifier: GPL-2.0-only OR BSD-3-Clause */
+/* SPDX-License-Identifier: GPL-2.0-only OR Linux-OpenIB */
 
 /* Header file for Mellanox BlueField GigE register defines
  *
- * Copyright (c) 2020, NVIDIA Corporation. All rights reserved.
+ * Copyright (c) 2020 Mellanox Technologies Ltd.
  */
 
 #ifndef __MLXBF_GIGE_REGS_H__
