@@ -1,8 +1,8 @@
-// SPDX-License-Identifier: GPL-2.0-only OR BSD-3-Clause
+// SPDX-License-Identifier: GPL-2.0-only OR Linux-OpenIB
 
 /* Gigabit Ethernet driver for Mellanox BlueField SoC
  *
- * Copyright (c) 2020, NVIDIA Corporation. All rights reserved.
+ * Copyright (c) 2020 Mellanox Technologies Ltd.
  */
 
 #include <linux/acpi.h>
@@ -18,7 +18,7 @@
 #include "mlxbf_gige_regs.h"
 
 #define DRV_NAME    "mlxbf_gige"
-#define DRV_VERSION "1.3"
+#define DRV_VERSION "1.2"
 
 static void mlxbf_gige_set_mac_rx_filter(struct mlxbf_gige *priv,
 					 unsigned int index, u64 dmac)
@@ -474,11 +474,9 @@ static void mlxbf_gige_get_ethtool_stats(struct net_device *netdev,
 static void mlxbf_gige_get_pauseparam(struct net_device *netdev,
 				      struct ethtool_pauseparam *pause)
 {
-	struct mlxbf_gige *priv = netdev_priv(netdev);
-
-	pause->autoneg = priv->aneg_pause;
-	pause->rx_pause = priv->tx_pause;
-	pause->tx_pause = priv->rx_pause;
+	pause->autoneg = AUTONEG_ENABLE;
+	pause->rx_pause = 1;
+	pause->tx_pause = 1;
 }
 
 static const struct ethtool_ops mlxbf_gige_ethtool_ops = {
@@ -495,6 +493,20 @@ static const struct ethtool_ops mlxbf_gige_ethtool_ops = {
 	.get_pauseparam		= mlxbf_gige_get_pauseparam,
 	.get_link_ksettings	= phy_ethtool_get_link_ksettings,
 };
+
+static void mlxbf_gige_handle_link_change(struct net_device *netdev)
+{
+	struct mlxbf_gige *priv = netdev_priv(netdev);
+	struct phy_device *phydev = netdev->phydev;
+	irqreturn_t ret;
+
+	ret = mlxbf_gige_mdio_handle_phy_interrupt(priv);
+	if (ret != IRQ_HANDLED)
+		return;
+
+	/* print new link status only if the interrupt came from the PHY */
+	phy_print_status(phydev);
+}
 
 /* Start of struct net_device_ops functions */
 static irqreturn_t mlxbf_gige_error_intr(int irq, void *dev_id)
@@ -789,15 +801,6 @@ static int mlxbf_gige_request_irqs(struct mlxbf_gige *priv)
 		return err;
 	}
 
-	err = request_threaded_irq(priv->phy_irq, NULL,
-			       mlxbf_gige_mdio_handle_phy_interrupt,
-			       IRQF_ONESHOT | IRQF_SHARED, "mlxbf_gige_phy",
-			       priv);
-	if (err) {
-		dev_err(priv->dev, "Request phy_irq failure\n");
-		return err;
-	}
-
 	return 0;
 }
 
@@ -806,7 +809,6 @@ static void mlxbf_gige_free_irqs(struct mlxbf_gige *priv)
 	devm_free_irq(priv->dev, priv->error_irq, priv);
 	devm_free_irq(priv->dev, priv->rx_irq, priv);
 	devm_free_irq(priv->dev, priv->llu_plu_irq, priv);
-	free_irq(priv->phy_irq, priv);
 }
 
 static void mlxbf_gige_cache_stats(struct mlxbf_gige *priv)
@@ -848,38 +850,6 @@ static void mlxbf_gige_clean_port(struct mlxbf_gige *priv)
 	writeq(control, priv->base + MLXBF_GIGE_CONTROL);
 }
 
-static int mlxbf_gige_phy_enable_interrupt(struct phy_device *phydev)
-{
-	int ret = 0;
-
-	if (phydev->drv->ack_interrupt)
-		ret = phydev->drv->ack_interrupt(phydev);
-	if (ret < 0)
-		return ret;
-
-	phydev->interrupts = PHY_INTERRUPT_ENABLED;
-	if (phydev->drv->config_intr)
-		ret = phydev->drv->config_intr(phydev);
-
-	return ret;
-}
-
-static int mlxbf_gige_phy_disable_interrupt(struct phy_device *phydev)
-{
-	int ret = 0;
-
-	if (phydev->drv->ack_interrupt)
-		ret = phydev->drv->ack_interrupt(phydev);
-	if (ret < 0)
-		return ret;
-
-	phydev->interrupts = PHY_INTERRUPT_DISABLED;
-	if (phydev->drv->config_intr)
-		ret = phydev->drv->config_intr(phydev);
-
-	return ret;
-}
-
 static int mlxbf_gige_open(struct net_device *netdev)
 {
 	struct mlxbf_gige *priv = netdev_priv(netdev);
@@ -900,14 +870,6 @@ static int mlxbf_gige_open(struct net_device *netdev)
 		return err;
 
 	phy_start(phydev);
-	/* Always make sure interrupts are enabled since phy_start calls
-	 * __phy_resume which may reset the PHY interrupt control reg.
-	 * __phy_resume only reenables the interrupts if
-	 * phydev->irq != IRQ_IGNORE_INTERRUPT.
-	 */
-	err = mlxbf_gige_phy_enable_interrupt(phydev);
-	if (err)
-		return err;
 
 	/* Set bits in INT_EN that we care about */
 	int_en = MLXBF_GIGE_INT_EN_HW_ACCESS_ERROR |
@@ -932,8 +894,8 @@ static int mlxbf_gige_stop(struct net_device *netdev)
 	netif_napi_del(&priv->napi);
 	mlxbf_gige_free_irqs(priv);
 
-	phy_stop(netdev->phydev);
-	mlxbf_gige_phy_disable_interrupt(netdev->phydev);
+	if (netdev->phydev)
+		phy_stop(netdev->phydev);
 
 	mlxbf_gige_rx_deinit(priv);
 	mlxbf_gige_tx_deinit(priv);
@@ -1111,12 +1073,6 @@ static void mlxbf_gige_initial_mac(struct mlxbf_gige *priv)
 				     local_mac);
 }
 
-static void mlxbf_gige_adjust_link(struct net_device *netdev)
-{
-	/* Only one speed and one duplex supported */
-	return;
-}
-
 static int mlxbf_gige_probe(struct platform_device *pdev)
 {
 	struct phy_device *phydev;
@@ -1130,7 +1086,6 @@ static int mlxbf_gige_probe(struct platform_device *pdev)
 	void __iomem *base;
 	u64 control;
 	int err = 0;
-	int addr;
 
 	mac_res = platform_get_resource(pdev, IORESOURCE_MEM, MLXBF_GIGE_RES_MAC);
 	if (!mac_res)
@@ -1202,21 +1157,16 @@ static int mlxbf_gige_probe(struct platform_device *pdev)
 	priv->error_irq = platform_get_irq(pdev, MLXBF_GIGE_ERROR_INTR_IDX);
 	priv->rx_irq = platform_get_irq(pdev, MLXBF_GIGE_RECEIVE_PKT_INTR_IDX);
 	priv->llu_plu_irq = platform_get_irq(pdev, MLXBF_GIGE_LLU_PLU_INTR_IDX);
-	priv->phy_irq = platform_get_irq(pdev, MLXBF_GIGE_PHY_INT_N);
 
 	phydev = phy_find_first(priv->mdiobus);
 	if (!phydev)
-		return -ENODEV;
-
-	addr = phydev->mdio.addr;
-	phydev->irq = priv->mdiobus->irq[addr] = PHY_IGNORE_INTERRUPT;
+		return -EIO;
 
 	/* Sets netdev->phydev to phydev; which will eventually
 	 * be used in ioctl calls.
-	 * Cannot pass NULL handler.
 	 */
 	err = phy_connect_direct(netdev, phydev,
-				 mlxbf_gige_adjust_link,
+				 mlxbf_gige_handle_link_change,
 				 PHY_INTERFACE_MODE_GMII);
 	if (err) {
 		dev_err(&pdev->dev, "Could not attach to PHY\n");
@@ -1232,11 +1182,6 @@ static int mlxbf_gige_probe(struct platform_device *pdev)
 
 	/* MAC supports symmetric flow control */
 	phy_support_sym_pause(phydev);
-
-	/* Enable pause */
-	priv->rx_pause = phydev->pause;
-	priv->tx_pause = phydev->pause;
-	priv->aneg_pause = AUTONEG_ENABLE;
 
 	/* Display information about attached PHY device */
 	phy_attached_info(phydev);
