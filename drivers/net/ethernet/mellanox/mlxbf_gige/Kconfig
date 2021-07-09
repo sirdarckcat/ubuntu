@@ -5,7 +5,7 @@
 
 config MLXBF_GIGE
 	tristate "Mellanox Technologies BlueField Gigabit Ethernet support"
-	depends on (ARM64 || COMPILE_TEST) && ACPI
+	depends on (ARM64 || COMPILE_TEST) && ACPI && INET
 	select PHYLIB
 	help
 	  The second generation BlueField SoC from Mellanox Technologies
