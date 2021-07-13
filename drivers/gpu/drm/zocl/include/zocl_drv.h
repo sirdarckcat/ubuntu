@@ -25,7 +25,7 @@
 #include <linux/version.h>
 #include <linux/poll.h>
 #include "zocl_util.h"
-#include "zocl_ioctl.h"
+#include <drm/zocl_ioctl.h>
 #include "zocl_ert.h"
 #include "zocl_bo.h"
 #include "zocl_dma.h"
