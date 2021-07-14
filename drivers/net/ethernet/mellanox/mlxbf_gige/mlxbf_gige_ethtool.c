@@ -44,6 +44,43 @@ static void mlxbf_gige_get_ringparam(struct net_device *netdev,
 	ering->tx_pending = priv->tx_q_entries;
 }
 
+static int mlxbf_gige_set_ringparam(struct net_device *netdev,
+				    struct ethtool_ringparam *ering)
+{
+	const struct net_device_ops *ops = netdev->netdev_ops;
+	struct mlxbf_gige *priv = netdev_priv(netdev);
+	int new_rx_q_entries, new_tx_q_entries;
+
+	/* Device does not have separate queues for small/large frames */
+	if (ering->rx_mini_pending || ering->rx_jumbo_pending)
+		return -EINVAL;
+
+	/* Round up to supported values */
+	new_rx_q_entries = roundup_pow_of_two(ering->rx_pending);
+	new_tx_q_entries = roundup_pow_of_two(ering->tx_pending);
+
+	/* Check against min values, core checks against max values */
+	if (new_tx_q_entries < MLXBF_GIGE_MIN_TXQ_SZ ||
+	    new_rx_q_entries < MLXBF_GIGE_MIN_RXQ_SZ)
+		return -EINVAL;
+
+	/* If queue sizes did not change, exit now */
+	if (new_rx_q_entries == priv->rx_q_entries &&
+	    new_tx_q_entries == priv->tx_q_entries)
+		return 0;
+
+	if (netif_running(netdev))
+		ops->ndo_stop(netdev);
+
+	priv->rx_q_entries = new_rx_q_entries;
+	priv->tx_q_entries = new_tx_q_entries;
+
+	if (netif_running(netdev))
+		ops->ndo_open(netdev);
+
+	return 0;
+}
+
 static const struct {
 	const char string[ETH_GSTRING_LEN];
 } mlxbf_gige_ethtool_stats_keys[] = {
@@ -126,6 +163,7 @@ static void mlxbf_gige_get_pauseparam(struct net_device *netdev,
 const struct ethtool_ops mlxbf_gige_ethtool_ops = {
 	.get_link		= ethtool_op_get_link,
 	.get_ringparam		= mlxbf_gige_get_ringparam,
+	.set_ringparam		= mlxbf_gige_set_ringparam,
 	.get_regs_len           = mlxbf_gige_get_regs_len,
 	.get_regs               = mlxbf_gige_get_regs,
 	.get_strings            = mlxbf_gige_get_strings,
