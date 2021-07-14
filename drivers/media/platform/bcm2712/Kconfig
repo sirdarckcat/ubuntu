@@ -1,0 +1,12 @@
+config VIDEO_BCM2712_PISP_BE
+	tristate "BCM2712 PiSP Backend (BE) ISP driver"
+	depends on VIDEO_DEV
+	select VIDEO_V4L2_SUBDEV_API
+	select MEDIA_CONTROLLER
+	select VIDEOBUF2_DMA_CONTIG
+	select V4L2_FWNODE
+	help
+	  Say Y here to enable support for the PiSP Backend (BE) ISP driver.
+
+	  To compile this driver as a module, choose M here. The module will be
+	  called bcm2712-pisp-be.
