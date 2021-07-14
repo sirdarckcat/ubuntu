@@ -62,6 +62,8 @@ typedef enum {
 #define YU_GPIO_MODE0			0x0c
 #define YU_GPIO_DATASET			0x14
 #define YU_GPIO_DATACLEAR		0x18
+#define YU_GPIO_FUNCTIONAL_ENABLE1	0x24
+#define YU_GPIO_FUNCTIONAL_ENABLE0	0x28
 #define YU_GPIO_CAUSE_RISE_EN		0x44
 #define YU_GPIO_CAUSE_FALL_EN		0x48
 #define YU_GPIO_MODE1_CLEAR		0x50
@@ -293,6 +295,7 @@ static int mlxbf2_gpio_direction_output(struct gpio_chip *chip,
 {
 	struct mlxbf2_gpio_context *gs = gpiochip_get_data(chip);
 	int ret = 0;
+	u32 val;
 
 	/*
 	 * Although the arm_gpio_lock was set in the probe function,
@@ -305,6 +308,17 @@ static int mlxbf2_gpio_direction_output(struct gpio_chip *chip,
 
 	writel(BIT(offset), gs->gpio_io + YU_GPIO_MODE1_CLEAR);
 	writel(BIT(offset), gs->gpio_io + YU_GPIO_MODE0_SET);
+
+	/*
+	 * Set {functional_enable1,functional_enable0}={0,0}
+	 * to give control to software over these GPIOs.
+	 */
+	val = readl(gs->gpio_io + YU_GPIO_FUNCTIONAL_ENABLE1);
+	val &= ~BIT(offset);
+	writel(val, gs->gpio_io + YU_GPIO_FUNCTIONAL_ENABLE1);
+	val = readl(gs->gpio_io + YU_GPIO_FUNCTIONAL_ENABLE0);
+	val &= ~BIT(offset);
+	writel(val, gs->gpio_io + YU_GPIO_FUNCTIONAL_ENABLE0);
 
 	mlxbf2_gpio_lock_release(gs);
 
