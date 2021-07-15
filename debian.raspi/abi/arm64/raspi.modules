@@ -1,5 +1,3 @@
-3c574_cs
-3c589_cs
 6lowpan
 6pack
 8021q
@@ -7,7 +5,6 @@
 8250_dw
 8250_men_mcb
 8255
-8390
 842
 842_compress
 842_decompress
@@ -289,7 +286,6 @@ arizona-micsupp
 arizona-spi
 ark3116
 arm-cmn
-arm64-reloc-test
 arm_mhu
 arm_mhu_db
 arm_mhuv2
@@ -369,7 +365,6 @@ ax88179_178a
 ax88796b
 axi-fan-control
 axis-fifo
-axnet_cs
 axp20x
 axp20x-i2c
 axp20x-pek
@@ -682,6 +677,7 @@ cpia2
 cqhci
 cramfs
 crc-itu-t
+crc32_generic
 crc4
 crc64
 crc7
@@ -897,7 +893,6 @@ ds3000
 ds4424
 ds620
 dsa_core
-dsa_loop
 dsbr100
 dt9812
 dummy
@@ -1131,7 +1126,6 @@ ff-memless
 fieldbus_dev
 flexcan
 fm_drv
-fmvj18x_cs
 fotg210-hcd
 fou
 fou6
@@ -1498,6 +1492,7 @@ hid-roccat-ryos
 hid-roccat-savu
 hid-saitek
 hid-samsung
+hid-semitek
 hid-sensor-accel-3d
 hid-sensor-als
 hid-sensor-custom
@@ -1580,6 +1575,7 @@ i2c-algo-bit
 i2c-algo-pca
 i2c-arb-gpio-challenge
 i2c-bcm2708
+i2c-bcm2835
 i2c-brcmstb
 i2c-cbus-gpio
 i2c-cp2615
@@ -1587,7 +1583,6 @@ i2c-cros-ec-tunnel
 i2c-demux-pinctrl
 i2c-diolan-u2c
 i2c-dln2
-i2c-emev2
 i2c-gpio
 i2c-hid
 i2c-hid-of
@@ -1670,8 +1665,14 @@ img-spdif-out
 imon
 imon_raw
 ims-pcu
+imx214
+imx219
+imx258
+imx274
 imx290
+imx319
 imx334
+imx355
 imx477
 imx6ul_tsc
 ina209
@@ -2605,6 +2606,7 @@ nhc_mobility
 nhc_routing
 nhc_udp
 nhpoly1305
+nhpoly1305-neon
 ni_routes_test
 ni_routing
 ni_usb6501
@@ -2649,7 +2651,6 @@ nls_koi8-r
 nls_koi8-ru
 nls_koi8-u
 nls_utf8
-nmclan_cs
 notifier-error-inject
 npcm750-pwm-fan
 nps_enet
@@ -2793,10 +2794,8 @@ pcf8591
 pci
 pci-pf-stub
 pci-stub
-pcmcia
 pcmcia_core
 pcmcia_rsrc
-pcnet_cs
 pcrypt
 pcs-lynx
 pcs-xpcs
@@ -3011,7 +3010,6 @@ rave-sp-wdt
 raw
 raw_diag
 raw_gadget
-ray_cs
 raydium_i2c_ts
 rbd
 rc-adstech-dvb-t-pci
@@ -3439,7 +3437,6 @@ sch_teql
 scpi-cpufreq
 scpi-hwmon
 scpi_pm_domain
-scr24x_cs
 scsi_debug
 scsi_dh_alua
 scsi_dh_emc
@@ -3460,7 +3457,6 @@ sdhci-xenon-driver
 sdhci_f_sdh30
 sdio_uart
 sensorhub
-serial_cs
 serial_ir
 serio_raw
 sermouse
@@ -3473,8 +3469,10 @@ sgp30
 sha1-ce
 sha2-ce
 sha256-arm64
+sha3-ce
 sha3_generic
 sha512-arm64
+sha512-ce
 shark2
 sht15
 sht21
@@ -3513,7 +3511,6 @@ sky81452
 sky81452-backlight
 sky81452-regulator
 sl811-hcd
-sl811_cs
 slcan
 slg51000-regulator
 slim-qcom-ctrl
@@ -3521,7 +3518,9 @@ slimbus
 slip
 slram
 sm2_generic
+sm3-ce
 sm3_generic
+sm4-ce
 sm4_generic
 sm501
 sm501fb
@@ -3529,7 +3528,6 @@ sm_common
 sm_ftl
 smb347-charger
 smc
-smc91c92_cs
 smc91x
 smm665
 smsc47b397
@@ -3544,7 +3542,6 @@ smssdio
 smsusb
 snd
 snd-ac97-codec
-snd-ak4117
 snd-aloop
 snd-bcd2000
 snd-bcm2835
@@ -3559,8 +3556,6 @@ snd-mtpav
 snd-mts64
 snd-pcm
 snd-pcm-dmaengine
-snd-pcm-oss
-snd-pdaudiocf
 snd-portman2x4
 snd-rawmidi
 snd-seq
@@ -3568,7 +3563,6 @@ snd-seq-device
 snd-seq-dummy
 snd-seq-midi
 snd-seq-midi-event
-snd-seq-oss
 snd-seq-virmidi
 snd-serial-u16550
 snd-soc-63xx
@@ -3841,8 +3835,6 @@ snd-usb-toneport
 snd-usb-variax
 snd-usbmidi-lib
 snd-virmidi
-snd-vx-lib
-snd-vxpocket
 softdog
 softing
 sony-btf-mpx
@@ -3860,6 +3852,7 @@ spi-altera-dfl
 spi-altera-platform
 spi-amd
 spi-axi-spi-engine
+spi-bcm2835
 spi-bcm2835aux
 spi-bitbang
 spi-butterfly
@@ -3986,7 +3979,6 @@ sy8827n
 symbolserial
 synaptics_i2c
 synaptics_usb
-synclink_cs
 syscon-reboot-mode
 syscopyarea
 sysfillrect
@@ -4090,15 +4082,7 @@ tef6862
 teranetics
 test_bpf
 test_div64
-test_firmware
-test_kmod
-test_module
 test_power
-test_static_key_base
-test_static_keys
-test_sysctl
-test_udelay
-test_user_copy
 thermal-generic-adc
 thmc50
 thunderbolt
@@ -4311,6 +4295,8 @@ usb_debug
 usb_f_acm
 usb_f_ecm
 usb_f_ecm_subset
+usb_f_eem
+usb_f_fs
 usb_f_hid
 usb_f_mass_storage
 usb_f_midi
@@ -4322,6 +4308,8 @@ usb_f_rndis
 usb_f_serial
 usb_f_ss_lb
 usb_f_tcm
+usb_f_uac1
+usb_f_uac1_legacy
 usb_f_uac2
 usb_f_uvc
 usb_wwan
@@ -4508,7 +4496,6 @@ wl1251_spi
 wl1273-core
 wl12xx
 wl18xx
-wl3501_cs
 wlcore
 wlcore_sdio
 wlcore_spi
@@ -4565,7 +4552,6 @@ xilinx_uartps
 xillybus_core
 xillybus_of
 xiphera-trng
-xirc2ps_cs
 xlnx_vcu
 xor
 xor-neon
