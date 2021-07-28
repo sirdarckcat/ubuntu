@@ -157,7 +157,6 @@ struct devlink_port {
 	struct list_head region_list;
 	struct devlink *devlink;
 	unsigned int index;
-	bool registered;
 	spinlock_t type_lock; /* Protects type and type_dev
 			       * pointer consistency.
 			       */
