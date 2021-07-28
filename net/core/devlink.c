@@ -116,7 +116,7 @@ static void __devlink_net_set(struct devlink *devlink, struct net *net)
 
 void devlink_net_set(struct devlink *devlink, struct net *net)
 {
-	if (WARN_ON(devlink->registered))
+	if (WARN_ON(devlink->dev))
 		return;
 	__devlink_net_set(devlink, net);
 }
@@ -1026,7 +1026,7 @@ static void devlink_port_notify(struct devlink_port *devlink_port,
 	struct sk_buff *msg;
 	int err;
 
-	if (!devlink_port->registered)
+	if (!devlink_port->devlink)
 		return;
 
 	WARN_ON(cmd != DEVLINK_CMD_PORT_NEW && cmd != DEVLINK_CMD_PORT_DEL);
@@ -8719,9 +8719,9 @@ EXPORT_SYMBOL_GPL(devlink_alloc);
  */
 int devlink_register(struct devlink *devlink, struct device *dev)
 {
-	mutex_lock(&devlink_mutex);
+	WARN_ON(devlink->dev);
 	devlink->dev = dev;
-	devlink->registered = true;
+	mutex_lock(&devlink_mutex);
 	list_add_tail(&devlink->list, &devlink_list);
 	devlink_notify(devlink, DEVLINK_CMD_NEW);
 	mutex_unlock(&devlink_mutex);
@@ -8865,9 +8865,10 @@ int devlink_port_register(struct devlink *devlink,
 		mutex_unlock(&devlink->lock);
 		return -EEXIST;
 	}
+
+	WARN_ON(devlink_port->devlink);
 	devlink_port->devlink = devlink;
 	devlink_port->index = port_index;
-	devlink_port->registered = true;
 	spin_lock_init(&devlink_port->type_lock);
 	INIT_LIST_HEAD(&devlink_port->reporter_list);
 	mutex_init(&devlink_port->reporters_lock);
@@ -8906,7 +8907,7 @@ static void __devlink_port_type_set(struct devlink_port *devlink_port,
 				    enum devlink_port_type type,
 				    void *type_dev)
 {
-	if (WARN_ON(!devlink_port->registered))
+	if (WARN_ON(!devlink_port->devlink))
 		return;
 	devlink_port_type_warn_cancel(devlink_port);
 	spin_lock_bh(&devlink_port->type_lock);
@@ -8991,7 +8992,7 @@ static int __devlink_port_attrs_set(struct devlink_port *devlink_port,
 {
 	struct devlink_port_attrs *attrs = &devlink_port->attrs;
 
-	if (WARN_ON(devlink_port->registered))
+	if (WARN_ON(devlink_port->devlink))
 		return -EEXIST;
 	devlink_port->attrs_set = true;
 	attrs->flavour = flavour;
@@ -9016,6 +9017,9 @@ void devlink_port_attrs_set(struct devlink_port *devlink_port,
 {
 	int ret;
 
+	if (WARN_ON(devlink_port->devlink))
+		return;
+
 	devlink_port->attrs = *attrs;
 	ret = __devlink_port_attrs_set(devlink_port, attrs->flavour);
 	if (ret)
@@ -9037,6 +9041,9 @@ void devlink_port_attrs_pci_pf_set(struct devlink_port *devlink_port, u32 contro
 {
 	struct devlink_port_attrs *attrs = &devlink_port->attrs;
 	int ret;
+
+	if (WARN_ON(devlink_port->devlink))
+		return;
 
 	ret = __devlink_port_attrs_set(devlink_port,
 				       DEVLINK_PORT_FLAVOUR_PCI_PF);
@@ -9062,6 +9069,9 @@ void devlink_port_attrs_pci_vf_set(struct devlink_port *devlink_port, u32 contro
 {
 	struct devlink_port_attrs *attrs = &devlink_port->attrs;
 	int ret;
+
+	if (WARN_ON(devlink_port->devlink))
+		return;
 
 	ret = __devlink_port_attrs_set(devlink_port,
 				       DEVLINK_PORT_FLAVOUR_PCI_VF);
@@ -9089,7 +9099,7 @@ void devlink_port_attrs_pci_sf_set(struct devlink_port *devlink_port, u32 contro
 	struct devlink_port_attrs *attrs = &devlink_port->attrs;
 	int ret;
 
-	if (WARN_ON(devlink_port->registered))
+	if (WARN_ON(devlink_port->devlink))
 		return;
 	ret = __devlink_port_attrs_set(devlink_port,
 				       DEVLINK_PORT_FLAVOUR_PCI_SF);
