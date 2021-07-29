@@ -10,17 +10,17 @@ CONFIG_SND_SOC_INTEL_USER_FRIENDLY_LONG_NAMES   mark<ENFORCED> note<LP:1921632>
 CONFIG_SND_SOC_INTEL_SOUNDWIRE_SOF_MACH         policy<{'amd64': '-'}>
 CONFIG_SND_SOC_INTEL_SOUNDWIRE_SOF_MACH         mark<ENFORCED> note<LP:1921632>
 
-CONFIG_FAILOVER                                   policy<{'amd64': 'm'}>
+CONFIG_FAILOVER                                   policy<{'amd64': 'm', 'arm64': 'm'}>
 CONFIG_FAILOVER                                   mark<ENFORCED> note<OCI requirement>
-CONFIG_MODVERSIONS                                policy<{'amd64': 'y'}>
+CONFIG_MODVERSIONS                                policy<{'amd64': 'y', 'arm64': 'y'}>
 CONFIG_MODVERSIONS                                mark<ENFORCED> note<LP:1898716 -- required as we have a livepatch/drivers modules signing key>
-CONFIG_NET_FAILOVER                               policy<{'amd64': 'm'}>
+CONFIG_NET_FAILOVER                               policy<{'amd64': 'm', 'arm64': 'm'}>
 CONFIG_NET_FAILOVER                               mark<ENFORCED> note<OCI requirement>
-CONFIG_PAGE_POOL                                  policy<{'amd64': 'y'}>
+CONFIG_PAGE_POOL                                  policy<{'amd64': 'y', 'arm64': 'y'}>
 CONFIG_PAGE_POOL                                  mark<ENFORCED> note<OCI requirement>
-CONFIG_SOUNDWIRE                                  policy<{'amd64': 'n'}>
+CONFIG_SOUNDWIRE                                  policy<{'amd64': 'n', 'arm64': 'n'}>
 CONFIG_SOUNDWIRE                                  mark<ENFORCED> note<not needed for cloud kernels>
-CONFIG_LATENCYTOP                                 policy<{'amd64': 'n'}>
+CONFIG_LATENCYTOP                                 policy<{'amd64': 'n', 'arm64': 'n'}>
 CONFIG_LATENCYTOP                                 mark<ENFORCED> note<not needed for cloud kernels>
 CONFIG_SAMPLE_TRACE_PRINTK                        policy<{'amd64': '-'}>
 CONFIG_SAMPLE_TRACE_PRINTK                        mark<ENFORCED> note<not selectable for linux-oracle>
@@ -49,3 +49,5 @@ CONFIG_ANDROID_BINDER_IPC                         policy<{'amd64': 'm', 'arm64':
 CONFIG_ANDROID_BINDER_IPC                         mark<ENFORCED> note<needed for Anbox - LP #1928686>
 CONFIG_ASHMEM                                     policy<{'amd64': 'm', 'arm64':'m'}>
 CONFIG_ASHMEM                                     mark<ENFORCED> note<needed for Anbox - LP #1928686>
+CONFIG_ARM_SMMU_DISABLE_BYPASS_BY_DEFAULT         policy<{'arm64': '-'}>
+CONFIG_ARM_SMMU_DISABLE_BYPASS_BY_DEFAULT         mark<ENFORCED> note<not selectable for linux-oracle>
