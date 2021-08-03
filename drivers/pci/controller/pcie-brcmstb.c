@@ -135,6 +135,22 @@
 #define PCIE_MISC_UBUS_BAR2_CONFIG_REMAP	0x40b4
 #define  PCIE_MISC_UBUS_BAR2_CONFIG_REMAP_ACCESS_ENABLE_MASK	BIT(0)
 
+/* Additional RC BARs */
+#define  PCIE_MISC_RC_BAR_CONFIG_LO_SIZE_MASK		0x1f
+#define PCIE_MISC_RC_BAR4_CONFIG_LO			0x40d4
+#define PCIE_MISC_RC_BAR4_CONFIG_HI			0x40d8
+/* ... */
+#define PCIE_MISC_RC_BAR10_CONFIG_LO			0x4104
+#define PCIE_MISC_RC_BAR10_CONFIG_HI			0x4108
+
+#define PCIE_MISC_UBUS_BAR_CONFIG_REMAP_LO_MASK		0xfffff000
+#define PCIE_MISC_UBUS_BAR_CONFIG_REMAP_HI_MASK		0xff
+#define PCIE_MISC_UBUS_BAR4_CONFIG_REMAP_LO		0x410c
+#define PCIE_MISC_UBUS_BAR4_CONFIG_REMAP_HI		0x4110
+/* ... */
+#define PCIE_MISC_UBUS_BAR10_CONFIG_REMAP_LO		0x413c
+#define PCIE_MISC_UBUS_BAR10_CONFIG_REMAP_HI		0x4140
+
 #define PCIE_MISC_AXI_READ_ERROR_DATA	0x4170
 
 #define PCIE_INTR2_CPU_BASE		(pcie->reg_offsets[INTR2_CPU])
@@ -710,6 +726,7 @@ static bool brcm_pcie_rc_mode_2712(struct brcm_pcie *pcie)
 	void __iomem *base = pcie->base;
 	u32 val = readl(base + PCIE_MISC_PCIE_STATUS);
 
+	pr_err("%s: %d\n", __func__, !!FIELD_GET(PCIE_MISC_PCIE_STATUS_PCIE_PORT_MASK_2712, val));
 	return 1; //XXX !!FIELD_GET(PCIE_MISC_PCIE_STATUS_PCIE_PORT_MASK_2712, val);
 }
 
@@ -855,6 +872,8 @@ static int brcm_pcie_get_rc_bar2_size_and_offset(struct brcm_pcie *pcie,
 		size += entry->res->end - entry->res->start + 1;
 		if (pcie_beg < lowest_pcie_addr)
 			lowest_pcie_addr = pcie_beg;
+		if (pcie->type == BCM2711 || pcie->type == BCM2712)
+			break; // Only consider the first entry
 	}
 
 	if (lowest_pcie_addr == ~(u64)0) {
@@ -925,6 +944,30 @@ static int brcm_pcie_get_rc_bar2_size_and_offset(struct brcm_pcie *pcie,
 	return 0;
 }
 
+static int brcm_pcie_get_rc_bar_n(struct brcm_pcie *pcie,
+				  int idx,
+				  u64 *rc_bar_cpu,
+				  u64 *rc_bar_size,
+				  u64 *rc_bar_pci)
+{
+	struct pci_host_bridge *bridge = pci_host_bridge_from_priv(pcie);
+	struct resource_entry *entry;
+	int i = 0;
+
+	resource_list_for_each_entry(entry, &bridge->dma_ranges) {
+		if (i == idx) {
+			*rc_bar_cpu  = entry->res->start;
+			*rc_bar_size = entry->res->end - entry->res->start + 1;
+			*rc_bar_pci = entry->res->start - entry->offset;
+			return 0;
+		}
+
+		i++;
+	}
+
+	return -EINVAL;
+}
+
 static int brcm_pcie_setup(struct brcm_pcie *pcie)
 {
 	u64 rc_bar2_offset, rc_bar2_size;
@@ -933,7 +976,7 @@ static int brcm_pcie_setup(struct brcm_pcie *pcie)
 	struct resource_entry *entry;
 	u32 tmp, burst, aspm_support;
 	int num_out_wins = 0;
-	int ret, memc;
+	int ret, memc, count, i;
 
 	/* Reset the bridge */
 	pcie->bridge_sw_init_set(pcie, 1);
@@ -1060,6 +1103,40 @@ static int brcm_pcie_setup(struct brcm_pcie *pcie)
 	u32p_replace_bits(&tmp, aspm_support,
 		PCIE_RC_CFG_PRIV1_LINK_CAPABILITY_ASPM_SUPPORT_MASK);
 	writel(tmp, base + PCIE_RC_CFG_PRIV1_LINK_CAPABILITY);
+
+	/* program additional inbound windows (RC_BAR4..RC_BAR10) */
+	count = (pcie->type == BCM2712) ? 7 : 0;
+	for (i = 0; i < count; i++) {
+		u64 bar_cpu, bar_size, bar_pci;
+
+		ret = brcm_pcie_get_rc_bar_n(pcie, 1 + i, &bar_cpu, &bar_size,
+					     &bar_pci);
+		if (ret)
+			break;
+
+		pr_err("  bar%d: pci %llx, size %llx -> cpu %llx\n",
+		       4 + i, bar_pci, bar_size, bar_cpu);
+		tmp = lower_32_bits(bar_pci);
+		u32p_replace_bits(&tmp, brcm_pcie_encode_ibar_size(bar_size),
+				  PCIE_MISC_RC_BAR_CONFIG_LO_SIZE_MASK);
+		writel(tmp, base + PCIE_MISC_RC_BAR4_CONFIG_LO + i * 8);
+		writel(upper_32_bits(bar_pci),
+		       base + PCIE_MISC_RC_BAR2_CONFIG_HI + i * 8);
+
+		tmp = (upper_32_bits(bar_cpu) - upper_32_bits(bar_pci)) &
+			PCIE_MISC_UBUS_BAR_CONFIG_REMAP_HI_MASK;
+		writel(tmp,
+		       base + PCIE_MISC_UBUS_BAR4_CONFIG_REMAP_HI + i * 8);
+		tmp = (lower_32_bits(bar_cpu) - lower_32_bits(bar_pci)) &
+			PCIE_MISC_UBUS_BAR_CONFIG_REMAP_LO_MASK;
+		writel(tmp | 1,
+		       base + PCIE_MISC_UBUS_BAR4_CONFIG_REMAP_LO + i * 8);
+	}
+
+	if (pcie->gen) {
+		pr_crit("  brcm_pcie_set_gen(%d)\n", pcie->gen);
+		brcm_pcie_set_gen(pcie, pcie->gen);
+	}
 
 	/*
 	 * For config space accesses on the RC, show the right class for
