@@ -668,7 +668,7 @@ CONFIG_MHI_BUS                                  policy<{'amd64': 'm', 'arm64': '
 
 # Menu: Device Drivers >> Character devices
 CONFIG_DEVMEM                                   policy<{'amd64': 'y', 'arm64': 'y', 'armhf': 'y', 'ppc64el': 'y', 's390x': 'y'}>
-CONFIG_DEVKMEM                                  policy<{'amd64': 'n', 'armhf': 'n', 'ppc64el': 'n', 's390x': 'n'}>
+CONFIG_DEVKMEM                                  policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_TTY_PRINTK                               policy<{'amd64': 'y', 'arm64': 'y', 'armhf': 'y', 'ppc64el': 'y', 's390x': 'n'}>
 CONFIG_TTY_PRINTK_LEVEL                         policy<{'amd64': '6', 'arm64': '6', 'armhf': '6', 'ppc64el': '6'}>
 CONFIG_PRINTER                                  policy<{'amd64': 'm', 'arm64': 'm', 'armhf': 'm', 'ppc64el': 'm'}>
@@ -12519,7 +12519,7 @@ CONFIG_LOAD_PPC_KEYS                            mark<ENFORCED> note<LP:1866909>
 
 # Menu: Security options >> Enable different security models >> Integrity subsystem >> Integrity Measurement Architecture(IMA)
 CONFIG_IMA                                      policy<{'amd64': 'y', 'arm64': 'y', 'armhf': 'y', 'ppc64el': 'y', 's390x': 'y'}>
-CONFIG_IMA_KEXEC                                policy<{'ppc64el': 'y'}>
+CONFIG_IMA_KEXEC                                policy<{'arm64': 'y'}>
 CONFIG_IMA_WRITE_POLICY                         policy<{'amd64': 'n', 'arm64': 'n', 'armhf': 'n', 'ppc64el': 'n', 's390x': 'n'}>
 CONFIG_IMA_READ_POLICY                          policy<{'amd64': 'n', 'arm64': 'n', 'armhf': 'n', 'ppc64el': 'y', 's390x': 'n'}>
 #
@@ -12963,7 +12963,7 @@ CONFIG_OMAP3_SDRC_AC_TIMING                     policy<{'armhf-generic': 'n'}>
 CONFIG_MACH_OMAP_GENERIC                        policy<{'armhf': 'y'}>
 
 # Menu: Ubuntu Supplied Third-Party Device Drivers
-CONFIG_HIO                                      policy<{'amd64': 'm', 'arm64': 'n', 'armhf': 'n', 'ppc64el': 'n', 's390x': 'n'}>
+CONFIG_HIO                                      policy<{'amd64': 'n', 'arm64': 'n', 'armhf': 'n', 'ppc64el': 'n', 's390x': 'n'}>
 #
 CONFIG_HIO                                      mark<ENFORCED> note<LP:1635594>
 
