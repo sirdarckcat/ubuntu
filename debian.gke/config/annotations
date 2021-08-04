@@ -107,8 +107,12 @@ CONFIG_MODVERSIONS				policy<{'amd64': 'y'}>
 CONFIG_MODVERSIONS				mark<ENFORCED> note<LP:1898716 -- required as we have a livepatch/drivers modules signing key>
 
 CONFIG_SYSTEM_TRUSTED_KEYS			policy<{'amd64': '"debian/canonical-certs.pem"'}>
-CONFIG_ATARI_PARTITION                             policy<{'amd64': 'n'}>
-CONFIG_ATARI_PARTITION                             mark<ENFORCED> note<LP:1908264>
 
-CONFIG_SAMPLE_TRACE_PRINTK                         policy<{'amd64': '-'}>
-CONFIG_SAMPLE_TRACE_PRINTK                         mark<ENFORCED> note<override master annotations>
+CONFIG_ATARI_PARTITION				policy<{'amd64': 'n'}>
+CONFIG_ATARI_PARTITION				mark<ENFORCED> note<LP:1908264>
+
+CONFIG_SAMPLE_TRACE_PRINTK			policy<{'amd64': '-'}>
+CONFIG_SAMPLE_TRACE_PRINTK			mark<ENFORCED> note<override master annotations>
+
+CONFIG_AUFS_FS					policy<{'amd64': 'n'}>
+CONFIG_AUFS_FS					mark<ENFORCED> note<Specifically requested by GKE in partner issue 194431474 >
