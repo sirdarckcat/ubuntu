@@ -37,10 +37,8 @@ CONFIG_SCSI_VIRTIO                              mark<ENFORCED> note<LP:1669657> 
 
 # Menu: Device Drivers >> X86 Platform Specific Device Drivers
 CONFIG_DELL_UART_BACKLIGHT			policy<{'amd64': 'n'}>
-CONFIG_DELL_SMBIOS_SMM				policy<{'amd64': 'n'}>
 #
 CONFIG_DELL_UART_BACKLIGHT			mark<ENFORCED> note<not relevant for gcp>
-CONFIG_DELL_SMBIOS_SMM				mark<ENFORCED> note<not relevant for gcp>
 
 # Menu: Kernel hacking
 CONFIG_PANIC_ON_OOPS                            policy<{'amd64': 'y'}>
@@ -114,4 +112,3 @@ CONFIG_ANDROID_BINDER_IPC                       policy<{'amd64': 'm'}>
 CONFIG_ANDROID_BINDER_IPC                       mark<ENFORCED> note<needed for Anbox - LP #1928686>
 CONFIG_ASHMEM                                   policy<{'amd64': 'm'}>
 CONFIG_ASHMEM                                   mark<ENFORCED> note<needed for Anbox - LP #1928686>
-
