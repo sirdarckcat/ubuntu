@@ -1,0 +1,11 @@
+# SPDX-License-Identifier: GPL-2.0-only
+#
+# Xilinx DMA_IP Core XDMA drivers
+#
+
+config XILINX_XDMA
+	tristate "XILINX DMA_IP Core XDMA support"
+	depends on PCI
+	help
+	  The driver is backported from
+	  https://github.com/Xilinx/dma_ip_drivers/tree/master/XDMA/linux-kernel
