@@ -21,7 +21,7 @@ Build-Depends:
  pkg-config <!stage1>,
  flex <!stage1>,
  bison <!stage1>,
- libunwind8-dev [amd64] <!stage1>,
+ libunwind8-dev [amd64 arm64 armhf ppc64el] <!stage1>,
  liblzma-dev <!stage1>,
  openssl <!stage1>,
  libssl-dev <!stage1>,
@@ -33,7 +33,7 @@ Build-Depends:
  automake <!stage1>,
  libtool <!stage1>,
  uuid-dev <!stage1>,
- libnuma-dev [amd64] <!stage1>,
+ libnuma-dev [amd64 arm64 ppc64el s390x] <!stage1>,
  dkms <!stage1>,
  curl <!stage1>,
  zstd [amd64] <!stage1>,
@@ -68,7 +68,7 @@ Description: Header files related to Oracle Linux kernel version PKGVER
 
 Package: SRCPKGNAME-tools-PKGVER-ABINUM
 Build-Profiles: <!stage1>
-Architecture: amd64
+Architecture: amd64 arm64
 Section: devel
 Priority: optional
 Depends: ${misc:Depends}, ${shlibs:Depends}, linux-tools-common
