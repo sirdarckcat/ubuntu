@@ -216,7 +216,7 @@ static int tcf_mirred_forward(bool want_ingress, struct sk_buff *skb)
 	int err;
 
 	if (!want_ingress)
-		err = dev_queue_xmit(skb);
+		err = tcf_dev_queue_xmit(skb, dev_queue_xmit);
 	else if (is_mirred_nested())
 		err = netif_rx(skb);
 	else
