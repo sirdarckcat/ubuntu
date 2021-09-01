@@ -724,7 +724,7 @@ static int tcf_ct_handle_fragments(struct net *net, struct sk_buff *skb,
 		memset(IP6CB(skb), 0, sizeof(struct inet6_skb_parm));
 		err = nf_ct_frag6_gather(net, skb, user);
 		if (err && err != -EINPROGRESS)
-			return err;
+			goto out_free;
 
 		if (!err) {
 			*defrag = true;
