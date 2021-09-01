@@ -58,6 +58,8 @@ struct ipv6_stub {
 			      const struct in6_addr *solicited_addr,
 			      bool router, bool solicited, bool override, bool inc_opt);
 	struct neigh_table *nd_tbl;
+	int (*ipv6_fragment)(struct net *net, struct sock *sk, struct sk_buff *skb,
+			     int (*output)(struct net *, struct sock *, struct sk_buff *));
 };
 extern const struct ipv6_stub *ipv6_stub __read_mostly;
 
