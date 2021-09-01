@@ -974,6 +974,7 @@ static const struct ipv6_stub ipv6_stub_impl = {
 	.udpv6_encap_enable = udpv6_encap_enable,
 	.ndisc_send_na = ndisc_send_na,
 	.nd_tbl	= &nd_tbl,
+	.ipv6_fragment = ip6_fragment,
 };
 
 static const struct ipv6_bpf_stub ipv6_bpf_stub_impl = {
