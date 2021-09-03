@@ -14,6 +14,7 @@
 #include <linux/irqchip/chained_irq.h>
 #include <linux/irqdomain.h>
 #include <linux/kernel.h>
+#include <linux/kthread.h>
 #include <linux/list.h>
 #include <linux/log2.h>
 #include <linux/module.h>
@@ -74,6 +75,7 @@
 
 #define PCIE_MISC_RC_BAR1_CONFIG_LO			0x402c
 #define  PCIE_MISC_RC_BAR1_CONFIG_LO_SIZE_MASK		0x1f
+#define PCIE_MISC_RC_BAR1_CONFIG_HI			0x4030
 
 #define PCIE_MISC_RC_BAR2_CONFIG_LO			0x4034
 #define  PCIE_MISC_RC_BAR2_CONFIG_LO_SIZE_MASK		0x1f
@@ -81,6 +83,7 @@
 
 #define PCIE_MISC_RC_BAR3_CONFIG_LO			0x403c
 #define  PCIE_MISC_RC_BAR3_CONFIG_LO_SIZE_MASK		0x1f
+#define PCIE_MISC_RC_BAR3_CONFIG_HI			0x4040
 
 #define PCIE_MISC_MSI_BAR_CONFIG_LO			0x4044
 #define PCIE_MISC_MSI_BAR_CONFIG_HI			0x4048
@@ -132,6 +135,10 @@
 
 #define PCIE_MISC_UBUS_TIMEOUT	0x40A8
 
+#define PCIE_MISC_UBUS_BAR1_CONFIG_REMAP	0x40ac
+#define  PCIE_MISC_UBUS_BAR1_CONFIG_REMAP_ACCESS_ENABLE_MASK	BIT(0)
+#define PCIE_MISC_UBUS_BAR1_CONFIG_REMAP_HI	0x40b0
+
 #define PCIE_MISC_UBUS_BAR2_CONFIG_REMAP	0x40b4
 #define  PCIE_MISC_UBUS_BAR2_CONFIG_REMAP_ACCESS_ENABLE_MASK	BIT(0)
 
@@ -143,6 +150,7 @@
 #define PCIE_MISC_RC_BAR10_CONFIG_LO			0x4104
 #define PCIE_MISC_RC_BAR10_CONFIG_HI			0x4108
 
+#define PCIE_MISC_UBUS_BAR_CONFIG_REMAP_ENABLE		0x1
 #define PCIE_MISC_UBUS_BAR_CONFIG_REMAP_LO_MASK		0xfffff000
 #define PCIE_MISC_UBUS_BAR_CONFIG_REMAP_HI_MASK		0xff
 #define PCIE_MISC_UBUS_BAR4_CONFIG_REMAP_LO		0x410c
@@ -726,8 +734,7 @@ static bool brcm_pcie_rc_mode_2712(struct brcm_pcie *pcie)
 	void __iomem *base = pcie->base;
 	u32 val = readl(base + PCIE_MISC_PCIE_STATUS);
 
-	pr_err("%s: %d\n", __func__, !!FIELD_GET(PCIE_MISC_PCIE_STATUS_PCIE_PORT_MASK_2712, val));
-	return 1; //XXX !!FIELD_GET(PCIE_MISC_PCIE_STATUS_PCIE_PORT_MASK_2712, val);
+	return !!FIELD_GET(PCIE_MISC_PCIE_STATUS_PCIE_PORT_MASK_2712, val) | 1; //XXX
 }
 
 static bool brcm_pcie_link_up(struct brcm_pcie *pcie)
@@ -803,7 +810,6 @@ static void brcm_pcie_bridge_sw_init_set_7278(struct brcm_pcie *pcie, u32 val)
 
 static void brcm_pcie_bridge_sw_init_set_2712(struct brcm_pcie *pcie, u32 val)
 {
-	pr_crit("%s(%d)\n", __func__, val);
 	if (WARN_ONCE(!pcie->bridge_reset,
 		      "missing bridge reset controller\n"))
 		return;
@@ -839,7 +845,6 @@ static void brcm_pcie_perst_set_2712(struct brcm_pcie *pcie, u32 val)
 {
 	u32 tmp;
 
-	pr_crit("%s(%d)\n", __func__, val);
 	/* Perst bit has moved and assert value is 0 */
 	tmp = readl(pcie->base + PCIE_MISC_PCIE_CTRL);
 	u32p_replace_bits(&tmp, !val, PCIE_MISC_PCIE_CTRL_PCIE_PERSTB_MASK);
@@ -1036,7 +1041,6 @@ static int brcm_pcie_setup(struct brcm_pcie *pcie)
 
 	tmp = readl(base + PCIE_MISC_UBUS_BAR2_CONFIG_REMAP);
 	u32p_replace_bits(&tmp, 1, PCIE_MISC_UBUS_BAR2_CONFIG_REMAP_ACCESS_ENABLE_MASK);
-	pr_crit("  write %x -> BAR2_CONFIG_REMAP\n", tmp);
 	writel(tmp, base + PCIE_MISC_UBUS_BAR2_CONFIG_REMAP);
 	tmp = readl(base + PCIE_MISC_MISC_CTRL);
 
@@ -1057,7 +1061,7 @@ static int brcm_pcie_setup(struct brcm_pcie *pcie)
 	tmp = readl(base + PCIE_MISC_UBUS_CTRL);
 	u32p_replace_bits(&tmp, 1, PCIE_MISC_UBUS_CTRL_UBUS_PCIE_REPLY_ERR_DIS_MASK);
 	u32p_replace_bits(&tmp, 1, PCIE_MISC_UBUS_CTRL_UBUS_PCIE_REPLY_DECERR_DIS_MASK);
-	pr_crit("  write %x -> MISC_UBUS_CTRL\n", tmp);
+	pr_err("  write %x -> MISC_UBUS_CTRL\n", tmp);
 	writel(tmp, base + PCIE_MISC_UBUS_CTRL);
 	writel(0xffffffff, base + PCIE_MISC_AXI_READ_ERROR_DATA);
 
@@ -1114,27 +1118,25 @@ static int brcm_pcie_setup(struct brcm_pcie *pcie)
 		if (ret)
 			break;
 
-		pr_err("  bar%d: pci %llx, size %llx -> cpu %llx\n",
-		       4 + i, bar_pci, bar_size, bar_cpu);
 		tmp = lower_32_bits(bar_pci);
 		u32p_replace_bits(&tmp, brcm_pcie_encode_ibar_size(bar_size),
 				  PCIE_MISC_RC_BAR_CONFIG_LO_SIZE_MASK);
 		writel(tmp, base + PCIE_MISC_RC_BAR4_CONFIG_LO + i * 8);
 		writel(upper_32_bits(bar_pci),
-		       base + PCIE_MISC_RC_BAR2_CONFIG_HI + i * 8);
+		       base + PCIE_MISC_RC_BAR4_CONFIG_HI + i * 8);
 
-		tmp = (upper_32_bits(bar_cpu) - upper_32_bits(bar_pci)) &
+		tmp = upper_32_bits(bar_cpu) &
 			PCIE_MISC_UBUS_BAR_CONFIG_REMAP_HI_MASK;
 		writel(tmp,
 		       base + PCIE_MISC_UBUS_BAR4_CONFIG_REMAP_HI + i * 8);
-		tmp = (lower_32_bits(bar_cpu) - lower_32_bits(bar_pci)) &
+		tmp = lower_32_bits(bar_cpu) &
 			PCIE_MISC_UBUS_BAR_CONFIG_REMAP_LO_MASK;
-		writel(tmp | 1,
+		writel(tmp | PCIE_MISC_UBUS_BAR_CONFIG_REMAP_ENABLE,
 		       base + PCIE_MISC_UBUS_BAR4_CONFIG_REMAP_LO + i * 8);
 	}
 
 	if (pcie->gen) {
-		pr_crit("  brcm_pcie_set_gen(%d)\n", pcie->gen);
+		pr_err("  brcm_pcie_set_gen(%d)\n", pcie->gen);
 		brcm_pcie_set_gen(pcie, pcie->gen);
 	}
 
@@ -1801,6 +1803,33 @@ static int brcm_pcie_probe(struct platform_device *pdev)
 			dev_err(pcie->dev, "probe of internal MSI failed");
 			goto fail;
 		}
+	} else if (pci_msi_enabled() && msi_np != pcie->np) {
+		/* Use RC_BAR1 for MIP access */
+		u64 msi_pci_addr;
+		u64 msi_phys_addr;
+
+		if (of_property_read_u64(msi_np, "brcm,msi-pci-addr", &msi_pci_addr)) {
+			pr_err("Unable to find MSI PCI address\n");
+			ret = -EINVAL;
+			goto fail;
+		}
+
+		if (of_property_read_u64(msi_np, "reg", &msi_phys_addr)) {
+			pr_err("Unable to find MSI physical address\n");
+			ret = -EINVAL;
+			goto fail;
+		}
+
+		writel(lower_32_bits(msi_pci_addr) | brcm_pcie_encode_ibar_size(0x1000),
+		       pcie->base + PCIE_MISC_RC_BAR1_CONFIG_LO);
+		writel(upper_32_bits(msi_pci_addr),
+		       pcie->base + PCIE_MISC_RC_BAR1_CONFIG_HI);
+
+		writel(lower_32_bits(msi_phys_addr) |
+		       PCIE_MISC_UBUS_BAR1_CONFIG_REMAP_ACCESS_ENABLE_MASK,
+		       pcie->base + PCIE_MISC_UBUS_BAR1_CONFIG_REMAP);
+		writel(upper_32_bits(msi_phys_addr),
+		       pcie->base + PCIE_MISC_UBUS_BAR1_CONFIG_REMAP_HI);
 	}
 
 	bridge->ops = pcie->type == BCM7425 ? &brcm7425_pcie_ops : &brcm_pcie_ops;
