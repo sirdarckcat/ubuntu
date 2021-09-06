@@ -26,6 +26,9 @@
 #define PHY_ID_AQR412	0x03a1b712
 #define PHY_ID_AQR113C	0x31c31c12
 
+#define MDIO_AN_PAUSE                  BIT(10)
+#define MDIO_AN_ASYM_PAUSE             BIT(11)
+
 #define MDIO_PHYXS_VEND_IF_STATUS		0xe812
 #define MDIO_PHYXS_VEND_IF_STATUS_TYPE_MASK	GENMASK(7, 3)
 #define MDIO_PHYXS_VEND_IF_STATUS_TYPE_KR	0
@@ -508,6 +511,16 @@ static void aqr107_chip_info(struct phy_device *phydev)
 static int aqr107_config_init(struct phy_device *phydev)
 {
 	int ret;
+
+	/* Advertize flow control */
+	linkmode_set_bit(SUPPORTED_Pause, phydev->supported);
+	linkmode_set_bit(SUPPORTED_Asym_Pause, phydev->supported);
+	linkmode_copy(phydev->advertising, phydev->supported);
+
+	/* Configure flow control */
+	ret = phy_read_mmd(phydev, MDIO_MMD_AN, 0x10);
+	ret |= MDIO_AN_PAUSE | MDIO_AN_ASYM_PAUSE;
+	phy_write_mmd(phydev, MDIO_MMD_AN, 0x10, ret);
 
 	/* Check that the PHY interface type is compatible */
 	if (phydev->interface != PHY_INTERFACE_MODE_SGMII &&
