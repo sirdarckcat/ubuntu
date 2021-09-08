@@ -2231,10 +2231,8 @@ static int vc4_hdmi_runtime_resume(struct device *dev)
 	int ret;
 
 	ret = clk_prepare_enable(vc4_hdmi->hsm_clock);
-	if (ret) {
-		clk_request_done(vc4_hdmi->hsm_req);
+	if (ret)
 		return ret;
-	}
 
 	return 0;
 }
