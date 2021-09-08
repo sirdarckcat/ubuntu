@@ -28,5 +28,4 @@ do_doc_package		= false
 do_source_package	= false
 do_dtbs			= false
 do_common_headers_indep = false
-# Temporary, till arm64 annotations can be independently set as not-enforced
-do_enforce_all		= false
+do_enforce_all		= true
