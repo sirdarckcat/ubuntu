@@ -20,7 +20,7 @@
 #include "mlxbf_gige_regs.h"
 
 #define DRV_NAME    "mlxbf_gige"
-#define DRV_VERSION 1.24
+#define DRV_VERSION 1.25
 
 /* This setting defines the version of the ACPI table
  * content that is compatible with this driver version.
