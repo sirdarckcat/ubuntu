@@ -129,6 +129,12 @@
 #define  PCIE_BMIPS_MISC_HARD_PCIE_HARD_DEBUG_SERDES_IDDQ_MASK		0x00800000
 #define  PCIE_MISC_HARD_PCIE_HARD_DEBUG_CLKREQ_L1SS_ENABLE_MASK		0x00200000
 
+#define PCIE_MISC_CTRL_1					0x40A0
+#define  PCIE_MISC_CTRL_1_OUTBOUND_TC_MASK			0xf
+#define  PCIE_MISC_CTRL_1_OUTBOUND_NO_SNOOP_MASK		BIT(3)
+#define  PCIE_MISC_CTRL_1_OUTBOUND_RO_MASK			BIT(4)
+#define  PCIE_MISC_CTRL_1_EN_VDM_QOS_CONTROL_MASK		BIT(5)
+
 #define PCIE_MISC_UBUS_CTRL	0x40a4
 #define  PCIE_MISC_UBUS_CTRL_UBUS_PCIE_REPLY_ERR_DIS_MASK	BIT(13)
 #define  PCIE_MISC_UBUS_CTRL_UBUS_PCIE_REPLY_DECERR_DIS_MASK	BIT(19)
@@ -158,6 +164,23 @@
 /* ... */
 #define PCIE_MISC_UBUS_BAR10_CONFIG_REMAP_LO		0x413c
 #define PCIE_MISC_UBUS_BAR10_CONFIG_REMAP_HI		0x4140
+
+/* AXI priority forwarding - automatic level-based */
+#define PCIE_MISC_TC(x)_QUEUE_THRESHOLD_TO_QOS_MAP	(0x4160 - (x) * 4)
+/* Defined in quarter-fullness */
+#define  QUEUE_THRESHOLD_34_TO_QOS_MAP_SHIFT		12
+#define  QUEUE_THRESHOLD_23_TO_QOS_MAP_SHIFT		8
+#define  QUEUE_THRESHOLD_12_TO_QOS_MAP_SHIFT		4
+#define  QUEUE_THRESHOLD_01_TO_QOS_MAP_SHIFT		0
+#define  QUEUE_THRESHOLD_MASK				0xf
+
+/* VDM messages indexing TCs to AXI priorities */
+/* Indexes 8-15 */
+#define PCIE_2_MISC_VDM_PRIORITY_TO_QOS_MAP_HI		0x4164
+/* Indexes 0-7 */
+#define PCIE_2_MISC_VDM_PRIORITY_TO_QOS_MAP_LO		0x4168
+#define  VDM_PRIORITY_TO_QOS_MAP_SHIFT(x)		(4 * (x))
+#define  VDM_PRIORITY_TO_QOS_MAP_MASK			0xf
 
 #define PCIE_MISC_AXI_READ_ERROR_DATA	0x4170
 
@@ -254,6 +277,11 @@ enum pcie_type {
 	BCM2712,
 };
 
+enum qos_mode {
+	VDM_INDEXED,
+	LEVEL_INDEXED,
+};
+
 struct pcie_cfg_data {
 	const int *offsets;
 	const enum pcie_type type;
@@ -304,6 +332,9 @@ struct brcm_pcie {
 	int			num_memc;
 	u64			memc_size[PCIE_BRCM_MAX_MEMC];
 	u32			hw_rev;
+	int			vdm_to_qos_map[16];
+	int			tc_queue_lvl_to_qos_map[8];
+	enum qos_mode		qos_mode;
 	void			(*perst_set)(struct brcm_pcie *pcie, u32 val);
 	void			(*bridge_sw_init_set)(struct brcm_pcie *pcie, u32 val);
 	bool			(*rc_mode)(struct brcm_pcie *pcie);
@@ -472,6 +503,37 @@ static void brcm_pcie_set_outbound_win(struct brcm_pcie *pcie,
 	u32p_replace_bits(&tmp, limit_addr_mb_high,
 			  PCIE_MISC_CPU_2_PCIE_MEM_WIN0_LIMIT_HI_LIMIT_MASK);
 	writel(tmp, pcie->base + PCIE_MEM_WIN0_LIMIT_HI(win));
+}
+
+static void brcm_pcie_set_tc_qos(struct brcm_pcie *pcie)
+{
+	int i;
+	u32 reg;
+
+	if (pcie->type != BCM2712)
+		return;
+
+	/* Bodge VDM forwarding mode */
+	pcie->qos_mode = VDM_INDEXED;
+	/* AXI QoS values for TC[0:7] normal and TC[0:7] panic */
+	/* XXX: needs putting in DT but it's a bit unwieldy */
+	for (i = 0; i < 16; i++)
+		pcie->vdm_to_qos_map[i] = i;
+
+	reg = 0;
+	for (i = 0; i < 8; i++)
+		reg |= (pcie->vdm_to_qos_map[i] << VDM_PRIORITY_TO_QOS_MAP_SHIFT(i));
+
+	writel(reg, pcie->base + PCIE_2_MISC_VDM_PRIORITY_TO_QOS_MAP_LO);
+	reg = 0;
+	for (i = 0; i < 8; i++)
+		reg |= (pcie->vdm_to_qos_map[i + 8] << VDM_PRIORITY_TO_QOS_MAP_SHIFT(i));
+
+	writel(reg, pcie->base + PCIE_2_MISC_VDM_PRIORITY_TO_QOS_MAP_HI);
+
+	reg = readl(pcie->base + PCIE_MISC_CTRL_1);
+	reg |= PCIE_MISC_CTRL_1_EN_VDM_QOS_CONTROL_MASK;
+	writel(reg, pcie->base + PCIE_MISC_CTRL_1);
 }
 
 static struct irq_chip brcm_msi_irq_chip = {
@@ -1026,6 +1088,8 @@ static int brcm_pcie_setup(struct brcm_pcie *pcie)
 	u32p_replace_bits(&tmp, 1, PCIE_MISC_MISC_CTRL_PCIE_RCB_MPS_MODE_MASK);
 	u32p_replace_bits(&tmp, 1, PCIE_MISC_MISC_CTRL_PCIE_RCB_64B_MODE_MASK);
 	writel(tmp, base + PCIE_MISC_MISC_CTRL);
+
+	brcm_pcie_set_tc_qos(pcie);
 
 	ret = brcm_pcie_get_rc_bar2_size_and_offset(pcie, &rc_bar2_size,
 						    &rc_bar2_offset);
