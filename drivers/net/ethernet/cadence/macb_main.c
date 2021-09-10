@@ -2768,6 +2768,30 @@ static void macb_configure_dma(struct macb *bp)
 	}
 }
 
+static void gem_init_axi(struct macb *bp)
+{
+	u32 amp;
+
+	/* AXI pipeline setup - don't touch values unless specified in device tree.
+	   Some hardware could have reset values > 1. */
+	amp = gem_readl(bp, AMP);
+
+	if (bp->use_aw2b_fill)
+		amp = GEM_BFINS(AW2B_FILL, bp->use_aw2b_fill, amp);
+	if (bp->aw2w_max_pipe)
+		amp = GEM_BFINS(AW2W_MAX_PIPE, bp->aw2w_max_pipe, amp);
+	if (bp->ar2r_max_pipe)
+		amp = GEM_BFINS(AR2R_MAX_PIPE, bp->ar2r_max_pipe, amp);
+
+	gem_writel(bp, AMP, amp);
+}
+
+static void gem_init_intmod(struct macb *bp)
+{
+	/* Clear interrupt moderation thresholds */
+	gem_writel(bp, INTMOD, 0);
+}
+
 static void macb_init_hw(struct macb *bp)
 {
 	u32 config;
@@ -2795,6 +2819,11 @@ static void macb_init_hw(struct macb *bp)
 	bp->rx_frm_len_mask = MACB_RX_FRMLEN_MASK;
 	if (bp->caps & MACB_CAPS_JUMBO)
 		bp->rx_frm_len_mask = MACB_RX_JFRMLEN_MASK;
+
+	if (macb_is_gem(bp)) {
+		gem_init_axi(bp);
+		gem_init_intmod(bp);
+	}
 
 	macb_configure_dma(bp);
 
@@ -3155,6 +3184,51 @@ static void gem_get_ethtool_strings(struct net_device *dev, u32 sset, u8 *p)
 		}
 		break;
 	}
+}
+
+static int gem_set_coalesce(struct net_device *dev,
+				 struct ethtool_coalesce *ec,
+			struct kernel_ethtool_coalesce *k, struct netlink_ext_ack *n)
+{
+	struct macb *bp = netdev_priv(dev);
+	unsigned int tx_throttle;
+	unsigned int rx_throttle;
+	u32 intmod = 0;
+
+	/*
+	 * GEM has simple IRQ throttling support. RX and TX interrupts
+	 * are separately moderated on 800ns quantums, with no support
+	 * for frame coalescing.
+	 */
+
+	/* Max is 255 * 0.8us = 204us. Zero implies no moderation. */
+	if (ec->rx_coalesce_usecs > 204 || ec->tx_coalesce_usecs > 204)
+		return -EINVAL;
+
+	tx_throttle = (1000 * ec->tx_coalesce_usecs) / 800;
+	rx_throttle = (1000 * ec->rx_coalesce_usecs) / 800;
+
+	intmod = GEM_BFINS(TX_MODERATION, tx_throttle, intmod);
+	intmod = GEM_BFINS(RX_MODERATION, rx_throttle, intmod);
+
+	gem_writel(bp, INTMOD, intmod);
+
+	return 0;
+}
+
+static int gem_get_coalesce(struct net_device *dev,
+				 struct ethtool_coalesce *ec,
+			struct kernel_ethtool_coalesce *k, struct netlink_ext_ack *n)
+{
+	struct macb *bp = netdev_priv(dev);
+	u32 intmod;
+
+	intmod = gem_readl(bp, INTMOD);
+
+	ec->tx_coalesce_usecs = (GEM_BFEXT(TX_MODERATION, intmod) * 800) / 1000;
+	ec->rx_coalesce_usecs = (GEM_BFEXT(RX_MODERATION, intmod) * 800) / 1000;
+
+	return 0;
 }
 
 static struct net_device_stats *macb_get_stats(struct net_device *dev)
@@ -3749,6 +3823,8 @@ static const struct ethtool_ops macb_ethtool_ops = {
 };
 
 static const struct ethtool_ops gem_ethtool_ops = {
+	.supported_coalesce_params = ETHTOOL_COALESCE_RX_USECS |
+				     ETHTOOL_COALESCE_TX_USECS,
 	.get_regs_len		= macb_get_regs_len,
 	.get_regs		= macb_get_regs,
 	.get_wol		= macb_get_wol,
@@ -3758,6 +3834,8 @@ static const struct ethtool_ops gem_ethtool_ops = {
 	.get_ethtool_stats	= gem_get_ethtool_stats,
 	.get_strings		= gem_get_ethtool_strings,
 	.get_sset_count		= gem_get_sset_count,
+	.get_coalesce		= gem_get_coalesce,
+	.set_coalesce		= gem_set_coalesce,
 	.get_link_ksettings     = macb_get_link_ksettings,
 	.set_link_ksettings     = macb_set_link_ksettings,
 	.get_ringparam		= macb_get_ringparam,
@@ -5054,6 +5132,11 @@ static int macb_probe(struct platform_device *pdev)
 			}
 		}
 	}
+
+	device_property_read_u8(&pdev->dev, "cdns,aw2w-max-pipe", &bp->aw2w_max_pipe);
+	device_property_read_u8(&pdev->dev, "cdns,ar2r-max-pipe", &bp->ar2r_max_pipe);
+	bp->use_aw2b_fill = device_property_read_bool(&pdev->dev, "cdns,use-aw2b-fill");
+
 	spin_lock_init(&bp->lock);
 
 	/* setup capabilities */
@@ -5183,6 +5266,32 @@ static int macb_remove(struct platform_device *pdev)
 	}
 
 	return 0;
+}
+
+static void macb_shutdown(struct platform_device *pdev)
+{
+	struct net_device *dev;
+	struct macb *bp;
+	unsigned long flags;
+	unsigned int q;
+	struct macb_queue *queue;
+
+	dev = platform_get_drvdata(pdev);
+	bp = netdev_priv(dev);
+
+	netif_device_detach(dev);
+	for (q = 0, queue = bp->queues; q < bp->num_queues; ++q, ++queue) {
+		napi_disable(&queue->napi_rx);
+		napi_disable(&queue->napi_tx);
+	}
+
+	/* Dont' care about WOL because we are shutting down */
+	rtnl_lock();
+	phylink_stop(bp->phylink);
+	rtnl_unlock();
+	spin_lock_irqsave(&bp->lock, flags);
+	macb_reset_hw(bp);
+	spin_unlock_irqrestore(&bp->lock, flags);
 }
 
 static int __maybe_unused macb_suspend(struct device *dev)
@@ -5399,6 +5508,7 @@ static const struct dev_pm_ops macb_pm_ops = {
 static struct platform_driver macb_driver = {
 	.probe		= macb_probe,
 	.remove		= macb_remove,
+	.shutdown	= macb_shutdown,
 	.driver		= {
 		.name		= "macb",
 		.of_match_table	= of_match_ptr(macb_dt_ids),
