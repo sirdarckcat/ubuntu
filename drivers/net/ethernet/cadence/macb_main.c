@@ -1640,6 +1640,11 @@ static int macb_rx(struct macb_queue *queue, struct napi_struct *napi,
 
 		macb_init_rx_ring(queue);
 		queue_writel(queue, RBQP, queue->rx_ring_dma);
+#ifdef CONFIG_ARCH_DMA_ADDR_T_64BIT
+		if (bp->hw_dma_cap & HW_DMA_CAP_64B)
+			macb_writel(bp, RBQPH,
+				    upper_32_bits(queue->rx_ring_dma));
+#endif
 
 		macb_writel(bp, NCR, ctrl | MACB_BIT(RE));
 
@@ -2772,8 +2777,9 @@ static void gem_init_axi(struct macb *bp)
 {
 	u32 amp;
 
-	/* AXI pipeline setup - don't touch values unless specified in device tree.
-	   Some hardware could have reset values > 1. */
+	/* AXI pipeline setup - don't touch values unless specified in device
+	 * tree. Some hardware could have reset values > 1.
+	 */
 	amp = gem_readl(bp, AMP);
 
 	if (bp->use_aw2b_fill)
@@ -3187,16 +3193,16 @@ static void gem_get_ethtool_strings(struct net_device *dev, u32 sset, u8 *p)
 }
 
 static int gem_set_coalesce(struct net_device *dev,
-				 struct ethtool_coalesce *ec,
-			struct kernel_ethtool_coalesce *k, struct netlink_ext_ack *n)
+			    struct ethtool_coalesce *ec,
+			    struct kernel_ethtool_coalesce *kernel_coal,
+			    struct netlink_ext_ack *extack)
 {
 	struct macb *bp = netdev_priv(dev);
 	unsigned int tx_throttle;
 	unsigned int rx_throttle;
 	u32 intmod = 0;
 
-	/*
-	 * GEM has simple IRQ throttling support. RX and TX interrupts
+	/* GEM has simple IRQ throttling support. RX and TX interrupts
 	 * are separately moderated on 800ns quantums, with no support
 	 * for frame coalescing.
 	 */
@@ -3217,8 +3223,9 @@ static int gem_set_coalesce(struct net_device *dev,
 }
 
 static int gem_get_coalesce(struct net_device *dev,
-				 struct ethtool_coalesce *ec,
-			struct kernel_ethtool_coalesce *k, struct netlink_ext_ack *n)
+			    struct ethtool_coalesce *ec,
+			    struct kernel_ethtool_coalesce *kernel_coal,
+			    struct netlink_ext_ack *extack)
 {
 	struct macb *bp = netdev_priv(dev);
 	u32 intmod;

@@ -350,11 +350,11 @@
 #define GEM_ADDR64_SIZE		1
 
 /* Bitfields in AMP */
-#define GEM_AR2R_MAX_PIPE_OFFSET 	0  /* Maximum number of outstanding AXI read requests */
-#define GEM_AR2R_MAX_PIPE_SIZE 		8
-#define GEM_AW2W_MAX_PIPE_OFFSET 	8  /* Maximum number of outstanding AXI write requests */
-#define GEM_AW2W_MAX_PIPE_SIZE 		8
-#define GEM_AW2B_FILL_OFFSET 		16 /* Select wether the max AW2W transactions operates between: */
+#define GEM_AR2R_MAX_PIPE_OFFSET	0  /* Maximum number of outstanding AXI read requests */
+#define GEM_AR2R_MAX_PIPE_SIZE		8
+#define GEM_AW2W_MAX_PIPE_OFFSET	8  /* Maximum number of outstanding AXI write requests */
+#define GEM_AW2W_MAX_PIPE_SIZE		8
+#define GEM_AW2B_FILL_OFFSET		16 /* Select wether the max AW2W transactions operates between: */
 #define GEM_AW2B_FILL_AW2W		0  /*   0: the AW to W AXI channel */
 #define GEM_AW2B_FILL_AW2B		1  /*   1: AW to B channel */
 #define GEM_AW2B_FILL_SIZE              1
