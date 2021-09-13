@@ -65,12 +65,18 @@ int dwc3_host_init(struct dwc3 *dwc)
 	struct platform_device	*xhci;
 	int			ret, irq;
 	int			prop_idx = 0;
+	int			id;
 
 	irq = dwc3_host_get_irq(dwc);
 	if (irq < 0)
 		return irq;
 
-	xhci = platform_device_alloc("xhci-hcd", PLATFORM_DEVID_AUTO);
+	id = of_alias_get_id(dwc->dev->of_node, "usb");
+	if (id >= 0)
+		xhci = platform_device_alloc("xhci-hcd", id);
+	else
+		xhci = platform_device_alloc("xhci-hcd", PLATFORM_DEVID_AUTO);
+
 	if (!xhci) {
 		dev_err(dwc->dev, "couldn't allocate xHCI device\n");
 		return -ENOMEM;
