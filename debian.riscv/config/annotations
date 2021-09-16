@@ -2607,7 +2607,7 @@ CONFIG_RFD_FTL                                  policy<{'riscv64': 'm'}>
 CONFIG_SSFDC                                    policy<{'riscv64': 'm'}>
 CONFIG_SM_FTL                                   policy<{'riscv64': 'm'}>
 CONFIG_MTD_OOPS                                 policy<{'riscv64': 'm'}>
-CONFIG_MTD_PSTORE                               policy<{'riscv64': 'm'}>
+CONFIG_MTD_PSTORE                               policy<{'riscv64': '-'}>
 CONFIG_MTD_SWAP                                 policy<{'riscv64': 'm'}>
 CONFIG_MTD_PARTITIONED_MASTER                   policy<{'riscv64': 'n'}>
 CONFIG_MTD_NAND_ECC_SW_HAMMING_SMC              policy<{'riscv64': 'n'}>
@@ -5113,8 +5113,8 @@ CONFIG_REMOTEPROC                               policy<{'riscv64': 'n'}>
 
 # Menu: Device Drivers >> Reset Controller Support
 CONFIG_RESET_CONTROLLER                         policy<{'riscv64': 'y'}>
-CONFIG_RESET_BRCMSTB_RESCAL                     policy<{'riscv64': 'y'}>
-CONFIG_RESET_INTEL_GW                           policy<{'riscv64': 'y'}>
+CONFIG_RESET_BRCMSTB_RESCAL                     policy<{'riscv64': '-'}>
+CONFIG_RESET_INTEL_GW                           policy<{'riscv64': '-'}>
 CONFIG_RESET_TI_SYSCON                          policy<{'riscv64': 'm'}>
 
 # Menu: Device Drivers >> Rpmsg drivers
@@ -7110,10 +7110,10 @@ CONFIG_PSTORE_FTRACE                            policy<{'riscv64': 'n'}>
 CONFIG_PSTORE_RAM                               policy<{'riscv64': 'm'}>
 
 # Menu: File systems >> Miscellaneous filesystems >> Persistent store support >> Log panic/oops to a block device
-CONFIG_PSTORE_BLK                               policy<{'riscv64': 'm'}>
-CONFIG_PSTORE_BLK_BLKDEV                        policy<{'riscv64': '""'}>
-CONFIG_PSTORE_BLK_KMSG_SIZE                     policy<{'riscv64': '64'}>
-CONFIG_PSTORE_BLK_MAX_REASON                    policy<{'riscv64': '2'}>
+CONFIG_PSTORE_BLK                               policy<{'riscv64': '-'}>
+CONFIG_PSTORE_BLK_BLKDEV                        policy<{'riscv64': '-'}>
+CONFIG_PSTORE_BLK_KMSG_SIZE                     policy<{'riscv64': '-'}>
+CONFIG_PSTORE_BLK_MAX_REASON                    policy<{'riscv64': '-'}>
 
 # Menu: File systems >> Miscellaneous filesystems >> RomFS backing stores
 CONFIG_ROMFS_BACKED_BY_BLOCK                    policy<{'riscv64': 'y'}>
