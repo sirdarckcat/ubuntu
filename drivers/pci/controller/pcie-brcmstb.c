@@ -49,6 +49,15 @@
 #define PCIE_RC_CFG_PRIV1_LINK_CAPABILITY			0x04dc
 #define  PCIE_RC_CFG_PRIV1_LINK_CAPABILITY_ASPM_SUPPORT_MASK	0xc00
 
+#define PCIE_RC_TL_VDM_CTL0				0x0a20
+#define  PCIE_RC_TL_VDM_CTL0_VDM_ENABLED_MASK		0x10000
+#define  PCIE_RC_TL_VDM_CTL0_VDM_IGNORETAG_MASK		0x20000
+#define  PCIE_RC_TL_VDM_CTL0_VDM_IGNOREVNDRID_MASK	0x40000
+
+#define PCIE_RC_TL_VDM_CTL1				0x0a0c
+#define  PCIE_RC_TL_VDM_CTL1_VDM_VNDRID0_MASK		0x0000ffff
+#define  PCIE_RC_TL_VDM_CTL1_VDM_VNDRID1_MASK		0xffff0000
+
 #define PCIE_RC_DL_MDIO_ADDR				0x1100
 #define PCIE_RC_DL_MDIO_WR_DATA				0x1104
 #define PCIE_RC_DL_MDIO_RD_DATA				0x1108
@@ -534,6 +543,14 @@ static void brcm_pcie_set_tc_qos(struct brcm_pcie *pcie)
 	reg = readl(pcie->base + PCIE_MISC_CTRL_1);
 	reg |= PCIE_MISC_CTRL_1_EN_VDM_QOS_CONTROL_MASK;
 	writel(reg, pcie->base + PCIE_MISC_CTRL_1);
+	/* Match Vendor ID of 0 */
+	writel(0, pcie->base + PCIE_RC_TL_VDM_CTL1);
+	/* Forward VDMs to priority interface */
+	reg = readl(pcie->base + PCIE_RC_TL_VDM_CTL0);
+	reg |= PCIE_RC_TL_VDM_CTL0_VDM_ENABLED_MASK |
+		PCIE_RC_TL_VDM_CTL0_VDM_IGNORETAG_MASK |
+		PCIE_RC_TL_VDM_CTL0_VDM_IGNOREVNDRID_MASK ;
+	writel(reg, pcie->base + PCIE_RC_TL_VDM_CTL0);
 }
 
 static struct irq_chip brcm_msi_irq_chip = {
