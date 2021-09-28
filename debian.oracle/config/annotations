@@ -4,6 +4,10 @@
 
 include "../../debian.master/config/annotations"
 
+CONFIG_ACCESSIBILITY                              policy<{'amd64': 'n', 'arm64': 'n'}>
+CONFIG_SPEAKUP                                    policy<{'amd64': '-', 'arm64': '-'}>
+                                                  note<LP: #1942459 diverging from master>
+
 CONFIG_SND_SOC_INTEL_USER_FRIENDLY_LONG_NAMES   policy<{'amd64': 'n'}>
 CONFIG_SND_SOC_INTEL_USER_FRIENDLY_LONG_NAMES   mark<ENFORCED> note<LP:1921632>
 
