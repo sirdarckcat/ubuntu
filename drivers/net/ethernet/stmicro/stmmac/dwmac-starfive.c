@@ -17,6 +17,10 @@
 #define STARFIVE_DWMAC_PHY_INFT_RMII	0x4
 #define STARFIVE_DWMAC_PHY_INFT_FIELD	0x7U
 
+#define JH7100_SYSMAIN_REGISTER28 0x70
+/* The value below is not a typo, just really bad naming by StarFive ¯\_(ツ)_/¯ */
+#define JH7100_SYSMAIN_REGISTER49 0xc8
+
 struct starfive_dwmac {
 	struct device *dev;
 	struct clk *clk_tx;
@@ -54,6 +58,8 @@ static int starfive_dwmac_set_mode(struct plat_stmmacenet_data *plat_dat)
 	struct regmap *regmap;
 	unsigned int args[2];
 	unsigned int mode;
+	u32 gtxclk_dlychain;
+	int err;
 
 	switch (plat_dat->interface) {
 	case PHY_INTERFACE_MODE_RMII:
@@ -62,6 +68,7 @@ static int starfive_dwmac_set_mode(struct plat_stmmacenet_data *plat_dat)
 
 	case PHY_INTERFACE_MODE_RGMII:
 	case PHY_INTERFACE_MODE_RGMII_ID:
+	case PHY_INTERFACE_MODE_RGMII_TXID:
 		mode = STARFIVE_DWMAC_PHY_INFT_RGMII;
 		break;
 
@@ -80,9 +87,19 @@ static int starfive_dwmac_set_mode(struct plat_stmmacenet_data *plat_dat)
 	}
 
 	/* args[0]:offset  args[1]: shift */
-	return regmap_update_bits(regmap, args[0],
-				  STARFIVE_DWMAC_PHY_INFT_FIELD << args[1],
-				  mode << args[1]);
+	err = regmap_update_bits(regmap, args[0],
+				 STARFIVE_DWMAC_PHY_INFT_FIELD << args[1],
+				 mode << args[1]);
+	if (err)
+		return dev_err_probe(dwmac->dev, err, "error setting phy mode\n");
+
+	if (!of_property_read_u32(dwmac->dev->of_node, "starfive,gtxclk-dlychain", &gtxclk_dlychain)) {
+		err = regmap_write(regmap, JH7100_SYSMAIN_REGISTER49, gtxclk_dlychain);
+		if (err)
+			return dev_err_probe(dwmac->dev, err, "error selecting gtxclk delay chain\n");
+	}
+
+	return 0;
 }
 
 static int starfive_dwmac_probe(struct platform_device *pdev)
@@ -146,6 +163,7 @@ static int starfive_dwmac_probe(struct platform_device *pdev)
 }
 
 static const struct of_device_id starfive_dwmac_match[] = {
+	{ .compatible = "starfive,jh7100-dwmac"	},
 	{ .compatible = "starfive,jh7110-dwmac"	},
 	{ /* sentinel */ }
 };
