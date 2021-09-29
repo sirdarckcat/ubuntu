@@ -5,6 +5,7 @@
 [ ! -L 'debian.raspi/control.d/raspi-nolpae.inclusion-list' ] && ln -sf 'raspi.inclusion-list' 'debian.raspi/control.d/raspi-nolpae.inclusion-list'
 # Remove any files deleted from the orig.
 rm -f 'arch/arm/boot/dts/bcm283x-rpi-usb-peripheral.dtsi'
+rm -f 'arch/parisc/lib/string.S'
 chmod +x 'arch/arm/boot/dts/overlays/anyspi-overlay.dts'
 chmod +x 'arch/arm/boot/dts/overlays/gpio-led-overlay.dts'
 chmod +x 'arch/arm/boot/dts/overlays/gpio-no-bank0-irq-overlay.dts'
@@ -60,5 +61,6 @@ chmod +x 'debian/templates/image.prerm.in'
 chmod +x 'debian/tests-build/check-aliases'
 chmod +x 'debian/tests/rebuild'
 chmod +x 'debian/tests/ubuntu-regression-suite'
+chmod +x 'update-dkms-versions'
 chmod +x 'update-version-dkms'
 exit 0
