@@ -4,6 +4,10 @@
 
 include "../../debian.master/config/annotations"
 
+CONFIG_ACCESSIBILITY                              policy<{'amd64': 'n', 'arm64': 'n'}>
+CONFIG_SPEAKUP                                    policy<{'amd64': '-', 'arm64': '-'}>
+                                                  note<LP: #1942459 diverging from master>
+
 CONFIG_SND_SOC_INTEL_USER_FRIENDLY_LONG_NAMES   policy<{'amd64': 'n'}>
 CONFIG_SND_SOC_INTEL_USER_FRIENDLY_LONG_NAMES   mark<ENFORCED> note<LP:1921632>
 
@@ -51,6 +55,10 @@ CONFIG_ASHMEM                                     policy<{'amd64': 'm', 'arm64':
 CONFIG_ASHMEM                                     mark<ENFORCED> note<needed for Anbox - LP #1928686>
 CONFIG_ARM_SMMU_DISABLE_BYPASS_BY_DEFAULT         policy<{'arm64': '-'}>
 CONFIG_ARM_SMMU_DISABLE_BYPASS_BY_DEFAULT         mark<ENFORCED> note<not selectable for linux-oracle>
+CONFIG_SERIAL_AMBA_PL011                          policy<{'arm64':'y'}>
+CONFIG_SERIAL_AMBA_PL011                          mark<ENFORCED> note<needed for serial support in VMs>
+CONFIG_SERIAL_AMBA_PL011_CONSOLE                  policy<{'arm64':'y'}>
+CONFIG_SERIAL_AMBA_PL011_CONSOLE                  mark<ENFORCED> note<needed for serial support in VMs>
 
 # Menu: Security options
 CONFIG_SECURITY_DMESG_RESTRICT                  policy<{'amd64': 'n', 'arm64': 'n', 'armhf': 'n', 'ppc64el': 'n', 's390x': 'n'}>
