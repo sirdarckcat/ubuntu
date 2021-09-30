@@ -194,6 +194,8 @@ enum nla_policy_validation {
 	NLA_VALIDATE_RANGE,
 	NLA_VALIDATE_MIN,
 	NLA_VALIDATE_MAX,
+	NLA_VALIDATE_MASK,
+	NLA_VALIDATE_RANGE_PTR,
 	NLA_VALIDATE_FUNCTION,
 };
 
@@ -294,6 +296,7 @@ struct nla_policy {
 	u16		len;
 	union {
 		const void *validation_data;
+		const u32 mask;
 		struct {
 			s16 min, max;
 		};
@@ -337,12 +340,19 @@ struct nla_policy {
 #define NLA_POLICY_NESTED_ARRAY(policy) \
 	_NLA_POLICY_NESTED_ARRAY(ARRAY_SIZE(policy) - 1, policy)
 
+#define __NLA_IS_UINT_TYPE(tp)						\
+	(tp == NLA_U8 || tp == NLA_U16 || tp == NLA_U32 || tp == NLA_U64)
+#define __NLA_IS_SINT_TYPE(tp)						\
+	(tp == NLA_S8 || tp == NLA_S16 || tp == NLA_S32 || tp == NLA_S64)
+
 #define __NLA_ENSURE(condition) BUILD_BUG_ON_ZERO(!(condition))
 #define NLA_ENSURE_INT_TYPE(tp)				\
 	(__NLA_ENSURE(tp == NLA_S8 || tp == NLA_U8 ||	\
 		      tp == NLA_S16 || tp == NLA_U16 ||	\
 		      tp == NLA_S32 || tp == NLA_U32 ||	\
 		      tp == NLA_S64 || tp == NLA_U64) + tp)
+#define NLA_ENSURE_UINT_TYPE(tp)			\
+	(__NLA_ENSURE(__NLA_IS_UINT_TYPE(tp)) + tp)
 #define NLA_ENSURE_NO_VALIDATION_PTR(tp)		\
 	(__NLA_ENSURE(tp != NLA_BITFIELD32 &&		\
 		      tp != NLA_REJECT &&		\
@@ -366,6 +376,12 @@ struct nla_policy {
 	.type = NLA_ENSURE_INT_TYPE(tp),		\
 	.validation_type = NLA_VALIDATE_MAX,		\
 	.max = _max,					\
+}
+
+#define NLA_POLICY_MASK(tp, _mask) {			\
+	.type = NLA_ENSURE_UINT_TYPE(tp),		\
+	.validation_type = NLA_VALIDATE_MASK,		\
+	.mask = _mask,					\
 }
 
 #define NLA_POLICY_VALIDATE_FN(tp, fn, ...) {		\
