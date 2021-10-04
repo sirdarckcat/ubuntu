@@ -1348,6 +1348,9 @@ static void arm_smmu_tlb_add_walk(void *cookie, void *virt, unsigned long iova, 
 static const struct qcom_iommu_pgtable_ops arm_smmu_pgtable_ops = {
 	.alloc = arm_smmu_alloc_pgtable,
 	.free = arm_smmu_free_pgtable,
+};
+
+static const struct qcom_iommu_flush_ops arm_smmu_iotlb_ops = {
 	.tlb_add_walk = arm_smmu_tlb_add_walk,
 };
 
@@ -1522,6 +1525,7 @@ static int arm_smmu_init_domain_context(struct iommu_domain *domain,
 		cfg->asid = cfg->cbndx;
 
 	pgtbl_info.iommu_pgtbl_ops = &arm_smmu_pgtable_ops;
+	pgtbl_info.iommu_tlb_ops = &arm_smmu_iotlb_ops;
 	pgtbl_info.cfg = (struct io_pgtable_cfg) {
 		.pgsize_bitmap	= smmu->pgsize_bitmap,
 		.ias		= ias,
