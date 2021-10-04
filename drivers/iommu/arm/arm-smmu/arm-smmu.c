@@ -50,6 +50,7 @@
 #include "arm-smmu.h"
 #include "../../qcom-dma-iommu-generic.h"
 #include "../../qcom-io-pgtable.h"
+#include "../../qcom-io-pgtable-alloc.h"
 #include <linux/qcom-iommu-util.h>
 
 #define CREATE_TRACE_POINTS
@@ -2377,7 +2378,7 @@ static void __arm_smmu_iotlb_sync(struct iommu_domain *domain,
 	while (freelist) {
 		page = freelist;
 		freelist = page->freelist;
-		arm_smmu_free_pgtable(smmu_domain, page_address(page), 0);
+		qcom_io_pgtable_free_page(page);
 	}
 }
 
