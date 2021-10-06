@@ -210,6 +210,7 @@ void psample_group_put(struct psample_group *group)
 }
 EXPORT_SYMBOL_GPL(psample_group_put);
 
+#ifdef CONFIG_INET
 static int __psample_ip_tun_to_nlattr(struct sk_buff *skb,
 			      struct ip_tunnel_info *tun_info)
 {
@@ -353,12 +354,15 @@ static int psample_tunnel_meta_len(struct ip_tunnel_info *tun_info)
 
 	return sum;
 }
+#endif
 
 void psample_sample_packet(struct psample_group *group, struct sk_buff *skb,
 			   u32 trunc_size, int in_ifindex, int out_ifindex,
 			   u32 sample_rate)
 {
+#ifdef CONFIG_INET
 	struct ip_tunnel_info *tun_info;
+#endif
 	struct sk_buff *nl_skb;
 	int data_len;
 	int meta_len;
@@ -372,9 +376,11 @@ void psample_sample_packet(struct psample_group *group, struct sk_buff *skb,
 		   nla_total_size(sizeof(u32)) +	/* group_num */
 		   nla_total_size(sizeof(u32));		/* seq */
 
+#ifdef CONFIG_INET
 	tun_info = skb_tunnel_info(skb);
 	if (tun_info)
 		meta_len += psample_tunnel_meta_len(tun_info);
+#endif
 
 	data_len = min(skb->len, trunc_size);
 	if (meta_len + nla_total_size(data_len) > PSAMPLE_MAX_PACKET_SIZE)
@@ -430,11 +436,13 @@ void psample_sample_packet(struct psample_group *group, struct sk_buff *skb,
 			goto error;
 	}
 
+#ifdef CONFIG_INET
 	if (tun_info) {
 		ret = psample_ip_tun_to_nlattr(nl_skb, tun_info);
 		if (unlikely(ret < 0))
 			goto error;
 	}
+#endif
 
 	genlmsg_end(nl_skb, data);
 	genlmsg_multicast_netns(&psample_nl_family, group->net, nl_skb, 0,
