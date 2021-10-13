@@ -557,6 +557,44 @@ static void brcm_pcie_set_tc_qos(struct brcm_pcie *pcie)
 	writel(reg, pcie->base + PCIE_RC_TL_VDM_CTL0);
 }
 
+static void brcm_pcie_config_clkreq(struct brcm_pcie *pcie)
+{
+	void __iomem *base = pcie->base;
+	struct pci_host_bridge *bridge = pci_host_bridge_from_priv(pcie);
+	int domain = pci_domain_nr(bridge->bus);
+	const struct pci_bus *bus = pci_find_bus(domain, 1);
+	struct pci_dev *pdev = (struct pci_dev *)bus->devices.next;
+	u32 tmp, link_cap = 0;
+	u16 link_ctl = 0;
+	int clkpm = 0;
+	int substates = 0;
+
+	pcie_capability_read_dword(pdev, PCI_EXP_LNKCAP, &link_cap);
+	if ((link_cap & PCI_EXP_LNKCAP_CLKPM))
+		clkpm = 1;
+
+	pcie_capability_read_word(pdev, PCI_EXP_LNKCTL, &link_ctl);
+	if (!(link_ctl & PCI_EXP_LNKCTL_CLKREQ_EN))
+		clkpm = 0;
+
+	if (pcie->l1ss && pci_find_ext_capability(pdev, PCI_EXT_CAP_ID_L1SS))
+		substates = 1;
+
+	tmp = readl(base + PCIE_MISC_HARD_PCIE_HARD_DEBUG);
+	tmp &= ~PCIE_MISC_HARD_PCIE_HARD_DEBUG_CLKREQ_DEBUG_ENABLE_MASK;
+	tmp &= ~PCIE_MISC_HARD_PCIE_HARD_DEBUG_CLKREQ_L1SS_ENABLE_MASK;
+
+	if (substates)
+		tmp |= PCIE_MISC_HARD_PCIE_HARD_DEBUG_CLKREQ_L1SS_ENABLE_MASK;
+	else if (clkpm)
+		tmp |= PCIE_MISC_HARD_PCIE_HARD_DEBUG_CLKREQ_DEBUG_ENABLE_MASK;
+
+	writel(tmp, base + PCIE_MISC_HARD_PCIE_HARD_DEBUG);
+
+	if (substates || clkpm)
+		dev_info(pcie->dev, "clkreq control enabled\n");
+}
+
 static struct irq_chip brcm_msi_irq_chip = {
 	.name            = "BRCM STB PCIe MSI",
 	.irq_ack         = irq_chip_ack_parent,
@@ -1332,28 +1370,6 @@ static int brcm_pcie_start_link(struct brcm_pcie *pcie)
 		 pci_speed_string(pcie_link_speed[cls]), nlw,
 		 ssc_good ? "(SSC)" : "(!SSC)");
 
-	tmp = readl(base + PCIE_MISC_HARD_PCIE_HARD_DEBUG);
-	if (pcie->l1ss) {
-		/*
-		 * Enable CLKREQ# signalling include L1 Substate control of
-		 * the CLKREQ# signal and the external reference clock buffer.
-		 * meet requirement for Endpoints that require CLKREQ#
-		 * assertion to clock active within 400ns.
-		 */
-		tmp &= ~PCIE_MISC_HARD_PCIE_HARD_DEBUG_CLKREQ_DEBUG_ENABLE_MASK;
-		tmp |= PCIE_MISC_HARD_PCIE_HARD_DEBUG_CLKREQ_L1SS_ENABLE_MASK;
-	} else {
-		/*
-		 * Refclk from RC should be gated with CLKREQ# input when
-		 * ASPM L0s,L1 is enabled => setting the CLKREQ_DEBUG_ENABLE
-		 * field to 1.
-		 */
-		tmp &= ~PCIE_MISC_HARD_PCIE_HARD_DEBUG_CLKREQ_L1SS_ENABLE_MASK;
-		tmp |= PCIE_MISC_HARD_PCIE_HARD_DEBUG_CLKREQ_DEBUG_ENABLE_MASK;
-	}
-	// XXX: this turns off refclk for some reason
-	//writel(tmp, base + PCIE_MISC_HARD_PCIE_HARD_DEBUG);
-
 	return 0;
 }
 
@@ -1939,6 +1955,8 @@ static int brcm_pcie_probe(struct platform_device *pdev)
 		brcm_pcie_remove(pdev);
 		return ret;
 	}
+
+	brcm_pcie_config_clkreq(pcie);
 
 	return 0;
 
