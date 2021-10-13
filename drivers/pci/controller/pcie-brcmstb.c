@@ -62,6 +62,10 @@
 #define PCIE_RC_DL_MDIO_WR_DATA				0x1104
 #define PCIE_RC_DL_MDIO_RD_DATA				0x1108
 
+#define PCIE_RC_PL_PHY_CTL_15				0x184c
+#define  PCIE_RC_PL_PHY_CTL_15_DIS_PLL_PD_MASK		0x400000
+#define  PCIE_RC_PL_PHY_CTL_15_PM_CLK_PERIOD_MASK	0xff
+
 #define PCIE_MISC_MISC_CTRL				0x4008
 #define  PCIE_MISC_MISC_CTRL_PCIE_RCB_64B_MODE_MASK	0x80
 #define  PCIE_MISC_MISC_CTRL_PCIE_RCB_MPS_MODE_MASK	0x400
@@ -1077,6 +1081,16 @@ static int brcm_pcie_setup(struct brcm_pcie *pcie)
 	writel(tmp, base + PCIE_MISC_HARD_PCIE_HARD_DEBUG);
 	/* Wait for SerDes to be stable */
 	usleep_range(100, 200);
+
+	/* Fix for L1SS errata - PM clock adjust and don't disable PLL in L1.2 */
+	if (pcie->type == BCM2712) {
+		tmp = readl(base + PCIE_RC_PL_PHY_CTL_15);
+		tmp &= ~PCIE_RC_PL_PHY_CTL_15_PM_CLK_PERIOD_MASK;
+		/* PM clock period is 18.52ns (round down) */
+		tmp |= 0x12;
+		tmp |= PCIE_RC_PL_PHY_CTL_15_DIS_PLL_PD_MASK;
+		writel(tmp, base + PCIE_RC_PL_PHY_CTL_15);
+	}
 
 	/*
 	 * SCB_MAX_BURST_SIZE is a two bit field.  For GENERIC chips it
