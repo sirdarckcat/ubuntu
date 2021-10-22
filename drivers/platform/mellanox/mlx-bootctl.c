@@ -25,7 +25,7 @@
 #include "mlx-bootctl.h"
 
 #define DRIVER_NAME		"mlx-bootctl"
-#define DRIVER_VERSION		"1.4"
+#define DRIVER_VERSION		"1.5"
 #define DRIVER_DESCRIPTION	"Mellanox boot control driver"
 
 #define SB_MODE_SECURE_MASK	0x03
@@ -99,6 +99,7 @@ enum {
 	MLNX_MFG_TYPE_UUID_2,
 	MLNX_MFG_TYPE_UUID_3,
 	MLNX_MFG_TYPE_UUID_4,
+	MLNX_MFG_TYPE_REV,
 };
 
 /* This mutex is used to serialize MFG write and lock operations. */
@@ -110,6 +111,7 @@ static DEFINE_MUTEX(mfg_ops_lock);
 #define MLNX_MFG_MODL_VAL_LEN        24
 #define MLNX_MFG_SN_VAL_LEN          24
 #define MLNX_MFG_UUID_VAL_LEN        40
+#define MLNX_MFG_REV_VAL_LEN         8
 #define MLNX_MFG_VAL_QWORD_CNT(type) \
 	(MLNX_MFG_##type##_VAL_LEN / sizeof(u64))
 
@@ -636,6 +638,57 @@ static ssize_t uuid_store(struct device_driver *drv, const char *buf,
 	return count;
 }
 
+static ssize_t rev_show(struct device_driver *drv, char *buf)
+{
+	u64 rev_data[MLNX_MFG_VAL_QWORD_CNT(REV)] = { 0 };
+	char rev[MLNX_MFG_REV_VAL_LEN + 1] = { 0 };
+	struct arm_smccc_res res;
+	int word;
+
+	mutex_lock(&mfg_ops_lock);
+	for (word = 0; word < MLNX_MFG_VAL_QWORD_CNT(REV); word++) {
+		arm_smccc_smc(MLNX_HANDLE_GET_MFG_INFO,
+			      MLNX_MFG_TYPE_REV + word,
+			      0, 0, 0, 0, 0, 0, &res);
+		if (res.a0) {
+			mutex_unlock(&mfg_ops_lock);
+			return -EPERM;
+		}
+		rev_data[word] = res.a1;
+	}
+	mutex_unlock(&mfg_ops_lock);
+	memcpy(rev, rev_data, MLNX_MFG_REV_VAL_LEN);
+
+	return snprintf(buf, PAGE_SIZE, "%s", rev);
+}
+
+static ssize_t rev_store(struct device_driver *drv, const char *buf,
+			 size_t count)
+{
+	u64 rev[MLNX_MFG_VAL_QWORD_CNT(REV)] = { 0 };
+	struct arm_smccc_res res;
+	int word;
+
+	if (count > MLNX_MFG_REV_VAL_LEN)
+		return -EINVAL;
+
+	memcpy(rev, buf, count);
+
+	mutex_lock(&mfg_ops_lock);
+	for (word = 0; word < MLNX_MFG_VAL_QWORD_CNT(REV); word++) {
+		arm_smccc_smc(MLNX_HANDLE_SET_MFG_INFO,
+			      MLNX_MFG_TYPE_REV + word,
+			      sizeof(u64), rev[word], 0, 0, 0, 0, &res);
+		if (res.a0) {
+			mutex_unlock(&mfg_ops_lock);
+			return -EPERM;
+		}
+	}
+	mutex_unlock(&mfg_ops_lock);
+
+	return count;
+}
+
 static ssize_t mfg_lock_store(struct device_driver *drv, const char *buf,
 			      size_t count)
 {
@@ -1114,6 +1167,7 @@ static DRIVER_ATTR_RW(sku);
 static DRIVER_ATTR_RW(modl);
 static DRIVER_ATTR_RW(sn);
 static DRIVER_ATTR_RW(uuid);
+static DRIVER_ATTR_RW(rev);
 static DRIVER_ATTR_WO(mfg_lock);
 static DRIVER_ATTR_RW(rsh_log);
 
@@ -1130,6 +1184,7 @@ static struct attribute *mbc_dev_attrs[] = {
 	&driver_attr_modl.attr,
 	&driver_attr_sn.attr,
 	&driver_attr_uuid.attr,
+	&driver_attr_rev.attr,
 	&driver_attr_mfg_lock.attr,
 	&driver_attr_rsh_log.attr,
 	NULL
