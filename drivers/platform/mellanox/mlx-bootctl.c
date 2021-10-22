@@ -30,6 +30,7 @@
 
 #define SB_MODE_SECURE_MASK	0x03
 #define SB_MODE_TEST_MASK	0x0c
+#define SB_MODE_DEV_MASK	0x10
 
 #define SB_KEY_NUM		4
 
@@ -47,11 +48,18 @@ static struct boot_name boot_names[] = {
 	{ -1,				""		}
 };
 
+enum {
+	SB_LIFECYCLE_PRODUCTION = 0,
+	SB_LIFECYCLE_GA_SECURE = 1,
+	SB_LIFECYCLE_GA_NON_SECURE = 2,
+	SB_LIFECYCLE_RMA = 3
+};
+
 static char lifecycle_states[][16] = {
-	[0] = "Production",
-	[1] = "GA Secured",
-	[2] = "GA Non-Secured",
-	[3] = "RMA",
+	[SB_LIFECYCLE_PRODUCTION] = "Production",
+	[SB_LIFECYCLE_GA_SECURE] = "GA Secured",
+	[SB_LIFECYCLE_GA_NON_SECURE] = "GA Non-Secured",
+	[SB_LIFECYCLE_RMA] = "RMA",
 };
 
 /* ctl/data register within the resource. */
@@ -225,7 +233,10 @@ static ssize_t lifecycle_state_show(struct device_driver *drv,
 	if (lc_state < 0)
 		return -EINVAL;
 
-	lc_state &= (SB_MODE_TEST_MASK | SB_MODE_SECURE_MASK);
+	lc_state &= (SB_MODE_TEST_MASK |
+		     SB_MODE_SECURE_MASK |
+		     SB_MODE_DEV_MASK);
+
 	/*
 	 * If the test bits are set, we specify that the current state may be
 	 * due to using the test bits.
@@ -236,6 +247,9 @@ static ssize_t lifecycle_state_show(struct device_driver *drv,
 
 		return snprintf(buf, PAGE_SIZE, "%s(test)\n",
 				lifecycle_states[lc_state]);
+	} else if ((lc_state & SB_MODE_SECURE_MASK) == SB_LIFECYCLE_GA_SECURE
+		   && (lc_state & SB_MODE_DEV_MASK)) {
+		return snprintf(buf, PAGE_SIZE, "Secured (development)\n");
 	}
 
 	return snprintf(buf, PAGE_SIZE, "%s\n", lifecycle_states[lc_state]);
