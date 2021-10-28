@@ -1545,6 +1545,12 @@ static void brcm_pcie_turn_off(struct brcm_pcie *pcie)
 	u32p_replace_bits(&tmp, 1, PCIE_MISC_HARD_PCIE_HARD_DEBUG_SERDES_IDDQ_MASK);
 	writel(tmp, base + PCIE_MISC_HARD_PCIE_HARD_DEBUG);
 
+	/*
+	 * Shutting down this bridge on pcie1 means accesses to rescal block
+	 * will hang the chip if another RC wants to assert/deassert rescal.
+	 */
+	if (pcie->type == BCM2712)
+		return;
 	/* Shutdown PCIe bridge */
 	pcie->bridge_sw_init_set(pcie, 1);
 }
