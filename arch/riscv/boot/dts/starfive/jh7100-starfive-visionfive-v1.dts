@@ -19,6 +19,19 @@
 	};
 };
 
+&gpio {
+	/* don't reset gpio mux for serial console and reset gpio */
+	starfive,keep-gpiomux = <13 14 63>;
+};
+
+&i2c0 {
+	eeprom@50 {
+		compatible = "atmel,24c04";
+		reg = <0x50>;
+		pagesize = <16>;
+	};
+};
+
 &mdio {
 	phy: ethernet-phy@0 {
 		reg = <0>;
