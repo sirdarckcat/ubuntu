@@ -478,7 +478,9 @@ static int stmmac_nway_reset(struct net_device *dev)
 }
 
 static void stmmac_get_ringparam(struct net_device *netdev,
-				 struct ethtool_ringparam *ring)
+				 struct ethtool_ringparam *ring,
+				 struct kernel_ethtool_ringparam *kernel_ring,
+				 struct netlink_ext_ack *extack)
 {
 	struct stmmac_priv *priv = netdev_priv(netdev);
 
@@ -489,7 +491,9 @@ static void stmmac_get_ringparam(struct net_device *netdev,
 }
 
 static int stmmac_set_ringparam(struct net_device *netdev,
-				struct ethtool_ringparam *ring)
+				struct ethtool_ringparam *ring,
+				struct kernel_ethtool_ringparam *kernel_ring,
+				struct netlink_ext_ack *extack)
 {
 	if (ring->rx_mini_pending || ring->rx_jumbo_pending ||
 	    ring->rx_pending < DMA_MIN_RX_SIZE ||

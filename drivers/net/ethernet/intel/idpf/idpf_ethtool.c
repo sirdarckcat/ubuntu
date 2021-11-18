@@ -306,7 +306,9 @@ unlock_mutex:
  * but the number of rings is not reported.
  */
 static void idpf_get_ringparam(struct net_device *netdev,
-			       struct ethtool_ringparam *ring)
+			       struct ethtool_ringparam *ring,
+			       struct kernel_ethtool_ringparam *kring,
+			       struct netlink_ext_ack *ext_ack)
 {
 	struct idpf_vport *vport;
 
@@ -332,7 +334,9 @@ static void idpf_get_ringparam(struct net_device *netdev,
  * number of rings is not specified, so all rings get the same settings.
  */
 static int idpf_set_ringparam(struct net_device *netdev,
-			      struct ethtool_ringparam *ring)
+			      struct ethtool_ringparam *ring,
+			      struct kernel_ethtool_ringparam *kring,
+			      struct netlink_ext_ack *ext_ack)
 {
 	struct idpf_vport_user_config_data *config_data;
 	u32 new_rx_count, new_tx_count;
