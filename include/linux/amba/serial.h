@@ -94,6 +94,14 @@
 #define UART01x_FR_DCD		BIT(2)
 #define UART01x_FR_DSR		BIT(1)
 #define UART01x_FR_CTS		BIT(0)
+/*
+ * Nvidia Tegra UART supports EORD interrupt through misc registers.
+ */
+#define NV_UART011_MIS		0x1008	/* MISC interrupt status */
+#define NV_UART011_MIM		0x100c	/* MISC interrupt mask  */
+#define NV_UART011_MMIS		0x1010	/* MISC masked interrupt status */
+#define NV_UART011_MIC		0x1014	/* MISC interrupt clear */
+
 #define UART01x_FR_TMSK		(UART01x_FR_TXFF + UART01x_FR_BUSY)
 
 /*
@@ -208,12 +216,20 @@
 #define UART011_CTSMIC		BIT(1)	/* CTS interrupt clear */
 #define UART011_RIMIC		BIT(0)	/* RI interrupt clear */
 
+/* Values for Nvidia MISC interrupts */
+#define NV_UART011_EORDIC	(1 << 0)	/* EORD interrupt clear */
+
 #define UART011_DMAONERR	BIT(2)	/* disable dma on error */
 #define UART011_TXDMAE		BIT(1)	/* enable transmit dma */
 #define UART011_RXDMAE		BIT(0)	/* enable receive dma */
 
 #define UART01x_RSR_ANY		(UART01x_RSR_OE | UART01x_RSR_BE | UART01x_RSR_PE | UART01x_RSR_FE)
 #define UART01x_FR_MODEM_ANY	(UART01x_FR_DCD | UART01x_FR_DSR | UART01x_FR_CTS)
+/* Values for Nvidia MISC interrupts */
+#define NV_UART011_EORDIM	(1 << 0)	/* EORD interrupt mask */
+
+/* Values for Nvidia MISC interrupts */
+#define NV_UART011_EORDIS	(1 << 0)	/* EORD interrupt status */
 
 #ifndef __ASSEMBLY__
 struct amba_device; /* in uncompress this is included but amba/bus.h is not */
