@@ -697,6 +697,7 @@ static const struct class spidev_class = {
 };
 
 static const struct spi_device_id spidev_spi_ids[] = {
+	{ .name = "spidev" },
 	{ .name = "bh2228fv" },
 	{ .name = "dh2228fv" },
 	{ .name = "jg10309-01" },
