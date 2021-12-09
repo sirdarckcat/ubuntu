@@ -16,5 +16,4 @@ echo "CONFIG_KCSAN                                       policy<{'amd64': '-', '
 # gcc version. Note that the config itself is already removed in an earlier
 # stage when 'make' is run, updating config 'GCC_VERSION' and removing
 # 'ARM64_BTI_KERNEL'.
-sed -i "/CONFIG_ARM64_BTI_KERNEL                         policy<{'arm64': 'y'}>/d" ${DEBIAN}/config/annotations
-
+echo "CONFIG_ARM64_BTI_KERNEL                            policy<{'arm64': '-'}" >> "${DEBIAN}/config/annotations"
