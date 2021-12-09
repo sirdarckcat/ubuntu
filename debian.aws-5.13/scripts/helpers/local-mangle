@@ -8,6 +8,10 @@
 ANN=${DEBIAN}/config/annotations
 CFG=${DEBIAN}/config/config.common.ubuntu
 
+# KCSAN cannot be enabled in focal, so make sure it's disabled in the
+# annotations file as well for all arches.
+echo "CONFIG_KCSAN                                       policy<{'amd64': '-', 'arm64': '-', 'armhf': '-', 'ppc64el': '-', 's390x': '-'}>" >> "${DEBIAN}/config/annotations"
+
 # Do not enforce CONFIG_ARM64_BTI_KERNEL in Focal, as it depends on a newer
 # gcc version. Note that the config itself is already removed in an earlier
 # stage when 'make' is run, updating config 'GCC_VERSION' and removing
