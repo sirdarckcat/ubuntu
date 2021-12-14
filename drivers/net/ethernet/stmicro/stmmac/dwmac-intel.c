@@ -620,7 +620,7 @@ static int ehl_sgmii_data(struct pci_dev *pdev,
 	plat->serdes_powerup = intel_serdes_powerup;
 	plat->serdes_powerdown = intel_serdes_powerdown;
 
-	plat->clk_ptp_rate = 204800000;
+	plat->clk_ptp_rate = 204860000;
 
 	if (pdev->revision == PCI_PCH_A0 ||
 	    pdev->revision == PCI_PCH_A1 ||
@@ -640,7 +640,7 @@ static int ehl_rgmii_data(struct pci_dev *pdev,
 	plat->bus_id = 1;
 	plat->phy_interface = PHY_INTERFACE_MODE_RGMII;
 
-	plat->clk_ptp_rate = 204800000;
+	plat->clk_ptp_rate = 204860000;
 
 	if (pdev->revision == PCI_PCH_A0 ||
 	    pdev->revision == PCI_PCH_A1 ||
