@@ -216,8 +216,12 @@ dtbo-$(CONFIG_ARCH_BCM2835) += \
 	wittypi.dtbo \
 	wm8960-soundcard.dtbo
 
+# These will simply be copied
+misc-$(CONFIG_ARCH_BCM2835) += README
+
 targets += dtbs dtbs_install
 targets += $(dtbo-y)
+targets += $(misc-y)
 
 always		:= $(dtbo-y)
 clean-files	:= *.dtbo
