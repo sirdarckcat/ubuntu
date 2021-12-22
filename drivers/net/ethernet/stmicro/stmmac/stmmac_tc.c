@@ -457,6 +457,7 @@ static int tc_parse_flow_actions(struct stmmac_priv *priv,
 
 #define ETHER_TYPE_FULL_MASK	cpu_to_be16(~0)
 #define IP_PROTO_FULL_MASK	0xFF
+#define ETHER_TYPE_FULL_MASK	cpu_to_be16(~0)
 
 static int tc_add_basic_flow(struct stmmac_priv *priv,
 			     struct flow_cls_offload *cls,
