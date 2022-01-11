@@ -644,7 +644,8 @@ static void vc4_hvs_install_dlist(struct vc4_dev *vc4, unsigned int channel)
 	hvs->fifo[channel].pending = false;
 
 	reg = HVS_READ(SCALER_DISPCTRL);
-	reg &= ~BIT(7 + (channel * (vc4->hvs->hvs5 ? 4 : 2)));
+	reg &= ~(vc4->hvs->hvs5 ? SCALER5_DISPCTRL_DSPEIEOF(channel) :
+				  SCALER_DISPCTRL_DSPEIEOF(channel));
 	HVS_WRITE(SCALER_DISPCTRL, reg);
 
 	spin_unlock_irqrestore(&hvs->hw_dlist_lock, flags);
@@ -664,7 +665,9 @@ static void vc4_hvs_schedule_dlist_update(struct vc4_dev *vc4,
 	}
 
 	HVS_WRITE(SCALER_DISPCTRL,
-		  HVS_READ(SCALER_DISPCTRL) | BIT(7 + (channel * (vc4->hvs->hvs5 ? 4 : 2))));
+		  HVS_READ(SCALER_DISPCTRL) |
+		  (vc4->hvs->hvs5 ? SCALER5_DISPCTRL_DSPEIEOF(channel) :
+				    SCALER_DISPCTRL_DSPEIEOF(channel)));
 
 	hvs->fifo[channel].pending = true;
 
@@ -850,7 +853,8 @@ void vc4_hvs_mask_underrun(struct drm_device *dev, int channel)
 	struct vc4_dev *vc4 = to_vc4_dev(dev);
 	u32 dispctrl = HVS_READ(SCALER_DISPCTRL);
 
-	dispctrl &= ~SCALER_DISPCTRL_DSPEISLUR(channel);
+	dispctrl &= ~(vc4->hvs->hvs5 ? SCALER5_DISPCTRL_DSPEISLUR(channel) :
+				       SCALER_DISPCTRL_DSPEISLUR(channel));
 
 	HVS_WRITE(SCALER_DISPCTRL, dispctrl);
 }
@@ -860,7 +864,8 @@ void vc4_hvs_unmask_underrun(struct drm_device *dev, int channel)
 	struct vc4_dev *vc4 = to_vc4_dev(dev);
 	u32 dispctrl = HVS_READ(SCALER_DISPCTRL);
 
-	dispctrl |= SCALER_DISPCTRL_DSPEISLUR(channel);
+	dispctrl |= vc4->hvs->hvs5 ? SCALER5_DISPCTRL_DSPEISLUR(channel) :
+				     SCALER_DISPCTRL_DSPEISLUR(channel);
 
 	HVS_WRITE(SCALER_DISPSTAT,
 		  SCALER_DISPSTAT_EUFLOW(channel));
@@ -890,7 +895,8 @@ static irqreturn_t vc4_hvs_irq_handler(int irq, void *data)
 	for (channel = 0; channel < SCALER_CHANNELS_COUNT; channel++) {
 		/* Interrupt masking is not always honored, so check it here. */
 		if (status & SCALER_DISPSTAT_EUFLOW(channel) &&
-		    control & SCALER_DISPCTRL_DSPEISLUR(channel)) {
+		    control & (vc4->hvs->hvs5 ? SCALER5_DISPCTRL_DSPEISLUR(channel) :
+						SCALER_DISPCTRL_DSPEISLUR(channel))) {
 			vc4_hvs_mask_underrun(dev, channel);
 			vc4_hvs_report_underrun(dev);
 
@@ -904,9 +910,14 @@ static irqreturn_t vc4_hvs_irq_handler(int irq, void *data)
 	}
 
 	/* Clear every per-channel interrupt flag. */
-	HVS_WRITE(SCALER_DISPSTAT, SCALER_DISPSTAT_IRQMASK(0) |
-				   SCALER_DISPSTAT_IRQMASK(1) |
-				   SCALER_DISPSTAT_IRQMASK(2));
+	if (vc4->hvs->hvs5)
+		HVS_WRITE(SCALER_DISPSTAT, SCALER5_DISPSTAT_IRQMASK(0) |
+					   SCALER5_DISPSTAT_IRQMASK(1) |
+					   SCALER5_DISPSTAT_IRQMASK(2));
+	else
+		HVS_WRITE(SCALER_DISPSTAT, SCALER_DISPSTAT_IRQMASK(0) |
+					   SCALER_DISPSTAT_IRQMASK(1) |
+					   SCALER_DISPSTAT_IRQMASK(2));
 
 	return irqret;
 }
@@ -1019,19 +1030,36 @@ static int vc4_hvs_bind(struct device *dev, struct device *master, void *data)
 		    SCALER_DISPCTRL_DISPEIRQ(1) |
 		    SCALER_DISPCTRL_DISPEIRQ(2);
 
-	dispctrl &= ~(SCALER_DISPCTRL_DMAEIRQ |
-		      SCALER_DISPCTRL_SLVWREIRQ |
-		      SCALER_DISPCTRL_SLVRDEIRQ |
-		      SCALER_DISPCTRL_DSPEIEOF(0) |
-		      SCALER_DISPCTRL_DSPEIEOF(1) |
-		      SCALER_DISPCTRL_DSPEIEOF(2) |
-		      SCALER_DISPCTRL_DSPEIEOLN(0) |
-		      SCALER_DISPCTRL_DSPEIEOLN(1) |
-		      SCALER_DISPCTRL_DSPEIEOLN(2) |
-		      SCALER_DISPCTRL_DSPEISLUR(0) |
-		      SCALER_DISPCTRL_DSPEISLUR(1) |
-		      SCALER_DISPCTRL_DSPEISLUR(2) |
-		      SCALER_DISPCTRL_SCLEIRQ);
+	if (!hvs->hvs5)
+		dispctrl &= ~(SCALER_DISPCTRL_DMAEIRQ |
+			      SCALER_DISPCTRL_SLVWREIRQ |
+			      SCALER_DISPCTRL_SLVRDEIRQ |
+			      SCALER_DISPCTRL_DSPEIEOF(0) |
+			      SCALER_DISPCTRL_DSPEIEOF(1) |
+			      SCALER_DISPCTRL_DSPEIEOF(2) |
+			      SCALER_DISPCTRL_DSPEIEOLN(0) |
+			      SCALER_DISPCTRL_DSPEIEOLN(1) |
+			      SCALER_DISPCTRL_DSPEIEOLN(2) |
+			      SCALER_DISPCTRL_DSPEISLUR(0) |
+			      SCALER_DISPCTRL_DSPEISLUR(1) |
+			      SCALER_DISPCTRL_DSPEISLUR(2) |
+			      SCALER_DISPCTRL_SCLEIRQ);
+	else
+		dispctrl &= ~(SCALER5_DISPCTRL_DMAEIRQ |
+			      SCALER5_DISPCTRL_SLVEIRQ |
+			      SCALER5_DISPCTRL_DSPEIEOF(0) |
+			      SCALER5_DISPCTRL_DSPEIEOF(1) |
+			      SCALER5_DISPCTRL_DSPEIEOF(2) |
+			      SCALER5_DISPCTRL_DSPEIEOLN(0) |
+			      SCALER5_DISPCTRL_DSPEIEOLN(1) |
+			      SCALER5_DISPCTRL_DSPEIEOLN(2) |
+			      SCALER5_DISPCTRL_DSPEISLUR(0) |
+			      SCALER5_DISPCTRL_DSPEISLUR(1) |
+			      SCALER5_DISPCTRL_DSPEISLUR(2) |
+			      SCALER5_DISPCTRL_DSPVSTART(0) |
+			      SCALER5_DISPCTRL_DSPVSTART(1) |
+			      SCALER5_DISPCTRL_DSPVSTART(2) |
+			      SCALER_DISPCTRL_SCLEIRQ);
 
 	/* Set AXI panic mode.
 	 * VC4 panics when < 2 lines in FIFO.
