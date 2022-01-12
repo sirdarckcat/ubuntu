@@ -59,3 +59,5 @@ CONFIG_SERIAL_AMBA_PL011                          policy<{'arm64':'y'}>
 CONFIG_SERIAL_AMBA_PL011                          mark<ENFORCED> note<needed for serial support in VMs>
 CONFIG_SERIAL_AMBA_PL011_CONSOLE                  policy<{'arm64':'y'}>
 CONFIG_SERIAL_AMBA_PL011_CONSOLE                  mark<ENFORCED> note<needed for serial support in VMs>
+CONFIG_DRM_BOCHS                                  policy<{'amd64': 'm', 'arm64':'m'}>
+CONFIG_DRM_BOCHS                                  mark<ENFORCED> note<needed for virtual display support in VMs - LP #1957744 >
