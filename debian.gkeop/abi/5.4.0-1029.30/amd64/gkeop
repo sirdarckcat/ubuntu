@@ -6143,6 +6143,7 @@ EXPORT_SYMBOL	 vmlinux 0x18f6d698	generic_file_fsync
 EXPORT_SYMBOL	 vmlinux 0x1900fc3c	seg6_push_hmac
 EXPORT_SYMBOL	 vmlinux 0x19021bd6	jbd2_journal_destroy
 EXPORT_SYMBOL	 vmlinux 0x1912be44	clk_hw_register_clkdev
+EXPORT_SYMBOL	 vmlinux 0x19242e38	efi
 EXPORT_SYMBOL	 vmlinux 0x193715df	tcf_em_tree_destroy
 EXPORT_SYMBOL	 vmlinux 0x1945c68b	nd_dax_probe
 EXPORT_SYMBOL	 vmlinux 0x1946774d	fscrypt_has_permitted_context
@@ -7437,6 +7438,7 @@ EXPORT_SYMBOL	 vmlinux 0x547e3344	acpi_disable
 EXPORT_SYMBOL	 vmlinux 0x54a88cd8	wait_on_page_bit
 EXPORT_SYMBOL	 vmlinux 0x54a9db5f	_kstrtoul
 EXPORT_SYMBOL	 vmlinux 0x54cfd79a	simple_release_fs
+EXPORT_SYMBOL	 vmlinux 0x54d82127	mdio_driver_register
 EXPORT_SYMBOL	 vmlinux 0x54e6fcdd	net_enable_timestamp
 EXPORT_SYMBOL	 vmlinux 0x54e85f5e	kill_pid
 EXPORT_SYMBOL	 vmlinux 0x54ea6dfe	xen_start_flags
@@ -8637,6 +8639,7 @@ EXPORT_SYMBOL	 vmlinux 0x8f80bf11	acpi_install_gpe_raw_handler
 EXPORT_SYMBOL	 vmlinux 0x8f996a30	ethtool_convert_legacy_u32_to_link_mode
 EXPORT_SYMBOL	 vmlinux 0x8f9a1a3f	kill_bdev
 EXPORT_SYMBOL	 vmlinux 0x8f9c199c	__get_user_2
+EXPORT_SYMBOL	 vmlinux 0x8fa08874	mdio_driver_unregister
 EXPORT_SYMBOL	 vmlinux 0x8fa25c24	xa_find
 EXPORT_SYMBOL	 vmlinux 0x8fa5860e	clk_bulk_get
 EXPORT_SYMBOL	 vmlinux 0x8fa59250	drop_super_exclusive
@@ -9006,7 +9009,6 @@ EXPORT_SYMBOL	 vmlinux 0xa0b5e613	security_inode_init_security
 EXPORT_SYMBOL	 vmlinux 0xa0dad88e	netdev_adjacent_get_private
 EXPORT_SYMBOL	 vmlinux 0xa0eae826	smp_call_function
 EXPORT_SYMBOL	 vmlinux 0xa0ebd14c	sysctl_tcp_mem
-EXPORT_SYMBOL	 vmlinux 0xa0f493d9	efi
 EXPORT_SYMBOL	 vmlinux 0xa0fbac79	wake_up_bit
 EXPORT_SYMBOL	 vmlinux 0xa108eb4d	sysctl_optmem_max
 EXPORT_SYMBOL	 vmlinux 0xa11b04dd	skb_flow_dissect_tunnel_info
@@ -10109,7 +10111,6 @@ EXPORT_SYMBOL	 vmlinux 0xd181ea69	ps2_end_command
 EXPORT_SYMBOL	 vmlinux 0xd194ddf9	acpi_gpe_count
 EXPORT_SYMBOL	 vmlinux 0xd19bd2e1	__tracepoint_write_msr
 EXPORT_SYMBOL	 vmlinux 0xd1ab8cc0	nvdimm_bus_lock
-EXPORT_SYMBOL	 vmlinux 0xd1ac7678	mdio_driver_register
 EXPORT_SYMBOL	 vmlinux 0xd1c9fd14	md_unregister_thread
 EXPORT_SYMBOL	 vmlinux 0xd1c9ffdb	sync_blockdev
 EXPORT_SYMBOL	 vmlinux 0xd1d15f1b	uv_hub_info_version
@@ -10148,7 +10149,6 @@ EXPORT_SYMBOL	 vmlinux 0xd3ac1933	pcix_get_max_mmrbc
 EXPORT_SYMBOL	 vmlinux 0xd3ad2cda	xfrm_lookup_route
 EXPORT_SYMBOL	 vmlinux 0xd3adb5d6	__register_binfmt
 EXPORT_SYMBOL	 vmlinux 0xd3b76d9c	netif_set_real_num_rx_queues
-EXPORT_SYMBOL	 vmlinux 0xd3c72a39	mdio_driver_unregister
 EXPORT_SYMBOL	 vmlinux 0xd3ca2f03	serio_open
 EXPORT_SYMBOL	 vmlinux 0xd3e18f88	block_write_end
 EXPORT_SYMBOL	 vmlinux 0xd3eaf1ed	devlink_dpipe_entry_clear
@@ -13881,20 +13881,20 @@ EXPORT_SYMBOL_GPL	 drivers/net/ethernet/mellanox/mlx5/core/mlx5_core 0xf584b138	
 EXPORT_SYMBOL_GPL	 drivers/net/ethernet/mellanox/mlx5/core/mlx5_core 0xf64f66d6	mlx5_query_port_tc_group
 EXPORT_SYMBOL_GPL	 drivers/net/ethernet/mellanox/mlx5/core/mlx5_core 0xfee7f91f	mlx5_modify_nic_vport_mac_address
 EXPORT_SYMBOL_GPL	 drivers/net/ethernet/mellanox/mlx5/core/mlx5_core 0xff155e12	mlx5_core_res_hold
-EXPORT_SYMBOL_GPL	 drivers/net/ethernet/microchip/encx24j600-regmap 0x80312878	devm_regmap_init_encx24j600
+EXPORT_SYMBOL_GPL	 drivers/net/ethernet/microchip/encx24j600-regmap 0x6b1df3b8	devm_regmap_init_encx24j600
 EXPORT_SYMBOL_GPL	 drivers/net/ethernet/microchip/encx24j600-regmap 0xcc4fa41a	regmap_encx24j600_spi_write
 EXPORT_SYMBOL_GPL	 drivers/net/ethernet/microchip/encx24j600-regmap 0xe8c8c6c2	regmap_encx24j600_spi_read
-EXPORT_SYMBOL_GPL	 drivers/net/ethernet/stmicro/stmmac/stmmac 0x300b1217	stmmac_dvr_probe
 EXPORT_SYMBOL_GPL	 drivers/net/ethernet/stmicro/stmmac/stmmac 0x92d778bb	stmmac_get_mac_addr
 EXPORT_SYMBOL_GPL	 drivers/net/ethernet/stmicro/stmmac/stmmac 0xbd0c60af	stmmac_dvr_remove
 EXPORT_SYMBOL_GPL	 drivers/net/ethernet/stmicro/stmmac/stmmac 0xd1cc24db	stmmac_set_mac_addr
+EXPORT_SYMBOL_GPL	 drivers/net/ethernet/stmicro/stmmac/stmmac 0xe7bfd8e6	stmmac_dvr_probe
 EXPORT_SYMBOL_GPL	 drivers/net/ethernet/stmicro/stmmac/stmmac 0xf9d0a904	stmmac_suspend
 EXPORT_SYMBOL_GPL	 drivers/net/ethernet/stmicro/stmmac/stmmac 0xfb52a1fc	stmmac_resume
 EXPORT_SYMBOL_GPL	 drivers/net/ethernet/stmicro/stmmac/stmmac-platform 0x263ede57	stmmac_get_platform_resources
 EXPORT_SYMBOL_GPL	 drivers/net/ethernet/stmicro/stmmac/stmmac-platform 0x45fe4554	stmmac_pltfr_remove
-EXPORT_SYMBOL_GPL	 drivers/net/ethernet/stmicro/stmmac/stmmac-platform 0x77f9aec7	stmmac_probe_config_dt
-EXPORT_SYMBOL_GPL	 drivers/net/ethernet/stmicro/stmmac/stmmac-platform 0x9e3b8ace	stmmac_remove_config_dt
+EXPORT_SYMBOL_GPL	 drivers/net/ethernet/stmicro/stmmac/stmmac-platform 0x63b3372b	stmmac_probe_config_dt
 EXPORT_SYMBOL_GPL	 drivers/net/ethernet/stmicro/stmmac/stmmac-platform 0xd0e0886d	stmmac_pltfr_pm_ops
+EXPORT_SYMBOL_GPL	 drivers/net/ethernet/stmicro/stmmac/stmmac-platform 0xd5bf2cdc	stmmac_remove_config_dt
 EXPORT_SYMBOL_GPL	 drivers/net/ethernet/wiznet/w5100 0x16ad9565	w5100_probe
 EXPORT_SYMBOL_GPL	 drivers/net/ethernet/wiznet/w5100 0x5d804116	w5100_ops_priv
 EXPORT_SYMBOL_GPL	 drivers/net/ethernet/wiznet/w5100 0x70f27d52	w5100_pm_ops
