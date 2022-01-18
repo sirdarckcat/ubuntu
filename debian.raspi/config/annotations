@@ -4,6 +4,8 @@
 
 include "../../debian.master/config/annotations"
 
+CONFIG_KFENCE_STATIC_KEYS			policy<{'*': '-'}> mark<ENFORCED> note<LP: #1948038>
+
 CONFIG_HUGETLBFS				policy<{'arm64': 'y', 'armhf': 'y', 'armhf-raspi-nolpae': '-'}> mark<ENFORCED> note<LP: #1933627>
 CONFIG_CGROUP_HUGETLB				policy<{'arm64': 'y', 'armhf': 'y', 'armhf-raspi-nolpae': '-'}> mark<ENFORCED> note<LP: #1933627>
 
