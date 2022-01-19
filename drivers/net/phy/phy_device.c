@@ -3039,6 +3039,7 @@ static int phy_probe(struct device *dev)
 	struct phy_device *phydev = to_phy_device(dev);
 	struct device_driver *drv = phydev->mdio.dev.driver;
 	struct phy_driver *phydrv = to_phy_driver(drv);
+	struct ethtool_wolinfo wol = { .cmd = ETHTOOL_GWOL };
 	int err = 0;
 
 	phydev->drv = phydrv;
@@ -3061,7 +3062,10 @@ static int phy_probe(struct device *dev)
 			goto out;
 	}
 
-	phy_disable_interrupts(phydev);
+	phy_ethtool_get_wol(phydev, &wol);
+	/* If the device has WOL enabled, don't disable interrupts. */
+	if (!wol.wolopts)
+		phy_disable_interrupts(phydev);
 
 	/* Start out supporting everything. Eventually,
 	 * a controller will attach, and may modify one
