@@ -3520,7 +3520,8 @@
 			disable unhandled interrupt sources.
 
 	no_timer_check	[X86,APIC] Disables the code which tests for
-			broken timer IRQ sources.
+			broken timer IRQ sources. For AWS, this is defaulted
+			to disabled, can be re-enabled using no_timer_check=0.
 
 	noisapnp	[ISAPNP] Disables ISA PnP code.
 
@@ -5898,6 +5899,7 @@
 			as the stability checks done at bootup.	Used to enable
 			high-resolution timer mode on older hardware, and in
 			virtualized environment.
+			[x86] unreliable: mark tsc clocksource as unreliable.
 			[x86] noirqtime: Do not use TSC to do irq accounting.
 			Used to run time disable IRQ_TIME_ACCOUNTING on any
 			platforms where RDTSC is slow and this accounting
