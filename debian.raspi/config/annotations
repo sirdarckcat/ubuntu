@@ -8486,7 +8486,7 @@ CONFIG_SYSFS                                    policy<{'amd64': 'y', 'arm64': '
 CONFIG_TMPFS                                    policy<{'amd64': 'y', 'arm64': 'y', 'armhf': 'y', 'i386': 'y', 'ppc64el': 'y', 's390x': 'y'}>
 CONFIG_TMPFS_POSIX_ACL                          policy<{'amd64': 'y', 'arm64': 'y', 'armhf': 'y', 'i386': 'y', 'ppc64el': 'y', 's390x': 'y'}>
 CONFIG_TMPFS_XATTR                              policy<{'amd64': 'y', 'arm64': 'y', 'armhf': 'y', 'i386': 'y', 'ppc64el': 'y', 's390x': 'y'}>
-CONFIG_HUGETLBFS                                policy<{'amd64': 'y', 'arm64': 'y', 'armhf-generic-lpae': 'y', 'i386': 'y', 'ppc64el': 'y', 's390x': 'y'}>
+CONFIG_HUGETLBFS                                policy<{'amd64': 'y', 'arm64': 'y', 'armhf': 'y', 'i386': 'y', 'ppc64el': 'y', 's390x': 'y'}> mark<ENFORCED> note<LP: #1933532>
 CONFIG_CONFIGFS_FS                              policy<{'amd64': 'm', 'arm64': 'm', 'armhf': 'm', 'i386': 'm', 'ppc64el': 'm', 's390x': 'y'}>
 CONFIG_EFIVAR_FS                                policy<{'amd64': 'y', 'arm64': 'y', 'i386': 'y'}>
 #
@@ -8694,7 +8694,7 @@ CONFIG_DEBUG_BLK_CGROUP                         policy<{'amd64': 'n', 'arm64': '
 CONFIG_CGROUP_PIDS                              policy<{'amd64': 'y', 'arm64': 'y', 'armhf': 'y', 'i386': 'y', 'ppc64el': 'y', 's390x': 'y'}>
 CONFIG_CGROUP_RDMA                              policy<{'amd64': 'y', 'arm64': 'y', 'armhf': 'y', 'i386': 'y', 'ppc64el': 'y', 's390x': 'y'}>
 CONFIG_CGROUP_FREEZER                           policy<{'amd64': 'y', 'arm64': 'y', 'armhf': 'y', 'i386': 'y', 'ppc64el': 'y', 's390x': 'y'}>
-CONFIG_CGROUP_HUGETLB                           policy<{'amd64': 'y', 'arm64': 'y', 'armhf-generic-lpae': 'y', 'i386': 'y', 'ppc64el': 'y', 's390x': 'y'}>
+CONFIG_CGROUP_HUGETLB                           policy<{'amd64': 'y', 'arm64': 'y', 'armhf': 'y', 'i386': 'y', 'ppc64el': 'y', 's390x': 'y'}> mark<ENFORCED> note<LP: #1933532>
 CONFIG_CPUSETS                                  policy<{'amd64': 'y', 'arm64': 'y', 'armhf': 'y', 'i386': 'y', 'ppc64el': 'y', 's390x': 'y'}>
 CONFIG_PROC_PID_CPUSET                          policy<{'amd64': 'y', 'arm64': 'y', 'armhf': 'y', 'i386': 'y', 'ppc64el': 'y', 's390x': 'y'}>
 CONFIG_CGROUP_DEVICE                            policy<{'amd64': 'y', 'arm64': 'y', 'armhf': 'y', 'i386': 'y', 'ppc64el': 'y', 's390x': 'y'}>
@@ -10741,8 +10741,8 @@ CONFIG_HZ_200                                   policy<{'armhf': 'n'}>
 CONFIG_HZ_500                                   policy<{'armhf': 'n'}>
 
 # Menu: Processor type and features >> Transparent Hugepage Support sysfs defaults
-CONFIG_TRANSPARENT_HUGEPAGE_ALWAYS              policy<{'amd64': 'y', 'arm64': 'y', 'armhf-generic-lpae': 'y', 'i386': 'y', 'ppc64el': 'y', 's390x': 'y'}>
-CONFIG_TRANSPARENT_HUGEPAGE_MADVISE             policy<{'amd64': 'n', 'arm64': 'n', 'armhf-generic-lpae': 'n', 'i386': 'n', 'ppc64el': 'n', 's390x': 'n'}>
+CONFIG_TRANSPARENT_HUGEPAGE_ALWAYS              policy<{'amd64': 'n', 'arm64': 'n', 'armhf': 'n', 'i386': 'n', 'ppc64el': 'y', 's390x': 'n'}> mark<ENFORCED> note<LP: #1933532>
+CONFIG_TRANSPARENT_HUGEPAGE_MADVISE             policy<{'amd64': 'y', 'arm64': 'y', 'armhf': 'y', 'i386': 'y', 'ppc64el': 'n', 's390x': 'y'}> mark<ENFORCED> note<LP: #1933532>
 
 # Menu: Processor type and features >> Tune code generation >> Architecture: s390
 CONFIG_TUNE_DEFAULT                             policy<{'s390x': 'n'}>
