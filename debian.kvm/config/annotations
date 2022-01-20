@@ -1,0 +1,32 @@
+# Menu: HEADER
+# FORMAT: 3
+# ARCH: x86
+
+CONFIG_MODVERSIONS              policy<{'amd64': 'y'}>
+CONFIG_MODVERSIONS              mark<ENFORCED> note<LP: #1898716>
+
+CONFIG_SYSTEM_TRUSTED_KEYS      policy<{'amd64': '"debian/canonical-certs.pem"'}>
+CONFIG_SYSTEM_TRUSTED_KEYS      mark<ENFORCED> note<LP: #1898716>
+
+CONFIG_LOAD_UEFI_KEYS           policy<{'amd64': 'y'}>
+CONFIG_SYSTEM_REVOCATION_KEYS   policy<{'amd64': '"debian/canonical-revoked-certs.pem"'}>
+CONFIG_LOAD_UEFI_KEYS           mark<ENFORCED> note<LP: #1942319>
+CONFIG_SYSTEM_REVOCATION_KEYS   mark<ENFORCED> note<LP: #1942319>
+
+CONFIG_BLK_DEV_RAM				policy<{'amd64': 'm'}>
+CONFIG_BLK_DEV_RAM				mark<ENFORCED> note<LP: #1873809>
+
+CONFIG_BLK_DEV_RBD				policy<{'amd64': 'm'}>
+CONFIG_BLK_DEV_RBD				mark<ENFORCED> note<LP: #1902434>
+
+CONFIG_BLK_DEV_RAM_SIZE				policy<{'amd64': '65536'}>
+CONFIG_BLK_DEV_RAM_SIZE				mark<ENFORCED> note<LP: #1873809>
+
+CONFIG_FB_EFI					policy<{'amd64': 'y'}>
+CONFIG_FB_EFI					mark<ENFORCED> note<LP: #1873809>
+
+BRIDGE_VLAN_FILTERING				policy<{'amd64': 'y'}>
+BRIDGE_VLAN_FILTERING				mark<ENFORCED> note<LP: #1882955>
+
+CONFIG_PCI_MSI					policy<{'amd64': 'y'}>
+CONFIG_PCI_MSI					mark<ENFORCED> note<LP: #1914283>
