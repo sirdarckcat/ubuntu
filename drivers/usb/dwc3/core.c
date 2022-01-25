@@ -1675,6 +1675,20 @@ static int dwc3_probe(struct platform_device *pdev)
 	if (ret)
 		goto err5;
 
+	/*
+	 * DWC3 controller has a Power Management Unit(PMU) module
+	 * which requests the power controller for entering into
+	 * D3/D0 state. Try getting the regulator.
+	 */
+	dwc->dwc3_pmu = devm_regulator_get(dev, "dwc3-pmu-regulator");
+	if (!IS_ERR(dwc->dwc3_pmu)) {
+		ret = regulator_enable(dwc->dwc3_pmu);
+		if (ret) {
+			dev_err(dev, "Failed to enable dwc3_pmu supply\n");
+			goto err5;
+		}
+	}
+
 	pm_runtime_put(dev);
 
 	dma_set_max_seg_size(dev, UINT_MAX);
@@ -1740,6 +1754,9 @@ static int dwc3_remove(struct platform_device *pdev)
 
 	dwc3_core_exit(dwc);
 	dwc3_ulpi_exit(dwc);
+
+	if (dwc->dwc3_pmu)
+		regulator_disable(dwc->dwc3_pmu);
 
 	pm_runtime_allow(&pdev->dev);
 	pm_runtime_disable(&pdev->dev);
@@ -1849,6 +1866,15 @@ static int dwc3_resume_common(struct dwc3 *dwc, pm_message_t msg)
 	unsigned long	flags;
 	int		ret;
 	u32		reg;
+
+	/* Bring core to D0 state */
+	if (dwc->dwc3_pmu) {
+		ret = regulator_enable(dwc->dwc3_pmu);
+		if (ret) {
+			dev_err(dwc->dev, "Failed to enable dwc3_pmu supply\n");
+			return ret;
+		}
+	}
 
 	switch (dwc->current_dr_role) {
 	case DWC3_GCTL_PRTCAP_DEVICE:
