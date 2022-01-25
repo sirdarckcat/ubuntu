@@ -1680,6 +1680,13 @@ static int __dwc3_stop_active_transfer(struct dwc3_ep *dep, bool force, bool int
 		dep->flags |= DWC3_EP_END_TRANSFER_PENDING;
 	}
 
+	/*
+	 * when transfer is stopped with force rm bit false, it can be
+	 * restarted by passing resource_index in params; don't loose it
+	 */
+	if (force)
+		dep->resource_index = 0;
+
 	return ret;
 }
 
