@@ -281,8 +281,6 @@ CONFIG_LP_CONSOLE                               policy<{'riscv64': 'n'}>
 CONFIG_PPDEV                                    policy<{'riscv64': 'm'}>
 CONFIG_VIRTIO_CONSOLE                           policy<{'riscv64': 'y'}>
 CONFIG_APPLICOM                                 policy<{'riscv64': 'm'}>
-CONFIG_RAW_DRIVER                               policy<{'riscv64': 'm'}>
-CONFIG_MAX_RAW_DEVS                             policy<{'riscv64': '256'}>
 CONFIG_DEVPORT                                  policy<{'riscv64': 'y'}>
 CONFIG_XILLYBUS                                 policy<{'riscv64': 'm'}>
 CONFIG_XILLYBUS_PCIE                            policy<{'riscv64': 'm'}>
@@ -969,7 +967,6 @@ CONFIG_DRM_PANEL_ASUS_Z00T_TM5P5_NT35596        policy<{'riscv64': 'm'}>
 CONFIG_DRM_PANEL_BOE_HIMAX8279D                 policy<{'riscv64': 'm'}>
 CONFIG_DRM_PANEL_BOE_TV101WUM_NL6               policy<{'riscv64': 'm'}>
 CONFIG_DRM_PANEL_LVDS                           policy<{'riscv64': 'm'}>
-CONFIG_DRM_PANEL_SIMPLE                         policy<{'riscv64': 'm'}>
 CONFIG_DRM_PANEL_ELIDA_KD35T133                 policy<{'riscv64': 'm'}>
 CONFIG_DRM_PANEL_FEIXIN_K101_IM2BA02            policy<{'riscv64': 'm'}>
 CONFIG_DRM_PANEL_FEIYANG_FY07024DI26A30D        policy<{'riscv64': 'm'}>
@@ -1107,7 +1104,7 @@ CONFIG_FB_VIRTUAL                               policy<{'riscv64': 'n'}>
 CONFIG_FB_METRONOME                             policy<{'riscv64': 'm'}>
 CONFIG_FB_MB862XX                               policy<{'riscv64': 'm'}>
 CONFIG_FB_MB862XX_I2C                           policy<{'riscv64': 'y'}>
-CONFIG_FB_SIMPLE                                policy<{'riscv64': 'y'}>
+CONFIG_FB_SIMPLE                                policy<{'riscv64': 'm'}>
 CONFIG_FB_SSD1307                               policy<{'riscv64': 'm'}>
 CONFIG_FB_SM712                                 policy<{'riscv64': 'm'}>
 #
@@ -2058,7 +2055,6 @@ CONFIG_INFINIBAND_USER_ACCESS                   policy<{'riscv64': 'm'}>
 CONFIG_INFINIBAND_MTHCA                         policy<{'riscv64': 'm'}>
 CONFIG_INFINIBAND_MTHCA_DEBUG                   policy<{'riscv64': 'n'}>
 CONFIG_INFINIBAND_EFA                           policy<{'riscv64': 'm'}>
-CONFIG_INFINIBAND_I40IW                         policy<{'riscv64': 'm'}>
 CONFIG_MLX4_INFINIBAND                          policy<{'riscv64': 'm'}>
 CONFIG_MLX5_INFINIBAND                          policy<{'riscv64': 'm'}>
 CONFIG_INFINIBAND_OCRDMA                        policy<{'riscv64': 'm'}>
@@ -2607,7 +2603,7 @@ CONFIG_RFD_FTL                                  policy<{'riscv64': 'm'}>
 CONFIG_SSFDC                                    policy<{'riscv64': 'm'}>
 CONFIG_SM_FTL                                   policy<{'riscv64': 'm'}>
 CONFIG_MTD_OOPS                                 policy<{'riscv64': 'm'}>
-CONFIG_MTD_PSTORE                               policy<{'riscv64': '-'}>
+CONFIG_MTD_PSTORE                               policy<{'riscv64': 'n'}>
 CONFIG_MTD_SWAP                                 policy<{'riscv64': 'm'}>
 CONFIG_MTD_PARTITIONED_MASTER                   policy<{'riscv64': 'n'}>
 CONFIG_MTD_NAND_ECC_SW_HAMMING_SMC              policy<{'riscv64': 'n'}>
@@ -3317,7 +3313,6 @@ CONFIG_VIDEO_CX88_ENABLE_VP3054                 policy<{'riscv64': 'y'}>
 
 # Menu: Device Drivers >> Multimedia support >> Media drivers >> Media PCI Adapters >> Conexant cx23416/cx23415 MPEG encoder/decoder support
 CONFIG_VIDEO_IVTV                               policy<{'riscv64': 'm'}>
-CONFIG_VIDEO_IVTV_DEPRECATED_IOCTLS             policy<{'riscv64': 'n'}>
 CONFIG_VIDEO_IVTV_ALSA                          policy<{'riscv64': 'm'}>
 CONFIG_VIDEO_FB_IVTV                            policy<{'riscv64': 'm'}>
 
@@ -3707,7 +3702,6 @@ CONFIG_ATM_ENI_TUNE_BURST                       policy<{'riscv64': 'n'}>
 # Menu: Device Drivers >> Network device support >> CAIF transport drivers
 CONFIG_CAIF_DRIVERS                             policy<{'riscv64': 'y'}>
 CONFIG_CAIF_TTY                                 policy<{'riscv64': 'm'}>
-CONFIG_CAIF_HSI                                 policy<{'riscv64': 'm'}>
 CONFIG_CAIF_VIRTIO                              policy<{'riscv64': 'm'}>
 
 # Menu: Device Drivers >> Network device support >> Distributed Switch Architecture drivers
@@ -3785,7 +3779,6 @@ CONFIG_NET_VENDOR_EMULEX                        policy<{'riscv64': 'y'}>
 CONFIG_NET_VENDOR_EZCHIP                        policy<{'riscv64': 'y'}>
 CONFIG_EZCHIP_NPS_MANAGEMENT_ENET               policy<{'riscv64': 'm'}>
 CONFIG_NET_VENDOR_GOOGLE                        policy<{'riscv64': 'y'}>
-CONFIG_GVE                                      policy<{'riscv64': 'm'}>
 CONFIG_NET_VENDOR_HUAWEI                        policy<{'riscv64': 'y'}>
 CONFIG_JME                                      policy<{'riscv64': 'm'}>
 CONFIG_NET_VENDOR_MICROSEMI                     policy<{'riscv64': 'y'}>
@@ -4003,8 +3996,6 @@ CONFIG_MLXSW_MINIMAL                            policy<{'riscv64': 'm'}>
 
 # Menu: Device Drivers >> Network device support >> Ethernet driver support >> Mellanox devices >> Mellanox Technologies Switch ASICs support >> PCI bus implementation for Mellanox Technologies Switch ASICs
 CONFIG_MLXSW_PCI                                policy<{'riscv64': 'm'}>
-CONFIG_MLXSW_SWITCHIB                           policy<{'riscv64': 'm'}>
-CONFIG_MLXSW_SWITCHX2                           policy<{'riscv64': 'm'}>
 CONFIG_MLXSW_SPECTRUM                           policy<{'riscv64': 'm'}>
 CONFIG_MLXSW_SPECTRUM_DCB                       policy<{'riscv64': 'y'}>
 
@@ -4212,7 +4203,7 @@ CONFIG_SFP                                      policy<{'riscv64': 'm'}>
 CONFIG_ADIN_PHY                                 policy<{'riscv64': 'm'}>
 CONFIG_AMD_PHY                                  policy<{'riscv64': 'm'}>
 CONFIG_AQUANTIA_PHY                             policy<{'riscv64': 'm'}>
-CONFIG_AX88796B_PHY                             policy<{'riscv64': 'n'}>
+CONFIG_AX88796B_PHY                             policy<{'riscv64': 'm'}>
 CONFIG_BCM7XXX_PHY                              policy<{'riscv64': 'm'}>
 CONFIG_BCM87XX_PHY                              policy<{'riscv64': 'm'}>
 CONFIG_BROADCOM_PHY                             policy<{'riscv64': 'm'}>
@@ -4503,7 +4494,6 @@ CONFIG_IWLEGACY_DEBUGFS                         policy<{'riscv64': 'y'}>
 
 # Menu: Device Drivers >> Network device support >> Wireless LAN >> Intersil devices
 CONFIG_WLAN_VENDOR_INTERSIL                     policy<{'riscv64': 'y'}>
-CONFIG_PRISM54                                  policy<{'riscv64': 'n'}>
 
 # Menu: Device Drivers >> Network device support >> Wireless LAN >> Intersil devices >> Hermes chipset 802.11b support (Orinoco/Prism2/Symbol)
 CONFIG_HERMES                                   policy<{'riscv64': 'm'}>
@@ -4660,11 +4650,6 @@ CONFIG_INTERCONNECT                             policy<{'riscv64': 'y'}>
 # Menu: Device Drivers >> On-Chip Interconnect management support >> Qualcomm Network-on-Chip interconnect drivers
 
 # Menu: Device Drivers >> On-Chip Interconnect management support >> i.MX interconnect drivers
-
-# Menu: Device Drivers >> Open-Channel SSD target support
-CONFIG_NVM                                      policy<{'riscv64': 'y'}>
-CONFIG_NVM_PBLK                                 policy<{'riscv64': 'm'}>
-CONFIG_NVM_PBLK_DEBUG                           policy<{'riscv64': 'n'}>
 
 # Menu: Device Drivers >> PCCard (PCMCIA/CardBus) support
 CONFIG_PCCARD                                   policy<{'riscv64': 'n'}>
@@ -4868,7 +4853,6 @@ CONFIG_BATTERY_DA9150                           policy<{'riscv64': 'm'}>
 CONFIG_CHARGER_AXP20X                           policy<{'riscv64': 'm'}>
 CONFIG_BATTERY_AXP20X                           policy<{'riscv64': 'm'}>
 CONFIG_AXP20X_POWER                             policy<{'riscv64': 'm'}>
-CONFIG_AXP288_FUEL_GAUGE                        policy<{'riscv64': 'm'}>
 CONFIG_BATTERY_MAX17040                         policy<{'riscv64': 'm'}>
 CONFIG_BATTERY_MAX17042                         policy<{'riscv64': 'm'}>
 CONFIG_BATTERY_MAX1721X                         policy<{'riscv64': 'm'}>
@@ -4903,7 +4887,6 @@ CONFIG_BATTERY_GOLDFISH                         policy<{'riscv64': 'm'}>
 CONFIG_BATTERY_RT5033                           policy<{'riscv64': 'm'}>
 CONFIG_CHARGER_RT9455                           policy<{'riscv64': 'm'}>
 CONFIG_CHARGER_UCS1002                          policy<{'riscv64': 'm'}>
-CONFIG_CHARGER_BD70528                          policy<{'riscv64': 'm'}>
 CONFIG_CHARGER_BD99954                          policy<{'riscv64': 'm'}>
 
 # Menu: Device Drivers >> Pulse-Width Modulation (PWM) Support
@@ -5675,7 +5658,6 @@ CONFIG_SND_SOC_WM8978                           policy<{'riscv64': 'm'}>
 CONFIG_SND_SOC_WM8985                           policy<{'riscv64': 'm'}>
 CONFIG_SND_SOC_WSA881X                          policy<{'riscv64': 'm'}>
 CONFIG_SND_SOC_ZL38060                          policy<{'riscv64': 'm'}>
-CONFIG_SND_SOC_ZX_AUD96P22                      policy<{'riscv64': 'm'}>
 CONFIG_SND_SOC_MAX9759                          policy<{'riscv64': 'm'}>
 CONFIG_SND_SOC_MT6351                           policy<{'riscv64': 'm'}>
 CONFIG_SND_SOC_MT6358                           policy<{'riscv64': 'm'}>
@@ -5932,11 +5914,6 @@ CONFIG_STAGING                                  flag<REVIEW>
 CONFIG_ASHMEM                                   policy<{'riscv64': 'm'}>
 
 # Menu: Device Drivers >> Staging drivers >> Daktronics KPC Device support
-CONFIG_KPC2000                                  policy<{'riscv64': 'y'}>
-CONFIG_KPC2000_CORE                             policy<{'riscv64': 'm'}>
-CONFIG_KPC2000_SPI                              policy<{'riscv64': 'm'}>
-CONFIG_KPC2000_I2C                              policy<{'riscv64': 'm'}>
-CONFIG_KPC2000_DMA                              policy<{'riscv64': 'm'}>
 
 # Menu: Device Drivers >> Staging drivers >> Data acquisition support (comedi)
 CONFIG_COMEDI                                   policy<{'riscv64': 'm'}>
@@ -6607,7 +6584,6 @@ CONFIG_VFIO                                     policy<{'riscv64': 'm'}>
 CONFIG_VFIO_NOIOMMU                             policy<{'riscv64': 'y'}>
 CONFIG_VFIO_PCI                                 policy<{'riscv64': 'm'}>
 CONFIG_VFIO_MDEV                                policy<{'riscv64': 'm'}>
-CONFIG_VFIO_MDEV_DEVICE                         policy<{'riscv64': 'm'}>
 
 # Menu: Device Drivers >> VFIO Non-Privileged userspace driver framework >> VFIO support for platform devices
 
@@ -6664,7 +6640,6 @@ CONFIG_REGULATOR_AS3711                         policy<{'riscv64': 'm'}>
 CONFIG_REGULATOR_AS3722                         policy<{'riscv64': 'm'}>
 CONFIG_REGULATOR_AXP20X                         policy<{'riscv64': 'm'}>
 CONFIG_REGULATOR_BCM590XX                       policy<{'riscv64': 'm'}>
-CONFIG_REGULATOR_BD70528                        policy<{'riscv64': 'm'}>
 CONFIG_REGULATOR_BD71828                        policy<{'riscv64': 'm'}>
 CONFIG_REGULATOR_BD718XX                        policy<{'riscv64': 'm'}>
 CONFIG_REGULATOR_BD9571MWV                      policy<{'riscv64': 'm'}>
@@ -6774,7 +6749,6 @@ CONFIG_WATCHDOG_OPEN_TIMEOUT                    policy<{'riscv64': '0'}>
 CONFIG_WATCHDOG_SYSFS                           policy<{'riscv64': 'y'}>
 CONFIG_SOFT_WATCHDOG                            policy<{'riscv64': 'm'}>
 CONFIG_SOFT_WATCHDOG_PRETIMEOUT                 policy<{'riscv64': 'y'}>
-CONFIG_BD70528_WATCHDOG                         policy<{'riscv64': 'm'}>
 CONFIG_DA9052_WATCHDOG                          policy<{'riscv64': 'm'}>
 CONFIG_DA9055_WATCHDOG                          policy<{'riscv64': 'm'}>
 CONFIG_DA9063_WATCHDOG                          policy<{'riscv64': 'm'}>
@@ -6864,7 +6838,6 @@ CONFIG_BLK_DEV_INTEGRITY                        policy<{'riscv64': 'y'}>
 CONFIG_BLK_DEV_ZONED                            policy<{'riscv64': 'y'}>
 CONFIG_BLK_DEV_THROTTLING                       policy<{'riscv64': 'y'}>
 CONFIG_BLK_DEV_THROTTLING_LOW                   policy<{'riscv64': 'n'}>
-CONFIG_BLK_CMDLINE_PARSER                       policy<{'riscv64': 'y'}>
 CONFIG_BLK_WBT                                  policy<{'riscv64': 'y'}>
 CONFIG_BLK_CGROUP_IOLATENCY                     policy<{'riscv64': 'n'}>
 CONFIG_BLK_CGROUP_IOCOST                        policy<{'riscv64': 'y'}>
@@ -6941,7 +6914,6 @@ CONFIG_ZONEFS_FS                                policy<{'riscv64': 'm'}>
 CONFIG_FS_DAX                                   policy<{'riscv64': 'y'}>
 CONFIG_EXPORTFS_BLOCK_OPS                       policy<{'riscv64': 'y'}>
 CONFIG_FILE_LOCKING                             policy<{'riscv64': 'y'}>
-CONFIG_MANDATORY_FILE_LOCKING                   policy<{'riscv64': 'y'}>
 CONFIG_FS_ENCRYPTION                            policy<{'riscv64': 'y'}>
 CONFIG_FS_VERITY                                policy<{'riscv64': 'y'}>
 CONFIG_FS_VERITY_DEBUG                          policy<{'riscv64': 'n'}>
@@ -6983,14 +6955,11 @@ CONFIG_UDF_FS                                   policy<{'riscv64': 'm'}>
 # Menu: File systems >> Caches
 CONFIG_CACHEFILES                               policy<{'riscv64': 'm'}>
 CONFIG_CACHEFILES_DEBUG                         policy<{'riscv64': 'n'}>
-CONFIG_CACHEFILES_HISTOGRAM                     policy<{'riscv64': 'n'}>
 
 # Menu: File systems >> Caches >> General filesystem local caching manager
 CONFIG_FSCACHE                                  policy<{'riscv64': 'm'}>
 CONFIG_FSCACHE_STATS                            policy<{'riscv64': 'y'}>
-CONFIG_FSCACHE_HISTOGRAM                        policy<{'riscv64': 'n'}>
 CONFIG_FSCACHE_DEBUG                            policy<{'riscv64': 'n'}>
-CONFIG_FSCACHE_OBJECT_LIST                      policy<{'riscv64': 'n'}>
 
 # Menu: File systems >> DOS/FAT/EXFAT/NT Filesystems
 CONFIG_EXFAT_FS                                 policy<{'riscv64': 'm'}>
@@ -7119,10 +7088,9 @@ CONFIG_PSTORE_FTRACE                            policy<{'riscv64': 'n'}>
 CONFIG_PSTORE_RAM                               policy<{'riscv64': 'm'}>
 
 # Menu: File systems >> Miscellaneous filesystems >> Persistent store support >> Log panic/oops to a block device
-CONFIG_PSTORE_BLK                               policy<{'riscv64': '-'}>
-CONFIG_PSTORE_BLK_BLKDEV                        policy<{'riscv64': '-'}>
-CONFIG_PSTORE_BLK_KMSG_SIZE                     policy<{'riscv64': '-'}>
-CONFIG_PSTORE_BLK_MAX_REASON                    policy<{'riscv64': '-'}>
+CONFIG_PSTORE_BLK                               policy<{'riscv64': 'm'}>
+CONFIG_PSTORE_BLK_BLKDEV                        policy<{'riscv64': '""'}>
+CONFIG_PSTORE_BLK_MAX_REASON                    policy<{'riscv64': '2'}>
 
 # Menu: File systems >> Miscellaneous filesystems >> RomFS backing stores
 CONFIG_ROMFS_BACKED_BY_BLOCK                    policy<{'riscv64': 'y'}>
@@ -7278,7 +7246,6 @@ CONFIG_9P_FS_SECURITY                           policy<{'riscv64': 'y'}>
 CONFIG_CIFS                                     policy<{'riscv64': 'm'}>
 CONFIG_CIFS_STATS2                              policy<{'riscv64': 'n'}>
 CONFIG_CIFS_ALLOW_INSECURE_LEGACY               policy<{'riscv64': 'y'}>
-CONFIG_CIFS_WEAK_PW_HASH                        policy<{'riscv64': 'y'}>
 CONFIG_CIFS_UPCALL                              policy<{'riscv64': 'y'}>
 CONFIG_CIFS_XATTR                               policy<{'riscv64': 'y'}>
 CONFIG_CIFS_POSIX                               policy<{'riscv64': 'y'}>
@@ -7657,9 +7624,7 @@ CONFIG_NETDEV_NOTIFIER_ERROR_INJECT             policy<{'riscv64': 'n'}>
 # Menu: Kernel hacking >> Kernel Testing and Coverage >> Runtime Testing
 CONFIG_RUNTIME_TESTING_MENU                     policy<{'riscv64': 'y'}>
 CONFIG_LKDTM                                    policy<{'riscv64': 'n'}>
-CONFIG_TEST_LIST_SORT                           policy<{'riscv64': 'n'}>
 CONFIG_TEST_MIN_HEAP                            policy<{'riscv64': 'n'}>
-CONFIG_TEST_SORT                                policy<{'riscv64': 'n'}>
 CONFIG_BACKTRACE_SELF_TEST                      policy<{'riscv64': 'n'}>
 CONFIG_RBTREE_TEST                              policy<{'riscv64': 'n'}>
 CONFIG_REED_SOLOMON_TEST                        policy<{'riscv64': 'n'}>
@@ -7700,8 +7665,6 @@ CONFIG_KPROBES_SANITY_TEST                      policy<{'riscv64': 'n'}>
 #
 CONFIG_RUNTIME_TESTING_MENU                     flag<TESTING>
 CONFIG_LKDTM                                    flag<TESTING> flag<REVIEW>
-CONFIG_TEST_LIST_SORT                           flag<TESTING>
-CONFIG_TEST_SORT                                flag<TESTING>
 CONFIG_KPROBES_SANITY_TEST                      flag<TESTING>
 CONFIG_BACKTRACE_SELF_TEST                      flag<TESTING>
 CONFIG_RBTREE_TEST                              flag<TESTING>
@@ -7748,7 +7711,6 @@ CONFIG_DEBUG_SHIRQ                              policy<{'riscv64': 'n'}>
 CONFIG_DEBUG_KOBJECT                            policy<{'riscv64': 'n'}>
 CONFIG_DEBUG_CREDENTIALS                        policy<{'riscv64': 'n'}>
 CONFIG_DEBUG_WQ_FORCE_RR_CPU                    policy<{'riscv64': 'n'}>
-CONFIG_DEBUG_BLOCK_EXT_DEVT                     policy<{'riscv64': 'n'}>
 CONFIG_CPU_HOTPLUG_STATE_CONTROL                policy<{'riscv64': 'n'}>
 CONFIG_LATENCYTOP                               policy<{'riscv64': 'n'}>
 #
@@ -7971,7 +7933,6 @@ CONFIG_IDLE_PAGE_TRACKING                       policy<{'riscv64': 'y'}>
 CONFIG_PERCPU_STATS                             policy<{'riscv64': 'n'}>
 #
 CONFIG_DEFAULT_MMAP_MIN_ADDR                    mark<ENFORCED> note<LP:1418140 LP:1531327>
-CONFIG_TRANSPARENT_HUGEPAGE                     flag<REVIEW>
 CONFIG_MEM_SOFT_DIRTY                           flag<REVIEW>
 CONFIG_IDLE_PAGE_TRACKING                       flag<REVIEW> note<is there a cost associated with this?>
 CONFIG_PERCPU_STATS                             flag<REVIEW>
