@@ -6,11 +6,9 @@ Standards-Version: 3.9.4.0
 Build-Depends:
  debhelper-compat (= 10),
  cpio,
- kernel-wedge <!stage1> <!noudeb> <!cross> <!autopkgtest>,
- dctrl-tools <!stage1> <!noudeb> <!cross> <!autopkgtest>,
  kmod <!stage1>,
- libcap-dev <!stage1>,
  makedumpfile [amd64] <!stage1>,
+ libcap-dev <!stage1>,
  libelf-dev <!stage1>,
  libnewt-dev <!stage1>,
  libiberty-dev <!stage1>,
@@ -37,8 +35,8 @@ Build-Depends:
  libnuma-dev [amd64 arm64 ppc64el s390x] <!stage1>,
  dkms <!stage1>,
  curl <!stage1>,
- lz4 [amd64 s390x] <!stage1>,
- dwarves <!stage1>,
+ zstd [amd64 s390x] <!stage1>,
+ dwarves [amd64 arm64 armhf ppc64el s390x] <!stage1>,
 Build-Depends-Indep:
  xmlto <!stage1>,
  docbook-utils <!stage1>,
@@ -51,6 +49,12 @@ Build-Depends-Indep:
  python3-sphinx-rtd-theme <!stage1>,
  fontconfig <!stage1>,
  python3-docutils <!stage1>,
+ imagemagick <!stage1>,
+ graphviz <!stage1>,
+ dvipng <!stage1>,
+ fonts-noto-cjk <!stage1>,
+ latexmk <!stage1>,
+ librsvg2-bin <!stage1>,
 Vcs-Git: git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/=SERIES=
 XS-Testsuite: autopkgtest
 #XS-Testsuite-Depends: gcc-4.7 binutils
