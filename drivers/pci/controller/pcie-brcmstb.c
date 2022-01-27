@@ -1190,19 +1190,21 @@ static int brcm_pcie_setup(struct brcm_pcie *pcie)
 
 	writel(tmp, base + PCIE_MISC_MISC_CTRL);
 
-	/* Suppress AXI error responses and return 1s for read failures */
-	tmp = readl(base + PCIE_MISC_UBUS_CTRL);
-	u32p_replace_bits(&tmp, 1, PCIE_MISC_UBUS_CTRL_UBUS_PCIE_REPLY_ERR_DIS_MASK);
-	u32p_replace_bits(&tmp, 1, PCIE_MISC_UBUS_CTRL_UBUS_PCIE_REPLY_DECERR_DIS_MASK);
-	writel(tmp, base + PCIE_MISC_UBUS_CTRL);
-	writel(0xffffffff, base + PCIE_MISC_AXI_READ_ERROR_DATA);
+	if (pcie->type == BCM2712) {
+		/* Suppress AXI error responses and return 1s for read failures */
+		tmp = readl(base + PCIE_MISC_UBUS_CTRL);
+		u32p_replace_bits(&tmp, 1, PCIE_MISC_UBUS_CTRL_UBUS_PCIE_REPLY_ERR_DIS_MASK);
+		u32p_replace_bits(&tmp, 1, PCIE_MISC_UBUS_CTRL_UBUS_PCIE_REPLY_DECERR_DIS_MASK);
+		writel(tmp, base + PCIE_MISC_UBUS_CTRL);
+		writel(0xffffffff, base + PCIE_MISC_AXI_READ_ERROR_DATA);
 
-	/* Adjust completion timeout - defaults to a very tight value.
-	 * If a link retrain happens, don't prematurely terminate the transaction.
-	 * The value is specified in core clocks, so for the upper clockspeed of 750MHz
-	 * and a maximum link retrain time of 24ms, timeout = 14.4e6.
-	 */
-	writel(0xdbba00, base + PCIE_MISC_UBUS_TIMEOUT);
+		/* Adjust completion timeout - defaults to a very tight value.
+		 * If a link retrain happens, don't prematurely terminate the transaction.
+		 * The value is specified in core clocks, so for the upper clockspeed of 750MHz
+		 * and a maximum link retrain time of 24ms, timeout = 14.4e6.
+		 */
+		writel(0xdbba00, base + PCIE_MISC_UBUS_TIMEOUT);
+	}
 
 	/*
 	 * We ideally want the MSI target address to be located in the 32bit
