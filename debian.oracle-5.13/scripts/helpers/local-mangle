@@ -4,11 +4,20 @@
 
 # Do not enforce DMESG_RESTRICT in focal
 sed -i 's/CONFIG_SECURITY_DMESG_RESTRICT=y/# CONFIG_SECURITY_DMESG_RESTRICT is not set/' ${DEBIAN}/config/config.common.ubuntu
-sed -i "s/CONFIG_SECURITY_DMESG_RESTRICT                  policy<{'amd64': 'y', 'arm64': 'y', 'armhf': 'y', 'ppc64el': 'y', 's390x': 'y'}>/CONFIG_SECURITY_DMESG_RESTRICT                  policy<{'amd64': 'n', 'arm64': 'n', 'armhf': 'n', 'ppc64el': 'n', 's390x': 'n'}>/" ${DEBIAN}/config/annotations
+echo "CONFIG_SECURITY_DMESG_RESTRICT                     policy<{'amd64': 'n', 'arm64': 'n'}>" >> ${DEBIAN}/config/annotations
+
 
 # KCSAN cannot be enabled in focal, so make sure it's disabled in the
 # annotations file as well for all arches.
-sed -i "s/CONFIG_KCSAN                                    policy<{'amd64': 'n', 'arm64': '-', 'armhf': '-', 'ppc64el': '-', 's390x': '-'}>/CONFIG_KCSAN                                    policy<{'amd64': '-', 'arm64': '-', 'armhf': '-', 'ppc64el': '-', 's390x': '-'}>/" ${DEBIAN}/config/annotations
+echo "CONFIG_KCSAN                                       policy<{'amd64': '-', 'arm64': '-'}>" >> ${DEBIAN}/config/annotations
+
+# Do not enforce CONFIG_ARM64_BTI_KERNEL in Focal, as it depends on a newer
+# gcc version. Note that the config itself is already removed in an earlier
+# stage when 'make' is run, updating config 'GCC_VERSION' and removing
+# 'ARM64_BTI_KERNEL'.
+echo "CONFIG_ARM64_BTI_KERNEL                            policy<{'amd64': '-', 'arm64': '-'}>" >> ${DEBIAN}/config/annotations
+
+
 
 # Drop CONFIG_DEBUG_INFO_DWARF5 because we have a toolchain too old to support
 # this in focal.
@@ -19,11 +28,6 @@ sed -i 's/.*CONFIG_DEBUG_INFO_DWARF5.*/# CONFIG_DEBUG_INFO_DWARF5 is not set/' $
 # 64bit/amd64 builds.
 sed -i "s/CONFIG_INTEL_IOMMU_SVM                          policy<{'amd64': 'y', 'i386': 'y'}>/CONFIG_INTEL_IOMMU_SVM                          policy<{'amd64': 'y'}>/" ${DEBIAN}/config/annotations
 
-# Do not enforce CONFIG_ARM64_BTI_KERNEL in Focal, as it depends on a newer
-# gcc version. Note that the config itself is already removed in an earlier
-# stage when 'make' is run, updating config 'GCC_VERSION' and removing
-# 'ARM64_BTI_KERNEL'.
-sed -i "/CONFIG_ARM64_BTI_KERNEL                         policy<{'arm64': 'y'}>/d" ${DEBIAN}/config/annotations
 
 # Re-enable AUFS
 #
