@@ -1,5 +1,5 @@
 Name:    linux-gcp-5.13
-Version: 6.13.0
+Version: 5.13.0
 Series:  20.04 (focal)
 Description:
     This is the source code for the Ubuntu linux kernel for the 20.04 series. This
