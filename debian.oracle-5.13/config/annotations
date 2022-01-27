@@ -118,7 +118,6 @@ CONFIG_SND_SOC_INTEL_SKL                           policy<{'amd64': '-'}>
 CONFIG_DELL_WMI_SYSMAN                             policy<{'amd64': '-'}> 
 CONFIG_VIDEO_IPU3_CIO2                             policy<{'amd64': 'n'}> 
 CONFIG_SND_SOC_INTEL_KBL_RT5663_RT5514_MAX98927_MACH policy<{'amd64': '-'}> 
-CONFIG_NET_DSA_TAG_OCELOT                          policy<{'amd64': '-', 'arm64': 'm'}> 
 CONFIG_PWM_LPSS_PCI                                policy<{'amd64': 'm'}> 
 CONFIG_SCSI_SIM710                                 policy<{'amd64': 'y'}> 
 CONFIG_SND_SOC_INTEL_BYT_CHT_DA7213_MACH           policy<{'amd64': 'n'}> 
@@ -338,7 +337,7 @@ CONFIG_SND_SOC_RT711_SDW                           policy<{'amd64': '-', 'arm64'
 CONFIG_VDPA_SIM                                    policy<{'amd64': '-', 'arm64': '-'}> 
 CONFIG_PCI_J721E_EP                                policy<{'arm64': 'n', 'armhf': 'y', 'ppc64el': 'y'}> 
 CONFIG_SM_GCC_8250                                 policy<{'arm64': '-', 'armhf': 'm'}> 
-CONFIG_DRM_BOCHS                                   policy<{'amd64': 'n', 'arm64': 'n'}> 
+CONFIG_DRM_BOCHS                                   policy<{'amd64': 'm', 'arm64': 'm'}> note<needed for virtual display support in VMs - LP #1957744 >
 CONFIG_ARCH_R8A77950                               policy<{'arm64': '-'}> 
 CONFIG_LEDS_LP50XX                                 policy<{'amd64': 'n', 'arm64': 'n'}> 
 CONFIG_NET_VENDOR_MEDIATEK                         policy<{'arm64': '-', 'armhf': 'n'}> 
@@ -2045,6 +2044,6 @@ CONFIG_COMEDI_NI_MIO_CS                            policy<{'amd64': 'm', 'arm64'
 CONFIG_ARCH_REALTEK                                policy<{'arm64': 'n', 'armhf': 'y'}> 
 CONFIG_ACCESSIBILITY                               policy<{'amd64': 'n', 'arm64': 'n'}>
 CONFIG_SPEAKUP                                     policy<{'amd64': '-', 'arm64': '-'}>
-CONFIG_SECURITY_DMESG_RESTRICT                     policy<{'amd64': 'n', 'arm64': 'n'}> not <see local-mangle file for more info>
-CONFIG_ARM64_BTI_KERNEL                            policy<{'amd64': '-', 'arm64': '-'}> not <see local-mangle file for more info>
-CONFIG_KCSAN                                       policy<{'amd64': '-', 'arm64': '-'}> not <see local-mangle file for more info>
+CONFIG_SECURITY_DMESG_RESTRICT                     policy<{'amd64': 'n', 'arm64': 'n'}>
+CONFIG_KCSAN                                       policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_ARM64_BTI_KERNEL                            policy<{'amd64': '-', 'arm64': '-'}>
