@@ -1120,13 +1120,12 @@ static int brcm_pcie_setup(struct brcm_pcie *pcie)
 	/* Wait for SerDes to be stable */
 	usleep_range(100, 200);
 
-	/* Fix for L1SS errata - PM clock adjust and don't disable PLL in L1.2 */
+	/* Fix for L1SS errata */
 	if (pcie->type == BCM2712) {
 		tmp = readl(base + PCIE_RC_PL_PHY_CTL_15);
 		tmp &= ~PCIE_RC_PL_PHY_CTL_15_PM_CLK_PERIOD_MASK;
 		/* PM clock period is 18.52ns (round down) */
 		tmp |= 0x12;
-		tmp |= PCIE_RC_PL_PHY_CTL_15_DIS_PLL_PD_MASK;
 		writel(tmp, base + PCIE_RC_PL_PHY_CTL_15);
 	}
 
