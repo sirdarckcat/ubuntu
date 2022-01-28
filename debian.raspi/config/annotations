@@ -38,10 +38,9 @@ CONFIG_BRCM_TRACING				policy<{'arm64': 'n', 'armhf': 'n'}> mark<ENFORCED> note<
 CONFIG_PREEMPT					policy<{'arm64': 'y', 'armhf': 'y'}> mark<ENFORCED> note<LP: #1890808>
 
 # The following are required after enabling the inclusion of the master annotations at the top of this file
-CONFIG_ACPI_CUSTOM_METHOD			policy<{'arm64': '-'}> mark<ENFORCED> note<override master annotations>
 CONFIG_ARM_SMMU_DISABLE_BYPASS_BY_DEFAULT	policy<{'arm64': '-'}> mark<ENFORCED> note<override master annotations>
 CONFIG_CMA_SIZE_MBYTES				policy<{'arm64': '5', 'armhf': '5'}> mark<ENFORCED> note<override master annotations>
-CONFIG_CRYPTO_DEV_HISI_ZIP			policy<{'arm64': '-'}> mark<ENFORCED> note<override master annotations>
+CONFIG_CRYPTO_DEV_HISI_ZIP			policy<{'arm64': 'n'}> mark<ENFORCED> note<override master annotations>
 CONFIG_FW_LOADER_USER_HELPER_FALLBACK		policy<{'arm64': '-', 'armhf': '-'}> mark<ENFORCED> note<override master annotations>
 CONFIG_GPIO_TWL4030				policy<{'arm64': 'm', 'armhf': 'm'}> mark<ENFORCED> note<override master annotations>
 CONFIG_HOTPLUG_PCI_PCIE				policy<{'arm64': '-'}> mark<ENFORCED> note<override master annotations>
