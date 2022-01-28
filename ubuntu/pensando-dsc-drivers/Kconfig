@@ -1,3 +1,5 @@
+if ARCH_PENSANDO
+
 config IONIC_MNIC
 	tristate "Pensando ionic mnic driver"
 	help
@@ -27,3 +29,4 @@ config MNET_UIO_PDRV_GENIRQ
 	  interrupts in the interrupt controller using the write() syscall.
 
 	  If you don't know what to do here, say N.
+endif
