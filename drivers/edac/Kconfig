@@ -524,4 +524,11 @@ config EDAC_BLUEFIELD
 	  Support for error detection and correction on the
 	  Mellanox BlueField SoCs.
 
+config EDAC_ELBA
+	tristate "Pensando Elba Memory ECC"
+	depends on ARCH_PENSANDO_ELBA_SOC
+	help
+	  Support for error detection and correction on the
+	  Pensando Elba SoC.
+
 endif # EDAC
