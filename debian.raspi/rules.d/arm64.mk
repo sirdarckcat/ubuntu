@@ -8,8 +8,6 @@ kernel_file		= arch/$(build_arch)/boot/Image.gz
 install_file		= vmlinuz
 no_dumpfile		= true
 
-loader			= grub
-
 do_linux_tools		= true
 do_tools_usbip		= true
 do_tools_cpupower	= true
@@ -22,5 +20,5 @@ do_dtbs			= true
 do_libc_dev_package	= false
 do_doc_package		= false
 do_source_package	= false
-do_zfs			= true
 do_extras_package	= true
+do_zfs			= true
