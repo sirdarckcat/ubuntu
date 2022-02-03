@@ -6,11 +6,7 @@
 sed -i 's/CONFIG_SECURITY_DMESG_RESTRICT=y/# CONFIG_SECURITY_DMESG_RESTRICT is not set/' ${DEBIAN}/config/config.common.ubuntu
 sed -i "s/CONFIG_SECURITY_DMESG_RESTRICT                  policy<{'riscv64': 'y'}>/CONFIG_SECURITY_DMESG_RESTRICT                  policy<{'riscv64': 'n'}>/" ${DEBIAN}/config/annotations
 
-# Disable DEBUG_INFO_BTF (pahole version is too old in focal)
-sed -i 's/CONFIG_DEBUG_INFO_BTF=y/# CONFIG_DEBUG_INFO_BTF is not set/' ${DEBIAN}/config/config.common.ubuntu
-sed -i "s/CONFIG_DEBUG_INFO_BTF                           policy<{'riscv64': 'y'}>/CONFIG_DEBUG_INFO_BTF                           policy<{'riscv64': 'n'}>/" ${DEBIAN}/config/annotations
-
-# Maybe related to BTF above, the updateconfig in Focal will ask about CONFIG_KASAN since it
+# The updateconfig in Focal will ask about CONFIG_KASAN since it
 # is nowhere in debian.riscv/config ...
 if ! grep -q CONFIG_KASAN ${DEBIAN}/config/config.common.ubuntu; then
 	sed -i -e '/CONFIG_KCMP=y/i\# CONFIG_KASAN is not set' \
