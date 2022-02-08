@@ -28,14 +28,14 @@
 #include <linux/errno.h>
 #include <linux/list.h>
 
+#include <drm/drm_connector.h>
+
 struct backlight_device;
 struct device_node;
 struct drm_connector;
 struct drm_device;
 struct drm_panel;
 struct display_timing;
-
-enum drm_panel_orientation;
 
 /**
  * struct drm_panel_funcs - perform operations on a given panel
