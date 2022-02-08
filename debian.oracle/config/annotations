@@ -47,6 +47,11 @@ CONFIG_ANDROID_BINDER_IPC                          policy<{'amd64': 'm', 'arm64'
 CONFIG_ANDROID_BINDER_IPC                          mark<ENFORCED> note<needed for Anbox - LP #1928686> 
 CONFIG_ASHMEM                                      policy<{'amd64': 'm', 'arm64':'m'}> 
 CONFIG_ASHMEM                                      mark<ENFORCED> note<needed for Anbox - LP #1928686> 
+CONFIG_SERIAL_AMBA_PL011                           policy<{'arm64':'y'}>
+CONFIG_SERIAL_AMBA_PL011                           mark<ENFORCED> note<needed for serial support in VMs>
+CONFIG_SERIAL_AMBA_PL011_CONSOLE                   policy<{'arm64':'y'}>
+CONFIG_SERIAL_AMBA_PL011_CONSOLE                   mark<ENFORCED> note<needed for serial support in VMs>
+
 
 CONFIG_SND_SOC_INTEL_CHT_BSW_MAX98090_TI_MACH      policy<{'amd64': 'n'}> 
 CONFIG_SND_SOC_SOF_INTEL_SOUNDWIRE                 policy<{'amd64': '-'}> 
@@ -1432,7 +1437,6 @@ CONFIG_PWM_SPRD                                    policy<{'arm64': '-'}>
 CONFIG_SPRD_THERMAL                                policy<{'arm64': '-'}> 
 CONFIG_DRM_RCAR_VSP                                policy<{'arm64': '-', 'armhf': 'y'}> 
 CONFIG_SM_GCC_8150                                 policy<{'arm64': '-', 'armhf': 'm'}> 
-CONFIG_SERIAL_AMBA_PL011                           policy<{'arm64': 'm', 'armhf': 'y'}> 
 CONFIG_BCM2835_POWER                               policy<{'arm64': '-'}> 
 CONFIG_FPGA_MGR_ZYNQMP_FPGA                        policy<{'arm64': '-'}> 
 CONFIG_MTD_NAND_TEGRA                              policy<{'arm64': '-', 'armhf-generic': 'm'}> 
@@ -1834,7 +1838,6 @@ CONFIG_ROCKCHIP_LVDS                               policy<{'arm64': '-', 'armhf'
 CONFIG_GPIO_XLP                                    policy<{'arm64': '-'}> 
 CONFIG_SERIAL_OWL                                  policy<{'arm64': '-', 'armhf': 'y'}> 
 CONFIG_CRYPTO_DEV_MARVELL_CESA                     policy<{'arm64': '-', 'armhf': 'm'}> 
-CONFIG_SERIAL_AMBA_PL011_CONSOLE                   policy<{'arm64': '-', 'armhf': 'y'}> 
 CONFIG_CLK_IMX8MN                                  policy<{'arm64': '-', 'armhf-generic': 'y'}> 
 CONFIG_RESET_BRCMSTB                               policy<{'arm64': '-'}> 
 CONFIG_GPIO_PMIC_EIC_SPRD                          policy<{'arm64': '-'}> 
