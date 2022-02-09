@@ -1,0 +1,15 @@
+repo_list=(
+	"http://archive.ubuntu.com/ubuntu/pool/main/l/linux-oracle"
+	"http://ports.ubuntu.com/ubuntu-ports/pool/main/l/linux-oracle"
+	"http://archive.ubuntu.com/ubuntu/pool/universe/l/linux-oracle"
+	"http://ports.ubuntu.com/ubuntu-ports/pool/universe/l/linux-oracle"
+	"http://ppa.launchpad.net/canonical-kernel-team/ppa/ubuntu/pool/main/l/linux-oracle"
+	"http://ppa.launchpad.net/canonical-kernel-team/oracle/ubuntu/pool/main/l/linux-oracle"
+	"http://ppa.launchpad.net/canonical-kernel-team/unstable/ubuntu/pool/main/l/linux-oracle"
+	"http://ppa.launchpad.net/canonical-kernel-team/bootstrap/ubuntu/pool/main/l/linux-oracle"
+)
+
+package_prefixes linux-buildinfo
+
+getall amd64 oracle
+getall arm64 oracle
