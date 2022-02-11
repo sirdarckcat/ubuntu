@@ -1033,6 +1033,7 @@ struct xfrm_offload {
 	__u32			orig_mac_len;
 
 	__u8			proto;
+	__u8			inner_ipproto;
 };
 
 struct sec_path {
