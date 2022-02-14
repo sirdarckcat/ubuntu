@@ -1,0 +1,18 @@
+# Menu: HEADER
+# FORMAT: 3
+# ARCH: x86 
+
+include ../../debian.master/config/annotations
+CONFIG_SHIFT_FS_POSIX_ACL                       policy<{'amd64': 'y', 'arm64': 'y', 'armhf': 'y', 'ppc64el': 'y', 's390x': 'y'}>
+
+CONFIG_HZ_1000 policy<{'amd64': 'n'}>
+CONFIG_PREEMPT policy<{'amd64': 'n'}>
+CONFIG_COMEDI_TESTS_EXAMPLE policy<{'amd64': 'm'}>
+CONFIG_LATENCYTOP policy<{'amd64': 'n'}> 
+CONFIG_COMEDI_TESTS_NI_ROUTES policy<{'amd64': 'm'}>
+CONFIG_PREEMPT_VOLUNTARY policy<{'amd64': 'y'}>
+CONFIG_HZ_250 policy<{'amd64': 'y'}>
+CONFIG_TEST_DIV64 policy<{'amd64': 'n'}>
+
+CONFIG_SYSFB_SIMPLEFB policy<{'amd64': 'n', 'arm64': 'y', 'armhf': 'y'}>
+
