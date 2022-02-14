@@ -65,17 +65,13 @@ CONFIG_CRYPTO_POLY1305                          policy<{'riscv64': 'm'}>
 CONFIG_CRYPTO_MD4                               policy<{'riscv64': 'm'}>
 CONFIG_CRYPTO_MD5                               policy<{'riscv64': 'y'}>
 CONFIG_CRYPTO_MICHAEL_MIC                       policy<{'riscv64': 'm'}>
-CONFIG_CRYPTO_RMD128                            policy<{'riscv64': 'm'}>
 CONFIG_CRYPTO_RMD160                            policy<{'riscv64': 'm'}>
-CONFIG_CRYPTO_RMD256                            policy<{'riscv64': 'm'}>
-CONFIG_CRYPTO_RMD320                            policy<{'riscv64': 'm'}>
 CONFIG_CRYPTO_SHA1                              policy<{'riscv64': 'y'}>
 CONFIG_CRYPTO_SHA256                            policy<{'riscv64': 'y'}>
 CONFIG_CRYPTO_SHA512                            policy<{'riscv64': 'y'}>
 CONFIG_CRYPTO_SHA3                              policy<{'riscv64': 'm'}>
 CONFIG_CRYPTO_SM3                               policy<{'riscv64': 'm'}>
 CONFIG_CRYPTO_STREEBOG                          policy<{'riscv64': 'm'}>
-CONFIG_CRYPTO_TGR192                            policy<{'riscv64': 'm'}>
 CONFIG_CRYPTO_WP512                             policy<{'riscv64': 'm'}>
 CONFIG_CRYPTO_AES                               policy<{'riscv64': 'y'}>
 CONFIG_CRYPTO_AES_TI                            policy<{'riscv64': 'm'}>
@@ -85,7 +81,6 @@ CONFIG_CRYPTO_CAST5                             policy<{'riscv64': 'm'}>
 CONFIG_CRYPTO_CAST6                             policy<{'riscv64': 'm'}>
 CONFIG_CRYPTO_DES                               policy<{'riscv64': 'm'}>
 CONFIG_CRYPTO_FCRYPT                            policy<{'riscv64': 'm'}>
-CONFIG_CRYPTO_SALSA20                           policy<{'riscv64': 'm'}>
 CONFIG_CRYPTO_CHACHA20                          policy<{'riscv64': 'm'}>
 CONFIG_CRYPTO_SERPENT                           policy<{'riscv64': 'm'}>
 CONFIG_CRYPTO_SM4                               policy<{'riscv64': 'm'}>
@@ -140,7 +135,6 @@ CONFIG_SYSTEM_TRUSTED_KEYRING                   policy<{'riscv64': 'y'}>
 CONFIG_SYSTEM_TRUSTED_KEYS                      policy<{'riscv64': '"debian/canonical-certs.pem"'}>
 CONFIG_SYSTEM_EXTRA_CERTIFICATE                 policy<{'riscv64': 'y'}>
 CONFIG_SYSTEM_EXTRA_CERTIFICATE_SIZE            policy<{'riscv64': '4096'}>
-CONFIG_SYSTEM_REVOCATION_KEYS                   policy<{'riscv64': '"debian/canonical-revoked-certs.pem"'}>
 CONFIG_SECONDARY_TRUSTED_KEYRING                policy<{'riscv64': 'y'}>
 
 # Menu: Cryptographic API >> Hardware crypto devices
@@ -222,14 +216,12 @@ CONFIG_BLK_DEV_PCIESSD_MTIP32XX                 policy<{'riscv64': 'm'}>
 CONFIG_ZRAM                                     policy<{'riscv64': 'm'}>
 CONFIG_ZRAM_WRITEBACK                           policy<{'riscv64': 'y'}>
 CONFIG_ZRAM_MEMORY_TRACKING                     policy<{'riscv64': 'y'}>
-CONFIG_BLK_DEV_UMEM                             policy<{'riscv64': 'm'}>
 CONFIG_BLK_DEV_LOOP                             policy<{'riscv64': 'y'}>
 CONFIG_BLK_DEV_LOOP_MIN_COUNT                   policy<{'riscv64': '8'}>
 CONFIG_BLK_DEV_CRYPTOLOOP                       policy<{'riscv64': 'm'}>
 CONFIG_BLK_DEV_DRBD                             policy<{'riscv64': 'm'}>
 CONFIG_DRBD_FAULT_INJECTION                     policy<{'riscv64': 'n'}>
 CONFIG_BLK_DEV_NBD                              policy<{'riscv64': 'm'}>
-CONFIG_BLK_DEV_SKD                              policy<{'riscv64': 'm'}>
 CONFIG_BLK_DEV_SX8                              policy<{'riscv64': 'm'}>
 CONFIG_BLK_DEV_RAM                              policy<{'riscv64': 'm'}>
 CONFIG_BLK_DEV_RAM_COUNT                        policy<{'riscv64': '16'}>
@@ -244,7 +236,6 @@ CONFIG_BLK_DEV_RSXX                             policy<{'riscv64': 'm'}>
 CONFIG_BLK_DEV_RNBD_CLIENT                      policy<{'riscv64': 'm'}>
 CONFIG_BLK_DEV_RNBD_SERVER                      policy<{'riscv64': 'm'}>
 #
-CONFIG_BLK_DEV_UMEM                             note<experimental NVRAM disk driver -- opt-in>
 CONFIG_CDROM_PKTCDVD_WCACHE                     mark<DANGEROUS>
 CONFIG_VIRTIO_BLK                               note<KVM paravirt support -- not autoloadable>
 CONFIG_BLK_DEV_RAM                              note<LP #1593293>
@@ -283,7 +274,6 @@ CONFIG_MHI_BUS                                  policy<{'riscv64': 'm'}>
 
 # Menu: Device Drivers >> Character devices
 CONFIG_DEVMEM                                   policy<{'riscv64': 'y'}>
-CONFIG_DEVKMEM                                  policy<{'riscv64': 'n'}>
 CONFIG_TTY_PRINTK                               policy<{'riscv64': 'y'}>
 CONFIG_TTY_PRINTK_LEVEL                         policy<{'riscv64': '6'}>
 CONFIG_PRINTER                                  policy<{'riscv64': 'm'}>
@@ -298,7 +288,6 @@ CONFIG_XILLYBUS                                 policy<{'riscv64': 'm'}>
 CONFIG_XILLYBUS_PCIE                            policy<{'riscv64': 'm'}>
 CONFIG_XILLYBUS_OF                              policy<{'riscv64': 'm'}>
 #
-CONFIG_DEVKMEM                                  mark<ENFORCED> note</dev/kmem is a large attack vector>
 
 # Menu: Device Drivers >> Character devices >> Enable TTY
 CONFIG_TTY                                      policy<{'riscv64': 'y'}>
@@ -314,20 +303,14 @@ CONFIG_GOLDFISH_TTY                             policy<{'riscv64': 'm'}>
 CONFIG_N_GSM                                    policy<{'riscv64': 'm'}>
 CONFIG_NOZOMI                                   policy<{'riscv64': 'm'}>
 CONFIG_NULL_TTY                                 policy<{'riscv64': 'm'}>
-CONFIG_TRACE_ROUTER                             policy<{'riscv64': 'm'}>
-CONFIG_TRACE_SINK                               policy<{'riscv64': 'm'}>
 #
 CONFIG_N_GSM                                    note<LP#1404670>
 
 # Menu: Device Drivers >> Character devices >> Enable TTY >> Non-standard serial port support
 CONFIG_SERIAL_NONSTANDARD                       policy<{'riscv64': 'y'}>
-CONFIG_ROCKETPORT                               policy<{'riscv64': 'm'}>
-CONFIG_CYCLADES                                 policy<{'riscv64': 'm'}>
-CONFIG_CYZ_INTR                                 policy<{'riscv64': 'n'}>
 CONFIG_MOXA_INTELLIO                            policy<{'riscv64': 'm'}>
 CONFIG_MOXA_SMARTIO                             policy<{'riscv64': 'm'}>
 CONFIG_SYNCLINK_GT                              policy<{'riscv64': 'm'}>
-CONFIG_ISI                                      policy<{'riscv64': 'm'}>
 CONFIG_N_HDLC                                   policy<{'riscv64': 'm'}>
 
 # Menu: Device Drivers >> Character devices >> Enable TTY >> Serial drivers
@@ -345,7 +328,6 @@ CONFIG_SERIAL_SC16IS7XX                         policy<{'riscv64': 'm'}>
 CONFIG_SERIAL_SC16IS7XX_I2C                     policy<{'riscv64': 'y'}>
 CONFIG_SERIAL_SC16IS7XX_SPI                     policy<{'riscv64': 'y'}>
 CONFIG_SERIAL_ALTERA_JTAGUART                   policy<{'riscv64': 'm'}>
-CONFIG_SERIAL_IFX6X60                           policy<{'riscv64': 'n'}>
 CONFIG_SERIAL_XILINX_PS_UART                    policy<{'riscv64': 'm'}>
 CONFIG_SERIAL_ARC                               policy<{'riscv64': 'm'}>
 CONFIG_SERIAL_ARC_NR_PORTS                      policy<{'riscv64': '1'}>
@@ -598,7 +580,6 @@ CONFIG_SIOX_BUS_GPIO                            policy<{'riscv64': 'm'}>
 # Menu: Device Drivers >> External Connector Class (extcon) support
 CONFIG_EXTCON                                   policy<{'riscv64': 'y'}>
 CONFIG_EXTCON_ADC_JACK                          policy<{'riscv64': 'm'}>
-CONFIG_EXTCON_ARIZONA                           policy<{'riscv64': 'm'}>
 CONFIG_EXTCON_FSA9480                           policy<{'riscv64': 'm'}>
 CONFIG_EXTCON_GPIO                              policy<{'riscv64': 'm'}>
 CONFIG_EXTCON_MAX14577                          policy<{'riscv64': 'm'}>
@@ -932,7 +913,6 @@ CONFIG_DRM_AMDGPU                               policy<{'riscv64': 'm'}>
 CONFIG_DRM_AMDGPU_SI                            policy<{'riscv64': 'y'}>
 CONFIG_DRM_AMDGPU_CIK                           policy<{'riscv64': 'y'}>
 CONFIG_DRM_AMDGPU_USERPTR                       policy<{'riscv64': 'y'}>
-CONFIG_DRM_AMDGPU_GART_DEBUGFS                  policy<{'riscv64': 'n'}>
 #
 CONFIG_DRM_AMDGPU_CIK                           note<LP:1510405>
 CONFIG_DRM_AMDGPU_CIK                           note<LP:1661887 for zesty>
@@ -1325,7 +1305,6 @@ CONFIG_HID_PICOLCD_LEDS                         policy<{'riscv64': 'y'}>
 CONFIG_HID_PICOLCD_CIR                          policy<{'riscv64': 'y'}>
 
 # Menu: Device Drivers >> HID support >> I2C HID support
-CONFIG_I2C_HID                                  policy<{'riscv64': 'm'}>
 
 # Menu: Device Drivers >> HID support >> Intel ISH HID support
 
@@ -2555,7 +2534,6 @@ CONFIG_MMC_TEST                                 policy<{'riscv64': 'n'}>
 CONFIG_MMC_DEBUG                                policy<{'riscv64': 'n'}>
 CONFIG_MMC_ALCOR                                policy<{'riscv64': 'm'}>
 CONFIG_MMC_TIFM_SD                              policy<{'riscv64': 'm'}>
-CONFIG_MMC_GOLDFISH                             policy<{'riscv64': 'm'}>
 CONFIG_MMC_SPI                                  policy<{'riscv64': 'y'}>
 CONFIG_MMC_CB710                                policy<{'riscv64': 'm'}>
 CONFIG_MMC_VIA_SDMMC                            policy<{'riscv64': 'm'}>
@@ -2629,6 +2607,7 @@ CONFIG_RFD_FTL                                  policy<{'riscv64': 'm'}>
 CONFIG_SSFDC                                    policy<{'riscv64': 'm'}>
 CONFIG_SM_FTL                                   policy<{'riscv64': 'm'}>
 CONFIG_MTD_OOPS                                 policy<{'riscv64': 'm'}>
+CONFIG_MTD_PSTORE                               policy<{'riscv64': '-'}>
 CONFIG_MTD_SWAP                                 policy<{'riscv64': 'm'}>
 CONFIG_MTD_PARTITIONED_MASTER                   policy<{'riscv64': 'n'}>
 CONFIG_MTD_NAND_ECC_SW_HAMMING_SMC              policy<{'riscv64': 'n'}>
@@ -2776,7 +2755,7 @@ CONFIG_LATTICE_ECP3_CONFIG                      policy<{'riscv64': 'm'}>
 CONFIG_SRAM                                     policy<{'riscv64': 'y'}>
 CONFIG_PCI_ENDPOINT_TEST                        policy<{'riscv64': 'n'}>
 CONFIG_XILINX_SDFEC                             policy<{'riscv64': 'n'}>
-CONFIG_PVPANIC                                  policy<{'riscv64': 'm'}>
+CONFIG_PVPANIC                                  policy<{'riscv64': 'y'}>
 CONFIG_CB710_CORE                               policy<{'riscv64': 'm'}>
 CONFIG_CB710_DEBUG                              policy<{'riscv64': 'n'}>
 CONFIG_SENSORS_LIS3_SPI                         policy<{'riscv64': 'm'}>
@@ -2878,9 +2857,6 @@ CONFIG_MFD_SI476X_CORE                          policy<{'riscv64': 'm'}>
 CONFIG_MFD_SM501                                policy<{'riscv64': 'm'}>
 CONFIG_MFD_SM501_GPIO                           policy<{'riscv64': 'y'}>
 CONFIG_MFD_SKY81452                             policy<{'riscv64': 'm'}>
-CONFIG_ABX500_CORE                              policy<{'riscv64': 'y'}>
-CONFIG_AB3100_CORE                              policy<{'riscv64': 'y'}>
-CONFIG_AB3100_OTP                               policy<{'riscv64': 'm'}>
 CONFIG_MFD_STMPE                                policy<{'riscv64': 'y'}>
 CONFIG_MFD_SYSCON                               policy<{'riscv64': 'y'}>
 CONFIG_MFD_TI_AM335X_TSCADC                     policy<{'riscv64': 'm'}>
@@ -3741,7 +3717,6 @@ CONFIG_NET_DSA_LANTIQ_GSWIP                     policy<{'riscv64': 'm'}>
 CONFIG_NET_DSA_MT7530                           policy<{'riscv64': 'm'}>
 CONFIG_NET_DSA_MV88E6060                        policy<{'riscv64': 'm'}>
 CONFIG_NET_DSA_MV88E6XXX                        policy<{'riscv64': 'm'}>
-CONFIG_NET_DSA_MV88E6XXX_GLOBAL2                policy<{'riscv64': 'y'}>
 CONFIG_NET_DSA_MV88E6XXX_PTP                    policy<{'riscv64': 'y'}>
 CONFIG_NET_DSA_AR9331                           policy<{'riscv64': 'm'}>
 CONFIG_NET_DSA_SJA1105                          policy<{'riscv64': 'm'}>
@@ -3790,8 +3765,6 @@ CONFIG_NET_VENDOR_AMAZON                        policy<{'riscv64': 'y'}>
 CONFIG_ENA_ETHERNET                             policy<{'riscv64': 'm'}>
 CONFIG_NET_VENDOR_AQUANTIA                      policy<{'riscv64': 'y'}>
 CONFIG_NET_VENDOR_ARC                           policy<{'riscv64': 'y'}>
-CONFIG_NET_VENDOR_AURORA                        policy<{'riscv64': 'y'}>
-CONFIG_AURORA_NB8800                            policy<{'riscv64': 'm'}>
 CONFIG_NET_VENDOR_BROCADE                       policy<{'riscv64': 'y'}>
 CONFIG_BNA                                      policy<{'riscv64': 'm'}>
 CONFIG_NET_VENDOR_CADENCE                       policy<{'riscv64': 'y'}>
@@ -4157,10 +4130,8 @@ CONFIG_XILINX_LL_TEMAC                          policy<{'riscv64': 'm'}>
 # Menu: Device Drivers >> Network device support >> FDDI driver support
 CONFIG_FDDI                                     policy<{'riscv64': 'y'}>
 CONFIG_DEFXX                                    policy<{'riscv64': 'm'}>
-CONFIG_DEFXX_MMIO                               policy<{'riscv64': 'n'}>
 CONFIG_SKFP                                     policy<{'riscv64': 'm'}>
 #
-CONFIG_DEFXX_MMIO                               flag<REVIEW>
 
 # Menu: Device Drivers >> Network device support >> IEEE 802.15.4 drivers
 CONFIG_IEEE802154_DRIVERS                       policy<{'riscv64': 'm'}>
@@ -4372,8 +4343,6 @@ CONFIG_PC300TOO                                 policy<{'riscv64': 'm'}>
 CONFIG_FARSYNC                                  policy<{'riscv64': 'm'}>
 
 # Menu: Device Drivers >> Network device support >> WiMAX Wireless Broadband devices
-CONFIG_WIMAX_I2400M_USB                         policy<{'riscv64': 'm'}>
-CONFIG_WIMAX_I2400M_DEBUG_LEVEL                 policy<{'riscv64': '8'}>
 
 # Menu: Device Drivers >> Network device support >> Wireless LAN
 CONFIG_WLAN                                     policy<{'riscv64': 'y'}>
@@ -4632,6 +4601,15 @@ CONFIG_RTW88_8822CE                             policy<{'riscv64': 'm'}>
 CONFIG_RTW88_8723DE                             policy<{'riscv64': 'm'}>
 CONFIG_RTW88_DEBUG                              policy<{'riscv64': 'y'}>
 CONFIG_RTW88_DEBUGFS                            policy<{'riscv64': 'y'}>
+
+# Menu: Device Drivers >> Network device support >> Wireless LAN >> Realtek devices >> Realtek 802.11ax wireless chips support
+CONFIG_RTW89                                    policy<{'riscv64': 'm'}>
+CONFIG_RTW89_CORE                               policy<{'riscv64': 'm'}>
+CONFIG_RTW89_PCI                                policy<{'riscv64': 'm'}>
+CONFIG_RTW89_8852AE                             policy<{'riscv64': 'm'}>
+CONFIG_RTW89_DEBUG                              policy<{'riscv64': 'y'}>
+CONFIG_RTW89_DEBUGMSG                           policy<{'riscv64': 'y'}>
+CONFIG_RTW89_DEBUGFS                            policy<{'riscv64': 'y'}>
 
 # Menu: Device Drivers >> Network device support >> Wireless LAN >> Realtek devices >> Realtek rtlwifi family of devices
 CONFIG_RTL_CARDS                                policy<{'riscv64': 'm'}>
@@ -5065,7 +5043,6 @@ CONFIG_RTC_DRV_V3020                            policy<{'riscv64': 'm'}>
 CONFIG_RTC_DRV_WM831X                           policy<{'riscv64': 'm'}>
 CONFIG_RTC_DRV_WM8350                           policy<{'riscv64': 'm'}>
 CONFIG_RTC_DRV_PCF50633                         policy<{'riscv64': 'm'}>
-CONFIG_RTC_DRV_AB3100                           policy<{'riscv64': 'm'}>
 CONFIG_RTC_DRV_ZYNQMP                           policy<{'riscv64': 'm'}>
 CONFIG_RTC_DRV_CADENCE                          policy<{'riscv64': 'm'}>
 CONFIG_RTC_DRV_FTRTC010                         policy<{'riscv64': 'm'}>
@@ -5145,6 +5122,8 @@ CONFIG_REMOTEPROC                               policy<{'riscv64': 'n'}>
 
 # Menu: Device Drivers >> Reset Controller Support
 CONFIG_RESET_CONTROLLER                         policy<{'riscv64': 'y'}>
+CONFIG_RESET_BRCMSTB_RESCAL                     policy<{'riscv64': '-'}>
+CONFIG_RESET_INTEL_GW                           policy<{'riscv64': '-'}>
 CONFIG_RESET_TI_SYSCON                          policy<{'riscv64': 'm'}>
 
 # Menu: Device Drivers >> Rpmsg drivers
@@ -5219,6 +5198,7 @@ CONFIG_MEGARAID_MM                              policy<{'riscv64': 'm'}>
 CONFIG_MEGARAID_MAILBOX                         policy<{'riscv64': 'm'}>
 CONFIG_MEGARAID_LEGACY                          policy<{'riscv64': 'm'}>
 CONFIG_MEGARAID_SAS                             policy<{'riscv64': 'm'}>
+CONFIG_SCSI_MPI3MR                              policy<{'riscv64': 'm'}>
 CONFIG_SCSI_MPT3SAS                             policy<{'riscv64': 'm'}>
 CONFIG_SCSI_MPT2SAS_MAX_SGE                     policy<{'riscv64': '128'}>
 CONFIG_SCSI_MPT3SAS_MAX_SGE                     policy<{'riscv64': '128'}>
@@ -5232,7 +5212,6 @@ CONFIG_SCSI_SNIC                                policy<{'riscv64': 'm'}>
 CONFIG_SCSI_SNIC_DEBUG_FS                       policy<{'riscv64': 'n'}>
 CONFIG_SCSI_DMX3191D                            policy<{'riscv64': 'm'}>
 CONFIG_SCSI_FDOMAIN_PCI                         policy<{'riscv64': 'n'}>
-CONFIG_SCSI_GDTH                                policy<{'riscv64': 'n'}>
 CONFIG_SCSI_IPS                                 policy<{'riscv64': 'm'}>
 CONFIG_SCSI_INITIO                              policy<{'riscv64': 'm'}>
 CONFIG_SCSI_INIA100                             policy<{'riscv64': 'm'}>
@@ -5519,7 +5498,7 @@ CONFIG_SND_PCM_OSS                              note<deprecated in favour of pul
 # Menu: Device Drivers >> Sound card support >> Advanced Linux Sound Architecture >> ALSA for SoC audio support
 CONFIG_SND_SOC                                  policy<{'riscv64': 'm'}>
 CONFIG_SND_SOC_AMD_ACP                          policy<{'riscv64': 'm'}>
-CONFIG_SND_SOC_AMD_CZ_DA7219MX98357_MACH        policy<{'riscv64': 'm'}>
+CONFIG_SND_SOC_AMD_CZ_DA7219MX98357_MACH        policy<{'amd64': 'm', 'arm64': 'm'}>
 CONFIG_SND_SOC_AMD_CZ_RT5645_MACH               policy<{'riscv64': 'm'}>
 CONFIG_SND_BCM63XX_I2S_WHISTLER                 policy<{'riscv64': 'm'}>
 CONFIG_SND_DESIGNWARE_I2S                       policy<{'riscv64': 'm'}>
@@ -5530,7 +5509,6 @@ CONFIG_SND_SOC_XILINX_I2S                       policy<{'riscv64': 'm'}>
 CONFIG_SND_SOC_XILINX_AUDIO_FORMATTER           policy<{'riscv64': 'm'}>
 CONFIG_SND_SOC_XILINX_SPDIF                     policy<{'riscv64': 'm'}>
 CONFIG_SND_SOC_XTFPGA_I2S                       policy<{'riscv64': 'm'}>
-CONFIG_ZX_TDM                                   policy<{'riscv64': 'm'}>
 CONFIG_SND_SIMPLE_CARD                          policy<{'riscv64': 'm'}>
 CONFIG_SND_AUDIO_GRAPH_CARD                     policy<{'riscv64': 'm'}>
 #
@@ -5643,7 +5621,6 @@ CONFIG_SND_SOC_RT711_SDW                        policy<{'riscv64': 'm'}>
 CONFIG_SND_SOC_RT715_SDW                        policy<{'riscv64': 'm'}>
 CONFIG_SND_SOC_SGTL5000                         policy<{'riscv64': 'm'}>
 CONFIG_SND_SOC_SIMPLE_AMPLIFIER                 policy<{'riscv64': 'm'}>
-CONFIG_SND_SOC_SIRF_AUDIO_CODEC                 policy<{'riscv64': 'm'}>
 CONFIG_SND_SOC_SPDIF                            policy<{'riscv64': 'm'}>
 CONFIG_SND_SOC_SSM2305                          policy<{'riscv64': 'm'}>
 CONFIG_SND_SOC_SSM2602_SPI                      policy<{'riscv64': 'm'}>
@@ -6139,7 +6116,6 @@ CONFIG_AD2S1210                                 policy<{'riscv64': 'm'}>
 CONFIG_MOST_COMPONENTS                          policy<{'riscv64': 'm'}>
 CONFIG_MOST_CDEV                                policy<{'riscv64': 'm'}>
 CONFIG_MOST_NET                                 policy<{'riscv64': 'm'}>
-CONFIG_MOST_SOUND                               policy<{'riscv64': 'm'}>
 CONFIG_MOST_VIDEO                               policy<{'riscv64': 'm'}>
 CONFIG_MOST_DIM2                                policy<{'riscv64': 'm'}>
 CONFIG_MOST_I2C                                 policy<{'riscv64': 'm'}>
@@ -6683,7 +6659,6 @@ CONFIG_REGULATOR_ACT8865                        policy<{'riscv64': 'm'}>
 CONFIG_REGULATOR_ACT8945A                       policy<{'riscv64': 'm'}>
 CONFIG_REGULATOR_AD5398                         policy<{'riscv64': 'm'}>
 CONFIG_REGULATOR_AAT2870                        policy<{'riscv64': 'm'}>
-CONFIG_REGULATOR_AB3100                         policy<{'riscv64': 'm'}>
 CONFIG_REGULATOR_ARIZONA_LDO1                   policy<{'riscv64': 'm'}>
 CONFIG_REGULATOR_ARIZONA_MICSUPP                policy<{'riscv64': 'm'}>
 CONFIG_REGULATOR_AS3711                         policy<{'riscv64': 'm'}>
@@ -6864,9 +6839,7 @@ CONFIG_MODULE_UNLOAD                            policy<{'riscv64': 'y'}>
 CONFIG_MODULE_FORCE_UNLOAD                      policy<{'riscv64': 'n'}>
 CONFIG_MODVERSIONS                              policy<{'riscv64': 'y'}>
 CONFIG_MODULE_SRCVERSION_ALL                    policy<{'riscv64': 'y'}>
-CONFIG_MODULE_COMPRESS                          policy<{'riscv64': 'n'}>
 CONFIG_MODULE_ALLOW_MISSING_NAMESPACE_IMPORTS   policy<{'riscv64': 'n'}>
-CONFIG_UNUSED_SYMBOLS                           policy<{'riscv64': 'y'}>
 #
 CONFIG_MODVERSIONS                              mark<ENFORCED> note<LP:1898716 -- required as we have a livepatch/drivers modules signing key>
 
@@ -7047,7 +7020,6 @@ CONFIG_F2FS_FS_XATTR                            policy<{'riscv64': 'y'}>
 CONFIG_F2FS_FS_POSIX_ACL                        policy<{'riscv64': 'y'}>
 CONFIG_F2FS_FS_SECURITY                         policy<{'riscv64': 'y'}>
 CONFIG_F2FS_CHECK_FS                            policy<{'riscv64': 'n'}>
-CONFIG_F2FS_IO_TRACE                            policy<{'riscv64': 'n'}>
 CONFIG_F2FS_FAULT_INJECTION                     policy<{'riscv64': 'n'}>
 
 # Menu: File systems >> F2FS filesystem support >> F2FS compression feature
@@ -7097,20 +7069,6 @@ CONFIG_UFS_DEBUG                                policy<{'riscv64': 'n'}>
 CONFIG_ECRYPT_FS                                mark<ENFORCED> note<not autoloadable>
 
 # Menu: File systems >> Miscellaneous filesystems >> Aufs (Advanced multi layered unification filesystem) support
-CONFIG_AUFS_BR_FUSE                             policy<{'riscv64': 'n'}>
-CONFIG_AUFS_BR_HFSPLUS                          policy<{'riscv64': 'y'}>
-CONFIG_AUFS_BR_RAMFS                            policy<{'riscv64': 'n'}>
-CONFIG_AUFS_DEBUG                               policy<{'riscv64': 'n'}>
-CONFIG_AUFS_DIRREN                              policy<{'riscv64': 'y'}>
-CONFIG_AUFS_EXPORT                              policy<{'riscv64': 'y'}>
-CONFIG_AUFS_FHSM                                policy<{'riscv64': 'n'}>
-CONFIG_AUFS_FS                                  policy<{'riscv64': 'm'}>
-CONFIG_AUFS_HNOTIFY                             policy<{'riscv64': 'n'}>
-CONFIG_AUFS_RDU                                 policy<{'riscv64': 'n'}>
-CONFIG_AUFS_SHWH                                policy<{'riscv64': 'n'}>
-CONFIG_AUFS_XATTR                               policy<{'riscv64': 'y'}>
-#
-CONFIG_AUFS_EXPORT                              note<LP:1121699>
 
 # Menu: File systems >> Miscellaneous filesystems >> Aufs (Advanced multi layered unification filesystem) support >> method
 
@@ -7124,7 +7082,6 @@ CONFIG_EROFS_FS_XATTR                           policy<{'riscv64': 'y'}>
 CONFIG_EROFS_FS_POSIX_ACL                       policy<{'riscv64': 'y'}>
 CONFIG_EROFS_FS_SECURITY                        policy<{'riscv64': 'y'}>
 CONFIG_EROFS_FS_ZIP                             policy<{'riscv64': 'y'}>
-CONFIG_EROFS_FS_CLUSTER_PAGE_LIMIT              policy<{'riscv64': '1'}>
 
 # Menu: File systems >> Miscellaneous filesystems >> Journalling Flash File System v2 (JFFS2) support
 CONFIG_JFFS2_FS                                 policy<{'riscv64': 'm'}>
@@ -7161,6 +7118,12 @@ CONFIG_PSTORE_CONSOLE                           policy<{'riscv64': 'n'}>
 CONFIG_PSTORE_PMSG                              policy<{'riscv64': 'n'}>
 CONFIG_PSTORE_FTRACE                            policy<{'riscv64': 'n'}>
 CONFIG_PSTORE_RAM                               policy<{'riscv64': 'm'}>
+
+# Menu: File systems >> Miscellaneous filesystems >> Persistent store support >> Log panic/oops to a block device
+CONFIG_PSTORE_BLK                               policy<{'riscv64': '-'}>
+CONFIG_PSTORE_BLK_BLKDEV                        policy<{'riscv64': '-'}>
+CONFIG_PSTORE_BLK_KMSG_SIZE                     policy<{'riscv64': '-'}>
+CONFIG_PSTORE_BLK_MAX_REASON                    policy<{'riscv64': '-'}>
 
 # Menu: File systems >> Miscellaneous filesystems >> RomFS backing stores
 CONFIG_ROMFS_BACKED_BY_BLOCK                    policy<{'riscv64': 'y'}>
@@ -7504,10 +7467,8 @@ CONFIG_KALLSYMS_ALL                             policy<{'riscv64': 'y'}>
 CONFIG_PC104                                    policy<{'riscv64': 'y'}>
 CONFIG_VM_EVENT_COUNTERS                        policy<{'riscv64': 'y'}>
 CONFIG_SLUB_DEBUG                               policy<{'riscv64': 'y'}>
-CONFIG_SLUB_MEMCG_SYSFS_ON                      policy<{'riscv64': 'y'}>
 #
 CONFIG_FHANDLE                                  mark<ENFORCED> note<LP:1412543>
-CONFIG_SLUB_MEMCG_SYSFS_ON                      flag<REVIEW>
 
 # Menu: General setup >> Control Group support
 CONFIG_CGROUPS                                  policy<{'riscv64': 'y'}>
@@ -7736,6 +7697,7 @@ CONFIG_TEST_MEMCAT_P                            policy<{'riscv64': 'n'}>
 CONFIG_TEST_OBJAGG                              policy<{'riscv64': 'n'}>
 CONFIG_TEST_STACKINIT                           policy<{'riscv64': 'n'}>
 CONFIG_TEST_MEMINIT                             policy<{'riscv64': 'n'}>
+CONFIG_KPROBES_SANITY_TEST                      policy<{'riscv64': 'n'}>
 #
 CONFIG_RUNTIME_TESTING_MENU                     flag<TESTING>
 CONFIG_LKDTM                                    flag<TESTING> flag<REVIEW>
@@ -8039,7 +8001,7 @@ CONFIG_CMA_DEBUGFS                              policy<{'riscv64': 'n'}>
 CONFIG_CMA_AREAS                                policy<{'riscv64': '7'}>
 
 # Menu: Memory Management options >> Memory model
-CONFIG_FLATMEM_MANUAL                           policy<{'riscv64': 'n'}>
+CONFIG_FLATMEM_MANUAL                           policy<{'armhf': 'n'}>
 CONFIG_SPARSEMEM_MANUAL                         policy<{'riscv64': 'y'}>
 
 # Menu: Memory Management options >> Transparent Hugepage Support sysfs defaults
@@ -8364,7 +8326,6 @@ CONFIG_NETFILTER_NETLINK_ACCT                   policy<{'riscv64': 'm'}>
 CONFIG_NETFILTER_NETLINK_QUEUE                  policy<{'riscv64': 'm'}>
 CONFIG_NETFILTER_NETLINK_LOG                    policy<{'riscv64': 'm'}>
 CONFIG_NETFILTER_NETLINK_OSF                    policy<{'riscv64': 'm'}>
-CONFIG_NF_LOG_NETDEV                            policy<{'riscv64': 'm'}>
 CONFIG_NF_FLOW_TABLE_INET                       policy<{'riscv64': 'm'}>
 
 # Menu: Networking support >> Networking options >> Network packet filtering framework (Netfilter) >> Core Netfilter Configuration >> Netfilter Xtables support (required for ip_tables)
@@ -8519,7 +8480,6 @@ CONFIG_DECNET_NF_GRABULATOR                     policy<{'riscv64': 'm'}>
 CONFIG_NF_TABLES_BRIDGE                         policy<{'riscv64': 'm'}>
 CONFIG_NFT_BRIDGE_META                          policy<{'riscv64': 'm'}>
 CONFIG_NFT_BRIDGE_REJECT                        policy<{'riscv64': 'm'}>
-CONFIG_NF_LOG_BRIDGE                            policy<{'riscv64': 'm'}>
 
 # Menu: Networking support >> Networking options >> Network packet filtering framework (Netfilter) >> Ethernet Bridge tables (ebtables) support
 CONFIG_BRIDGE_NF_EBTABLES                       policy<{'riscv64': 'm'}>
@@ -8961,8 +8921,6 @@ CONFIG_AF_RXRPC_DEBUG                           policy<{'riscv64': 'n'}>
 CONFIG_RXKAD                                    policy<{'riscv64': 'y'}>
 
 # Menu: Networking support >> WiMAX Wireless Broadband support
-CONFIG_WIMAX                                    policy<{'riscv64': 'm'}>
-CONFIG_WIMAX_DEBUG_LEVEL                        policy<{'riscv64': '8'}>
 
 # Menu: Networking support >> Wireless
 CONFIG_WIRELESS                                 policy<{'riscv64': 'y'}>
@@ -9211,7 +9169,6 @@ CONFIG_HIO                                      policy<{'riscv64': 'n'}>
 #
 CONFIG_HIO                                      mark<ENFORCED> note<LP:1635594>
 
-CONFIG_CPU_SIFIVE                               policy<{'riscv64': 'y'}>
 CONFIG_ERRATA_SIFIVE_CIP_453                    policy<{'riscv64': 'y'}>
 CONFIG_PCIE_FU740                               policy<{'riscv64': 'y'}>
 CONFIG_RESET_SIMPLE                             policy<{'riscv64': 'y'}>
