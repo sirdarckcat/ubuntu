@@ -1322,7 +1322,7 @@ static void set_pmu_unmatched_events(struct evlist *evlist, int group_idx,
 		for_each_group_evsel(pos, evsel) {
 			if (evsel__is_hybrid(pos) &&
 			    strcmp(pos->pmu_name, pmu_name)) {
-				set_bit(pos->idx, evlist_removed);
+				set_bit(pos->core.idx, evlist_removed);
 			}
 		}
 		break;
@@ -1341,7 +1341,7 @@ static void remove_pmu_umatched_events(struct evlist *evlist, char *metric_pmus)
 	if (!nlist)
 		return;
 
-	evlist_removed = bitmap_alloc(evlist->core.nr_entries);
+	evlist_removed = bitmap_zalloc(evlist->core.nr_entries);
 	if (!evlist_removed) {
 		free(nlist);
 		return;
@@ -1363,13 +1363,13 @@ static void remove_pmu_umatched_events(struct evlist *evlist, char *metric_pmus)
 	}
 
 	evlist__for_each_entry_safe(evlist, tmp, evsel) {
-		if (test_bit(evsel->idx, evlist_removed)) {
+		if (test_bit(evsel->core.idx, evlist_removed)) {
 			if (!evsel__is_group_leader(evsel)) {
 				if (!need_new_leader) {
 					if (new_leader)
-						new_leader->leader->core.nr_members--;
+						new_leader->core.leader->nr_members--;
 					else
-						evsel->leader->core.nr_members--;
+						evsel->core.leader->nr_members--;
 				} else
 					new_nr_members--;
 			} else {
@@ -1379,7 +1379,7 @@ static void remove_pmu_umatched_events(struct evlist *evlist, char *metric_pmus)
 				 * members.
 				 */
 				need_new_leader = true;
-				new_nr_members = evsel->leader->core.nr_members - 1;
+				new_nr_members = evsel->core.leader->nr_members - 1;
 			}
 
 			evlist__remove(evlist, evsel);
@@ -1389,10 +1389,10 @@ static void remove_pmu_umatched_events(struct evlist *evlist, char *metric_pmus)
 				if (need_new_leader) {
 					need_new_leader = false;
 					new_leader = evsel;
-					new_leader->leader = new_leader;
+					new_leader->core.leader = new_leader;
 					new_leader->core.nr_members = new_nr_members;
 				} else if (new_leader)
-					evsel->leader = new_leader;
+					evsel->core.leader = new_leader;
 			} else {
 				need_new_leader = false;
 				new_leader = NULL;
