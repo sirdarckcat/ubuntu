@@ -1160,6 +1160,8 @@ static void tb_xdomain_get_properties(struct work_struct *work)
 		if (xd->vendor_name && xd->device_name)
 			dev_info(&xd->dev, "%s %s\n", xd->vendor_name,
 				 xd->device_name);
+
+		tb_xdomain_debugfs_init(xd);
 	} else {
 		kobject_uevent(&xd->dev.kobj, KOBJ_CHANGE);
 	}
@@ -1499,6 +1501,8 @@ void tb_xdomain_remove(struct tb_xdomain *xd)
 	mutex_lock(&xd->lock);
 	xd->removing = true;
 	mutex_unlock(&xd->lock);
+
+	tb_xdomain_debugfs_remove(xd);
 
 	stop_handshake(xd);
 
