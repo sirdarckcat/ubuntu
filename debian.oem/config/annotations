@@ -11443,8 +11443,8 @@ CONFIG_NET_NS                                   policy<{'amd64': 'y', 'arm64': '
 
 # Menu: General setup >> Preemption Model
 CONFIG_PREEMPT_NONE                             policy<{'amd64': 'n', 'arm64': 'n', 'armhf': 'n', 'ppc64el': 'n', 's390x': 'y'}>
-CONFIG_PREEMPT_VOLUNTARY                        policy<{'amd64-generic': 'y', 'amd64-lowlatency': 'n', 'arm64': 'y', 'arm64-lowlatency': 'n', 'arm64-lowlatency-64k': 'n', 'armhf': 'y', 'ppc64el': 'y', 's390x': 'n'}>
-CONFIG_PREEMPT                                  policy<{'amd64-generic': 'n', 'amd64-lowlatency': 'y', 'arm64': 'n', 'arm64-lowlatency': 'y', 'arm64-lowlatency-64k': 'y', 'armhf': 'n', 'ppc64el': 'n', 's390x': 'n'}>
+CONFIG_PREEMPT_VOLUNTARY                        policy<{'amd64-oem': 'y', 'amd64-lowlatency': 'n', 'arm64': 'y', 'arm64-lowlatency': 'n', 'arm64-lowlatency-64k': 'n', 'armhf': 'y', 'ppc64el': 'y', 's390x': 'n'}>
+CONFIG_PREEMPT                                  policy<{'amd64-oem': 'n', 'amd64-lowlatency': 'y', 'arm64': 'n', 'arm64-lowlatency': 'y', 'arm64-lowlatency-64k': 'y', 'armhf': 'n', 'ppc64el': 'n', 's390x': 'n'}>
 #
 CONFIG_PREEMPT_NONE                             note<LP:1543165>
 
@@ -11807,7 +11807,7 @@ CONFIG_DEBUG_KOBJECT                            policy<{'amd64': 'n', 'arm64': '
 CONFIG_DEBUG_CREDENTIALS                        policy<{'amd64': 'n', 'arm64': 'n', 'armhf': 'n', 'ppc64el': 'n', 's390x': 'n'}>
 CONFIG_DEBUG_WQ_FORCE_RR_CPU                    policy<{'amd64': 'n', 'arm64': 'n', 'armhf': 'n', 'ppc64el': 'n', 's390x': 'n'}>
 CONFIG_CPU_HOTPLUG_STATE_CONTROL                policy<{'amd64': 'n', 'arm64': 'n', 'armhf': 'n', 'ppc64el': 'n', 's390x': 'n'}>
-CONFIG_LATENCYTOP                               policy<{'amd64-generic': 'n', 'amd64-lowlatency': 'y', 'arm64': 'n', 'arm64-lowlatency': 'y', 'arm64-lowlatency-64k': 'y', 'armhf': 'n', 'ppc64el': 'n', 's390x': 'n'}>
+CONFIG_LATENCYTOP                               policy<{'amd64-oem': 'n', 'amd64-lowlatency': 'y', 'arm64': 'n', 'arm64-lowlatency': 'y', 'arm64-lowlatency-64k': 'y', 'armhf': 'n', 'ppc64el': 'n', 's390x': 'n'}>
 #
 CONFIG_LATENCYTOP                               mark<ENFORCED> note<https://lists.ubuntu.com/archives/kernel-team/2014-July/045006.html, LP#1655986>
 
@@ -13827,9 +13827,9 @@ CONFIG_X86_INTEL_TSX_MODE_AUTO                  policy<{'amd64': 'n'}>
 
 # Menu: Processor type and features >> Timer frequency
 CONFIG_HZ_100                                   policy<{'amd64': 'n', 'arm64': 'n', 'armhf': 'n', 'ppc64el': 'n', 's390x': 'y'}>
-CONFIG_HZ_250                                   policy<{'amd64-generic': 'y', 'amd64-lowlatency': 'n', 'arm64': 'y', 'arm64-lowlatency': 'n', 'arm64-lowlatency-64k': 'n', 'armhf': 'y', 'ppc64el': 'y', 's390x': 'n'}>
+CONFIG_HZ_250                                   policy<{'amd64-oem': 'y', 'amd64-lowlatency': 'n', 'arm64': 'y', 'arm64-lowlatency': 'n', 'arm64-lowlatency-64k': 'n', 'armhf': 'y', 'ppc64el': 'y', 's390x': 'n'}>
 CONFIG_HZ_300                                   policy<{'amd64': 'n', 'arm64': 'n', 'armhf': 'n', 'ppc64el': 'n', 's390x': 'n'}>
-CONFIG_HZ_1000                                  policy<{'amd64-generic': 'n', 'amd64-lowlatency': 'y', 'arm64': 'n', 'arm64-lowlatency': 'y', 'arm64-lowlatency-64k': 'y', 'armhf': 'n', 'ppc64el': 'n', 's390x': 'n'}>
+CONFIG_HZ_1000                                  policy<{'amd64-oem': 'n', 'amd64-lowlatency': 'y', 'arm64': 'n', 'arm64-lowlatency': 'y', 'arm64-lowlatency-64k': 'y', 'armhf': 'n', 'ppc64el': 'n', 's390x': 'n'}>
 
 # Menu: Processor type and features >> Timer frequency >> Architecture: arm
 CONFIG_HZ_200                                   policy<{'armhf': 'n'}>
