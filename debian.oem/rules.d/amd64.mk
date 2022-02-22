@@ -2,7 +2,7 @@ human_arch	= 64 bit x86
 build_arch	= x86
 header_arch	= $(build_arch)
 defconfig	= defconfig
-flavours	= generic
+flavours	= oem
 build_image	= bzImage
 kernel_file	= arch/$(build_arch)/boot/bzImage
 install_file	= vmlinuz
@@ -23,3 +23,10 @@ do_tools_acpidbg = true
 do_zfs		= true
 do_v4l2loopback	= true
 do_odm_drivers  = true
+
+# OEM
+do_doc_package = false
+do_extras_package      = false
+do_libc_dev_package    = false
+do_source_package      = false
+do_tools_hyperv        = false
