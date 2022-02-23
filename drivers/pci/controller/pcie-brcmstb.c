@@ -1582,9 +1582,9 @@ static int brcm_pcie_suspend_noirq(struct device *dev)
 	if (brcm_phy_stop(pcie))
 		dev_err(dev, "Could not stop phy for suspend\n");
 
-	ret = reset_control_rearm(pcie->rescal);
+	ret = reset_control_assert(pcie->rescal);
 	if (ret) {
-		dev_err(dev, "Could not rearm rescal reset\n");
+		dev_err(dev, "Could not assert rescal reset\n");
 		return ret;
 	}
 
@@ -1679,7 +1679,7 @@ err_regulator:
 	if (pcie->sr)
 		regulator_bulk_disable(pcie->sr->num_supplies, pcie->sr->supplies);
 err_reset:
-	reset_control_rearm(pcie->rescal);
+	reset_control_assert(pcie->rescal);
 err_disable_clk:
 	clk_disable_unprepare(pcie->clk);
 	return ret;
@@ -1691,8 +1691,8 @@ static void __brcm_pcie_remove(struct brcm_pcie *pcie)
 	brcm_pcie_turn_off(pcie);
 	if (brcm_phy_stop(pcie))
 		dev_err(pcie->dev, "Could not stop phy\n");
-	if (reset_control_rearm(pcie->rescal))
-		dev_err(pcie->dev, "Could not rearm rescal reset\n");
+	if (reset_control_assert(pcie->rescal))
+		dev_err(pcie->dev, "Could not assert rescal reset\n");
 	clk_disable_unprepare(pcie->clk);
 }
 
@@ -1897,7 +1897,7 @@ static int brcm_pcie_probe(struct platform_device *pdev)
 
 	ret = brcm_phy_start(pcie);
 	if (ret) {
-		reset_control_rearm(pcie->rescal);
+		reset_control_assert(pcie->rescal);
 		clk_disable_unprepare(pcie->clk);
 		return ret;
 	}
