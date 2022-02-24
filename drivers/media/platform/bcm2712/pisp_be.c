@@ -23,7 +23,7 @@ MODULE_AUTHOR("Someone");
 MODULE_LICENSE("GPL");
 MODULE_VERSION("0.1.1");
 
-static unsigned int debug = 0;
+static unsigned int debug = 2;
 module_param(debug, uint, 0644);
 MODULE_PARM_DESC(debug, "activates debug info");
 
@@ -119,13 +119,13 @@ struct node_description node_desc[PISPBE_NUM_NODES] = {
 	{
 		.name = "tdn_output",
 		.buf_type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE,
-		.caps = V4L2_CAP_VIDEO_CAPTURE,
+		.caps = V4L2_CAP_VIDEO_CAPTURE_MPLANE,
 	},
 	/* STITCH_OUTPUT_NODE */
 	{
 		.name = "stitch_output",
 		.buf_type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE,
-		.caps = V4L2_CAP_VIDEO_CAPTURE,
+		.caps = V4L2_CAP_VIDEO_CAPTURE_MPLANE,
 	},
 	/* CONFIG_NODE */
 	{
@@ -177,6 +177,7 @@ struct pispbe_node {
 	struct v4l2_fh fh;
 	struct vb2_queue queue;
 	struct v4l2_format format;
+	const struct pisp_be_format *pisp_format;
 	struct v4l2_ctrl_handler hdl;
 	/*
 	 * State for TDN and stitch buffer auto-cycling
@@ -355,22 +356,41 @@ struct pispbe_buffer {
 static int get_addr_3(dma_addr_t addr[3], struct pispbe_buffer *buf,
 		      struct pispbe_node *node)
 {
-	if (buf) {
-		unsigned int num_planes = NODE_IS_MPLANE(node) ?
-				node->format.fmt.pix_mp.num_planes : 1;
-		unsigned int p;
+	unsigned int num_planes = node->format.fmt.pix_mp.num_planes;
+	unsigned int plane_factor = 0;
+	unsigned int size;
+	unsigned int p;
 
-		for (p = 0; p < num_planes && p < 3; p++) {
-			addr[p] = vb2_dma_contig_plane_dma_addr(
-				&buf->vb.vb2_buf, p);
-		}
-		for (; p < 3; p++) {
-			/* Ensure all 3 addresses are initialized */
-			addr[p] = addr[0];
-		}
-		return num_planes;
+	if (!buf)
+		return 0;
+
+	WARN_ON(!NODE_IS_MPLANE(node));
+
+	/*
+	 * Determine the base plane size. This will not be the same
+	 * as node->format.fmt.pix_mp.plane_fmt[0].sizeimage for a single
+	 * plane buffer in an mplane format.
+	 */
+	size = node->format.fmt.pix_mp.plane_fmt[0].bytesperline *
+			node->format.fmt.pix_mp.height;
+
+	for (p = 0; p < num_planes && p < 3; p++) {
+		addr[p] = vb2_dma_contig_plane_dma_addr(&buf->vb.vb2_buf, p);
+		plane_factor += node->pisp_format->plane_factor[p];
 	}
-	return 0;
+
+	for (; p < MAX_PLANES && node->pisp_format->plane_factor[p]; p++) {
+		/*
+		 * Calculate the address offset of this plane as needed
+		 * by the hardware. This is specifically for non-mplane
+		 * buffer formats, where there are 3 image planes, e.g.
+		 * for the V4L2_PIX_FMT_YUV420 format.
+		 */
+		addr[p] = addr[0] + ((size * plane_factor) >> 8);
+		plane_factor += node->pisp_format->plane_factor[p];
+	}
+
+	return num_planes;
 }
 
 static dma_addr_t get_addr(struct pispbe_buffer *buf)
@@ -787,15 +807,40 @@ static int pispbe_node_queue_setup(struct vb2_queue *q, unsigned int *nbuffers,
 				node->format.fmt.pix_mp.plane_fmt[i].sizeimage;
 	} else if (NODE_IS_META(node)) {
 		sizes[0] = node->format.fmt.meta.buffersize;
-	} else {
-		sizes[0] = node->format.fmt.pix.sizeimage;
 	}
 
 	if (sizes[0] * (*nbuffers) > PISPBE_QUEUE_MEM)
 		*nbuffers = PISPBE_QUEUE_MEM / sizes[0];
+
 	v4l2_dbg(1, debug, &node_get_pispbe(node)->v4l2_dev,
 		 "Image (or metadata) size %u, nbuffers %u for node %s\n",
 		 sizes[0], *nbuffers, NODE_NAME(node));
+
+	return 0;
+}
+
+static int pispbe_node_buffer_prepare(struct vb2_buffer *vb)
+{
+	struct pispbe_node *node = vb2_get_drv_priv(vb->vb2_queue);
+	struct pispbe_dev *pispbe = node_get_pispbe(node);
+	unsigned long size = 0;
+	unsigned int num_planes = NODE_IS_MPLANE(node) ?
+					node->format.fmt.pix_mp.num_planes : 1;
+	unsigned int i;
+
+	for (i = 0; i < num_planes; i++) {
+		size = NODE_IS_MPLANE(node)
+			? node->format.fmt.pix_mp.plane_fmt[i].sizeimage
+			: node->format.fmt.meta.buffersize;
+
+		if (vb2_plane_size(vb, i) < size) {
+			v4l2_err(&pispbe->v4l2_dev, "data will not fit into plane %d (%lu < %lu)\n",
+				 i, vb2_plane_size(vb, i), size);
+			return -EINVAL;
+		}
+
+		vb2_set_plane_payload(vb, i, size);
+	}
 
 	return 0;
 }
@@ -912,7 +957,7 @@ static int pispbe_buf_out_validate(struct vb2_buffer *vb)
 
 static const struct vb2_ops pispbe_node_queue_ops = {
 	.queue_setup = pispbe_node_queue_setup,
-	/*.buf_prepare = pispbe_node_buffer_prepare, */
+	.buf_prepare = pispbe_node_buffer_prepare,
 	.buf_queue = pispbe_node_buffer_queue,
 	.start_streaming = pispbe_node_start_streaming,
 	.stop_streaming = pispbe_node_stop_streaming,
@@ -1083,9 +1128,7 @@ static int pispbe_node_querycap(struct file *file, void *priv,
 	snprintf(cap->bus_info, sizeof(cap->bus_info), "platform:%s",
 		 PISPBE_NAME);
 
-	cap->capabilities = V4L2_CAP_VIDEO_CAPTURE_MPLANE |
-			    V4L2_CAP_VIDEO_OUTPUT_MPLANE |
-			    V4L2_CAP_VIDEO_CAPTURE | V4L2_CAP_VIDEO_OUTPUT |
+	cap->capabilities = V4L2_CAP_VIDEO_CAPTURE_MPLANE | V4L2_CAP_VIDEO_OUTPUT_MPLANE |
 			    V4L2_CAP_STREAMING | V4L2_CAP_DEVICE_CAPS |
 			    V4L2_CAP_META_OUTPUT | V4L2_CAP_META_CAPTURE;
 	cap->device_caps = node->vfd.device_caps;
@@ -1164,32 +1207,6 @@ static int pispbe_node_g_fmt_meta_cap(struct file *file, void *priv,
 	return 0;
 }
 
-static void set_plane_params(struct v4l2_format *f,
-			     const struct pisp_be_format *fmt)
-{
-	unsigned int nplanes = f->fmt.pix_mp.num_planes;
-	unsigned int i;
-
-	for (i = 0; i < nplanes; i++) {
-		struct v4l2_plane_pix_format *p = &f->fmt.pix_mp.plane_fmt[i];
-		unsigned int bpl, plane_size;
-
-		bpl = f->fmt.pix_mp.width * fmt->bit_depth * fmt->plane_size[i];
-		/*
-		 * The shift is to divide out the bit_depth by 8 and plane_size
-		 * fixed point scaling of 256.
-		 */
-		bpl >>= 3 + 8;
-		bpl = ALIGN(max(p->bytesperline, bpl), fmt->align);
-
-		plane_size = bpl * f->fmt.pix_mp.height;
-		plane_size = max(p->sizeimage, plane_size);
-
-		p->bytesperline = bpl;
-		p->sizeimage = plane_size;
-	}
-}
-
 static int verify_be_pix_format(const struct v4l2_format *f,
 				struct pispbe_node *node)
 {
@@ -1239,16 +1256,54 @@ static const struct pisp_be_format *find_format(unsigned int fourcc)
 	return NULL;
 }
 
+static void set_plane_params(struct v4l2_format *f,
+			     const struct pisp_be_format *fmt)
+{
+	unsigned int nplanes = f->fmt.pix_mp.num_planes;
+	unsigned int total_plane_factor = 0;
+	unsigned int i;
+
+	for (i = 0; i < MAX_PLANES; i++)
+		total_plane_factor += fmt->plane_factor[i];
+
+	for (i = 0; i < nplanes; i++) {
+		struct v4l2_plane_pix_format *p = &f->fmt.pix_mp.plane_fmt[i];
+		unsigned int bpl, plane_size;
+
+		bpl = (f->fmt.pix_mp.width * fmt->bit_depth) >> 3;
+		bpl = ALIGN(max(p->bytesperline, bpl), fmt->align);
+
+		plane_size = bpl * f->fmt.pix_mp.height *
+		      (nplanes > 1 ? fmt->plane_factor[i] : total_plane_factor);
+		/*
+		 * The shift is to divide out the plane_factor fixed point
+		 * scaling of 256.
+		 */
+		plane_size = max(p->sizeimage, plane_size >> 8);
+
+		p->bytesperline = bpl;
+		p->sizeimage = plane_size;
+	}
+}
+
 static int try_format(struct v4l2_format *f, struct pispbe_node *node)
 {
 	const struct pisp_be_format *fmt;
+	unsigned int i;
 	bool is_rgb;
+	u32 pixfmt = f->fmt.pix_mp.pixelformat;
 
-	fmt = find_format(f->fmt.pix_mp.pixelformat);
+	v4l2_dbg(2, debug,  &node_get_pispbe(node)->v4l2_dev,
+		 "%s: [%s] req %ux%u " V4L2_FOURCC_CONV ", planes %d\n",
+		 __func__, node_desc[node->id].name, f->fmt.pix_mp.width,
+		 f->fmt.pix_mp.height, V4L2_FOURCC_CONV_ARGS(pixfmt),
+		 f->fmt.pix_mp.num_planes);
+
+	fmt = find_format(pixfmt);
 	if (!fmt)
 		return -EINVAL;
 
-	if (f->fmt.pix_mp.pixelformat == V4L2_PIX_FMT_RPI_BE)
+	if (pixfmt == V4L2_PIX_FMT_RPI_BE)
 		return verify_be_pix_format(f, node);
 
 	f->fmt.pix_mp.pixelformat = fmt->fourcc;
@@ -1280,6 +1335,14 @@ static int try_format(struct v4l2_format *f, struct pispbe_node *node)
 
 	/* Set plane size and bytes/line for each plane. */
 	set_plane_params(f, fmt);
+
+	for (i = 0; i < f->fmt.pix_mp.num_planes; i++) {
+		v4l2_dbg(2, debug,  &node_get_pispbe(node)->v4l2_dev,
+			 "%s: [%s] calc plane %d, %ux%u, depth %u, bpl %u size %u\n",
+			 __func__, node_desc[node->id].name, i, f->fmt.pix_mp.width, f->fmt.pix_mp.height,
+			 fmt->bit_depth, f->fmt.pix_mp.plane_fmt[i].bytesperline,
+			 f->fmt.pix_mp.plane_fmt[i].sizeimage);
+	}
 
 	return 0;
 }
@@ -1371,8 +1434,11 @@ static int pispbe_node_s_fmt_vid_cap(struct file *file, void *priv,
 		return ret;
 
 	node->format = *f;
+	node->pisp_format = find_format(f->fmt.pix_mp.pixelformat);
+
 	v4l2_dbg(1, debug, &node_get_pispbe(node)->v4l2_dev,
-		 "Set capture format for node %s\n", NODE_NAME(node));
+		 "Set capture format for node %s to " V4L2_FOURCC_CONV "\n",
+		 NODE_NAME(node), V4L2_FOURCC_CONV_ARGS(f->fmt.pix_mp.pixelformat));
 	return 0;
 }
 
@@ -1386,8 +1452,11 @@ static int pispbe_node_s_fmt_vid_out(struct file *file, void *priv,
 		return ret;
 
 	node->format = *f;
+	node->pisp_format = find_format(f->fmt.pix_mp.pixelformat);
+
 	v4l2_dbg(1, debug, &node_get_pispbe(node)->v4l2_dev,
-		 "Set output format for node %s\n", NODE_NAME(node));
+		 "Set output format for node %s to " V4L2_FOURCC_CONV "\n",
+		 NODE_NAME(node), V4L2_FOURCC_CONV_ARGS(f->fmt.pix_mp.pixelformat));
 	return 0;
 }
 
@@ -1401,8 +1470,11 @@ static int pispbe_node_s_fmt_meta_out(struct file *file, void *priv,
 		return ret;
 
 	node->format = *f;
+	node->pisp_format = find_format(f->fmt.meta.dataformat);
+
 	v4l2_dbg(1, debug, &node_get_pispbe(node)->v4l2_dev,
-		 "Set output format for metadata node %s\n", NODE_NAME(node));
+		 "Set output format for meta node %s to " V4L2_FOURCC_CONV "\n",
+		 NODE_NAME(node), V4L2_FOURCC_CONV_ARGS(f->fmt.meta.dataformat));
 	return 0;
 }
 
@@ -1416,8 +1488,11 @@ static int pispbe_node_s_fmt_meta_cap(struct file *file, void *priv,
 		return ret;
 
 	node->format = *f;
+	node->pisp_format = find_format(f->fmt.meta.dataformat);
+
 	v4l2_dbg(1, debug, &node_get_pispbe(node)->v4l2_dev,
-		 "Set output format for metadata node %s\n", NODE_NAME(node));
+		 "Set capture format for meta node %s to " V4L2_FOURCC_CONV "\n",
+		 NODE_NAME(node), V4L2_FOURCC_CONV_ARGS(f->fmt.meta.dataformat));
 	return 0;
 }
 
@@ -1606,6 +1681,13 @@ static const struct v4l2_ioctl_ops pispbe_node_ioctl_ops = {
 	.vidioc_enum_fmt_vid_out = pispbe_node_enum_fmt,
 	.vidioc_enum_fmt_meta_cap = pispbe_node_enum_fmt,
 	.vidioc_enum_framesizes = pispbe_enum_framesizes,
+	.vidioc_reqbufs = vb2_ioctl_reqbufs,
+	.vidioc_create_bufs = vb2_ioctl_create_bufs,
+	.vidioc_prepare_buf = vb2_ioctl_prepare_buf,
+	.vidioc_querybuf = vb2_ioctl_querybuf,
+	.vidioc_qbuf = vb2_ioctl_qbuf,
+	.vidioc_dqbuf = vb2_ioctl_dqbuf,
+	.vidioc_expbuf = vb2_ioctl_expbuf,
 	.vidioc_reqbufs = pispbe_node_reqbufs,
 	.vidioc_querybuf = pispbe_node_querybuf,
 	.vidioc_expbuf = pispbe_node_expbuf,
@@ -1626,16 +1708,7 @@ static const struct video_device pispbe_videodev = {
 
 static void node_set_default_format(struct pispbe_node *node)
 {
-	if (NODE_IS_MPLANE(node)) {
-		struct v4l2_format f = {0};
-
-		f.fmt.pix_mp.pixelformat = V4L2_PIX_FMT_YUV420;
-		f.fmt.pix_mp.width = 1920;
-		f.fmt.pix_mp.height = 1080;
-		f.type = node->buf_type;
-		try_format(&f, node);
-		node->format = f;
-	} else if (NODE_IS_META(node) && NODE_IS_OUTPUT(node)) {
+	if (NODE_IS_META(node) && NODE_IS_OUTPUT(node)) {
 		/* Config node */
 		struct v4l2_format *f = &node->format;
 
@@ -1649,6 +1722,15 @@ static void node_set_default_format(struct pispbe_node *node)
 		f->fmt.meta.dataformat = V4L2_PIX_FMT_RPI_BE;
 		f->fmt.meta.buffersize = 1 << 20;
 		f->type = node->buf_type;
+	} else {
+		struct v4l2_format f = {0};
+
+		f.fmt.pix_mp.pixelformat = V4L2_PIX_FMT_YUV420M;
+		f.fmt.pix_mp.width = 1920;
+		f.fmt.pix_mp.height = 1080;
+		f.type = node->buf_type;
+		try_format(&f, node);
+		node->format = f;
 	}
 }
 
