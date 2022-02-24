@@ -1,0 +1,35 @@
+Package: linux-headers-oracle${variant:suffix}
+Architecture: amd64 arm64
+Section: kernel
+Depends: ${misc:Depends}, linux-headers-${kernel-abi-version}-oracle
+Description: Linux kernel headers for Oracle systems.
+ This package will always depend on the latest kernel headers available
+ for Oracle systems.
+
+Package: linux-image-oracle${variant:suffix}
+Architecture: amd64 arm64
+Section: kernel
+Provides: ${dkms:zfs-modules} ${dkms:virtualbox-guest-modules} ${dkms:wireguard-linux-compat-modules}
+Depends: ${misc:Depends}, linux-image-${kernel-abi-version}-oracle, linux-modules-extra-${kernel-abi-version}-oracle [amd64]
+Description: Linux kernel image for Oracle systems.
+ This package will always depend on the latest kernel image available
+ for Oracle systems.
+
+Package: linux-tools-oracle${variant:suffix}
+Architecture: amd64 arm64
+Section: kernel
+Provides: linux-tools
+Depends: ${misc:Depends}, linux-tools-${kernel-abi-version}-oracle
+Description: Linux kernel versioned tools for Oracle systems.
+ This package will always depend on the latest Linux kernel versioned tools
+ available for Oracle systems.
+
+Package: linux-oracle${variant:suffix}
+Architecture: amd64 arm64
+Section: kernel
+Provides: ${test:provides-full-oracle} ${test:provides-full-preferred}
+Depends: ${misc:Depends}, linux-image-oracle${variant:suffix} (= ${binary:Version}), linux-headers-oracle${variant:suffix} (= ${binary:Version})
+Description: Complete Linux kernel for Oracle systems.
+ This package will always depend on the latest complete Linux kernel available
+ for Oracle systems.
+
