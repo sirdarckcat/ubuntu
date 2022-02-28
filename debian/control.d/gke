@@ -1,0 +1,35 @@
+Package: linux-headers-gke${variant:suffix}
+Architecture: amd64 arm64
+Section: kernel
+Depends: ${misc:Depends}, linux-headers-${kernel-abi-version}-gke
+Description: Linux kernel headers for gke systems.
+ This package will always depend on the latest kernel headers available
+ for gke systems.
+
+Package: linux-image-gke${variant:suffix}
+Architecture: amd64 arm64
+Section: kernel
+Provides: ${dkms:zfs-modules} ${dkms:virtualbox-guest-modules} ${dkms:wireguard-linux-compat-modules}
+Depends: ${misc:Depends}, linux-image-${kernel-abi-version}-gke, linux-modules-extra-${kernel-abi-version}-gke [amd64]
+Description: Linux kernel image for gke systems.
+ This package will always depend on the latest kernel image available
+ for gke systems.
+
+Package: linux-tools-gke${variant:suffix}
+Architecture: amd64 arm64
+Section: kernel
+Provides: linux-tools
+Depends: ${misc:Depends}, linux-tools-${kernel-abi-version}-gke
+Description: Linux kernel versioned tools for gke systems.
+ This package will always depend on the latest Linux kernel versioned tools
+ available for gke systems.
+
+Package: linux-gke${variant:suffix}
+Architecture: amd64 arm64
+Section: kernel
+Provides: ${test:provides-full-gke} ${test:provides-full-preferred}
+Depends: ${misc:Depends}, linux-image-gke${variant:suffix} (= ${binary:Version}), linux-headers-gke${variant:suffix} (= ${binary:Version})
+Description: Complete Linux kernel for gke systems.
+ This package will always depend on the latest complete Linux kernel available
+ for gke systems.
+

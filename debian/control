@@ -1,84 +1,84 @@
-Source: linux-meta-oracle-5.13
+Source: linux-meta-gke-5.13
 Section: devel
 Priority: optional
 Maintainer: Ubuntu Kernel Team <kernel-team@lists.ubuntu.com>
 Standards-Version: 3.9.8
 Build-Depends: dpkg (>= 1.13.19), debhelper (>= 9), gawk, kmod
 Build-Depends-Arch:
- linux-oracle-5.13-headers-5.13.0-1018,
- linux-headers-5.13.0-1018-oracle,
- linux-modules-5.13.0-1018-oracle,
-Vcs-Git: git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-oracle/+git/focal
+ linux-gke-5.13-headers-5.13.0-1018,
+ linux-headers-5.13.0-1018-gke,
+ linux-modules-5.13.0-1018-gke,
+Vcs-Git: git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-gke/+git/focal
 
-Package: linux-headers-oracle
+Package: linux-headers-gke
 Architecture: amd64 arm64
 Section: kernel
-Depends: ${misc:Depends}, linux-headers-${kernel-abi-version}-oracle
-Description: Linux kernel headers for Oracle systems.
+Depends: ${misc:Depends}, linux-headers-${kernel-abi-version}-gke
+Description: Linux kernel headers for gke systems.
  This package will always depend on the latest kernel headers available
- for Oracle systems.
+ for gke systems.
 
-Package: linux-image-oracle
+Package: linux-image-gke
 Architecture: amd64 arm64
 Section: kernel
 Provides: ${dkms:zfs-modules} ${dkms:virtualbox-guest-modules} ${dkms:wireguard-linux-compat-modules}
-Depends: ${misc:Depends}, linux-image-${kernel-abi-version}-oracle, linux-modules-extra-${kernel-abi-version}-oracle [amd64]
-Description: Linux kernel image for Oracle systems.
+Depends: ${misc:Depends}, linux-image-${kernel-abi-version}-gke, linux-modules-extra-${kernel-abi-version}-gke [amd64]
+Description: Linux kernel image for gke systems.
  This package will always depend on the latest kernel image available
- for Oracle systems.
+ for gke systems.
 
-Package: linux-tools-oracle
+Package: linux-tools-gke
 Architecture: amd64 arm64
 Section: kernel
 Provides: linux-tools
-Depends: ${misc:Depends}, linux-tools-${kernel-abi-version}-oracle
-Description: Linux kernel versioned tools for Oracle systems.
+Depends: ${misc:Depends}, linux-tools-${kernel-abi-version}-gke
+Description: Linux kernel versioned tools for gke systems.
  This package will always depend on the latest Linux kernel versioned tools
- available for Oracle systems.
+ available for gke systems.
 
-Package: linux-oracle
+Package: linux-gke
 Architecture: amd64 arm64
 Section: kernel
-Provides: kernel-testing--linux-oracle-5.13--full--oracle, kernel-testing--linux-oracle-5.13--full--preferred,
-Depends: ${misc:Depends}, linux-image-oracle (= ${binary:Version}), linux-headers-oracle (= ${binary:Version})
-Description: Complete Linux kernel for Oracle systems.
+Provides: kernel-testing--linux-gke-5.13--full--gke, kernel-testing--linux-gke-5.13--full--preferred,
+Depends: ${misc:Depends}, linux-image-gke (= ${binary:Version}), linux-headers-gke (= ${binary:Version})
+Description: Complete Linux kernel for gke systems.
  This package will always depend on the latest complete Linux kernel available
- for Oracle systems.
+ for gke systems.
 
 
-Package: linux-headers-oracle-edge
+Package: linux-headers-gke-edge
 Architecture: amd64 arm64
 Section: kernel
-Depends: ${misc:Depends}, linux-headers-${kernel-abi-version}-oracle
-Description: Linux kernel headers for Oracle systems.
+Depends: ${misc:Depends}, linux-headers-${kernel-abi-version}-gke
+Description: Linux kernel headers for gke systems.
  This package will always depend on the latest kernel headers available
- for Oracle systems.
+ for gke systems.
 
-Package: linux-image-oracle-edge
+Package: linux-image-gke-edge
 Architecture: amd64 arm64
 Section: kernel
 Provides: ${dkms:zfs-modules} ${dkms:virtualbox-guest-modules} ${dkms:wireguard-linux-compat-modules}
-Depends: ${misc:Depends}, linux-image-${kernel-abi-version}-oracle, linux-modules-extra-${kernel-abi-version}-oracle [amd64]
-Description: Linux kernel image for Oracle systems.
+Depends: ${misc:Depends}, linux-image-${kernel-abi-version}-gke, linux-modules-extra-${kernel-abi-version}-gke [amd64]
+Description: Linux kernel image for gke systems.
  This package will always depend on the latest kernel image available
- for Oracle systems.
+ for gke systems.
 
-Package: linux-tools-oracle-edge
+Package: linux-tools-gke-edge
 Architecture: amd64 arm64
 Section: kernel
 Provides: linux-tools
-Depends: ${misc:Depends}, linux-tools-${kernel-abi-version}-oracle
-Description: Linux kernel versioned tools for Oracle systems.
+Depends: ${misc:Depends}, linux-tools-${kernel-abi-version}-gke
+Description: Linux kernel versioned tools for gke systems.
  This package will always depend on the latest Linux kernel versioned tools
- available for Oracle systems.
+ available for gke systems.
 
-Package: linux-oracle-edge
+Package: linux-gke-edge
 Architecture: amd64 arm64
 Section: kernel
 Provides:  
-Depends: ${misc:Depends}, linux-image-oracle-edge (= ${binary:Version}), linux-headers-oracle-edge (= ${binary:Version})
-Description: Complete Linux kernel for Oracle systems.
+Depends: ${misc:Depends}, linux-image-gke-edge (= ${binary:Version}), linux-headers-gke-edge (= ${binary:Version})
+Description: Complete Linux kernel for gke systems.
  This package will always depend on the latest complete Linux kernel available
- for Oracle systems.
+ for gke systems.
 
 
