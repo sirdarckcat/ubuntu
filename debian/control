@@ -1,14 +1,14 @@
-Source: linux-meta-gke-5.13
+Source: linux-meta-gke
 Section: devel
 Priority: optional
 Maintainer: Ubuntu Kernel Team <kernel-team@lists.ubuntu.com>
 Standards-Version: 3.9.8
 Build-Depends: dpkg (>= 1.13.19), debhelper (>= 9), gawk, kmod
 Build-Depends-Arch:
- linux-gke-5.13-headers-5.13.0-1018,
- linux-headers-5.13.0-1018-gke,
- linux-modules-5.13.0-1018-gke,
-Vcs-Git: git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-gke/+git/focal
+ linux-gke-headers-5.15.0-1001,
+ linux-headers-5.15.0-1001-gke,
+ linux-modules-5.15.0-1001-gke,
+Vcs-Git: git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-gke/+git/jammy
 
 Package: linux-headers-gke
 Architecture: amd64 arm64
@@ -39,14 +39,14 @@ Description: Linux kernel versioned tools for gke systems.
 Package: linux-gke
 Architecture: amd64 arm64
 Section: kernel
-Provides: kernel-testing--linux-gke-5.13--full--gke, kernel-testing--linux-gke-5.13--full--preferred,
+Provides: kernel-testing--linux-gke--full--gke, kernel-testing--linux-gke--full--preferred,
 Depends: ${misc:Depends}, linux-image-gke (= ${binary:Version}), linux-headers-gke (= ${binary:Version})
 Description: Complete Linux kernel for gke systems.
  This package will always depend on the latest complete Linux kernel available
  for gke systems.
 
 
-Package: linux-headers-gke-edge
+Package: linux-headers-gke-5.15
 Architecture: amd64 arm64
 Section: kernel
 Depends: ${misc:Depends}, linux-headers-${kernel-abi-version}-gke
@@ -54,7 +54,7 @@ Description: Linux kernel headers for gke systems.
  This package will always depend on the latest kernel headers available
  for gke systems.
 
-Package: linux-image-gke-edge
+Package: linux-image-gke-5.15
 Architecture: amd64 arm64
 Section: kernel
 Provides: ${dkms:zfs-modules} ${dkms:virtualbox-guest-modules} ${dkms:wireguard-linux-compat-modules}
@@ -63,7 +63,7 @@ Description: Linux kernel image for gke systems.
  This package will always depend on the latest kernel image available
  for gke systems.
 
-Package: linux-tools-gke-edge
+Package: linux-tools-gke-5.15
 Architecture: amd64 arm64
 Section: kernel
 Provides: linux-tools
@@ -72,11 +72,11 @@ Description: Linux kernel versioned tools for gke systems.
  This package will always depend on the latest Linux kernel versioned tools
  available for gke systems.
 
-Package: linux-gke-edge
+Package: linux-gke-5.15
 Architecture: amd64 arm64
 Section: kernel
 Provides:  
-Depends: ${misc:Depends}, linux-image-gke-edge (= ${binary:Version}), linux-headers-gke-edge (= ${binary:Version})
+Depends: ${misc:Depends}, linux-image-gke-5.15 (= ${binary:Version}), linux-headers-gke-5.15 (= ${binary:Version})
 Description: Complete Linux kernel for gke systems.
  This package will always depend on the latest complete Linux kernel available
  for gke systems.
