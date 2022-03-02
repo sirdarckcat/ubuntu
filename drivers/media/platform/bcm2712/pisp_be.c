@@ -23,7 +23,7 @@ MODULE_AUTHOR("Someone");
 MODULE_LICENSE("GPL");
 MODULE_VERSION("0.1.1");
 
-static unsigned int debug = 2;
+static unsigned int debug;
 module_param(debug, uint, 0644);
 MODULE_PARM_DESC(debug, "activates debug info");
 
