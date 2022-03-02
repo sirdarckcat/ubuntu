@@ -2252,6 +2252,23 @@ static const char *pl011_type(struct uart_port *port)
 }
 
 /*
+ * Release the memory region(s) being used by 'port'
+ */
+static void pl011_release_port(struct uart_port *port)
+{
+	release_mem_region(port->mapbase, SZ_4K);
+}
+
+/*
+ * Request the memory region(s) being used by 'port'
+ */
+static int pl011_request_port(struct uart_port *port)
+{
+	return request_mem_region(port->mapbase, SZ_4K, "uart-pl011")
+			!= NULL ? 0 : -EBUSY;
+}
+
+/*
  * Configure/autoconfigure the port.
  */
 static void pl011_config_port(struct uart_port *port, int flags)
