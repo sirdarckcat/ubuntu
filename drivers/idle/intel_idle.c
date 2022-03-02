@@ -784,6 +784,16 @@ static struct cpuidle_state icx_cstates[] __initdata = {
 		.enter = NULL }
 };
 
+/*
+ * On Sapphire Rapids Xeon C1 has to be disabled if C1E is enabled, and vice
+ * versa. On SPR C1E is enabled only if "C1E promotion" bit is set in
+ * MSR_IA32_POWER_CTL. But in this case there effectively no C1, because C1
+ * requests are promoted to C1E. If the "C1E promotion" bit is cleared, then
+ * both C1 and C1E requests end up with C1, so there is effectively no C1E.
+ *
+ * By default we enable C1 and disable C1E by marking it with
+ * 'CPUIDLE_FLAG_UNUSABLE'.
+ */
 static struct cpuidle_state spr_cstates[] __initdata = {
 	{
 		.name = "C1",
@@ -796,7 +806,8 @@ static struct cpuidle_state spr_cstates[] __initdata = {
 	{
 		.name = "C1E",
 		.desc = "MWAIT 0x01",
-		.flags = MWAIT2flg(0x01) | CPUIDLE_FLAG_ALWAYS_ENABLE,
+		.flags = MWAIT2flg(0x01) | CPUIDLE_FLAG_ALWAYS_ENABLE | \
+					   CPUIDLE_FLAG_UNUSABLE,
 		.exit_latency = 2,
 		.target_residency = 4,
 		.enter = &intel_idle,
