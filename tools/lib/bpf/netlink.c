@@ -333,7 +333,7 @@ int bpf_set_link_xdp_md_btf(int ifindex, __u8  enable)
 		ret = -errno;
 		goto cleanup;
 	}
-	ret = bpf_netlink_recv(sock, nl_pid, seq, NULL, NULL, NULL);
+	ret = libbpf_netlink_recv(sock, nl_pid, seq, NULL, NULL, NULL);
 
 cleanup:
 	close(sock);
