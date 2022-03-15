@@ -96,6 +96,7 @@ struct cqspi_st {
 	u8			dll_mode;
 	struct completion	tuning_complete;
 	struct spi_mem_op	tuning_op;
+	int			gpio;
 };
 
 struct cqspi_driver_platdata {
@@ -869,6 +870,42 @@ static void cqspi_setup_ddrmode(struct cqspi_st *cqspi)
 	writel(reg, cqspi->iobase + CQSPI_REG_CONFIG);
 }
 
+static void cqspi_setup_sdrmode(struct cqspi_st *cqspi)
+{
+	u32 reg;
+
+	reg = readl(cqspi->iobase + CQSPI_REG_CONFIG);
+	reg &= ~CQSPI_REG_CONFIG_ENABLE_MASK;
+	writel(reg, cqspi->iobase + CQSPI_REG_CONFIG);
+
+	reg &= ~CQSPI_REG_CONFIG_DTR_PROTO;
+	reg &= ~CQSPI_REG_CONFIG_DUAL_OPCODE;
+	reg &= ~CQSPI_REG_CONFIG_PHY_ENABLE_MASK;
+	writel(reg, cqspi->iobase + CQSPI_REG_CONFIG);
+
+	/* Program POLL_CNT */
+	reg = readl(cqspi->iobase + CQSPI_REG_WR_COMPLETION_CTRL);
+	reg &= ~CQSPI_REG_WRCOMPLETION_POLLCNT_MASK;
+	reg |= (1 << CQSPI_REG_WRCOMPLETION_POLLCNY_LSB);
+	writel(reg, cqspi->iobase + CQSPI_REG_WR_COMPLETION_CTRL);
+
+	reg = readl(cqspi->iobase + CQSPI_REG_READCAPTURE);
+	reg &= ~CQSPI_REG_READCAPTURE_DQS_ENABLE;
+	reg |= (1 & CQSPI_REG_READCAPTURE_DELAY_MASK)
+		<< CQSPI_REG_READCAPTURE_DELAY_LSB;
+	writel(reg, cqspi->iobase + CQSPI_REG_READCAPTURE);
+
+	writel(CQSPI_REG_PHY_CONFIG_RESET_FLD_MASK,
+	       cqspi->iobase + CQSPI_REG_PHY_CONFIG);
+
+	reg = readl(cqspi->iobase + CQSPI_REG_CONFIG);
+	reg |= CQSPI_REG_CONFIG_ENABLE_MASK;
+	writel(reg, cqspi->iobase + CQSPI_REG_CONFIG);
+
+	cqspi->clk_tuned = false;
+	cqspi->extra_dummy = false;
+}
+
 static void cqspi_periodictuning(struct work_struct *work)
 {
 	struct delayed_work *d = to_delayed_work(work);
@@ -1174,15 +1211,14 @@ static int cqspi_versal_device_reset(struct cqspi_st *cqspi, u8 reset_type)
 {
 	struct platform_device *pdev = cqspi->pdev;
 	int ret;
-	int gpio;
 	enum of_gpio_flags flags;
 
 	if (reset_type == CQSPI_RESET_TYPE_HWPIN) {
-		gpio = of_get_named_gpio_flags(pdev->dev.of_node,
-					       "reset-gpios", 0, &flags);
-		if (!gpio_is_valid(gpio))
+		cqspi->gpio = of_get_named_gpio_flags(pdev->dev.of_node,
+						      "reset-gpios", 0, &flags);
+		if (!gpio_is_valid(cqspi->gpio))
 			return -EIO;
-		ret = devm_gpio_request_one(&pdev->dev, gpio, flags,
+		ret = devm_gpio_request_one(&pdev->dev, cqspi->gpio, flags,
 					    "flash-reset");
 		if (ret) {
 			dev_err(&pdev->dev,
@@ -1199,7 +1235,7 @@ static int cqspi_versal_device_reset(struct cqspi_st *cqspi, u8 reset_type)
 					     PM_PINCTRL_INPUT_TYPE_SCHMITT);
 
 		/* Set the direction as output and enable the output */
-		gpio_direction_output(gpio, 1);
+		gpio_direction_output(cqspi->gpio, 1);
 
 		/* Disable Tri-state */
 		zynqmp_pm_pinctrl_set_config(CQSPI_VERSAL_MIO_NODE_ID_12,
@@ -1208,11 +1244,11 @@ static int cqspi_versal_device_reset(struct cqspi_st *cqspi, u8 reset_type)
 		udelay(1);
 
 		/* Set value 0 to pin */
-		gpio_set_value(gpio, 0);
+		gpio_set_value(cqspi->gpio, 0);
 		udelay(10);
 
 		/* Set value 1 to pin */
-		gpio_set_value(gpio, 1);
+		gpio_set_value(cqspi->gpio, 1);
 		udelay(35);
 	} else {
 		ret = -EINVAL;
@@ -1870,6 +1906,9 @@ static int cqspi_exec_mem_op(struct spi_mem *mem, const struct spi_mem_op *op)
 		ret = cqspi_setup_edgemode(mem, op);
 		if (ret)
 			return ret;
+	} else {
+		if (cqspi->clk_tuned)
+			cqspi_setup_sdrmode(cqspi);
 	}
 
 	if (f_pdata->dtr && !cqspi->tuning_complete.done &&
@@ -2040,7 +2079,6 @@ static void cqspi_controller_init(struct cqspi_st *cqspi)
 	/* Enable DMA interface */
 	if (cqspi->use_dma_read) {
 		reg = readl(cqspi->iobase + CQSPI_REG_CONFIG);
-		reg |= CQSPI_REG_CONFIG_DMA_MASK;
 		reg &= ~CQSPI_REG_CONFIG_PHY_ENABLE_MASK;
 		writel(reg, cqspi->iobase + CQSPI_REG_CONFIG);
 	}
@@ -2341,7 +2379,7 @@ static int cqspi_suspend(struct device *dev)
 	struct spi_master *master = dev_get_drvdata(dev);
 	int ret;
 
-	if (!cqspi->tuning_complete.done &&
+	if (cqspi->clk_tuned && !cqspi->tuning_complete.done &&
 	    !wait_for_completion_timeout(&cqspi->tuning_complete,
 		msecs_to_jiffies(CQSPI_TUNING_TIMEOUT_MS))) {
 		return -ETIMEDOUT;
@@ -2359,6 +2397,7 @@ static int cqspi_resume(struct device *dev)
 {
 	struct cqspi_st *cqspi = dev_get_drvdata(dev);
 	struct spi_master *master = dev_get_drvdata(dev);
+	u32 ret;
 
 	clk_prepare_enable(cqspi->clk);
 	cqspi_wait_idle(cqspi);
@@ -2366,6 +2405,31 @@ static int cqspi_resume(struct device *dev)
 
 	cqspi->current_cs = -1;
 	cqspi->sclk = 0;
+	cqspi->extra_dummy = false;
+	cqspi->clk_tuned = false;
+
+	ret = cqspi_setup_flash(cqspi);
+	if (ret) {
+		dev_err(dev, "failed to setup flash parameters %d\n", ret);
+		return ret;
+	}
+
+	ret = zynqmp_pm_ospi_mux_select(cqspi->pd_dev_id,
+					PM_OSPI_MUX_SEL_LINEAR);
+	if (ret)
+		return ret;
+
+	/* Set the direction as output and enable the output */
+	gpio_direction_output(cqspi->gpio, 1);
+	udelay(1);
+
+	/* Set value 0 to pin */
+	gpio_set_value(cqspi->gpio, 0);
+	udelay(10);
+
+	/* Set value 1 to pin */
+	gpio_set_value(cqspi->gpio, 1);
+	udelay(35);
 
 	return spi_master_resume(master);
 }
