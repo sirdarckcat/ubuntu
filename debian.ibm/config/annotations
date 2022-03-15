@@ -12,14 +12,11 @@ include "../../debian.master/config/annotations"
 CONFIG_PREEMPT_VOLUNTARY			policy<{'amd64': 'y'}>
 CONFIG_PREEMPT_VOLUNTARY			flag<ENFORCE> note<maintaining original config>
 
-CONFIG_IRQ_FORCED_THREADING_DEFAULT		policy<{'amd64': 'n'}>
+CONFIG_IRQ_FORCED_THREADING_DEFAULT		policy<{'amd64': '-'}>
 CONFIG_IRQ_FORCED_THREADING_DEFAULT		flag<ENFORCE> note<maintaining original config>
 
 CONFIG_MFD_AHC1EC0				policy<{'amd64': '-'}>
 CONFIG_MFD_AHC1EC0				flag<ENFORCE> note<maintaining original config>
-
-CONFIG_KERNEL_GZIP				policy<{'amd64': 'y'}>
-CONFIG_KERNEL_GZIP				flag<ENFORCE> note<maintaining original config>
 
 CONFIG_HZ_1000					policy<{'amd64': 'n'}>
 CONFIG_HZ_1000					flag<ENFORCE> note<maintaining original config>
@@ -41,3 +38,15 @@ CONFIG_KERNEL_LZ4				flag<ENFORCE> note<maintaining original config>
 
 CONFIG_LATENCYTOP				policy<{'amd64': 'n'}>
 CONFIG_LATENCYTOP				flag<ENFORCE> note<maintaining original config>
+
+# No ODM/AAEON drivers
+CONFIG_GPIO_AAEON                               policy<{'amd64': '-'}>
+CONFIG_SENSORS_AAEON                            policy<{'amd64': '-'}>
+CONFIG_LEDS_AAEON                               policy<{'amd64': '-'}>
+CONFIG_MFD_AAEON                                policy<{'amd64': '-'}>
+CONFIG_AAEON_IWMI_WDT                           policy<{'amd64': '-'}>
+
+# Fixups for master annotations
+CONFIG_TEST_DIV64                               policy<{'amd64': 'n'}>
+CONFIG_COMEDI_TESTS_EXAMPLE                     policy<{'amd64': 'm'}>
+CONFIG_COMEDI_TESTS_NI_ROUTES                   policy<{'amd64': 'm'}>
