@@ -56,6 +56,7 @@ override_dh_auto_build:
 			dpkg-deb -x $${pkg}_*.deb $$flavour;			\
 		);								\
 		ubuntu-core-initramfs create-initrd --output $(initrd)		\
+			--feature main server					\
 			--kernelver $(KERNEL_ABI_VERSION)-$$flavour;		\
 		ubuntu-core-initramfs create-efi --unsigned --output $(efi)	\
 			--kernel $(outdir)/$$flavour/boot/vmlinuz		\
@@ -73,6 +74,7 @@ override_dh_auto_install:
 		mkdir -p debian/linux-image-uc20-efi-$$flavour/boot;		\
 		initrd="debian/linux-image-uc20-efi-$$flavour/boot/initrd.img";	\
 		ubuntu-core-initramfs create-initrd --output $$initrd		\
+			--feature main server					\
 			--kernelver $(KERNEL_ABI_VERSION)-$$flavour;		\
 		mv $$initrd-$(KERNEL_ABI_VERSION)-$$flavour $$initrd;		\
 	done
