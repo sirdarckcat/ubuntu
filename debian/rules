@@ -13,7 +13,11 @@ KERNEL_ABI_VERSION=$(shell echo "$(VERSION)" | sed -ne 's/\([0-9]*\.[0-9]*\.[0-9
 
 DEB_HOST_ARCH=$(shell dpkg-architecture -qDEB_HOST_ARCH)
 
+ifeq ($(DEB_HOST_ARCH),amd64)
 FLAVOURS=generic lowlatency
+else
+FLAVOURS=generic
+endif
 
 clean: debian/control
 	dh_testdir
@@ -34,6 +38,7 @@ debian/control:
 %:
 	dh $@
 
+ifneq (,$(filter $(DEB_HOST_ARCH),amd64))
 override_dh_auto_build: signing = $(CURDIR)/SIGNING
 override_dh_auto_build: signingv = $(signing)/$(VERSION)
 override_dh_auto_build: signing_tar = $(SOURCE)_$(VERSION)_$(DEB_HOST_ARCH).tar.gz
@@ -62,6 +67,16 @@ override_dh_auto_build:
 	{ echo "tarball"; } >$(signingv)/control/options
 	cd $(signing) && tar czvf ../../$(signing_tar) .
 	dpkg-distaddfile $(signing_tar) raw-signing -
+else
+override_dh_auto_install:
+	for flavour in $(FLAVOURS); do						\
+		mkdir -p debian/linux-image-uc20-efi-$$flavour/boot;		\
+		initrd="debian/linux-image-uc20-efi-$$flavour/boot/initrd.img";	\
+		ubuntu-core-initramfs create-initrd --output $$initrd		\
+			--kernelver $(KERNEL_ABI_VERSION)-$$flavour;		\
+		mv $$initrd-$(KERNEL_ABI_VERSION)-$$flavour $$initrd;		\
+	done
+endif
 
 printchanges:
 	@prev_ver=$$(dpkg-parsechangelog -l$(DEBIAN)/changelog -o1 -c1 -SVersion);	\

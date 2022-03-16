@@ -10,11 +10,12 @@ Build-Depends:
  kmod,
  linux-firmware
 Build-Depends-Arch:
- @KERNEL_SOURCE@-image-unsigned-@KERNEL_ABI_VERSION@-generic,
+ @KERNEL_SOURCE@-image-unsigned-@KERNEL_ABI_VERSION@-generic [amd64],
+ @KERNEL_SOURCE@-image-@KERNEL_ABI_VERSION@-generic [!amd64],
  @KERNEL_SOURCE@-modules-@KERNEL_ABI_VERSION@-generic,
- @KERNEL_SOURCE@-modules-extra-@KERNEL_ABI_VERSION@-generic,
- @KERNEL_SOURCE@-image-unsigned-@KERNEL_ABI_VERSION@-lowlatency,
- @KERNEL_SOURCE@-modules-@KERNEL_ABI_VERSION@-lowlatency,
+ @KERNEL_SOURCE@-modules-extra-@KERNEL_ABI_VERSION@-generic [!armhf],
+ @KERNEL_SOURCE@-image-unsigned-@KERNEL_ABI_VERSION@-lowlatency [amd64],
+ @KERNEL_SOURCE@-modules-@KERNEL_ABI_VERSION@-lowlatency [amd64],
 Vcs-Git: git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-uc20/+git/@SERIES@
 
 Package: @SRCPKGNAME@
@@ -22,3 +23,9 @@ Architecture: amd64
 Section: devel
 Priority: optional
 Description: Empty package
+
+Package: linux-image-uc20-efi-generic
+Architecture: arm64 armhf
+Depends: linux-firmware, wireless-regdb, linux-image-@KERNEL_ABI_VERSION@-generic, linux-modules-@KERNEL_ABI_VERSION@-generic, linux-modules-extra-@KERNEL_ABI_VERSION@-generic [arm64]
+Description: UC20 kernel image generic
+ A kernel image and initrd for generic UC20.
