@@ -531,18 +531,15 @@ static int nsim_devlink_eswitch_mode_set(struct devlink *devlink, u16 mode,
 					 struct netlink_ext_ack *extack)
 {
 	struct nsim_dev *nsim_dev = devlink_priv(devlink);
-	int err = 0;
 
 	mutex_lock(&nsim_dev->nsim_bus_dev->vfs_lock);
 	if (mode == nsim_dev->esw_mode)
-		goto unlock;
+		return 0;
 
 	if (mode == DEVLINK_ESWITCH_MODE_LEGACY)
-		err = nsim_esw_legacy_enable(nsim_dev, extack);
-	else if (mode == DEVLINK_ESWITCH_MODE_SWITCHDEV)
-		err = nsim_esw_switchdev_enable(nsim_dev, extack);
-	else
-		err = -EINVAL;
+		return nsim_esw_legacy_enable(nsim_dev, extack);
+	if (mode == DEVLINK_ESWITCH_MODE_SWITCHDEV)
+		return nsim_esw_switchdev_enable(nsim_dev, extack);
 
 unlock:
 	mutex_unlock(&nsim_dev->nsim_bus_dev->vfs_lock);
