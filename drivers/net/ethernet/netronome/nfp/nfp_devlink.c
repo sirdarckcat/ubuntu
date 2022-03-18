@@ -156,7 +156,6 @@ static int nfp_devlink_eswitch_mode_set(struct devlink *devlink, u16 mode,
 					struct netlink_ext_ack *extack)
 {
 	struct nfp_pf *pf = devlink_priv(devlink);
-	int ret;
 
 	mutex_lock(&pf->lock);
 	ret = nfp_app_eswitch_mode_set(pf->app, mode);
