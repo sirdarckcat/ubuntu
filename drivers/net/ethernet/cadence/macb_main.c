@@ -335,7 +335,7 @@ static int macb_mdio_wait_for_idle(struct macb *bp)
 	u32 val;
 
 	return readx_poll_timeout(MACB_READ_NSR, bp, val, val & MACB_BIT(IDLE),
-				  1, MACB_MDIO_TIMEOUT);
+				  100, MACB_MDIO_TIMEOUT);
 }
 
 static int macb_mdio_read_c22(struct mii_bus *bus, int mii_id, int regnum)
