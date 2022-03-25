@@ -10,20 +10,20 @@ Build-Depends:
  kmod,
  linux-firmware
 Build-Depends-Arch:
- @KERNEL_SOURCE@-image-unsigned-@KERNEL_ABI_VERSION@-generic [amd64],
- @KERNEL_SOURCE@-image-@KERNEL_ABI_VERSION@-generic [!amd64],
+ @KERNEL_SOURCE@-image-unsigned-@KERNEL_ABI_VERSION@-generic [amd64 arm64],
+ @KERNEL_SOURCE@-image-@KERNEL_ABI_VERSION@-generic [armhf],
  @KERNEL_SOURCE@-modules-@KERNEL_ABI_VERSION@-generic,
  @KERNEL_SOURCE@-modules-extra-@KERNEL_ABI_VERSION@-generic [!armhf],
 Vcs-Git: https://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-uc22/+git/jammy -b main
 
 Package: @SRCPKGNAME@
-Architecture: amd64
+Architecture: amd64 arm64
 Section: devel
 Priority: optional
 Description: Empty package
 
 Package: linux-image-uc22-generic
-Architecture: arm64 armhf
-Depends: linux-firmware, wireless-regdb, linux-image-@KERNEL_ABI_VERSION@-generic, linux-modules-@KERNEL_ABI_VERSION@-generic, linux-modules-extra-@KERNEL_ABI_VERSION@-generic [arm64]
+Architecture: armhf
+Depends: linux-firmware, wireless-regdb, linux-image-@KERNEL_ABI_VERSION@-generic, linux-modules-@KERNEL_ABI_VERSION@-generic
 Description: UC22 kernel image generic
  A kernel image and initrd for generic UC22.

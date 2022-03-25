@@ -34,7 +34,7 @@ debian/control:
 %:
 	dh $@
 
-ifneq (,$(filter $(DEB_HOST_ARCH),amd64))
+ifneq (,$(filter $(DEB_HOST_ARCH),amd64 arm64))
 override_dh_auto_build: signing = $(CURDIR)/SIGNING
 override_dh_auto_build: signingv = $(signing)/$(VERSION)
 override_dh_auto_build: signing_tar = $(SOURCE)_$(VERSION)_$(DEB_HOST_ARCH).tar.gz
