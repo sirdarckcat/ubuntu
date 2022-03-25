@@ -69,12 +69,22 @@ else
 override_dh_auto_install:
 	set -x;									\
 	for flavour in $(FLAVOURS); do						\
+		pkg="linux-image-$(KERNEL_ABI_VERSION)-$$flavour";		\
+		(								\
+			apt-get download $$pkg;					\
+			dpkg-deb -x $${pkg}_*.deb $$flavour;			\
+		);								\
 		mkdir -p debian/linux-image-uc22-$$flavour/boot;		\
-		initrd="debian/linux-image-uc22-$$flavour/boot/initrd.img";	\
+		initrd="$$flavour/boot/initrd.img";	\
+		efi="debian/linux-image-uc22-$$flavour/boot/kernel.efi";	\
 		ubuntu-core-initramfs create-initrd --output $$initrd		\
 			--feature main server					\
 			--kernelver $(KERNEL_ABI_VERSION)-$$flavour;		\
-		mv $$initrd-$(KERNEL_ABI_VERSION)-$$flavour $$initrd;		\
+		ubuntu-core-initramfs create-efi --unsigned --output $$efi	\
+			--kernel $$flavour/boot/vmlinuz				\
+			--kernelver $(KERNEL_ABI_VERSION)-$$flavour		\
+			--initrd $$initrd;					\
+		mv $$efi-$(KERNEL_ABI_VERSION)-$$flavour $$efi;			\
 	done
 endif
 
