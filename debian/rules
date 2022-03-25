@@ -62,6 +62,7 @@ override_dh_auto_build:
 		cp -p $(efi)-$(KERNEL_ABI_VERSION)-$$flavour			\
 			$(signingv)/vmlinuz-$(KERNEL_ABI_VERSION)-$$flavour.efi;\
 	done
+	cp /usr/lib/ubuntu-core-initramfs/main/usr/lib/snapd/info $(signingv)/snapd-info
 	{ echo "tarball"; } >$(signingv)/control/options
 	cd $(signing) && tar czvf ../../$(signing_tar) .
 	dpkg-distaddfile $(signing_tar) raw-signing -
@@ -85,6 +86,8 @@ override_dh_auto_install:
 			--kernelver $(KERNEL_ABI_VERSION)-$$flavour		\
 			--initrd $$initrd;					\
 		mv $$efi-$(KERNEL_ABI_VERSION)-$$flavour $$efi;			\
+		cp /usr/lib/ubuntu-core-initramfs/main/usr/lib/snapd/info	\
+		   debian/linux-image-uc22-$$flavour/boot/snapd-info; \
 	done
 endif
 
