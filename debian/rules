@@ -44,6 +44,7 @@ override_dh_auto_build: efi = $(outdir)/kernel.efi
 override_dh_auto_build:
 	install -d $(signingv)/control
 	mkdir -p $(outdir)
+	set -x;									\
 	for flavour in $(FLAVOURS); do						\
 		pkg="linux-image-unsigned-$(KERNEL_ABI_VERSION)-$$flavour";	\
 		(								\
@@ -66,6 +67,7 @@ override_dh_auto_build:
 	dpkg-distaddfile $(signing_tar) raw-signing -
 else
 override_dh_auto_install:
+	set -x;									\
 	for flavour in $(FLAVOURS); do						\
 		mkdir -p debian/linux-image-uc22-$$flavour/boot;		\
 		initrd="debian/linux-image-uc22-$$flavour/boot/initrd.img";	\
