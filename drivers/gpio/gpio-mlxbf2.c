@@ -21,7 +21,7 @@
 #include <linux/spinlock.h>
 #include <linux/types.h>
 
-#define DRV_VERSION "1.4"
+#define DRV_VERSION "1.3"
 
 /*
  * There are 3 YU GPIO blocks:
@@ -95,6 +95,9 @@ struct mlxbf2_gpio_context {
 
 	/* YU GPIO pin responsible for soft reset */
 	unsigned long rst_pin;
+
+	/* YU GPIO pin connected to PHY INT_N signal */
+	unsigned long phy_int_pin;
 
 	/* YU GPIO block interrupt mask */
 	u32 gpio_int_mask;
@@ -326,6 +329,8 @@ static u32 mlxbf2_gpio_get_int_mask(struct mlxbf2_gpio_context *gs)
 	/*
 	 * Determine bit mask within the yu gpio block.
 	 */
+	if (gs->phy_int_pin != MLXBF2_GPIO_MAX_PINS_PER_BLOCK)
+		gpio_int_mask = BIT(gs->phy_int_pin);
 	if (gs->rst_pin != MLXBF2_GPIO_MAX_PINS_PER_BLOCK)
 		gpio_int_mask |= BIT(gs->rst_pin);
 	if (gs->low_pwr_pin != MLXBF2_GPIO_MAX_PINS_PER_BLOCK)
@@ -372,6 +377,9 @@ static irqreturn_t mlxbf2_gpio_irq_handler(int irq, void *ptr)
 	val |= gpio_pin;
 	writel(val, gs->gpio_io + YU_GPIO_CAUSE_OR_CLRCAUSE);
 
+	if ((gpio_block & BIT(GPIO_BLOCK0)) && (gpio_pin & BIT(gs->phy_int_pin)))
+		generic_handle_irq(irq_find_mapping(gs->gc.irq.domain, gs->phy_int_pin));
+
 	spin_unlock_irqrestore(&gs->gc.bgpio_lock, flags);
 
 	if (gpio_block & BIT(GPIO_BLOCK16)) {
@@ -385,6 +393,15 @@ static irqreturn_t mlxbf2_gpio_irq_handler(int irq, void *ptr)
 	}
 
 	return IRQ_HANDLED;
+}
+
+static int mlxbf2_gpio_to_irq(struct gpio_chip *chip, unsigned gpio)
+{
+	struct mlxbf2_gpio_context *gs;
+
+	gs = gpiochip_get_data(chip);
+
+	return irq_create_mapping(gs->gc.irq.domain, gpio);
 }
 
 static void mlxbf2_gpio_irq_unmask(struct irq_data *data)
@@ -451,6 +468,7 @@ mlxbf2_gpio_probe(struct platform_device *pdev)
 	struct device *dev = &pdev->dev;
 	struct gpio_irq_chip *girq;
 	unsigned int low_pwr_pin;
+	unsigned int phy_int_pin;
 	unsigned int rst_pin;
 	struct gpio_chip *gc;
 	struct resource *res;
@@ -509,6 +527,14 @@ mlxbf2_gpio_probe(struct platform_device *pdev)
 	gc->direction_output = mlxbf2_gpio_direction_output;
 	gc->ngpio = npins;
 	gc->owner = THIS_MODULE;
+	gc->to_irq = mlxbf2_gpio_to_irq;
+
+	/*
+	 * PHY interrupt
+	 */
+	ret = device_property_read_u32(dev, "phy-int-pin", &phy_int_pin);
+	if (ret < 0)
+		phy_int_pin = MLXBF2_GPIO_MAX_PINS_PER_BLOCK;
 
 	/*
 	 * OCP3.0 supports the low power mode interrupt.
@@ -524,6 +550,7 @@ mlxbf2_gpio_probe(struct platform_device *pdev)
 	if (ret < 0)
 		rst_pin = MLXBF2_GPIO_MAX_PINS_PER_BLOCK;
 
+	gs->phy_int_pin = phy_int_pin;
 	gs->low_pwr_pin = low_pwr_pin;
 	gs->rst_pin = rst_pin;
 	gs->gpio_int_mask = mlxbf2_gpio_get_int_mask(gs);
@@ -561,6 +588,12 @@ mlxbf2_gpio_probe(struct platform_device *pdev)
 	}
 	platform_set_drvdata(pdev, gs);
 
+	if (phy_int_pin != MLXBF2_GPIO_MAX_PINS_PER_BLOCK) {
+		/* Create phy irq mapping */
+		mlxbf2_gpio_to_irq(&gs->gc, phy_int_pin);
+		/* Enable sharing the irq domain with the PHY driver */
+		irq_set_default_host(gs->gc.irq.domain);
+	}
 
 	return 0;
 }
@@ -572,9 +605,14 @@ mlxbf2_gpio_remove(struct platform_device *pdev)
 
 	gs = platform_get_drvdata(pdev);
 
-	if ((gs->low_pwr_pin != MLXBF2_GPIO_MAX_PINS_PER_BLOCK) ||
+	if ((gs->phy_int_pin != MLXBF2_GPIO_MAX_PINS_PER_BLOCK) ||
+	    (gs->low_pwr_pin != MLXBF2_GPIO_MAX_PINS_PER_BLOCK) ||
 	    (gs->rst_pin != MLXBF2_GPIO_MAX_PINS_PER_BLOCK)) {
 		mlxbf2_gpio_disable_int(gs);
+	}
+
+	if ((gs->low_pwr_pin != MLXBF2_GPIO_MAX_PINS_PER_BLOCK) ||
+	    (gs->rst_pin != MLXBF2_GPIO_MAX_PINS_PER_BLOCK)) {
 		flush_work(&gs->send_work);
 	}
 
