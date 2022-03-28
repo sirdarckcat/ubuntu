@@ -8,7 +8,6 @@
 #include <linux/io.h>
 #include <linux/ioport.h>
 #include <linux/kernel.h>
-#include <linux/kmod.h>
 #include <linux/module.h>
 #include <linux/platform_device.h>
 #include <linux/pm.h>
@@ -45,24 +44,9 @@
 #define YU_GPIO_MODE0			0x0c
 #define YU_GPIO_DATASET			0x14
 #define YU_GPIO_DATACLEAR		0x18
-#define YU_GPIO_CAUSE_RISE_EN		0x44
-#define YU_GPIO_CAUSE_FALL_EN		0x48
 #define YU_GPIO_MODE1_CLEAR		0x50
 #define YU_GPIO_MODE0_SET		0x54
 #define YU_GPIO_MODE0_CLEAR		0x58
-
-#define YU_GPIO_CAUSE_OR_CAUSE_EVTEN0	0x80
-#define YU_GPIO_CAUSE_OR_EVTEN0		0x94
-#define YU_GPIO_CAUSE_OR_CLRCAUSE	0x98
-#define YU_GPIO16_BIT				0
-#define YU_GPIO16_CAUSE_OR_CAUSE_EVTEN0_MASK	BIT(YU_GPIO16_BIT)
-#define YU_GPIO16_CAUSE_OR_EVTEN0_MASK		BIT(YU_GPIO16_BIT)
-#define YU_GPIO16_CAUSE_RISE_EN_MASK		BIT(YU_GPIO16_BIT)
-#define YU_GPIO16_CAUSE_FALL_EN_MASK		BIT(YU_GPIO16_BIT)
-#define YU_GPIO16_CAUSE_OR_CLRCAUSE_MASK	BIT(YU_GPIO16_BIT)
-#define YU_CAUSE_RSH_COALESCE0_GPIO_CAUSE_MASK	0x10
-#define YU_GPIO_CAUSE_IRQ_IS_SET(val) \
-	(val & YU_CAUSE_RSH_COALESCE0_GPIO_CAUSE_MASK)
 
 #ifdef CONFIG_PM
 struct mlxbf2_gpio_context_save_regs {
@@ -71,33 +55,12 @@ struct mlxbf2_gpio_context_save_regs {
 };
 #endif
 
-typedef enum {
-	ARM_GPIO_LOCK,
-	CAUSE_RSH_COALESCE0,
-	CAUSE_GPIO_ARM_COALESCE0
-} yu_gpio_resources;
-
 /* BlueField-2 gpio block context structure. */
 struct mlxbf2_gpio_context {
 	struct gpio_chip gc;
 
 	/* YU GPIO blocks address */
 	void __iomem *gpio_io;
-
-	/* YU cause rshim cause coalesce0 address */
-	void __iomem *cause_rsh_coalesce0_io;
-
-	/* YU cause gpio arm coalesce0 address */
-	void __iomem *cause_gpio_arm_coalesce0_io;
-
-	/* Block ID */
-	unsigned long block;
-
-	/* Worker function */
-	struct work_struct send_work;
-
-	/* Interrupt */
-	u16 hwirq;
 
 #ifdef CONFIG_PM
 	struct mlxbf2_gpio_context_save_regs *csave_regs;
@@ -164,8 +127,8 @@ static int mlxbf2_gpio_lock_acquire(struct mlxbf2_gpio_context *gs)
 {
 	u32 arm_gpio_lock_val;
 
-	mutex_lock(yu_arm_gpio_lock_param.lock);
 	spin_lock(&gs->gc.bgpio_lock);
+	mutex_lock(yu_arm_gpio_lock_param.lock);
 
 	arm_gpio_lock_val = readl(yu_arm_gpio_lock_param.io);
 
@@ -173,8 +136,8 @@ static int mlxbf2_gpio_lock_acquire(struct mlxbf2_gpio_context *gs)
 	 * When lock active bit[31] is set, ModeX is write enabled
 	 */
 	if (YU_LOCK_ACTIVE_BIT(arm_gpio_lock_val)) {
-		spin_unlock(&gs->gc.bgpio_lock);
 		mutex_unlock(yu_arm_gpio_lock_param.lock);
+		spin_unlock(&gs->gc.bgpio_lock);
 		return -EINVAL;
 	}
 
@@ -189,8 +152,8 @@ static int mlxbf2_gpio_lock_acquire(struct mlxbf2_gpio_context *gs)
 static void mlxbf2_gpio_lock_release(struct mlxbf2_gpio_context *gs)
 {
 	writel(YU_ARM_GPIO_LOCK_RELEASE, yu_arm_gpio_lock_param.io);
-	spin_unlock(&gs->gc.bgpio_lock);
 	mutex_unlock(yu_arm_gpio_lock_param.lock);
+	spin_unlock(&gs->gc.bgpio_lock);
 }
 
 /*
@@ -261,165 +224,29 @@ static int mlxbf2_gpio_direction_output(struct gpio_chip *chip,
 	return ret;
 }
 
-static void mlxbf2_gpio_irq_disable(struct mlxbf2_gpio_context *gs)
-{
-	u32 val;
-
-	spin_lock(&gs->gc.bgpio_lock);
-	val = readl(gs->gpio_io + YU_GPIO_CAUSE_OR_EVTEN0);
-	if (!val) {
-		spin_unlock(&gs->gc.bgpio_lock);
-		/* There is no enabled interrupt */
-		return;
-	}
-
-	val &= ~YU_GPIO16_CAUSE_OR_EVTEN0_MASK;
-	writel(val, gs->gpio_io + YU_GPIO_CAUSE_OR_EVTEN0);
-	spin_unlock(&gs->gc.bgpio_lock);
-}
-
-static void mlxbf2_gpio_irq_set_type(struct mlxbf2_gpio_context *gs)
-{
-	u32 val;
-
-	spin_lock(&gs->gc.bgpio_lock);
-
-	/*
-	 * The power state gpio interrupt should be detected at rising
-	 * and falling edges.
-	 * When it goes from 0 to 1, system should go into low power state
-	 * When it goes from 1 to 0, system should revert to normal state
-	 */
-	val = readl(gs->gpio_io + YU_GPIO_CAUSE_RISE_EN);
-	val |= YU_GPIO16_CAUSE_RISE_EN_MASK;
-	writel(val, gs->gpio_io + YU_GPIO_CAUSE_RISE_EN);
-
-	val = readl(gs->gpio_io + YU_GPIO_CAUSE_FALL_EN);
-	val |= YU_GPIO16_CAUSE_FALL_EN_MASK;
-	writel(val, gs->gpio_io + YU_GPIO_CAUSE_FALL_EN);
-
-	spin_unlock(&gs->gc.bgpio_lock);
-}
-
-static void mlxbf2_gpio_irq_enable(struct mlxbf2_gpio_context *gs)
-{
-	u32 val;
-
-	spin_lock(&gs->gc.bgpio_lock);
-
-	/*
-	 * Setting the priority for the GPIO 16 interrupt enables the
-	 * interrupt as well
-	 */
-	val = readl(gs->gpio_io + YU_GPIO_CAUSE_OR_EVTEN0);
-	val |= YU_GPIO16_CAUSE_OR_EVTEN0_MASK;
-	writel(val, gs->gpio_io + YU_GPIO_CAUSE_OR_EVTEN0);
-
-	spin_unlock(&gs->gc.bgpio_lock);
-}
-
-static void mlxbf2_gpio_send_work(struct work_struct *work)
-{
-	struct mlxbf2_gpio_context *gs;
-
-	gs = container_of(work, struct mlxbf2_gpio_context, send_work);
-
-	acpi_bus_generate_netlink_event("button/power.*", "Power Button",
-					0x80, 1);
-}
-
-static irqreturn_t mlxbf2_gpio_irq_handler(int irq, void *ptr)
-{
-	struct mlxbf2_gpio_context *gs = ptr;
-	u32 val;
-
-	spin_lock(&gs->gc.bgpio_lock);
-
-	/*
-	 * The YU interrupt is shared between SMBus and GPIOs.
-	 * So first, determine whether this is a GPIO interrupt.
-	 */
-	val = readl(gs->cause_rsh_coalesce0_io);
-	if (!YU_GPIO_CAUSE_IRQ_IS_SET(val)) {
-		/* Nothing to do here, not a GPIO interrupt */
-		return IRQ_NONE;
-	}
-	/*
-	 * Finally check if this interrupt is for GPIO 16.
-	 * Return if it is not.
-	 */
-	val = readl(gs->gpio_io + YU_GPIO_CAUSE_OR_CAUSE_EVTEN0);
-	if (!(val & YU_GPIO16_CAUSE_OR_CAUSE_EVTEN0_MASK)) {
-		spin_unlock(&gs->gc.bgpio_lock);
-		return IRQ_NONE;
-	}
-
-	/*
-	 * Clear interrupt when done, otherwise, no further interrupt
-	 * will be triggered.
-	 */
-	val = readl(gs->gpio_io + YU_GPIO_CAUSE_OR_CLRCAUSE);
-	val |= YU_GPIO16_CAUSE_OR_CLRCAUSE_MASK;
-	writel(val, gs->gpio_io + YU_GPIO_CAUSE_OR_CLRCAUSE);
-	spin_unlock(&gs->gc.bgpio_lock);
-
-	schedule_work(&gs->send_work);
-
-	return IRQ_HANDLED;
-}
-
 /* BlueField-2 GPIO driver initialization routine. */
 static int
 mlxbf2_gpio_probe(struct platform_device *pdev)
 {
 	struct mlxbf2_gpio_context *gs;
 	struct device *dev = &pdev->dev;
-	struct acpi_device *adev;
 	struct gpio_chip *gc;
 	struct resource *res;
-	unsigned long blk_id;
 	unsigned int npins;
-	const char *uid;
-	int ret, irq;
+	int ret;
 
 	gs = devm_kzalloc(dev, sizeof(*gs), GFP_KERNEL);
 	if (!gs)
 		return -ENOMEM;
 
-	adev = ACPI_COMPANION(dev);
-	if (!adev)
-		return -ENODEV;
-
-	uid = acpi_device_uid(adev);
-	if (!uid || !(*uid)) {
-		dev_err(dev, "cannot retrieve _UID\n");
-		return -ENODEV;
-	}
-
-	ret = kstrtoul(uid, 0, &blk_id);
-	if (ret == 0)
-		gs->block = blk_id;
-
 	/* YU GPIO block address */
-	res = platform_get_resource(pdev, IORESOURCE_MEM, ARM_GPIO_LOCK);
+	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
 	if (!res)
 		return -ENODEV;
 
 	gs->gpio_io = devm_ioremap(dev, res->start, resource_size(res));
 	if (!gs->gpio_io)
 		return -ENOMEM;
-
-	/* Optional resources */
-	res = platform_get_resource(pdev, IORESOURCE_MEM, CAUSE_RSH_COALESCE0);
-	if (res)
-		gs->cause_rsh_coalesce0_io =
-			devm_ioremap(dev, res->start, resource_size(res));
-
-	res = platform_get_resource(pdev, IORESOURCE_MEM,
-				    CAUSE_GPIO_ARM_COALESCE0);
-	if (res)
-		gs->cause_gpio_arm_coalesce0_io =
-			devm_ioremap(dev, res->start, resource_size(res));
 
 	ret = mlxbf2_gpio_get_lock_res(pdev);
 	if (ret) {
@@ -445,41 +272,12 @@ mlxbf2_gpio_probe(struct platform_device *pdev)
 	gc->ngpio = npins;
 	gc->owner = THIS_MODULE;
 
+	platform_set_drvdata(pdev, gs);
+
 	ret = devm_gpiochip_add_data(dev, &gs->gc, gs);
 	if (ret) {
 		dev_err(dev, "Failed adding memory mapped gpiochip\n");
 		return ret;
-	}
-	platform_set_drvdata(pdev, gs);
-
-	/* Interrupts are only supported for GPIO bit 0 on yu gpio block 16 */
-	if (blk_id == 3) {
-		irq = platform_get_irq(pdev, 0);
-		gs->hwirq = irq;
-		mlxbf2_gpio_irq_enable(gs);
-		mlxbf2_gpio_irq_set_type(gs);
-		ret = devm_request_irq(dev, irq, mlxbf2_gpio_irq_handler,
-			IRQF_ONESHOT | IRQF_SHARED | IRQF_PROBE_SHARED,
-			dev_name(dev), gs);
-		if (ret) {
-			dev_err(dev, "IRQ handler register failed: %d\n", ret);
-			return ret;
-		}
-		INIT_WORK(&gs->send_work, mlxbf2_gpio_send_work);
-	}
-
-	return 0;
-}
-
-static int
-mlxbf2_gpio_remove(struct platform_device *pdev)
-{
-	struct mlxbf2_gpio_context *gs;
-
-	gs = platform_get_drvdata(pdev);
-	if (gs->block == 3) {
-		mlxbf2_gpio_irq_disable(gs);
-		flush_work(&gs->send_work);
 	}
 
 	return 0;
@@ -524,7 +322,6 @@ static struct platform_driver mlxbf2_gpio_driver = {
 		.acpi_match_table = ACPI_PTR(mlxbf2_gpio_acpi_match),
 	},
 	.probe    = mlxbf2_gpio_probe,
-	.remove   = mlxbf2_gpio_remove,
 #ifdef CONFIG_PM
 	.suspend  = mlxbf2_gpio_suspend,
 	.resume   = mlxbf2_gpio_resume,
