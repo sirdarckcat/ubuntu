@@ -324,16 +324,16 @@ static void mlxbf2_gpio_send_work(struct work_struct *work)
 
 	gs = container_of(work, struct mlxbf2_gpio_context, send_work);
 
-	acpi_bus_generate_netlink_event("button/power.*", "Power Button", 0x80, 1);
+	acpi_bus_generate_netlink_event("button/power.*", "Power Button",
+					0x80, 1);
 }
 
 static irqreturn_t mlxbf2_gpio_irq_handler(int irq, void *ptr)
 {
 	struct mlxbf2_gpio_context *gs = ptr;
-	unsigned long flags;
 	u32 val;
 
-	spin_lock_irqsave(&gs->gc.bgpio_lock, flags);
+	spin_lock(&gs->gc.bgpio_lock);
 
 	/*
 	 * The YU interrupt is shared between SMBus and GPIOs.
@@ -342,7 +342,6 @@ static irqreturn_t mlxbf2_gpio_irq_handler(int irq, void *ptr)
 	val = readl(gs->cause_rsh_coalesce0_io);
 	if (!YU_GPIO_CAUSE_IRQ_IS_SET(val)) {
 		/* Nothing to do here, not a GPIO interrupt */
-		spin_unlock_irqrestore(&gs->gc.bgpio_lock, flags);
 		return IRQ_NONE;
 	}
 	/*
@@ -351,7 +350,7 @@ static irqreturn_t mlxbf2_gpio_irq_handler(int irq, void *ptr)
 	 */
 	val = readl(gs->gpio_io + YU_GPIO_CAUSE_OR_CAUSE_EVTEN0);
 	if (!(val & YU_GPIO16_CAUSE_OR_CAUSE_EVTEN0_MASK)) {
-		spin_unlock_irqrestore(&gs->gc.bgpio_lock, flags);
+		spin_unlock(&gs->gc.bgpio_lock);
 		return IRQ_NONE;
 	}
 
@@ -362,7 +361,7 @@ static irqreturn_t mlxbf2_gpio_irq_handler(int irq, void *ptr)
 	val = readl(gs->gpio_io + YU_GPIO_CAUSE_OR_CLRCAUSE);
 	val |= YU_GPIO16_CAUSE_OR_CLRCAUSE_MASK;
 	writel(val, gs->gpio_io + YU_GPIO_CAUSE_OR_CLRCAUSE);
-	spin_unlock_irqrestore(&gs->gc.bgpio_lock, flags);
+	spin_unlock(&gs->gc.bgpio_lock);
 
 	schedule_work(&gs->send_work);
 
@@ -386,9 +385,6 @@ mlxbf2_gpio_probe(struct platform_device *pdev)
 	gs = devm_kzalloc(dev, sizeof(*gs), GFP_KERNEL);
 	if (!gs)
 		return -ENOMEM;
-
-	spin_lock_init(&gs->gc.bgpio_lock);
-	INIT_WORK(&gs->send_work, mlxbf2_gpio_send_work);
 
 	adev = ACPI_COMPANION(dev);
 	if (!adev)
@@ -416,11 +412,14 @@ mlxbf2_gpio_probe(struct platform_device *pdev)
 	/* Optional resources */
 	res = platform_get_resource(pdev, IORESOURCE_MEM, CAUSE_RSH_COALESCE0);
 	if (res)
-		gs->cause_rsh_coalesce0_io = devm_ioremap(dev, res->start, resource_size(res));
+		gs->cause_rsh_coalesce0_io =
+			devm_ioremap(dev, res->start, resource_size(res));
 
-	res = platform_get_resource(pdev, IORESOURCE_MEM, CAUSE_GPIO_ARM_COALESCE0);
+	res = platform_get_resource(pdev, IORESOURCE_MEM,
+				    CAUSE_GPIO_ARM_COALESCE0);
 	if (res)
-		gs->cause_gpio_arm_coalesce0_io = devm_ioremap(dev, res->start, resource_size(res));
+		gs->cause_gpio_arm_coalesce0_io =
+			devm_ioremap(dev, res->start, resource_size(res));
 
 	ret = mlxbf2_gpio_get_lock_res(pdev);
 	if (ret) {
@@ -460,11 +459,13 @@ mlxbf2_gpio_probe(struct platform_device *pdev)
 		mlxbf2_gpio_irq_enable(gs);
 		mlxbf2_gpio_irq_set_type(gs);
 		ret = devm_request_irq(dev, irq, mlxbf2_gpio_irq_handler,
-			IRQF_ONESHOT | IRQF_SHARED | IRQF_PROBE_SHARED, dev_name(dev), gs);
+			IRQF_ONESHOT | IRQF_SHARED | IRQF_PROBE_SHARED,
+			dev_name(dev), gs);
 		if (ret) {
-			dev_err(dev, "IRQ handler registering failed (%d)\n", ret);
+			dev_err(dev, "IRQ handler register failed: %d\n", ret);
 			return ret;
 		}
+		INIT_WORK(&gs->send_work, mlxbf2_gpio_send_work);
 	}
 
 	return 0;
