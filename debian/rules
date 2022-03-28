@@ -82,6 +82,7 @@ override_dh_auto_install:
 			--feature main server					\
 			--kernelver $(KERNEL_ABI_VERSION)-$$flavour;		\
 		ubuntu-core-initramfs create-efi --unsigned --output $$efi	\
+			--stub /usr/lib/ubuntu-core-initramfs/efi/linuxarm.efi.stub \
 			--kernel $$flavour/boot/vmlinuz				\
 			--kernelver $(KERNEL_ABI_VERSION)-$$flavour		\
 			--initrd $$initrd;					\
