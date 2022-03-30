@@ -41,7 +41,6 @@ MODULE_PARM_DESC(debug, "activates debug info");
 #define SUPPORT_IO_USERPTR 0
 
 #define PISPBE_NAME "pispbe"
-#define PISPBE_QUEUE_MEM (80 * 1024 * 1024)
 #define PISPBE_ENTITY_NAME_LEN 32
 
 /* Some ISP-BE registers */
@@ -780,21 +779,26 @@ static int pispbe_node_queue_setup(struct vb2_queue *q, unsigned int *nbuffers,
 				   struct device *alloc_devs[])
 {
 	struct pispbe_node *node = vb2_get_drv_priv(q);
+	struct pispbe_dev *pispbe = node_get_pispbe(node);
 
 	*nplanes = 1;
 	if (NODE_IS_MPLANE(node)) {
 		unsigned int i;
 
 		*nplanes = node->format.fmt.pix_mp.num_planes;
-		for (i = 0; i < *nplanes; i++)
-			sizes[i] =
+		for (i = 0; i < *nplanes; i++) {
+			unsigned int size =
 				node->format.fmt.pix_mp.plane_fmt[i].sizeimage;
+			if (sizes[i] && sizes[i] < size) {
+				v4l2_err(&pispbe->v4l2_dev, "%s: size %u < %u\n",
+					 __func__, sizes[i], size);
+				return -EINVAL;
+			}
+			sizes[i] = size;
+		}
 	} else if (NODE_IS_META(node)) {
 		sizes[0] = node->format.fmt.meta.buffersize;
 	}
-
-	if (sizes[0] * (*nbuffers) > PISPBE_QUEUE_MEM)
-		*nbuffers = PISPBE_QUEUE_MEM / sizes[0];
 
 	v4l2_dbg(1, debug, &node_get_pispbe(node)->v4l2_dev,
 		 "Image (or metadata) size %u, nbuffers %u for node %s\n",
