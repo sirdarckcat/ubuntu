@@ -344,6 +344,7 @@ static void __init ms_hyperv_init_platform(void)
 		 * use swiotlb bounce buffer for dma transaction.
 		 */
 		swiotlb_force = SWIOTLB_FORCE;
+		swiotlb_set_alloc_from_low_pages(false);
 #endif
 		/* Isolation VMs are unenlightened SEV-based VMs, thus this check: */
 		if (IS_ENABLED(CONFIG_AMD_MEM_ENCRYPT)) {
