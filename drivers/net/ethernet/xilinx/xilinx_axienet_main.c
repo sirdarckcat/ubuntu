@@ -2450,6 +2450,9 @@ static const struct net_device_ops axienet_netdev_ops = {
 #ifdef CONFIG_NET_POLL_CONTROLLER
 	.ndo_poll_controller = axienet_poll_controller,
 #endif
+#if defined(CONFIG_XILINX_TSN_SWITCH)
+	.ndo_get_port_parent_id = tsn_switch_get_port_parent_id,
+#endif
 };
 
 /**
