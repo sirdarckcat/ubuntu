@@ -88,6 +88,14 @@ enum flow_offload_tuple_dir {
 	FLOW_OFFLOAD_DIR_MAX = IP_CT_DIR_MAX
 };
 
+enum flow_offload_xmit_type {
+	FLOW_OFFLOAD_XMIT_UNSPEC	= 0,
+	FLOW_OFFLOAD_XMIT_NEIGH,
+	FLOW_OFFLOAD_XMIT_XFRM,
+	FLOW_OFFLOAD_XMIT_DIRECT,
+	FLOW_OFFLOAD_XMIT_TC,
+};
+
 struct flow_offload_tuple {
 	union {
 		struct in_addr		src_v4;
@@ -111,6 +119,14 @@ struct flow_offload_tuple {
 	u16				mtu;
 
 	struct dst_entry		*dst_cache;
+
+	/* fix conflicting upstream commit db6140e5e35a48405e669353bd54042c1d4c3841 */
+	u8				xmit_type;
+	union {
+		struct {
+			u32		iifidx;
+		} tc;
+	};
 };
 
 struct flow_offload_tuple_rhash {
