@@ -29,6 +29,7 @@
 88pm860x_charger
 88pm860x_onkey
 9p
+9pnet
 9pnet_rdma
 9pnet_virtio
 9pnet_xen
@@ -256,9 +257,16 @@ adxl372_spi
 adxrs290
 adxrs450
 aegis128
+aes-arm64
+aes-ce-blk
+aes-ce-ccm
+aes-ce-cipher
+aes-neon-blk
+aes-neon-bs
 aes_ti
 af9013
 af9033
+af_key
 af_packet_diag
 afe4403
 afe4404
@@ -268,6 +276,7 @@ ah4
 ah6
 ahci
 ahci_brcm
+ahci_ceva
 ahci_mtk
 ahci_mvebu
 ahci_qoriq
@@ -316,6 +325,7 @@ am65-cpts
 amba-clcd
 ambakmi
 amc6821
+amd
 amd-xgbe
 amd5536udc_pci
 amd8111e
@@ -425,7 +435,9 @@ async_pq
 async_raid6_recov
 async_tx
 async_xor
+at25
 at76c50x-usb
+at803x
 at86rf230
 ata_generic
 ata_piix
@@ -444,6 +456,7 @@ ath10k_usb
 ath11k
 ath11k_ahb
 ath11k_pci
+ath3k
 ath5k
 ath6kl_core
 ath6kl_sdio
@@ -485,6 +498,7 @@ au8522_dig
 auo-pixcir-ts
 authenc
 authencesn
+autofs4
 avmfritz
 ax25
 axg-audio
@@ -523,8 +537,10 @@ bcache
 bcm-flexrm-mailbox
 bcm-keypad
 bcm-pdc-mailbox
+bcm-phy-lib
 bcm-sba-raid
 bcm-sf2
+bcm203x
 bcm2711_thermal
 bcm2835
 bcm2835-mmal-vchiq
@@ -542,6 +558,8 @@ bcm63138_nand
 bcm6368_nand
 bcm63xx_uart
 bcm7038_wdt
+bcm7xxx
+bcm87xx
 bcm_crypto_spu
 bcm_iproc_adc
 bcm_iproc_tsc
@@ -568,6 +586,7 @@ berlin2-adc
 bfa
 bfq
 bfs
+bfusb
 bh1750
 bh1770glc
 bh1780
@@ -578,6 +597,7 @@ block2mtd
 blowfish_common
 blowfish_generic
 bluefield_edac
+bluetooth
 bluetooth_6lowpan
 bma150
 bma220_spi
@@ -588,7 +608,15 @@ bman-test
 bmc150-accel-core
 bmc150-accel-i2c
 bmc150-accel-spi
+bmc150_magn
 bmc150_magn_i2c
+bmc150_magn_spi
+bme680_core
+bme680_i2c
+bme680_spi
+bmg160_core
+bmg160_i2c
+bmg160_spi
 bmi088-accel-core
 bmi088-accel-spi
 bmi160_core
@@ -598,6 +626,7 @@ bmp280
 bmp280-i2c
 bmp280-spi
 bna
+bnep
 bnx2
 bnx2fc
 bnx2i
@@ -607,6 +636,7 @@ bnxt_re
 bochs
 bonding
 bpa-rs600
+bpa10x
 bpfilter
 bpqether
 bq2415x_charger
@@ -630,17 +660,27 @@ brcmstb-usb-pinmap
 brcmstb_nand
 brcmstb_thermal
 brcmutil
+bridge
+broadcom
 bsd_comp
 bt819
 bt856
 bt866
 bt878
+btbcm
 btcoexist
+btintel
+btmrvl
+btmrvl_sdio
 btmtksdio
 btmtkuart
+btqca
 btqcomsmd
 btrsi
+btrtl
+btsdio
 bttv
+btusb
 bu21013_ts
 bu21029_ts
 budget
@@ -671,8 +711,13 @@ camcc-sc7180
 camcc-sdm845
 camcc-sm8250
 camellia_generic
+can
+can-bcm
+can-dev
+can-gw
 can-isotp
 can-j1939
+can-raw
 cap11xx
 capmode
 capsule-loader
@@ -698,6 +743,7 @@ cc2520
 cc770
 cc770_isa
 cc770_platform
+ccm
 ccp
 ccp-crypto
 ccree
@@ -724,6 +770,7 @@ cdns3-ti
 cdnsp-udc-pci
 ceph
 cfb
+cfg80211
 cfi_cmdset_0002
 cfi_cmdset_0020
 ch
@@ -733,6 +780,7 @@ ch7322
 ch9200
 ch_ipsec
 ch_ktls
+chacha-neon
 chacha20poly1305
 chacha_generic
 chaoskey
@@ -750,6 +798,7 @@ ci_hdrc_msm
 ci_hdrc_pci
 ci_hdrc_tegra
 ci_hdrc_usb2
+cicada
 cifs
 cifs_arc4
 cifs_md4
@@ -812,6 +861,7 @@ cm3605
 cm36651
 cma3000_d0x
 cma3000_d0x_i2c
+cmac
 cmtp
 cnic
 cobra
@@ -849,10 +899,12 @@ cppc_cpufreq
 cpr
 cptpf
 cptvf
+cramfs
 crc-itu-t
 crc32_generic
 crc4
 crc64
+crc7
 crct10dif-ce
 crg-hi3516cv300
 crg-hi3798cv200
@@ -884,7 +936,9 @@ cros_peripheral_charger
 cros_usbpd-charger
 cros_usbpd_logger
 cros_usbpd_notify
+cryptd
 crypto_safexcel
+crypto_simd
 crypto_user
 cryptoloop
 cs3308
@@ -1451,6 +1505,8 @@ forcedeth
 fore_200e
 fotg210-hcd
 fotg210-udc
+fou
+fou6
 freevxfs
 fscache
 fsi-core
@@ -1784,6 +1840,8 @@ hanwang
 hbmc-am654
 hci
 hci_nokia
+hci_uart
+hci_vhci
 hclge
 hclgevf
 hd3ss3220
@@ -1954,6 +2012,7 @@ hid-xinmo
 hid-zpff
 hid-zydacron
 hideep
+hidp
 hih6130
 hinic
 hip04_eth
@@ -2202,6 +2261,7 @@ imx208
 imx214
 imx219
 imx258
+imx274
 imx290
 imx2_wdt
 imx319
@@ -2241,9 +2301,11 @@ industrialio-hw-consumer
 industrialio-sw-device
 industrialio-sw-trigger
 industrialio-triggered-event
+inet_diag
 inexio
 inftl
 initio
+input-leds
 inspur-ipsps
 int51x1
 intel-m10-bmc
@@ -2275,8 +2337,12 @@ io_ti
 ionic
 iowarrior
 ip6_gre
+ip6_tables
+ip6_tunnel
+ip6_udp_tunnel
 ip6_vti
 ip6t_NPT
+ip6t_REJECT
 ip6t_SYNPROXY
 ip6t_ah
 ip6t_eui64
@@ -2287,6 +2353,8 @@ ip6t_mh
 ip6t_rpfilter
 ip6t_rt
 ip6t_srh
+ip6table_filter
+ip6table_mangle
 ip6table_nat
 ip6table_raw
 ip6table_security
@@ -2308,6 +2376,8 @@ ip_set_hash_netnet
 ip_set_hash_netport
 ip_set_hash_netportnet
 ip_set_list_set
+ip_tables
+ip_tunnel
 ip_vs
 ip_vs_dh
 ip_vs_fo
@@ -2353,6 +2423,7 @@ ipt_SYNPROXY
 ipt_ah
 ipt_rpfilter
 iptable_filter
+iptable_mangle
 iptable_nat
 iptable_raw
 iptable_security
@@ -2611,9 +2682,11 @@ lib80211
 lib80211_crypt_ccmp
 lib80211_crypt_tkip
 lib80211_crypt_wep
+libarc4
 libblake2s
 libblake2s-generic
 libceph
+libchacha
 libchacha20poly1305
 libcurve25519
 libcurve25519-generic
@@ -2646,6 +2719,7 @@ litex_liteeth
 litex_soc_ctrl
 lkkbd
 ll_temac
+llc
 llc2
 llcc-qcom
 lm25066
@@ -2777,6 +2851,7 @@ mac-inuit
 mac-roman
 mac-romanian
 mac-turkish
+mac80211
 mac80211_hwsim
 mac802154
 mac802154_hwsim
@@ -3106,6 +3181,7 @@ mpq7920
 mpr121_touchkey
 mpt3sas
 mptbase
+mptcp_diag
 mptctl
 mptfc
 mptlan
@@ -3127,6 +3203,7 @@ mscc_felix
 mscc_ocelot
 mscc_ocelot_switch_lib
 mscc_seville
+msdos
 msg2638
 msi001
 msi2500
@@ -3305,14 +3382,22 @@ netup-unidvb
 netxen_nic
 newtonkbd
 nf_conncount
+nf_conntrack
 nf_conntrack_amanda
 nf_conntrack_bridge
+nf_conntrack_broadcast
+nf_conntrack_ftp
 nf_conntrack_h323
 nf_conntrack_irc
 nf_conntrack_netbios_ns
+nf_conntrack_netlink
 nf_conntrack_pptp
 nf_conntrack_sane
 nf_conntrack_sip
+nf_conntrack_snmp
+nf_conntrack_tftp
+nf_defrag_ipv4
+nf_defrag_ipv6
 nf_dup_ipv4
 nf_dup_ipv6
 nf_dup_netdev
@@ -3320,6 +3405,7 @@ nf_flow_table
 nf_flow_table_inet
 nf_flow_table_ipv4
 nf_flow_table_ipv6
+nf_log_syslog
 nf_nat
 nf_nat_amanda
 nf_nat_ftp
@@ -3330,6 +3416,7 @@ nf_nat_sip
 nf_nat_snmp_basic
 nf_nat_tftp
 nf_reject_ipv4
+nf_reject_ipv6
 nf_socket_ipv4
 nf_socket_ipv6
 nf_synproxy_core
@@ -3345,10 +3432,12 @@ nfcmrvl_uart
 nfcmrvl_usb
 nfcsim
 nfit
+nfnetlink
 nfnetlink_acct
 nfnetlink_cthelper
 nfnetlink_cttimeout
 nfnetlink_hook
+nfnetlink_log
 nfnetlink_osf
 nfnetlink_queue
 nfp
@@ -3611,6 +3700,7 @@ p54common
 p54pci
 p54spi
 p54usb
+p8022
 pa12203001
 palmas-pwrbutton
 palmas-regulator
@@ -3939,6 +4029,7 @@ pixcir_i2c_ts
 pkcs7_test_key
 pkcs8_key_parser
 pktcdvd
+pktgen
 pl111_drm
 pl172
 pl2303
@@ -3998,6 +4089,7 @@ ps2-gpio
 ps2mult
 psample
 psmouse
+psnap
 pstore_blk
 pstore_zone
 psxpad-spi
@@ -4426,6 +4518,7 @@ retu-pwrbutton
 retu_wdt
 rfc1051
 rfc1201
+rfcomm
 rfd77402
 rfd_ftl
 rio-scan
@@ -4918,6 +5011,7 @@ sis900
 sis_i2c
 sisfb
 sisusbvga
+sit
 siw
 sja1000
 sja1000_isa
@@ -5621,6 +5715,7 @@ stmpe-adc
 stmpe-keypad
 stmpe-ts
 stowaway
+stp
 stpddc60
 stpmic1
 stpmic1_onkey
@@ -5760,6 +5855,7 @@ tcp_bbr
 tcp_bic
 tcp_cdg
 tcp_dctcp
+tcp_diag
 tcp_highspeed
 tcp_htcp
 tcp_hybla
@@ -5990,6 +6086,8 @@ tua6100
 tua9001
 tulip
 tuner
+tunnel4
+tunnel6
 turbografx
 turingcc-qcs404
 turris-mox-rwtm
@@ -6042,6 +6140,7 @@ udf
 udl
 udlfb
 udp_diag
+udp_tunnel
 ueagle-atm
 ufs
 ufs-hisi
@@ -6103,13 +6202,16 @@ usbatm
 usbdux
 usbduxfast
 usbduxsigma
+usbhid
 usbip-core
 usbip-host
 usbip-vudc
+usbkbd
 usblcd
 usblp
 usbmisc_imx
 usbmon
+usbmouse
 usbserial
 usbsevseg
 usbtest
@@ -6317,6 +6419,10 @@ wl1251_sdio
 wl1251_spi
 wl1273-core
 wl12xx
+wl18xx
+wlcore
+wlcore_sdio
+wlcore_spi
 wm831x-dcdc
 wm831x-hwmon
 wm831x-isink
@@ -6340,6 +6446,7 @@ wm97xx-ts
 wp512
 wwan_hwsim
 x25
+x_tables
 xbox_remote
 xcbc
 xdpe12284
@@ -6348,6 +6455,7 @@ xen-fbfront
 xen-front-pgdir-shbuf
 xen-gntalloc
 xen-gntdev
+xen-kbdfront
 xen-netback
 xen-scsiback
 xen-scsifront
@@ -6369,6 +6477,7 @@ xhci-mtk-hcd
 xhci-pci
 xhci-pci-renesas
 xhci-tegra
+xilinx_can
 xilinxfb
 xillybus_class
 xillybus_core
@@ -6395,6 +6504,7 @@ xt_HL
 xt_HMARK
 xt_IDLETIMER
 xt_LED
+xt_LOG
 xt_MASQUERADE
 xt_NETMAP
 xt_NFLOG
@@ -6415,6 +6525,7 @@ xt_comment
 xt_connbytes
 xt_connlabel
 xt_connlimit
+xt_connmark
 xt_conntrack
 xt_cpu
 xt_dccp
@@ -6430,6 +6541,10 @@ xt_iprange
 xt_ipvs
 xt_l2tp
 xt_length
+xt_limit
+xt_mac
+xt_mark
+xt_multiport
 xt_nat
 xt_nfacct
 xt_osf
@@ -6448,6 +6563,7 @@ xt_state
 xt_statistic
 xt_string
 xt_tcpmss
+xt_tcpudp
 xt_time
 xt_u32
 xtkbd
