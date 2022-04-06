@@ -26,21 +26,6 @@ struct axienet_stat {
 	const char *name;
 };
 
-#ifdef CONFIG_XILINX_TSN
-/* TODO
- * The channel numbers for managemnet frames in 5 channel mcdma on EP+Switch
- * system. These are not exposed via hdf/dtsi, so need to hardcode here
- */
-#define TSN_MAX_RX_Q_EX_EPSWITCH 7
-#define TSN_MIN_RX_Q_EX_EPSWITCH 5
-#define TSN_MGMT_CHAN 3
-#define TSN_MAX_EX_EP_BE_CHAN 5
-#define TSN_MAX_EX_EP_ST_CHAN 6
-#define TSN_MAX_EX_EP_RES_CHAN 7
-#define TSN_MIN_EX_EP_BE_CHAN 4
-#define TSN_MIN_EX_EP_ST_CHAN 5
-#endif
-
 static struct axienet_stat axienet_get_tx_strings_stats[] = {
 	{ "txq0_packets" },
 	{ "txq0_bytes"   },
@@ -306,22 +291,6 @@ int __maybe_unused axienet_mcdma_rx_q_init(struct net_device *ndev,
 		q->rxq_bd_v[i].phys = mapping;
 		q->rxq_bd_v[i].cntrl = lp->max_frm_size;
 	}
-
-#ifdef CONFIG_XILINX_TSN
-	/* check if this is a mgmt channel */
-	if (lp->num_rx_queues == TSN_MAX_RX_Q_EX_EPSWITCH &&
-	    (q->chan_id == TSN_MAX_EX_EP_BE_CHAN ||
-	     q->chan_id == TSN_MAX_EX_EP_ST_CHAN ||
-	     q->chan_id == TSN_MAX_EX_EP_RES_CHAN)) {
-		q->flags = MCDMA_EP_EX_CHAN;
-	} else if ((lp->num_rx_queues == TSN_MIN_RX_Q_EX_EPSWITCH) &&
-		   ((q->chan_id == TSN_MIN_EX_EP_BE_CHAN) ||
-		    (q->chan_id == TSN_MIN_EX_EP_ST_CHAN))) {
-		q->flags = MCDMA_EP_EX_CHAN;
-	} else if (!(lp->abl_reg & TSN_BRIDGEEP_EPONLY) && q->chan_id == TSN_MGMT_CHAN) {
-		q->flags = MCDMA_MGMT_CHAN;
-	}
-#endif
 
 	/* Start updating the Rx channel control register */
 	cr = axienet_dma_in32(q, XMCDMA_CHAN_CR_OFFSET(q->chan_id) +
@@ -776,16 +745,6 @@ int __maybe_unused axienet_mcdma_tx_probe(struct platform_device *pdev,
 	int i;
 	char dma_name[24];
 
-#ifdef CONFIG_XILINX_TSN
-	u32 num = XAE_TSN_MIN_QUEUES;
-	int ret = 0;
-	/* get number of associated queues */
-	ret = of_property_read_u32(np, "xlnx,num-mm2s-channels", &num);
-	if (ret)
-		num = XAE_TSN_MIN_QUEUES;
-	lp->num_tx_queues = num;
-#endif
-
 	for_each_tx_dma_queue(lp, i) {
 		struct axienet_dma_q *q;
 
@@ -795,13 +754,8 @@ int __maybe_unused axienet_mcdma_tx_probe(struct platform_device *pdev,
 		snprintf(dma_name, sizeof(dma_name), "mm2s_ch%d_introut",
 			 q->chan_id);
 		q->tx_irq = platform_get_irq_byname(pdev, dma_name);
-#ifdef CONFIG_XILINX_TSN
-		q->eth_hasdre = of_property_read_bool(np,
-						      "xlnx,include-mm2s-dre");
-#else
 		q->eth_hasdre = of_property_read_bool(np,
 						      "xlnx,include-dre");
-#endif
 		spin_lock_init(&q->tx_lock);
 	}
 	of_node_put(np);
