@@ -241,8 +241,10 @@ int mali_mem_os_alloc_pages(mali_mem_os_mem *os_mem, u32 size)
 		/* Ensure page is flushed from CPU caches. */
 		dma_addr = dma_map_page(&mali_platform_device->dev, new_page,
 					0, _MALI_OSK_MALI_PAGE_SIZE, DMA_BIDIRECTIONAL);
-		dma_unmap_page(&mali_platform_device->dev, dma_addr,
-			       _MALI_OSK_MALI_PAGE_SIZE, DMA_BIDIRECTIONAL);
+		err = dma_mapping_error(&mali_platform_device->dev, dma_addr);
+		if (likely(!err))
+			dma_unmap_page(&mali_platform_device->dev, dma_addr,
+				       _MALI_OSK_MALI_PAGE_SIZE, DMA_BIDIRECTIONAL);
 		dma_addr = dma_map_page(&mali_platform_device->dev, new_page,
 					0, _MALI_OSK_MALI_PAGE_SIZE, DMA_BIDIRECTIONAL);
 
