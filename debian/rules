@@ -52,6 +52,10 @@ override_dh_auto_build:
 			apt-get download $$pkg;					\
 			dpkg-deb -x $${pkg}_*.deb $$flavour;			\
 		);								\
+		if [ "$(DEB_HOST_ARCH)" = "arm64" ]; then \
+			mv $(outdir)/$$flavour/boot/vmlinuz-$(KERNEL_ABI_VERSION)-$$flavour $(outdir)/$$flavour/boot/vmlinuz-$(KERNEL_ABI_VERSION)-$$flavour.gz; \
+			gzip -d $(outdir)/$$flavour/boot/vmlinuz-$(KERNEL_ABI_VERSION)-$$flavour.gz; \
+		fi; \
 		ubuntu-core-initramfs create-initrd --output $(initrd)		\
 			--feature main server					\
 			--kernelver $(KERNEL_ABI_VERSION)-$$flavour;		\
