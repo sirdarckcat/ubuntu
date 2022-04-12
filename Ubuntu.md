@@ -1,4 +1,4 @@
-Name:    linux-uc22
+Name:    linux-uc22-lowlatency
 Version: 5.15.0
 Series:  22.04 (jammy)
 Description:

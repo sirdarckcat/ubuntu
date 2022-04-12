@@ -1,0 +1,21 @@
+Source: @SRCPKGNAME@
+Section: devel
+Priority: optional
+Maintainer: Ubuntu Kernel Team <kernel-team@lists.ubuntu.com>
+Standards-Version: 3.9.8
+Build-Depends:
+ dpkg (>= 1.13.19),
+ debhelper (>= 9),
+ ubuntu-core-initramfs,
+ kmod,
+ linux-firmware
+Build-Depends-Arch:
+ @KERNEL_SOURCE@-image-unsigned-@KERNEL_ABI_VERSION@-lowlatency,
+ @KERNEL_SOURCE@-modules-@KERNEL_ABI_VERSION@-lowlatency,
+Vcs-Git: https://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-uc22/+git/jammy -b lowlatency
+
+Package: @SRCPKGNAME@
+Architecture: amd64 arm64
+Section: devel
+Priority: optional
+Description: Empty package

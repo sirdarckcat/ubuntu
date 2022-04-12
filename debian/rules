@@ -6,14 +6,14 @@ DEBIAN=$(shell awk -F= '($$1 == "DEBIAN") { print $$2 }' <debian/debian.env)
 
 SERIES=$(shell dpkg-parsechangelog -l$(DEBIAN)/changelog -SDistribution | sed -e 's/-\(security\|updates\|proposed\)$$//')
 SOURCE=$(shell dpkg-parsechangelog -l$(DEBIAN)/changelog -SSource)
-KERNEL_SOURCE=$(shell echo "$(SOURCE)" | sed -e 's/-uc22//')
+KERNEL_SOURCE=$(shell echo "$(SOURCE)" | sed -e 's/-uc22.*//')
 
 VERSION=$(shell dpkg-parsechangelog -l$(DEBIAN)/changelog -SVersion)
 KERNEL_ABI_VERSION=$(shell echo "$(VERSION)" | sed -ne 's/\([0-9]*\.[0-9]*\.[0-9]*\-[0-9]*\)\..*/\1/p')
 
 DEB_HOST_ARCH=$(shell dpkg-architecture -qDEB_HOST_ARCH)
 
-FLAVOURS=generic
+FLAVOURS=lowlatency
 
 clean: debian/control
 	dh_testdir
