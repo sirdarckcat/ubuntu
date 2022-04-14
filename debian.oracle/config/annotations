@@ -18,25 +18,7 @@ CONFIG_NET_FAILOVER                                policy<{'amd64': 'm', 'arm64'
 CONFIG_NET_FAILOVER                                mark<ENFORCED> note<OCI requirement> 
 CONFIG_PAGE_POOL                                   policy<{'amd64': 'y', 'arm64': 'y'}> 
 CONFIG_PAGE_POOL                                   mark<ENFORCED> note<OCI requirement> 
-CONFIG_LATENCYTOP                                  policy<{'amd64': 'n', 'arm64': 'n'}> 
-CONFIG_LATENCYTOP                                  mark<ENFORCED> note<not needed for cloud kernels> 
-CONFIG_SAMPLE_TRACE_PRINTK                         policy<{'amd64': '-'}> 
-CONFIG_SAMPLE_TRACE_PRINTK                         mark<ENFORCED> note<not selectable for linux-oracle> 
-CONFIG_SND_SOC_INTEL_CML_LP                        policy<{'amd64': '-'}> 
-CONFIG_SND_SOC_INTEL_CML_LP                        mark<ENFORCED> note<not selectable for linux-oracle> 
-CONFIG_SND_SOC_INTEL_SKYLAKE_HDAUDIO_CODEC         policy<{'amd64': '-'}> 
-CONFIG_SND_SOC_INTEL_SKYLAKE_HDAUDIO_CODEC         mark<ENFORCED> note<not selectable for linux-oracle> 
-CONFIG_SND_SOC_INTEL_SKYLAKE                       policy<{'amd64': '-'}> 
-CONFIG_SND_SOC_INTEL_SKYLAKE                       mark<ENFORCED> note<not selectable for linux-oracle> 
-CONFIG_SND_SOC_INTEL_CML_H                         policy<{'amd64': '-'}> 
-CONFIG_SND_SOC_INTEL_CML_H                         mark<ENFORCED> note<not selectable for linux-oracle> 
-CONFIG_SND_SOC_INTEL_CFL                           policy<{'amd64': '-'}> 
-CONFIG_SND_SOC_INTEL_CFL                           mark<ENFORCED> note<not selectable for linux-oracle> 
-CONFIG_SND_SOC_INTEL_CNL                           policy<{'amd64': '-'}> 
-CONFIG_SND_SOC_INTEL_CNL                           mark<ENFORCED> note<not selectable for linux-oracle> 
 CONFIG_SYSTEM_TRUSTED_KEYS                         policy<{'amd64': '"debian/canonical-certs.pem"', 'arm64': '"debian/canonical-certs.pem"'}> 
-CONFIG_X86_UV                                      policy<{'amd64': 'n'}> 
-CONFIG_X86_UV                                      mark<ENFORCED> note<not needed for cloud kernels> 
 CONFIG_ANDROID                                     policy<{'amd64': 'y', 'arm64':'y'}> 
 CONFIG_ANDROID                                     mark<ENFORCED> note<needed for Anbox - LP #1928686> 
 CONFIG_ANDROID_BINDERFS                            policy<{'amd64': 'm', 'arm64':'m'}> 
@@ -52,3 +34,66 @@ CONFIG_SERIAL_AMBA_PL011                           mark<ENFORCED> note<needed fo
 CONFIG_SERIAL_AMBA_PL011_CONSOLE                   policy<{'arm64':'y'}>
 CONFIG_SERIAL_AMBA_PL011_CONSOLE                   mark<ENFORCED> note<needed for serial support in VMs>
 
+
+
+
+
+CONFIG_ACCESSIBILITY   policy<{'amd64': 'y', 'arm64': 'y'}>
+CONFIG_HZ_250   policy<{'amd64': 'y', 'arm64': 'y'}>
+CONFIG_PREEMPT_VOLUNTARY   policy<{'amd64': 'y', 'arm64': 'y'}>
+CONFIG_SCSI_SPI_ATTRS   policy<{'amd64': 'y', 'arm64': 'm'}>
+CONFIG_HZ_1000   policy<{'amd64': 'n', 'arm64': 'n'}>
+CONFIG_IRQ_FORCED_THREADING_DEFAULT   policy<{'amd64': 'n', 'arm64': 'n'}>
+CONFIG_BT_HS   policy<{'amd64': 'n', 'arm64': 'n'}>
+CONFIG_PLAYSTATION_FF   policy<{'amd64': 'n', 'arm64': 'n'}>
+CONFIG_PREEMPT   policy<{'amd64': 'n', 'arm64': 'n'}>
+CONFIG_CS89x0_PLATFORM   policy<{'amd64': 'n'}>
+CONFIG_BT_HCIBTUSB_AUTOSUSPEND   policy<{'amd64': 'n', 'arm64': 'n'}>
+CONFIG_CXL_MEM_RAW_COMMANDS   policy<{'amd64': 'n', 'arm64': 'n'}>
+CONFIG_SND_SOC_INTEL_SKYLAKE_HDAUDIO_CODEC   policy<{'amd64': 'n'}>
+CONFIG_SURFACE_PLATFORMS   policy<{'amd64': 'n', 'arm64': 'n'}>
+CONFIG_TOUCHSCREEN_DMI   policy<{'amd64': 'n'}>
+CONFIG_DRM_DEBUG_SELFTEST   policy<{'amd64': 'm', 'arm64': 'm'}>
+CONFIG_SND_SOC_INTEL_SKYLAKE   policy<{'amd64': 'm'}>
+CONFIG_PWM_LPSS_PCI   policy<{'amd64': 'm'}>
+CONFIG_SND_SOC_INTEL_CFL   policy<{'amd64': 'm'}>
+CONFIG_PRIME_NUMBERS   policy<{'amd64': 'm', 'arm64': 'm'}>
+CONFIG_SND_SOC_INTEL_CML_H   policy<{'amd64': 'm'}>
+CONFIG_SND_SOC_INTEL_CML_LP   policy<{'amd64': 'm'}>
+CONFIG_SPEAKUP   policy<{'amd64': 'm', 'arm64': 'm'}>
+CONFIG_PREEMPTIRQ_DELAY_TEST   policy<{'amd64': 'm', 'arm64': 'm'}>
+CONFIG_SND_SOC_INTEL_CNL   policy<{'amd64': 'm'}>
+CONFIG_SND_SOC_INTEL_BYT_CHT_NOCODEC_MACH   policy<{'amd64': 'm'}>
+CONFIG_PWM_LPSS_PLATFORM   policy<{'amd64': 'm'}>
+CONFIG_SURFACE_HOTPLUG   policy<{'amd64': '-'}>
+CONFIG_SURFACE_GPE   policy<{'amd64': '-'}>
+CONFIG_SURFACE_3_BUTTON   policy<{'amd64': '-'}>
+CONFIG_SURFACE_3_POWER_OPREGION   policy<{'amd64': '-'}>
+CONFIG_SURFACE3_WMI   policy<{'amd64': '-'}>
+CONFIG_SURFACE_AGGREGATOR   policy<{'amd64': '-'}>
+CONFIG_LATENCYTOP    policy<{'amd64': 'n', 'arm64': 'n'}>
+CONFIG_SURFACE_AGGREGATOR_ERROR_INJECTION   policy<{'amd64': '-'}>
+CONFIG_UV_MMTIMER   policy<{'amd64': 'n', 'arm64': '-'}>
+CONFIG_SURFACE_AGGREGATOR_BUS   policy<{'amd64': '-'}>
+CONFIG_SGI_XP   policy<{'amd64': 'n', 'arm64': '-'}>
+CONFIG_SGI_GRU   policy<{'amd64': 'n', 'arm64': '-'}>
+CONFIG_SGI_GRU_DEBUG   policy<{'amd64': '-'}>
+CONFIG_SURFACE_AGGREGATOR_CDEV   policy<{'amd64': '-'}>
+CONFIG_SURFACE_PRO3_BUTTON   policy<{'amd64': '-'}>
+CONFIG_SURFACE_ACPI_NOTIFY   policy<{'amd64': '-'}>
+
+CONFIG_MESON_SM policy<{'arm64': 'm'}>
+CONFIG_ARM64_VA_BITS_39 policy<{'arm64': 'n'}>
+CONFIG_ARM64_64K_PAGES policy<{'arm64': 'n'}>
+CONFIG_MESON_SECURE_PM_DOMAINS policy<{'arm64': 'm'}>
+CONFIG_ARM64_4K_PAGES policy<{'arm64': 'y'}>
+CONFIG_INFINIBAND_VMWARE_PVRDMA policy<{'amd64': 'm', 'arm64': 'm'}>
+CONFIG_VMXNET3 policy<{'amd64': 'm', 'arm64': 'm'}>
+CONFIG_SPMI_MSM_PMIC_ARB policy<{'arm64': 'm'}>
+CONFIG_SPMI policy<{'amd64': 'm','arm64': 'm'}>
+CONFIG_FORCE_MAX_ZONEORDER policy<{'arm64': '13'}>
+CONFIG_I2C_ALGOBIT policy<{'amd64': 'm', 'arm64': 'm'}>
+CONFIG_SOUND policy<{'amd64': 'm', 'arm64': 'm'}>
+CONFIG_MMC_SDHCI_IPROC policy<{'arm64': 'n'}>
+CONFIG_MMC_SDHCI policy<{'amd64': 'm','arm64': 'm'}>
+CONFIG_MESON_EFUSE  policy<{'arm64': 'm'}>
