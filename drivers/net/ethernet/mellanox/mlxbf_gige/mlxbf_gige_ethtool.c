@@ -24,9 +24,11 @@ static void mlxbf_gige_get_regs(struct net_device *netdev,
 	regs->version = MLXBF_GIGE_REGS_VERSION;
 
 	/* Read entire MMIO register space and store results
-	 * into the provided buffer. By design, a read to an
-	 * offset without an existing register will be
-	 * acknowledged and return zero.
+	 * into the provided buffer. Each 64-bit word is converted
+	 * to big-endian to make the output more readable.
+	 *
+	 * NOTE: by design, a read to an offset without an existing
+	 *       register will be acknowledged and return zero.
 	 */
 	memcpy_fromio(p, priv->base, MLXBF_GIGE_MMIO_REG_SZ);
 }
@@ -94,9 +96,6 @@ static const struct {
 	{ "tx_fifo_full" },
 	{ "rx_filter_passed_pkts" },
 	{ "rx_filter_discard_pkts" },
-	{ "mac_intr_count" },
-	{ "rx_intr_count" },
-	{ "llu_plu_intr_count" },
 };
 
 static int mlxbf_gige_get_sset_count(struct net_device *netdev, int stringset)
@@ -151,9 +150,6 @@ static void mlxbf_gige_get_ethtool_stats(struct net_device *netdev,
 		   readq(priv->base + MLXBF_GIGE_RX_PASS_COUNTER_ALL));
 	*data++ = (priv->stats.rx_filter_discard_pkts +
 		   readq(priv->base + MLXBF_GIGE_RX_DISC_COUNTER_ALL));
-	*data++ = priv->error_intr_count;
-	*data++ = priv->rx_intr_count;
-	*data++ = priv->llu_plu_intr_count;
 }
 
 static void mlxbf_gige_get_pauseparam(struct net_device *netdev,
