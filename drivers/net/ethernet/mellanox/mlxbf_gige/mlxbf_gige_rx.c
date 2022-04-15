@@ -266,6 +266,9 @@ static bool mlxbf_gige_rx_packet(struct mlxbf_gige *priv, int *rx_pkts)
 		priv->stats.rx_truncate_errors++;
 	}
 
+	rx_ci = readq(priv->base + MLXBF_GIGE_RX_CQE_PACKET_CI);
+	rx_ci_rem = rx_ci % priv->rx_q_entries;
+
 	/* Let hardware know we've replenished one buffer */
 	rx_pi++;
 
@@ -278,8 +281,6 @@ static bool mlxbf_gige_rx_packet(struct mlxbf_gige *priv, int *rx_pkts)
 	rx_pi_rem = rx_pi % priv->rx_q_entries;
 	if (rx_pi_rem == 0)
 		priv->valid_polarity ^= 1;
-	rx_ci = readq(priv->base + MLXBF_GIGE_RX_CQE_PACKET_CI);
-	rx_ci_rem = rx_ci % priv->rx_q_entries;
 
 	if (skb)
 		netif_receive_skb(skb);
@@ -299,6 +300,10 @@ int mlxbf_gige_poll(struct napi_struct *napi, int budget)
 
 	mlxbf_gige_handle_tx_complete(priv);
 
+	data = readq(priv->base + MLXBF_GIGE_RX_DMA);
+	data &= ~MLXBF_GIGE_RX_DMA_EN;
+	writeq(data, priv->base + MLXBF_GIGE_RX_DMA);
+
 	do {
 		remaining_pkts = mlxbf_gige_rx_packet(priv, &work_done);
 	} while (remaining_pkts && work_done < budget);
@@ -314,6 +319,10 @@ int mlxbf_gige_poll(struct napi_struct *napi, int budget)
 		data = readq(priv->base + MLXBF_GIGE_INT_MASK);
 		data &= ~MLXBF_GIGE_INT_MASK_RX_RECEIVE_PACKET;
 		writeq(data, priv->base + MLXBF_GIGE_INT_MASK);
+
+		data = readq(priv->base + MLXBF_GIGE_RX_DMA);
+		data |= MLXBF_GIGE_RX_DMA_EN;
+		writeq(data, priv->base + MLXBF_GIGE_RX_DMA);
 	}
 
 	return work_done;
