@@ -20,6 +20,12 @@
 #include "mlxbf_gige_regs.h"
 
 #define DRV_NAME    "mlxbf_gige"
+#define DRV_VERSION 1.27
+
+/* This setting defines the version of the ACPI table
+ * content that is compatible with this driver version.
+ */
+#define MLXBF_GIGE_ACPI_TABLE_VERSION 2
 
 /* Allocate SKB whose payload pointer aligns with the Bluefield
  * hardware DMA limitation, i.e. DMA operation can't cross
@@ -284,8 +290,22 @@ static int mlxbf_gige_probe(struct platform_device *pdev)
 	void __iomem *plu_base;
 	void __iomem *base;
 	int addr, phy_irq;
+	u32 version;
 	u64 control;
 	int err;
+
+	version = 0;
+	err = device_property_read_u32(&pdev->dev, "version", &version);
+	if (err) {
+		dev_err(&pdev->dev, "ACPI table version not found\n");
+		return -EINVAL;
+	}
+
+	if (version != MLXBF_GIGE_ACPI_TABLE_VERSION) {
+		dev_err(&pdev->dev, "ACPI table version mismatch: expected %d found %d\n",
+			MLXBF_GIGE_ACPI_TABLE_VERSION, version);
+		return -EINVAL;
+	}
 
 	mac_res = platform_get_resource(pdev, IORESOURCE_MEM, MLXBF_GIGE_RES_MAC);
 	if (!mac_res)
@@ -453,3 +473,4 @@ MODULE_DESCRIPTION("Mellanox BlueField SoC Gigabit Ethernet Driver");
 MODULE_AUTHOR("David Thompson <davthompson@nvidia.com>");
 MODULE_AUTHOR("Asmaa Mnebhi <asmaa@nvidia.com>");
 MODULE_LICENSE("Dual BSD/GPL");
+MODULE_VERSION(__stringify(DRV_VERSION));
