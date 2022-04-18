@@ -19,6 +19,10 @@ obj-$(CONFIG_MALI400) += mali/
 ##
 ##
 ##
+obj-y += xilinx-vcu/
+##
+##
+##
 obj-$(CONFIG_UBUNTU_HOST)      += ubuntu-host/
 ##
 ##
