@@ -23,6 +23,10 @@ obj-y += xilinx-vcu/
 ##
 ##
 ##
+obj-y += xilinx-hdmi/
+##
+##
+##
 obj-$(CONFIG_UBUNTU_HOST)      += ubuntu-host/
 ##
 ##
