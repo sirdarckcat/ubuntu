@@ -1,6 +1,6 @@
 AL_COMMON=../common
 
-ccflags-y += -I$(src)/../include
+ccflags-y += -I$(srctree)/$(src)/../include
 
 obj-m += al5e.o
 
