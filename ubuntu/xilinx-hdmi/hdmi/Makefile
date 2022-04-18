@@ -28,7 +28,7 @@ ccflags-y += -DXPAR_XHDCP22_CIPHER_NUM_INSTANCES=8
 ccflags-y += -DXPAR_XHDCP22_RNG_NUM_INSTANCES=8
 ccflags-y += -DXPAR_XTMRCTR_NUM_INSTANCES=16
 
-ccflags-y += -I${srctree}/${src}/phy-xilinx-vphy
+ccflags-y += -I${srctree}/${src}/include -I${srctree}/${src}/phy-xilinx-vphy
 
 # the BSP code uses C99 style declarations. The kernel is on C89, but steps to C11 are underway.
 ccflags-y += -Wno-declaration-after-statement
