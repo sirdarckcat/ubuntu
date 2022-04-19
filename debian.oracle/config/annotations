@@ -56,3 +56,7 @@ CONFIG_SERIAL_AMBA_PL011                          policy<{'arm64':'y'}>
 CONFIG_SERIAL_AMBA_PL011                          mark<ENFORCED> note<needed for serial support in VMs>
 CONFIG_SERIAL_AMBA_PL011_CONSOLE                  policy<{'arm64':'y'}>
 CONFIG_SERIAL_AMBA_PL011_CONSOLE                  mark<ENFORCED> note<needed for serial support in VMs>
+
+# Menu: Processor type and features >> Architecture: arm64
+CONFIG_ARM64_SW_TTBR0_PAN                       policy<{'arm64': 'y'}>
+CONFIG_ARM64_SW_TTBR0_PAN 			mark<ENFORCED> note<LP: #1968902>
