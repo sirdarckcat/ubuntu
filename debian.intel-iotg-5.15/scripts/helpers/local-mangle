@@ -1,70 +1,76 @@
 #!/bin/bash -eu
 
+# shellcheck disable=SC1091
 . debian/debian.env
 
-# Do not enforce DMESG_RESTRICT in focal
-sed -i 's/CONFIG_SECURITY_DMESG_RESTRICT=y/# CONFIG_SECURITY_DMESG_RESTRICT is not set/' ${DEBIAN}/config/config.common.ubuntu
-echo "CONFIG_SECURITY_DMESG_RESTRICT                  policy<{'amd64': 'n', 'arm64': 'n', 'armhf': 'n', 'ppc64el': 'n', 's390x': 'n'}>" >> "${DEBIAN}/config/annotations"
+# It's not necessary to update "${DEBIAN}/rules.d/*.mk" because
+# hooks.mk can be used to override them.
 
-# KCSAN cannot be enabled in focal, so make sure it's disabled in the
-# annotations file as well for all arches.
-echo "CONFIG_KCSAN                                    policy<{'amd64': '-', 'arm64': '-', 'armhf': '-', 'ppc64el': '-', 's390x': '-'}>" >> "${DEBIAN}/config/annotations"
+# Update config options and the annotations file.
+configs=(
+    'CONFIG_AUFS_BDEV_LOOP=y'
+    'CONFIG_AUFS_BRANCH_MAX_1023=n'
+    'CONFIG_AUFS_BRANCH_MAX_127=y'
+    'CONFIG_AUFS_BRANCH_MAX_32767=n'
+    'CONFIG_AUFS_BRANCH_MAX_511=n'
+    'CONFIG_AUFS_BR_FUSE=n'
+    'CONFIG_AUFS_BR_HFSPLUS=y'
+    'CONFIG_AUFS_BR_RAMFS=n'
+    'CONFIG_AUFS_DEBUG=n'
+    'CONFIG_AUFS_DIRREN=y'
+    'CONFIG_AUFS_EXPORT=y'
+    'CONFIG_AUFS_FHSM=n'
+    'CONFIG_AUFS_FS=m'
+    'CONFIG_AUFS_HNOTIFY=n'
+    'CONFIG_AUFS_INO_T_64=y'
+    'CONFIG_AUFS_RDU=n'
+    'CONFIG_AUFS_SBILIST=y'
+    'CONFIG_AUFS_SHWH=n'
+    'CONFIG_AUFS_XATTR=y'
+    'CONFIG_DEBUG_INFO_DWARF4=y'
+    'CONFIG_DEBUG_INFO_DWARF5=n'
+)
 
-# Drop CONFIG_DEBUG_INFO_DWARF5 because we have a toolchain too old to support
-# this in focal.
-sed -i "/CONFIG_DEBUG_INFO_DWARF5/d" ${DEBIAN}/config/annotations
-sed -i 's/.*CONFIG_DEBUG_INFO_DWARF5.*/# CONFIG_DEBUG_INFO_DWARF5 is not set/' ${DEBIAN}/config/config.common.ubuntu
+# Load archs supported in the configs
+archs=
+# shellcheck disable=SC2034
+variant=
+# shellcheck disable=SC1090
+. "${DEBIAN}/etc/kernelconfig"
 
-# Re-enable AUFS
-#
-# We are still supporting AUFS in focal, so make sure to re-enable it.
-cat << EOF >> ${DEBIAN}/config/config.common.ubuntu
-CONFIG_AUFS_BDEV_LOOP=y
-# CONFIG_AUFS_BRANCH_MAX_1023 is not set
-CONFIG_AUFS_BRANCH_MAX_127=y
-# CONFIG_AUFS_BRANCH_MAX_32767 is not set
-# CONFIG_AUFS_BRANCH_MAX_511 is not set
-# CONFIG_AUFS_BR_FUSE is not set
-CONFIG_AUFS_BR_HFSPLUS=y
-# CONFIG_AUFS_BR_RAMFS is not set
-# CONFIG_AUFS_DEBUG is not set
-CONFIG_AUFS_DIRREN=y
-CONFIG_AUFS_EXPORT=y
-# CONFIG_AUFS_FHSM is not set
-CONFIG_AUFS_FS=m
-# CONFIG_AUFS_HNOTIFY is not set
-CONFIG_AUFS_INO_T_64=y
-# CONFIG_AUFS_RDU is not set
-CONFIG_AUFS_SBILIST=y
-# CONFIG_AUFS_SHWH is not set
-CONFIG_AUFS_XATTR=y
-EOF
-
-TMPFILE=$(mktemp)
-cat <<EOF >${TMPFILE} || true
-CONFIG_AUFS_FS                                  policy<{'amd64': 'm', 'arm64': 'm', 'armhf': 'm', 'i386': 'm', 'ppc64el': 'm', 's390x': 'm'}>
-CONFIG_AUFS_HNOTIFY                             policy<{'amd64': 'n', 'arm64': 'n', 'armhf': 'n', 'i386': 'n', 'ppc64el': 'n', 's390x': 'n'}>
-CONFIG_AUFS_EXPORT                              policy<{'amd64': 'y', 'arm64': 'y', 'armhf': 'y', 'i386': 'y', 'ppc64el': 'y', 's390x': 'y'}>
-CONFIG_AUFS_XATTR                               policy<{'amd64': 'y', 'arm64': 'y', 'armhf': 'y', 'i386': 'y', 'ppc64el': 'y', 's390x': 'y'}>
-CONFIG_AUFS_FHSM                                policy<{'amd64': 'n', 'arm64': 'n', 'armhf': 'n', 'i386': 'n', 'ppc64el': 'n', 's390x': 'n'}>
-CONFIG_AUFS_RDU                                 policy<{'amd64': 'n', 'arm64': 'n', 'armhf': 'n', 'i386': 'n', 'ppc64el': 'n', 's390x': 'n'}>
-CONFIG_AUFS_DIRREN                              policy<{'amd64': 'y', 'arm64': 'y', 'armhf': 'y', 'i386': 'y', 'ppc64el': 'y', 's390x': 'y'}>
-CONFIG_AUFS_SHWH                                policy<{'amd64': 'n', 'arm64': 'n', 'armhf': 'n', 'i386': 'n', 'ppc64el': 'n', 's390x': 'n'}>
-CONFIG_AUFS_BR_RAMFS                            policy<{'amd64': 'n', 'arm64': 'n', 'armhf': 'n', 'i386': 'n', 'ppc64el': 'n', 's390x': 'n'}>
-CONFIG_AUFS_BR_FUSE                             policy<{'amd64': 'n', 'arm64': 'n', 'armhf': 'n', 'i386': 'n', 'ppc64el': 'n', 's390x': 'n'}>
-CONFIG_AUFS_BR_HFSPLUS                          policy<{'amd64': 'y', 'arm64': 'y', 'armhf': 'y', 'i386': 'y', 'ppc64el': 'y', }>
-CONFIG_AUFS_DEBUG                               policy<{'amd64': 'n', 'arm64': 'n', 'armhf': 'n', 'i386': 'n', 'ppc64el': 'n', 's390x': 'n'}>
-#
-CONFIG_AUFS_EXPORT                              note<LP:1121699>
-EOF
-gawk -i inplace "/CONFIG_AUFS_FS                                  policy<{'amd64': 'n', 'arm64': 'n', 'armhf': 'n', 'ppc64el': 'n', 's390x': 'n'}>/{system(\"cat ${TMPFILE}\");next}1" ${DEBIAN}/config/annotations
-rm -f ${TMPFILE}
-
-# Override options in rules.d/hooks.mk (normally master does not have this
-# file but it got added for generic annotations enforcement.
-cat <<EOD >>${DEBIAN}/rules.d/hooks.mk
-do_libc_dev_package	= false
-do_doc_package		= false
-do_tools_common		= false
-do_tools_host		= false
-EOD
+# Configs should be in the common config file
+annot_file="${DEBIAN}/config/annotations"
+for config in "${configs[@]}"; do
+    # Split key and value
+    key="${config%%=*}"
+    val="${config#*=}"
+    # Drop unused archs
+    for arch_dir in "${DEBIAN}"/config/*; do
+        [ ! -d "$arch_dir" ] && continue
+        dir_arch="${arch_dir##*/}"
+        skip=0
+        for arch in ${archs}; do
+            [ "$dir_arch" = "$arch" ] && skip=1
+        done
+        [ "$skip" -ne 0 ] && continue
+        rm -rf "$arch_dir"
+    done
+    for config_file in "${DEBIAN}/config/config.common.ubuntu" \
+                   "${DEBIAN}"/config/*/config.*; do
+        # Remove any existing config
+        sed -i -e "/^${key}=/d" -e "/^# ${key} /d" "$config_file"
+        # Append desirable config value
+        echo "${key}=${val:-n}" >> "$config_file"
+    done
+    # Remove any existing annotations
+    sed -i -e "/^${key}\>/d" "$annot_file"
+    # Append new annotations
+    {
+        echo -ne "${key}\tpolicy<{"
+        for arch in ${archs}; do
+            echo -n "'${arch}': '${val:--}',"
+        done
+        echo "}>"
+        echo -e "${key}\tmark<ENFORCED> note<custom changes>"
+    } >> "$annot_file"
+done
