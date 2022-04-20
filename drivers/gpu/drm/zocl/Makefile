@@ -1,0 +1,42 @@
+# SPDX-License-Identifier: GPL-2.0
+
+export XRT_DRIVER_VERSION := 2.13.0
+ccflags-y := -I$(srctree)/$(src)/include -I$(src)/../../include -I$(src)/../../../include -I$(src)/../../../common/drv/include -DXRT_HASH="\"$(GIT_HASH)\"" -DXRT_HASH_DATE="\"$(GIT_HASH_DATE)\"" -DXRT_BRANCH="\"$(GIT_BRANCH)\"" -DXRT_MODIFIED_FILES="\"$(GIT_MODIFIED_FILES)\"" -DXRT_DATE="\"$(DATE_NOW)\"" -DXRT_DRIVER_VERSION="\"$(XRT_DRIVER_VERSION)\""
+
+common_dir = common
+drv_common-y   := $(common_dir)/kds_core.o \
+                  $(common_dir)/cu_hls.o \
+                  $(common_dir)/fast_adapter.o \
+                  $(common_dir)/xrt_cu.o \
+                  $(common_dir)/xrt_xclbin.o
+
+zocl-y := \
+	$(drv_common-y) \
+	zocl_sysfs.o \
+	zocl_ioctl.o \
+	zocl_ert.o \
+	zocl_watchdog.o \
+	zocl_drv.o \
+	zocl_bo.o \
+	zocl_dma.o \
+	zocl_cu.o \
+	zocl_mailbox.o \
+	zocl_ov_sysfs.o \
+	zocl_ospi_versal.o \
+	zocl_xclbin.o \
+	zocl_sk.o \
+	zocl_kds.o \
+	cu.o \
+	cu_scu.o \
+	scu.o \
+	zocl_error.o \
+	zocl_aie.o \
+	zocl_ctrl_ert.o \
+	zocl_xgq.o \
+	zocl_lib.o \
+	zocl_cu_xgq.o \
+	zocl_rpu_channel.o \
+	zocl_csr_intc.o \
+	zocl_xgq_intc.o
+
+obj-$(CONFIG_DRM_ZOCL) += zocl.o
