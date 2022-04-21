@@ -77,6 +77,9 @@ vc4_get_hang_state_ioctl(struct drm_device *dev, void *data,
 	u32 i;
 	int ret = 0;
 
+	if (WARN_ON_ONCE(vc4->is_vc5))
+		return -ENODEV;
+
 	if (!vc4->v3d) {
 		DRM_DEBUG("VC4_GET_HANG_STATE with no VC4 V3D probed\n");
 		return -ENODEV;
@@ -389,6 +392,9 @@ vc4_wait_for_seqno(struct drm_device *dev, uint64_t seqno, uint64_t timeout_ns,
 	unsigned long timeout_expire;
 	DEFINE_WAIT(wait);
 
+	if (WARN_ON_ONCE(vc4->is_vc5))
+		return -ENODEV;
+
 	if (vc4->finished_seqno >= seqno)
 		return 0;
 
@@ -471,6 +477,9 @@ vc4_submit_next_bin_job(struct drm_device *dev)
 	struct vc4_dev *vc4 = to_vc4_dev(dev);
 	struct vc4_exec_info *exec;
 
+	if (WARN_ON_ONCE(vc4->is_vc5))
+		return;
+
 again:
 	exec = vc4_first_bin_job(vc4);
 	if (!exec)
@@ -514,6 +523,9 @@ vc4_submit_next_render_job(struct drm_device *dev)
 	if (!exec)
 		return;
 
+	if (WARN_ON_ONCE(vc4->is_vc5))
+		return;
+
 	/* A previous RCL may have written to one of our textures, and
 	 * our full cache flush at bin time may have occurred before
 	 * that RCL completed.  Flush the texture cache now, but not
@@ -530,6 +542,9 @@ vc4_move_job_to_render(struct drm_device *dev, struct vc4_exec_info *exec)
 {
 	struct vc4_dev *vc4 = to_vc4_dev(dev);
 	bool was_empty = list_empty(&vc4->render_job_list);
+
+	if (WARN_ON_ONCE(vc4->is_vc5))
+		return;
 
 	list_move_tail(&exec->head, &vc4->render_job_list);
 	if (was_empty)
@@ -995,6 +1010,9 @@ vc4_job_handle_completed(struct vc4_dev *vc4)
 	unsigned long irqflags;
 	struct vc4_seqno_cb *cb, *cb_temp;
 
+	if (WARN_ON_ONCE(vc4->is_vc5))
+		return;
+
 	spin_lock_irqsave(&vc4->job_lock, irqflags);
 	while (!list_empty(&vc4->job_done_list)) {
 		struct vc4_exec_info *exec =
@@ -1030,6 +1048,9 @@ int vc4_queue_seqno_cb(struct drm_device *dev,
 {
 	struct vc4_dev *vc4 = to_vc4_dev(dev);
 	unsigned long irqflags;
+
+	if (WARN_ON_ONCE(vc4->is_vc5))
+		return -ENODEV;
 
 	cb->func = func;
 	INIT_WORK(&cb->work, vc4_seqno_cb_work);
@@ -1081,7 +1102,11 @@ int
 vc4_wait_seqno_ioctl(struct drm_device *dev, void *data,
 		     struct drm_file *file_priv)
 {
+	struct vc4_dev *vc4 = to_vc4_dev(dev);
 	struct drm_vc4_wait_seqno *args = data;
+
+	if (WARN_ON_ONCE(vc4->is_vc5))
+		return -ENODEV;
 
 	return vc4_wait_for_seqno_ioctl_helper(dev, args->seqno,
 					       &args->timeout_ns);
@@ -1091,10 +1116,14 @@ int
 vc4_wait_bo_ioctl(struct drm_device *dev, void *data,
 		  struct drm_file *file_priv)
 {
+	struct vc4_dev *vc4 = to_vc4_dev(dev);
 	int ret;
 	struct drm_vc4_wait_bo *args = data;
 	struct drm_gem_object *gem_obj;
 	struct vc4_bo *bo;
+
+	if (WARN_ON_ONCE(vc4->is_vc5))
+		return -ENODEV;
 
 	if (args->pad != 0)
 		return -EINVAL;
@@ -1138,6 +1167,9 @@ vc4_submit_cl_ioctl(struct drm_device *dev, void *data,
 	struct dma_fence *in_fence;
 	int ret = 0;
 
+	if (WARN_ON_ONCE(vc4->is_vc5))
+		return -ENODEV;
+
 	if (!vc4->v3d) {
 		DRM_DEBUG("VC4_SUBMIT_CL with no VC4 V3D probed\n");
 		return -ENODEV;
@@ -1161,6 +1193,7 @@ vc4_submit_cl_ioctl(struct drm_device *dev, void *data,
 		DRM_ERROR("malloc failure on exec struct\n");
 		return -ENOMEM;
 	}
+	exec->dev = vc4;
 
 	ret = vc4_v3d_pm_get(vc4);
 	if (ret) {
@@ -1270,6 +1303,9 @@ int vc4_gem_init(struct drm_device *dev)
 {
 	struct vc4_dev *vc4 = to_vc4_dev(dev);
 
+	if (WARN_ON_ONCE(vc4->is_vc5))
+		return -ENODEV;
+
 	vc4->dma_fence_context = dma_fence_context_alloc(1);
 
 	INIT_LIST_HEAD(&vc4->bin_job_list);
@@ -1315,10 +1351,14 @@ static void vc4_gem_destroy(struct drm_device *dev, void *unused)
 int vc4_gem_madvise_ioctl(struct drm_device *dev, void *data,
 			  struct drm_file *file_priv)
 {
+	struct vc4_dev *vc4 = to_vc4_dev(dev);
 	struct drm_vc4_gem_madvise *args = data;
 	struct drm_gem_object *gem_obj;
 	struct vc4_bo *bo;
 	int ret;
+
+	if (WARN_ON_ONCE(vc4->is_vc5))
+		return -ENODEV;
 
 	switch (args->madv) {
 	case VC4_MADV_DONTNEED:
