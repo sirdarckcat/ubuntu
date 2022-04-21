@@ -16,5 +16,45 @@ CONFIG_TEST_DIV64 policy<{'amd64': 'n'}>
 
 CONFIG_SYSFB_SIMPLEFB policy<{'amd64': 'n', 'arm64': 'y', 'armhf': 'y'}>
 
-CONFIG_SECURITY_DMESG_RESTRICT                  policy<{'amd64': 'n', 'arm64': 'n', 'armhf': 'n', 'ppc64el': 'n', 's390x': 'n'}>
-CONFIG_KCSAN                                    policy<{'amd64': '-', 'arm64': '-', 'armhf': '-', 'ppc64el': '-', 's390x': '-'}>
+CONFIG_AUFS_BDEV_LOOP	policy<{'amd64': 'y',}>
+CONFIG_AUFS_BDEV_LOOP	mark<ENFORCED> note<custom changes>
+CONFIG_AUFS_BRANCH_MAX_1023	policy<{'amd64': 'n',}>
+CONFIG_AUFS_BRANCH_MAX_1023	mark<ENFORCED> note<custom changes>
+CONFIG_AUFS_BRANCH_MAX_127	policy<{'amd64': 'y',}>
+CONFIG_AUFS_BRANCH_MAX_127	mark<ENFORCED> note<custom changes>
+CONFIG_AUFS_BRANCH_MAX_32767	policy<{'amd64': 'n',}>
+CONFIG_AUFS_BRANCH_MAX_32767	mark<ENFORCED> note<custom changes>
+CONFIG_AUFS_BRANCH_MAX_511	policy<{'amd64': 'n',}>
+CONFIG_AUFS_BRANCH_MAX_511	mark<ENFORCED> note<custom changes>
+CONFIG_AUFS_BR_FUSE	policy<{'amd64': 'n',}>
+CONFIG_AUFS_BR_FUSE	mark<ENFORCED> note<custom changes>
+CONFIG_AUFS_BR_HFSPLUS	policy<{'amd64': 'y',}>
+CONFIG_AUFS_BR_HFSPLUS	mark<ENFORCED> note<custom changes>
+CONFIG_AUFS_BR_RAMFS	policy<{'amd64': 'n',}>
+CONFIG_AUFS_BR_RAMFS	mark<ENFORCED> note<custom changes>
+CONFIG_AUFS_DEBUG	policy<{'amd64': 'n',}>
+CONFIG_AUFS_DEBUG	mark<ENFORCED> note<custom changes>
+CONFIG_AUFS_DIRREN	policy<{'amd64': 'y',}>
+CONFIG_AUFS_DIRREN	mark<ENFORCED> note<custom changes>
+CONFIG_AUFS_EXPORT	policy<{'amd64': 'y',}>
+CONFIG_AUFS_EXPORT	mark<ENFORCED> note<custom changes>
+CONFIG_AUFS_FHSM	policy<{'amd64': 'n',}>
+CONFIG_AUFS_FHSM	mark<ENFORCED> note<custom changes>
+CONFIG_AUFS_FS	policy<{'amd64': 'm',}>
+CONFIG_AUFS_FS	mark<ENFORCED> note<custom changes>
+CONFIG_AUFS_HNOTIFY	policy<{'amd64': 'n',}>
+CONFIG_AUFS_HNOTIFY	mark<ENFORCED> note<custom changes>
+CONFIG_AUFS_INO_T_64	policy<{'amd64': 'y',}>
+CONFIG_AUFS_INO_T_64	mark<ENFORCED> note<custom changes>
+CONFIG_AUFS_RDU	policy<{'amd64': 'n',}>
+CONFIG_AUFS_RDU	mark<ENFORCED> note<custom changes>
+CONFIG_AUFS_SBILIST	policy<{'amd64': 'y',}>
+CONFIG_AUFS_SBILIST	mark<ENFORCED> note<custom changes>
+CONFIG_AUFS_SHWH	policy<{'amd64': 'n',}>
+CONFIG_AUFS_SHWH	mark<ENFORCED> note<custom changes>
+CONFIG_AUFS_XATTR	policy<{'amd64': 'y',}>
+CONFIG_AUFS_XATTR	mark<ENFORCED> note<custom changes>
+CONFIG_DEBUG_INFO_DWARF4	policy<{'amd64': 'y',}>
+CONFIG_DEBUG_INFO_DWARF4	mark<ENFORCED> note<custom changes>
+CONFIG_DEBUG_INFO_DWARF5	policy<{'amd64': 'n',}>
+CONFIG_DEBUG_INFO_DWARF5	mark<ENFORCED> note<custom changes>
