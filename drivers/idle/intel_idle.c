@@ -1423,8 +1423,6 @@ static inline void intel_idle_init_cstates_acpi(struct cpuidle_driver *drv) { }
 static inline bool intel_idle_off_by_default(u32 mwait_hint) { return false; }
 #endif /* !CONFIG_ACPI_PROCESSOR_CSTATE */
 
-static void c1e_promotion_enable(void);
-
 /**
  * ivt_idle_state_table_update - Tune the idle states table for Ivy Town.
  *
@@ -1610,8 +1608,7 @@ static void __init spr_idle_state_table_update(void)
 		spr_cstates[1].flags &= ~CPUIDLE_FLAG_UNUSABLE;
 
 		/* Enable C1E using the "C1E promotion" bit. */
-		c1e_promotion_enable();
-		disable_promotion_to_c1e = false;
+		c1e_promotion = C1E_PROMOTION_ENABLE;
 	}
 }
 
