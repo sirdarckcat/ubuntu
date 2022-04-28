@@ -4,6 +4,14 @@
 
 include "../../debian.master/config/annotations"
 
+#
+# One (or both) of these SMMU options is needed for arm64 baremetal support
+#
+CONFIG_ARM_SMMU                                    policy<{'arm64':'y'}>
+CONFIG_ARM_SMMU                                    mark<ENFORCED> note<needed for arm64 bare-metal support>
+CONFIG_ARM_SMMU_V3                                 policy<{'arm64':'y'}>
+CONFIG_ARM_SMMU_V3                                 mark<ENFORCED> note<needed for arm64 bare-metal support>
+
 CONFIG_SND_SOC_INTEL_USER_FRIENDLY_LONG_NAMES      policy<{'amd64': 'n'}> 
 CONFIG_SND_SOC_INTEL_USER_FRIENDLY_LONG_NAMES      mark<ENFORCED> note<LP:1921632> 
 
