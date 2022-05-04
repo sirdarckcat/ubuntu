@@ -1338,7 +1338,8 @@ static void arm_smmu_tlb_add_walk(void *cookie, void *virt, unsigned long iova, 
 	spin_lock_irqsave(&smmu_domain->iotlb_gather_lock, flags);
 	gather->start = min(iova, gather->start);
 	gather->end = max(iova + granule - 1, gather->end);
-	list_add(&page->lru, &smmu_domain->iotlb_gather_freelist);
+	page->freelist = gather->freelist;
+	gather->freelist = page;
 	spin_unlock_irqrestore(&smmu_domain->iotlb_gather_lock, flags);
 
 	trace_tlb_add_walk(smmu_domain, iova, granule);
@@ -1703,7 +1704,6 @@ static struct iommu_domain *arm_smmu_domain_alloc(unsigned type)
 	INIT_LIST_HEAD(&smmu_domain->secure_pool_list);
 	iommu_iotlb_gather_init(&smmu_domain->iotlb_gather);
 	spin_lock_init(&smmu_domain->iotlb_gather_lock);
-	INIT_LIST_HEAD(&smmu_domain->iotlb_gather_freelist);
 	arm_smmu_domain_reinit(smmu_domain);
 
 	return &smmu_domain->domain;
@@ -2358,8 +2358,7 @@ static void __arm_smmu_iotlb_sync(struct iommu_domain *domain,
 {
 	struct arm_smmu_domain *smmu_domain = to_smmu_domain(domain);
 	struct arm_smmu_device *smmu = smmu_domain->smmu;
-	LIST_HEAD(list);
-	struct page *page, *tmp;
+	struct page *freelist, *page;
 
 	if (smmu->version == ARM_SMMU_V2 ||
 	    smmu_domain->stage == ARM_SMMU_DOMAIN_S1)
@@ -2367,11 +2366,12 @@ static void __arm_smmu_iotlb_sync(struct iommu_domain *domain,
 	else
 		arm_smmu_tlb_sync_global(smmu);
 
-	list_splice_init(&smmu_domain->iotlb_gather_freelist, &list);
+	freelist = smmu_domain->iotlb_gather.freelist;
 	iommu_iotlb_gather_init(&smmu_domain->iotlb_gather);
 
-	list_for_each_entry_safe(page, tmp, &list, lru) {
-		list_del(&page->lru);
+	while (freelist) {
+		page = freelist;
+		freelist = page->freelist;
 		arm_smmu_free_pgtable(smmu_domain, page_address(page), 0);
 	}
 }
