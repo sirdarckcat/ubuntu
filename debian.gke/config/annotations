@@ -5,30 +5,29 @@
 include "../../debian.master/config/annotations"
 
 # Menu: Device Drivers >> Block devices
-CONFIG_BLK_DEV_FD                               policy<{'amd64': 'n'}>
-#
+CONFIG_BLK_DEV_FD                               policy<{'amd64': 'n', 'arm64': '-'}>
 CONFIG_BLK_DEV_FD                               mark<ENFORCED> note<LP:1729673>
 
 # Menu: Device Drivers >> SCSI device support >> SCSI device support >> SCSI low-level drivers
-CONFIG_SCSI_VIRTIO                              policy<{'amd64': 'y'}>
+CONFIG_SCSI_VIRTIO                              policy<{'amd64': 'y', 'arm64': 'y'}>
 #
 CONFIG_SCSI_VIRTIO                              mark<ENFORCED> note<LP:1669657> note<tech preview of new feature>
 
 # Menu: Kernel hacking
-CONFIG_PANIC_ON_OOPS                            policy<{'amd64': 'y'}>
+CONFIG_PANIC_ON_OOPS                            policy<{'amd64': 'y', 'arm64': 'y'}>
 #
 CONFIG_PANIC_ON_OOPS  				mark<ENFORCED> note<initial packaging> note<keep working if at all possible>
 
 # Menu: Kernel hacking >> Debug Lockups and Hangs
-CONFIG_BOOTPARAM_HARDLOCKUP_PANIC               policy<{'amd64': 'y'}>
-CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC               policy<{'amd64': 'y'}>
+CONFIG_BOOTPARAM_HARDLOCKUP_PANIC               policy<{'amd64': 'y', 'arm64': '-'}>
+CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC               policy<{'amd64': 'y', 'arm64': 'y'}>
 #
 CONFIG_BOOTPARAM_HARDLOCKUP_PANIC               mark<ENFORCED> note<initial packaging>
 CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC               mark<ENFORCED> note<initial packaging>
 
 # Menu: Library routines
 #CONFIG_RAID6_PQ_DEFAULT_ALG			policy<'amd64': 'avx2x4'>
-CONFIG_RAID6_PQ_DEFAULT_ALG_BOOL		policy<{'amd64': '-'}>
+CONFIG_RAID6_PQ_DEFAULT_ALG_BOOL		policy<{'amd64': '-', 'arm64': '-'}>
 #
 #CONFIG_RAID6_PQ_DEFAULT_ALG			mark<ENFORCED> note<LP:1812728>
 CONFIG_RAID6_PQ_DEFAULT_ALG_BOOL		mark<ENFORCED> note<LP:1812728>
@@ -36,16 +35,16 @@ CONFIG_RAID6_PQ_DEFAULT_ALG_BOOL		mark<ENFORCED> note<LP:1812728>
 
 
 # Menu: Networking support >> Networking options >> Network packet filtering framework (Netfilter) >> Core Netfilter Configuration
-CONFIG_NETFILTER_NETLINK_QUEUE                  policy<{'amd64': 'y'}>
-CONFIG_NETFILTER_NETLINK_LOG                    policy<{'amd64': 'y'}>
+CONFIG_NETFILTER_NETLINK_QUEUE                  policy<{'amd64': 'y', 'arm64': 'y'}>
+CONFIG_NETFILTER_NETLINK_LOG                    policy<{'amd64': 'y', 'arm64': 'y'}>
 #
 CONFIG_NETFILTER_NETLINK_QUEUE                  mark<ENFORCED> note<initial packaging>
 CONFIG_NETFILTER_NETLINK_LOG                    mark<ENFORCED> note<initial packaging>
 
 # Menu: Networking support >> Networking options >> Network packet filtering framework (Netfilter) >> Core Netfilter Configuration >> Netfilter connection tracking support
-CONFIG_NF_CONNTRACK                             policy<{'amd64': 'y'}>
-CONFIG_NF_CONNTRACK_PROCFS                      policy<{'amd64': 'y'}>
-CONFIG_NF_CT_NETLINK                            policy<{'amd64': 'y'}>
+CONFIG_NF_CONNTRACK                             policy<{'amd64': 'y', 'arm64': 'y'}>
+CONFIG_NF_CONNTRACK_PROCFS                      policy<{'amd64': 'y', 'arm64': 'y'}>
+CONFIG_NF_CT_NETLINK                            policy<{'amd64': 'y', 'arm64': 'y'}>
 #
 CONFIG_NF_CONNTRACK                             mark<ENFORCED> note<initial packaging>
 CONFIG_NF_CONNTRACK_PROCFS                      mark<ENFORCED> note<initial packaging>
@@ -53,21 +52,21 @@ CONFIG_NF_CT_NETLINK                            mark<ENFORCED> note<initial pack
 CONFIG_NF_CONNTRACK_PROCFS                      flag<DEPRECATED>
 
 
-CONFIG_LATENCYTOP				policy<{'amd64': '-'}>
-CONFIG_LATENCYTOP				note<Unnecessary for linux-gke>
-
-CONFIG_X86_UV					policy<{'amd64': 'n'}>
-CONFIG_X86_UV					note<Unnecessary for linux-gke>
-
-CONFIG_MODVERSIONS				policy<{'amd64': 'y'}>
+CONFIG_MODVERSIONS				policy<{'amd64': 'y', 'arm64': 'y'}>
 CONFIG_MODVERSIONS				mark<ENFORCED> note<LP:1898716 -- required as we have a livepatch/drivers modules signing key>
 
-CONFIG_SYSTEM_TRUSTED_KEYS			policy<{'amd64': '"debian/canonical-certs.pem"'}>
+CONFIG_SYSTEM_TRUSTED_KEYS			policy<{'amd64': '"debian/canonical-certs.pem"', 'arm64': '"debian/canonical-certs.pem"'}>
 
-CONFIG_ATARI_PARTITION				policy<{'amd64': 'n'}>
+CONFIG_ATARI_PARTITION				policy<{'amd64': 'n', 'arm64': 'n'}>
 CONFIG_ATARI_PARTITION				mark<ENFORCED> note<LP:1908264>
 
 # The following was requested in Focal/5.4 
 # CONFIG_AUFS_FS does not exist in 5.13?
-#CONFIG_AUFS_FS					policy<{'amd64': 'n'}>
+#CONFIG_AUFS_FS					policy<{'amd64': 'n', 'arm64': 'n'}>
 #CONFIG_AUFS_FS					mark<ENFORCED> note<Specifically requested by GKE in partner issue 194431474 >
+
+
+
+# The following annotations are not specifically needed
+# they are just to override the mater annotations
+CONFIG_LATENCYTOP                                policy<{'amd64': 'n'}>
