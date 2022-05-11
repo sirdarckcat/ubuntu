@@ -16,3 +16,11 @@ CONFIG_TEST_DIV64 policy<{'amd64': 'n'}>
 
 CONFIG_SYSFB_SIMPLEFB policy<{'amd64': 'n', 'arm64': 'y', 'armhf': 'y'}>
 
+# Menu: Kernel hacking >> Memory Debugging >> KFENCE: low-overhead sampling-based memory safety error detector
+CONFIG_KFENCE                                   policy<{'amd64': 'n', 'arm64': 'n'}>
+CONFIG_KFENCE_STATIC_KEYS                       policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_KFENCE_SAMPLE_INTERVAL                   policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_KFENCE_NUM_OBJECTS                       policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_KFENCE_STRESS_TEST_FAULTS                policy<{'amd64': '-', 'arm64': '-'}>
+#
+CONFIG_KFENCE                                   mark<ENFORCED> note<LP:1946001>
