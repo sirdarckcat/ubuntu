@@ -1,0 +1,70 @@
+/*
+ * INTEL CONFIDENTIAL
+ *
+ * Copyright (C) 2020-2022 Intel Corporation
+ *
+ * This software and the related documents are Intel copyrighted materials,
+ * and your use of them is governed by the express license under which they
+ * were provided to you ("LICENSE"). Unless the LICENSE provides otherwise,
+ * you may not use, modify, copy, publish, distribute, disclose or transmit
+ * this software or the related documents without Intel's prior written
+ * permission.
+ *
+ * This software and the related documents are provided as is, with no
+ * express or implied warranties, other than those that are expressly
+ * stated in the License.
+ *
+ */
+#ifndef __BACKPORT_NETDEV_FEATURES_H
+#define __BACKPORT_NETDEV_FEATURES_H
+
+#include <linux/version.h>
+
+#if LINUX_VERSION_IS_LESS(3,3,0)
+#include <linux/netdevice.h>
+#include <linux/types.h>
+
+/* added via 9356b8fc */
+#define NETIF_F_HW_VLAN_CTAG_RX			NETIF_F_HW_VLAN_RX
+#define NETIF_F_HW_VLAN_CTAG_TX			NETIF_F_HW_VLAN_TX
+
+/* added via d314774c */
+#define NETIF_F_HW_VLAN_CTAG_FILTER		NETIF_F_HW_VLAN_FILTER
+
+/* c8f44aff made this u32 but later a861a8b2 changed it to u64 both on v3.3 */
+typedef u32 netdev_features_t;
+
+#else
+#include_next <linux/netdev_features.h>
+
+#if LINUX_VERSION_IS_LESS(3,10,0)
+/* See commit f646968f8f on next-20130423 */
+#define NETIF_F_HW_VLAN_CTAG_TX_BIT		NETIF_F_HW_VLAN_TX_BIT
+#define NETIF_F_HW_VLAN_CTAG_RX_BIT		NETIF_F_HW_VLAN_RX_BIT
+#define NETIF_F_HW_VLAN_CTAG_FILTER_BIT		NETIF_F_HW_VLAN_FILTER_BIT
+
+#define NETIF_F_HW_VLAN_CTAG_FILTER		NETIF_F_HW_VLAN_FILTER
+#define NETIF_F_HW_VLAN_CTAG_RX			NETIF_F_HW_VLAN_RX
+#define NETIF_F_HW_VLAN_CTAG_TX			NETIF_F_HW_VLAN_TX
+#endif
+
+#endif /* LINUX_VERSION_IS_LESS(3,3,0) */
+
+#if !defined(NETIF_F_RXCSUM)
+#define NETIF_F_RXCSUM 0
+#endif
+
+#if !defined(NETIF_F_RXALL)
+#define NETIF_F_RXALL 0
+#endif
+
+#if !defined(NETIF_F_RXFCS)
+#define NETIF_F_RXFCS 0
+#endif
+
+/* this was renamed in commit 53692b1de :  sctp: Rename NETIF_F_SCTP_CSUM to NETIF_F_SCTP_CRC */
+#ifndef NETIF_F_SCTP_CRC
+#define NETIF_F_SCTP_CRC __NETIF_F(SCTP_CSUM)
+#endif
+
+#endif /* __BACKPORT_NETDEV_FEATURES_H */
