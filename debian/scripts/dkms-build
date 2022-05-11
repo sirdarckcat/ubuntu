@@ -46,6 +46,7 @@ do
 	echo "II: dkms-build downloading $package ($package_file)"
 	rpackage=$( echo "$package_path" | sed -e 's@.*/@@' -e 's@_.*@@' )
 	lpackage=$( echo "$rpackage" | sed -e 's@=.*@@' )
+	type=deb
 
 	while true
 	do
@@ -77,7 +78,11 @@ do
 			"$here/file-downloader" "$package_path"
 			;;
 		*/*)
-			cp -p "$package_path" .
+			if [ -d "$srcdir/$package_path" ]; then
+				type=dir
+			else
+				cp -p "$package_path" .
+			fi
 			;;
 		*)
 			apt-get download "$rpackage"
@@ -85,14 +90,22 @@ do
 		esac
 		break
 	done
-	if ! package_present "$lpackage"; then
-		echo "EE: $lpackage not found"
-		exit 1
+	if [ "$type" = "dir" ]; then
+		lpackage=$(awk -F \" '/^PACKAGE_NAME=/ { print $2 }' "$srcdir/$package_path/dkms.conf")
+		lversion=$(awk -F \" '/^PACKAGE_VERSION=/ { print $2 }' "$srcdir/$package_path/dkms.conf")
+		mkdir -p "$package/usr/src"
+		cp -rp "$srcdir/$package_path" "$package/usr/src/$lpackage-$lversion"
+	else
+		if ! package_present "$lpackage"; then
+			echo "EE: $lpackage not found"
+			exit 1
+		fi
+
+		dpkg -x "$lpackage"_*.deb "$package"
+
+		lversion=$( echo "$lpackage_path" | sed -e 's@.*/@@' -e 's@_[^_]*$@@' -e 's@.*_@@')
 	fi
 
-	dpkg -x "$lpackage"_*.deb "$package"
-
-	lversion=$( echo "$lpackage_path" | sed -e 's@.*/@@' -e 's@_[^_]*$@@' -e 's@.*_@@')
 	#built_using_record "$srcdir/debian/$pkgname.substvars" "$built_using$lpackage (= $lversion)"
 done
 
