@@ -1,0 +1,84 @@
+# Menu: HEADER
+# FORMAT: 3
+# ARCH: x86
+
+include "../../debian.master/config/annotations"
+
+
+# Configurations made specifically for linux-oracle go here
+
+CONFIG_FAILOVER					policy<{'amd64': 'm', 'arm64': 'm'}>
+CONFIG_FAILOVER					mark<ENFORCED> note<OCI requirement>
+CONFIG_MODVERSIONS				policy<{'amd64': 'y', 'arm64': 'y'}>
+CONFIG_MODVERSIONS				mark<ENFORCED> note<LP:1898716 -- required as we have a livepatch/drivers modules signing key>
+CONFIG_NET_FAILOVER				policy<{'amd64': 'm', 'arm64': 'm'}>
+CONFIG_NET_FAILOVER				mark<ENFORCED> note<OCI requirement>
+CONFIG_PAGE_POOL				policy<{'amd64': 'y', 'arm64': 'y'}>
+CONFIG_PAGE_POOL				mark<ENFORCED> note<OCI requirement>
+CONFIG_SYSTEM_TRUSTED_KEYS			policy<{'amd64': '"debian/canonical-certs.pem"', 'arm64': '"debian/canonical-certs.pem"'}>
+CONFIG_ANDROID					policy<{'amd64': 'y', 'arm64':'y'}>
+CONFIG_ANDROID					mark<ENFORCED> note<needed for Anbox - LP #1928686>
+CONFIG_ANDROID_BINDERFS				policy<{'amd64': 'm', 'arm64':'m'}>
+CONFIG_ANDROID_BINDERFS				mark<ENFORCED> note<needed for Anbox - LP #1928686>
+CONFIG_ANDROID_BINDER_DEVICES			policy<{'amd64': '""', 'arm64':'""'}>
+CONFIG_ANDROID_BINDER_DEVICES			mark<ENFORCED> note<needed for Anbox - LP #1928686>
+CONFIG_ANDROID_BINDER_IPC			policy<{'amd64': 'm', 'arm64':'m'}>
+CONFIG_ANDROID_BINDER_IPC			mark<ENFORCED> note<needed for Anbox - LP #1928686>
+CONFIG_ASHMEM					policy<{'amd64': 'm', 'arm64':'m'}>
+CONFIG_ASHMEM					mark<ENFORCED> note<needed for Anbox - LP #1928686>
+CONFIG_SERIAL_AMBA_PL011			policy<{'arm64':'y'}>
+CONFIG_SERIAL_AMBA_PL011			mark<ENFORCED> note<needed for serial support in VMs>
+CONFIG_SERIAL_AMBA_PL011_CONSOLE		policy<{'arm64':'y'}>
+CONFIG_SERIAL_AMBA_PL011_CONSOLE		mark<ENFORCED> note<needed for serial support in VMs>
+
+
+# Configurations made just to override master annotations go here
+
+CONFIG_SERIAL_8250_MID				policy<{'amd64': 'm'}>
+CONFIG_LATENCYTOP				policy<{'amd64': 'n', 'arm64': 'n'}>
+CONFIG_LATENCYTOP				mark<ENFORCED> note<not needed for cloud kernels>
+CONFIG_SYSTEM_REVOCATION_KEYS			policy<{'amd64': '"debian/canonical-revoked-certs.pem"', 'arm64': '"debian/canonical-revoked-certs.pem"'}>
+CONFIG_HZ_1000					policy<{'amd64': 'n', 'arm64': 'n'}>
+CONFIG_HZ_250					policy<{'amd64': 'y', 'arm64': 'y'}>
+CONFIG_CXL_MEM_RAW_COMMANDS			policy<{'amd64': 'n', 'arm64': 'n'}>
+CONFIG_DRM_BOCHS				policy<{'amd64': 'm', 'arm64': 'm'}> note<needed for virtual display support in VMs - LP #1957744 >
+CONFIG_I2C_ALGOBIT				policy<{'amd64': 'm', 'arm64': 'm', 'arm64': 'm'}>
+CONFIG_SOUND					policy<{'amd64': 'm', 'arm64': 'm', 'arm64': 'm'}> note<not autoloadable on omap>
+CONFIG_TEST_LIST_SORT				policy<{'amd64': '-', 'arm64': '-'}> flag<TESTING>
+CONFIG_ARM64_64K_PAGES				policy<{'arm64': 'n'}>
+CONFIG_VMXNET3					policy<{'amd64': 'm', 'arm64': 'm'}>
+CONFIG_ARM64_4K_PAGES				policy<{'arm64': 'y'}>
+CONFIG_CLK_R9A06G032				policy<{'arm64': '-'}>
+CONFIG_SPMI					policy<{'amd64': 'm', 'arm64': 'm', 'arm64': 'm'}>
+CONFIG_KERNEL_ZSTD				policy<{'amd64': 'y', 'arm64': '-'}>
+CONFIG_KERNEL_LZ4				policy<{'amd64': 'n', 'arm64': '-'}>
+CONFIG_INFINIBAND_VMWARE_PVRDMA			policy<{'amd64': 'm', 'arm64': 'm'}>
+CONFIG_ARM64_VA_BITS_39				policy<{'arm64': 'n'}>
+CONFIG_MMC_SDHCI				policy<{'amd64': 'm', 'arm64': 'm', 'arm64': 'm'}> note<installation essential on omap/highbank>
+CONFIG_TEST_SORT				policy<{'amd64': '-', 'arm64': '-'}> flag<TESTING>
+CONFIG_ACCESSIBILITY				policy<{'amd64': 'n', 'arm64': 'n'}>
+CONFIG_SPEAKUP					policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_SPEAKUP_SYNTH_ACNTSA			policy<{'*': '-'}>
+CONFIG_SPEAKUP_SYNTH_APOLLO			policy<{'*': '-'}>
+CONFIG_SPEAKUP_SYNTH_AUDPTR			policy<{'*': '-'}>
+CONFIG_SPEAKUP_SYNTH_BNS			policy<{'*': '-'}>
+CONFIG_SPEAKUP_SYNTH_DECEXT			policy<{'*': '-'}>
+CONFIG_SPEAKUP_SYNTH_DECTLK			policy<{'*': '-'}>
+CONFIG_SPEAKUP_SYNTH_DUMMY			policy<{'*': '-'}>
+CONFIG_SPEAKUP_SYNTH_LTLK			policy<{'*': '-'}>
+CONFIG_SPEAKUP_SYNTH_SOFT			policy<{'*': '-'}>
+CONFIG_SPEAKUP_SYNTH_SPKOUT			policy<{'*': '-'}>
+CONFIG_SPEAKUP_SYNTH_TXPRT			policy<{'*': '-'}>
+CONFIG_COMEDI_TESTS_EXAMPLE			policy<{'amd64': 'n', 'arm64': 'm'}>
+CONFIG_GPIO_AAEON				policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_AAEON_IWMI_WDT				policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_COMEDI_TESTS_NI_ROUTES			policy<{'amd64': 'n', 'arm64': 'm'}>
+CONFIG_SENSORS_AAEON				policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_MFD_AAEON				policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_LEDS_AAEON				policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_TEST_DIV64				policy<{'amd64': 'n', 'arm64': 'm'}>
+CONFIG_PREEMPT_VOLUNTARY			policy<{'amd64': 'n', 'arm64': 'n'}>
+CONFIG_PREEMPT					policy<{'amd64': 'n', 'arm64': 'n'}>
+CONFIG_PREEMPT_NONE				policy<{'amd64': 'y', 'arm64': 'y'}>
+CONFIG_FORCE_MAX_ZONEORDER			policy<{'arm64': '13'}>
+CONFIG_MESON_SM					policy<{'arm64': 'n'}>
