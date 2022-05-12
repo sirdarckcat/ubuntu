@@ -30,6 +30,12 @@ CONFIG_SERIAL_AMBA_PL011			policy<{'arm64':'y'}>
 CONFIG_SERIAL_AMBA_PL011			mark<ENFORCED> note<needed for serial support in VMs>
 CONFIG_SERIAL_AMBA_PL011_CONSOLE		policy<{'arm64':'y'}>
 CONFIG_SERIAL_AMBA_PL011_CONSOLE		mark<ENFORCED> note<needed for serial support in VMs>
+CONFIG_DRM_VIRTIO_GPU                           policy<'arm64':'m'>
+CONFIG_DRM_VIRTIO_GPU                           mark<ENFORCED> note<Ensure virtio-gpu.ko is in inclusion list, or set =y>
+
+
+
+
 
 
 # Configurations made just to override master annotations go here
