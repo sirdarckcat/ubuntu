@@ -95,13 +95,15 @@ int blk_crypto_init_key(struct blk_crypto_key *blk_key, const u8 *raw_key,
 			unsigned int data_unit_size);
 
 int blk_crypto_start_using_key(const struct blk_crypto_key *key,
-			       struct request_queue *q);
+			       struct request_queue *q,
+			       bool allow_fallback);
 
 int blk_crypto_evict_key(struct request_queue *q,
 			 const struct blk_crypto_key *key);
 
 bool blk_crypto_config_supported(struct request_queue *q,
-				 const struct blk_crypto_config *cfg);
+				 const struct blk_crypto_config *cfg,
+				 bool allow_fallback);
 
 #else /* CONFIG_BLK_INLINE_ENCRYPTION */
 
