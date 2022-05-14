@@ -354,9 +354,10 @@ int blk_crypto_init_key(struct blk_crypto_key *blk_key, const u8 *raw_key,
  * blk-crypto-fallback is enabled and supports the cfg).
  */
 bool blk_crypto_config_supported(struct request_queue *q,
-				 const struct blk_crypto_config *cfg)
+				 const struct blk_crypto_config *cfg,
+				 bool allow_fallback)
 {
-	return IS_ENABLED(CONFIG_BLK_INLINE_ENCRYPTION_FALLBACK) ||
+	return (IS_ENABLED(CONFIG_BLK_INLINE_ENCRYPTION_FALLBACK) && allow_fallback) ||
 	       blk_ksm_crypto_cfg_supported(q->ksm, cfg);
 }
 
@@ -364,6 +365,8 @@ bool blk_crypto_config_supported(struct request_queue *q,
  * blk_crypto_start_using_key() - Start using a blk_crypto_key on a device
  * @key: A key to use on the device
  * @q: the request queue for the device
+ * @allow_fallback: Permit use of blk-crypto-fallback if the hardware doesn't
+ *		    support the key.
  *
  * Upper layers must call this function to ensure that either the hardware
  * supports the key's crypto settings, or the crypto API fallback has transforms
@@ -376,10 +379,13 @@ bool blk_crypto_config_supported(struct request_queue *q,
  *	   is disabled in the crypto API; or another -errno code.
  */
 int blk_crypto_start_using_key(const struct blk_crypto_key *key,
-			       struct request_queue *q)
+			       struct request_queue *q,
+			       bool allow_fallback)
 {
 	if (blk_ksm_crypto_cfg_supported(q->ksm, &key->crypto_cfg))
 		return 0;
+	if (!allow_fallback)
+		return -ENOPKG;
 	return blk_crypto_fallback_start_using_mode(key->crypto_cfg.crypto_mode);
 }
 
