@@ -112,7 +112,7 @@ int fscrypt_select_encryption_impl(struct fscrypt_info *ci)
 	fscrypt_get_devices(sb, num_devs, devs);
 
 	for (i = 0; i < num_devs; i++) {
-		if (!blk_crypto_config_supported(devs[i], &crypto_cfg))
+		if (!blk_crypto_config_supported(devs[i], &crypto_cfg, true))
 			goto out_free_devs;
 	}
 
@@ -166,7 +166,8 @@ int fscrypt_prepare_inline_crypt_key(struct fscrypt_prepared_key *prep_key,
 		queue_refs++;
 
 		err = blk_crypto_start_using_key(&blk_key->base,
-						 blk_key->devs[i]);
+						 blk_key->devs[i],
+						 true);
 		if (err) {
 			fscrypt_err(inode,
 				    "error %d starting to use blk-crypto", err);
