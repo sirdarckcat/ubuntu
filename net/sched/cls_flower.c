@@ -326,7 +326,8 @@ static int fl_classify(struct sk_buff *skb, const struct tcf_proto *tp,
 				    fl_ct_info_to_flower_map,
 				    ARRAY_SIZE(fl_ct_info_to_flower_map),
 				    post_ct, zone);
-		skb_flow_dissect(skb, &mask->dissector, &skb_key, 0);
+		skb_flow_dissect(skb, &mask->dissector, &skb_key,
+				 FLOW_DISSECTOR_F_STOP_BEFORE_ENCAP);
 
 		fl_set_masked_key(&skb_mkey, &skb_key, mask);
 
