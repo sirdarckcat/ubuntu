@@ -461,6 +461,35 @@ static int brcm_pcie_set_ssc(struct brcm_pcie *pcie)
 	return ssc && pll ? 0 : -EIO;
 }
 
+static void brcm_pcie_munge_pll(struct brcm_pcie *pcie)
+{
+	//print "MDIO block 0x1600 written per Dannys instruction"
+	//tmp = pcie_mdio_write(phyad, &h16&, &h50b9&)
+	//tmp = pcie_mdio_write(phyad, &h17&, &hbd1a&)
+	//tmp = pcie_mdio_write(phyad, &h1b&, &h5030&)
+	//tmp = pcie_mdio_write(phyad, &h1e&, &h0007&)
+
+	u32 tmp;
+	int ret, i;
+	u8 regs[] = {0x16, 0x17, 0x1b, 0x1e};
+	u16 data[] = {0x50b9, 0xbd1a, 0x5030, 0x0007};
+	ret = brcm_pcie_mdio_write(pcie->base, MDIO_PORT0, SET_ADDR_OFFSET,
+				0x1600);
+	for (i = 0; i < 4; i++) {
+		brcm_pcie_mdio_read(pcie->base, MDIO_PORT0, regs[i], &tmp);
+		dev_dbg(pcie->dev, "PCIE MDIO pre_refclk 0x%02x = 0x%04x\n",
+			regs[i], tmp);
+	}
+
+	for (i = 0; i < 4; i++) {
+		brcm_pcie_mdio_write(pcie->base, MDIO_PORT0, regs[i], data[i]);
+		brcm_pcie_mdio_read(pcie->base, MDIO_PORT0, regs[i], &tmp);
+		dev_dbg(pcie->dev, "PCIE MDIO post_refclk 0x%02x = 0x%04x\n",
+			regs[i], tmp);
+	}
+	usleep_range(100, 200);
+}
+
 /* Limits operation to a specific generation (1, 2, or 3) */
 static void brcm_pcie_set_gen(struct brcm_pcie *pcie, int gen)
 {
@@ -1120,8 +1149,10 @@ static int brcm_pcie_setup(struct brcm_pcie *pcie)
 	/* Wait for SerDes to be stable */
 	usleep_range(100, 200);
 
-	/* Fix for L1SS errata */
 	if (pcie->type == BCM2712) {
+		/* Allow a 54MHz (xosc) refclk source */
+		brcm_pcie_munge_pll(pcie);
+		/* Fix for L1SS errata */
 		tmp = readl(base + PCIE_RC_PL_PHY_CTL_15);
 		tmp &= ~PCIE_RC_PL_PHY_CTL_15_PM_CLK_PERIOD_MASK;
 		/* PM clock period is 18.52ns (round down) */
@@ -1363,6 +1394,7 @@ static int brcm_pcie_start_link(struct brcm_pcie *pcie)
 		else
 			dev_err(dev, "failed attempt to enter ssc mode\n");
 	}
+
 
 	lnksta = readw(base + BRCM_PCIE_CAP_REGS + PCI_EXP_LNKSTA);
 	cls = FIELD_GET(PCI_EXP_LNKSTA_CLS, lnksta);
