@@ -2051,4 +2051,9 @@ static inline struct scatterlist *cifs_sg_set_buf(struct scatterlist *sg,
 	return sg;
 }
 
+static inline u64 cifs_flock_len(struct file_lock *fl)
+{
+	return fl->fl_end == OFFSET_MAX ? 0 : fl->fl_end - fl->fl_start + 1;
+}
+
 #endif	/* _CIFS_GLOB_H */
