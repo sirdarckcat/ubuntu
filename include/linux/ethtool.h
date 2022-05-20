@@ -426,6 +426,8 @@ struct ethtool_module_eeprom {
 struct ethtool_fp {
    u32 enabled;
    u32 preemptible_mask;
+   u32 disable_verify;
+   u32 verified;
    u32 add_frag_size;
 };
 
