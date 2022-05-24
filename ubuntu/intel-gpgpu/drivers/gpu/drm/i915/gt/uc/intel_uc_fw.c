@@ -70,7 +70,7 @@ void intel_uc_fw_change_status(struct intel_uc_fw *uc_fw,
  */
 #define INTEL_GUC_FIRMWARE_DEFS(fw_def, guc_def) \
 	fw_def(PONTEVECCHIO, 0, guc_def(pvc,  70, 0, 7)) \
-	fw_def(DG2,          0, guc_def(dg2,  70, 0, 7)) \
+	fw_def(DG2,          0, guc_def(dg2,  70, 1, 2)) \
 	fw_def(XEHPSDV,  0, guc_def(xehpsdv,  70, 0, 7)) \
 	fw_def(ALDERLAKE_P,  0, guc_def(adlp, 70, 0, 7)) \
 	fw_def(ALDERLAKE_S,  0, guc_def(tgl,  70, 0, 7)) \
