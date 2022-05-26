@@ -61,12 +61,12 @@ CONFIG_ATARI_PARTITION				policy<{'amd64': 'n', 'arm64': 'n'}>
 CONFIG_ATARI_PARTITION				mark<ENFORCED> note<LP:1908264>
 
 # The following was requested in Focal/5.4 
-# CONFIG_AUFS_FS does not exist in 5.13?
-#CONFIG_AUFS_FS					policy<{'amd64': 'n', 'arm64': 'n'}>
-#CONFIG_AUFS_FS					mark<ENFORCED> note<Specifically requested by GKE in partner issue 194431474 >
 
 
 
 # The following annotations are not specifically needed
 # they are just to override the mater annotations
 CONFIG_LATENCYTOP                                policy<{'amd64': 'n'}>
+CONFIG_KCSAN policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_ARM64_BTI_KERNEL                            policy<{'arm64': '-'}
+CONFIG_AUFS_FS policy<{'amd64': 'm', 'arm64': 'm'}>
