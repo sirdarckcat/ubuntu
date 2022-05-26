@@ -16,6 +16,9 @@ CONFIG_TEST_DIV64 policy<{'amd64': 'n'}>
 
 CONFIG_SYSFB_SIMPLEFB policy<{'amd64': 'n', 'arm64': 'y', 'armhf': 'y'}>
 
+# This isn't being run on AMD Zen hardware, so don't need the support
+CONFIG_X86_AMD_PSTATE                           policy<{'amd64': 'n'}>
+
 # Menu: Kernel hacking >> Memory Debugging >> KFENCE: low-overhead sampling-based memory safety error detector
 CONFIG_KFENCE                                   policy<{'amd64': 'n', 'arm64': 'n'}>
 CONFIG_KFENCE_STATIC_KEYS                       policy<{'amd64': '-', 'arm64': '-'}>
