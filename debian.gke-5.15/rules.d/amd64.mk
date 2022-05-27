@@ -27,4 +27,3 @@ do_dtbs		= false
 do_common_headers_indep = false
 do_dkms_nvidia  = false
 do_dkms_vbox	= false
-do_dkms_wireguard = true
