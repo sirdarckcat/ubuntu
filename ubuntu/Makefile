@@ -27,6 +27,10 @@ obj-y += xilinx-hdmi/
 ##
 ##
 ##
+obj-$(CONFIG_NET_VENDOR_S2I) += xilinx-mv-camera-10gige-module/
+##
+##
+##
 obj-$(CONFIG_UBUNTU_HOST)      += ubuntu-host/
 ##
 ##
