@@ -42,6 +42,7 @@ CONFIG_DRM_BOCHS				mark<ENFORCED> note<Ensure bochs-drm.ko is in inclusion list
 
 # Configurations made just to override master annotations go here
 
+CONFIG_SERIAL_8250_MID				policy<{'amd64': 'm'}>
 CONFIG_LATENCYTOP				policy<{'amd64': 'n', 'arm64': 'n'}>
 CONFIG_LATENCYTOP				mark<ENFORCED> note<not needed for cloud kernels>
 CONFIG_SYSTEM_REVOCATION_KEYS			policy<{'amd64': '"debian/canonical-revoked-certs.pem"', 'arm64': '"debian/canonical-revoked-certs.pem"'}>
@@ -65,6 +66,17 @@ CONFIG_MMC_SDHCI				policy<{'amd64': 'm', 'arm64': 'm', 'arm64': 'm'}> note<inst
 CONFIG_TEST_SORT				policy<{'amd64': '-', 'arm64': '-'}> flag<TESTING>
 CONFIG_ACCESSIBILITY				policy<{'amd64': 'n', 'arm64': 'n'}>
 CONFIG_SPEAKUP					policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_SPEAKUP_SYNTH_ACNTSA			policy<{'*': '-'}>
+CONFIG_SPEAKUP_SYNTH_APOLLO			policy<{'*': '-'}>
+CONFIG_SPEAKUP_SYNTH_AUDPTR			policy<{'*': '-'}>
+CONFIG_SPEAKUP_SYNTH_BNS			policy<{'*': '-'}>
+CONFIG_SPEAKUP_SYNTH_DECEXT			policy<{'*': '-'}>
+CONFIG_SPEAKUP_SYNTH_DECTLK			policy<{'*': '-'}>
+CONFIG_SPEAKUP_SYNTH_DUMMY			policy<{'*': '-'}>
+CONFIG_SPEAKUP_SYNTH_LTLK			policy<{'*': '-'}>
+CONFIG_SPEAKUP_SYNTH_SOFT			policy<{'*': '-'}>
+CONFIG_SPEAKUP_SYNTH_SPKOUT			policy<{'*': '-'}>
+CONFIG_SPEAKUP_SYNTH_TXPRT			policy<{'*': '-'}>
 CONFIG_COMEDI_TESTS_EXAMPLE			policy<{'amd64': 'n', 'arm64': 'm'}>
 CONFIG_GPIO_AAEON				policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_AAEON_IWMI_WDT				policy<{'amd64': '-', 'arm64': '-'}>
