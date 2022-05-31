@@ -45,6 +45,14 @@ CONFIG_SPEAKUP_SYNTH_SPKOUT 					policy<{'amd64': '-'}>
 
 
 
+# Menu: Device Drivers >> Industrial I/O support >> Accelerometers
+CONFIG_ADXL345                                  policy<{'amd64': 'm'}>
+CONFIG_ADXL345_I2C                              policy<{'amd64': 'm'}>
+CONFIG_ADXL345_SPI                              policy<{'amd64': 'm'}>
+CONFIG_INPUT_ADXL34X                            policy<{'amd64': 'n'}>
+CONFIG_INPUT_ADXL34X_I2C                        policy<{'amd64': '-'}>
+CONFIG_INPUT_ADXL34X_SPI                        policy<{'amd64': '-'}>
+
 # Menu: Kernel hacking >> Memory Debugging >> KFENCE: low-overhead sampling-based memory safety error detector
 CONFIG_KFENCE                                   policy<{'amd64': 'n', 'arm64': 'n'}>
 CONFIG_KFENCE_STATIC_KEYS                       policy<{'amd64': '-', 'arm64': '-'}>
