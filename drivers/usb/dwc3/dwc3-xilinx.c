@@ -78,6 +78,7 @@ struct dwc3_xlnx {
 	struct device			*dev;
 	void __iomem			*regs;
 	int				(*pltfm_init)(struct dwc3_xlnx *data);
+	struct phy			*usb3_phy;
 	struct regulator		*dwc3_pmu;
 	struct regulator_dev		*dwc3_xlnx_reg_rdev;
 	enum dwc3_xlnx_core_state	pmu_state;
@@ -379,14 +380,13 @@ static int dwc3_xlnx_init_zynqmp(struct dwc3_xlnx *priv_data)
 {
 	struct device		*dev = priv_data->dev;
 	struct reset_control	*crst, *hibrst, *apbrst;
-	struct phy		*usb3_phy;
-	int			ret = 0;
+	int			ret;
 	u32			reg;
 	struct gpio_desc	*reset_gpio = NULL;
 
-	usb3_phy = devm_phy_optional_get(dev, "usb3-phy");
-	if (IS_ERR(usb3_phy)) {
-		ret = PTR_ERR(usb3_phy);
+	priv_data->usb3_phy = devm_phy_optional_get(dev, "usb3-phy");
+	if (IS_ERR(priv_data->usb3_phy)) {
+		ret = PTR_ERR(priv_data->usb3_phy);
 		dev_err_probe(dev, ret,
 			      "failed to get USB3 PHY\n");
 		goto err;
@@ -401,7 +401,7 @@ static int dwc3_xlnx_init_zynqmp(struct dwc3_xlnx *priv_data)
 	 * in use but the usb3-phy entry is missing from the device tree.
 	 * Therefore, skip these operations in this case.
 	 */
-	if (!usb3_phy)
+	if (!priv_data->usb3_phy)
 		goto skip_usb3_phy;
 
 	crst = devm_reset_control_get_exclusive(dev, "usb_crst");
@@ -447,7 +447,7 @@ static int dwc3_xlnx_init_zynqmp(struct dwc3_xlnx *priv_data)
 		goto err;
 	}
 
-	ret = phy_init(usb3_phy);
+	ret = phy_init(priv_data->usb3_phy);
 	if (ret < 0)
 		goto err;
 
@@ -475,7 +475,7 @@ static int dwc3_xlnx_init_zynqmp(struct dwc3_xlnx *priv_data)
 		goto err_phy_exit;
 	}
 
-	ret = phy_power_on(usb3_phy);
+	ret = phy_power_on(priv_data->usb3_phy);
 	if (ret < 0)
 		goto err_phy_exit;
 
@@ -511,7 +511,7 @@ skip_usb3_phy:
 	return 0;
 
 err_phy_exit:
-	phy_exit(usb3_phy);
+	phy_exit(priv_data->usb3_phy);
 err:
 	return ret;
 }
@@ -700,6 +700,8 @@ static int __maybe_unused dwc3_xlnx_suspend(struct device *dev)
 			/* Put the core into D3 */
 			dwc3_set_usb_core_power(dev, false);
 #endif
+		phy_exit(priv_data->usb3_phy);
+
 		/* Disable the clocks */
 		clk_bulk_disable(priv_data->num_clocks, priv_data->clks);
 	}
@@ -720,9 +722,20 @@ static int __maybe_unused dwc3_xlnx_resume(struct device *dev)
 		dwc3_set_usb_core_power(dev, true);
 #endif
 
+	/* Enabled the clocks */
 	ret = clk_bulk_enable(priv_data->num_clocks, priv_data->clks);
 	if (ret)
 		return ret;
+
+	ret = phy_init(priv_data->usb3_phy);
+	if (ret < 0)
+		return ret;
+
+	ret = phy_power_on(priv_data->usb3_phy);
+	if (ret < 0) {
+		phy_exit(priv_data->usb3_phy);
+		return ret;
+	}
 
 	return 0;
 }
