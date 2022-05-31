@@ -16,6 +16,43 @@ CONFIG_TEST_DIV64 policy<{'amd64': 'n'}>
 
 CONFIG_SYSFB_SIMPLEFB policy<{'amd64': 'n', 'arm64': 'y', 'armhf': 'y'}>
 
+# This isn't being run on AMD Zen hardware, so don't need the support
+CONFIG_X86_AMD_PSTATE                           policy<{'amd64': 'n'}>
+
+CONFIG_SND_HDA_SCODEC_CS35L41                   policy<{'amd64': 'n'}>
+CONFIG_SND_HDA_SCODEC_CS35L41_I2C               policy<{'amd64': 'n'}>
+CONFIG_SND_HDA_SCODEC_CS35L41_SPI               policy<{'amd64': 'n'}>
+CONFIG_SPEAKUP_SYNTH_SOFT 						policy<{'amd64': '-'}>
+CONFIG_SPEAKUP_SYNTH_DECTLK 					policy<{'amd64': '-'}>
+CONFIG_SPEAKUP_SYNTH_ACNTSA 					policy<{'amd64': '-'}>
+CONFIG_SND_SOC_CS35L41 							policy<{'amd64': '-'}>
+CONFIG_SPEAKUP_SYNTH_BNS 						policy<{'amd64': '-'}>
+CONFIG_SND_SOC_CS35L41_SPI 						policy<{'amd64': 'n'}>
+CONFIG_SPEAKUP_SYNTH_APOLLO 					policy<{'amd64': '-'}>
+CONFIG_SERIAL_MULTI_INSTANTIATE 				policy<{'amd64': 'n'}>
+CONFIG_SPEAKUP_SYNTH_DUMMY 						policy<{'amd64': '-'}>
+CONFIG_SPEAKUP_SYNTH_TXPRT 						policy<{'amd64': '-'}>
+CONFIG_SERIAL_8250_MID 							policy<{'amd64': 'm'}>
+CONFIG_SPEAKUP_SYNTH_LTLK 						policy<{'amd64': '-'}>
+CONFIG_SND_SOC_CS35L41_LIB 						policy<{'amd64': '-'}>
+CONFIG_SPEAKUP_SYNTH_DECEXT 					policy<{'amd64': '-'}>
+CONFIG_SND_HDA_SCODEC_CS35L41 					policy<{'amd64': '-'}>
+CONFIG_SPEAKUP_SYNTH_AUDPTR 					policy<{'amd64': '-'}>
+CONFIG_SPEAKUP 									policy<{'amd64': '-'}>
+CONFIG_SND_SOC_CS35L41_I2C 						policy<{'amd64': 'n'}>
+CONFIG_ACCESSIBILITY 							policy<{'amd64': 'n'}>
+CONFIG_SPEAKUP_SYNTH_SPKOUT 					policy<{'amd64': '-'}>
+
+
+
+# Menu: Kernel hacking >> Memory Debugging >> KFENCE: low-overhead sampling-based memory safety error detector
+CONFIG_KFENCE                                   policy<{'amd64': 'n', 'arm64': 'n'}>
+CONFIG_KFENCE_STATIC_KEYS                       policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_KFENCE_SAMPLE_INTERVAL                   policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_KFENCE_NUM_OBJECTS                       policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_KFENCE_STRESS_TEST_FAULTS                policy<{'amd64': '-', 'arm64': '-'}>
+#
+CONFIG_KFENCE                                   mark<ENFORCED> note<LP:1946001>
 CONFIG_AUFS_BDEV_LOOP	policy<{'amd64': 'y',}>
 CONFIG_AUFS_BDEV_LOOP	mark<ENFORCED> note<custom changes>
 CONFIG_AUFS_BRANCH_MAX_1023	policy<{'amd64': 'n',}>
