@@ -4,6 +4,14 @@
 
 include "../../debian.master/config/annotations"
 
+#
+# One (or both) of these SMMU options is needed for arm64 baremetal support
+#
+CONFIG_ARM_SMMU                                    policy<{'arm64':'y'}>
+CONFIG_ARM_SMMU                                    mark<ENFORCED> note<needed for arm64 bare-metal support>
+CONFIG_ARM_SMMU_V3                                 policy<{'arm64':'y'}>
+CONFIG_ARM_SMMU_V3                                 mark<ENFORCED> note<needed for arm64 bare-metal support>
+
 CONFIG_SND_SOC_INTEL_USER_FRIENDLY_LONG_NAMES      policy<{'amd64': 'n'}> 
 CONFIG_SND_SOC_INTEL_USER_FRIENDLY_LONG_NAMES      mark<ENFORCED> note<LP:1921632> 
 
@@ -33,6 +41,11 @@ CONFIG_SERIAL_AMBA_PL011                           policy<{'arm64':'y'}>
 CONFIG_SERIAL_AMBA_PL011                           mark<ENFORCED> note<needed for serial support in VMs>
 CONFIG_SERIAL_AMBA_PL011_CONSOLE                   policy<{'arm64':'y'}>
 CONFIG_SERIAL_AMBA_PL011_CONSOLE                   mark<ENFORCED> note<needed for serial support in VMs>
+CONFIG_DRM_VIRTIO_GPU                              policy<{'amd64': 'm', 'arm64':'m'}>
+CONFIG_DRM_VIRTIO_GPU                              mark<ENFORCED> note<Ensure virtio-gpu.ko is in inclusion list>
+CONFIG_DRM_BOCHS                                   policy<{'amd64':'m', 'arm64': 'm'}>
+CONFIG_DRM_BOCHS                                   mark<ENFORCED> note<Ensure bochs-drm.ko is in inclusion list>
+
 
 
 
