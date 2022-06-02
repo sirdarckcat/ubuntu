@@ -2,7 +2,7 @@
 /*
  * NVIDIA Tegra XUSB device mode controller
  *
- * Copyright (c) 2013-2022, NVIDIA CORPORATION.  All rights reserved.
+ * Copyright (c) 2013-2023, NVIDIA CORPORATION.  All rights reserved.
  * Copyright (c) 2015, Google Inc.
  */
 
@@ -501,6 +501,9 @@ struct tegra_xudc {
 
 	struct clk_bulk_data *clks;
 
+	struct reset_control *dev_rst;
+	struct reset_control *ss_rst;
+
 	bool device_mode;
 	struct work_struct usb_role_sw_work;
 
@@ -555,6 +558,7 @@ struct tegra_xudc_soc {
 	bool port_reset_quirk;
 	bool port_speed_quirk;
 	bool has_ipfs;
+	bool has_pg_support;
 };
 
 static inline u32 fpci_readl(struct tegra_xudc *xudc, unsigned int offset)
@@ -3645,6 +3649,7 @@ static struct tegra_xudc_soc tegra210_xudc_soc_data = {
 	.port_reset_quirk = true,
 	.port_speed_quirk = false,
 	.has_ipfs = true,
+	.has_pg_support = true,
 };
 
 static struct tegra_xudc_soc tegra186_xudc_soc_data = {
@@ -3659,6 +3664,7 @@ static struct tegra_xudc_soc tegra186_xudc_soc_data = {
 	.port_reset_quirk = false,
 	.port_speed_quirk = false,
 	.has_ipfs = false,
+	.has_pg_support = true,
 };
 
 static struct tegra_xudc_soc tegra194_xudc_soc_data = {
@@ -3673,6 +3679,7 @@ static struct tegra_xudc_soc tegra194_xudc_soc_data = {
 	.port_reset_quirk = false,
 	.port_speed_quirk = true,
 	.has_ipfs = false,
+	.has_pg_support = true,
 };
 
 static struct tegra_xudc_soc tegra234_xudc_soc_data = {
@@ -3686,6 +3693,7 @@ static struct tegra_xudc_soc tegra234_xudc_soc_data = {
 	.pls_quirk = false,
 	.port_reset_quirk = false,
 	.has_ipfs = false,
+	.has_pg_support = true,
 };
 
 static const struct of_device_id tegra_xudc_of_match[] = {
@@ -3848,9 +3856,25 @@ static int tegra_xudc_probe(struct platform_device *pdev)
 	if (err)
 		goto disable_regulator;
 
-	err = tegra_xudc_powerdomain_init(xudc);
-	if (err)
-		goto put_powerdomains;
+	if (xudc->soc->has_pg_support) {
+		err = tegra_xudc_powerdomain_init(xudc);
+		if (err)
+			goto put_powerdomains;
+	} else {
+		xudc->dev_rst = devm_reset_control_get(&pdev->dev, "xusb_dev");
+		if (IS_ERR(xudc->dev_rst)) {
+			err = PTR_ERR(xudc->dev_rst);
+			dev_err(&pdev->dev, "failed to get xusb_dev reset: %d\n", err);
+			goto disable_regulator;
+		}
+
+		xudc->ss_rst = devm_reset_control_get_shared(&pdev->dev, "xusb_ss");
+		if (IS_ERR(xudc->ss_rst)) {
+			err = PTR_ERR(xudc->ss_rst);
+			dev_err(&pdev->dev, "failed to get xusb_ss reset: %d\n", err);
+			goto disable_regulator;
+		}
+	}
 
 	err = tegra_xudc_phy_init(xudc);
 	if (err)
@@ -3947,12 +3971,14 @@ static void tegra_xudc_remove(struct platform_device *pdev)
 	tegra_xusb_padctl_put(xudc->padctl);
 }
 
-static int __maybe_unused tegra_xudc_powergate(struct tegra_xudc *xudc)
+static int __maybe_unused
+tegra_xudc_lowpower_enter(struct tegra_xudc *xudc)
 {
 	unsigned long flags;
 	u32 val;
+	int err;
 
-	dev_dbg(xudc->dev, "entering ELPG\n");
+	dev_dbg(xudc->dev, "entering low power state\n");
 
 	spin_lock_irqsave(&xudc->lock, flags);
 
@@ -3971,16 +3997,31 @@ static int __maybe_unused tegra_xudc_powergate(struct tegra_xudc *xudc)
 
 	regulator_bulk_disable(xudc->soc->num_supplies, xudc->supplies);
 
-	dev_dbg(xudc->dev, "entering ELPG done\n");
+	if (!xudc->soc->has_pg_support) {
+		err = reset_control_assert(xudc->dev_rst);
+		if (err) {
+			dev_err(xudc->dev, "failed to assert xusb_dev reset: %d\n", err);
+			return err;
+		}
+
+		err = reset_control_assert(xudc->ss_rst);
+		if (err) {
+			dev_err(xudc->dev, "failed to assert xusb_ss reset: %d\n", err);
+			return err;
+		}
+	}
+
+	dev_dbg(xudc->dev, "entering low power state done\n");
 	return 0;
 }
 
-static int __maybe_unused tegra_xudc_unpowergate(struct tegra_xudc *xudc)
+static int __maybe_unused
+tegra_xudc_lowpower_exit(struct tegra_xudc *xudc)
 {
 	unsigned long flags;
 	int err;
 
-	dev_dbg(xudc->dev, "exiting ELPG\n");
+	dev_dbg(xudc->dev, "exiting low power state\n");
 
 	err = regulator_bulk_enable(xudc->soc->num_supplies,
 			xudc->supplies);
@@ -3990,6 +4031,20 @@ static int __maybe_unused tegra_xudc_unpowergate(struct tegra_xudc *xudc)
 	err = clk_bulk_prepare_enable(xudc->soc->num_clks, xudc->clks);
 	if (err < 0)
 		return err;
+
+	if (!xudc->soc->has_pg_support) {
+		err = reset_control_deassert(xudc->dev_rst);
+		if (err) {
+			dev_err(xudc->dev, "failed to deassert xusb_dev reset: %d\n", err);
+			return err;
+		}
+
+		err = reset_control_deassert(xudc->ss_rst);
+		if (err) {
+			dev_err(xudc->dev, "failed to deassert xusb_ss reset: %d\n", err);
+			return err;
+		}
+	}
 
 	tegra_xudc_fpci_ipfs_init(xudc);
 
@@ -4006,7 +4061,7 @@ static int __maybe_unused tegra_xudc_unpowergate(struct tegra_xudc *xudc)
 	xudc->powergated = false;
 	spin_unlock_irqrestore(&xudc->lock, flags);
 
-	dev_dbg(xudc->dev, "exiting ELPG done\n");
+	dev_dbg(xudc->dev, "exiting low power state done\n");
 	return 0;
 }
 
@@ -4024,7 +4079,7 @@ static int __maybe_unused tegra_xudc_suspend(struct device *dev)
 	if (!pm_runtime_status_suspended(dev)) {
 		/* Forcibly disconnect before powergating. */
 		tegra_xudc_device_mode_off(xudc);
-		tegra_xudc_powergate(xudc);
+		tegra_xudc_lowpower_enter(xudc);
 	}
 
 	pm_runtime_disable(dev);
@@ -4038,7 +4093,7 @@ static int __maybe_unused tegra_xudc_resume(struct device *dev)
 	unsigned long flags;
 	int err;
 
-	err = tegra_xudc_unpowergate(xudc);
+	err = tegra_xudc_lowpower_exit(xudc);
 	if (err < 0)
 		return err;
 
@@ -4057,14 +4112,14 @@ static int __maybe_unused tegra_xudc_runtime_suspend(struct device *dev)
 {
 	struct tegra_xudc *xudc = dev_get_drvdata(dev);
 
-	return tegra_xudc_powergate(xudc);
+	return tegra_xudc_lowpower_enter(xudc);
 }
 
 static int __maybe_unused tegra_xudc_runtime_resume(struct device *dev)
 {
 	struct tegra_xudc *xudc = dev_get_drvdata(dev);
 
-	return tegra_xudc_unpowergate(xudc);
+	return tegra_xudc_lowpower_exit(xudc);
 }
 
 static const struct dev_pm_ops tegra_xudc_pm_ops = {
