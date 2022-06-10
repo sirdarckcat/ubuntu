@@ -25,8 +25,6 @@ CONFIG_ANDROID_BINDER_DEVICES                      policy<{'amd64': '""', 'arm64
 CONFIG_ANDROID_BINDER_DEVICES                      mark<ENFORCED> note<needed for Anbox - LP #1928686> 
 CONFIG_ANDROID_BINDER_IPC                          policy<{'amd64': 'm', 'arm64':'m'}> 
 CONFIG_ANDROID_BINDER_IPC                          mark<ENFORCED> note<needed for Anbox - LP #1928686> 
-CONFIG_ASHMEM                                      policy<{'amd64': 'm', 'arm64':'m'}> 
-CONFIG_ASHMEM                                      mark<ENFORCED> note<needed for Anbox - LP #1928686> 
 CONFIG_SERIAL_AMBA_PL011                           policy<{'arm64':'y'}>
 CONFIG_SERIAL_AMBA_PL011                           mark<ENFORCED> note<needed for serial support in VMs>
 CONFIG_SERIAL_AMBA_PL011_CONSOLE                   policy<{'arm64':'y'}>
@@ -83,3 +81,8 @@ CONFIG_PREEMPT                                     policy<{'amd64': 'n', 'arm64'
 CONFIG_PREEMPT_NONE                                policy<{'amd64': 'y', 'arm64': 'y'}>
 CONFIG_FORCE_MAX_ZONEORDER                         policy<{'arm64': '13'}>
 CONFIG_MESON_SM                                    policy<{'arm64': 'n'}>
+CONFIG_DEBUG_PREEMPT                               policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_PREEMPT_TRACER                              policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_CEC_PIN_ERROR_INJ                           policy<{'amd64': '-', 'arm64': 'n'}>
+CONFIG_CEC_GPIO                                    policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_NTFS_RW                                     policy<{'amd64': 'n', 'arm64': 'n'}>
