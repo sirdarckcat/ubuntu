@@ -245,7 +245,7 @@ static struct platform_driver vic_rng_driver = {
 	.probe		= vic_rng_probe,
 	.driver		= {
 		.name		= "vic-rng",
-		.of_match_table	= of_match_ptr(vic_rng_dt_ids),
+		.of_match_table	= vic_rng_dt_ids,
 	},
 };
 
