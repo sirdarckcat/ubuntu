@@ -583,7 +583,7 @@ static int si5wdt_probe(struct platform_device *pdev)
 {
 	struct device *dev = &pdev->dev;
 	struct stf_si5_wdt *wdt;
-	struct resource *wdt_irq;
+	int wdt_irq;
 	int started = 0;
 	int ret;
 
@@ -597,12 +597,9 @@ static int si5wdt_probe(struct platform_device *pdev)
 
 	wdt->drv_data = si5_get_wdt_drv_data(pdev);
 
-	wdt_irq = platform_get_resource(pdev, IORESOURCE_IRQ, 0);
-	if (wdt_irq == NULL) {
-		dev_err(dev, "no irq resource specified\n");
-		ret = -ENOENT;
-		goto err;
-	}
+	wdt_irq = platform_get_irq(pdev, 0);
+	if (wdt_irq < 0)
+		return wdt_irq;
 
 	/* get the memory region for the watchdog timer */
 	wdt->base = devm_platform_ioremap_resource(pdev, 0);
@@ -637,7 +634,7 @@ static int si5wdt_probe(struct platform_device *pdev)
 				SI5_WATCHDOG_DEFAULT_TIME);
 	}
 
-	ret = devm_request_irq(dev, wdt_irq->start, si5wdt_interrupt_handler, 0,
+	ret = devm_request_irq(dev, wdt_irq, si5wdt_interrupt_handler, 0,
 				pdev->name, pdev);
 	if (ret != 0) {
 		dev_err(dev, "failed to install irq (%d)\n", ret);
