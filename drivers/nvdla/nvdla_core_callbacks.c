@@ -365,13 +365,12 @@ static const struct of_device_id nvdla_of_match[] = {
 	{ },
 };
 
-static int32_t nvdla_probe(struct platform_device *pdev)
+static int nvdla_probe(struct platform_device *pdev)
 {
-	int32_t err = 0;
-	struct resource *res;
-	struct nvdla_device *nvdla_dev;
 	struct device *dev = &pdev->dev;
+	struct nvdla_device *nvdla_dev;
 	const struct of_device_id *match;
+	int err;
 
 	if (!pdev->dev.of_node)
 		return -EINVAL;
@@ -394,17 +393,13 @@ static int32_t nvdla_probe(struct platform_device *pdev)
 
 	init_completion(&nvdla_dev->event_notifier);
 
-	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-	nvdla_dev->base = devm_ioremap_resource(&pdev->dev, res);
+	nvdla_dev->base = devm_platform_ioremap_resource(pdev, 0);
 	if (IS_ERR(nvdla_dev->base))
 		return PTR_ERR(nvdla_dev->base);
 
-	res = platform_get_resource(pdev, IORESOURCE_IRQ, 0);
-	if (!res) {
-		dev_err(&pdev->dev, "no irq resource\n");
-		return -EINVAL;
-	}
-	nvdla_dev->irq = res->start;
+	nvdla_dev->irq = platform_get_irq(pdev, 0);
+	if (nvdla_dev->irq < 0)
+		return nvdla_dev->irq;
 
 	err = devm_request_irq(&pdev->dev, nvdla_dev->irq,
 				nvdla_engine_isr, 0,
@@ -422,7 +417,7 @@ static int32_t nvdla_probe(struct platform_device *pdev)
 	return err;
 }
 
-static int32_t __exit nvdla_remove(struct platform_device *pdev)
+static int __exit nvdla_remove(struct platform_device *pdev)
 {
 	struct nvdla_device *nvdla_dev = dev_get_drvdata(&pdev->dev);
 
