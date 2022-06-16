@@ -17,6 +17,24 @@ CONFIG_CMDLINE                                  policy<{'riscv64': '""'}>
 
 # Menu: Boot options >> Built-in command line usage >> Architecture: riscv
 
+# Menu: CPU Power Management >> Architecture: riscv
+
+# Menu: CPU Power Management >> CPU Idle
+
+# Menu: CPU Power Management >> CPU Idle >> CPU idle PM support
+
+# Menu: CPU Power Management >> CPU Idle >> CPU idle PM support >> ARM CPU Idle Drivers
+
+# Menu: CPU Power Management >> CPU Idle >> CPU idle PM support >> MIPS CPU Idle Drivers
+
+# Menu: CPU Power Management >> CPU Idle >> CPU idle PM support >> POWERPC CPU Idle Drivers
+
+# Menu: CPU Power Management >> CPU Idle >> CPU idle PM support >> RISC-V CPU Idle Drivers
+
+# Menu: CPU errata selection >> Architecture: riscv
+CONFIG_ERRATA_SIFIVE_CIP_453                    policy<{'riscv64': 'y'}>
+CONFIG_RISCV_ERRATA_ALTERNATIVE                 policy<{'riscv64': 'y'}>
+
 # Menu: Cryptographic API
 CONFIG_CRYPTO                                   policy<{'riscv64': 'y'}>
 CONFIG_CRYPTO_MANAGER                           policy<{'riscv64': 'y'}>
@@ -98,11 +116,6 @@ CONFIG_CRYPTO_USER_API_SKCIPHER                 policy<{'riscv64': 'm'}>
 CONFIG_CRYPTO_USER_API_RNG                      policy<{'riscv64': 'm'}>
 CONFIG_CRYPTO_USER_API_AEAD                     policy<{'riscv64': 'm'}>
 CONFIG_CRYPTO_STATS                             policy<{'riscv64': 'y'}>
-CONFIG_CRYPTO_LIB_BLAKE2S                       policy<{'riscv64': 'm'}>
-CONFIG_CRYPTO_LIB_CHACHA                        policy<{'riscv64': 'm'}>
-CONFIG_CRYPTO_LIB_CURVE25519                    policy<{'riscv64': 'm'}>
-CONFIG_CRYPTO_LIB_POLY1305                      policy<{'riscv64': 'm'}>
-CONFIG_CRYPTO_LIB_CHACHA20POLY1305              policy<{'riscv64': 'm'}>
 #
 CONFIG_CRYPTO_MANAGER_DISABLE_TESTS             flag<TESTING>
 CONFIG_CRYPTO_TEST                              flag<TESTING>
@@ -111,10 +124,8 @@ CONFIG_CRYPTO_SHA512                            note<module signing>
 # Menu: Cryptographic API >> Asymmetric (public-key cryptographic) key type
 CONFIG_ASYMMETRIC_KEY_TYPE                      policy<{'riscv64': 'y'}>
 CONFIG_ASYMMETRIC_PUBLIC_KEY_SUBTYPE            policy<{'riscv64': 'y'}>
-CONFIG_ASYMMETRIC_TPM_KEY_SUBTYPE               policy<{'riscv64': 'm'}>
 CONFIG_X509_CERTIFICATE_PARSER                  policy<{'riscv64': 'y'}>
 CONFIG_PKCS8_PRIVATE_KEY_PARSER                 policy<{'riscv64': 'm'}>
-CONFIG_TPM_KEY_PARSER                           policy<{'riscv64': 'm'}>
 CONFIG_PKCS7_MESSAGE_PARSER                     policy<{'riscv64': 'y'}>
 CONFIG_PKCS7_TEST_KEY                           policy<{'riscv64': 'm'}>
 CONFIG_SIGNED_PE_FILE_VERIFICATION              policy<{'riscv64': 'y'}>
@@ -137,14 +148,14 @@ CONFIG_SYSTEM_EXTRA_CERTIFICATE                 policy<{'riscv64': 'y'}>
 CONFIG_SYSTEM_EXTRA_CERTIFICATE_SIZE            policy<{'riscv64': '4096'}>
 CONFIG_SECONDARY_TRUSTED_KEYRING                policy<{'riscv64': 'y'}>
 
+# Menu: Cryptographic API >> Certificates for signature checking >> Type of module signing key to be generated
+
 # Menu: Cryptographic API >> Hardware crypto devices
 CONFIG_CRYPTO_HW                                policy<{'riscv64': 'y'}>
 CONFIG_CRYPTO_DEV_ATMEL_ECC                     policy<{'riscv64': 'n'}>
 CONFIG_CRYPTO_DEV_ATMEL_SHA204A                 policy<{'riscv64': 'n'}>
 CONFIG_CRYPTO_DEV_NITROX_CNN55XX                policy<{'riscv64': 'm'}>
 CONFIG_CRYPTO_DEV_CHELSIO                       policy<{'riscv64': 'm'}>
-CONFIG_CHELSIO_IPSEC_INLINE                     policy<{'riscv64': 'm'}>
-CONFIG_CHELSIO_TLS_DEVICE                       policy<{'riscv64': 'm'}>
 CONFIG_CRYPTO_DEV_VIRTIO                        policy<{'riscv64': 'm'}>
 CONFIG_CRYPTO_DEV_SAFEXCEL                      policy<{'riscv64': 'n'}>
 CONFIG_CRYPTO_DEV_CCREE                         policy<{'riscv64': 'm'}>
@@ -157,7 +168,13 @@ CONFIG_CRYPTO_DEV_AMLOGIC_GXL_DEBUG             policy<{'riscv64': 'n'}>
 
 # Menu: Cryptographic API >> Hardware crypto devices >> Support for Allwinner cryptographic offloader
 
+# Menu: Cryptographic API >> Hardware crypto devices >> Support for Allwinner cryptographic offloader >> Support for Allwinner Crypto Engine cryptographic offloader
+
+# Menu: Cryptographic API >> Hardware crypto devices >> Support for Allwinner cryptographic offloader >> Support for Allwinner Security System cryptographic offloader
+
 # Menu: Cryptographic API >> Hardware crypto devices >> Support for OMAP crypto HW accelerators
+
+# Menu: Cryptographic API >> Hardware crypto devices >> Support for s390 cryptographic adapters
 
 # Menu: Cryptographic API >> NIST SP800-90A DRBG
 CONFIG_CRYPTO_DRBG_MENU                         policy<{'riscv64': 'y'}>
@@ -165,19 +182,16 @@ CONFIG_CRYPTO_DRBG_HASH                         policy<{'riscv64': 'y'}>
 CONFIG_CRYPTO_DRBG_CTR                          policy<{'riscv64': 'y'}>
 
 # Menu: Device Drivers
-CONFIG_RANDOM_TRUST_BOOTLOADER                  policy<{'riscv64': 'y'}>
-CONFIG_MEDIA_CEC_RC                             policy<{'riscv64': 'y'}>
 CONFIG_PANEL                                    policy<{'riscv64': 'm'}>
-CONFIG_CHARLCD                                  policy<{'riscv64': 'm'}>
-CONFIG_USB4                                     policy<{'riscv64': 'm'}>
-CONFIG_MOST                                     policy<{'riscv64': 'm'}>
-
-# Menu: Device Drivers >> ATA/ATAPI/MFM/RLL support (DEPRECATED)
 
 # Menu: Device Drivers >> Accessibility support
 CONFIG_ACCESSIBILITY                            policy<{'riscv64': 'n'}>
 #
 CONFIG_ACCESSIBILITY                            flag<REVIEW>
+
+# Menu: Device Drivers >> Accessibility support >> Speakup console speech
+
+# Menu: Device Drivers >> Accessibility support >> Speakup console speech >> Speakup core
 
 # Menu: Device Drivers >> Android
 CONFIG_ANDROID                                  policy<{'riscv64': 'y'}>
@@ -189,6 +203,7 @@ CONFIG_ANDROID_BINDER_DEVICES                   policy<{'riscv64': '""'}>
 CONFIG_ANDROID_BINDER_IPC_SELFTEST              policy<{'riscv64': 'n'}>
 
 # Menu: Device Drivers >> Auxiliary Display support
+CONFIG_CHARLCD                                  policy<{'riscv64': 'm'}>
 CONFIG_AUXDISPLAY                               policy<{'riscv64': 'y'}>
 CONFIG_HD44780                                  policy<{'riscv64': 'm'}>
 CONFIG_IMG_ASCII_LCD                            policy<{'riscv64': 'm'}>
@@ -199,6 +214,8 @@ CONFIG_PANEL_CHANGE_MESSAGE                     policy<{'riscv64': 'n'}>
 CONFIG_CHARLCD_BL_OFF                           policy<{'riscv64': 'n'}>
 CONFIG_CHARLCD_BL_ON                            policy<{'riscv64': 'n'}>
 CONFIG_CHARLCD_BL_FLASH                         policy<{'riscv64': 'y'}>
+
+# Menu: Device Drivers >> Auxiliary Display support >> KS0108 LCD Controller
 
 # Menu: Device Drivers >> Auxiliary Display support >> Parallel port LCD/Keypad Panel support
 CONFIG_PARPORT_PANEL                            policy<{'riscv64': 'm'}>
@@ -213,12 +230,8 @@ CONFIG_PANEL_PROFILE                            policy<{'riscv64': '5'}>
 CONFIG_BLK_DEV                                  policy<{'riscv64': 'y'}>
 CONFIG_BLK_DEV_NULL_BLK                         policy<{'riscv64': 'm'}>
 CONFIG_BLK_DEV_PCIESSD_MTIP32XX                 policy<{'riscv64': 'm'}>
-CONFIG_ZRAM                                     policy<{'riscv64': 'm'}>
-CONFIG_ZRAM_WRITEBACK                           policy<{'riscv64': 'y'}>
-CONFIG_ZRAM_MEMORY_TRACKING                     policy<{'riscv64': 'y'}>
 CONFIG_BLK_DEV_LOOP                             policy<{'riscv64': 'y'}>
 CONFIG_BLK_DEV_LOOP_MIN_COUNT                   policy<{'riscv64': '8'}>
-CONFIG_BLK_DEV_CRYPTOLOOP                       policy<{'riscv64': 'm'}>
 CONFIG_BLK_DEV_DRBD                             policy<{'riscv64': 'm'}>
 CONFIG_DRBD_FAULT_INJECTION                     policy<{'riscv64': 'n'}>
 CONFIG_BLK_DEV_NBD                              policy<{'riscv64': 'm'}>
@@ -232,7 +245,6 @@ CONFIG_CDROM_PKTCDVD_WCACHE                     policy<{'riscv64': 'n'}>
 CONFIG_ATA_OVER_ETH                             policy<{'riscv64': 'm'}>
 CONFIG_VIRTIO_BLK                               policy<{'riscv64': 'm'}>
 CONFIG_BLK_DEV_RBD                              policy<{'riscv64': 'm'}>
-CONFIG_BLK_DEV_RSXX                             policy<{'riscv64': 'm'}>
 CONFIG_BLK_DEV_RNBD_CLIENT                      policy<{'riscv64': 'm'}>
 CONFIG_BLK_DEV_RNBD_SERVER                      policy<{'riscv64': 'm'}>
 #
@@ -240,6 +252,13 @@ CONFIG_CDROM_PKTCDVD_WCACHE                     mark<DANGEROUS>
 CONFIG_VIRTIO_BLK                               note<KVM paravirt support -- not autoloadable>
 CONFIG_BLK_DEV_RAM                              note<LP #1593293>
 CONFIG_BLK_DEV_RAM_SIZE                         mark<ENFORCED> note<Ramdisk size should be a minimum of 64M> flag<REVIEW>
+
+# Menu: Device Drivers >> Block devices >> Compressed RAM block device support
+CONFIG_ZRAM                                     policy<{'riscv64': 'm'}>
+CONFIG_ZRAM_WRITEBACK                           policy<{'riscv64': 'y'}>
+CONFIG_ZRAM_MEMORY_TRACKING                     policy<{'riscv64': 'y'}>
+
+# Menu: Device Drivers >> Block devices >> Compressed RAM block device support >> Default zram compressor
 
 # Menu: Device Drivers >> Block devices >> Parallel port IDE device support
 
@@ -272,7 +291,18 @@ CONFIG_BCMA_DEBUG                               policy<{'riscv64': 'n'}>
 CONFIG_MOXTET                                   policy<{'riscv64': 'm'}>
 CONFIG_MHI_BUS                                  policy<{'riscv64': 'm'}>
 
+# Menu: Device Drivers >> CEC support
+CONFIG_MEDIA_CEC_RC                             policy<{'riscv64': 'y'}>
+
+# Menu: Device Drivers >> CEC support >> HDMI CEC drivers
+CONFIG_MEDIA_CEC_SUPPORT                        policy<{'riscv64': 'y'}>
+CONFIG_USB_PULSE8_CEC                           policy<{'riscv64': 'm'}>
+CONFIG_USB_RAINSHADOW_CEC                       policy<{'riscv64': 'm'}>
+
+# Menu: Device Drivers >> CXL (Compute Express Link) Devices Support
+
 # Menu: Device Drivers >> Character devices
+CONFIG_RANDOM_TRUST_BOOTLOADER                  policy<{'riscv64': 'y'}>
 CONFIG_DEVMEM                                   policy<{'riscv64': 'y'}>
 CONFIG_TTY_PRINTK                               policy<{'riscv64': 'y'}>
 CONFIG_TTY_PRINTK_LEVEL                         policy<{'riscv64': '6'}>
@@ -285,7 +315,6 @@ CONFIG_DEVPORT                                  policy<{'riscv64': 'y'}>
 CONFIG_XILLYBUS                                 policy<{'riscv64': 'm'}>
 CONFIG_XILLYBUS_PCIE                            policy<{'riscv64': 'm'}>
 CONFIG_XILLYBUS_OF                              policy<{'riscv64': 'm'}>
-#
 
 # Menu: Device Drivers >> Character devices >> Enable TTY
 CONFIG_TTY                                      policy<{'riscv64': 'y'}>
@@ -443,6 +472,7 @@ CONFIG_COMMON_CLK_PWM                           policy<{'riscv64': 'm'}>
 CONFIG_COMMON_CLK_VC5                           policy<{'riscv64': 'm'}>
 CONFIG_COMMON_CLK_BD718XX                       policy<{'riscv64': 'm'}>
 CONFIG_COMMON_CLK_FIXED_MMIO                    policy<{'riscv64': 'y'}>
+CONFIG_XILINX_VCU                               policy<{'riscv64': 'm'}>
 
 # Menu: Device Drivers >> Common Clock Framework >> Clock driver for ARM Reference designs
 
@@ -462,15 +492,25 @@ CONFIG_COMMON_CLK_FIXED_MMIO                    policy<{'riscv64': 'y'}>
 
 # Menu: Device Drivers >> Common Clock Framework >> Clock driver for MediaTek SoC >> Clock driver for MediaTek MT7622
 
+# Menu: Device Drivers >> Common Clock Framework >> Clock driver for MediaTek SoC >> Clock driver for MediaTek MT8167
+
 # Menu: Device Drivers >> Common Clock Framework >> Clock driver for MediaTek SoC >> Clock driver for MediaTek MT8183
 
+# Menu: Device Drivers >> Common Clock Framework >> Clock driver for MediaTek SoC >> Clock driver for MediaTek MT8192
+
 # Menu: Device Drivers >> Common Clock Framework >> Clock support for Allwinner SoCs
+
+# Menu: Device Drivers >> Common Clock Framework >> Clock support for Amlogic platforms
 
 # Menu: Device Drivers >> Common Clock Framework >> Ingenic SoCs drivers
 
 # Menu: Device Drivers >> Common Clock Framework >> Legacy clock support for Allwinner SoCs
 
 # Menu: Device Drivers >> Common Clock Framework >> Renesas SoC clock support
+
+# Menu: Device Drivers >> Common Clock Framework >> Rockchip clock controller common support
+
+# Menu: Device Drivers >> Common Clock Framework >> Samsung Exynos clock controller support
 
 # Menu: Device Drivers >> Common Clock Framework >> SiFive SoC driver support
 CONFIG_CLK_SIFIVE                               policy<{'riscv64': 'y'}>
@@ -553,6 +593,135 @@ CONFIG_W1_SLAVE_DS2781                          policy<{'riscv64': 'm'}>
 CONFIG_W1_SLAVE_DS28E04                         policy<{'riscv64': 'm'}>
 CONFIG_W1_SLAVE_DS28E17                         policy<{'riscv64': 'm'}>
 
+# Menu: Device Drivers >> Data acquisition support (comedi)
+CONFIG_COMEDI                                   policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_DEBUG                             policy<{'riscv64': 'n'}>
+CONFIG_COMEDI_DEFAULT_BUF_SIZE_KB               policy<{'riscv64': '2048'}>
+CONFIG_COMEDI_DEFAULT_BUF_MAXSIZE_KB            policy<{'riscv64': '20480'}>
+CONFIG_COMEDI_8255_SA                           policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_KCOMEDILIB                        policy<{'riscv64': 'm'}>
+
+# Menu: Device Drivers >> Data acquisition support (comedi) >> Comedi ISA and PC/104 drivers
+CONFIG_COMEDI_ISA_DRIVERS                       policy<{'riscv64': 'y'}>
+CONFIG_COMEDI_PCL711                            policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_PCL724                            policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_PCL726                            policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_PCL730                            policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_PCL812                            policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_PCL816                            policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_PCL818                            policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_PCM3724                           policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_AMPLC_DIO200_ISA                  policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_AMPLC_PC236_ISA                   policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_AMPLC_PC263_ISA                   policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_RTI800                            policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_RTI802                            policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_DAC02                             policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_DAS16M1                           policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_DAS08_ISA                         policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_DAS16                             policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_DAS800                            policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_DAS1800                           policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_DAS6402                           policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_DT2801                            policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_DT2811                            policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_DT2814                            policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_DT2815                            policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_DT2817                            policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_DT282X                            policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_DMM32AT                           policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_FL512                             policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_AIO_AIO12_8                       policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_AIO_IIRO_16                       policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_II_PCI20KC                        policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_C6XDIGIO                          policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_MPC624                            policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_ADQ12B                            policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_NI_AT_A2150                       policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_NI_AT_AO                          policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_NI_ATMIO                          policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_NI_ATMIO16D                       policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_NI_LABPC_ISA                      policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_PCMAD                             policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_PCMDA12                           policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_PCMMIO                            policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_PCMUIO                            policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_MULTIQ3                           policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_S526                              policy<{'riscv64': 'm'}>
+
+# Menu: Device Drivers >> Data acquisition support (comedi) >> Comedi PCI drivers
+CONFIG_COMEDI_PCI_DRIVERS                       policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_8255_PCI                          policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_ADDI_APCI_1032                    policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_ADDI_APCI_1500                    policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_ADDI_APCI_1516                    policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_ADDI_APCI_1564                    policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_ADDI_APCI_16XX                    policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_ADDI_APCI_2032                    policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_ADDI_APCI_2200                    policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_ADDI_APCI_3120                    policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_ADDI_APCI_3501                    policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_ADDI_APCI_3XXX                    policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_ADL_PCI6208                       policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_ADL_PCI7X3X                       policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_ADL_PCI8164                       policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_ADL_PCI9111                       policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_ADL_PCI9118                       policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_ADV_PCI1710                       policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_ADV_PCI1720                       policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_ADV_PCI1723                       policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_ADV_PCI1724                       policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_ADV_PCI1760                       policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_ADV_PCI_DIO                       policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_AMPLC_DIO200_PCI                  policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_AMPLC_PC236_PCI                   policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_AMPLC_PC263_PCI                   policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_AMPLC_PCI224                      policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_AMPLC_PCI230                      policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_CONTEC_PCI_DIO                    policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_DAS08_PCI                         policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_DT3000                            policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_DYNA_PCI10XX                      policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_GSC_HPDI                          policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_MF6X4                             policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_ICP_MULTI                         policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_DAQBOARD2000                      policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_JR3_PCI                           policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_KE_COUNTER                        policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_CB_PCIDAS64                       policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_CB_PCIDAS                         policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_CB_PCIDDA                         policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_CB_PCIMDAS                        policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_CB_PCIMDDA                        policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_ME4000                            policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_ME_DAQ                            policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_NI_6527                           policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_NI_65XX                           policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_NI_660X                           policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_NI_670X                           policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_NI_LABPC_PCI                      policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_NI_PCIDIO                         policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_NI_PCIMIO                         policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_RTD520                            policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_S626                              policy<{'riscv64': 'm'}>
+
+# Menu: Device Drivers >> Data acquisition support (comedi) >> Comedi PCMCIA drivers
+
+# Menu: Device Drivers >> Data acquisition support (comedi) >> Comedi USB drivers
+CONFIG_COMEDI_USB_DRIVERS                       policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_DT9812                            policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_NI_USB6501                        policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_USBDUX                            policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_USBDUXFAST                        policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_USBDUXSIGMA                       policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_VMK80XX                           policy<{'riscv64': 'm'}>
+
+# Menu: Device Drivers >> Data acquisition support (comedi) >> Comedi misc drivers
+CONFIG_COMEDI_MISC_DRIVERS                      policy<{'riscv64': 'y'}>
+CONFIG_COMEDI_BOND                              policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_TEST                              policy<{'riscv64': 'm'}>
+CONFIG_COMEDI_PARPORT                           policy<{'riscv64': 'm'}>
+
 # Menu: Device Drivers >> Device Tree and Open Firmware support
 CONFIG_OF                                       policy<{'riscv64': 'y'}>
 CONFIG_OF_UNITTEST                              policy<{'riscv64': 'n'}>
@@ -629,6 +798,22 @@ CONFIG_FSI_SCOM                                 policy<{'riscv64': 'm'}>
 CONFIG_FSI_SBEFIFO                              policy<{'riscv64': 'm'}>
 CONFIG_FSI_OCC                                  policy<{'riscv64': 'm'}>
 
+# Menu: Device Drivers >> Firmware Drivers
+
+# Menu: Device Drivers >> Firmware Drivers >> ARM System Control and Management Interface Protocol
+
+# Menu: Device Drivers >> Firmware Drivers >> ARM System Control and Management Interface Protocol >> ARM System Control and Management Interface (SCMI) Message Protocol
+
+# Menu: Device Drivers >> Firmware Drivers >> EFI (Extensible Firmware Interface) Support
+
+# Menu: Device Drivers >> Firmware Drivers >> Google Firmware Drivers
+
+# Menu: Device Drivers >> Firmware Drivers >> Google Firmware Drivers >> Coreboot Table Access
+
+# Menu: Device Drivers >> Firmware Drivers >> Tegra firmware driver
+
+# Menu: Device Drivers >> Firmware Drivers >> Zynq MPSoC Firmware Drivers
+
 # Menu: Device Drivers >> Fusion MPT device support
 CONFIG_FUSION                                   policy<{'riscv64': 'y'}>
 CONFIG_FUSION_SPI                               policy<{'riscv64': 'm'}>
@@ -650,8 +835,6 @@ CONFIG_GPIOLIB                                  policy<{'riscv64': 'y'}>
 CONFIG_GPIOLIB_FASTPATH_LIMIT                   policy<{'riscv64': '512'}>
 CONFIG_DEBUG_GPIO                               policy<{'riscv64': 'n'}>
 CONFIG_GPIO_SYSFS                               policy<{'riscv64': 'y'}>
-CONFIG_GPIO_AGGREGATOR                          policy<{'riscv64': 'm'}>
-CONFIG_GPIO_MOCKUP                              policy<{'riscv64': 'n'}>
 
 # Menu: Device Drivers >> GPIO Support >> I2C GPIO expanders
 CONFIG_GPIO_ADP5588                             policy<{'riscv64': 'm'}>
@@ -667,7 +850,6 @@ CONFIG_GPIO_TPIC2810                            policy<{'riscv64': 'm'}>
 # Menu: Device Drivers >> GPIO Support >> MFD GPIO expanders
 CONFIG_GPIO_ADP5520                             policy<{'riscv64': 'm'}>
 CONFIG_GPIO_ARIZONA                             policy<{'riscv64': 'm'}>
-CONFIG_GPIO_BD70528                             policy<{'riscv64': 'm'}>
 CONFIG_GPIO_BD71828                             policy<{'riscv64': 'm'}>
 CONFIG_GPIO_BD9571MWV                           policy<{'riscv64': 'm'}>
 CONFIG_GPIO_DA9052                              policy<{'riscv64': 'm'}>
@@ -741,6 +923,10 @@ CONFIG_GPIO_MOXTET                              policy<{'riscv64': 'm'}>
 # Menu: Device Drivers >> GPIO Support >> USB GPIO expanders
 CONFIG_GPIO_VIPERBOARD                          policy<{'riscv64': 'm'}>
 
+# Menu: Device Drivers >> GPIO Support >> Virtual GPIO drivers
+CONFIG_GPIO_AGGREGATOR                          policy<{'riscv64': 'm'}>
+CONFIG_GPIO_MOCKUP                              policy<{'riscv64': 'n'}>
+
 # Menu: Device Drivers >> Generic Driver Options
 CONFIG_UEVENT_HELPER                            policy<{'riscv64': 'y'}>
 CONFIG_UEVENT_HELPER_PATH                       policy<{'riscv64': '""'}>
@@ -796,9 +982,10 @@ CONFIG_SBP_TARGET                               policy<{'riscv64': 'm'}>
 CONFIG_POWERCAP                                 policy<{'riscv64': 'y'}>
 
 # Menu: Device Drivers >> Graphics support
-CONFIG_VGA_ARB                                  policy<{'riscv64': 'y'}>
-CONFIG_VGA_ARB_MAX_GPUS                         policy<{'riscv64': '16'}>
 CONFIG_DRM_DEBUG_DP_MST_TOPOLOGY_REFS           policy<{'riscv64': 'n'}>
+CONFIG_DRM_FBDEV_EMULATION                      policy<{'riscv64': 'y'}>
+CONFIG_DRM_FBDEV_OVERALLOC                      policy<{'riscv64': '100'}>
+CONFIG_DRM_FBDEV_LEAK_PHYS_SMEM                 policy<{'riscv64': 'n'}>
 
 # Menu: Device Drivers >> Graphics support >> /dev/agpgart (AGP Support)
 #
@@ -871,9 +1058,6 @@ CONFIG_FRAMEBUFFER_CONSOLE_DEFERRED_TAKEOVER    policy<{'riscv64': 'y'}>
 CONFIG_DRM                                      policy<{'riscv64': 'm'}>
 CONFIG_DRM_DP_AUX_CHARDEV                       policy<{'riscv64': 'y'}>
 CONFIG_DRM_DEBUG_SELFTEST                       policy<{'riscv64': 'n'}>
-CONFIG_DRM_FBDEV_EMULATION                      policy<{'riscv64': 'y'}>
-CONFIG_DRM_FBDEV_OVERALLOC                      policy<{'riscv64': '100'}>
-CONFIG_DRM_FBDEV_LEAK_PHYS_SMEM                 policy<{'riscv64': 'n'}>
 CONFIG_DRM_LOAD_EDID_FIRMWARE                   policy<{'riscv64': 'y'}>
 CONFIG_DRM_DP_CEC                               policy<{'riscv64': 'y'}>
 CONFIG_DRM_RADEON                               policy<{'riscv64': 'm'}>
@@ -884,7 +1068,6 @@ CONFIG_DRM_UDL                                  policy<{'riscv64': 'm'}>
 CONFIG_DRM_AST                                  policy<{'riscv64': 'm'}>
 CONFIG_DRM_MGAG200                              policy<{'riscv64': 'm'}>
 CONFIG_DRM_RCAR_DW_HDMI                         policy<{'riscv64': 'm'}>
-CONFIG_DRM_RCAR_LVDS                            policy<{'riscv64': 'n'}>
 CONFIG_DRM_QXL                                  policy<{'riscv64': 'm'}>
 CONFIG_DRM_BOCHS                                policy<{'riscv64': 'm'}>
 CONFIG_DRM_VIRTIO_GPU                           policy<{'riscv64': 'm'}>
@@ -919,6 +1102,8 @@ CONFIG_DRM_AMDGPU_CIK                           note<LP:1661887 for zesty>
 CONFIG_DRM_AMD_ACP                              policy<{'riscv64': 'y'}>
 
 # Menu: Device Drivers >> Graphics support >> Direct Rendering Manager (XFree86 4.1.0 and higher DRI support) >> AMD GPU >> Display Engine Configuration
+
+# Menu: Device Drivers >> Graphics support >> Direct Rendering Manager (XFree86 4.1.0 and higher DRI support) >> AMD GPU >> Display Engine Configuration >> AMD DC - Enable new display engine
 CONFIG_DRM_AMD_DC                               policy<{'riscv64': 'y'}>
 CONFIG_DRM_AMD_DC_HDCP                          policy<{'riscv64': 'y'}>
 CONFIG_DEBUG_KERNEL_DC                          policy<{'riscv64': 'n'}>
@@ -1003,7 +1188,6 @@ CONFIG_DRM_PANEL_SHARP_LS037V7DW01              policy<{'riscv64': 'm'}>
 CONFIG_DRM_PANEL_SHARP_LS043T1LE01              policy<{'riscv64': 'm'}>
 CONFIG_DRM_PANEL_SITRONIX_ST7701                policy<{'riscv64': 'm'}>
 CONFIG_DRM_PANEL_SITRONIX_ST7789V               policy<{'riscv64': 'm'}>
-CONFIG_DRM_PANEL_SONY_ACX424AKP                 policy<{'riscv64': 'm'}>
 CONFIG_DRM_PANEL_SONY_ACX565AKM                 policy<{'riscv64': 'm'}>
 CONFIG_DRM_PANEL_TPO_TD028TTEC1                 policy<{'riscv64': 'm'}>
 CONFIG_DRM_PANEL_TPO_TD043MTEA1                 policy<{'riscv64': 'm'}>
@@ -1033,8 +1217,6 @@ CONFIG_DRM_I2C_NXP_TDA9950                      policy<{'riscv64': 'm'}>
 
 # Menu: Device Drivers >> Graphics support >> Direct Rendering Manager (XFree86 4.1.0 and higher DRI support) >> Intel 8xx/9xx/G3x/G4x/HD Graphics >> drm/i915 Unstable Evolution
 
-# Menu: Device Drivers >> Graphics support >> Direct Rendering Manager (XFree86 4.1.0 and higher DRI support) >> Intel GMA5/600 KMS Framebuffer
-
 # Menu: Device Drivers >> Graphics support >> Direct Rendering Manager (XFree86 4.1.0 and higher DRI support) >> MSM DRM
 
 # Menu: Device Drivers >> Graphics support >> Direct Rendering Manager (XFree86 4.1.0 and higher DRI support) >> MSM DRM >> Enable DSI support in MSM DRM driver
@@ -1050,9 +1232,7 @@ CONFIG_DRM_NOUVEAU_BACKLIGHT                    policy<{'riscv64': 'y'}>
 CONFIG_NOUVEAU_LEGACY_CTX_SUPPORT               flag<REVIEW> note<Selects CONFIG_DRM_LEGACY which is not wanted>
 CONFIG_DRM_NOUVEAU_SVM                          flag<REVIEW>
 
-# Menu: Device Drivers >> Graphics support >> Direct Rendering Manager (XFree86 4.1.0 and higher DRI support) >> OMAP2+ Display Subsystem support
-
-# Menu: Device Drivers >> Graphics support >> Direct Rendering Manager (XFree86 4.1.0 and higher DRI support) >> OMAPDRM External Display Device Drivers
+# Menu: Device Drivers >> Graphics support >> Direct Rendering Manager (XFree86 4.1.0 and higher DRI support) >> OMAP DRM
 
 # Menu: Device Drivers >> Graphics support >> Frame buffer Devices
 
@@ -1172,11 +1352,6 @@ CONFIG_FB_RIVA_BACKLIGHT                        policy<{'riscv64': 'y'}>
 # Menu: Device Drivers >> Greybus support
 CONFIG_GREYBUS                                  policy<{'riscv64': 'n'}>
 
-# Menu: Device Drivers >> HDMI CEC drivers
-CONFIG_MEDIA_CEC_SUPPORT                        policy<{'riscv64': 'y'}>
-CONFIG_USB_PULSE8_CEC                           policy<{'riscv64': 'm'}>
-CONFIG_USB_RAINSHADOW_CEC                       policy<{'riscv64': 'm'}>
-
 # Menu: Device Drivers >> HID support
 
 # Menu: Device Drivers >> HID support >> HID bus support
@@ -1185,6 +1360,8 @@ CONFIG_HID_BATTERY_STRENGTH                     policy<{'riscv64': 'y'}>
 CONFIG_HIDRAW                                   policy<{'riscv64': 'y'}>
 CONFIG_UHID                                     policy<{'riscv64': 'm'}>
 CONFIG_HID_GENERIC                              policy<{'riscv64': 'm'}>
+
+# Menu: Device Drivers >> HID support >> HID bus support >> AMD SFH HID Support
 
 # Menu: Device Drivers >> HID support >> HID bus support >> Special HID drivers
 CONFIG_HID_A4TECH                               policy<{'riscv64': 'm'}>
@@ -1304,6 +1481,8 @@ CONFIG_HID_PICOLCD_CIR                          policy<{'riscv64': 'y'}>
 # Menu: Device Drivers >> HID support >> I2C HID support
 
 # Menu: Device Drivers >> HID support >> Intel ISH HID support
+
+# Menu: Device Drivers >> HID support >> Surface System Aggregator Module HID support
 
 # Menu: Device Drivers >> HID support >> USB HID support
 CONFIG_USB_HID                                  policy<{'riscv64': 'm'}>
@@ -1610,12 +1789,14 @@ CONFIG_FIREWIRE_NET                             policy<{'riscv64': 'm'}>
 # Menu: Device Drivers >> IOMMU Hardware Support
 CONFIG_IOMMU_SUPPORT                            policy<{'riscv64': 'y'}>
 CONFIG_IOMMU_DEBUGFS                            policy<{'riscv64': 'n'}>
-CONFIG_IOMMU_DEFAULT_PASSTHROUGH                policy<{'riscv64': 'n'}>
 #
 CONFIG_IPMMU_VMSA				note<LP:1718734>
 CONFIG_IOMMU_DEBUGFS                            mark<ENFORCED> note<Should not be enabled in production, LP #1861057>
 
 # Menu: Device Drivers >> IOMMU Hardware Support >> Generic IOMMU Pagetable Support
+
+# Menu: Device Drivers >> IOMMU Hardware Support >> IOMMU default domain type
+CONFIG_IOMMU_DEFAULT_PASSTHROUGH                policy<{'riscv64': 'n'}>
 
 # Menu: Device Drivers >> IOMMU Hardware Support >> Support for Intel IOMMU using DMA Remapping Devices
 #
@@ -1688,6 +1869,8 @@ CONFIG_HMC425                                   policy<{'riscv64': 'm'}>
 
 # Menu: Device Drivers >> Industrial I/O support >> Analog Front Ends
 CONFIG_IIO_RESCALE                              policy<{'riscv64': 'm'}>
+
+# Menu: Device Drivers >> Industrial I/O support >> Analog to digital and digital to analog converters
 
 # Menu: Device Drivers >> Industrial I/O support >> Analog to digital converters
 CONFIG_AD7091R5                                 policy<{'riscv64': 'm'}>
@@ -1764,6 +1947,10 @@ CONFIG_TWL6030_GPADC                            policy<{'riscv64': 'm'}>
 CONFIG_VF610_ADC                                policy<{'riscv64': 'm'}>
 CONFIG_VIPERBOARD_ADC                           policy<{'riscv64': 'm'}>
 CONFIG_XILINX_XADC                              policy<{'riscv64': 'm'}>
+CONFIG_AD7280                                   policy<{'riscv64': 'm'}>
+
+# Menu: Device Drivers >> Industrial I/O support >> Capacitance to digital converters
+CONFIG_AD7150                                   policy<{'riscv64': 'm'}>
 
 # Menu: Device Drivers >> Industrial I/O support >> Chemical Sensors
 CONFIG_ATLAS_PH_SENSOR                          policy<{'riscv64': 'm'}>
@@ -1773,7 +1960,6 @@ CONFIG_CCS811                                   policy<{'riscv64': 'm'}>
 CONFIG_IAQCORE                                  policy<{'riscv64': 'm'}>
 CONFIG_PMS7003                                  policy<{'riscv64': 'm'}>
 CONFIG_SENSIRION_SGP30                          policy<{'riscv64': 'm'}>
-CONFIG_SPS30                                    policy<{'riscv64': 'm'}>
 CONFIG_VZ89X                                    policy<{'riscv64': 'm'}>
 
 # Menu: Device Drivers >> Industrial I/O support >> Digital gyroscope sensors
@@ -1846,6 +2032,8 @@ CONFIG_IIO_BUFFER_CB                            policy<{'riscv64': 'm'}>
 CONFIG_IIO_BUFFER_HW_CONSUMER                   policy<{'riscv64': 'm'}>
 CONFIG_IIO_KFIFO_BUF                            policy<{'riscv64': 'm'}>
 
+# Menu: Device Drivers >> Industrial I/O support >> Filters
+
 # Menu: Device Drivers >> Industrial I/O support >> Frequency Synthesizers DDS/PLL
 
 # Menu: Device Drivers >> Industrial I/O support >> Frequency Synthesizers DDS/PLL >> Clock Generator/Distribution
@@ -1876,6 +2064,8 @@ CONFIG_HTS221                                   policy<{'riscv64': 'm'}>
 CONFIG_HTU21                                    policy<{'riscv64': 'm'}>
 CONFIG_SI7005                                   policy<{'riscv64': 'm'}>
 CONFIG_SI7020                                   policy<{'riscv64': 'm'}>
+
+# Menu: Device Drivers >> Industrial I/O support >> IIO SCMI Sensors
 
 # Menu: Device Drivers >> Industrial I/O support >> IIO dummy driver
 CONFIG_IIO_SIMPLE_DUMMY                         policy<{'riscv64': 'm'}>
@@ -2421,7 +2611,6 @@ CONFIG_USERIO                                   policy<{'riscv64': 'm'}>
 
 # Menu: Device Drivers >> LED Support
 CONFIG_NEW_LEDS                                 policy<{'riscv64': 'y'}>
-CONFIG_LEDS_LP55XX_COMMON                       policy<{'riscv64': 'm'}>
 
 # Menu: Device Drivers >> LED Support >> LED Class Support
 CONFIG_LEDS_CLASS                               policy<{'riscv64': 'y'}>
@@ -2445,10 +2634,6 @@ CONFIG_LEDS_PCA9532_GPIO                        policy<{'riscv64': 'y'}>
 CONFIG_LEDS_GPIO                                policy<{'riscv64': 'm'}>
 CONFIG_LEDS_LP3944                              policy<{'riscv64': 'm'}>
 CONFIG_LEDS_LP3952                              policy<{'riscv64': 'm'}>
-CONFIG_LEDS_LP5521                              policy<{'riscv64': 'm'}>
-CONFIG_LEDS_LP5523                              policy<{'riscv64': 'm'}>
-CONFIG_LEDS_LP5562                              policy<{'riscv64': 'm'}>
-CONFIG_LEDS_LP8501                              policy<{'riscv64': 'm'}>
 CONFIG_LEDS_LP8788                              policy<{'riscv64': 'm'}>
 CONFIG_LEDS_LP8860                              policy<{'riscv64': 'm'}>
 CONFIG_LEDS_PCA955X                             policy<{'riscv64': 'm'}>
@@ -2491,6 +2676,15 @@ CONFIG_LEDS_LM3601X                             policy<{'riscv64': 'm'}>
 CONFIG_LEDS_MAX77693                            policy<{'riscv64': 'm'}>
 CONFIG_LEDS_KTD2692                             policy<{'riscv64': 'm'}>
 CONFIG_LEDS_SGM3140                             policy<{'riscv64': 'm'}>
+
+# Menu: Device Drivers >> LED Support >> LED Class Support >> LED Multicolor Class Support
+
+# Menu: Device Drivers >> LED Support >> LED Class Support >> LED Multicolor Class Support >> Common Driver for TI/National LP5521/5523/55231/5562/8501
+CONFIG_LEDS_LP55XX_COMMON                       policy<{'riscv64': 'm'}>
+CONFIG_LEDS_LP5521                              policy<{'riscv64': 'm'}>
+CONFIG_LEDS_LP5523                              policy<{'riscv64': 'm'}>
+CONFIG_LEDS_LP5562                              policy<{'riscv64': 'm'}>
+CONFIG_LEDS_LP8501                              policy<{'riscv64': 'm'}>
 
 # Menu: Device Drivers >> LED Support >> LED Class Support >> LED Trigger support
 CONFIG_LEDS_TRIGGERS                            policy<{'riscv64': 'y'}>
@@ -2573,6 +2767,10 @@ CONFIG_MMC_SDHCI_PLTFM                          note<boot essential on highbank>
 
 # Menu: Device Drivers >> MMC/SD/SDIO card support >> Synopsys DesignWare Memory Card Interface
 
+# Menu: Device Drivers >> MOST support
+CONFIG_MOST                                     policy<{'riscv64': 'm'}>
+CONFIG_MOST_CDEV                                policy<{'riscv64': 'm'}>
+
 # Menu: Device Drivers >> Macintosh device drivers
 
 # Menu: Device Drivers >> Macintosh device drivers >> Apple Desktop Bus (ADB) support
@@ -2590,6 +2788,8 @@ CONFIG_MAILBOX_TEST                             policy<{'riscv64': 'm'}>
 # Menu: Device Drivers >> Memory Controller drivers
 CONFIG_MEMORY                                   policy<{'riscv64': 'y'}>
 
+# Menu: Device Drivers >> Memory Controller drivers >> NVIDIA Tegra Memory Controller support
+
 # Menu: Device Drivers >> Memory Technology Device (MTD) support
 CONFIG_MTD                                      policy<{'riscv64': 'm'}>
 CONFIG_MTD_TESTS                                policy<{'riscv64': 'n'}>
@@ -2606,8 +2806,6 @@ CONFIG_MTD_OOPS                                 policy<{'riscv64': 'm'}>
 CONFIG_MTD_PSTORE                               policy<{'riscv64': 'n'}>
 CONFIG_MTD_SWAP                                 policy<{'riscv64': 'm'}>
 CONFIG_MTD_PARTITIONED_MASTER                   policy<{'riscv64': 'n'}>
-CONFIG_MTD_NAND_ECC_SW_HAMMING_SMC              policy<{'riscv64': 'n'}>
-CONFIG_MTD_SPI_NAND                             policy<{'riscv64': 'm'}>
 #
 CONFIG_MTD                                      note<boot essential on arm>
 CONFIG_MTD_BLOCK                                note<boot essential on arm>
@@ -2633,7 +2831,6 @@ CONFIG_MTD_PLATRAM                              policy<{'riscv64': 'm'}>
 
 # Menu: Device Drivers >> Memory Technology Device (MTD) support >> Mapping drivers for chip access >> Flash device in physical memory map
 CONFIG_MTD_PHYSMAP                              policy<{'riscv64': 'm'}>
-CONFIG_MTD_PHYSMAP_COMPAT                       policy<{'riscv64': 'n'}>
 CONFIG_MTD_PHYSMAP_GPIO_ADDR                    policy<{'riscv64': 'y'}>
 
 # Menu: Device Drivers >> Memory Technology Device (MTD) support >> Mapping drivers for chip access >> Flash device in physical memory map >> Memory device in physical memory map based on OF description
@@ -2641,13 +2838,20 @@ CONFIG_MTD_PHYSMAP_OF                           policy<{'riscv64': 'y'}>
 CONFIG_MTD_PHYSMAP_VERSATILE                    policy<{'riscv64': 'n'}>
 CONFIG_MTD_PHYSMAP_GEMINI                       policy<{'riscv64': 'n'}>
 
-# Menu: Device Drivers >> Memory Technology Device (MTD) support >> Mapping drivers for chip access >> Maximum mappable memory available for flash IO
+# Menu: Device Drivers >> Memory Technology Device (MTD) support >> Mapping drivers for chip access >> Flash device in physical memory map >> Physmap compat support
+CONFIG_MTD_PHYSMAP_COMPAT                       policy<{'riscv64': 'n'}>
 
 # Menu: Device Drivers >> Memory Technology Device (MTD) support >> Mapping drivers for chip access >> Support non-linear mappings of flash chips
 CONFIG_MTD_COMPLEX_MAPPINGS                     policy<{'riscv64': 'y'}>
 CONFIG_MTD_PCI                                  policy<{'riscv64': 'm'}>
 
-# Menu: Device Drivers >> Memory Technology Device (MTD) support >> OneNAND Device Support
+# Menu: Device Drivers >> Memory Technology Device (MTD) support >> NAND
+CONFIG_MTD_SPI_NAND                             policy<{'riscv64': 'm'}>
+
+# Menu: Device Drivers >> Memory Technology Device (MTD) support >> NAND >> ECC engine support
+CONFIG_MTD_NAND_ECC_SW_HAMMING_SMC              policy<{'riscv64': 'n'}>
+
+# Menu: Device Drivers >> Memory Technology Device (MTD) support >> NAND >> OneNAND Device Support
 CONFIG_MTD_ONENAND                              policy<{'riscv64': 'm'}>
 CONFIG_MTD_ONENAND_VERIFY_WRITE                 policy<{'riscv64': 'y'}>
 CONFIG_MTD_ONENAND_GENERIC                      policy<{'riscv64': 'm'}>
@@ -2656,6 +2860,16 @@ CONFIG_MTD_ONENAND_2X_PROGRAM                   policy<{'riscv64': 'y'}>
 #
 CONFIG_MTD_ONENAND_VERIFY_WRITE                 note<writes here are not checked in full without>
 CONFIG_MTD_ONENAND_OTP                          flag<REVIEW>
+
+# Menu: Device Drivers >> Memory Technology Device (MTD) support >> NAND >> Raw/Parallel NAND Device Support
+CONFIG_MTD_RAW_NAND                             policy<{'riscv64': 'n'}>
+#
+CONFIG_MTD_RAW_NAND                             note<boot essential on arm>
+CONFIG_MTD_NAND_OMAP2                           note<boot essential on arm>
+CONFIG_MTD_NAND_OMAP_BCH                        note<boot essential on arm>
+CONFIG_MTD_NAND_DISKONCHIP_BBTWRITE             note<can be enabled at runtime>
+
+# Menu: Device Drivers >> Memory Technology Device (MTD) support >> NAND >> Raw/Parallel NAND Device Support >> JZ4780 NAND controller
 
 # Menu: Device Drivers >> Memory Technology Device (MTD) support >> Partition parsers
 CONFIG_MTD_AR7_PARTS                            policy<{'riscv64': 'm'}>
@@ -2693,19 +2907,11 @@ CONFIG_MTD_MAP_BANK_WIDTH_4                     policy<{'riscv64': 'y'}>
 CONFIG_MTD_CFI_I1                               policy<{'riscv64': 'y'}>
 CONFIG_MTD_CFI_I2                               policy<{'riscv64': 'y'}>
 
-# Menu: Device Drivers >> Memory Technology Device (MTD) support >> Raw/Parallel NAND Device Support
-CONFIG_MTD_RAW_NAND                             policy<{'riscv64': 'n'}>
-#
-CONFIG_MTD_RAW_NAND                             note<boot essential on arm>
-CONFIG_MTD_NAND_OMAP2                           note<boot essential on arm>
-CONFIG_MTD_NAND_OMAP_BCH                        note<boot essential on arm>
-CONFIG_MTD_NAND_DISKONCHIP_BBTWRITE             note<can be enabled at runtime>
-
-# Menu: Device Drivers >> Memory Technology Device (MTD) support >> Raw/Parallel NAND Device Support >> JZ4780 NAND controller
-
 # Menu: Device Drivers >> Memory Technology Device (MTD) support >> SPI NOR device support
 CONFIG_MTD_SPI_NOR                              policy<{'riscv64': 'm'}>
 CONFIG_MTD_SPI_NOR_USE_4K_SECTORS               policy<{'riscv64': 'y'}>
+
+# Menu: Device Drivers >> Memory Technology Device (MTD) support >> SPI NOR device support >> Software write protection at boot
 
 # Menu: Device Drivers >> Memory Technology Device (MTD) support >> Self-contained MTD device drivers
 CONFIG_MTD_PMC551                               policy<{'riscv64': 'm'}>
@@ -2727,6 +2933,10 @@ CONFIG_MTD_DOCG3                                policy<{'riscv64': 'n'}>
 CONFIG_MTD_DOCG3                                mark<ENFORCED> note<LP:1792205>
 
 # Menu: Device Drivers >> Microsoft Hyper-V guest support
+
+# Menu: Device Drivers >> Microsoft Surface Platform-Specific Device Drivers
+
+# Menu: Device Drivers >> Microsoft Surface Platform-Specific Device Drivers >> Microsoft Surface System Aggregator Module Subsystem and Drivers
 
 # Menu: Device Drivers >> Misc devices
 CONFIG_AD525X_DPOT                              policy<{'riscv64': 'm'}>
@@ -2779,8 +2989,6 @@ CONFIG_EEPROM_EE1004                            policy<{'riscv64': 'm'}>
 # Menu: Device Drivers >> Misc devices >> GenWQE PCIe Accelerator
 CONFIG_GENWQE                                   policy<{'riscv64': 'm'}>
 CONFIG_GENWQE_PLATFORM_ERROR_RECOVERY           policy<{'riscv64': '0'}>
-
-# Menu: Device Drivers >> Misc devices >> Intel MIC & related support
 
 # Menu: Device Drivers >> Misc devices >> Silicon Labs C2 port support
 CONFIG_C2PORT                                   policy<{'riscv64': 'm'}>
@@ -2873,7 +3081,6 @@ CONFIG_MFD_TPS6586X                             policy<{'riscv64': 'y'}>
 CONFIG_MFD_TPS65910                             policy<{'riscv64': 'y'}>
 CONFIG_MFD_TPS65912_I2C                         policy<{'riscv64': 'y'}>
 CONFIG_MFD_TPS65912_SPI                         policy<{'riscv64': 'y'}>
-CONFIG_MFD_TPS80031                             policy<{'riscv64': 'y'}>
 CONFIG_TWL4030_CORE                             policy<{'riscv64': 'y'}>
 CONFIG_MFD_TWL4030_AUDIO                        policy<{'riscv64': 'y'}>
 CONFIG_TWL6040_CORE                             policy<{'riscv64': 'y'}>
@@ -2896,7 +3103,6 @@ CONFIG_MFD_WM831X_SPI                           policy<{'riscv64': 'y'}>
 CONFIG_MFD_WM8350_I2C                           policy<{'riscv64': 'y'}>
 CONFIG_MFD_WM8994                               policy<{'riscv64': 'm'}>
 CONFIG_MFD_ROHM_BD718XX                         policy<{'riscv64': 'm'}>
-CONFIG_MFD_ROHM_BD70528                         policy<{'riscv64': 'm'}>
 CONFIG_MFD_ROHM_BD71828                         policy<{'riscv64': 'm'}>
 CONFIG_MFD_STPMIC1                              policy<{'riscv64': 'm'}>
 CONFIG_MFD_STMFX                                policy<{'riscv64': 'm'}>
@@ -3055,7 +3261,6 @@ CONFIG_DVB_TS2020                               policy<{'riscv64': 'm'}>
 CONFIG_DVB_DS3000                               policy<{'riscv64': 'm'}>
 CONFIG_DVB_MB86A16                              policy<{'riscv64': 'm'}>
 CONFIG_DVB_TDA10071                             policy<{'riscv64': 'm'}>
-CONFIG_DVB_SP8870                               policy<{'riscv64': 'm'}>
 CONFIG_DVB_SP887X                               policy<{'riscv64': 'm'}>
 CONFIG_DVB_CX22700                              policy<{'riscv64': 'm'}>
 CONFIG_DVB_CX22702                              policy<{'riscv64': 'm'}>
@@ -3181,6 +3386,7 @@ CONFIG_VIDEO_DW9807_VCM                         policy<{'riscv64': 'm'}>
 
 # Menu: Device Drivers >> Multimedia support >> Media ancillary drivers >> Media SPI Adapters
 CONFIG_CXD2880_SPI_DRV                          policy<{'riscv64': 'm'}>
+CONFIG_VIDEO_GS1662                             policy<{'riscv64': 'm'}>
 
 # Menu: Device Drivers >> Multimedia support >> Media ancillary drivers >> Miscellaneous helper chips
 CONFIG_VIDEO_THS7303                            policy<{'riscv64': 'm'}>
@@ -3193,9 +3399,6 @@ CONFIG_VIDEO_SAA6588                            policy<{'riscv64': 'm'}>
 
 # Menu: Device Drivers >> Multimedia support >> Media ancillary drivers >> SDR tuner chips
 CONFIG_SDR_MAX2175                              policy<{'riscv64': 'm'}>
-
-# Menu: Device Drivers >> Multimedia support >> Media ancillary drivers >> SPI helper chips
-CONFIG_VIDEO_GS1662                             policy<{'riscv64': 'm'}>
 
 # Menu: Device Drivers >> Multimedia support >> Media ancillary drivers >> Video decoders
 CONFIG_VIDEO_ADV7180                            policy<{'riscv64': 'm'}>
@@ -3262,10 +3465,7 @@ CONFIG_DVB_FIREDTV                              policy<{'riscv64': 'm'}>
 CONFIG_SMS_SIANO_RC                             policy<{'riscv64': 'y'}>
 CONFIG_SMS_SIANO_DEBUGFS                        policy<{'riscv64': 'y'}>
 
-# Menu: Device Drivers >> Multimedia support >> Media drivers >> DVB platform devices
-CONFIG_DVB_PLATFORM_DRIVERS                     policy<{'riscv64': 'y'}>
-#
-CONFIG_DVB_C8SECTPFE                            flag<REVIEW>
+# Menu: Device Drivers >> Multimedia support >> Media drivers >> DVB test drivers
 
 # Menu: Device Drivers >> Multimedia support >> Media drivers >> Media PCI Adapters
 CONFIG_VIDEO_PCI_SKELETON                       policy<{'riscv64': 'n'}>
@@ -3287,8 +3487,6 @@ CONFIG_VIDEO_CX25821_ALSA                       policy<{'riscv64': 'm'}>
 CONFIG_VIDEO_BT848                              policy<{'riscv64': 'm'}>
 CONFIG_DVB_BT8XX                                policy<{'riscv64': 'm'}>
 CONFIG_VIDEO_SAA7164                            policy<{'riscv64': 'm'}>
-CONFIG_DVB_AV7110                               policy<{'riscv64': 'm'}>
-CONFIG_DVB_AV7110_OSD                           policy<{'riscv64': 'y'}>
 CONFIG_DVB_B2C2_FLEXCOP_PCI                     policy<{'riscv64': 'm'}>
 CONFIG_DVB_B2C2_FLEXCOP_PCI_DEBUG               policy<{'riscv64': 'n'}>
 CONFIG_DVB_PLUTO2                               policy<{'riscv64': 'm'}>
@@ -3303,6 +3501,9 @@ CONFIG_DVB_DDBRIDGE                             policy<{'riscv64': 'm'}>
 CONFIG_DVB_DDBRIDGE_MSIENABLE                   policy<{'riscv64': 'n'}>
 CONFIG_DVB_SMIPCIE                              policy<{'riscv64': 'm'}>
 CONFIG_DVB_NETUP_UNIDVB                         policy<{'riscv64': 'm'}>
+CONFIG_VIDEO_IVTV                               policy<{'riscv64': 'm'}>
+CONFIG_VIDEO_IVTV_ALSA                          policy<{'riscv64': 'm'}>
+CONFIG_VIDEO_FB_IVTV                            policy<{'riscv64': 'm'}>
 
 # Menu: Device Drivers >> Multimedia support >> Media drivers >> Media PCI Adapters >> Conexant 2388x (bt878 successor) support
 CONFIG_VIDEO_CX88                               policy<{'riscv64': 'm'}>
@@ -3310,11 +3511,6 @@ CONFIG_VIDEO_CX88_ALSA                          policy<{'riscv64': 'm'}>
 CONFIG_VIDEO_CX88_BLACKBIRD                     policy<{'riscv64': 'm'}>
 CONFIG_VIDEO_CX88_DVB                           policy<{'riscv64': 'm'}>
 CONFIG_VIDEO_CX88_ENABLE_VP3054                 policy<{'riscv64': 'y'}>
-
-# Menu: Device Drivers >> Multimedia support >> Media drivers >> Media PCI Adapters >> Conexant cx23416/cx23415 MPEG encoder/decoder support
-CONFIG_VIDEO_IVTV                               policy<{'riscv64': 'm'}>
-CONFIG_VIDEO_IVTV_ALSA                          policy<{'riscv64': 'm'}>
-CONFIG_VIDEO_FB_IVTV                            policy<{'riscv64': 'm'}>
 
 # Menu: Device Drivers >> Multimedia support >> Media drivers >> Media PCI Adapters >> Philips SAA7134 support
 CONFIG_VIDEO_SAA7134                            policy<{'riscv64': 'm'}>
@@ -3328,7 +3524,6 @@ CONFIG_DVB_BUDGET_CORE                          policy<{'riscv64': 'm'}>
 CONFIG_DVB_BUDGET                               policy<{'riscv64': 'm'}>
 CONFIG_DVB_BUDGET_CI                            policy<{'riscv64': 'm'}>
 CONFIG_DVB_BUDGET_AV                            policy<{'riscv64': 'm'}>
-CONFIG_DVB_BUDGET_PATCH                         policy<{'riscv64': 'm'}>
 
 # Menu: Device Drivers >> Multimedia support >> Media drivers >> Media USB Adapters
 CONFIG_MEDIA_USB_SUPPORT                        policy<{'riscv64': 'y'}>
@@ -3478,9 +3673,30 @@ CONFIG_DVB_USB_RTL28XXU                         policy<{'riscv64': 'm'}>
 CONFIG_DVB_USB_DVBSKY                           policy<{'riscv64': 'm'}>
 CONFIG_DVB_USB_ZD1301                           policy<{'riscv64': 'm'}>
 
-# Menu: Device Drivers >> Multimedia support >> Media drivers >> Memory-to-memory multimedia devices
+# Menu: Device Drivers >> Multimedia support >> Media drivers >> Media platform devices
+CONFIG_DVB_PLATFORM_DRIVERS                     policy<{'riscv64': 'y'}>
+CONFIG_SDR_PLATFORM_DRIVERS                     policy<{'riscv64': 'y'}>
+CONFIG_VIDEO_CADENCE_CSI2RX                     policy<{'riscv64': 'm'}>
+CONFIG_VIDEO_CADENCE_CSI2TX                     policy<{'riscv64': 'm'}>
+#
+CONFIG_DVB_C8SECTPFE                            flag<REVIEW>
+
+# Menu: Device Drivers >> Multimedia support >> Media drivers >> Media platform devices >> Memory-to-memory multimedia devices
 CONFIG_V4L_MEM2MEM_DRIVERS                      policy<{'riscv64': 'y'}>
 CONFIG_VIDEO_MEM2MEM_DEINTERLACE                policy<{'riscv64': 'm'}>
+
+# Menu: Device Drivers >> Multimedia support >> Media drivers >> Media platform devices >> V4L platform devices
+CONFIG_V4L_PLATFORM_DRIVERS                     policy<{'riscv64': 'y'}>
+CONFIG_VIDEO_CAFE_CCIC                          policy<{'riscv64': 'm'}>
+CONFIG_VIDEO_ASPEED                             policy<{'riscv64': 'm'}>
+CONFIG_VIDEO_MUX                                policy<{'riscv64': 'm'}>
+
+# Menu: Device Drivers >> Multimedia support >> Media drivers >> Media platform devices >> V4L platform devices >> Samsung S5P/EXYNOS4 SoC series Camera Subsystem driver
+
+# Menu: Device Drivers >> Multimedia support >> Media drivers >> Media platform devices >> V4L platform devices >> Xilinx Video IP (EXPERIMENTAL)
+CONFIG_VIDEO_XILINX                             policy<{'riscv64': 'm'}>
+CONFIG_VIDEO_XILINX_TPG                         policy<{'riscv64': 'm'}>
+CONFIG_VIDEO_XILINX_VTC                         policy<{'riscv64': 'm'}>
 
 # Menu: Device Drivers >> Multimedia support >> Media drivers >> Radio Adapters
 CONFIG_RADIO_ADAPTERS                           policy<{'riscv64': 'y'}>
@@ -3509,23 +3725,6 @@ CONFIG_RADIO_SI4713                             policy<{'riscv64': 'm'}>
 CONFIG_USB_SI4713                               policy<{'riscv64': 'm'}>
 CONFIG_PLATFORM_SI4713                          policy<{'riscv64': 'm'}>
 CONFIG_I2C_SI4713                               policy<{'riscv64': 'm'}>
-
-# Menu: Device Drivers >> Multimedia support >> Media drivers >> SDR platform devices
-CONFIG_SDR_PLATFORM_DRIVERS                     policy<{'riscv64': 'y'}>
-
-# Menu: Device Drivers >> Multimedia support >> Media drivers >> V4L platform devices
-CONFIG_V4L_PLATFORM_DRIVERS                     policy<{'riscv64': 'y'}>
-CONFIG_VIDEO_CAFE_CCIC                          policy<{'riscv64': 'm'}>
-CONFIG_VIDEO_CADENCE                            policy<{'riscv64': 'y'}>
-CONFIG_VIDEO_CADENCE_CSI2RX                     policy<{'riscv64': 'm'}>
-CONFIG_VIDEO_CADENCE_CSI2TX                     policy<{'riscv64': 'm'}>
-CONFIG_VIDEO_ASPEED                             policy<{'riscv64': 'm'}>
-CONFIG_VIDEO_MUX                                policy<{'riscv64': 'm'}>
-CONFIG_VIDEO_XILINX                             policy<{'riscv64': 'm'}>
-CONFIG_VIDEO_XILINX_TPG                         policy<{'riscv64': 'm'}>
-CONFIG_VIDEO_XILINX_VTC                         policy<{'riscv64': 'm'}>
-
-# Menu: Device Drivers >> Multimedia support >> Media drivers >> V4L platform devices >> Samsung S5P/EXYNOS4 SoC series Camera Subsystem driver
 
 # Menu: Device Drivers >> Multimedia support >> Media drivers >> V4L test drivers
 CONFIG_V4L_TEST_DRIVERS                         policy<{'riscv64': 'y'}>
@@ -3612,7 +3811,6 @@ CONFIG_MUX_MMIO                                 policy<{'riscv64': 'm'}>
 # Menu: Device Drivers >> NVDIMM (Non-Volatile Memory Device) Support
 CONFIG_LIBNVDIMM                                policy<{'riscv64': 'y'}>
 CONFIG_BLK_DEV_PMEM                             policy<{'riscv64': 'm'}>
-CONFIG_ND_BLK                                   policy<{'riscv64': 'm'}>
 CONFIG_BTT                                      policy<{'riscv64': 'y'}>
 CONFIG_OF_PMEM                                  policy<{'riscv64': 'm'}>
 
@@ -3718,7 +3916,6 @@ CONFIG_NET_DSA_SJA1105_PTP                      policy<{'riscv64': 'y'}>
 CONFIG_NET_DSA_SJA1105_TAS                      policy<{'riscv64': 'y'}>
 CONFIG_NET_DSA_SJA1105_VL                       policy<{'riscv64': 'y'}>
 CONFIG_NET_DSA_QCA8K                            policy<{'riscv64': 'm'}>
-CONFIG_NET_DSA_REALTEK_SMI                      policy<{'riscv64': 'm'}>
 CONFIG_NET_DSA_SMSC_LAN9303_I2C                 policy<{'riscv64': 'm'}>
 CONFIG_NET_DSA_SMSC_LAN9303_MDIO                policy<{'riscv64': 'm'}>
 CONFIG_NET_DSA_VITESSE_VSC73XX_SPI              policy<{'riscv64': 'm'}>
@@ -3742,6 +3939,9 @@ CONFIG_NET_DSA_MICROCHIP_KSZ8795_SPI            policy<{'riscv64': 'm'}>
 CONFIG_NET_DSA_MICROCHIP_KSZ9477                policy<{'riscv64': 'm'}>
 CONFIG_NET_DSA_MICROCHIP_KSZ9477_I2C            policy<{'riscv64': 'm'}>
 CONFIG_NET_DSA_MICROCHIP_KSZ9477_SPI            policy<{'riscv64': 'm'}>
+
+# Menu: Device Drivers >> Network device support >> Distributed Switch Architecture drivers >> Realtek Ethernet switch family support
+CONFIG_NET_DSA_REALTEK_SMI                      policy<{'riscv64': 'm'}>
 
 # Menu: Device Drivers >> Network device support >> Ethernet driver support
 CONFIG_ETHERNET                                 policy<{'riscv64': 'y'}>
@@ -3896,6 +4096,10 @@ CONFIG_CHELSIO_T4_DCB                           policy<{'riscv64': 'y'}>
 CONFIG_CHELSIO_T4_FCOE                          policy<{'riscv64': 'y'}>
 CONFIG_CHELSIO_T4VF                             policy<{'riscv64': 'm'}>
 
+# Menu: Device Drivers >> Network device support >> Ethernet driver support >> Chelsio devices >> Chelsio Inline Crypto support
+CONFIG_CHELSIO_IPSEC_INLINE                     policy<{'riscv64': 'm'}>
+CONFIG_CHELSIO_TLS_DEVICE                       policy<{'riscv64': 'm'}>
+
 # Menu: Device Drivers >> Network device support >> Ethernet driver support >> Cirrus devices
 
 # Menu: Device Drivers >> Network device support >> Ethernet driver support >> DEC - Tulip devices
@@ -3969,11 +4173,11 @@ CONFIG_MLX4_CORE_GEN2                           policy<{'riscv64': 'y'}>
 CONFIG_MLX5_CORE                                policy<{'riscv64': 'm'}>
 CONFIG_MLX5_FPGA                                policy<{'riscv64': 'y'}>
 CONFIG_MLX5_FPGA_IPSEC                          policy<{'riscv64': 'y'}>
-CONFIG_MLX5_EN_IPSEC                            policy<{'riscv64': 'y'}>
-CONFIG_MLX5_FPGA_TLS                            policy<{'riscv64': 'y'}>
 CONFIG_MLXFW                                    policy<{'riscv64': 'm'}>
 
 # Menu: Device Drivers >> Network device support >> Ethernet driver support >> Mellanox devices >> Mellanox 5th generation network adapters (ConnectX series) Ethernet support
+CONFIG_MLX5_EN_IPSEC                            policy<{'riscv64': 'y'}>
+CONFIG_MLX5_FPGA_TLS                            policy<{'riscv64': 'y'}>
 CONFIG_MLX5_CORE_EN                             policy<{'riscv64': 'y'}>
 CONFIG_MLX5_EN_ARFS                             policy<{'riscv64': 'y'}>
 CONFIG_MLX5_EN_RXNFC                            policy<{'riscv64': 'y'}>
@@ -3984,7 +4188,6 @@ CONFIG_MLX5_TC_CT                               policy<{'riscv64': 'y'}>
 CONFIG_MLX5_CORE_EN_DCB                         policy<{'riscv64': 'y'}>
 CONFIG_MLX5_CORE_IPOIB                          policy<{'riscv64': 'y'}>
 CONFIG_MLX5_TLS                                 policy<{'riscv64': 'y'}>
-CONFIG_MLX5_EN_TLS                              policy<{'riscv64': 'y'}>
 CONFIG_MLX5_SW_STEERING                         policy<{'riscv64': 'y'}>
 
 # Menu: Device Drivers >> Network device support >> Ethernet driver support >> Mellanox devices >> Mellanox Technologies Switch ASICs support
@@ -3993,8 +4196,6 @@ CONFIG_MLXSW_CORE_HWMON                         policy<{'riscv64': 'y'}>
 CONFIG_MLXSW_CORE_THERMAL                       policy<{'riscv64': 'y'}>
 CONFIG_MLXSW_I2C                                policy<{'riscv64': 'm'}>
 CONFIG_MLXSW_MINIMAL                            policy<{'riscv64': 'm'}>
-
-# Menu: Device Drivers >> Network device support >> Ethernet driver support >> Mellanox devices >> Mellanox Technologies Switch ASICs support >> PCI bus implementation for Mellanox Technologies Switch ASICs
 CONFIG_MLXSW_PCI                                policy<{'riscv64': 'm'}>
 CONFIG_MLXSW_SPECTRUM                           policy<{'riscv64': 'm'}>
 CONFIG_MLXSW_SPECTRUM_DCB                       policy<{'riscv64': 'y'}>
@@ -4087,7 +4288,7 @@ CONFIG_BE2NET_BE3                               policy<{'riscv64': 'y'}>
 CONFIG_BE2NET_LANCER                            policy<{'riscv64': 'y'}>
 CONFIG_BE2NET_SKYHAWK                           policy<{'riscv64': 'y'}>
 
-# Menu: Device Drivers >> Network device support >> Ethernet driver support >> Solarflare SFC9000/SFC9100-family support
+# Menu: Device Drivers >> Network device support >> Ethernet driver support >> Solarflare SFC9000/SFC9100/EF100-family support
 CONFIG_SFC                                      policy<{'riscv64': 'm'}>
 CONFIG_SFC_MTD                                  policy<{'riscv64': 'y'}>
 CONFIG_SFC_MCDI_MON                             policy<{'riscv64': 'y'}>
@@ -4122,7 +4323,6 @@ CONFIG_XILINX_LL_TEMAC                          policy<{'riscv64': 'm'}>
 CONFIG_FDDI                                     policy<{'riscv64': 'y'}>
 CONFIG_DEFXX                                    policy<{'riscv64': 'm'}>
 CONFIG_SKFP                                     policy<{'riscv64': 'm'}>
-#
 
 # Menu: Device Drivers >> Network device support >> IEEE 802.15.4 drivers
 CONFIG_IEEE802154_DRIVERS                       policy<{'riscv64': 'm'}>
@@ -4137,6 +4337,8 @@ CONFIG_IEEE802154_CA8210                        policy<{'riscv64': 'm'}>
 CONFIG_IEEE802154_CA8210_DEBUGFS                policy<{'riscv64': 'y'}>
 CONFIG_IEEE802154_MCR20A                        policy<{'riscv64': 'm'}>
 CONFIG_IEEE802154_HWSIM                         policy<{'riscv64': 'm'}>
+
+# Menu: Device Drivers >> Network device support >> MCTP Device Drivers
 
 # Menu: Device Drivers >> Network device support >> MDIO bus device drivers
 CONFIG_MDIO_DEVICE                              policy<{'riscv64': 'y'}>
@@ -4195,6 +4397,8 @@ CONFIG_NET_TEAM_MODE_ROUNDROBIN                 policy<{'riscv64': 'm'}>
 CONFIG_NET_TEAM_MODE_RANDOM                     policy<{'riscv64': 'm'}>
 CONFIG_NET_TEAM_MODE_ACTIVEBACKUP               policy<{'riscv64': 'm'}>
 CONFIG_NET_TEAM_MODE_LOADBALANCE                policy<{'riscv64': 'm'}>
+
+# Menu: Device Drivers >> Network device support >> PCS device drivers
 
 # Menu: Device Drivers >> Network device support >> PHY Device support and infrastructure
 CONFIG_PHYLIB                                   policy<{'riscv64': 'y'}>
@@ -4256,7 +4460,6 @@ CONFIG_PPP_ASYNC                                policy<{'riscv64': 'm'}>
 CONFIG_PPP_SYNC_TTY                             policy<{'riscv64': 'm'}>
 
 # Menu: Device Drivers >> Network device support >> S/390 network device drivers
-#
 
 # Menu: Device Drivers >> Network device support >> S/390 network device drivers >> Gigabit Ethernet device support
 
@@ -4333,8 +4536,6 @@ CONFIG_WANXL                                    policy<{'riscv64': 'm'}>
 CONFIG_PC300TOO                                 policy<{'riscv64': 'm'}>
 CONFIG_FARSYNC                                  policy<{'riscv64': 'm'}>
 
-# Menu: Device Drivers >> Network device support >> WiMAX Wireless Broadband devices
-
 # Menu: Device Drivers >> Network device support >> Wireless LAN
 CONFIG_WLAN                                     policy<{'riscv64': 'y'}>
 CONFIG_WLAN_VENDOR_ADMTEK                       policy<{'riscv64': 'y'}>
@@ -4371,9 +4572,6 @@ CONFIG_ATH9K_COMMON_SPECTRAL                    policy<{'riscv64': 'y'}>
 CONFIG_AR5523                                   policy<{'riscv64': 'm'}>
 CONFIG_WCN36XX                                  policy<{'riscv64': 'm'}>
 CONFIG_WCN36XX_DEBUGFS                          policy<{'riscv64': 'n'}>
-CONFIG_ATH11K_DEBUGFS                           policy<{'riscv64': 'y'}>
-CONFIG_ATH11K_SPECTRAL                          policy<{'riscv64': 'y'}>
-CONFIG_ATH11K_TRACING                           policy<{'riscv64': 'y'}>
 
 # Menu: Device Drivers >> Network device support >> Wireless LAN >> Atheros/Qualcomm devices >> Atheros 5xxx wireless cards support
 CONFIG_ATH5K                                    policy<{'riscv64': 'm'}>
@@ -4418,6 +4616,9 @@ CONFIG_CARL9170_DEBUGFS                         policy<{'riscv64': 'n'}>
 CONFIG_CARL9170_HWRNG                           policy<{'riscv64': 'y'}>
 
 # Menu: Device Drivers >> Network device support >> Wireless LAN >> Atheros/Qualcomm devices >> Qualcomm Technologies 802.11ax chipset support
+CONFIG_ATH11K_DEBUGFS                           policy<{'riscv64': 'y'}>
+CONFIG_ATH11K_SPECTRAL                          policy<{'riscv64': 'y'}>
+CONFIG_ATH11K_TRACING                           policy<{'riscv64': 'y'}>
 
 # Menu: Device Drivers >> Network device support >> Wireless LAN >> Atheros/Qualcomm devices >> Wilocity 60g WiFi card wil6210 support
 CONFIG_WIL6210                                  policy<{'riscv64': 'm'}>
@@ -4481,7 +4682,6 @@ CONFIG_IPW2200_DEBUG                            policy<{'riscv64': 'n'}>
 CONFIG_IWLWIFI                                  policy<{'riscv64': 'm'}>
 CONFIG_IWLDVM                                   policy<{'riscv64': 'm'}>
 CONFIG_IWLMVM                                   policy<{'riscv64': 'm'}>
-CONFIG_IWLWIFI_BCAST_FILTERING                  policy<{'riscv64': 'n'}>
 
 # Menu: Device Drivers >> Network device support >> Wireless LAN >> Intel devices >> Intel Wireless WiFi Next Gen AGN - Wireless-N/Advanced-N/Ultimate-N (iwlwifi) >> Debugging Options
 CONFIG_IWLWIFI_DEBUG                            policy<{'riscv64': 'n'}>
@@ -4594,10 +4794,7 @@ CONFIG_RTW88_DEBUGFS                            policy<{'riscv64': 'y'}>
 
 # Menu: Device Drivers >> Network device support >> Wireless LAN >> Realtek devices >> Realtek 802.11ax wireless chips support
 CONFIG_RTW89                                    policy<{'riscv64': 'm'}>
-CONFIG_RTW89_CORE                               policy<{'riscv64': 'm'}>
-CONFIG_RTW89_PCI                                policy<{'riscv64': 'm'}>
 CONFIG_RTW89_8852AE                             policy<{'riscv64': 'm'}>
-CONFIG_RTW89_DEBUG                              policy<{'riscv64': 'y'}>
 CONFIG_RTW89_DEBUGMSG                           policy<{'riscv64': 'y'}>
 CONFIG_RTW89_DEBUGFS                            policy<{'riscv64': 'y'}>
 
@@ -4633,6 +4830,10 @@ CONFIG_WLCORE_SPI                               policy<{'riscv64': 'm'}>
 CONFIG_WLCORE_SDIO                              policy<{'riscv64': 'm'}>
 CONFIG_WILINK_PLATFORM_DATA                     policy<{'riscv64': 'y'}>
 
+# Menu: Device Drivers >> Network device support >> Wireless WAN
+
+# Menu: Device Drivers >> Network device support >> Wireless WAN >> WWAN Driver Core
+
 # Menu: Device Drivers >> Non-Transparent Bridge support
 CONFIG_NTB                                      policy<{'riscv64': 'm'}>
 CONFIG_NTB_MSI                                  policy<{'riscv64': 'y'}>
@@ -4659,6 +4860,8 @@ CONFIG_PCCARD                                   policy<{'riscv64': 'n'}>
 # Menu: Device Drivers >> PCCard (PCMCIA/CardBus) support >> CardBus yenta-compatible bridge support
 
 # Menu: Device Drivers >> PCI support
+CONFIG_VGA_ARB                                  policy<{'riscv64': 'y'}>
+CONFIG_VGA_ARB_MAX_GPUS                         policy<{'riscv64': '16'}>
 CONFIG_PCI                                      policy<{'riscv64': 'y'}>
 CONFIG_PCI_MSI                                  policy<{'riscv64': 'y'}>
 CONFIG_PCI_QUIRKS                               policy<{'riscv64': 'y'}>
@@ -4671,8 +4874,12 @@ CONFIG_PCI_PRI                                  policy<{'riscv64': 'y'}>
 CONFIG_PCI_PASID                                policy<{'riscv64': 'y'}>
 CONFIG_PCIEASPM                                 policy<{'riscv64': 'y'}>
 CONFIG_PCIE_PTM                                 policy<{'riscv64': 'y'}>
+CONFIG_PCIEPORTBUS                              policy<{'riscv64': 'y'}>
+CONFIG_HOTPLUG_PCI_PCIE                         policy<{'riscv64': 'y'}>
 #
 CONFIG_PCI_P2PDMA                               flag<REVIEW>
+CONFIG_PCIEPORTBUS                              mark<ENFORCED> note<LP#1665404>
+CONFIG_HOTPLUG_PCI_PCIE                         mark<ENFORCED> note<LP#1374440>
 
 # Menu: Device Drivers >> PCI support >> Default ASPM policy
 CONFIG_PCIEASPM_DEFAULT                         policy<{'riscv64': 'y'}>
@@ -4683,24 +4890,21 @@ CONFIG_PCIEASPM_PERFORMANCE                     policy<{'riscv64': 'n'}>
 CONFIG_PCIEASPM_DEFAULT                         note<LP#1398544>
 
 # Menu: Device Drivers >> PCI support >> PCI Endpoint
+
+# Menu: Device Drivers >> PCI support >> PCI Endpoint >> PCI Endpoint Support
 CONFIG_PCI_ENDPOINT                             policy<{'riscv64': 'y'}>
 CONFIG_PCI_ENDPOINT_CONFIGFS                    policy<{'riscv64': 'y'}>
 CONFIG_PCI_EPF_TEST                             policy<{'riscv64': 'n'}>
 
-# Menu: Device Drivers >> PCI support >> PCI Express Port Bus support
-CONFIG_PCIEPORTBUS                              policy<{'riscv64': 'y'}>
-CONFIG_HOTPLUG_PCI_PCIE                         policy<{'riscv64': 'y'}>
-#
-CONFIG_PCIEPORTBUS                              mark<ENFORCED> note<LP#1665404>
-CONFIG_HOTPLUG_PCI_PCIE                         mark<ENFORCED> note<LP#1374440>
-
-# Menu: Device Drivers >> PCI support >> PCI Express Port Bus support >> PCI Express Advanced Error Reporting support
+# Menu: Device Drivers >> PCI support >> PCI Express Advanced Error Reporting support
 CONFIG_PCIEAER                                  policy<{'riscv64': 'y'}>
 CONFIG_PCIEAER_INJECT                           policy<{'riscv64': 'n'}>
 CONFIG_PCIE_ECRC                                policy<{'riscv64': 'n'}>
 CONFIG_PCIE_DPC                                 policy<{'riscv64': 'y'}>
 #
 CONFIG_PCIEAER_INJECT                           flag<TESTING>
+
+# Menu: Device Drivers >> PCI support >> PCI Express hierarchy optimization setting
 
 # Menu: Device Drivers >> PCI support >> PCI controller drivers
 CONFIG_PCI_FTPCI100                             policy<{'riscv64': 'y'}>
@@ -4715,6 +4919,7 @@ CONFIG_PCIE_CADENCE_PLAT_EP                     policy<{'riscv64': 'y'}>
 CONFIG_PCIE_DW_PLAT_HOST                        policy<{'riscv64': 'y'}>
 CONFIG_PCIE_DW_PLAT_EP                          policy<{'riscv64': 'y'}>
 CONFIG_PCI_MESON                                policy<{'riscv64': 'n'}>
+CONFIG_PCIE_FU740                               policy<{'riscv64': 'y'}>
 
 # Menu: Device Drivers >> PCI support >> PCI controller drivers >> Mobiveil PCIe Core Support
 
@@ -4728,15 +4933,14 @@ CONFIG_HOTPLUG_PCI_SHPC                         policy<{'riscv64': 'y'}>
 #
 CONFIG_HOTPLUG_PCI_SHPC                         note<LP#1374440>
 
+# Menu: Device Drivers >> PECI support
+
 # Menu: Device Drivers >> PHY Subsystem
 CONFIG_GENERIC_PHY                              policy<{'riscv64': 'y'}>
-CONFIG_BCM_KONA_USB2_PHY                        policy<{'riscv64': 'm'}>
 CONFIG_PHY_CADENCE_TORRENT                      policy<{'riscv64': 'm'}>
 CONFIG_PHY_CADENCE_DPHY                         policy<{'riscv64': 'm'}>
 CONFIG_PHY_CADENCE_SIERRA                       policy<{'riscv64': 'm'}>
 CONFIG_PHY_CADENCE_SALVO                        policy<{'riscv64': 'm'}>
-CONFIG_PHY_FSL_IMX8MQ_USB                       policy<{'riscv64': 'm'}>
-CONFIG_PHY_MIXEL_MIPI_DPHY                      policy<{'riscv64': 'm'}>
 CONFIG_PHY_PXA_28NM_HSIC                        policy<{'riscv64': 'm'}>
 CONFIG_PHY_PXA_28NM_USB2                        policy<{'riscv64': 'm'}>
 CONFIG_PHY_CPCAP_USB                            policy<{'riscv64': 'm'}>
@@ -4746,6 +4950,9 @@ CONFIG_PHY_QCOM_USB_HS                          policy<{'riscv64': 'm'}>
 CONFIG_PHY_QCOM_USB_HSIC                        policy<{'riscv64': 'm'}>
 CONFIG_PHY_SAMSUNG_USB2                         policy<{'riscv64': 'm'}>
 CONFIG_PHY_TUSB1210                             policy<{'riscv64': 'm'}>
+
+# Menu: Device Drivers >> PHY Subsystem >> PHY drivers for Broadcom platforms
+CONFIG_BCM_KONA_USB2_PHY                        policy<{'riscv64': 'm'}>
 
 # Menu: Device Drivers >> PPS support
 CONFIG_PPS                                      policy<{'riscv64': 'y'}>
@@ -4794,12 +5001,22 @@ CONFIG_PINCTRL_RK805                            policy<{'riscv64': 'm'}>
 CONFIG_PINCTRL_OCELOT                           policy<{'riscv64': 'y'}>
 CONFIG_PINCTRL_LOCHNAGAR                        policy<{'riscv64': 'm'}>
 
+# Menu: Device Drivers >> Pin controllers >> Actions Semi OWL pinctrl driver
+
 # Menu: Device Drivers >> Pin controllers >> Amlogic SoC pinctrl drivers
+
+# Menu: Device Drivers >> Pin controllers >> Intel pinctrl drivers
 
 # Menu: Device Drivers >> Pin controllers >> MediaTek pinctrl drivers
 #
 CONFIG_PINCTRL_MT8135                           flag<REVIEW>
 CONFIG_PINCTRL_MT8127                           flag<REVIEW>
+
+# Menu: Device Drivers >> Pin controllers >> Qualcomm core pin controller driver
+
+# Menu: Device Drivers >> Pin controllers >> Ralink pinctrl drivers
+
+# Menu: Device Drivers >> Pin controllers >> Renesas pinctrl drivers
 
 # Menu: Device Drivers >> Pin controllers >> UniPhier SoC pinctrl drivers
 
@@ -4916,9 +5133,7 @@ CONFIG_RAPIDIO_MPORT_CDEV                       policy<{'riscv64': 'm'}>
 CONFIG_RAPIDIO_ENUM_BASIC                       policy<{'riscv64': 'm'}>
 
 # Menu: Device Drivers >> RapidIO support >> RapidIO Switch drivers
-CONFIG_RAPIDIO_TSI57X                           policy<{'riscv64': 'm'}>
 CONFIG_RAPIDIO_CPS_XX                           policy<{'riscv64': 'm'}>
-CONFIG_RAPIDIO_TSI568                           policy<{'riscv64': 'm'}>
 CONFIG_RAPIDIO_CPS_GEN2                         policy<{'riscv64': 'm'}>
 CONFIG_RAPIDIO_RXS_GEN3                         policy<{'riscv64': 'm'}>
 
@@ -4973,7 +5188,6 @@ CONFIG_RTC_DRV_TWL4030                          policy<{'riscv64': 'm'}>
 CONFIG_RTC_DRV_PALMAS                           policy<{'riscv64': 'm'}>
 CONFIG_RTC_DRV_TPS6586X                         policy<{'riscv64': 'm'}>
 CONFIG_RTC_DRV_TPS65910                         policy<{'riscv64': 'm'}>
-CONFIG_RTC_DRV_TPS80031                         policy<{'riscv64': 'm'}>
 CONFIG_RTC_DRV_RC5T583                          policy<{'riscv64': 'm'}>
 CONFIG_RTC_DRV_RC5T619                          policy<{'riscv64': 'm'}>
 CONFIG_RTC_DRV_S35390A                          policy<{'riscv64': 'm'}>
@@ -5079,7 +5293,6 @@ CONFIG_IR_GPIO_TX                               policy<{'riscv64': 'm'}>
 CONFIG_IR_PWM_TX                                policy<{'riscv64': 'm'}>
 CONFIG_IR_SERIAL                                policy<{'riscv64': 'm'}>
 CONFIG_IR_SERIAL_TRANSMITTER                    policy<{'riscv64': 'y'}>
-CONFIG_IR_SIR                                   policy<{'riscv64': 'm'}>
 CONFIG_RC_XBOX_DVD                              policy<{'riscv64': 'm'}>
 
 # Menu: Device Drivers >> Remote Controller support >> Remote Controller devices >> Hardware decoder
@@ -5108,6 +5321,7 @@ CONFIG_RESET_CONTROLLER                         policy<{'riscv64': 'y'}>
 CONFIG_RESET_BRCMSTB_RESCAL                     policy<{'riscv64': '-'}>
 CONFIG_RESET_INTEL_GW                           policy<{'riscv64': '-'}>
 CONFIG_RESET_TI_SYSCON                          policy<{'riscv64': 'm'}>
+CONFIG_RESET_SIMPLE                             policy<{'riscv64': 'y'}>
 
 # Menu: Device Drivers >> Rpmsg drivers
 CONFIG_RPMSG_CHAR                               policy<{'riscv64': 'm'}>
@@ -5129,6 +5343,7 @@ CONFIG_SCSI_ENCLOSURE                           policy<{'riscv64': 'm'}>
 CONFIG_SCSI_CONSTANTS                           policy<{'riscv64': 'y'}>
 CONFIG_SCSI_LOGGING                             policy<{'riscv64': 'y'}>
 CONFIG_SCSI_SCAN_ASYNC                          policy<{'riscv64': 'y'}>
+CONFIG_BLK_DEV_BSG                              policy<{'riscv64': 'y'}>
 #
 CONFIG_SCSI                                     flag<REVIEW>
 CONFIG_CHR_DEV_SG                               note<not autoloadable>
@@ -5271,11 +5486,15 @@ CONFIG_SLIM_QCOM_CTRL                           policy<{'riscv64': 'm'}>
 # Menu: Device Drivers >> SOC (System On Chip) specific Drivers
 CONFIG_SIFIVE_L2                                policy<{'riscv64': 'y'}>
 
+# Menu: Device Drivers >> SOC (System On Chip) specific Drivers >> ASPEED SoC drivers
+
 # Menu: Device Drivers >> SOC (System On Chip) specific Drivers >> Amlogic SoC drivers
 
-# Menu: Device Drivers >> SOC (System On Chip) specific Drivers >> Aspeed SoC drivers
+# Menu: Device Drivers >> SOC (System On Chip) specific Drivers >> Apple SoC drivers
 
 # Menu: Device Drivers >> SOC (System On Chip) specific Drivers >> Broadcom SoC drivers
+
+# Menu: Device Drivers >> SOC (System On Chip) specific Drivers >> Enable LiteX SoC Builder specific drivers
 
 # Menu: Device Drivers >> SOC (System On Chip) specific Drivers >> IXP4xx SoC drivers
 
@@ -5301,16 +5520,12 @@ CONFIG_SOC_TI                                   policy<{'riscv64': 'y'}>
 CONFIG_SOC_TI                                   flag<REVIEW>
 
 # Menu: Device Drivers >> SOC (System On Chip) specific Drivers >> Xilinx SoC drivers
-CONFIG_XILINX_VCU                               policy<{'riscv64': 'm'}>
-
-# Menu: Device Drivers >> SOC (System On Chip) specific Drivers >> ZTE SoC driver support
 
 # Menu: Device Drivers >> SOC (System On Chip) specific Drivers >> i.MX SoC drivers
 
 # Menu: Device Drivers >> SPI support
 CONFIG_SPI                                      policy<{'riscv64': 'y'}>
 CONFIG_SPI_DEBUG                                policy<{'riscv64': 'n'}>
-CONFIG_SPI_MEM                                  policy<{'riscv64': 'y'}>
 CONFIG_SPI_ALTERA                               policy<{'riscv64': 'm'}>
 CONFIG_SPI_AXI_SPI_ENGINE                       policy<{'riscv64': 'm'}>
 CONFIG_SPI_BITBANG                              policy<{'riscv64': 'm'}>
@@ -5345,6 +5560,9 @@ CONFIG_SPI_DESIGNWARE                           policy<{'riscv64': 'm'}>
 CONFIG_SPI_DW_DMA                               policy<{'riscv64': 'y'}>
 CONFIG_SPI_DW_PCI                               policy<{'riscv64': 'm'}>
 CONFIG_SPI_DW_MMIO                              policy<{'riscv64': 'm'}>
+
+# Menu: Device Drivers >> SPI support >> SPI memory extension
+CONFIG_SPI_MEM                                  policy<{'riscv64': 'y'}>
 
 # Menu: Device Drivers >> SPMI support
 CONFIG_SPMI                                     policy<{'riscv64': 'm'}>
@@ -5384,7 +5602,6 @@ CONFIG_ATA_BMDMA                                policy<{'riscv64': 'y'}>
 CONFIG_ATA_PIIX                                 policy<{'riscv64': 'm'}>
 CONFIG_SATA_DWC                                 policy<{'riscv64': 'm'}>
 CONFIG_SATA_DWC_OLD_DMA                         policy<{'riscv64': 'y'}>
-CONFIG_SATA_DWC_DEBUG                           policy<{'riscv64': 'n'}>
 CONFIG_SATA_MV                                  policy<{'riscv64': 'm'}>
 CONFIG_SATA_NV                                  policy<{'riscv64': 'm'}>
 CONFIG_SATA_PROMISE                             policy<{'riscv64': 'm'}>
@@ -5496,9 +5713,13 @@ CONFIG_SND_AUDIO_GRAPH_CARD                     policy<{'riscv64': 'm'}>
 #
 CONFIG_SND_SOC                                  note<not autoloadable on omap>
 
+# Menu: Device Drivers >> Sound card support >> Advanced Linux Sound Architecture >> ALSA for SoC audio support >> AMD Audio ACP Common support
+
 # Menu: Device Drivers >> Sound card support >> Advanced Linux Sound Architecture >> ALSA for SoC audio support >> ASoC support for Amlogic platforms
 
 # Menu: Device Drivers >> Sound card support >> Advanced Linux Sound Architecture >> ALSA for SoC audio support >> ASoC support for Mediatek MT8173 chip
+
+# Menu: Device Drivers >> Sound card support >> Advanced Linux Sound Architecture >> ALSA for SoC audio support >> ASoC support for QCOM platforms
 
 # Menu: Device Drivers >> Sound card support >> Advanced Linux Sound Architecture >> ALSA for SoC audio support >> ASoC support for Rockchip
 
@@ -5576,7 +5797,6 @@ CONFIG_SND_SOC_MAX98357A                        policy<{'riscv64': 'm'}>
 CONFIG_SND_SOC_MAX98504                         policy<{'riscv64': 'm'}>
 CONFIG_SND_SOC_MAX9867                          policy<{'riscv64': 'm'}>
 CONFIG_SND_SOC_MAX98927                         policy<{'riscv64': 'm'}>
-CONFIG_SND_SOC_MAX98373                         policy<{'riscv64': 'm'}>
 CONFIG_SND_SOC_MAX98390                         policy<{'riscv64': 'm'}>
 CONFIG_SND_SOC_MAX9860                          policy<{'riscv64': 'm'}>
 CONFIG_SND_SOC_MSM8916_WCD_ANALOG               policy<{'riscv64': 'm'}>
@@ -5625,7 +5845,6 @@ CONFIG_SND_SOC_TLV320AIC23_SPI                  policy<{'riscv64': 'm'}>
 CONFIG_SND_SOC_TLV320AIC31XX                    policy<{'riscv64': 'm'}>
 CONFIG_SND_SOC_TLV320AIC32X4_I2C                policy<{'riscv64': 'm'}>
 CONFIG_SND_SOC_TLV320AIC32X4_SPI                policy<{'riscv64': 'm'}>
-CONFIG_SND_SOC_TLV320AIC3X                      policy<{'riscv64': 'm'}>
 CONFIG_SND_SOC_TLV320ADCX140                    policy<{'riscv64': 'm'}>
 CONFIG_SND_SOC_TS3A227E                         policy<{'riscv64': 'm'}>
 CONFIG_SND_SOC_TSCS42XX                         policy<{'riscv64': 'm'}>
@@ -5715,10 +5934,8 @@ CONFIG_SND_SOC_MIKROE_PROTO                     policy<{'riscv64': 'm'}>
 CONFIG_SND_SOC_SOF_TOPLEVEL                     policy<{'riscv64': 'y'}>
 CONFIG_SND_SOC_SOF_PCI                          policy<{'riscv64': 'm'}>
 CONFIG_SND_SOC_SOF_OF                           policy<{'riscv64': 'm'}>
-CONFIG_SND_SOC_SOF_DEBUG_PROBES                 policy<{'riscv64': 'n'}>
 
 # Menu: Device Drivers >> Sound card support >> Advanced Linux Sound Architecture >> ALSA for SoC audio support >> Sound Open Firmware Support >> SOF developer options support
-CONFIG_SND_SOC_SOF_DEVELOPER_SUPPORT            policy<{'riscv64': 'n'}>
 
 # Menu: Device Drivers >> Sound card support >> Advanced Linux Sound Architecture >> ALSA for SoC audio support >> Sound Open Firmware Support >> SOF developer options support >> SOF debugging features
 
@@ -5891,7 +6108,6 @@ CONFIG_RTL8192U                                 policy<{'riscv64': 'm'}>
 CONFIG_RTL8723BS                                policy<{'riscv64': 'm'}>
 CONFIG_R8712U                                   policy<{'riscv64': 'm'}>
 CONFIG_R8188EU                                  policy<{'riscv64': 'm'}>
-CONFIG_88EU_AP_MODE                             policy<{'riscv64': 'y'}>
 CONFIG_RTS5208                                  policy<{'riscv64': 'm'}>
 CONFIG_VT6655                                   policy<{'riscv64': 'm'}>
 CONFIG_VT6656                                   policy<{'riscv64': 'm'}>
@@ -5901,7 +6117,6 @@ CONFIG_LTE_GDM724X                              policy<{'riscv64': 'm'}>
 CONFIG_FIREWIRE_SERIAL                          policy<{'riscv64': 'm'}>
 CONFIG_FWTTY_MAX_TOTAL_PORTS                    policy<{'riscv64': '64'}>
 CONFIG_FWTTY_MAX_CARD_PORTS                     policy<{'riscv64': '32'}>
-CONFIG_GS_FPGABOOT                              policy<{'riscv64': 'm'}>
 CONFIG_KS7010                                   policy<{'riscv64': 'm'}>
 CONFIG_PI433                                    policy<{'riscv64': 'm'}>
 CONFIG_XIL_AXIS_FIFO                            policy<{'riscv64': 'm'}>
@@ -5910,147 +6125,13 @@ CONFIG_WFX                                      policy<{'riscv64': 'm'}>
 #
 CONFIG_STAGING                                  flag<REVIEW>
 
-# Menu: Device Drivers >> Staging drivers >> Android
-CONFIG_ASHMEM                                   policy<{'riscv64': 'm'}>
-
-# Menu: Device Drivers >> Staging drivers >> Daktronics KPC Device support
-
-# Menu: Device Drivers >> Staging drivers >> Data acquisition support (comedi)
-CONFIG_COMEDI                                   policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_DEBUG                             policy<{'riscv64': 'n'}>
-CONFIG_COMEDI_DEFAULT_BUF_SIZE_KB               policy<{'riscv64': '2048'}>
-CONFIG_COMEDI_DEFAULT_BUF_MAXSIZE_KB            policy<{'riscv64': '20480'}>
-CONFIG_COMEDI_8255_SA                           policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_KCOMEDILIB                        policy<{'riscv64': 'm'}>
-
-# Menu: Device Drivers >> Staging drivers >> Data acquisition support (comedi) >> Comedi ISA and PC/104 drivers
-CONFIG_COMEDI_ISA_DRIVERS                       policy<{'riscv64': 'y'}>
-CONFIG_COMEDI_PCL711                            policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_PCL724                            policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_PCL726                            policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_PCL730                            policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_PCL812                            policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_PCL816                            policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_PCL818                            policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_PCM3724                           policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_AMPLC_DIO200_ISA                  policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_AMPLC_PC236_ISA                   policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_AMPLC_PC263_ISA                   policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_RTI800                            policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_RTI802                            policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_DAC02                             policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_DAS16M1                           policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_DAS08_ISA                         policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_DAS16                             policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_DAS800                            policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_DAS1800                           policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_DAS6402                           policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_DT2801                            policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_DT2811                            policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_DT2814                            policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_DT2815                            policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_DT2817                            policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_DT282X                            policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_DMM32AT                           policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_FL512                             policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_AIO_AIO12_8                       policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_AIO_IIRO_16                       policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_II_PCI20KC                        policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_C6XDIGIO                          policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_MPC624                            policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_ADQ12B                            policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_NI_AT_A2150                       policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_NI_AT_AO                          policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_NI_ATMIO                          policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_NI_ATMIO16D                       policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_NI_LABPC_ISA                      policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_PCMAD                             policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_PCMDA12                           policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_PCMMIO                            policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_PCMUIO                            policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_MULTIQ3                           policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_S526                              policy<{'riscv64': 'm'}>
-
-# Menu: Device Drivers >> Staging drivers >> Data acquisition support (comedi) >> Comedi PCI drivers
-CONFIG_COMEDI_PCI_DRIVERS                       policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_8255_PCI                          policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_ADDI_APCI_1032                    policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_ADDI_APCI_1500                    policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_ADDI_APCI_1516                    policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_ADDI_APCI_1564                    policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_ADDI_APCI_16XX                    policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_ADDI_APCI_2032                    policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_ADDI_APCI_2200                    policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_ADDI_APCI_3120                    policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_ADDI_APCI_3501                    policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_ADDI_APCI_3XXX                    policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_ADL_PCI6208                       policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_ADL_PCI7X3X                       policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_ADL_PCI8164                       policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_ADL_PCI9111                       policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_ADL_PCI9118                       policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_ADV_PCI1710                       policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_ADV_PCI1720                       policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_ADV_PCI1723                       policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_ADV_PCI1724                       policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_ADV_PCI1760                       policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_ADV_PCI_DIO                       policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_AMPLC_DIO200_PCI                  policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_AMPLC_PC236_PCI                   policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_AMPLC_PC263_PCI                   policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_AMPLC_PCI224                      policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_AMPLC_PCI230                      policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_CONTEC_PCI_DIO                    policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_DAS08_PCI                         policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_DT3000                            policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_DYNA_PCI10XX                      policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_GSC_HPDI                          policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_MF6X4                             policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_ICP_MULTI                         policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_DAQBOARD2000                      policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_JR3_PCI                           policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_KE_COUNTER                        policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_CB_PCIDAS64                       policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_CB_PCIDAS                         policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_CB_PCIDDA                         policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_CB_PCIMDAS                        policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_CB_PCIMDDA                        policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_ME4000                            policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_ME_DAQ                            policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_NI_6527                           policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_NI_65XX                           policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_NI_660X                           policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_NI_670X                           policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_NI_LABPC_PCI                      policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_NI_PCIDIO                         policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_NI_PCIMIO                         policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_RTD520                            policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_S626                              policy<{'riscv64': 'm'}>
-
-# Menu: Device Drivers >> Staging drivers >> Data acquisition support (comedi) >> Comedi PCMCIA drivers
-
-# Menu: Device Drivers >> Staging drivers >> Data acquisition support (comedi) >> Comedi USB drivers
-CONFIG_COMEDI_USB_DRIVERS                       policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_DT9812                            policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_NI_USB6501                        policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_USBDUX                            policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_USBDUXFAST                        policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_USBDUXSIGMA                       policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_VMK80XX                           policy<{'riscv64': 'm'}>
-
-# Menu: Device Drivers >> Staging drivers >> Data acquisition support (comedi) >> Comedi misc drivers
-CONFIG_COMEDI_MISC_DRIVERS                      policy<{'riscv64': 'y'}>
-CONFIG_COMEDI_BOND                              policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_TEST                              policy<{'riscv64': 'm'}>
-CONFIG_COMEDI_PARPORT                           policy<{'riscv64': 'm'}>
+# Menu: Device Drivers >> Staging drivers >> Broadcom VideoCore support
 
 # Menu: Device Drivers >> Staging drivers >> Fieldbus Device Support
 CONFIG_FIELDBUS_DEV                             policy<{'riscv64': 'm'}>
 CONFIG_HMS_ANYBUSS_BUS                          policy<{'riscv64': 'm'}>
 CONFIG_ARCX_ANYBUS_CONTROLLER                   policy<{'riscv64': 'm'}>
 CONFIG_HMS_PROFINET                             policy<{'riscv64': 'm'}>
-
-# Menu: Device Drivers >> Staging drivers >> Gasket devices
 
 # Menu: Device Drivers >> Staging drivers >> Greybus Bridged PHY Class drivers
 
@@ -6072,10 +6153,8 @@ CONFIG_ADT7316_I2C                              policy<{'riscv64': 'm'}>
 
 # Menu: Device Drivers >> Staging drivers >> IIO staging drivers >> Analog to digital converters
 CONFIG_AD7816                                   policy<{'riscv64': 'm'}>
-CONFIG_AD7280                                   policy<{'riscv64': 'm'}>
 
 # Menu: Device Drivers >> Staging drivers >> IIO staging drivers >> Capacitance to digital converters
-CONFIG_AD7150                                   policy<{'riscv64': 'm'}>
 CONFIG_AD7746                                   policy<{'riscv64': 'm'}>
 
 # Menu: Device Drivers >> Staging drivers >> IIO staging drivers >> Direct Digital Synthesis
@@ -6090,7 +6169,6 @@ CONFIG_AD2S1210                                 policy<{'riscv64': 'm'}>
 
 # Menu: Device Drivers >> Staging drivers >> MOST support
 CONFIG_MOST_COMPONENTS                          policy<{'riscv64': 'm'}>
-CONFIG_MOST_CDEV                                policy<{'riscv64': 'm'}>
 CONFIG_MOST_NET                                 policy<{'riscv64': 'm'}>
 CONFIG_MOST_VIDEO                               policy<{'riscv64': 'm'}>
 CONFIG_MOST_DIM2                                policy<{'riscv64': 'm'}>
@@ -6099,17 +6177,23 @@ CONFIG_MOST_I2C                                 policy<{'riscv64': 'm'}>
 # Menu: Device Drivers >> Staging drivers >> Media staging drivers
 CONFIG_STAGING_MEDIA                            policy<{'riscv64': 'y'}>
 
+# Menu: Device Drivers >> Staging drivers >> Media staging drivers >> AV7110 cards
+CONFIG_DVB_SP8870                               policy<{'riscv64': 'm'}>
+CONFIG_DVB_AV7110                               policy<{'riscv64': 'm'}>
+CONFIG_DVB_AV7110_OSD                           policy<{'riscv64': 'y'}>
+CONFIG_DVB_BUDGET_PATCH                         policy<{'riscv64': 'm'}>
+
 # Menu: Device Drivers >> Staging drivers >> Media staging drivers >> Enable support to Intel Atom ISP camera drivers
 
 # Menu: Device Drivers >> Staging drivers >> Media staging drivers >> Enable support to Intel Atom ISP camera drivers >> Intel Atom Image Signal Processor Driver
 
-# Menu: Device Drivers >> Staging drivers >> Media staging drivers >> SoC camera support
+# Menu: Device Drivers >> Staging drivers >> Media staging drivers >> Hantro VPU driver
 
-# Menu: Device Drivers >> Staging drivers >> Media staging drivers >> i.MX5/6/7 Media Sub devices
+# Menu: Device Drivers >> Staging drivers >> Media staging drivers >> Zoran ZR36060
+
+# Menu: Device Drivers >> Staging drivers >> Media staging drivers >> i.MX5/6/7/8 Media Sub devices
 
 # Menu: Device Drivers >> Staging drivers >> NV Tegra Embedded Controller SMBus Interface
-
-# Menu: Device Drivers >> Staging drivers >> Speakup console speech
 
 # Menu: Device Drivers >> Staging drivers >> Support for rtllib wireless devices
 CONFIG_RTLLIB                                   policy<{'riscv64': 'm'}>
@@ -6151,7 +6235,6 @@ CONFIG_FB_TFT_TLS8204                           policy<{'riscv64': 'm'}>
 CONFIG_FB_TFT_UC1611                            policy<{'riscv64': 'm'}>
 CONFIG_FB_TFT_UC1701                            policy<{'riscv64': 'm'}>
 CONFIG_FB_TFT_UPD161704                         policy<{'riscv64': 'm'}>
-CONFIG_FB_TFT_WATTEROTT                         policy<{'riscv64': 'm'}>
 
 # Menu: Device Drivers >> Staging drivers >> Unisys SPAR driver support
 CONFIG_UNISYSSPAR                               policy<{'riscv64': 'y'}>
@@ -6563,9 +6646,14 @@ CONFIG_TYPEC_MUX_PI3USB30532                    policy<{'riscv64': 'm'}>
 
 # Menu: Device Drivers >> USB support >> USB Type-C Support >> USB Type-C Port Controller Manager
 CONFIG_TYPEC_TCPM                               policy<{'riscv64': 'm'}>
+CONFIG_TYPEC_FUSB302                            policy<{'riscv64': 'm'}>
+
+# Menu: Device Drivers >> USB support >> USB Type-C Support >> USB Type-C Port Controller Manager >> Type-C Port Controller Interface driver
 CONFIG_TYPEC_TCPCI                              policy<{'riscv64': 'm'}>
 CONFIG_TYPEC_RT1711H                            policy<{'riscv64': 'm'}>
-CONFIG_TYPEC_FUSB302                            policy<{'riscv64': 'm'}>
+
+# Menu: Device Drivers >> Unified support for USB4 and Thunderbolt
+CONFIG_USB4                                     policy<{'riscv64': 'm'}>
 
 # Menu: Device Drivers >> Userspace I/O drivers
 CONFIG_UIO                                      policy<{'riscv64': 'm'}>
@@ -6729,7 +6817,6 @@ CONFIG_REGULATOR_TPS6524X                       policy<{'riscv64': 'm'}>
 CONFIG_REGULATOR_TPS6586X                       policy<{'riscv64': 'm'}>
 CONFIG_REGULATOR_TPS65910                       policy<{'riscv64': 'm'}>
 CONFIG_REGULATOR_TPS65912                       policy<{'riscv64': 'm'}>
-CONFIG_REGULATOR_TPS80031                       policy<{'riscv64': 'm'}>
 CONFIG_REGULATOR_TWL4030                        policy<{'riscv64': 'm'}>
 CONFIG_REGULATOR_VCTRL                          policy<{'riscv64': 'm'}>
 CONFIG_REGULATOR_WM831X                         policy<{'riscv64': 'm'}>
@@ -6788,9 +6875,13 @@ CONFIG_WATCHDOG_PRETIMEOUT_DEFAULT_GOV_PANIC    policy<{'riscv64': 'n'}>
 
 # Menu: Device Drivers >> X86 Platform Specific Device Drivers
 
-# Menu: Device Drivers >> X86 Platform Specific Device Drivers >> Dell SMBIOS driver
+# Menu: Device Drivers >> X86 Platform Specific Device Drivers >> Dell X86 Platform Specific Device Drivers
+
+# Menu: Device Drivers >> X86 Platform Specific Device Drivers >> Dell X86 Platform Specific Device Drivers >> Dell SMBIOS driver
 
 # Menu: Device Drivers >> X86 Platform Specific Device Drivers >> Intel Speed Select Technology interface support
+
+# Menu: Device Drivers >> X86 Platform Specific Device Drivers >> Intel Uncore Frequency Control
 
 # Menu: Device Drivers >> X86 Platform Specific Device Drivers >> ThinkPad ACPI Laptop Extras
 
@@ -6816,7 +6907,7 @@ CONFIG_MODULE_ALLOW_MISSING_NAMESPACE_IMPORTS   policy<{'riscv64': 'n'}>
 #
 CONFIG_MODVERSIONS                              mark<ENFORCED> note<LP:1898716 -- required as we have a livepatch/drivers modules signing key>
 
-# Menu: Enable loadable module support >> Compression algorithm
+# Menu: Enable loadable module support >> Module compression mode
 
 # Menu: Enable loadable module support >> Module signature verification
 CONFIG_MODULE_SIG                               policy<{'riscv64': 'y'}>
@@ -6832,7 +6923,6 @@ CONFIG_MODULE_SIG_SHA512                        policy<{'riscv64': 'y'}>
 
 # Menu: Enable the block layer
 CONFIG_BLOCK                                    policy<{'riscv64': 'y'}>
-CONFIG_BLK_DEV_BSG                              policy<{'riscv64': 'y'}>
 CONFIG_BLK_DEV_BSGLIB                           policy<{'riscv64': 'y'}>
 CONFIG_BLK_DEV_INTEGRITY                        policy<{'riscv64': 'y'}>
 CONFIG_BLK_DEV_ZONED                            policy<{'riscv64': 'y'}>
@@ -6911,7 +7001,6 @@ CONFIG_GFS2_FS                                  policy<{'riscv64': 'm'}>
 CONFIG_GFS2_FS_LOCKING_DLM                      policy<{'riscv64': 'y'}>
 CONFIG_NILFS2_FS                                policy<{'riscv64': 'm'}>
 CONFIG_ZONEFS_FS                                policy<{'riscv64': 'm'}>
-CONFIG_FS_DAX                                   policy<{'riscv64': 'y'}>
 CONFIG_EXPORTFS_BLOCK_OPS                       policy<{'riscv64': 'y'}>
 CONFIG_FILE_LOCKING                             policy<{'riscv64': 'y'}>
 CONFIG_FS_ENCRYPTION                            policy<{'riscv64': 'y'}>
@@ -6955,8 +7044,6 @@ CONFIG_UDF_FS                                   policy<{'riscv64': 'm'}>
 # Menu: File systems >> Caches
 CONFIG_CACHEFILES                               policy<{'riscv64': 'm'}>
 CONFIG_CACHEFILES_DEBUG                         policy<{'riscv64': 'n'}>
-
-# Menu: File systems >> Caches >> General filesystem local caching manager
 CONFIG_FSCACHE                                  policy<{'riscv64': 'm'}>
 CONFIG_FSCACHE_STATS                            policy<{'riscv64': 'y'}>
 CONFIG_FSCACHE_DEBUG                            policy<{'riscv64': 'n'}>
@@ -6968,14 +7055,14 @@ CONFIG_MSDOS_FS                                 policy<{'riscv64': 'm'}>
 CONFIG_NTFS_FS                                  policy<{'riscv64': 'm'}>
 CONFIG_NTFS_DEBUG                               policy<{'riscv64': 'n'}>
 CONFIG_NTFS_RW                                  policy<{'riscv64': 'n'}>
-
-# Menu: File systems >> DOS/FAT/EXFAT/NT Filesystems >> VFAT (Windows-95) fs support
 CONFIG_VFAT_FS                                  policy<{'riscv64': 'y'}>
 CONFIG_FAT_DEFAULT_CODEPAGE                     policy<{'riscv64': '437'}>
 CONFIG_FAT_DEFAULT_IOCHARSET                    policy<{'riscv64': '"iso8859-1"'}>
 CONFIG_FAT_DEFAULT_UTF8                         policy<{'riscv64': 'n'}>
 #
 CONFIG_VFAT_FS                                  mark<ENFORCED> note<needed on arm to ensure we can write the kernel when replacing>
+
+# Menu: File systems >> DOS/FAT/EXFAT/NT Filesystems >> NTFS Read-Write file system support
 
 # Menu: File systems >> Distributed Lock Manager (DLM)
 CONFIG_DLM                                      policy<{'riscv64': 'm'}>
@@ -7035,10 +7122,6 @@ CONFIG_UFS_FS_WRITE                             policy<{'riscv64': 'n'}>
 CONFIG_UFS_DEBUG                                policy<{'riscv64': 'n'}>
 #
 CONFIG_ECRYPT_FS                                mark<ENFORCED> note<not autoloadable>
-
-# Menu: File systems >> Miscellaneous filesystems >> Aufs (Advanced multi layered unification filesystem) support
-
-# Menu: File systems >> Miscellaneous filesystems >> Aufs (Advanced multi layered unification filesystem) support >> method
 
 # Menu: File systems >> Miscellaneous filesystems >> Default pstore compression algorithm
 CONFIG_PSTORE_DEFLATE_COMPRESS_DEFAULT          policy<{'riscv64': 'y'}>
@@ -7192,7 +7275,6 @@ CONFIG_NLS                                      note<dependancy of boot essentia
 # Menu: File systems >> Network File Systems
 CONFIG_NETWORK_FILESYSTEMS                      policy<{'riscv64': 'y'}>
 CONFIG_NFSD                                     policy<{'riscv64': 'm'}>
-CONFIG_NFSD_V3                                  policy<{'riscv64': 'y'}>
 CONFIG_NFSD_V3_ACL                              policy<{'riscv64': 'y'}>
 CONFIG_RPCSEC_GSS_KRB5                          policy<{'riscv64': 'm'}>
 CONFIG_SUNRPC_DISABLE_INSECURE_ENCTYPES         policy<{'riscv64': 'n'}>
@@ -7258,6 +7340,8 @@ CONFIG_CIFS_FSCACHE                             policy<{'riscv64': 'y'}>
 #
 CONFIG_CIFS_ALLOW_INSECURE_LEGACY               flag<REVIEW>
 
+# Menu: File systems >> Network File Systems >> SMB3 server support (EXPERIMENTAL)
+
 # Menu: File systems >> OCFS2 file system support
 CONFIG_OCFS2_FS                                 policy<{'riscv64': 'm'}>
 CONFIG_OCFS2_FS_O2CB                            policy<{'riscv64': 'm'}>
@@ -7279,22 +7363,25 @@ CONFIG_OVERLAY_FS_METACOPY                      flag<REVIEW>
 # Menu: File systems >> Pseudo filesystems
 CONFIG_PROC_CHILDREN                            policy<{'riscv64': 'y'}>
 CONFIG_SYSFS                                    policy<{'riscv64': 'y'}>
-CONFIG_TMPFS                                    policy<{'riscv64': 'y'}>
-CONFIG_TMPFS_POSIX_ACL                          policy<{'riscv64': 'y'}>
-CONFIG_TMPFS_XATTR                              policy<{'riscv64': 'y'}>
 CONFIG_HUGETLBFS                                policy<{'riscv64': 'y'}>
 CONFIG_CONFIGFS_FS                              policy<{'riscv64': 'y'}>
 CONFIG_EFIVAR_FS                                policy<{'riscv64': 'm'}>
 #
 CONFIG_CONFIGFS_FS                              flag<REVIEW>
 CONFIG_EFIVAR_FS                                note<needed for variable EFI update>
-CONFIG_TMPFS_POSIX_ACL                          mark<ENFORCED> note<some /dev nodes require POSIX ACLs, like /dev/dsp>
 
 # Menu: File systems >> Pseudo filesystems >> /proc file system support
 CONFIG_PROC_FS                                  policy<{'riscv64': 'y'}>
 CONFIG_PROC_KCORE                               policy<{'riscv64': 'y'}>
 CONFIG_PROC_SYSCTL                              policy<{'riscv64': 'y'}>
 CONFIG_PROC_PAGE_MONITOR                        policy<{'riscv64': 'y'}>
+
+# Menu: File systems >> Pseudo filesystems >> Tmpfs virtual memory file system support (former shm fs)
+CONFIG_TMPFS                                    policy<{'riscv64': 'y'}>
+CONFIG_TMPFS_POSIX_ACL                          policy<{'riscv64': 'y'}>
+CONFIG_TMPFS_XATTR                              policy<{'riscv64': 'y'}>
+#
+CONFIG_TMPFS_POSIX_ACL                          mark<ENFORCED> note<some /dev nodes require POSIX ACLs, like /dev/dsp>
 
 # Menu: File systems >> Quota support
 CONFIG_QUOTA                                    policy<{'riscv64': 'y'}>
@@ -7303,7 +7390,7 @@ CONFIG_QUOTA_DEBUG                              policy<{'riscv64': 'n'}>
 CONFIG_QFMT_V1                                  policy<{'riscv64': 'm'}>
 CONFIG_QFMT_V2                                  policy<{'riscv64': 'm'}>
 
-# Menu: File systems >> Reiserfs support
+# Menu: File systems >> Reiserfs support (deprecated)
 CONFIG_REISERFS_FS                              policy<{'riscv64': 'm'}>
 CONFIG_REISERFS_CHECK                           policy<{'riscv64': 'n'}>
 CONFIG_REISERFS_PROC_INFO                       policy<{'riscv64': 'n'}>
@@ -7332,14 +7419,18 @@ CONFIG_ARCH_MMAP_RND_BITS                       policy<{'riscv64': '18'}>
 CONFIG_COMPAT_32BIT_TIME                        policy<{'riscv64': 'y'}>
 CONFIG_STRICT_KERNEL_RWX                        policy<{'riscv64': 'y'}>
 CONFIG_LOCK_EVENT_COUNTS                        policy<{'riscv64': 'n'}>
-#
 CONFIG_JUMP_LABEL                               policy<{'riscv64': 'y'}>
+CONFIG_SECCOMP                                  policy<{'riscv64': 'y'}>
+#
 CONFIG_JUMP_LABEL                               flag<REVIEW>
+CONFIG_SECCOMP                                  mark<ENFORCED>
 
 # Menu: General architecture-dependent options >> GCC plugins
 
 # Menu: General architecture-dependent options >> GCOV-based kernel profiling
 CONFIG_GCOV_KERNEL                              policy<{'riscv64': 'n'}>
+
+# Menu: General architecture-dependent options >> Link Time Optimization (LTO) >> Architecture: riscv
 
 # Menu: General setup
 CONFIG_COMPILE_TEST                             policy<{'riscv64': 'n'}>
@@ -7367,8 +7458,6 @@ CONFIG_SCHED_AUTOGROUP                          policy<{'riscv64': 'y'}>
 CONFIG_SYSFS_DEPRECATED                         policy<{'riscv64': 'n'}>
 CONFIG_RELAY                                    policy<{'riscv64': 'y'}>
 CONFIG_BOOT_CONFIG                              policy<{'riscv64': 'y'}>
-CONFIG_BPF_SYSCALL                              policy<{'riscv64': 'y'}>
-CONFIG_BPF_JIT_ALWAYS_ON                        policy<{'riscv64': 'y'}>
 CONFIG_USERFAULTFD                              policy<{'riscv64': 'y'}>
 CONFIG_EMBEDDED                                 policy<{'riscv64': 'n'}>
 CONFIG_COMPAT_BRK                               policy<{'riscv64': 'n'}>
@@ -7382,8 +7471,16 @@ CONFIG_PROFILING                                policy<{'riscv64': 'y'}>
 CONFIG_SYSFS_DEPRECATED                         mark<ENFORCED> note<ensure nothing is using these deprecated interfaces>
 CONFIG_COMPAT_BRK                               mark<ENFORCED> note<disables brk ASLR>
 CONFIG_NUMA_BALANCING_DEFAULT_ENABLED           note<LP:1557690>
-CONFIG_BPF_JIT_ALWAYS_ON                        flag<REVIEW>
 CONFIG_LOCALVERSION_AUTO                        mark<ENFORCED> note<triggers packaging failures>
+
+# Menu: General setup >> BPF subsystem
+CONFIG_BPF_SYSCALL                              policy<{'riscv64': 'y'}>
+CONFIG_BPF_JIT_ALWAYS_ON                        policy<{'riscv64': 'y'}>
+CONFIG_BPF_JIT                                  policy<{'riscv64': 'y'}>
+#
+CONFIG_BPF_JIT_ALWAYS_ON                        flag<REVIEW>
+
+# Menu: General setup >> BPF subsystem >> Preload BPF file system with kernel specific program and map iterators
 
 # Menu: General setup >> CPU/Task time and stats accounting
 CONFIG_BSD_PROCESS_ACCT                         policy<{'riscv64': 'y'}>
@@ -7507,7 +7604,6 @@ CONFIG_RCU_EXPERT                               policy<{'riscv64': 'n'}>
 CONFIG_RCU_EXPERT                               flag<REVIEW>
 
 # Menu: General setup >> Scheduler features
-#
 
 # Menu: General setup >> Timers subsystem
 CONFIG_NO_HZ                                    policy<{'riscv64': 'y'}>
@@ -7523,10 +7619,7 @@ CONFIG_NO_HZ_IDLE                               policy<{'riscv64': 'y'}>
 CONFIG_NO_HZ_IDLE                               note<LP:1413968>
 
 # Menu: Kernel features >> Architecture: riscv
-CONFIG_SECCOMP                                  policy<{'riscv64': 'y'}>
 CONFIG_RISCV_SBI_V01                            policy<{'riscv64': 'n'}>
-#
-CONFIG_SECCOMP                                  mark<ENFORCED>
 
 # Menu: Kernel features >> Timer frequency
 CONFIG_HZ_100                                   policy<{'riscv64': 'n'}>
@@ -7549,18 +7642,16 @@ CONFIG_DEBUG_SECTION_MISMATCH                   policy<{'riscv64': 'n'}>
 CONFIG_SECTION_MISMATCH_WARN_ONLY               policy<{'riscv64': 'y'}>
 CONFIG_FRAME_POINTER                            policy<{'riscv64': 'y'}>
 CONFIG_DEBUG_FORCE_WEAK_PER_CPU                 policy<{'riscv64': 'n'}>
-
-# Menu: Kernel hacking >> Compile-time checks and compiler options >> Compile the kernel with debug info
-CONFIG_DEBUG_INFO                               policy<{'riscv64': 'y'}>
 CONFIG_DEBUG_INFO_REDUCED                       policy<{'riscv64': 'n'}>
 CONFIG_DEBUG_INFO_COMPRESSED                    policy<{'riscv64': 'n'}>
 CONFIG_DEBUG_INFO_SPLIT                         policy<{'riscv64': 'n'}>
-CONFIG_DEBUG_INFO_DWARF5                        policy<{'riscv64': 'y'}>
 CONFIG_DEBUG_INFO_BTF                           policy<{'riscv64': 'y'}>
 CONFIG_GDB_SCRIPTS                              policy<{'riscv64': 'y'}>
 #
-CONFIG_DEBUG_INFO                               mark<ENFORCED> note<required for debug packages>
 CONFIG_DEBUG_INFO_SPLIT                         note<LP:1413646 and LP:1413664>
+
+# Menu: Kernel hacking >> Compile-time checks and compiler options >> Debug information
+CONFIG_DEBUG_INFO_DWARF5                        policy<{'riscv64': 'y'}>
 
 # Menu: Kernel hacking >> Debug Oops, Lockups and Hangs
 CONFIG_PANIC_ON_OOPS                            policy<{'riscv64': 'n'}>
@@ -7591,22 +7682,32 @@ CONFIG_MAGIC_SYSRQ_SERIAL_SEQUENCE              policy<{'riscv64': '""'}>
 CONFIG_DEBUG_FS                                 policy<{'riscv64': 'y'}>
 #
 
+# Menu: Kernel hacking >> Generic Kernel Debugging Instruments >> Debugfs default access
+
+# Menu: Kernel hacking >> Generic Kernel Debugging Instruments >> KCSAN: dynamic data race detector
+
+# Menu: Kernel hacking >> Generic Kernel Debugging Instruments >> KCSAN: dynamic data race detector >> Strict data-race checking
+
 # Menu: Kernel hacking >> Generic Kernel Debugging Instruments >> KGDB: kernel debugger
 CONFIG_KGDB                                     policy<{'riscv64': 'y'}>
 CONFIG_KGDB_SERIAL_CONSOLE                      policy<{'riscv64': 'y'}>
 CONFIG_KGDB_TESTS                               policy<{'riscv64': 'n'}>
-CONFIG_KGDB_KDB                                 policy<{'riscv64': 'y'}>
-CONFIG_KDB_KEYBOARD                             policy<{'riscv64': 'y'}>
-CONFIG_KDB_CONTINUE_CATASTROPHIC                policy<{'riscv64': '0'}>
 #
 CONFIG_KGDB                                     flag<REVIEW>
 CONFIG_KGDB_SERIAL_CONSOLE                      note<early debugging support>
+
+# Menu: Kernel hacking >> Generic Kernel Debugging Instruments >> KGDB: kernel debugger >> KGDB_KDB: include kdb frontend for kgdb
+CONFIG_KGDB_KDB                                 policy<{'riscv64': 'y'}>
+CONFIG_KDB_KEYBOARD                             policy<{'riscv64': 'y'}>
+CONFIG_KDB_CONTINUE_CATASTROPHIC                policy<{'riscv64': '0'}>
 
 # Menu: Kernel hacking >> Generic Kernel Debugging Instruments >> Undefined behaviour sanity checker
 CONFIG_UBSAN                                    policy<{'riscv64': 'n'}>
 
 # Menu: Kernel hacking >> Kernel Testing and Coverage
 CONFIG_MEMTEST                                  policy<{'riscv64': 'y'}>
+
+# Menu: Kernel hacking >> Kernel Testing and Coverage >> Code coverage for fuzzing
 
 # Menu: Kernel hacking >> Kernel Testing and Coverage >> Fault-injection framework
 CONFIG_FAULT_INJECTION                          policy<{'riscv64': 'n'}>
@@ -7640,9 +7741,7 @@ CONFIG_TEST_PRINTF                              policy<{'riscv64': 'n'}>
 CONFIG_TEST_BITMAP                              policy<{'riscv64': 'n'}>
 CONFIG_TEST_UUID                                policy<{'riscv64': 'n'}>
 CONFIG_TEST_XARRAY                              policy<{'riscv64': 'n'}>
-CONFIG_TEST_OVERFLOW                            policy<{'riscv64': 'n'}>
 CONFIG_TEST_RHASHTABLE                          policy<{'riscv64': 'n'}>
-CONFIG_TEST_HASH                                policy<{'riscv64': 'n'}>
 CONFIG_TEST_IDA                                 policy<{'riscv64': 'n'}>
 CONFIG_TEST_PARMAN                              policy<{'riscv64': 'n'}>
 CONFIG_TEST_LKM                                 policy<{'riscv64': 'n'}>
@@ -7659,13 +7758,11 @@ CONFIG_TEST_STATIC_KEYS                         policy<{'riscv64': 'n'}>
 CONFIG_TEST_KMOD                                policy<{'riscv64': 'n'}>
 CONFIG_TEST_MEMCAT_P                            policy<{'riscv64': 'n'}>
 CONFIG_TEST_OBJAGG                              policy<{'riscv64': 'n'}>
-CONFIG_TEST_STACKINIT                           policy<{'riscv64': 'n'}>
 CONFIG_TEST_MEMINIT                             policy<{'riscv64': 'n'}>
-CONFIG_KPROBES_SANITY_TEST                      policy<{'riscv64': 'n'}>
+CONFIG_STRING_SELFTEST                          policy<{'riscv64': 'n'}>
 #
 CONFIG_RUNTIME_TESTING_MENU                     flag<TESTING>
 CONFIG_LKDTM                                    flag<TESTING> flag<REVIEW>
-CONFIG_KPROBES_SANITY_TEST                      flag<TESTING>
 CONFIG_BACKTRACE_SELF_TEST                      flag<TESTING>
 CONFIG_RBTREE_TEST                              flag<TESTING>
 CONFIG_INTERVAL_TREE_TEST                       flag<TESTING>
@@ -7678,12 +7775,9 @@ CONFIG_TEST_STRSCPY                             flag<TESTING>
 CONFIG_TEST_KSTRTOX                             flag<TESTING>
 CONFIG_TEST_PRINTF                              flag<TESTING>
 CONFIG_TEST_BITMAP                              flag<TESTING>
-CONFIG_TEST_BITFIELD                            flag<TESTING>
 CONFIG_TEST_UUID                                flag<TESTING>
 CONFIG_TEST_XARRAY                              flag<TESTING>
-CONFIG_TEST_OVERFLOW                            flag<TESTING>
 CONFIG_TEST_RHASHTABLE                          flag<TESTING>
-CONFIG_TEST_HASH                                flag<TESTING>
 CONFIG_TEST_IDA                                 flag<TESTING>
 CONFIG_TEST_PARMAN                              flag<TESTING>
 CONFIG_TEST_LKM                                 flag<TESTING>
@@ -7701,7 +7795,6 @@ CONFIG_TEST_KMOD                                flag<TESTING>
 CONFIG_TEST_MEMCAT_P                            flag<TESTING>
 CONFIG_TEST_LIVEPATCH                           flag<TESTING>
 CONFIG_TEST_OBJAGG                              flag<TESTING>
-CONFIG_TEST_STACKINIT                           flag<TESTING>
 CONFIG_TEST_MEMINIT                             flag<TESTING>
 
 # Menu: Kernel hacking >> Kernel debugging
@@ -7716,8 +7809,6 @@ CONFIG_LATENCYTOP                               policy<{'riscv64': 'n'}>
 #
 CONFIG_LATENCYTOP                               mark<ENFORCED> note<https://lists.ubuntu.com/archives/kernel-team/2014-July/045006.html, LP#1655986>
 
-# Menu: Kernel hacking >> Kernel debugging >> KCSAN: dynamic data race detector
-
 # Menu: Kernel hacking >> Lock Debugging (spinlocks, mutexes, etc...)
 CONFIG_DEBUG_RT_MUTEXES                         policy<{'riscv64': 'n'}>
 CONFIG_DEBUG_SPINLOCK                           policy<{'riscv64': 'n'}>
@@ -7727,6 +7818,8 @@ CONFIG_DEBUG_ATOMIC_SLEEP                       policy<{'riscv64': 'n'}>
 CONFIG_DEBUG_LOCKING_API_SELFTESTS              policy<{'riscv64': 'n'}>
 CONFIG_LOCK_TORTURE_TEST                        policy<{'riscv64': 'n'}>
 CONFIG_WW_MUTEX_SELFTEST                        policy<{'riscv64': 'n'}>
+
+# Menu: Kernel hacking >> Lock Debugging (spinlocks, mutexes, etc...) >> Lock debugging: prove subsystem device_lock() correctness
 
 # Menu: Kernel hacking >> Memory Debugging
 CONFIG_PAGE_EXTENSION                           policy<{'riscv64': 'n'}>
@@ -7760,7 +7853,11 @@ CONFIG_KASAN                                    policy<{'riscv64': 'n'}>
 
 # Menu: Kernel hacking >> Memory Debugging >> KASAN: runtime memory debugger >> KASAN mode
 
+# Menu: Kernel hacking >> Memory Debugging >> KFENCE: low-overhead sampling-based memory safety error detector
+
 # Menu: Kernel hacking >> Memory Debugging >> Kernel memory leak detector
+
+# Menu: Kernel hacking >> Networking Debugging
 
 # Menu: Kernel hacking >> RCU Debugging
 CONFIG_RCU_TORTURE_TEST                         policy<{'riscv64': 'n'}>
@@ -7854,7 +7951,7 @@ CONFIG_CRC_T10DIF                               policy<{'riscv64': 'y'}>
 CONFIG_CRC_ITU_T                                policy<{'riscv64': 'y'}>
 CONFIG_CRC32                                    policy<{'riscv64': 'y'}>
 CONFIG_CRC32_SELFTEST                           policy<{'riscv64': 'n'}>
-CONFIG_CRC64                                    policy<{'riscv64': 'm'}>
+CONFIG_CRC64                                    policy<{'riscv64': 'y'}>
 CONFIG_CRC4                                     policy<{'riscv64': 'm'}>
 CONFIG_CRC7                                     policy<{'riscv64': 'y'}>
 CONFIG_LIBCRC32C                                policy<{'riscv64': 'm'}>
@@ -7865,13 +7962,18 @@ CONFIG_GLOB_SELFTEST                            policy<{'riscv64': 'n'}>
 CONFIG_IRQ_POLL                                 policy<{'riscv64': 'y'}>
 CONFIG_PARMAN                                   policy<{'riscv64': 'm'}>
 CONFIG_OBJAGG                                   policy<{'riscv64': 'm'}>
-CONFIG_STRING_SELFTEST                          policy<{'riscv64': 'n'}>
 
 # Menu: Library routines >> CRC32 implementation
 CONFIG_CRC32_SLICEBY8                           policy<{'riscv64': 'y'}>
 CONFIG_CRC32_SLICEBY4                           policy<{'riscv64': 'n'}>
 CONFIG_CRC32_SARWATE                            policy<{'riscv64': 'n'}>
 CONFIG_CRC32_BIT                                policy<{'riscv64': 'n'}>
+
+# Menu: Library routines >> Crypto library routines
+CONFIG_CRYPTO_LIB_CHACHA                        policy<{'riscv64': 'm'}>
+CONFIG_CRYPTO_LIB_CURVE25519                    policy<{'riscv64': 'm'}>
+CONFIG_CRYPTO_LIB_POLY1305                      policy<{'riscv64': 'm'}>
+CONFIG_CRYPTO_LIB_CHACHA20POLY1305              policy<{'riscv64': 'm'}>
 
 # Menu: Library routines >> DMA Contiguous Memory Allocator
 CONFIG_DMA_CMA                                  policy<{'riscv64': 'y'}>
@@ -7922,8 +8024,6 @@ CONFIG_PAGE_REPORTING                           policy<{'riscv64': 'y'}>
 CONFIG_MIGRATION                                policy<{'riscv64': 'y'}>
 CONFIG_KSM                                      policy<{'riscv64': 'y'}>
 CONFIG_DEFAULT_MMAP_MIN_ADDR                    policy<{'riscv64': '65536'}>
-CONFIG_CLEANCACHE                               policy<{'riscv64': 'y'}>
-CONFIG_FRONTSWAP                                policy<{'riscv64': 'y'}>
 CONFIG_ZPOOL                                    policy<{'riscv64': 'y'}>
 CONFIG_ZBUD                                     policy<{'riscv64': 'y'}>
 CONFIG_Z3FOLD                                   policy<{'riscv64': 'm'}>
@@ -7960,6 +8060,10 @@ CONFIG_CMA                                      policy<{'riscv64': 'y'}>
 CONFIG_CMA_DEBUG                                policy<{'riscv64': 'n'}>
 CONFIG_CMA_DEBUGFS                              policy<{'riscv64': 'n'}>
 CONFIG_CMA_AREAS                                policy<{'riscv64': '7'}>
+
+# Menu: Memory Management options >> Data Access Monitoring
+
+# Menu: Memory Management options >> Data Access Monitoring >> DAMON: Data Access Monitoring Framework
 
 # Menu: Memory Management options >> Memory model
 CONFIG_FLATMEM_MANUAL                           policy<{'armhf': 'n'}>
@@ -8078,9 +8182,6 @@ CONFIG_CAN_GRCAN                                policy<{'riscv64': 'm'}>
 CONFIG_CAN_JANZ_ICAN3                           policy<{'riscv64': 'm'}>
 CONFIG_CAN_KVASER_PCIEFD                        policy<{'riscv64': 'm'}>
 CONFIG_CAN_IFI_CANFD                            policy<{'riscv64': 'm'}>
-CONFIG_CAN_M_CAN                                policy<{'riscv64': 'm'}>
-CONFIG_CAN_M_CAN_PLATFORM                       policy<{'riscv64': 'm'}>
-CONFIG_CAN_M_CAN_TCAN4X5X                       policy<{'riscv64': 'm'}>
 CONFIG_CAN_PEAK_PCIEFD                          policy<{'riscv64': 'm'}>
 CONFIG_CAN_SOFTING                              policy<{'riscv64': 'm'}>
 
@@ -8093,6 +8194,11 @@ CONFIG_CAN_CC770_PLATFORM                       policy<{'riscv64': 'm'}>
 CONFIG_CAN_C_CAN                                policy<{'riscv64': 'm'}>
 CONFIG_CAN_C_CAN_PLATFORM                       policy<{'riscv64': 'm'}>
 CONFIG_CAN_C_CAN_PCI                            policy<{'riscv64': 'm'}>
+
+# Menu: Networking support >> CAN bus subsystem support >> CAN Device Drivers >> Platform CAN drivers with Netlink support >> Bosch M_CAN support
+CONFIG_CAN_M_CAN                                policy<{'riscv64': 'm'}>
+CONFIG_CAN_M_CAN_PLATFORM                       policy<{'riscv64': 'm'}>
+CONFIG_CAN_M_CAN_TCAN4X5X                       policy<{'riscv64': 'm'}>
 
 # Menu: Networking support >> CAN bus subsystem support >> CAN Device Drivers >> Platform CAN drivers with Netlink support >> CAN SPI interfaces
 CONFIG_CAN_HI311X                               policy<{'riscv64': 'm'}>
@@ -8118,6 +8224,8 @@ CONFIG_CAN_PEAK_PCIEC                           policy<{'riscv64': 'y'}>
 CONFIG_CAN_PLX_PCI                              policy<{'riscv64': 'm'}>
 CONFIG_CAN_SJA1000_ISA                          policy<{'riscv64': 'm'}>
 CONFIG_CAN_SJA1000_PLATFORM                     policy<{'riscv64': 'm'}>
+
+# Menu: Networking support >> MCTP core protocol support
 
 # Menu: Networking support >> NFC subsystem support
 CONFIG_NFC                                      policy<{'riscv64': 'm'}>
@@ -8190,7 +8298,6 @@ CONFIG_NET_NSH                                  policy<{'riscv64': 'm'}>
 CONFIG_HSR                                      policy<{'riscv64': 'm'}>
 CONFIG_CGROUP_NET_PRIO                          policy<{'riscv64': 'y'}>
 CONFIG_CGROUP_NET_CLASSID                       policy<{'riscv64': 'y'}>
-CONFIG_BPF_JIT                                  policy<{'riscv64': 'y'}>
 #
 CONFIG_SMC                                      mark<ENFORCED> note<LP:1789934>
 CONFIG_SMC_DIAG                                 mark<ENFORCED> note<LP:1789934>
@@ -8246,22 +8353,6 @@ CONFIG_BATMAN_ADV_NC                            policy<{'riscv64': 'y'}>
 CONFIG_BATMAN_ADV_MCAST                         policy<{'riscv64': 'y'}>
 CONFIG_BATMAN_ADV_DEBUG                         policy<{'riscv64': 'n'}>
 CONFIG_BATMAN_ADV_TRACING                       policy<{'riscv64': 'n'}>
-
-# Menu: Networking support >> Networking options >> Distributed Switch Architecture
-CONFIG_NET_DSA                                  policy<{'riscv64': 'm'}>
-CONFIG_NET_DSA_TAG_AR9331                       policy<{'riscv64': 'm'}>
-CONFIG_NET_DSA_TAG_BRCM                         policy<{'riscv64': 'm'}>
-CONFIG_NET_DSA_TAG_BRCM_PREPEND                 policy<{'riscv64': 'm'}>
-CONFIG_NET_DSA_TAG_GSWIP                        policy<{'riscv64': 'm'}>
-CONFIG_NET_DSA_TAG_DSA                          policy<{'riscv64': 'm'}>
-CONFIG_NET_DSA_TAG_EDSA                         policy<{'riscv64': 'm'}>
-CONFIG_NET_DSA_TAG_MTK                          policy<{'riscv64': 'm'}>
-CONFIG_NET_DSA_TAG_KSZ                          policy<{'riscv64': 'm'}>
-CONFIG_NET_DSA_TAG_OCELOT                       policy<{'riscv64': 'm'}>
-CONFIG_NET_DSA_TAG_QCA                          policy<{'riscv64': 'm'}>
-CONFIG_NET_DSA_TAG_LAN9303                      policy<{'riscv64': 'm'}>
-CONFIG_NET_DSA_TAG_SJA1105                      policy<{'riscv64': 'm'}>
-CONFIG_NET_DSA_TAG_TRAILER                      policy<{'riscv64': 'm'}>
 
 # Menu: Networking support >> Networking options >> IEEE Std 802.15.4 Low-Rate Wireless Personal Area Networks support
 CONFIG_IEEE802154                               policy<{'riscv64': 'm'}>
@@ -8405,7 +8496,6 @@ CONFIG_NF_TABLES_INET                           policy<{'riscv64': 'y'}>
 CONFIG_NFT_NUMGEN                               policy<{'riscv64': 'm'}>
 CONFIG_NFT_CT                                   policy<{'riscv64': 'm'}>
 CONFIG_NFT_FLOW_OFFLOAD                         policy<{'riscv64': 'm'}>
-CONFIG_NFT_COUNTER                              policy<{'riscv64': 'm'}>
 CONFIG_NFT_CONNLIMIT                            policy<{'riscv64': 'm'}>
 CONFIG_NFT_LOG                                  policy<{'riscv64': 'm'}>
 CONFIG_NFT_LIMIT                                policy<{'riscv64': 'm'}>
@@ -8521,7 +8611,6 @@ CONFIG_NF_TABLES_IPV4                           policy<{'riscv64': 'y'}>
 CONFIG_NFT_DUP_IPV4                             policy<{'riscv64': 'm'}>
 CONFIG_NFT_FIB_IPV4                             policy<{'riscv64': 'm'}>
 CONFIG_NF_TABLES_ARP                            policy<{'riscv64': 'y'}>
-CONFIG_NF_FLOW_TABLE_IPV4                       policy<{'riscv64': 'm'}>
 CONFIG_NF_DUP_IPV4                              policy<{'riscv64': 'm'}>
 CONFIG_NF_LOG_ARP                               policy<{'riscv64': 'm'}>
 CONFIG_NF_LOG_IPV4                              policy<{'riscv64': 'm'}>
@@ -8561,7 +8650,6 @@ CONFIG_NF_TPROXY_IPV6                           policy<{'riscv64': 'm'}>
 CONFIG_NF_TABLES_IPV6                           policy<{'riscv64': 'y'}>
 CONFIG_NFT_DUP_IPV6                             policy<{'riscv64': 'm'}>
 CONFIG_NFT_FIB_IPV6                             policy<{'riscv64': 'm'}>
-CONFIG_NF_FLOW_TABLE_IPV6                       policy<{'riscv64': 'm'}>
 CONFIG_NF_DUP_IPV6                              policy<{'riscv64': 'm'}>
 CONFIG_NF_REJECT_IPV6                           policy<{'riscv64': 'm'}>
 CONFIG_NF_LOG_IPV6                              policy<{'riscv64': 'm'}>
@@ -8728,6 +8816,22 @@ CONFIG_NET_SWITCHDEV                            mark<ENFORCED> note<LP: #1865452
 CONFIG_BPFILTER                                 policy<{'riscv64': 'y'}>
 CONFIG_BPFILTER_UMH                             policy<{'riscv64': 'm'}>
 
+# Menu: Networking support >> Networking options >> TCP/IP networking >> Distributed Switch Architecture
+CONFIG_NET_DSA                                  policy<{'riscv64': 'm'}>
+CONFIG_NET_DSA_TAG_AR9331                       policy<{'riscv64': 'm'}>
+CONFIG_NET_DSA_TAG_BRCM                         policy<{'riscv64': 'm'}>
+CONFIG_NET_DSA_TAG_BRCM_PREPEND                 policy<{'riscv64': 'm'}>
+CONFIG_NET_DSA_TAG_GSWIP                        policy<{'riscv64': 'm'}>
+CONFIG_NET_DSA_TAG_DSA                          policy<{'riscv64': 'm'}>
+CONFIG_NET_DSA_TAG_EDSA                         policy<{'riscv64': 'm'}>
+CONFIG_NET_DSA_TAG_MTK                          policy<{'riscv64': 'm'}>
+CONFIG_NET_DSA_TAG_KSZ                          policy<{'riscv64': 'm'}>
+CONFIG_NET_DSA_TAG_OCELOT                       policy<{'riscv64': 'm'}>
+CONFIG_NET_DSA_TAG_QCA                          policy<{'riscv64': 'm'}>
+CONFIG_NET_DSA_TAG_LAN9303                      policy<{'riscv64': 'm'}>
+CONFIG_NET_DSA_TAG_SJA1105                      policy<{'riscv64': 'm'}>
+CONFIG_NET_DSA_TAG_TRAILER                      policy<{'riscv64': 'm'}>
+
 # Menu: Networking support >> Networking options >> TCP/IP networking >> INET: socket monitoring interface
 CONFIG_INET_DIAG                                policy<{'riscv64': 'm'}>
 CONFIG_INET_UDP_DIAG                            policy<{'riscv64': 'm'}>
@@ -8881,8 +8985,6 @@ CONFIG_AF_RXRPC_INJECT_LOSS                     policy<{'riscv64': 'n'}>
 CONFIG_AF_RXRPC_DEBUG                           policy<{'riscv64': 'n'}>
 CONFIG_RXKAD                                    policy<{'riscv64': 'y'}>
 
-# Menu: Networking support >> WiMAX Wireless Broadband support
-
 # Menu: Networking support >> Wireless
 CONFIG_WIRELESS                                 policy<{'riscv64': 'y'}>
 CONFIG_LIB80211_DEBUG                           policy<{'riscv64': 'n'}>
@@ -8919,13 +9021,8 @@ CONFIG_CFG80211_REQUIRE_SIGNED_REGDB            policy<{'riscv64': 'y'}>
 CONFIG_CFG80211_USE_KERNEL_REGDB_KEYS           policy<{'riscv64': 'y'}>
 
 # Menu: Platform type >> Architecture: riscv
-CONFIG_SMP                                      policy<{'riscv64': 'y'}>
-CONFIG_NR_CPUS                                  policy<{'riscv64': '8'}>
-CONFIG_HOTPLUG_CPU                              policy<{'riscv64': 'y'}>
 CONFIG_RISCV_ISA_C                              policy<{'riscv64': 'y'}>
 CONFIG_FPU                                      policy<{'riscv64': 'y'}>
-#
-CONFIG_NR_CPUS                                  note<LP:1864198>
 
 # Menu: Platform type >> Base ISA >> Architecture: riscv
 CONFIG_ARCH_RV32I                               policy<{'riscv64': 'n'}>
@@ -8938,8 +9035,12 @@ CONFIG_TUNE_GENERIC                             policy<{'riscv64': 'y'}>
 CONFIG_CMODEL_MEDLOW                            policy<{'riscv64': 'n'}>
 CONFIG_CMODEL_MEDANY                            policy<{'riscv64': 'y'}>
 
-# Menu: Platform type >> supported PMU type >> Architecture: riscv
-CONFIG_RISCV_BASE_PMU                           policy<{'riscv64': 'y'}>
+# Menu: Platform type >> Symmetric Multi-Processing >> Architecture: riscv
+CONFIG_SMP                                      policy<{'riscv64': 'y'}>
+CONFIG_NR_CPUS                                  policy<{'riscv64': '8'}>
+CONFIG_HOTPLUG_CPU                              policy<{'riscv64': 'y'}>
+#
+CONFIG_NR_CPUS                                  note<LP:1864198>
 
 # Menu: Power management options
 CONFIG_PM                                       policy<{'riscv64': 'n'}>
@@ -8949,15 +9050,12 @@ CONFIG_PM                                       mark<ENFORCED> note<LP:1867753>
 # Menu: Power management options >> Architecture: riscv
 
 # Menu: Power management options >> Power Management Debug Support
-#
 
 # Menu: Security options
 CONFIG_SECURITY_DMESG_RESTRICT                  policy<{'riscv64': 'y'}>
 CONFIG_SECURITY_PERF_EVENTS_RESTRICT            policy<{'riscv64': 'y'}>
 CONFIG_SECURITYFS                               policy<{'riscv64': 'y'}>
 CONFIG_HARDENED_USERCOPY                        policy<{'riscv64': 'y'}>
-CONFIG_HARDENED_USERCOPY_FALLBACK               policy<{'riscv64': 'y'}>
-CONFIG_HARDENED_USERCOPY_PAGESPAN               policy<{'riscv64': 'n'}>
 CONFIG_STATIC_USERMODEHELPER                    policy<{'riscv64': 'n'}>
 CONFIG_LSM                                      policy<{'riscv64': '"lockdown,yama,integrity,apparmor"'}>
 #
@@ -9123,11 +9221,8 @@ CONFIG_SOC_SIFIVE                               policy<{'riscv64': 'y'}>
 CONFIG_SOC_VIRT                                 policy<{'riscv64': 'y'}>
 
 # Menu: Ubuntu Supplied Third-Party Device Drivers
-CONFIG_HIO                                      policy<{'riscv64': '-'}>
+CONFIG_HIO                                      policy<{'riscv64': 'n'}>
 #
 CONFIG_HIO                                      mark<ENFORCED> note<LP:1635594>
 
-CONFIG_ERRATA_SIFIVE_CIP_453                    policy<{'riscv64': 'y'}>
-CONFIG_PCIE_FU740                               policy<{'riscv64': 'y'}>
-CONFIG_RESET_SIMPLE                             policy<{'riscv64': 'y'}>
-CONFIG_RISCV_ERRATA_ALTERNATIVE                 policy<{'riscv64': 'y'}>
+# Menu: Virtualization >> Architecture: riscv
