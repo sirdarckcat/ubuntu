@@ -165,7 +165,6 @@ CONFIG_CRYPTO_DRBG_CTR                          policy<{'riscv64': 'y'}>
 
 # Menu: Device Drivers
 CONFIG_RANDOM_TRUST_BOOTLOADER                  policy<{'riscv64': 'y'}>
-CONFIG_MEDIA_CEC_RC                             policy<{'riscv64': 'y'}>
 CONFIG_PANEL                                    policy<{'riscv64': 'm'}>
 CONFIG_CHARLCD                                  policy<{'riscv64': 'm'}>
 CONFIG_USB4                                     policy<{'riscv64': 'm'}>
@@ -864,7 +863,7 @@ CONFIG_FRAMEBUFFER_CONSOLE_ROTATION             policy<{'riscv64': 'y'}>
 CONFIG_FRAMEBUFFER_CONSOLE_DEFERRED_TAKEOVER    policy<{'riscv64': 'y'}>
 
 # Menu: Device Drivers >> Graphics support >> Direct Rendering Manager (XFree86 4.1.0 and higher DRI support)
-CONFIG_DRM                                      policy<{'riscv64': 'm'}>
+CONFIG_DRM                                      policy<{'riscv64': 'y'}>
 CONFIG_DRM_DP_AUX_CHARDEV                       policy<{'riscv64': 'y'}>
 CONFIG_DRM_DEBUG_SELFTEST                       policy<{'riscv64': 'n'}>
 CONFIG_DRM_FBDEV_EMULATION                      policy<{'riscv64': 'y'}>
@@ -888,6 +887,7 @@ CONFIG_DRM_ARCPGU                               policy<{'riscv64': 'm'}>
 CONFIG_DRM_MXSFB                                policy<{'riscv64': 'm'}>
 CONFIG_DRM_CIRRUS_QEMU                          policy<{'riscv64': 'm'}>
 CONFIG_DRM_GM12U320                             policy<{'riscv64': 'm'}>
+CONFIG_DRM_STARFIVE                             policy<{'riscv64': 'y'}>
 CONFIG_TINYDRM_HX8357D                          policy<{'riscv64': 'm'}>
 CONFIG_TINYDRM_ILI9225                          policy<{'riscv64': 'm'}>
 CONFIG_TINYDRM_ILI9341                          policy<{'riscv64': 'm'}>
@@ -1535,7 +1535,7 @@ CONFIG_I2C_DEBUG_BUS                            policy<{'riscv64': 'n'}>
 CONFIG_I2C_CHARDEV                              note<LP:1417032>
 
 # Menu: Device Drivers >> I2C support >> I2C support >> I2C Algorithms
-CONFIG_I2C_ALGOBIT                              policy<{'riscv64': 'm'}>
+CONFIG_I2C_ALGOBIT                              policy<{'riscv64': 'y'}>
 CONFIG_I2C_ALGOPCA                              policy<{'riscv64': 'm'}>
 
 # Menu: Device Drivers >> I2C support >> I2C support >> I2C Hardware Bus support
