@@ -626,126 +626,87 @@ static int sf_pwmdac_hw_params(struct snd_pcm_substream *substream,
 }
 
 static int sf_pwmdac_clks_get(struct platform_device *pdev,
-				struct sf_pwmdac_dev *dev)
+			      struct sf_pwmdac_dev *dev)
 {
-	static struct clk_bulk_data clks[] = {
-		{ .id = "audio_root" },		//clock-names in dts file
-		{ .id = "audio_src" },
-		{ .id = "audio_12288" },
-		{ .id = "dma1p_ahb" },
-		{ .id = "pwmdac_apb" },
-		{ .id = "dac_mclk" },
+	static const char *const clock_names[PWMDAC_CLK_NUM] = {
+		[PWMDAC_CLK_AUDIO_ROOT]  = "audio_root",
+		[PWMDAC_CLK_AUDIO_SRC]   = "audio_src",
+		[PWMDAC_CLK_AUDIO_12288] = "audio_12288",
+		[PWMDAC_CLK_DMA1P_AHB]   = "dma1p_ahb",
+		[PWMDAC_CLK_PWMDAC_APB]  = "pwmdac_apb",
+		[PWMDAC_CLK_DAC_MCLK]    = "dac_mclk",
 	};
-	int ret = devm_clk_bulk_get(&pdev->dev, ARRAY_SIZE(clks), clks);
-	dev->clk_audio_root = clks[0].clk;
-	dev->clk_audio_src = clks[1].clk;
-	dev->clk_audio_12288 = clks[2].clk;
-	dev->clk_dma1p_ahb = clks[3].clk;
-	dev->clk_pwmdac_apb = clks[4].clk;
-	dev->clk_dac_mclk = clks[5].clk;
+	int i;
 
-	return ret;
+	for (i = 0; i < PWMDAC_CLK_NUM; i++)
+		dev->clk[i].id = clock_names[i];
+
+	return devm_clk_bulk_get(&pdev->dev, ARRAY_SIZE(dev->clk), dev->clk);
 }
 
 static int sf_pwmdac_resets_get(struct platform_device *pdev,
 				struct sf_pwmdac_dev *dev)
 {
-	struct reset_control_bulk_data resets[] = {
-		{ .id = "apb_bus" },
-		{ .id = "dma1p_ahb" },
-		{ .id = "apb_pwmdac" },
+	static const char *const reset_names[PWMDAC_RST_NUM] = {
+		[PWMDAC_RST_APB_BUS]    = "apb_bus",
+		[PWMDAC_RST_DMA1P_AHB]  = "dma1p_ahb",
+		[PWMDAC_RST_APB_PWMDAC] = "apb_pwmdac",
 	};
-        int ret = devm_reset_control_bulk_get_exclusive(&pdev->dev, ARRAY_SIZE(resets), resets);
-	if (ret)
-		return ret;
+	int i;
 
-	dev->rst_apb_bus = resets[0].rstc;
-	dev->rst_dma1p_ahb = resets[1].rstc;
-	dev->rst_apb_pwmdac = resets[2].rstc;
-	return 0;
+	for (i = 0; i < PWMDAC_RST_NUM; i++)
+		dev->rst[i].id = reset_names[i];
+
+	return devm_reset_control_bulk_get_exclusive(&pdev->dev, ARRAY_SIZE(dev->rst), dev->rst);
 }
 
 static int sf_pwmdac_clk_init(struct platform_device *pdev,
 				struct sf_pwmdac_dev *dev)
 {
-	int ret = 0;
+	int ret;
+	int i;
 
-	ret = clk_prepare_enable(dev->clk_audio_root);
-	if (ret) {
-		dev_err(&pdev->dev, "failed to prepare enable clk_audio_root\n");
-		goto err_clk_pwmdac;
+	for (i = 0; i <= PWMDAC_CLK_DMA1P_AHB; i++) {
+		ret = clk_prepare_enable(dev->clk[i].clk);
+		if (ret)
+			return dev_err_probe(&pdev->dev, ret,
+					     "failed to enable %s\n", dev->clk[i].id);
 	}
 
-	ret = clk_prepare_enable(dev->clk_audio_src);
-	if (ret) {
-		dev_err(&pdev->dev, "failed to prepare enable clk_audio_src\n");
-		goto err_clk_pwmdac;
+	for (i = 0; i <= PWMDAC_RST_DMA1P_AHB; i++) {
+		ret = reset_control_deassert(dev->rst[i].rstc);
+		if (ret)
+			return dev_err_probe(&pdev->dev, ret,
+					     "failed to deassert %s\n", dev->rst[i].id);
 	}
 
-	ret = clk_prepare_enable(dev->clk_audio_12288);
-	if (ret) {
-		dev_err(&pdev->dev, "failed to prepare enable clk_audio_12288\n");
-		goto err_clk_pwmdac;
-	}
+	ret = clk_set_rate(dev->clk[PWMDAC_CLK_AUDIO_SRC].clk, 12288000);
+	if (ret)
+		return dev_err_probe(&pdev->dev, ret,
+				     "failed to set 12.288 MHz rate for clk_audio_src\n");
 
-	ret = clk_prepare_enable(dev->clk_dma1p_ahb);
-	if (ret) {
-		dev_err(&pdev->dev, "failed to prepare enable clk_dma1p_ahb\n");
-		goto err_clk_pwmdac;
-	}
+	ret = reset_control_assert(dev->rst[PWMDAC_RST_APB_PWMDAC].rstc);
+	if (ret)
+		return dev_err_probe(&pdev->dev, ret, "failed to assert apb_pwmdac\n");
 
-	ret = reset_control_deassert(dev->rst_apb_bus);
-	if (ret) {
-		printk(KERN_INFO "failed to deassert apb_bus\n");
-		goto err_clk_pwmdac;
-	}
-
-	ret = reset_control_deassert(dev->rst_dma1p_ahb);
-	if (ret) {
-		printk(KERN_INFO "failed to deassert dma1p_ahb\n");
-		goto err_clk_pwmdac;
-	}
-
-	ret = clk_set_rate(dev->clk_audio_src, 12288000);
-	if (ret) {
-		dev_err(&pdev->dev, "failed to set 12.288 MHz rate for clk_audio_src\n");
-		goto err_clk_pwmdac;
-	}
-
-	ret = reset_control_assert(dev->rst_apb_pwmdac);
-	if (ret) {
-		printk(KERN_INFO "failed to assert apb_pwmdac\n");
-		goto err_clk_pwmdac;
-	}
-
-	ret = clk_prepare_enable(dev->clk_dac_mclk);
-	if (ret) {
-		dev_err(&pdev->dev, "failed to prepare enable clk_dac_mclk\n");
-		goto err_clk_pwmdac;
-	}
+	ret = clk_prepare_enable(dev->clk[PWMDAC_CLK_DAC_MCLK].clk);
+	if (ret)
+		return dev_err_probe(&pdev->dev, ret, "failed to prepare enable clk_dac_mclk\n");
 
 	/* we want 4096kHz but the clock driver always rounds down so add a little slack */
-	ret = clk_set_rate(dev->clk_dac_mclk, 4096000 + 64);
-	if (ret) {
-		dev_err(&pdev->dev, "failed to set 4096kHz rate for clk_dac_mclk\n");
-		goto err_clk_pwmdac;
-	}
+	ret = clk_set_rate(dev->clk[PWMDAC_CLK_DAC_MCLK].clk, 4096000 + 64);
+	if (ret)
+		return dev_err_probe(&pdev->dev, ret, "failed to set 4096kHz rate for clk_dac_mclk\n");
 
-	ret = clk_prepare_enable(dev->clk_pwmdac_apb);
-	if (ret) {
-		dev_err(&pdev->dev, "failed to prepare enable clk_pwmdac_apb\n");
-		goto err_clk_pwmdac;
-	}
+	ret = clk_prepare_enable(dev->clk[PWMDAC_CLK_PWMDAC_APB].clk);
+	if (ret)
+		return dev_err_probe(&pdev->dev, ret, "failed to prepare enable clk_pwmdac_apb\n");
 
-	ret = reset_control_deassert(dev->rst_apb_pwmdac);
-	if (ret) {
-		printk(KERN_INFO "failed to deassert apb_pwmdac\n");
-		goto err_clk_pwmdac;
-	}
-	printk(KERN_INFO "Initialize pwmdac...success\n");
+	ret = reset_control_deassert(dev->rst[PWMDAC_RST_APB_PWMDAC].rstc);
+	if (ret)
+		return dev_err_probe(&pdev->dev, ret, "failed to deassert apb_pwmdac\n");
 
-err_clk_pwmdac:
-	return ret;
+	return 0;
 }
 
 static int sf_pwmdac_dai_probe(struct snd_soc_dai *dai)
