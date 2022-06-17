@@ -36,7 +36,7 @@
 #define JH7100_WDOGVALUE	0x118	/* Watchdog Value Register RO */
 #define JH7100_WDOGINTCLR	0x120	/* Watchdog Clear Interrupt Register WO */
 #define JH7100_WDOGINTMSK	0x124	/* Watchdog Interrupt Mask Register */
-#define JH7100_WDOGLOCK		0x13c	/* Watchdog Lock Register  R/W */
+#define JH7100_WDOGLOCK		0x13c	/* Watchdog Lock Register R/W */
 
 #define JH7100_UNLOCK_KEY	0x378f0765
 #define JH7100_RESEN_SHIFT	0
@@ -114,9 +114,9 @@ struct stf_si5_wdt {
 
 #ifdef CONFIG_OF
 static struct si5_wdt_variant_t jh7100_variant = {
-        .unlock_key = JH7100_UNLOCK_KEY,
-        .enrst_shift = JH7100_RESEN_SHIFT,
-        .en_shift = JH7100_EN_SHIFT,
+	.unlock_key = JH7100_UNLOCK_KEY,
+	.enrst_shift = JH7100_RESEN_SHIFT,
+	.en_shift = JH7100_EN_SHIFT,
 	.intclr_check = 1,
 	.intclr_ava_shift = JH7100_INTCLR_AVA_SHIFT,
 };
@@ -130,13 +130,12 @@ static const struct si5_wdt_variant drv_data_jh7100 = {
 	.int_clr = JH7100_WDOGINTCLR,
 	.int_mask = JH7100_WDOGINTMSK,
 	.unlock = JH7100_WDOGLOCK,
-	.variant =  &jh7100_variant,
+	.variant = &jh7100_variant,
 };
 
 static const struct of_device_id starfive_wdt_match[] = {
-	{ .compatible = "starfive,si5-wdt",
-	  .data = &drv_data_jh7100 },
-	{},
+	{ .compatible = "starfive,si5-wdt", .data = &drv_data_jh7100 },
+	{ /* sentinel */ }
 };
 MODULE_DEVICE_TABLE(of, starfive_wdt_match);
 #endif
@@ -469,12 +468,12 @@ static int si5wdt_start(struct watchdog_device *wdd)
 }
 
 static int si5wdt_restart(struct watchdog_device *wdd, unsigned long action,
-			      void *data)
+			  void *data)
 {
 	struct stf_si5_wdt *wdt = watchdog_get_drvdata(wdd);
 
 	si5wdt_unlock(wdt);
-	/* disable watchdog, to be safe  */
+	/* disable watchdog, to be safe */
 	si5wdt_disable(wdt);
 
 	if (soft_noboot)
@@ -499,7 +498,7 @@ static int si5wdt_restart(struct watchdog_device *wdd, unsigned long action,
 }
 
 static int si5wdt_set_timeout(struct watchdog_device *wdd,
-				    unsigned int timeout)
+			      unsigned int timeout)
 {
 	struct stf_si5_wdt *wdt = watchdog_get_drvdata(wdd);
 
@@ -536,9 +535,9 @@ static int si5wdt_set_timeout(struct watchdog_device *wdd,
 #define OPTIONS (WDIOF_SETTIMEOUT | WDIOF_KEEPALIVEPING | WDIOF_MAGICCLOSE)
 
 static const struct watchdog_info si5_wdt_ident = {
-	.options          = OPTIONS,
-	.firmware_version = 0,
-	.identity         = "StarFive SI5 Watchdog",
+	.options		= OPTIONS,
+	.firmware_version	= 0,
+	.identity		= "StarFive SI5 Watchdog",
 };
 
 static const struct watchdog_ops si5wdt_ops = {
@@ -577,7 +576,6 @@ static int si5wdt_probe(struct platform_device *pdev)
 	struct device *dev = &pdev->dev;
 	struct stf_si5_wdt *wdt;
 	int wdt_irq;
-	int started = 0;
 	int ret;
 
 	wdt = devm_kzalloc(dev, sizeof(*wdt), GFP_KERNEL);
@@ -596,14 +594,12 @@ static int si5wdt_probe(struct platform_device *pdev)
 
 	/* get the memory region for the watchdog timer */
 	wdt->base = devm_platform_ioremap_resource(pdev, 0);
-	if (IS_ERR(wdt->base)) {
-		ret = PTR_ERR(wdt->base);
-		goto err;
-	}
+	if (IS_ERR(wdt->base))
+		return PTR_ERR(wdt->base);
 
 	ret = si5wdt_enable_clock(wdt);
 	if (ret)
-		dev_warn(wdt->dev, "get & enable clk err\n");
+		return ret;
 
 	si5wdt_get_clock_rate(wdt);
 
@@ -647,13 +643,13 @@ static int si5wdt_probe(struct platform_device *pdev)
 	if (ret < 0)
 		goto err_unregister;
 
-	if (tmr_atboot && started == 0) {
+	if (tmr_atboot) {
 		dev_info(dev, "starting watchdog timer\n");
 		si5wdt_start(&wdt->wdt_device);
-	} else if (!tmr_atboot) {
+	} else {
 
 		/*
-		 *if we're not enabling the watchdog, then ensure it is
+		 * if we're not enabling the watchdog, then ensure it is
 		 * disabled if it has been left running from the bootloader
 		 * or other source.
 		 */
@@ -743,8 +739,7 @@ static int si5wdt_resume(struct device *dev)
 }
 #endif /* CONFIG_PM_SLEEP */
 
-static SIMPLE_DEV_PM_OPS(si5wdt_pm_ops, si5wdt_suspend,
-			si5wdt_resume);
+static SIMPLE_DEV_PM_OPS(si5wdt_pm_ops, si5wdt_suspend, si5wdt_resume);
 
 static struct platform_driver starfive_si5wdt_driver = {
 	.probe		= si5wdt_probe,
@@ -760,7 +755,7 @@ static struct platform_driver starfive_si5wdt_driver = {
 
 module_platform_driver(starfive_si5wdt_driver);
 
-MODULE_AUTHOR("samin.guo <samin.guo@starfivetech.com>");
+MODULE_AUTHOR("Samin Guo <samin.guo@starfivetech.com>");
 MODULE_AUTHOR("Walker Chen <walker.chen@starfivetech.com>");
 MODULE_DESCRIPTION("StarFive SI5 Watchdog Device Driver");
 MODULE_LICENSE("GPL v2");
