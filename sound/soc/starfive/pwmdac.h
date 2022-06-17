@@ -99,6 +99,23 @@ enum pwmdac_config_list{
 	shift_10Bit_inverter_dataShift,
 };
 
+enum pwmdac_clocks {
+	PWMDAC_CLK_AUDIO_ROOT,
+	PWMDAC_CLK_AUDIO_SRC,
+	PWMDAC_CLK_AUDIO_12288,
+	PWMDAC_CLK_DMA1P_AHB,
+	PWMDAC_CLK_PWMDAC_APB,
+	PWMDAC_CLK_DAC_MCLK,
+	PWMDAC_CLK_NUM,
+};
+
+enum pwmdac_resets {
+	PWMDAC_RST_APB_BUS,
+	PWMDAC_RST_DMA1P_AHB,
+	PWMDAC_RST_APB_PWMDAC,
+	PWMDAC_RST_NUM,
+};
+
 struct sf_pwmdac_dev {
 	void __iomem *pwmdac_base;
 	resource_size_t	mapbase;
@@ -114,15 +131,8 @@ struct sf_pwmdac_dev {
 	spinlock_t lock;
 	int active;
 
-	struct clk *clk_audio_root;
-	struct clk *clk_audio_src;
-	struct clk *clk_audio_12288;
-	struct clk *clk_dma1p_ahb;
-	struct clk *clk_pwmdac_apb;
-	struct clk *clk_dac_mclk;
-	struct reset_control *rst_apb_bus;
-	struct reset_control *rst_dma1p_ahb;
-	struct reset_control *rst_apb_pwmdac;
+	struct clk_bulk_data clk[PWMDAC_CLK_NUM];
+	struct reset_control_bulk_data rst[PWMDAC_RST_NUM];
 
 	struct device *dev;
 	struct snd_dmaengine_dai_dma_data play_dma_data;
