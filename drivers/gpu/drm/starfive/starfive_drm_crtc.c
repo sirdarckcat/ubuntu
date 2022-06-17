@@ -434,36 +434,22 @@ static int starfive_crtc_bind(struct device *dev, struct device *master, void *d
 	crtcp->pp_conn_lcdc = starfive_pp_get_2lcdc_id(crtcp);
 
 	crtcp->lcdc_irq = platform_get_irq_byname(pdev, "lcdc_irq");
-	if (crtcp->lcdc_irq == -EPROBE_DEFER)
-		return crtcp->lcdc_irq;
-	if (crtcp->lcdc_irq < 0) {
-		dev_err(dev, "couldn't get lcdc irq\n");
-		return crtcp->lcdc_irq;
-	}
+	if (crtcp->lcdc_irq < 0)
+		return dev_err_probe(dev, crtcp->lcdc_irq, "error getting lcdc irq\n");
 
 	crtcp->vpp1_irq = platform_get_irq_byname(pdev, "vpp1_irq");
-	if (crtcp->vpp1_irq == -EPROBE_DEFER)
-		return crtcp->vpp1_irq;
-	if (crtcp->vpp1_irq < 0) {
-		dev_err(dev, "couldn't get vpp1 irq\n");
-		return crtcp->vpp1_irq;
-	}
+	if (crtcp->vpp1_irq < 0)
+		return dev_err_probe(dev, crtcp->vpp1_irq, "error getting vpp1 irq\n");
 
 	ret = devm_request_irq(&pdev->dev, crtcp->lcdc_irq, lcdc_isr_handler, 0,
 			       "sf_lcdc", crtcp);
-	if (ret) {
-		dev_err(&pdev->dev, "failure requesting irq %i: %d\n",
-				crtcp->lcdc_irq, ret);
-		return ret;
-	}
+	if (ret)
+		return dev_err_probe(dev, ret, "error requesting irq %d\n", crtcp->lcdc_irq);
 
 	ret = devm_request_irq(&pdev->dev, crtcp->vpp1_irq, vpp1_isr_handler, 0,
 				"sf_vpp1", crtcp);
-	if (ret) {
-		dev_err(&pdev->dev, "failure requesting irq %i: %d\n",
-			crtcp->vpp1_irq, ret);
-		return ret;
-	}
+	if (ret)
+		return dev_err_probe(dev, ret, "error requesting irq %d\n", crtcp->vpp1_irq);
 
 	ret = starfive_crtc_create(drm_dev, crtcp,
 				   &starfive_crtc_funcs,
