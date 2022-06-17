@@ -66,7 +66,7 @@ static int starfive_encoder_bind(struct device *dev, struct device *master, void
 			&starfive_encoder_funcs,
 			encoderp->encoder_type, NULL);
 	if (ret)
-		goto err_encoder;
+		return dev_err_probe(dev, ret, "error initializing encoder\n");
 
 	ret = drm_of_find_panel_or_bridge(dev->of_node, 0, 0,
 			&tmp_panel, &tmp_bridge);
@@ -88,7 +88,6 @@ static int starfive_encoder_bind(struct device *dev, struct device *master, void
 
 err_bridge:
 	drm_encoder_cleanup(&encoderp->encoder);
-err_encoder:
 	return ret;
 
 }
