@@ -174,58 +174,51 @@ static int si5wdt_get_clock_rate(struct stf_si5_wdt *wdt)
 
 static int si5wdt_enable_clock(struct stf_si5_wdt *wdt)
 {
-	struct reset_control_bulk_data resets[] = {
-                { .id = "wdtimer_apb" },
-                { .id = "wdt" },
-        };
 	int ret;
 
-	ret = devm_reset_control_bulk_get_exclusive(wdt->dev, ARRAY_SIZE(resets), resets);
-	if (ret) {
-		printk(KERN_INFO "faied to get watchdog reset controls\n");
-		return ret;
-	}
+	wdt->rst_wdtimer_apb = devm_reset_control_get_exclusive(wdt->dev, "wdtimer_apb");
+	if (IS_ERR(wdt->rst_wdtimer_apb))
+		return dev_err_probe(wdt->dev, PTR_ERR(wdt->rst_wdtimer_apb),
+				     "failed to get apb reset\n");
 
-	wdt->rst_wdtimer_apb = resets[0].rstc;
-	wdt->rst_wdt = resets[1].rstc;
+	wdt->rst_wdt = devm_reset_control_get_exclusive(wdt->dev, "wdt");
+	if (IS_ERR(wdt->rst_wdt))
+		return dev_err_probe(wdt->dev, PTR_ERR(wdt->rst_wdt),
+				     "failed to get core reset\n");
 
 	wdt->apb_clk = devm_clk_get(wdt->dev, "wdtimer_apb");
-	if (!IS_ERR(wdt->apb_clk)) {
-		ret = clk_prepare_enable(wdt->apb_clk);
-		if(ret)
-			dev_warn(wdt->dev, "enable core_clk error.\n");
-	}
+	if (IS_ERR(wdt->apb_clk))
+		return dev_err_probe(wdt->dev, PTR_ERR(wdt->apb_clk),
+				     "failed to get apb clock\n");
 
 	wdt->core_clk = devm_clk_get(wdt->dev, "wdt_coreclk");
-	if (!IS_ERR(wdt->core_clk)) {
-		ret = clk_prepare_enable(wdt->core_clk);
-		if(ret)
-			dev_warn(wdt->dev, "enable apb_clk error.\n");
-	}
+	if (IS_ERR(wdt->core_clk))
+		return dev_err_probe(wdt->dev, PTR_ERR(wdt->core_clk),
+				     "failed to get core clock\n");
+
+	ret = clk_prepare_enable(wdt->apb_clk);
+	if (ret)
+		return dev_err_probe(wdt->dev, ret, "failed to enable apb clock\n");
+
+	ret = clk_prepare_enable(wdt->core_clk);
+	if (ret)
+		return dev_err_probe(wdt->dev, ret, "failed to enable core clock\n");
 
 	ret = reset_control_assert(wdt->rst_wdtimer_apb);
-	if (ret) {
-		printk(KERN_INFO "failed to assert wdtimer_apb\n");
-		return ret;
-	}
+	if (ret)
+		return dev_err_probe(wdt->dev, ret, "failed to assert apb reset\n");
 
 	ret = reset_control_assert(wdt->rst_wdt);
-	if (ret) {
-		printk(KERN_INFO "failed to assert wdt\n");
-		return ret;
-	}
+	if (ret)
+		return dev_err_probe(wdt->dev, ret, "failed to assert core reset\n");
 
 	ret = reset_control_deassert(wdt->rst_wdtimer_apb);
-	if (ret) {
-		printk(KERN_INFO "failed to deassert wdtimer_apb, ret=%d\n", ret);
-		return ret;
-	}
+	if (ret)
+		return dev_err_probe(wdt->dev, ret, "failed to deassert apb reset\n");
 
 	ret = reset_control_deassert(wdt->rst_wdt);
-	if (ret) {
-		printk(KERN_INFO "failed to deassert wdt\n");
-		return ret;
-	}
+	if (ret)
+		return dev_err_probe(wdt->dev, ret, "failed to deassert core reset\n");
 
 	return 0;
 }
