@@ -138,7 +138,7 @@ static int starfive_drm_bind(struct device *dev)
 
 	ret = drmm_mode_config_init(drm_dev);
 	if (ret)
-		return ret;
+		goto err_free;
 
 	drm_dev->mode_config.min_width = 64;
 	drm_dev->mode_config.min_height = 64;
@@ -156,11 +156,11 @@ static int starfive_drm_bind(struct device *dev)
 
 	ret = component_bind_all(dev, drm_dev);
 	if (ret)
-		goto err_component_bind_all;
+		goto err_free;
 
 	ret = drm_vblank_init(drm_dev, drm_dev->mode_config.num_crtc);
 	if (ret)
-		goto err_drm_vblank_init;
+		goto err_cleanup;
 
 	drm_mode_config_reset(drm_dev);
 
@@ -169,19 +169,16 @@ static int starfive_drm_bind(struct device *dev)
 
 	ret = drm_dev_register(drm_dev, 0);
 	if (ret)
-		goto err_drm_dev_register;
+		goto err_cleanup;
 #ifdef CONFIG_FRAMEBUFFER_CONSOLE
 	drm_fbdev_generic_setup(drm_dev, 16);
 #endif
 	return 0;
 
-err_drm_dev_register:
-err_component_bind_all:
+err_cleanup:
 	starfive_cleanup(drm_dev);
-err_drm_vblank_init:
 err_free:
 	drm_dev_put(drm_dev);
-
 	return ret;
 }
 
