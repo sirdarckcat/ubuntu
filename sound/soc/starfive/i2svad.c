@@ -452,62 +452,6 @@ static void dw_i2s_config(struct i2svad_dev *dev, int stream)
 	}
 }
 
-static int i2svad_clks_get(struct platform_device *pdev,
-				struct i2svad_dev *dev)
-{
-	dev->clk_apb_i2svad = devm_clk_get(&pdev->dev, "i2svad_apb");
-	if (IS_ERR(dev->clk_apb_i2svad)) {
-		dev_err(&pdev->dev, "failed to get clk_apb_i2svad: %ld\n",
-				PTR_ERR(dev->clk_apb_i2svad));
-		return PTR_ERR(dev->clk_apb_i2svad);
-        }
-
-	return 0;
-}
-
-static int i2svad_resets_get(struct platform_device *pdev,
-				struct i2svad_dev *dev)
-{
-	struct reset_control_bulk_data resets[] = {
-		{ .id = "apb_i2svad" },
-		{ .id = "i2svad_srst" },
-	};
-        int ret = devm_reset_control_bulk_get_exclusive(&pdev->dev, ARRAY_SIZE(resets), resets);
-	if (ret)
-		return ret;
-
-	dev->rst_apb_i2svad = resets[0].rstc;
-	dev->rst_i2svad_srst = resets[1].rstc;
-
-	return 0;
-}
-
-static int i2svad_clk_init(struct platform_device *pdev,
-				struct i2svad_dev *dev)
-{
-	int ret;
-
-	ret = clk_prepare_enable(dev->clk_apb_i2svad);
-	if (ret) {
-		dev_err(&pdev->dev, "failed to prepare enable clk_audio_root\n");
-		return ret;
-	}
-
-	ret = reset_control_deassert(dev->rst_apb_i2svad);
-        if (ret) {
-                printk(KERN_INFO "failed to deassert apb_i2svad\n");
-                return ret;
-        }
-
-	ret = reset_control_deassert(dev->rst_i2svad_srst);
-        if (ret) {
-                printk(KERN_INFO "failed to deassert i2svad_srst\n");
-                return ret;
-        }
-
-	return 0;
-}
-
 static int dw_i2s_hw_params(struct snd_pcm_substream *substream,
 		struct snd_pcm_hw_params *params, struct snd_soc_dai *dai)
 {
@@ -947,23 +891,32 @@ static int dw_i2s_probe(struct platform_device *pdev)
 
 	dev->dev = &pdev->dev;
 
-	ret = i2svad_clks_get(pdev, dev);
-	if (ret) {
-		dev_err(&pdev->dev, "failed to get i2svad clock\n");
-		return ret;
-	}
+	dev->clk_apb_i2svad = devm_clk_get(&pdev->dev, "i2svad_apb");
+	if (IS_ERR(dev->clk_apb_i2svad))
+		return dev_err_probe(&pdev->dev, PTR_ERR(dev->clk_apb_i2svad),
+				     "failed to get apb clock\n");
 
-	ret = i2svad_resets_get(pdev, dev);
-	if (ret) {
-		dev_err(&pdev->dev, "failed to get i2svad reset controls\n");
-		return ret;
-        }
+	dev->rst_apb_i2svad = devm_reset_control_get_exclusive(&pdev->dev, "apb_i2svad");
+	if (IS_ERR(dev->rst_apb_i2svad))
+		return dev_err_probe(&pdev->dev, PTR_ERR(dev->rst_apb_i2svad),
+				     "failed to get apb reset\n");
 
-	ret = i2svad_clk_init(pdev, dev);
-	if (ret) {
-		dev_err(&pdev->dev, "failed to initialize i2svad clock\n");
-		return ret;
-	}
+	dev->rst_i2svad_srst = devm_reset_control_get_exclusive(&pdev->dev, "i2svad_srst");
+	if (IS_ERR(dev->rst_i2svad_srst))
+		return dev_err_probe(&pdev->dev, PTR_ERR(dev->rst_i2svad_srst),
+				     "failed to get source reset\n");
+
+	ret = clk_prepare_enable(dev->clk_apb_i2svad);
+	if (ret)
+		return dev_err_probe(&pdev->dev, ret, "failed to enable apb clock\n");
+
+	ret = reset_control_deassert(dev->rst_apb_i2svad);
+	if (ret)
+		return dev_err_probe(&pdev->dev, ret, "failed to deassert apb reset\n");
+
+	ret = reset_control_deassert(dev->rst_i2svad_srst);
+	if (ret)
+		return dev_err_probe(&pdev->dev, ret, "failed to deassert source reset\n");
 
 	irq = platform_get_irq(pdev, 0);
 	if (irq >= 0) {
