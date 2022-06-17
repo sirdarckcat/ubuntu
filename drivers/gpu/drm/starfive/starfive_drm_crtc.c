@@ -332,19 +332,6 @@ static int starfive_crtc_get_memres(struct platform_device *pdev, struct starfiv
 	return 0;
 }
 
-static int starfive_crtc_get_clks(struct platform_device *pdev, struct starfive_crtc *sf_crtc)
-{
-	struct clk_bulk_data clks[] = {
-		{ .id = "disp_axi" },
-		{ .id = "vout_src" },
-	};
-	int ret = devm_clk_bulk_get(&pdev->dev, ARRAY_SIZE(clks), clks);
-
-	sf_crtc->clk_disp_axi = clks[0].clk;
-	sf_crtc->clk_vout_src = clks[1].clk;
-	return ret;
-}
-
 static int starfive_crtc_get_resets(struct platform_device *pdev, struct starfive_crtc *sf_crtc)
 {
 	struct reset_control_bulk_data resets[] = {
@@ -435,9 +422,15 @@ static int starfive_crtc_bind(struct device *dev, struct device *master, void *d
 	if (ret)
 		return ret;
 
-	ret = starfive_crtc_get_clks(pdev, crtcp);
-	if (ret)
-		return ret;
+	crtcp->clk_disp_axi = devm_clk_get(dev, "disp_axi");
+	if (IS_ERR(crtcp->clk_disp_axi))
+		return dev_err_probe(dev, PTR_ERR(crtcp->clk_disp_axi),
+				     "error getting axi clock\n");
+
+	crtcp->clk_vout_src = devm_clk_get(dev, "disp_axi");
+	if (IS_ERR(crtcp->clk_vout_src))
+		return dev_err_probe(dev, PTR_ERR(crtcp->clk_vout_src),
+				     "error getting vout clock\n");
 
 	ret = starfive_crtc_get_resets(pdev, crtcp);
 	if (ret)
