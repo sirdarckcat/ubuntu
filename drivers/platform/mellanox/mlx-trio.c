@@ -302,8 +302,7 @@ static irqreturn_t trio_irq_handler(int irq, void *arg)
 	struct event_context *ctx = (struct event_context *)arg;
 	struct trio_context *trio = ctx->trio;
 
-	dev_err_ratelimited(&trio->pdev->dev,
-		"mlx_trio: TRIO %d received IRQ %d event %d (%s)\n",
+	pr_debug("mlx_trio: TRIO %d received IRQ %d event %d (%s)\n",
 		trio->trio_index, irq, ctx->event_num,
 		trio_events[ctx->event_num].name);
 
@@ -312,8 +311,7 @@ static irqreturn_t trio_irq_handler(int irq, void *arg)
 		trio_readq(trio, trio->mmio_base +
 				trio_events[ctx->event_num].additional_info,
 				&info);
-		dev_err_ratelimited(&trio->pdev->dev,
-			"mlx_trio: Addition IRQ info: %llx\n", info);
+		pr_debug("mlx_trio: Addition IRQ info: %llx\n", info);
 	}
 
 	return IRQ_HANDLED;
