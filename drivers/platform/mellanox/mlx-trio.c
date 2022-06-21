@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0
+// SPDX-License-Identifier: GPL-2.0 or BSD-3-Clause
 /*
  * TRIO driver for Mellanox BlueField SoC
  *
@@ -647,5 +647,5 @@ module_exit(trio_exit);
 
 MODULE_DESCRIPTION(DRIVER_DESCRIPTION);
 MODULE_AUTHOR("Mellanox Technologies");
-MODULE_LICENSE("GPL");
+MODULE_LICENSE("Dual BSD/GPL");
 MODULE_VERSION(DRIVER_VERSION);
