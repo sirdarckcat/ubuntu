@@ -79,7 +79,7 @@ CONFIG_CRYPTO_BLOWFISH                          policy<{'riscv64': 'm'}>
 CONFIG_CRYPTO_CAMELLIA                          policy<{'riscv64': 'm'}>
 CONFIG_CRYPTO_CAST5                             policy<{'riscv64': 'm'}>
 CONFIG_CRYPTO_CAST6                             policy<{'riscv64': 'm'}>
-CONFIG_CRYPTO_DES                               policy<{'riscv64': 'm'}>
+CONFIG_CRYPTO_DES                               policy<{'riscv64': 'y'}>
 CONFIG_CRYPTO_FCRYPT                            policy<{'riscv64': 'm'}>
 CONFIG_CRYPTO_CHACHA20                          policy<{'riscv64': 'm'}>
 CONFIG_CRYPTO_SERPENT                           policy<{'riscv64': 'm'}>
@@ -165,7 +165,7 @@ CONFIG_CRYPTO_DRBG_CTR                          policy<{'riscv64': 'y'}>
 
 # Menu: Device Drivers
 CONFIG_RANDOM_TRUST_BOOTLOADER                  policy<{'riscv64': 'y'}>
-CONFIG_MEDIA_CEC_RC                             policy<{'riscv64': 'y'}>
+CONFIG_MEDIA_CEC_RC                             policy<{'riscv64': '-'}>
 CONFIG_PANEL                                    policy<{'riscv64': 'm'}>
 CONFIG_CHARLCD                                  policy<{'riscv64': 'm'}>
 CONFIG_USB4                                     policy<{'riscv64': 'm'}>
@@ -347,7 +347,7 @@ CONFIG_SERIAL_8250_MEN_MCB                      policy<{'riscv64': 'm'}>
 CONFIG_SERIAL_8250_NR_UARTS                     policy<{'riscv64': '48'}>
 CONFIG_SERIAL_8250_RUNTIME_UARTS                policy<{'riscv64': '32'}>
 CONFIG_SERIAL_8250_ASPEED_VUART                 policy<{'riscv64': 'm'}>
-CONFIG_SERIAL_8250_DW                           policy<{'riscv64': 'm'}>
+CONFIG_SERIAL_8250_DW                           policy<{'riscv64': 'y'}>
 CONFIG_SERIAL_8250_RT288X                       policy<{'riscv64': 'y'}>
 CONFIG_SERIAL_OF_PLATFORM                       policy<{'riscv64': 'y'}>
 
@@ -489,7 +489,7 @@ CONFIG_DAX                                      policy<{'riscv64': 'y'}>
 CONFIG_DMADEVICES                               policy<{'riscv64': 'y'}>
 CONFIG_DMADEVICES_DEBUG                         policy<{'riscv64': 'n'}>
 CONFIG_ALTERA_MSGDMA                            policy<{'riscv64': 'm'}>
-CONFIG_DW_AXI_DMAC                              policy<{'riscv64': 'm'}>
+CONFIG_DW_AXI_DMAC                              policy<{'riscv64': 'y'}>
 CONFIG_FSL_EDMA                                 policy<{'riscv64': 'm'}>
 CONFIG_INTEL_IDMA64                             policy<{'riscv64': 'm'}>
 CONFIG_PLX_DMA                                  policy<{'riscv64': 'm'}>
@@ -658,7 +658,7 @@ CONFIG_GPIO_MAX7300                             policy<{'riscv64': 'm'}>
 CONFIG_GPIO_MAX732X                             policy<{'riscv64': 'm'}>
 CONFIG_GPIO_PCA953X                             policy<{'riscv64': 'm'}>
 CONFIG_GPIO_PCA953X_IRQ                         policy<{'riscv64': 'y'}>
-CONFIG_GPIO_PCF857X                             policy<{'riscv64': 'm'}>
+CONFIG_GPIO_PCF857X                             policy<{'riscv64': 'y'}>
 CONFIG_GPIO_TPIC2810                            policy<{'riscv64': 'm'}>
 
 # Menu: Device Drivers >> GPIO Support >> MFD GPIO expanders
@@ -864,7 +864,7 @@ CONFIG_FRAMEBUFFER_CONSOLE_ROTATION             policy<{'riscv64': 'y'}>
 CONFIG_FRAMEBUFFER_CONSOLE_DEFERRED_TAKEOVER    policy<{'riscv64': 'y'}>
 
 # Menu: Device Drivers >> Graphics support >> Direct Rendering Manager (XFree86 4.1.0 and higher DRI support)
-CONFIG_DRM                                      policy<{'riscv64': 'm'}>
+CONFIG_DRM                                      policy<{'riscv64': 'y'}>
 CONFIG_DRM_DP_AUX_CHARDEV                       policy<{'riscv64': 'y'}>
 CONFIG_DRM_DEBUG_SELFTEST                       policy<{'riscv64': 'n'}>
 CONFIG_DRM_FBDEV_EMULATION                      policy<{'riscv64': 'y'}>
@@ -1535,7 +1535,7 @@ CONFIG_I2C_DEBUG_BUS                            policy<{'riscv64': 'n'}>
 CONFIG_I2C_CHARDEV                              note<LP:1417032>
 
 # Menu: Device Drivers >> I2C support >> I2C support >> I2C Algorithms
-CONFIG_I2C_ALGOBIT                              policy<{'riscv64': 'm'}>
+CONFIG_I2C_ALGOBIT                              policy<{'riscv64': 'y'}>
 CONFIG_I2C_ALGOPCA                              policy<{'riscv64': 'm'}>
 
 # Menu: Device Drivers >> I2C support >> I2C support >> I2C Hardware Bus support
@@ -2586,10 +2586,10 @@ CONFIG_MAILBOX_TEST                             policy<{'riscv64': 'm'}>
 CONFIG_MEMORY                                   policy<{'riscv64': 'y'}>
 
 # Menu: Device Drivers >> Memory Technology Device (MTD) support
-CONFIG_MTD                                      policy<{'riscv64': 'm'}>
+CONFIG_MTD                                      policy<{'riscv64': 'y'}>
 CONFIG_MTD_TESTS                                policy<{'riscv64': 'n'}>
-CONFIG_MTD_BLOCK                                policy<{'riscv64': 'm'}>
-CONFIG_MTD_BLOCK_RO                             policy<{'riscv64': 'm'}>
+CONFIG_MTD_BLOCK                                policy<{'riscv64': 'y'}>
+CONFIG_MTD_BLOCK_RO                             policy<{'riscv64': '-'}>
 CONFIG_FTL                                      policy<{'riscv64': 'm'}>
 CONFIG_NFTL                                     policy<{'riscv64': 'm'}>
 CONFIG_NFTL_RW                                  policy<{'riscv64': 'y'}>
@@ -2602,13 +2602,13 @@ CONFIG_MTD_PSTORE                               policy<{'riscv64': 'n'}>
 CONFIG_MTD_SWAP                                 policy<{'riscv64': 'm'}>
 CONFIG_MTD_PARTITIONED_MASTER                   policy<{'riscv64': 'n'}>
 CONFIG_MTD_NAND_ECC_SW_HAMMING_SMC              policy<{'riscv64': 'n'}>
-CONFIG_MTD_SPI_NAND                             policy<{'riscv64': 'm'}>
+CONFIG_MTD_SPI_NAND                             policy<{'riscv64': 'y'}>
 #
 CONFIG_MTD                                      note<boot essential on arm>
 CONFIG_MTD_BLOCK                                note<boot essential on arm>
 
 # Menu: Device Drivers >> Memory Technology Device (MTD) support >> Enable UBI - Unsorted block images
-CONFIG_MTD_UBI                                  policy<{'riscv64': 'm'}>
+CONFIG_MTD_UBI                                  policy<{'riscv64': 'y'}>
 CONFIG_MTD_UBI_WL_THRESHOLD                     policy<{'riscv64': '4096'}>
 CONFIG_MTD_UBI_BEB_LIMIT                        policy<{'riscv64': '20'}>
 CONFIG_MTD_UBI_FASTMAP                          policy<{'riscv64': 'y'}>
@@ -4063,7 +4063,7 @@ CONFIG_SMSC911X                                 policy<{'riscv64': 'm'}>
 CONFIG_SMSC9420                                 policy<{'riscv64': 'm'}>
 
 # Menu: Device Drivers >> Network device support >> Ethernet driver support >> STMicroelectronics Multi-Gigabit Ethernet driver
-CONFIG_STMMAC_ETH                               policy<{'riscv64': 'm'}>
+CONFIG_STMMAC_ETH                               policy<{'riscv64': 'y'}>
 CONFIG_STMMAC_SELFTESTS                         policy<{'riscv64': 'n'}>
 CONFIG_STMMAC_PCI                               policy<{'riscv64': 'm'}>
 
@@ -4225,7 +4225,7 @@ CONFIG_NATIONAL_PHY                             policy<{'riscv64': 'm'}>
 CONFIG_NXP_TJA11XX_PHY                          policy<{'riscv64': 'm'}>
 CONFIG_AT803X_PHY                               policy<{'riscv64': 'm'}>
 CONFIG_QSEMI_PHY                                policy<{'riscv64': 'm'}>
-CONFIG_REALTEK_PHY                              policy<{'riscv64': 'm'}>
+CONFIG_REALTEK_PHY                              policy<{'riscv64': 'y'}>
 CONFIG_RENESAS_PHY                              policy<{'riscv64': 'm'}>
 CONFIG_ROCKCHIP_PHY                             policy<{'riscv64': 'm'}>
 CONFIG_SMSC_PHY                                 policy<{'riscv64': 'm'}>
@@ -5089,7 +5089,7 @@ CONFIG_IR_RCMM_DECODER                          policy<{'riscv64': 'm'}>
 # Menu: Device Drivers >> Remoteproc drivers
 
 # Menu: Device Drivers >> Remoteproc drivers >> Support for Remote Processor subsystem
-CONFIG_REMOTEPROC                               policy<{'riscv64': 'n'}>
+CONFIG_REMOTEPROC                               policy<{'riscv64': 'y'}>
 
 # Menu: Device Drivers >> Reset Controller Support
 CONFIG_RESET_CONTROLLER                         policy<{'riscv64': 'y'}>
@@ -5321,7 +5321,7 @@ CONFIG_SPI_XILINX                               policy<{'riscv64': 'n'}>
 CONFIG_SPI_ZYNQMP_GQSPI                         policy<{'riscv64': 'm'}>
 CONFIG_SPI_AMD                                  policy<{'riscv64': 'm'}>
 CONFIG_SPI_MUX                                  policy<{'riscv64': 'm'}>
-CONFIG_SPI_SPIDEV                               policy<{'riscv64': 'm'}>
+CONFIG_SPI_SPIDEV                               policy<{'riscv64': 'y'}>
 CONFIG_SPI_LOOPBACK_TEST                        policy<{'riscv64': 'm'}>
 CONFIG_SPI_TLE62X0                              policy<{'riscv64': 'm'}>
 CONFIG_SPI_SLAVE                                policy<{'riscv64': 'y'}>
@@ -5329,10 +5329,10 @@ CONFIG_SPI_SLAVE_TIME                           policy<{'riscv64': 'm'}>
 CONFIG_SPI_SLAVE_SYSTEM_CONTROL                 policy<{'riscv64': 'm'}>
 
 # Menu: Device Drivers >> SPI support >> DesignWare SPI controller core support
-CONFIG_SPI_DESIGNWARE                           policy<{'riscv64': 'm'}>
+CONFIG_SPI_DESIGNWARE                           policy<{'riscv64': 'y'}>
 CONFIG_SPI_DW_DMA                               policy<{'riscv64': 'y'}>
 CONFIG_SPI_DW_PCI                               policy<{'riscv64': 'm'}>
-CONFIG_SPI_DW_MMIO                              policy<{'riscv64': 'm'}>
+CONFIG_SPI_DW_MMIO                              policy<{'riscv64': 'y'}>
 
 # Menu: Device Drivers >> SPMI support
 CONFIG_SPMI                                     policy<{'riscv64': 'm'}>
@@ -5769,6 +5769,7 @@ CONFIG_SND_HDA_GENERIC                          policy<{'riscv64': 'm'}>
 #
 CONFIG_SND_HDA_RECONFIG                         note<allows fixes to be tested live>
 CONFIG_SND_HDA_POWER_SAVE_DEFAULT               note<LP:1804265>
+CONFIG_SND_HDA_POWER_SAVE_DEFAULT               policy<{'riscv64': '0'}>
 
 # Menu: Device Drivers >> Sound card support >> Advanced Linux Sound Architecture >> ISA sound devices
 
@@ -6266,6 +6267,7 @@ CONFIG_USB_LINK_LAYER_TEST                      policy<{'riscv64': 'm'}>
 CONFIG_USB_CHAOSKEY                             policy<{'riscv64': 'm'}>
 #
 CONFIG_USB_OTG                                  note<triggers breakage on x86 LP:1047527, LP:1411295>
+CONFIG_USB_OTG                                  policy<{'riscv64': 'n'}>
 CONFIG_USB_HCD_BCMA                             note<USB_{O,E}HCI_HCD_PLATFORM must be off on omap>
 CONFIG_USB_HCD_SSB                              note<USB_{O,E}HCI_HCD_PLATFORM must be off on omap>
 
@@ -6281,7 +6283,7 @@ CONFIG_USB_DWC2_DEBUG                           policy<{'riscv64': 'n'}>
 CONFIG_USB_DWC2_TRACK_MISSED_SOFS               policy<{'riscv64': 'n'}>
 
 # Menu: Device Drivers >> USB support >> Support for Host-side USB >> DesignWare USB2 DRD Core Support >> DWC2 Mode Selection
-CONFIG_USB_DWC2_HOST                            policy<{'riscv64': 'y'}>
+CONFIG_USB_DWC2_HOST                            policy<{'riscv64': 'n'}>
 
 # Menu: Device Drivers >> USB support >> Support for Host-side USB >> DesignWare USB3 DRD Core Support
 CONFIG_USB_DWC3                                 policy<{'riscv64': 'm'}>
@@ -6299,7 +6301,7 @@ CONFIG_USB_EHCI_HCD                             policy<{'riscv64': 'y'}>
 CONFIG_USB_EHCI_ROOT_HUB_TT                     policy<{'riscv64': 'y'}>
 CONFIG_USB_EHCI_TT_NEWSCHED                     policy<{'riscv64': 'y'}>
 CONFIG_USB_EHCI_FSL                             policy<{'riscv64': 'm'}>
-CONFIG_USB_EHCI_HCD_PLATFORM                    policy<{'riscv64': 'm'}>
+CONFIG_USB_EHCI_HCD_PLATFORM                    policy<{'riscv64': 'y'}>
 #
 CONFIG_USB_EHCI_HCD_PLATFORM                    mark<ENFORCED> note<Don't use the generic ehci/ohci code on omap, it doesn't work> flag<REVIEW>
 CONFIG_USB_EHCI_HCD                             mark<ENFORCED> note<ensures USB 2.0/1.1 probe ordering> flag<REVIEW>
@@ -6310,7 +6312,7 @@ CONFIG_USB_ISP1760_GADGET_ROLE                  policy<{'riscv64': 'n'}>
 CONFIG_USB_ISP1760_DUAL_ROLE                    policy<{'riscv64': 'y'}>
 
 # Menu: Device Drivers >> USB support >> Support for Host-side USB >> Inventra Highspeed Dual Role Controller
-CONFIG_USB_MUSB_HDRC                            policy<{'riscv64': 'm'}>
+CONFIG_USB_MUSB_HDRC                            policy<{'riscv64': 'y'}>
 #
 CONFIG_USB_MUSB_HDRC                            note<not autoloadable on omap> flag<REVIEW>
 
@@ -6327,7 +6329,7 @@ CONFIG_USB_MUSB_DUAL_ROLE                       policy<{'riscv64': 'y'}>
 # Menu: Device Drivers >> USB support >> Support for Host-side USB >> OHCI HCD (USB 1.1) support
 CONFIG_USB_OHCI_HCD                             policy<{'riscv64': 'y'}>
 CONFIG_USB_OHCI_HCD_PCI                         policy<{'riscv64': 'y'}>
-CONFIG_USB_OHCI_HCD_PLATFORM                    policy<{'riscv64': 'm'}>
+CONFIG_USB_OHCI_HCD_PLATFORM                    policy<{'riscv64': 'y'}>
 #
 CONFIG_USB_OHCI_HCD                             mark<ENFORCED> note<ensures USB 2.0/1.1 probe ordering>
 CONFIG_USB_OHCI_HCD_PPC_OF_LE                   flag<REVIEW>
@@ -6340,7 +6342,7 @@ CONFIG_USB_UEAGLEATM                            policy<{'riscv64': 'm'}>
 CONFIG_USB_XUSBATM                              policy<{'riscv64': 'm'}>
 
 # Menu: Device Drivers >> USB support >> Support for Host-side USB >> USB Mass Storage support
-CONFIG_USB_STORAGE                              policy<{'riscv64': 'm'}>
+CONFIG_USB_STORAGE                              policy<{'riscv64': 'y'}>
 CONFIG_USB_STORAGE_DEBUG                        policy<{'riscv64': 'n'}>
 CONFIG_USB_STORAGE_REALTEK                      policy<{'riscv64': 'm'}>
 CONFIG_USB_STORAGE_DATAFAB                      policy<{'riscv64': 'm'}>
@@ -6355,16 +6357,16 @@ CONFIG_USB_STORAGE_ONETOUCH                     policy<{'riscv64': 'm'}>
 CONFIG_USB_STORAGE_KARMA                        policy<{'riscv64': 'm'}>
 CONFIG_USB_STORAGE_CYPRESS_ATACB                policy<{'riscv64': 'm'}>
 CONFIG_USB_STORAGE_ENE_UB6250                   policy<{'riscv64': 'm'}>
-CONFIG_USB_UAS                                  policy<{'riscv64': 'm'}>
+CONFIG_USB_UAS                                  policy<{'riscv64': 'y'}>
 
 # Menu: Device Drivers >> USB support >> Support for Host-side USB >> USB Serial Converter support
-CONFIG_USB_SERIAL                               policy<{'riscv64': 'm'}>
+CONFIG_USB_SERIAL                               policy<{'riscv64': 'y'}>
 CONFIG_USB_SERIAL_GENERIC                       policy<{'riscv64': 'y'}>
 CONFIG_USB_SERIAL_SIMPLE                        policy<{'riscv64': 'm'}>
 CONFIG_USB_SERIAL_AIRCABLE                      policy<{'riscv64': 'm'}>
 CONFIG_USB_SERIAL_ARK3116                       policy<{'riscv64': 'm'}>
 CONFIG_USB_SERIAL_BELKIN                        policy<{'riscv64': 'm'}>
-CONFIG_USB_SERIAL_CH341                         policy<{'riscv64': 'm'}>
+CONFIG_USB_SERIAL_CH341                         policy<{'riscv64': 'y'}>
 CONFIG_USB_SERIAL_WHITEHEAT                     policy<{'riscv64': 'm'}>
 CONFIG_USB_SERIAL_DIGI_ACCELEPORT               policy<{'riscv64': 'm'}>
 CONFIG_USB_SERIAL_CP210X                        policy<{'riscv64': 'm'}>
@@ -6434,7 +6436,7 @@ CONFIG_USB_XHCI_HCD                             mark<ENFORCED> note<ensures USB 
 CONFIG_USB_XHCI_DBGCAP                          note<LP:1730832>
 
 # Menu: Device Drivers >> USB support >> USB Gadget Support
-CONFIG_USB_GADGET                               policy<{'riscv64': 'm'}>
+CONFIG_USB_GADGET                               policy<{'riscv64': 'y'}>
 CONFIG_USB_GADGET_DEBUG                         policy<{'riscv64': 'n'}>
 CONFIG_USB_GADGET_DEBUG_FILES                   policy<{'riscv64': 'n'}>
 CONFIG_USB_GADGET_DEBUG_FS                      policy<{'riscv64': 'n'}>
@@ -6470,7 +6472,7 @@ CONFIG_USB_ZERO                                 policy<{'riscv64': 'm'}>
 CONFIG_USB_AUDIO                                policy<{'riscv64': 'm'}>
 CONFIG_GADGET_UAC1                              policy<{'riscv64': 'y'}>
 CONFIG_GADGET_UAC1_LEGACY                       policy<{'riscv64': 'n'}>
-CONFIG_USB_ETH                                  policy<{'riscv64': 'm'}>
+CONFIG_USB_ETH                                  policy<{'riscv64': 'y'}>
 CONFIG_USB_ETH_RNDIS                            policy<{'riscv64': 'y'}>
 CONFIG_USB_ETH_EEM                              policy<{'riscv64': 'y'}>
 CONFIG_USB_G_NCM                                policy<{'riscv64': 'm'}>
@@ -6608,7 +6610,7 @@ CONFIG_VBOXGUEST                                note<LP:1796647>
 # Menu: Device Drivers >> Voltage and Current Regulator Support
 CONFIG_REGULATOR                                policy<{'riscv64': 'y'}>
 CONFIG_REGULATOR_DEBUG                          policy<{'riscv64': 'n'}>
-CONFIG_REGULATOR_FIXED_VOLTAGE                  policy<{'riscv64': 'm'}>
+CONFIG_REGULATOR_FIXED_VOLTAGE                  policy<{'riscv64': 'y'}>
 CONFIG_REGULATOR_VIRTUAL_CONSUMER               policy<{'riscv64': 'm'}>
 CONFIG_REGULATOR_USERSPACE_CONSUMER             policy<{'riscv64': 'm'}>
 CONFIG_REGULATOR_88PG86X                        policy<{'riscv64': 'm'}>
@@ -6686,7 +6688,7 @@ CONFIG_REGULATOR_PFUZE100                       policy<{'riscv64': 'm'}>
 CONFIG_REGULATOR_PV88060                        policy<{'riscv64': 'm'}>
 CONFIG_REGULATOR_PV88080                        policy<{'riscv64': 'm'}>
 CONFIG_REGULATOR_PV88090                        policy<{'riscv64': 'm'}>
-CONFIG_REGULATOR_PWM                            policy<{'riscv64': 'm'}>
+CONFIG_REGULATOR_PWM                            policy<{'riscv64': 'y'}>
 CONFIG_REGULATOR_QCOM_SPMI                      policy<{'riscv64': 'm'}>
 CONFIG_REGULATOR_RC5T583                        policy<{'riscv64': 'm'}>
 CONFIG_REGULATOR_RK808                          policy<{'riscv64': 'm'}>
@@ -8918,9 +8920,7 @@ CONFIG_CMODEL_MEDANY                            policy<{'riscv64': 'y'}>
 CONFIG_RISCV_BASE_PMU                           policy<{'riscv64': 'y'}>
 
 # Menu: Power management options
-CONFIG_PM                                       policy<{'riscv64': 'n'}>
-#
-CONFIG_PM                                       mark<ENFORCED> note<LP:1867753>
+CONFIG_PM                                       policy<{'riscv64': 'y'}>
 
 # Menu: Power management options >> Architecture: riscv
 
