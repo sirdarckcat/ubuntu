@@ -8,10 +8,8 @@
 8139cp
 8139too
 8250_aspeed_vuart
-8250_dw
 8250_exar
 8250_men_mcb
-8250_pericom
 8255
 8255_pci
 8390
@@ -423,6 +421,7 @@ ath10k_pci
 ath10k_sdio
 ath10k_usb
 ath11k
+ath11k_ahb
 ath11k_pci
 ath3k
 ath5k
@@ -502,7 +501,6 @@ baycom_par
 baycom_ser_fdx
 baycom_ser_hdx
 bcache
-bch
 bcm-keypad
 bcm-phy-lib
 bcm-sf2
@@ -704,7 +702,6 @@ cdns-mhdp8546
 cdns-pltfrm
 cdns-usb-common
 cdns3
-cec
 ceph
 cfb
 cfg80211
@@ -714,7 +711,6 @@ cfi_cmdset_0020
 cfi_probe
 cfi_util
 ch
-ch341
 ch7006
 ch7322
 ch9200
@@ -727,7 +723,6 @@ charlcd
 chcr
 chipone-icn6211
 chipone_icn8318
-chipreg
 chnl_net
 chrontel-ch7033
 ci_hdrc
@@ -823,7 +818,6 @@ crc4
 crc64
 crc8
 cryptd
-crypto_engine
 crypto_user
 cs3308
 cs5345
@@ -950,7 +944,6 @@ de2104x
 decnet
 defxx
 delta-ahe50dc-fan
-des_generic
 designware_i2s
 device_dax
 dfl
@@ -1036,7 +1029,6 @@ dps310
 dps920ab
 drbd
 drivetemp
-drm
 drm_cma_helper
 drm_dp_aux_bus
 drm_kms_helper
@@ -1125,7 +1117,6 @@ dvb-usb-vp702x
 dvb-usb-vp7045
 dvb_dummy_fe
 dvb_usb_v2
-dw-axi-dmac-platform
 dw-edma
 dw-edma-pcie
 dw-hdmi
@@ -1140,13 +1131,11 @@ dw9807-vcm
 dw_dmac
 dw_dmac_core
 dw_dmac_pci
-dw_mmc
 dw_mmc-bluefield
 dw_mmc-exynos
 dw_mmc-hi3798cv200
 dw_mmc-k3
 dw_mmc-pci
-dw_mmc-pltfm
 dw_wdt
 dwc-xlgmac
 dwc2_pci
@@ -1211,7 +1200,6 @@ efs
 egalax_ts
 egalax_ts_serial
 ehci-fsl
-ehci-platform
 ehset
 ektf2127
 elan_i2c
@@ -1346,7 +1334,6 @@ firewire-net
 firewire-ohci
 firewire-sbp2
 firewire-serial
-fixed
 fl512
 flexcan
 fm10k
@@ -1398,7 +1385,6 @@ g_acm_ms
 g_audio
 g_cdc
 g_dbgp
-g_ether
 g_ffs
 g_hid
 g_mass_storage
@@ -1495,7 +1481,6 @@ gpio-menz127
 gpio-moxtet
 gpio-pca953x
 gpio-pca9570
-gpio-pcf857x
 gpio-pci-idio-16
 gpio-pcie-idio-24
 gpio-pisosr
@@ -1598,6 +1583,7 @@ hampshire
 hantro-vpu
 hanwang
 hci
+hci_nokia
 hci_uart
 hci_vhci
 hd3ss3220
@@ -1801,7 +1787,6 @@ hx8357
 hx8357d
 hycon-hy46xx
 hyperbus-core
-i2c-algo-bit
 i2c-algo-pca
 i2c-ali1535
 i2c-ali1563
@@ -1833,7 +1818,6 @@ i2c-mux-pca9541
 i2c-mux-pca954x
 i2c-mux-pinctrl
 i2c-mux-reg
-i2c-mv64xxx
 i2c-nforce2
 i2c-nvidia-gpu
 i2c-ocores
@@ -2335,13 +2319,11 @@ libarc4
 libceph
 libchacha
 libchacha20poly1305
-libcomposite
 libcrc32c
 libcurve25519
 libcurve25519-generic
 libcxgb
 libcxgbi
-libdes
 libertas
 libertas_sdio
 libertas_spi
@@ -2520,7 +2502,6 @@ mailbox-test
 mantis
 mantis_core
 map_absent
-map_funcs
 map_ram
 map_rom
 marvell
@@ -2727,7 +2708,6 @@ microchip_t1
 microread
 microread_i2c
 microtek
-mii
 minix
 mip6
 mipi-i3c-hci
@@ -2880,11 +2860,7 @@ mt9t112
 mt9v011
 mt9v032
 mt9v111
-mtd
-mtd_blkdevs
 mtd_dataflash
-mtdblock
-mtdblock_ro
 mtdoops
 mtdram
 mtdswap
@@ -2894,7 +2870,6 @@ mtk-sd
 mtouch
 multipath
 multiq3
-musb_hdrc
 mux-adg792a
 mux-adgs1408
 mux-core
@@ -2932,7 +2907,6 @@ myrs
 n5pf
 n_gsm
 n_hdlc
-nandcore
 national
 natsemi
 nau7802
@@ -3177,7 +3151,6 @@ nvmem-rave-sp-eeprom
 nvmem-reboot-mode
 nvmem-rmem
 nvmem_qcom-spmi-sdam
-nvmem_sunxi_sid
 nvmet
 nvmet-fc
 nvmet-rdma
@@ -3207,7 +3180,6 @@ of_pmem
 of_xilinx_wdt
 ofb
 ofpart
-ohci-platform
 omap4-keypad
 omfs
 omninet
@@ -3237,6 +3209,7 @@ ov2685
 ov5640
 ov5645
 ov5647
+ov5648
 ov5670
 ov5675
 ov5693
@@ -3248,6 +3221,7 @@ ov7670
 ov772x
 ov7740
 ov8856
+ov8865
 ov9282
 ov9640
 ov9650
@@ -3271,6 +3245,7 @@ panel-boe-bf060y8m-aj0
 panel-boe-himax8279d
 panel-boe-tv101wum-nl6
 panel-dsi-cm
+panel-edp
 panel-elida-kd35t133
 panel-feixin-k101-im2ba02
 panel-feiyang-fy07024di26a30d
@@ -3302,6 +3277,7 @@ panel-raspberrypi-touchscreen
 panel-raydium-rm67191
 panel-raydium-rm68200
 panel-ronbo-rb070d30
+panel-samsung-atna33xc20
 panel-samsung-db7430
 panel-samsung-ld9040
 panel-samsung-s6d16d0
@@ -3319,6 +3295,7 @@ panel-sharp-lq101r1sx01
 panel-sharp-ls037v7dw01
 panel-sharp-ls043t1le01
 panel-sharp-ls060t1sx01
+panel-simple
 panel-sitronix-st7701
 panel-sitronix-st7701s
 panel-sitronix-st7703
@@ -3420,7 +3397,6 @@ pcmuio
 pcnet32
 pcrypt
 pcs-lynx
-pcs_xpcs
 pcwd_pci
 pcwd_usb
 pda_power
@@ -3455,13 +3431,10 @@ phy-pxa-28nm-hsic
 phy-pxa-28nm-usb2
 phy-qcom-usb-hs
 phy-qcom-usb-hsic
-phy-sun4i-usb
 phy-sun50i-usb3
-phy-sun6i-mipi-dphy
 phy-sun9i-usb
 phy-tahvo
 phy-tusb1210
-phylink
 physmap
 pi3usb30532
 pi433
@@ -3492,6 +3465,7 @@ plusb
 pluto2
 plx_dma
 plx_pci
+pm-notifier-error-inject
 pm2fb
 pm3fb
 pm6764tr
@@ -3561,9 +3535,6 @@ pwm-ir-tx
 pwm-lp3943
 pwm-ntxec
 pwm-pca9685
-pwm-regulator
-pwm-sun4i
-pwm-sun8i-v536
 pwm-twl
 pwm-twl-led
 pwm-vibra
@@ -3821,7 +3792,6 @@ rdma_ucm
 rds
 rds_rdma
 rds_tcp
-realtek
 realtek-smi
 reboot-mode
 redboot
@@ -4706,8 +4676,6 @@ spi-butterfly
 spi-cadence
 spi-cadence-xspi
 spi-dln2
-spi-dw
-spi-dw-mmio
 spi-dw-pci
 spi-fsi
 spi-gpio
@@ -4724,13 +4692,10 @@ spi-sc18is602
 spi-slave-system-control
 spi-slave-time
 spi-sun4i
-spi-sun6i
 spi-tle62x0
 spi-xcomm
 spi-zynqmp-gqspi
 spi_ks8995
-spidev
-spinand
 spmi
 sprd_serial
 sps30
@@ -4808,7 +4773,6 @@ stm_p_basic
 stm_p_sys-t
 stmfts
 stmfx
-stmmac
 stmmac-pci
 stmmac-platform
 stmpe-adc
@@ -4836,8 +4800,6 @@ stv6110
 stv6110x
 stv6111
 sun20i-codec
-sun20i-d1-ccu
-sun20i-d1-r-ccu
 sun4i-backend
 sun4i-codec
 sun4i-csi
@@ -4848,26 +4810,19 @@ sun4i-frontend
 sun4i-gpadc
 sun4i-gpadc-iio
 sun4i-i2s
-sun4i-lradc-keys
-sun4i-ps2
 sun4i-spdif
 sun4i-tcon
 sun4i-ts
 sun4i_tv
 sun6i-csi
-sun6i-dma
-sun6i-msgbox
 sun6i-rtc-ccu
 sun6i_drc
-sun6i_hwspinlock
 sun6i_mipi_dsi
 sun8i-a33-mbus
-sun8i-de2-ccu
+sun8i-di
 sun8i-drm-hdmi
 sun8i-mixer
-sun8i-r-ccu
 sun8i_tcon_top
-sun8i_thermal
 sundance
 sungem
 sungem_phy
@@ -4879,9 +4834,7 @@ sunrpc
 sunxi
 sunxi-cedrus
 sunxi-cir
-sunxi-mmc
 sunxi-rsb
-sunxi_wdt
 sur40
 surface3_spi
 svc-i3c-master
@@ -5190,14 +5143,10 @@ typhoon
 u132-hcd
 uPD60620
 u_audio
-u_ether
 u_serial
 uacce
 uartlite
-uas
-ubi
 ubifs
-ubuntu-host
 ucan
 ucb1400_core
 ucb1400_ts
@@ -5206,7 +5155,6 @@ ucd9200
 ucs1002_power
 ucsi_ccg
 uda1342
-udc-core
 udc-xilinx
 udf
 udl
@@ -5254,7 +5202,6 @@ upd78f0730
 us5182d
 usb-conn-gpio
 usb-serial-simple
-usb-storage
 usb251xb
 usb3503
 usb4604
@@ -5262,9 +5209,6 @@ usb8xxx
 usb_8dev
 usb_debug
 usb_f_acm
-usb_f_ecm
-usb_f_ecm_subset
-usb_f_eem
 usb_f_fs
 usb_f_hid
 usb_f_mass_storage
@@ -5273,7 +5217,6 @@ usb_f_ncm
 usb_f_obex
 usb_f_phonet
 usb_f_printer
-usb_f_rndis
 usb_f_serial
 usb_f_ss_lb
 usb_f_tcm
@@ -5297,7 +5240,6 @@ usbmisc_imx
 usbmon
 usbmouse
 usbnet
-usbserial
 usbsevseg
 usbtest
 usbtmc
@@ -5372,7 +5314,6 @@ vim2m
 vimc
 viperboard
 viperboard_adc
-virt-dma
 virt_wifi
 virtio-gpu
 virtio-rng
