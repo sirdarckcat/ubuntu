@@ -398,6 +398,7 @@ static void ulite_pm(struct uart_port *port, unsigned int state,
 }
 
 static int ulite_config_rs485(struct uart_port *port,
+			      struct ktermios *termios,
 			      struct serial_rs485 *rs485conf)
 {
 	port->rs485 = *rs485conf;
