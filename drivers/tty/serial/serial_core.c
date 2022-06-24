@@ -1300,7 +1300,7 @@ static int uart_get_rs485_config(struct uart_port *port,
 	return 0;
 }
 
-static int uart_set_rs485_config(struct uart_port *port,
+static int uart_set_rs485_config(struct tty_struct *tty, struct uart_port *port,
 			 struct serial_rs485 __user *rs485_user)
 {
 	struct serial_rs485 rs485;
@@ -1340,7 +1340,7 @@ static int uart_set_rs485_config(struct uart_port *port,
 	memset(rs485.padding, 0, sizeof(rs485.padding));
 
 	spin_lock_irqsave(&port->lock, flags);
-	ret = port->rs485_config(port, &rs485);
+	ret = port->rs485_config(port, &tty->termios, &rs485);
 	if (!ret) {
 		port->rs485 = rs485;
 
@@ -1454,6 +1454,10 @@ uart_ioctl(struct tty_struct *tty, unsigned int cmd, unsigned long arg)
 	if (ret != -ENOIOCTLCMD)
 		goto out;
 
+	/* rs485_config requires more locking than others */
+	if (cmd == TIOCGRS485)
+		down_write(&tty->termios_rwsem);
+
 	mutex_lock(&port->mutex);
 	uport = uart_port_check(state);
 
@@ -1477,7 +1481,7 @@ uart_ioctl(struct tty_struct *tty, unsigned int cmd, unsigned long arg)
 		break;
 
 	case TIOCSRS485:
-		ret = uart_set_rs485_config(uport, uarg);
+		ret = uart_set_rs485_config(tty, uport, uarg);
 		break;
 
 	case TIOCSISO7816:
@@ -1494,6 +1498,8 @@ uart_ioctl(struct tty_struct *tty, unsigned int cmd, unsigned long arg)
 	}
 out_up:
 	mutex_unlock(&port->mutex);
+	if (cmd == TIOCGRS485)
+		up_write(&tty->termios_rwsem);
 out:
 	return ret;
 }
@@ -2334,7 +2340,7 @@ int uart_resume_port(struct uart_driver *drv, struct uart_port *uport)
 				if (!(uport->rs485.flags & SER_RS485_ENABLED))
 					ops->set_mctrl(uport, uport->mctrl);
 				else
-					uport->rs485_config(uport, &uport->rs485);
+					uport->rs485_config(uport, NULL, &uport->rs485);
 				ops->start_tx(uport);
 				spin_unlock_irq(&uport->lock);
 				tty_port_set_initialized(port, 1);
@@ -2452,7 +2458,7 @@ uart_configure_port(struct uart_driver *drv, struct uart_state *state,
 		if (!(port->rs485.flags & SER_RS485_ENABLED))
 			port->ops->set_mctrl(port, port->mctrl);
 		else
-			port->rs485_config(port, &port->rs485);
+			port->rs485_config(port, NULL, &port->rs485);
 		spin_unlock_irqrestore(&port->lock, flags);
 
 		if (uart_console(port))
