@@ -1,0 +1,14 @@
+# SPDX-License-Identifier: GPL-2.0-only OR Linux-OpenIB
+#
+# Platform support for Mellanox BlueField PKA
+#
+
+config MLXBF_PKA
+        tristate "Mellanox BlueField Public Key Accelerator driver"
+        depends on ARM64 && IOMMU_API && VFIO_IOMMU_TYPE1 && VFIO_PLATFORM
+        help
+          If you say yes to this option, support will be included for the
+          Public Key Accelerator device on Mellanox BlueField SoCs.
+
+          This driver can also be built as a module.  If so, the module will
+          be called pka-mlxbf.
