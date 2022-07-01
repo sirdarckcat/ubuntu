@@ -57,7 +57,7 @@ static bool handshake_rsp = false;
 
 #define	GET_SEQ(lun_seq)		(lun_seq >> 2)
 
-struct request {
+struct ipmb_host_request {
 	/*
 	 * u8 rs_sa;
 	 * rs_sa (rq_sa for rsp) is not part of the msg struct because
@@ -73,7 +73,7 @@ struct request {
 	/* checksum2 is the last element of the payload */
 } __packed;
 
-struct response {
+struct ipmb_host_response {
 	/*
 	 * u8 rq_sa;
 	 * It is not part of the msg struct because
@@ -112,8 +112,8 @@ struct ipmb_seq_entry {
 };
 
 struct ipmb_rsp_elem {
-	struct list_head	list;
-	struct response		rsp;
+	struct list_head	  list;
+	struct ipmb_host_response rsp;
 };
 
 struct ipmb_master {
@@ -130,7 +130,7 @@ struct ipmb_master {
 
 	/* This is all for the response message */
 	size_t				msg_idx;
-	struct response			rsp;
+	struct ipmb_host_response	rsp;
 	struct list_head		rsp_queue;
 	atomic_t			rsp_queue_len;
 	wait_queue_head_t		wait_queue;
@@ -140,7 +140,7 @@ struct ipmb_master {
 
 /* +1 is for the checksum integrated in payload */
 #define IPMB_MSG_HDR \
-	(sizeof(struct request) - IPMB_MSG_PAYLOAD_LEN_MAX + 1)
+	(sizeof(struct ipmb_host_request) - IPMB_MSG_PAYLOAD_LEN_MAX + 1)
 
 #define IPMB_SMI_MSG_HDR \
 	(sizeof(struct ipmb_smi_msg) - IPMB_SMI_MSG_PAYLOAD_LEN_MAX)
@@ -149,13 +149,13 @@ struct ipmb_master {
  * ipmb_smi_msg contains a payload and 2 header fields: netfn_lun and cmd.
  * Its payload does not contain checksum2.
  *
- * 'struct request' and 'struct response' contain a payload (including
+ * 'struct ipmb_host_request' and 'struct ipmb_host_response' contain a payload (including
  * checksum2) and 5 header fields: netfn_r*_lun, checksum1, r*_sa,
  * rq_seq_r*_lun, cmd. So we need to add one byte for each field which
  * is present in the IPMB format and not in ipmb_smi_msg: checksum1,
  * r*_sa, rq_seq_r*_lun and checksum2.
  *
- * Note that 'len' in 'struct response' is discarded as it is for internal
+ * Note that 'len' in 'struct ipmb_host_response' is discarded as it is for internal
  * use only and not part of the actual IPMB message.
  */
 static u8 ipmi_smi_to_ipmb_len(size_t smi_msg_size)
@@ -197,7 +197,7 @@ static int ipmb_handle_response(struct ipmb_master *master)
 	if (!queue_elem)
 		return -ENOMEM;
 	memcpy(&queue_elem->rsp, &master->rsp,
-		sizeof(struct response));
+		sizeof(struct ipmb_host_response));
 
 	list_add(&queue_elem->list, &master->rsp_queue);
 	atomic_inc(&master->rsp_queue_len);
@@ -210,7 +210,7 @@ static int ipmb_handle_response(struct ipmb_master *master)
  * i2c_master_send
  */
 static int ipmb_send_request(struct ipmb_master *master,
-				struct request *request, u8 i2c_msg_len)
+				struct ipmb_host_request *request, u8 i2c_msg_len)
 {
 	struct i2c_client *client = master->client;
 	unsigned long timeout, read_time;
@@ -382,7 +382,7 @@ static void ipmb_free_seq(struct ipmb_master *master, u8 seq)
  * - A negative value for errors.
  */
 static int ipmb_receive_rsp(struct ipmb_master *master,
-				struct response *ipmb_rsp)
+				struct ipmb_host_response *ipmb_rsp)
 {
 	struct ipmb_rsp_elem	*queue_elem;
 	int			ret = 1;
@@ -405,7 +405,7 @@ static int ipmb_receive_rsp(struct ipmb_master *master,
 	queue_elem = list_first_entry(&master->rsp_queue,
 			struct ipmb_rsp_elem, list);
 
-	memcpy(ipmb_rsp, &queue_elem->rsp, sizeof(struct response));
+	memcpy(ipmb_rsp, &queue_elem->rsp, sizeof(struct ipmb_host_response));
 	list_del(&queue_elem->list);
 	kfree(queue_elem);
 	atomic_dec(&master->rsp_queue_len);
@@ -426,11 +426,11 @@ static void ipmb_send_workfn(struct work_struct *work)
 	struct ipmb_master		*master;
 
 	struct ipmb_smi_msg		*smi_msg;
-	struct request			ipmb_req_msg;
+	struct ipmb_host_request	ipmb_req_msg;
 	struct ipmi_smi_msg		*req_msg;
 
 	struct ipmb_smi_msg		*smi_rsp_msg;
-	struct response			ipmb_rsp_msg;
+	struct ipmb_host_response	ipmb_rsp_msg;
 	struct ipmi_smi_msg		*rsp_msg;
 
 	size_t				smi_msg_size;
@@ -444,7 +444,7 @@ static void ipmb_send_workfn(struct work_struct *work)
 
 	u8 *buf = (u8 *) &ipmb_req_msg;
 
-	memset(&ipmb_req_msg, 0, sizeof(struct request));
+	memset(&ipmb_req_msg, 0, sizeof(struct ipmb_host_request));
 
 	master = container_of(work, struct ipmb_master,
 			     ipmb_send_work);
@@ -657,7 +657,7 @@ static int ipmb_slave_cb(struct i2c_client *client,
 	case I2C_SLAVE_WRITE_RECEIVED:
 		buf = (u8 *) &master->rsp;
 
-		if (master->msg_idx >= sizeof(struct response))
+		if (master->msg_idx >= sizeof(struct ipmb_host_response))
 			break;
 
 		buf[master->msg_idx++] = *val;
@@ -688,7 +688,7 @@ MODULE_PARM_DESC(slave_add, "The i2c slave address of the responding device");
 static bool ipmb_detect(struct ipmb_master *master)
 {
 	struct ipmb_rsp_elem *q_elem, *tmp_q_elem;
-	struct request request;
+	struct ipmb_host_request request;
 	u8 *buf = (u8 *) &request;
 	struct device dev;
 	int retry = 2000;
