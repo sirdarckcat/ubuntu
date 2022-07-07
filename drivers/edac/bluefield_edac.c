@@ -1,8 +1,8 @@
-// SPDX-License-Identifier: GPL-2.0
+// SPDX-License-Identifier: GPL-2.0 or BSD-3-Clause
 /*
  * Bluefield-specific EDAC driver.
  *
- * Copyright (c) 2019 Mellanox Technologies.
+ * Copyright (c) 2022 NVIDIA Corporation.
  */
 
 #include <linux/acpi.h>
@@ -492,5 +492,5 @@ static struct platform_driver bluefield_edac_mc_driver = {
 module_platform_driver(bluefield_edac_mc_driver);
 
 MODULE_DESCRIPTION("Mellanox BlueField memory edac driver");
-MODULE_AUTHOR("Mellanox Technologies");
-MODULE_LICENSE("GPL v2");
+MODULE_AUTHOR("Shravan Kumar Ramani <shravankr@nvidia.com>");
+MODULE_LICENSE("Dual BSD/GPL");
