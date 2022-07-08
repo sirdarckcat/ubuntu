@@ -20,6 +20,8 @@
 #include <linux/spinlock.h>
 #include <linux/types.h>
 
+#define DRV_VERSION "1.5"
+
 /*
  * There are 3 YU GPIO blocks:
  * gpio[0]: HOST_GPIO0->HOST_GPIO31
@@ -460,3 +462,4 @@ module_platform_driver(mlxbf2_gpio_driver);
 MODULE_DESCRIPTION("Mellanox BlueField-2 GPIO Driver");
 MODULE_AUTHOR("Asmaa Mnebhi <asmaa@nvidia.com>");
 MODULE_LICENSE("GPL v2");
+MODULE_VERSION(DRV_VERSION);
