@@ -673,9 +673,11 @@ static void kvm_riscv_check_vcpu_requests(struct kvm_vcpu *vcpu)
 
 	if (kvm_request_pending(vcpu)) {
 		if (kvm_check_request(KVM_REQ_SLEEP, vcpu)) {
+			srcu_read_unlock(&vcpu->kvm->srcu, vcpu->srcu_idx);
 			rcuwait_wait_event(wait,
 				(!vcpu->arch.power_off) && (!vcpu->arch.pause),
 				TASK_INTERRUPTIBLE);
+			vcpu->srcu_idx = srcu_read_lock(&vcpu->kvm->srcu);
 
 			if (vcpu->arch.power_off || vcpu->arch.pause) {
 				/*
