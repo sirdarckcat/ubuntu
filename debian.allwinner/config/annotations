@@ -155,6 +155,11 @@ CONFIG_CRYPTO_DEV_AMLOGIC_GXL_DEBUG             policy<{'riscv64': 'n'}>
 # Menu: Cryptographic API >> Hardware crypto devices >> Freescale CAAM Job Ring driver backend
 
 # Menu: Cryptographic API >> Hardware crypto devices >> Support for Allwinner cryptographic offloader
+CONFIG_CRYPTO_DEV_SUN8I_CE                      policy<{'riscv64': 'y'}>
+CONFIG_CRYPTO_DEV_SUN8I_CE_DEBUG                policy<{'riscv64': 'y'}>
+CONFIG_CRYPTO_DEV_SUN8I_CE_HASH                 policy<{'riscv64': 'y'}>
+CONFIG_CRYPTO_DEV_SUN8I_CE_PRNG                 policy<{'riscv64': 'y'}>
+CONFIG_CRYPTO_DEV_SUN8I_CE_TRNG                 policy<{'riscv64': 'y'}>
 
 # Menu: Cryptographic API >> Hardware crypto devices >> Support for OMAP crypto HW accelerators
 
@@ -462,6 +467,14 @@ CONFIG_COMMON_CLK_FIXED_MMIO                    policy<{'riscv64': 'y'}>
 # Menu: Device Drivers >> Common Clock Framework >> Clock driver for MediaTek SoC >> Clock driver for MediaTek MT8183
 
 # Menu: Device Drivers >> Common Clock Framework >> Clock support for Allwinner SoCs
+CONFIG_SUNXI_CCU                                policy<{'riscv64': 'y'}>
+CONFIG_SUN20I_D1_CCU                            policy<{'riscv64': 'y'}>
+CONFIG_SUN20I_D1_R_CCU                          policy<{'riscv64': 'y'}>
+CONFIG_SUN6I_RTC_CCU                            policy<{'riscv64': 'y'}>
+CONFIG_SUN8I_DE2_CCU                            policy<{'riscv64': 'y'}>
+CONFIG_SUN8I_R_CCU                              policy<{'riscv64': 'y'}>
+
+CONFIG_SUN6I_RTC_CCU                            note<LP#1981074>
 
 # Menu: Device Drivers >> Common Clock Framework >> Ingenic SoCs drivers
 
@@ -772,6 +785,9 @@ CONFIG_DEVFREQ_GOV_PERFORMANCE                  policy<{'riscv64': 'y'}>
 CONFIG_DEVFREQ_GOV_POWERSAVE                    policy<{'riscv64': 'y'}>
 CONFIG_DEVFREQ_GOV_USERSPACE                    policy<{'riscv64': 'y'}>
 CONFIG_DEVFREQ_GOV_PASSIVE                      policy<{'riscv64': 'y'}>
+CONFIG_ARM_SUN50I_R329_MBUS_DEVFREQ             policy<{'riscv64': 'y'}>
+
+CONFIG_ARM_SUN50I_R329_MBUS_DEVFREQ             note<LP#1981074>
 
 # Menu: Device Drivers >> Generic Dynamic Voltage and Frequency Scaling (DVFS) support >> DEVFREQ-Event device Support
 CONFIG_PM_DEVFREQ_EVENT                         policy<{'riscv64': 'y'}>
