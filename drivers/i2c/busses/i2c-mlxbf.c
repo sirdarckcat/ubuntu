@@ -764,13 +764,17 @@ static int mlx_smbus_start_transaction(struct mlx_i2c_priv *priv,
 	slave     = request->slave & 0x7f;
 	addr      = slave << 1;
 
-	/* First of all, check whether the HW is idle */
-	if (WARN_ON(!mlx_smbus_master_wait_for_idle(priv)))
-		return -EBUSY;
-
-	/* Try to acquire the smbus gw lock */
+	/* Try to acquire the smbus gw lock before any reads of the GW register since
+	 * a read sets the lock.
+	 */
 	if (WARN_ON(!mlx_smbus_master_lock(priv)))
 		return -EBUSY;
+
+	/* Check whether the HW is idle */
+	if (WARN_ON(!mlx_smbus_master_wait_for_idle(priv))) {
+		mlx_smbus_master_unlock(priv);
+		return -EBUSY;
+	}
 
 	/* Set first byte */
 	data_desc[data_idx++] = addr;
@@ -794,8 +798,10 @@ static int mlx_smbus_start_transaction(struct mlx_i2c_priv *priv,
 		if (flags & I2C_F_WRITE) {
 			write_en   = 1;
 			write_len += operation->length;
-			if (data_idx + operation->length > MASTER_DATA_DESC_SIZE)
+			if (data_idx + operation->length > MASTER_DATA_DESC_SIZE) {
+				mlx_smbus_master_unlock(priv);
 				return -ENOBUFS;
+			}
 			memcpy(data_desc + data_idx,
 			       operation->buffer, operation->length);
 			data_idx  += operation->length;
