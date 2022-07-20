@@ -471,17 +471,17 @@ static void brcm_pcie_munge_pll(struct brcm_pcie *pcie)
 
 	u32 tmp;
 	int ret, i;
-	u8 regs[] = {0x16, 0x17, 0x1b, 0x1e};
-	u16 data[] = {0x50b9, 0xbd1a, 0x5030, 0x0007};
+	u8 regs[] =  { 0x16,   0x17,   0x18,   0x19,   0x1b,   0x1c,   0x1e };
+	u16 data[] = { 0x50b9, 0xbda1, 0x0094, 0x97b4, 0x5030, 0x5030, 0x0007 };
+
 	ret = brcm_pcie_mdio_write(pcie->base, MDIO_PORT0, SET_ADDR_OFFSET,
 				0x1600);
-	for (i = 0; i < 4; i++) {
+	for (i = 0; i < ARRAY_SIZE(regs); i++) {
 		brcm_pcie_mdio_read(pcie->base, MDIO_PORT0, regs[i], &tmp);
 		dev_dbg(pcie->dev, "PCIE MDIO pre_refclk 0x%02x = 0x%04x\n",
 			regs[i], tmp);
 	}
-
-	for (i = 0; i < 4; i++) {
+	for (i = 0; i < ARRAY_SIZE(regs); i++) {
 		brcm_pcie_mdio_write(pcie->base, MDIO_PORT0, regs[i], data[i]);
 		brcm_pcie_mdio_read(pcie->base, MDIO_PORT0, regs[i], &tmp);
 		dev_dbg(pcie->dev, "PCIE MDIO post_refclk 0x%02x = 0x%04x\n",
@@ -1248,7 +1248,7 @@ static int brcm_pcie_setup(struct brcm_pcie *pcie)
 	else
 		pcie->msi_target_addr = BRCM_MSI_TARGET_ADDR_GT_4GB;
 
-	if (!brcm_pcie_rc_mode(pcie)) {
+	if (!pcie->rc_mode(pcie)) {
 		dev_err(pcie->dev, "PCIe RC controller misconfigured as Endpoint\n");
 		return -EINVAL;
 	}
@@ -1359,7 +1359,6 @@ static int brcm_pcie_start_link(struct brcm_pcie *pcie)
 	void __iomem *base = pcie->base;
 	u16 nlw, cls, lnksta;
 	bool ssc_good = false;
-	u32 tmp;
 	int ret, i;
 
 	/* Unassert the fundamental reset */
@@ -1752,13 +1751,6 @@ static const int pcie_offsets_bmips_7425[] = {
 	[EXT_CFG_DATA]   = 0x8304,
 	[PCIE_HARD_DEBUG] = 0x4204,
 	[INTR2_CPU]      = 0x4300,
-};
-
-static const int pcie_offsets_bcm2712[] = {
-	[EXT_CFG_INDEX] = 0x9000,
-	[EXT_CFG_DATA] = 0x9004,
-	[PCIE_HARD_DEBUG] = 0x4304,
-	[INTR2_CPU] = 0x4400,
 };
 
 static const struct pcie_cfg_data generic_cfg = {
