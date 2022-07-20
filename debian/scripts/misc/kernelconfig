@@ -69,9 +69,12 @@ for arch in $archs; do
 	# we maintain the configs for hwe.
 	modify_config=true
 	env="ARCH=$kernarch DEB_ARCH=$arch"
-	compiler_path=$(which "${cross_compile}gcc" || true)
+	hostcc=${HOSTCC:-gcc}
+	hostcxx=${HOSTCXX:-g++}
+	cc=${cross_compile}${CC:-gcc}
+	compiler_path=$(which "${cc}" || true)
 	if [ "$compiler_path" != '' ]; then
-		env="$env CROSS_COMPILE=$cross_compile"
+		env="$env CROSS_COMPILE=$cross_compile HOSTCC=$hostcc HOSTCXX=$hostcxx CC=$cc"
 	else
 		echo "WARNING: ${cross_compile}gcc not installed"
 		modify_config=
