@@ -1,8 +1,7 @@
-Name:    linux-riscv
+Name:    linux-riscv-5.15
 Version: 5.15.0
-Series:  22.04 (jammy)
+Series:  20.04 (focal)
 Description:
-    This is the source code for the Ubuntu linux kernel for the 22.04 series. This
+    This is the source code for the Ubuntu linux kernel for the 20.04 series. This
     source tree is used to produce the flavours: generic.
-    This kernel is configured to support the widest range of desktop, laptop and
-    server configurations.
+    This kernel is configured to support the riscv64 architecture for the RISC-V platform.
