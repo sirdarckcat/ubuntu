@@ -704,7 +704,7 @@ static int mlx_smbus_enable(struct mlx_i2c_priv *priv, u8 slave,
 	/* Clear status bits  */
 	smbus_write(priv->smbus->io, SMBUS_MASTER_STATUS, 0x0);
 	/* Set the cause data */
-	smbus_write(priv->smbus->io, I2C_CAUSE_OR_CLEAR_BITS, ~0x0);
+	smbus_write(priv->mst_cause->io, I2C_CAUSE_OR_CLEAR_BITS, ~0x0);
 	/* Zero PEC byte */
 	smbus_write(priv->smbus->io, SMBUS_MASTER_PEC, 0x0);
 	/* Zero byte count    */
