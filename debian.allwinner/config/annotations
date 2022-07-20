@@ -660,8 +660,12 @@ CONFIG_GPIOLIB                                  policy<{'riscv64': 'y'}>
 CONFIG_GPIOLIB_FASTPATH_LIMIT                   policy<{'riscv64': '512'}>
 CONFIG_DEBUG_GPIO                               policy<{'riscv64': 'n'}>
 CONFIG_GPIO_SYSFS                               policy<{'riscv64': 'y'}>
+CONFIG_GPIO_CDEV                                policy<{'riscv64': 'y'}>
+CONFIG_GPIO_CDEV_V1                             policy<{'riscv64': 'y'}>
 CONFIG_GPIO_AGGREGATOR                          policy<{'riscv64': 'm'}>
 CONFIG_GPIO_MOCKUP                              policy<{'riscv64': 'n'}>
+
+CONFIG_GPIO_CDEV_V1                             note<LP:1953613>
 
 # Menu: Device Drivers >> GPIO Support >> I2C GPIO expanders
 CONFIG_GPIO_ADP5588                             policy<{'riscv64': 'm'}>
