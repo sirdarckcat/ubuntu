@@ -6,12 +6,8 @@
 sed -i 's/CONFIG_SECURITY_DMESG_RESTRICT=y/# CONFIG_SECURITY_DMESG_RESTRICT is not set/' ${DEBIAN}/config/config.common.ubuntu
 sed -i "s/CONFIG_SECURITY_DMESG_RESTRICT                  policy<{'riscv64': 'y'}>/CONFIG_SECURITY_DMESG_RESTRICT                  policy<{'riscv64': 'n'}>/" ${DEBIAN}/config/annotations
 
-# The updateconfig in Focal will ask about CONFIG_KASAN since it
-# is nowhere in debian.riscv/config ...
-if ! grep -q CONFIG_KASAN ${DEBIAN}/config/config.common.ubuntu; then
-	sed -i -e '/CONFIG_KCMP=y/i\# CONFIG_KASAN is not set' \
-		${DEBIAN}/config/config.common.ubuntu
-fi
+# Kasan not available on riscv64
+sed -i "/^CONFIG_KASAN/d" ${DEBIAN}/config/annotations
 
 # Drop CONFIG_DEBUG_INFO_DWARF5 because we have a toolchain too old to support
 # this in focal.
@@ -69,9 +65,15 @@ rm -f ${TMPFILE}
 
 # Override options in rules.d/hooks.mk (normally master does not have this
 # file but it got added for generic annotations enforcement.
-cat <<EOD >>${DEBIAN}/rules.d/hooks.mk
+cat <<'EOD' >> ${DEBIAN}/rules.d/hooks.mk
 do_libc_dev_package	= false
 do_doc_package		= false
 do_tools_common		= false
 do_tools_host		= false
+
+# Set inconsistent toolchain
+export GCC_SUFFIX=-10
+# Target
+export CC=$(CROSS_COMPILE)gcc$(GCC_SUFFIX)
+kmake += CC=$(CC)
 EOD
