@@ -19,6 +19,11 @@
 #include "mlxbf_gige.h"
 #include "mlxbf_gige_regs.h"
 
+/* This setting defines the version of the ACPI table
+ * content that is compatible with this driver version.
+ */
+#define MLXBF_GIGE_ACPI_TABLE_VERSION 2
+
 /* Allocate SKB whose payload pointer aligns with the Bluefield
  * hardware DMA limitation, i.e. DMA operation can't cross
  * a 4KB boundary.  A maximum packet size of 2KB is assumed in the
@@ -279,8 +284,22 @@ static int mlxbf_gige_probe(struct platform_device *pdev)
 	void __iomem *plu_base;
 	void __iomem *base;
 	int addr, phy_irq;
+	u32 version;
 	u64 control;
 	int err;
+
+	version = 0;
+	err = device_property_read_u32(&pdev->dev, "version", &version);
+	if (err) {
+		dev_err(&pdev->dev, "ACPI table version not found\n");
+		return -EINVAL;
+	}
+
+	if (version != MLXBF_GIGE_ACPI_TABLE_VERSION) {
+		dev_err(&pdev->dev, "ACPI table version mismatch: expected %d found %d\n",
+			MLXBF_GIGE_ACPI_TABLE_VERSION, version);
+		return -EINVAL;
+	}
 
 	base = devm_platform_ioremap_resource(pdev, MLXBF_GIGE_RES_MAC);
 	if (IS_ERR(base))
