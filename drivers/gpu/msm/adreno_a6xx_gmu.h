@@ -43,6 +43,8 @@ struct a6xx_gmu_device {
 		u32 hfi;
 	} ver;
 	struct platform_device *pdev;
+	struct device *gxpd;
+	struct device *dev;
 	int irq;
 	const struct firmware *fw_image;
 	struct kgsl_memdesc *dump_mem;
