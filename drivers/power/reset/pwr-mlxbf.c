@@ -15,7 +15,7 @@
 #include <linux/reboot.h>
 #include <linux/types.h>
 
-#define DRV_VERSION "1.0"
+#define DRV_VERSION "1.1"
 
 struct pwr_mlxbf {
 	struct work_struct send_work;
