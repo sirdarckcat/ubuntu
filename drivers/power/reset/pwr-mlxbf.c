@@ -62,19 +62,31 @@ pwr_mlxbf_probe(struct platform_device *pdev)
 	hid = acpi_device_hid(adev);
 	priv->hid = hid;
 
-	irq = acpi_dev_gpio_irq_get(ACPI_COMPANION(&pdev->dev), 0);
-	if (irq < 0) {
-		dev_err(&pdev->dev, "Error getting %s irq.\n", priv->hid);
-		return -ENODEV;
+	irq = acpi_dev_gpio_irq_get(ACPI_COMPANION(dev), 0);
+	if (irq == -EPROBE_DEFER) {
+		return -EPROBE_DEFER;
+	} else if (irq < 0) {
+		dev_err(dev, "Error getting %s irq.\n", priv->hid);
+		return -ENXIO;
 	}
 
 	INIT_WORK(&priv->send_work, pwr_mlxbf_send_work);
 
-	err = devm_request_irq(&pdev->dev, irq, pwr_mlxbf_irq, 0, hid, priv);
+	err = devm_request_irq(dev, irq, pwr_mlxbf_irq, 0, hid, priv);
 	if (err)
-		dev_err(&pdev->dev, "Failed request of %s irq\n", priv->hid);
+		dev_err(dev, "Failed request of %s irq\n", priv->hid);
 
 	return err;
+}
+
+static int
+pwr_mlxbf_remove(struct platform_device *pdev)
+{
+	struct pwr_mlxbf *priv = platform_get_drvdata(pdev);
+
+	flush_work(&priv->send_work);
+
+	return 0;
 }
 
 static const struct acpi_device_id __maybe_unused pwr_mlxbf_acpi_match[] = {
@@ -90,11 +102,11 @@ static struct platform_driver pwr_mlxbf_driver = {
 		.acpi_match_table = pwr_mlxbf_acpi_match,
 	},
 	.probe    = pwr_mlxbf_probe,
+	.remove = pwr_mlxbf_remove,
 };
 
 module_platform_driver(pwr_mlxbf_driver);
 
-MODULE_SOFTDEP("pre: gpio_mlxbf2");
 MODULE_DESCRIPTION("Mellanox BlueField power driver");
 MODULE_AUTHOR("Asmaa Mnebhi <asmaa@nvidia.com>");
 MODULE_LICENSE("Dual BSD/GPL");
