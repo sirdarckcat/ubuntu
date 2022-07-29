@@ -20,6 +20,8 @@
 #include <linux/sysfs.h>
 #include <linux/mailbox/qmp.h>
 #include <soc/qcom/cmd-db.h>
+#include <linux/pm_runtime.h>
+#include <linux/pm_domain.h>
 
 #include "adreno.h"
 #include "adreno_a6xx.h"
@@ -1825,11 +1827,19 @@ void a6xx_gmu_suspend(struct adreno_device *adreno_dev)
 	struct a6xx_gmu_device *gmu = to_a6xx_gmu(adreno_dev);
 	struct kgsl_device *device = KGSL_DEVICE(adreno_dev);
 
+	if (!pm_runtime_active(gmu->dev))
+		return;
+
 	a6xx_gmu_irq_disable(adreno_dev);
 
 	a6xx_gmu_pwrctrl_suspend(adreno_dev);
 
+	if (!IS_ERR_OR_NULL(gmu->gxpd))
+		pm_runtime_put_sync(gmu->gxpd);
+
 	clk_bulk_disable_unprepare(gmu->num_clks, gmu->clks);
+
+	pm_runtime_put_sync(gmu->dev);
 
 	if (ADRENO_QUIRK(adreno_dev, ADRENO_QUIRK_CX_GDSC))
 		regulator_set_mode(gmu->cx_gdsc, REGULATOR_MODE_IDLE);
@@ -2183,6 +2193,17 @@ int a6xx_gmu_enable_clks(struct adreno_device *adreno_dev)
 	struct kgsl_device *device = KGSL_DEVICE(adreno_dev);
 	int ret;
 
+	/* Turn on the resources */
+	pm_runtime_get_sync(gmu->dev);
+
+	/*
+	 * "enable" the GX power domain which won't actually do anything but it
+	 * will make sure that the refcounting is correct in case we need to
+	 * bring down the GX after a GMU failure
+	 */
+	 if (!IS_ERR_OR_NULL(gmu->gxpd))
+		pm_runtime_get_sync(gmu->gxpd);
+
 	a6xx_rdpm_cx_freq_update(gmu, GMU_FREQ_MIN / 1000);
 
 	ret = kgsl_clk_set_rate(gmu->clks, gmu->num_clks, "gmu_clk",
@@ -2202,6 +2223,8 @@ int a6xx_gmu_enable_clks(struct adreno_device *adreno_dev)
 	ret = clk_bulk_prepare_enable(gmu->num_clks, gmu->clks);
 	if (ret) {
 		dev_err(&gmu->pdev->dev, "Cannot enable GMU clocks\n");
+		pm_runtime_put(gmu->gxpd);
+		pm_runtime_put(gmu->dev);
 		return ret;
 	}
 
@@ -2598,6 +2621,13 @@ void a6xx_gmu_remove(struct kgsl_device *device)
 	struct adreno_device *adreno_dev = ADRENO_DEVICE(device);
 	struct a6xx_gmu_device *gmu = to_a6xx_gmu(adreno_dev);
 
+	pm_runtime_force_suspend(gmu->dev);
+
+	if (!IS_ERR_OR_NULL(gmu->gxpd)) {
+		pm_runtime_disable(gmu->gxpd);
+		dev_pm_domain_detach(gmu->gxpd, false);
+	}
+
 	if (!IS_ERR_OR_NULL(gmu->mailbox.channel))
 		mbox_free_channel(gmu->mailbox.channel);
 
@@ -2677,6 +2707,7 @@ int a6xx_gmu_probe(struct kgsl_device *device,
 	int ret, i;
 
 	gmu->pdev = pdev;
+	gmu->dev = &pdev->dev;
 
 	dma_set_coherent_mask(&gmu->pdev->dev, DMA_BIT_MASK(64));
 	gmu->pdev->dev.dma_mask = &gmu->pdev->dev.coherent_dma_mask;
@@ -2700,6 +2731,12 @@ int a6xx_gmu_probe(struct kgsl_device *device,
 	ret = a6xx_gmu_regulators_probe(gmu, pdev);
 	if (ret)
 		return ret;
+
+	gmu->gxpd = dev_pm_domain_attach_by_name(&pdev->dev, "gx");
+	if (IS_ERR_OR_NULL(gmu->gxpd)) {
+		ret = PTR_ERR(gmu->gxpd) ? : -ENODATA;
+		dev_pm_domain_detach(gmu->gxpd, false);
+	}
 
 	ret = devm_clk_bulk_get_all(&pdev->dev, &gmu->clks);
 	if (ret < 0)
