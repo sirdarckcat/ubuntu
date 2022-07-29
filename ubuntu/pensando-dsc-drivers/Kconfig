@@ -1,0 +1,29 @@
+config IONIC_MNIC
+	tristate "Pensando ionic mnic driver"
+	help
+	  Pensando ionic mnic driver. This is intended to run on
+	  the card, not on the host.
+
+	  If you don't know what to do here, say N.
+
+config MDEV
+	tristate "Pensando mdev driver"
+	help
+	  Pensando driver that listens for ioctl() commands from
+	  userland to start and stop the network interface ports/
+
+	  If you don't know what to do here, say N.
+
+config MNET_UIO_PDRV_GENIRQ
+	tristate "Pensando mnet userspace I/O platform driver with generic IRQ handling code"
+	help
+	  Pensando specific platform driver for Userspace I/O devices,
+	  including generic interrupt handling code. Shared interrupts
+	  are not supported.
+
+	  This kernel driver requires that the matching userspace driver
+	  handles interrupts in a special way. Userspace is responsible
+	  for acknowledging the hardware device if needed, and re-enabling
+	  interrupts in the interrupt controller using the write() syscall.
+
+	  If you don't know what to do here, say N.
