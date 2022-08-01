@@ -916,7 +916,7 @@ static int macb_mii_probe(struct net_device *dev)
 static int macb_mdiobus_register(struct macb *bp)
 {
 	struct device_node *child, *np = bp->pdev->dev.of_node, *mdio_np, *dev_np;
-	struct platform_device *mdio_pdev;
+	struct platform_device *mdio_pdev = NULL;
 
 	/* Only create the PHY from the device tree if at least one PHY is
 	 * described. Otherwise scan the entire MDIO bus. We do this to support
@@ -941,7 +941,10 @@ static int macb_mdiobus_register(struct macb *bp)
 	of_node_put(np);
 	dev_np = of_get_parent(mdio_np);
 	of_node_put(mdio_np);
-	mdio_pdev = of_find_device_by_node(dev_np);
+	/* Handle error where bus_find_device returns a match for NULL */
+	if (dev_np)
+		mdio_pdev = of_find_device_by_node(dev_np);
+
 	of_node_put(dev_np);
 
 	/* Check if the MDIO producer device is probed */
