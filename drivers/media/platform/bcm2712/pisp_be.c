@@ -699,12 +699,30 @@ static void pispbe_schedule_all(struct pispbe_dev *pispbe, int clear_hw_busy)
 	spin_unlock_irqrestore(&pispbe->hw_lock, flags);
 }
 
+static void pispbe_isr_jobdone(struct pispbe_dev *pispbe, struct pispbe_job *job)
+{
+	struct pispbe_node_group *node_group = job->node_group;
+	struct pispbe_buffer **buf = job->buf;
+	u64 ts = ktime_get_ns();
+	int i;
+
+	v4l2_ctrl_request_complete(buf[0]->vb.vb2_buf.req_obj.req,
+				&node_group->node[0].hdl);
+
+	for (i = 0; i < PISPBE_NUM_NODES; i++) {
+		if (buf[i]) {
+			buf[i]->vb.vb2_buf.timestamp = ts;
+			vb2_buffer_done(&buf[i]->vb.vb2_buf,
+					VB2_BUF_STATE_DONE);
+		}
+	}
+}
+
 static irqreturn_t pispbe_isr(int irq, void *dev)
 {
 	struct pispbe_dev *pispbe = (struct pispbe_dev *)dev;
 	uint8_t started, done;
-	int i;
-	int clear_hw_busy = 0;
+	int can_queue_another = 0;
 	unsigned long flags;
 	u32 u;
 
@@ -730,23 +748,8 @@ static irqreturn_t pispbe_isr(int irq, void *dev)
 	 * we previously saw "start" now finishes, and we then queued a new job
 	 * which we see both start and finish "simultaneously".
 	 */
-	while (pispbe->done != done && pispbe->running_job.node_group) {
-		struct pispbe_node_group *node_group =
-			pispbe->running_job.node_group;
-		struct pispbe_buffer **buf = pispbe->running_job.buf;
-		u64 ts;
-
-		v4l2_ctrl_request_complete(buf[0]->vb.vb2_buf.req_obj.req,
-					   &node_group->node[0].hdl);
-		ts = ktime_get_ns();
-		for (i = 0; i < PISPBE_NUM_NODES; i++) {
-			if (buf[i]) {
-				buf[i]->vb.vb2_buf.timestamp = ts;
-				vb2_buffer_done(&buf[i]->vb.vb2_buf,
-						VB2_BUF_STATE_DONE);
-			}
-		}
-
+	if (pispbe->running_job.node_group && pispbe->done != done) {
+		pispbe_isr_jobdone(pispbe, &pispbe->running_job);
 		memset(&pispbe->running_job, 0, sizeof(pispbe->running_job));
 		pispbe->done++;
 		v4l2_dbg(1, debug, &pispbe->v4l2_dev, "Job done (1)\n");
@@ -754,10 +757,18 @@ static irqreturn_t pispbe_isr(int irq, void *dev)
 
 	if (pispbe->started != started) {
 		pispbe->started++;
-		pispbe->running_job = pispbe->queued_job;
-		memset(&pispbe->queued_job, 0, sizeof(pispbe->queued_job));
-		clear_hw_busy = 1;
+		can_queue_another = 1;
 		v4l2_dbg(1, debug, &pispbe->v4l2_dev, "Job started\n");
+
+		if (pispbe->done != done && pispbe->queued_job.node_group) {
+			pispbe_isr_jobdone(pispbe, &pispbe->queued_job);
+			pispbe->done++;
+			v4l2_dbg(1, debug, &pispbe->v4l2_dev, "Job done (2)\n");
+		} else {
+			pispbe->running_job = pispbe->queued_job;
+		}
+
+		memset(&pispbe->queued_job, 0, sizeof(pispbe->queued_job));
 	}
 
 	if (pispbe->done != done || pispbe->started != started) {
@@ -766,11 +777,11 @@ static irqreturn_t pispbe_isr(int irq, void *dev)
 		pispbe->started = started;
 		pispbe->done = done;
 	}
+
+	/* check if there's more to do before going to sleep */
+	pispbe_schedule_all(pispbe, can_queue_another);
+
 	spin_unlock_irqrestore(&pispbe->isr_lock, flags);
-
-	/* must check if there's more to do before going to sleep */
-	pispbe_schedule_all(pispbe, clear_hw_busy);
-
 	return IRQ_HANDLED;
 }
 
