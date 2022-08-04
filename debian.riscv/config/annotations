@@ -7,3 +7,29 @@ include ../../debian.master/config/annotations
 # Should upstream this to master kernel
 CONFIG_KEXEC_FILE policy<{'riscv64': 'y'}>
 CONFIG_IMA_KEXEC policy<{'riscv64': 'y'}>
+
+
+CONFIG_NUMA_BALANCING policy<{'riscv64': 'n'}>
+CONFIG_WILC1000_HW_OOB_INTR policy<{'riscv64': '-'}>
+CONFIG_GPIO_CDEV_V1 policy<{'riscv64': 'n'}> note<LP: #1953613>
+CONFIG_KFENCE_SAMPLE_INTERVAL policy<{'riscv64': '100'}>
+CONFIG_WILC1000_SPI policy<{'riscv64': '-'}>
+CONFIG_BPF_KPROBE_OVERRIDE policy<{'riscv64': 'n'}>
+CONFIG_FONT_6x8 policy<{'riscv64': 'y'}>
+CONFIG_DRM_AMD_DC_SI policy<{'riscv64': 'n'}>
+CONFIG_MTD_PSTORE policy<{'riscv64': 'n'}>
+CONFIG_STRICT_DEVMEM policy<{'riscv64': 'n'}> mark<ENFORCED>
+CONFIG_NUMA_BALANCING_DEFAULT_ENABLED policy<{'riscv64': '-'}> note<LP: #1557690>
+CONFIG_EFIVAR_FS policy<{'riscv64': 'm'}> note<needed for variable EFI update>
+CONFIG_SCSI_IZIP_EPP16 policy<{'riscv64': 'y'}>
+CONFIG_MHI_WWAN_CTRL policy<{'riscv64': 'n'}>
+CONFIG_NFC_S3FWRN82_UART policy<{'riscv64': 'n'}>
+CONFIG_IMA_ARCH_POLICY policy<{'riscv64': 'n'}> mark<ENFORCED> note<LP: #1866909>
+CONFIG_PROC_VMCORE_DEVICE_DUMP policy<{'riscv64': 'n'}>
+CONFIG_IO_STRICT_DEVMEM policy<{'riscv64': '-'}>
+CONFIG_SUNRPC_DISABLE_INSECURE_ENCTYPES policy<{'riscv64': 'n'}>
+CONFIG_WLAN_VENDOR_MICROCHIP policy<{'riscv64': 'n'}>
+CONFIG_VMAP_STACK policy<{'riscv64': 'n'}>
+CONFIG_NTFS3_64BIT_CLUSTER policy<{'riscv64': 'y'}>
+CONFIG_WILC1000_SDIO policy<{'riscv64': '-'}>
+CONFIG_CXL_MEM_RAW_COMMANDS policy<{'riscv64': 'y'}>
