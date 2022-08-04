@@ -7095,6 +7095,7 @@ EXPORT_SYMBOL	 vmlinux 0x27cdca93	pci_add_resource
 EXPORT_SYMBOL	 vmlinux 0x27e0a7b7	mdiobus_alloc_size
 EXPORT_SYMBOL	 vmlinux 0x27f23793	tcp_req_err
 EXPORT_SYMBOL	 vmlinux 0x27fec15e	tcp_sync_mss
+EXPORT_SYMBOL	 vmlinux 0x2806ca62	pcie_port_service_unregister
 EXPORT_SYMBOL	 vmlinux 0x281823c5	__kfifo_out_peek
 EXPORT_SYMBOL	 vmlinux 0x28220c5d	param_array_ops
 EXPORT_SYMBOL	 vmlinux 0x283b4ce0	dev_get_flags
@@ -8155,6 +8156,7 @@ EXPORT_SYMBOL	 vmlinux 0x5925cb52	udp6_csum_init
 EXPORT_SYMBOL	 vmlinux 0x592bbcce	ata_link_printk
 EXPORT_SYMBOL	 vmlinux 0x5934b5a9	qman_destroy_fq
 EXPORT_SYMBOL	 vmlinux 0x5939d791	ip_mc_inc_group
+EXPORT_SYMBOL	 vmlinux 0x5942e460	pcie_port_service_register
 EXPORT_SYMBOL	 vmlinux 0x595d8002	hdmi_infoframe_pack
 EXPORT_SYMBOL	 vmlinux 0x5966ff68	uart_get_baud_rate
 EXPORT_SYMBOL	 vmlinux 0x596911c5	ucc_of_parse_tdm
@@ -8610,7 +8612,6 @@ EXPORT_SYMBOL	 vmlinux 0x6cbbfc54	__arch_copy_to_user
 EXPORT_SYMBOL	 vmlinux 0x6cc28beb	sched_autogroup_create_attach
 EXPORT_SYMBOL	 vmlinux 0x6cc5ac18	prepare_kernel_cred
 EXPORT_SYMBOL	 vmlinux 0x6cccbff1	mem_cgroup_from_task
-EXPORT_SYMBOL	 vmlinux 0x6cd7fb01	pcie_port_service_unregister
 EXPORT_SYMBOL	 vmlinux 0x6cf0d67d	qe_get_num_of_snums
 EXPORT_SYMBOL	 vmlinux 0x6cf59fba	scsi_is_target_device
 EXPORT_SYMBOL	 vmlinux 0x6d00194f	__dev_kfree_skb_any
@@ -8679,7 +8680,6 @@ EXPORT_SYMBOL	 vmlinux 0x6fce1f9d	jbd2_journal_clear_features
 EXPORT_SYMBOL	 vmlinux 0x6fd9c35a	__clzdi2
 EXPORT_SYMBOL	 vmlinux 0x6fdd9f4d	register_netdev
 EXPORT_SYMBOL	 vmlinux 0x6fe605a0	fs_bio_set
-EXPORT_SYMBOL	 vmlinux 0x6fe8d708	pcie_port_service_register
 EXPORT_SYMBOL	 vmlinux 0x6fff261f	__arch_clear_user
 EXPORT_SYMBOL	 vmlinux 0x70002fe8	siphash_1u32
 EXPORT_SYMBOL	 vmlinux 0x701b5514	vfs_rename
@@ -15892,66 +15892,66 @@ EXPORT_SYMBOL_GPL	 drivers/ntb/ntb_transport 0xf55d6313	ntb_transport_register_c
 EXPORT_SYMBOL_GPL	 drivers/ntb/ntb_transport 0xf9eb813f	ntb_transport_unregister_client_dev
 EXPORT_SYMBOL_GPL	 drivers/nvdimm/nd_virtio 0x160e4192	virtio_pmem_host_ack
 EXPORT_SYMBOL_GPL	 drivers/nvdimm/nd_virtio 0xd2a8629c	async_pmem_flush
-EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0x03cb1611	nvme_stop_ctrl
+EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0x06bf02df	nvme_stop_keep_alive
+EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0x0e434d39	nvme_enable_ctrl
 EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0x11abc494	__SCK__tp_func_nvme_sq
-EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0x15e592a8	nvme_complete_async_event
-EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0x21a31bef	nvme_set_queue_count
-EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0x21a95038	nvme_uninit_ctrl
-EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0x25898123	nvme_cancel_tagset
-EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0x2b645a76	nvme_start_freeze
-EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0x2e5cb552	nvme_fail_nonready_command
-EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0x3295ec09	nvme_init_ctrl
+EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0x18e47b76	nvme_sync_io_queues
+EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0x1c3d243d	nvme_reset_ctrl
+EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0x2cf4f7cc	nvme_setup_cmd
+EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0x2e279ed6	nvme_kill_queues
 EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0x3606b3b0	nvme_host_path_error
-EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0x3db5e35d	nvme_sync_queues
-EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0x3f28f5a0	nvme_set_features
-EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0x450b55b8	nvme_setup_cmd
+EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0x3f875532	nvme_cancel_tagset
+EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0x47fd1f1d	nvme_wait_freeze_timeout
 EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0x49224181	nvme_reset_wq
-EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0x4e005ac2	nvme_wait_freeze
+EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0x4fed8a97	nvme_cancel_admin_tagset
+EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0x5539d55f	nvme_wait_freeze
 EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0x604e0650	nvme_complete_rq
+EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0x62e799b7	nvme_complete_async_event
+EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0x6479f81d	nvme_disable_ctrl
 EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0x64b62862	nvme_wq
-EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0x6e481611	nvme_start_queues
 EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0x6f2f39ca	__nvme_submit_sync_cmd
 EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0x813cf212	nvme_io_timeout
 EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0x815530c0	nvme_cancel_request
+EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0x822bc662	nvme_start_ctrl
 EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0x82fd8cbb	nvme_submit_sync_cmd
-EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0x87c5d641	nvme_init_ctrl_finish
-EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0x88847ad0	nvme_sync_io_queues
+EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0x84a052b7	nvme_stop_queues
+EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0x89226b62	nvme_init_ctrl
+EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0x89b1d5c8	nvme_init_ctrl_finish
+EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0x8a86b5b2	nvme_stop_ctrl
 EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0x8a9c70ed	nvme_sec_submit
 EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0x8e7ec2b6	__tracepoint_nvme_sq
-EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0x9b8bf04c	nvme_delete_ctrl
-EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0x9de4101d	nvme_stop_queues
-EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0xa6852df4	nvme_wait_reset
-EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0xaea24d4c	nvme_start_ctrl
+EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0x92162200	nvme_unfreeze
+EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0x9fdff762	nvme_set_features
+EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0xa18678c4	__nvme_check_ready
+EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0xb14be083	nvme_change_ctrl_state
 EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0xb3f0229d	nvme_cleanup_cmd
-EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0xb4a368fc	nvme_disable_ctrl
-EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0xbd912f83	nvme_stop_keep_alive
-EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0xbee04423	nvme_wait_freeze_timeout
-EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0xc1b94f91	nvme_change_ctrl_state
-EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0xc84b8164	nvme_kill_queues
-EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0xcde9bb64	nvme_get_features
+EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0xb4fcea2a	nvme_shutdown_ctrl
+EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0xbdf328b6	nvme_set_queue_count
+EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0xcc94bf83	nvme_start_queues
 EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0xced91c7e	__traceiter_nvme_sq
+EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0xcf15377c	nvme_delete_ctrl
+EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0xd23de74f	nvme_remove_namespaces
 EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0xd332295b	nvme_alloc_request
 EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0xd45434ee	admin_timeout
 EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0xd58bbbcb	nvme_delete_wq
-EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0xe04660ca	__nvme_check_ready
-EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0xe50a0dae	nvme_remove_namespaces
-EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0xe9cad466	nvme_shutdown_ctrl
-EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0xeae210c1	nvme_enable_ctrl
-EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0xf26119c9	nvme_reset_ctrl
-EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0xf4049a2b	nvme_unfreeze
-EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0xfc438bb5	nvme_try_sched_reset
-EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0xff5ad7a7	nvme_cancel_admin_tagset
-EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-fabrics 0x05397001	nvmf_reg_write32
-EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-fabrics 0x08218deb	nvmf_ip_options_match
-EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-fabrics 0x0d1c2c59	nvmf_connect_admin_queue
-EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-fabrics 0x13e0b785	nvmf_reg_read64
-EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-fabrics 0x439c5eb4	nvmf_get_address
+EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0xdce03fbc	nvme_start_freeze
+EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0xdf274488	nvme_fail_nonready_command
+EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0xe668475f	nvme_get_features
+EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0xea3ee94d	nvme_uninit_ctrl
+EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0xeb723a5c	nvme_wait_reset
+EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0xf19819d1	nvme_sync_queues
+EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-core 0xf35f826b	nvme_try_sched_reset
+EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-fabrics 0x17fa7d5b	nvmf_connect_admin_queue
+EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-fabrics 0x21772b81	nvmf_ip_options_match
+EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-fabrics 0x37666670	nvmf_reg_read64
 EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-fabrics 0x51c659eb	nvmf_free_options
-EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-fabrics 0x7134ceb9	nvmf_register_transport
-EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-fabrics 0x8892897a	nvmf_should_reconnect
-EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-fabrics 0xa41b3be5	nvmf_connect_io_queue
-EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-fabrics 0xd7677de8	nvmf_unregister_transport
-EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-fabrics 0xe2e02780	nvmf_reg_read32
+EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-fabrics 0x5457f115	nvmf_reg_write32
+EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-fabrics 0x66927ba4	nvmf_should_reconnect
+EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-fabrics 0x723d9b7f	nvmf_unregister_transport
+EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-fabrics 0x7683ce9e	nvmf_reg_read32
+EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-fabrics 0xa60b3e5a	nvmf_register_transport
+EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-fabrics 0xbb3a5d83	nvmf_get_address
+EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-fabrics 0xef04bf26	nvmf_connect_io_queue
 EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-fc 0x0d12e564	nvme_fc_register_remoteport
 EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-fc 0x3884f8b8	nvme_fc_unregister_localport
 EXPORT_SYMBOL_GPL	 drivers/nvme/host/nvme-fc 0x3e33ac54	nvme_fc_rescan_remoteport
@@ -26433,11 +26433,11 @@ MCB EXPORT_SYMBOL_GPL 0x8f873ae7	mcb_alloc_dev	drivers/mcb/mcb
 MCB EXPORT_SYMBOL_GPL 0x9cc093ea	mcb_release_bus	drivers/mcb/mcb
 MCB EXPORT_SYMBOL_GPL 0xeb2c8905	mcb_release_mem	drivers/mcb/mcb
 MCB EXPORT_SYMBOL_GPL 0xecfa5018	mcb_get_irq	drivers/mcb/mcb
+NVME_TARGET_PASSTHRU EXPORT_SYMBOL_GPL 0x46c2a3f6	nvme_command_effects	drivers/nvme/host/nvme-core
+NVME_TARGET_PASSTHRU EXPORT_SYMBOL_GPL 0x4884340c	nvme_put_ns	drivers/nvme/host/nvme-core
 NVME_TARGET_PASSTHRU EXPORT_SYMBOL_GPL 0x525a9998	nvme_execute_passthru_rq	drivers/nvme/host/nvme-core
-NVME_TARGET_PASSTHRU EXPORT_SYMBOL_GPL 0x541a0745	nvme_ctrl_from_file	drivers/nvme/host/nvme-core
-NVME_TARGET_PASSTHRU EXPORT_SYMBOL_GPL 0x6d0219e1	nvme_put_ns	drivers/nvme/host/nvme-core
-NVME_TARGET_PASSTHRU EXPORT_SYMBOL_GPL 0x799d6dc7	nvme_command_effects	drivers/nvme/host/nvme-core
-NVME_TARGET_PASSTHRU EXPORT_SYMBOL_GPL 0xde4e2442	nvme_find_get_ns	drivers/nvme/host/nvme-core
+NVME_TARGET_PASSTHRU EXPORT_SYMBOL_GPL 0x7b4c9a56	nvme_ctrl_from_file	drivers/nvme/host/nvme-core
+NVME_TARGET_PASSTHRU EXPORT_SYMBOL_GPL 0xe4471467	nvme_find_get_ns	drivers/nvme/host/nvme-core
 PMBUS EXPORT_SYMBOL_GPL 0x01aa82eb	pmbus_read_byte_data	drivers/hwmon/pmbus/pmbus_core
 PMBUS EXPORT_SYMBOL_GPL 0x09a7d81d	pmbus_update_byte_data	drivers/hwmon/pmbus/pmbus_core
 PMBUS EXPORT_SYMBOL_GPL 0x0b4a3a43	pmbus_get_fan_rate_cached	drivers/hwmon/pmbus/pmbus_core
