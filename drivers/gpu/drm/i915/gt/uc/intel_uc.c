@@ -22,7 +22,18 @@ static void uc_expand_default_options(struct intel_uc *uc)
 	if (i915->params.enable_guc != -1)
 		return;
 
-	/* Don't enable GuC/HuC on pre-Gen12 */
+	/* The parameter i915.enable_guc=2 is needed for EHL, ICL and ADL-S
+	    to enable HuC authentication but not explicitly required for ADL-P
+	    since HuC is default enabled.  This check needs to be before the other
+	    conditions are checked because the gen11 gfx platforms would return
+	    out of the function and not get set.
+	*/
+	if (IS_JSL_EHL(i915) || IS_ICELAKE(i915) || IS_ALDERLAKE_S(i915)) {
+		i915->params.enable_guc = ENABLE_GUC_LOAD_HUC;
+		return;
+	}
+
+	/* Don't enable GuC/HuC on non-ICL and non-EHL pre-Gen12 platforms */
 	if (GRAPHICS_VER(i915) < 12) {
 		i915->params.enable_guc = 0;
 		return;
@@ -35,7 +46,7 @@ static void uc_expand_default_options(struct intel_uc *uc)
 	}
 
 	/* Intermediate platforms are HuC authentication only */
-	if (IS_DG1(i915) || IS_ALDERLAKE_S(i915)) {
+	if (IS_DG1(i915)) {
 		i915->params.enable_guc = ENABLE_GUC_LOAD_HUC;
 		return;
 	}
