@@ -515,13 +515,13 @@ static int pispbe_schedule_internal(struct pispbe_node_group *node_group,
 	struct pispbe_dev *pispbe = node_group->pispbe;
 
 	if (node_group->num_streaming >= 2) {
-		unsigned long flags;
-		 /* remember: srcimages, captures then metadata */
+		/* remember: srcimages, captures then metadata */
 		struct pispbe_buffer *buf[PISPBE_NUM_NODES];
 		struct pispbe_buffer *rbuf[PISPBE_NUM_RECURRENT_INPUTS];
 		struct pisp_be_tiles_config *config_tiles_buffer;
 		dma_addr_t hw_dma_addrs[N_HW_ADDRESSES];
 		u32 hw_enables[N_HW_ENABLES];
+		unsigned long flags1;
 		int i;
 
 		/* Check if all the streaming nodes have a buffer ready */
@@ -531,12 +531,12 @@ static int pispbe_schedule_internal(struct pispbe_node_group *node_group,
 			    node_group->node[i].streaming) {
 				struct pispbe_node *node = &node_group->node[i];
 
-				spin_lock_irqsave(&node->ready_lock, flags);
+				spin_lock_irqsave(&node->ready_lock, flags1);
 				buf[i] = list_first_entry_or_null(
 					&node->ready_queue,
 					struct pispbe_buffer, ready_list);
 				spin_unlock_irqrestore(&node->ready_lock,
-						       flags);
+						       flags1);
 				if (buf[i] == NULL)
 					goto nothing_to_do;
 			}
@@ -547,10 +547,10 @@ static int pispbe_schedule_internal(struct pispbe_node_group *node_group,
 			if (buf[i]) {
 				struct pispbe_node *node = &node_group->node[i];
 
-				spin_lock_irqsave(&node->ready_lock, flags);
+				spin_lock_irqsave(&node->ready_lock, flags1);
 				list_del(&buf[i]->ready_list);
 				spin_unlock_irqrestore(&node->ready_lock,
-						       flags);
+						       flags1);
 			}
 			pispbe->queued_job.buf[i] = buf[i];
 		}
@@ -587,7 +587,7 @@ static int pispbe_schedule_internal(struct pispbe_node_group *node_group,
 		 * Buffers which weren't queued by V4L2 are not registered
 		 * in pispbe->queued_job.
 		 */
-		spin_lock_irqsave(&node_group->node[TDN_OUTPUT_NODE].ready_lock, flags);
+		spin_lock_irqsave(&node_group->node[TDN_OUTPUT_NODE].ready_lock, flags1);
 		rbuf[RECURRENT_TDN_INPUT] = get_last_buffer(&node_group->node[TDN_OUTPUT_NODE]);
 		if (config_tiles_buffer->config.global.bayer_enables &
 		    PISP_BE_BAYER_ENABLE_TDN_OUTPUT) {
@@ -602,9 +602,9 @@ static int pispbe_schedule_internal(struct pispbe_node_group *node_group,
 					buf[TDN_OUTPUT_NODE]->vb.vb2_buf.index;
 			}
 		}
-		spin_unlock_irqrestore(&node_group->node[TDN_OUTPUT_NODE].ready_lock, flags);
+		spin_unlock_irqrestore(&node_group->node[TDN_OUTPUT_NODE].ready_lock, flags1);
 
-		spin_lock_irqsave(&node_group->node[STITCH_OUTPUT_NODE].ready_lock, flags);
+		spin_lock_irqsave(&node_group->node[STITCH_OUTPUT_NODE].ready_lock, flags1);
 		rbuf[RECURRENT_STITCH_INPUT] = get_last_buffer(&node_group->node[STITCH_OUTPUT_NODE]);
 		if (config_tiles_buffer->config.global.bayer_enables &
 		    PISP_BE_BAYER_ENABLE_STITCH_OUTPUT) {
@@ -619,7 +619,7 @@ static int pispbe_schedule_internal(struct pispbe_node_group *node_group,
 					buf[STITCH_OUTPUT_NODE]->vb.vb2_buf.index;
 			}
 		}
-		spin_unlock_irqrestore(&node_group->node[STITCH_OUTPUT_NODE].ready_lock, flags);
+		spin_unlock_irqrestore(&node_group->node[STITCH_OUTPUT_NODE].ready_lock, flags1);
 
 		/* Convert buffers to DMA addresses for the hardware */
 		fixup_addrs_enables(hw_dma_addrs, hw_enables,
