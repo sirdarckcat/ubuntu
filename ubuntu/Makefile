@@ -35,6 +35,10 @@ obj-y += xilinx-mv-camera-sensor-module/
 ##
 ##
 ##
+obj-y += xilinx-isp-module/
+##
+##
+##
 obj-$(CONFIG_UBUNTU_HOST)      += ubuntu-host/
 ##
 ##
