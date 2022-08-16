@@ -46,7 +46,7 @@
 
 #define AON_GPIO_PINMUX_0	0x00
 #define AON_GPIO_PINMUX_3	0x0c
-#define AON_GPIO_PADCTRL_0	0x14
+#define AON_GPIO_PADCTRL_0	0x18
 
 #define BCM2712_PULL_MASK	0x3
 
