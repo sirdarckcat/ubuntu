@@ -44,6 +44,7 @@ struct a6xx_gmu_device {
 	} ver;
 	struct platform_device *pdev;
 	struct device *gxpd;
+	struct device *cxpd;
 	struct device *dev;
 	int irq;
 	const struct firmware *fw_image;
