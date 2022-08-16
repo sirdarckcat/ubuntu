@@ -12,6 +12,7 @@
 #include <linux/regulator/consumer.h>
 #include <linux/soc/qcom/llcc-qcom.h>
 #include <soc/qcom/of_common.h>
+#include <linux/pm_runtime.h>
 
 #include "adreno.h"
 #include "adreno_a6xx.h"
@@ -327,10 +328,12 @@ void a6xx_cx_regulator_disable_wait(struct regulator *reg,
 				struct kgsl_device *device, u32 timeout)
 {
 	u32 offset;
+	struct a6xx_gmu_device *gmu = to_a6xx_gmu(ADRENO_DEVICE(device));
 
 	offset = adreno_is_a662(ADRENO_DEVICE(device)) ?
 			 A662_GPU_CC_CX_GDSCR : A6XX_GPU_CC_CX_GDSCR;
 
+	pm_runtime_put_sync(gmu->cxpd);
 	if (!adreno_regulator_disable_poll(device, reg, offset, timeout)) {
 		dev_err(device->dev, "GPU CX wait timeout. Dumping CX votes:\n");
 	}
