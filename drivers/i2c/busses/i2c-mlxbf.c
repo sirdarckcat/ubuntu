@@ -15,6 +15,8 @@
 #include <linux/platform_device.h>
 #include <linux/string.h>
 
+#define DRV_VERSION "3.1"
+
 /* Defines what functionality is present. */
 #define MLXBF_I2C_FUNC_SMBUS_BLOCK \
 	(I2C_FUNC_SMBUS_BLOCK_DATA | I2C_FUNC_SMBUS_BLOCK_PROC_CALL)
@@ -2527,3 +2529,4 @@ MODULE_DESCRIPTION("Mellanox BlueField I2C bus driver");
 MODULE_AUTHOR("Khalil Blaiech <kblaiech@nvidia.com>");
 MODULE_AUTHOR("Asmaa Mnebhi <asmaa@nvidia.com>");
 MODULE_LICENSE("GPL v2");
+MODULE_VERSION(DRV_VERSION);
