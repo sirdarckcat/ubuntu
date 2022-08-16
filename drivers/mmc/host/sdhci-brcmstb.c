@@ -616,29 +616,29 @@ static int sdhci_brcmstb_probe(struct platform_device *pdev)
 	if (IS_ERR(priv->sde_1v8))
 		priv->flags &= ~BRCMSTB_PRIV_FLAGS_HAS_SD_EXPRESS;
 
-	priv->sde_ioaddr = devm_platform_ioremap_resource(pdev, 2);
+	priv->sde_ioaddr = devm_platform_get_and_ioremap_resource(pdev, 2, NULL);
 	if (IS_ERR(priv->sde_ioaddr))
 		priv->sde_ioaddr = NULL;
 
-	priv->sde_ioaddr2 = devm_platform_ioremap_resource(pdev, 3);
+	priv->sde_ioaddr2 =  devm_platform_get_and_ioremap_resource(pdev, 3, NULL);
 	if (IS_ERR(priv->sde_ioaddr2))
 		priv->sde_ioaddr2 = NULL;
 
-        priv->pinctrl = devm_pinctrl_get(&pdev->dev);
-        if (IS_ERR(priv->pinctrl)) {
-                no_pinctrl = true;
-        }
-        priv->pins_default = pinctrl_lookup_state(priv->pinctrl, "default");
-        if (IS_ERR(priv->pins_default)) {
-                dev_dbg(&pdev->dev, "No pinctrl default state\n");
-                no_pinctrl = true;
-        }
-        priv->pins_sdex = pinctrl_lookup_state(priv->pinctrl, "sd-express");
-        if (IS_ERR(priv->pins_sdex)) {
-                dev_dbg(&pdev->dev, "No pinctrl sd-express state\n");
-                no_pinctrl = true;
-        }
-	if (no_pinctrl) {
+	priv->pinctrl = devm_pinctrl_get(&pdev->dev);
+	if (IS_ERR(priv->pinctrl)) {
+			no_pinctrl = true;
+	}
+	priv->pins_default = pinctrl_lookup_state(priv->pinctrl, "default");
+	if (IS_ERR(priv->pins_default)) {
+			dev_dbg(&pdev->dev, "No pinctrl default state\n");
+			no_pinctrl = true;
+	}
+	priv->pins_sdex = pinctrl_lookup_state(priv->pinctrl, "sd-express");
+	if (IS_ERR(priv->pins_sdex)) {
+			dev_dbg(&pdev->dev, "No pinctrl sd-express state\n");
+			no_pinctrl = true;
+	}
+	if (no_pinctrl || !priv->sde_ioaddr || !priv->sde_ioaddr2) {
 		priv->pinctrl = NULL;
 		priv->flags &= ~BRCMSTB_PRIV_FLAGS_HAS_SD_EXPRESS;
 	}
