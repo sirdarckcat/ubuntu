@@ -292,7 +292,7 @@ static int poll_gmu_reg(struct adreno_device *adreno_dev,
 	}
 
 	ao_post_poll = a6xx_read_alwayson(adreno_dev);
-
+	msleep(30);
 	/* Check one last time */
 	gmu_core_regread(device, offsetdwords, &val);
 	if ((val & mask) == expected_val)
