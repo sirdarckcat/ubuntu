@@ -2184,6 +2184,9 @@ int a6xx_gmu_enable_gdsc(struct adreno_device *adreno_dev)
 		dev_err(&gmu->pdev->dev,
 			"Failed to enable GMU CX gdsc, error %d\n", ret);
 
+	if (!IS_ERR_OR_NULL(gmu->cxpd))
+		pm_runtime_get_sync(gmu->cxpd);
+
 	return ret;
 }
 
@@ -2737,6 +2740,13 @@ int a6xx_gmu_probe(struct kgsl_device *device,
 		ret = PTR_ERR(gmu->gxpd) ? : -ENODATA;
 		dev_pm_domain_detach(gmu->gxpd, false);
 	}
+
+	gmu->cxpd = dev_pm_domain_attach_by_name(&pdev->dev, "cx");
+	if (IS_ERR_OR_NULL(gmu->cxpd)) {
+			ret = PTR_ERR(gmu->cxpd) ? : -ENODATA;
+			dev_pm_domain_detach(gmu->cxpd, false);
+		}
+
 
 	ret = devm_clk_bulk_get_all(&pdev->dev, &gmu->clks);
 	if (ret < 0)
