@@ -1393,11 +1393,13 @@ static int tegra_ahub_probe(struct platform_device *pdev)
 		return err;
 	}
 
-	err = of_platform_populate(pdev->dev.of_node, NULL, NULL, &pdev->dev);
-	if (err)
-		return err;
-
 	pm_runtime_enable(&pdev->dev);
+
+	err = of_platform_populate(pdev->dev.of_node, NULL, NULL, &pdev->dev);
+	if (err) {
+		pm_runtime_disable(&pdev->dev);
+		return err;
+	}
 
 	return 0;
 }
