@@ -1,0 +1,23 @@
+#!/bin/bash
+
+if [ "$#" -ne 2 ]; then
+	echo "Usage: $0 <arch> <flavour>" 1>&2
+	exit 1
+fi
+
+arch=$1
+flavour=$2
+meta="linux-$flavour"
+
+# find our changelog.
+debian=$(awk -F= '($1 == "DEBIAN") { print $2 }' <debian/debian.env)
+
+# identify the current series
+series=$(dpkg-parsechangelog -l"$debian/changelog" -SDistribution)
+if [ "$series" = "UNRELEASED" ]; then
+		series=$(dpkg-parsechangelog -l"$debian/changelog" -c1 -o1 -SDistribution)
+fi
+
+linux_version=$(cranky rmadison -s -p proposed $series:$meta | grep "$meta " | cut -d\  -f2)
+
+echo "$linux_version"

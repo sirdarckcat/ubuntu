@@ -1,0 +1,22 @@
+Source: @SRCPKGNAME@
+Section: devel
+Priority: optional
+Maintainer: Ubuntu Kernel Team <kernel-team@lists.ubuntu.com>
+Standards-Version: 4.5.1
+Build-Depends:
+ dpkg (>= 1.13.19),
+ debhelper-compat (= 13),
+ ubuntu-core-initramfs,
+ kmod,
+ linux-firmware
+Build-Depends-Arch:
+ linux-image-unsigned-@KERNEL_ABI_VERSION@-intel-iotg,
+ linux-modules-@KERNEL_ABI_VERSION@-intel-iotg,
+ linux-modules-extra-@KERNEL_ABI_VERSION@-intel-iotg,
+Vcs-Git: git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-uc22-intel-iotg/+git/@SERIES@
+
+Package: @SRCPKGNAME@
+Architecture: amd64
+Section: devel
+Priority: optional
+Description: Empty package
