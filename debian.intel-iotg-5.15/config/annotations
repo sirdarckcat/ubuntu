@@ -45,6 +45,14 @@ CONFIG_SPEAKUP_SYNTH_SPKOUT 					policy<{'amd64': '-'}>
 
 
 
+# Menu: Device Drivers >> Industrial I/O support >> Accelerometers
+CONFIG_ADXL345                                  policy<{'amd64': 'm'}>
+CONFIG_ADXL345_I2C                              policy<{'amd64': 'm'}>
+CONFIG_ADXL345_SPI                              policy<{'amd64': 'm'}>
+CONFIG_INPUT_ADXL34X                            policy<{'amd64': 'n'}>
+CONFIG_INPUT_ADXL34X_I2C                        policy<{'amd64': '-'}>
+CONFIG_INPUT_ADXL34X_SPI                        policy<{'amd64': '-'}>
+
 # Menu: Kernel hacking >> Memory Debugging >> KFENCE: low-overhead sampling-based memory safety error detector
 CONFIG_KFENCE                                   policy<{'amd64': 'n', 'arm64': 'n'}>
 CONFIG_KFENCE_STATIC_KEYS                       policy<{'amd64': '-', 'arm64': '-'}>
@@ -53,6 +61,10 @@ CONFIG_KFENCE_NUM_OBJECTS                       policy<{'amd64': '-', 'arm64': '
 CONFIG_KFENCE_STRESS_TEST_FAULTS                policy<{'amd64': '-', 'arm64': '-'}>
 #
 CONFIG_KFENCE                                   mark<ENFORCED> note<LP:1946001>
+
+# This build isn't intended to be run on the Yellow Carp AMD platform.
+CONFIG_SND_SOC_AMD_YC_MACH                      policy<{'amd64': '-'}>
+CONFIG_SND_SOC_AMD_ACP6x                        policy<{'amd64': 'n'}>
 CONFIG_AUFS_BDEV_LOOP	policy<{'amd64': 'y',}>
 CONFIG_AUFS_BDEV_LOOP	mark<ENFORCED> note<custom changes>
 CONFIG_AUFS_BRANCH_MAX_1023	policy<{'amd64': 'n',}>
