@@ -782,11 +782,6 @@ const char *esr_get_class_string(u32 esr)
 	return esr_class_str[ESR_ELx_EC(esr)];
 }
 
-int __weak platform_bad_mode(struct pt_regs *regs, unsigned int esr)
-{
-	return 0;
-}
-
 /*
  * bad_mode handles the impossible case in the exception vector.
  * This is usually fatal, but give the platform a chance to handle
@@ -794,9 +789,6 @@ int __weak platform_bad_mode(struct pt_regs *regs, unsigned int esr)
  */
 asmlinkage void bad_mode(struct pt_regs *regs, int reason, unsigned int esr)
 {
-	if (platform_bad_mode(regs, esr))
-		return;
-
 	console_verbose();
 
 	pr_crit("Bad mode in %s handler detected on CPU%d, code 0x%08x -- %s\n",
@@ -906,9 +898,17 @@ bool arm64_is_fatal_ras_serror(struct pt_regs *regs, unsigned int esr)
 	}
 }
 
+int __weak platform_serror(struct pt_regs *regs, unsigned int esr)
+{
+	return 0;
+}
+
 asmlinkage void do_serror(struct pt_regs *regs, unsigned int esr)
 {
 	const bool was_in_nmi = in_nmi();
+
+	if (platform_serror(regs, esr))
+		return;
 
 	if (!was_in_nmi)
 		nmi_enter();
