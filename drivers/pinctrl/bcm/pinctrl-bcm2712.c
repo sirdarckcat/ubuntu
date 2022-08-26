@@ -42,7 +42,7 @@
 
 /* Register offsets */
 #define GPIO_PINMUX_0		0x00
-#define GPIO_PADCTRL_0		0x18
+#define GPIO_PADCTRL_0		0x1c
 
 #define AON_GPIO_PINMUX_0	0x00
 #define AON_GPIO_PINMUX_3	0x0c
