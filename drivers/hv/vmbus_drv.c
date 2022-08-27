@@ -34,6 +34,7 @@
 #include <linux/kernel.h>
 #include <linux/syscore_ops.h>
 #include <linux/dma-map-ops.h>
+#include <linux/pci.h>
 #include <clocksource/hyperv_timer.h>
 #include "hyperv_vmbus.h"
 
@@ -2312,6 +2313,7 @@ static void vmbus_reserve_fb(void)
 {
 	resource_size_t start = 0, size;
 	resource_size_t low_mmio_base;
+	struct pci_dev *pdev;
 
 	if (efi_enabled(EFI_BOOT)) {
 		/* Gen2 VM: get FB base from EFI framebuffer */
@@ -2336,9 +2338,22 @@ static void vmbus_reserve_fb(void)
 			size = min((SZ_4G - start) / 2, SZ_128M);
 		}
 	} else {
-		/* Gen1 VM: get FB base from screen_info */
-		start = screen_info.lfb_base;
-		size = max_t(__u32, screen_info.lfb_size, 0x4000000);
+		/* Gen1 VM: get FB base from PCI */
+		pdev = pci_get_device(PCI_VENDOR_ID_MICROSOFT,
+				      PCI_DEVICE_ID_HYPERV_VIDEO, NULL);
+		if (!pdev)
+			return;
+
+		if (pdev->resource[0].flags & IORESOURCE_MEM) {
+			start = pci_resource_start(pdev, 0);
+			size = pci_resource_len(pdev, 0);
+		}
+
+		/*
+		 * Release the PCI device so hyperv_drm or hyperv_fb driver can
+		 * grab it later.
+		 */
+		pci_dev_put(pdev);				      
 	}
 
 	if (!start) {
