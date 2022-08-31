@@ -272,21 +272,22 @@ static void sdhci_brcmstb_cfginit_2712(struct sdhci_host *host)
 {
 	struct sdhci_pltfm_host *pltfm_host = sdhci_priv(host);
 	struct sdhci_brcmstb_priv *brcmstb_priv = sdhci_pltfm_priv(pltfm_host);
-	bool uhs_capable = false;
-	u32 uhs_mask = (MMC_CAP_UHS_SDR12 | MMC_CAP_UHS_SDR25 |
-			MMC_CAP_UHS_SDR50 | MMC_CAP_UHS_SDR104 |
-			MMC_CAP_UHS_DDR50);
+	bool want_dll = false;
+	u32 uhs_mask = (MMC_CAP_UHS_SDR50 | MMC_CAP_UHS_SDR104);
 	u32 hsemmc_mask = (MMC_CAP2_HS200_1_8V_SDR | MMC_CAP2_HS200_1_2V_SDR |
 			   MMC_CAP2_HS400_1_8V | MMC_CAP2_HS400_1_2V);
 	u32 reg;
 
 	if (!(host->quirks2 & SDHCI_QUIRK2_NO_1_8_V)) {
 	    if((host->mmc->caps & uhs_mask) || (host->mmc->caps2 & hsemmc_mask))
-		uhs_capable = true;
+		want_dll = true;
 	}
 
-	/* If we want UHS-I speeds, then unrestrict the delay line PHY */
-	if (uhs_capable) {
+	/*
+	 * If we want a speed that requires tuning,
+	 * then select the delay line PHY as the clock source.
+	 */
+	if (want_dll) {
 		reg = readl(brcmstb_priv->cfg_regs + SDIO_CFG_MAX_50MHZ_MODE);
 		reg &= ~SDIO_CFG_MAX_50MHZ_MODE_ENABLE;
 		reg |= SDIO_CFG_MAX_50MHZ_MODE_STRAP_OVERRIDE;
