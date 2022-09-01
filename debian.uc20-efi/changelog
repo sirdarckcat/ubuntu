@@ -1,14 +1,15 @@
-linux-uc20-efi (5.4.0-126.142.1) focal; urgency=medium
+linux-uc20-efi (5.4.0-126.142.2) focal; urgency=medium
 
   * Master version: 5.4.0-126.142
 
-  * focal/linux-uc20-efi: 5.4.0-126.142.1 -proposed tracker (LP: #1987816)
+  * focal/linux-uc20-efi: 5.4.0-126.142.2 -proposed tracker (LP: #1987816)
 
   * Support snapd/info in kernel snaps
     - [Packaging] Expose snapd/info as snapd-info in kernel snaps
       Exposes which snap-bootstrap version is used inside the initrd which
       is part of kernel.efi. This allows to access this info without the
       need to unpack everything.
+    - [Packaging] Fix up non-amd64 target path to use uc20 instead of uc22
 
  -- Stefan Bader <stefan.bader@canonical.com>  Tue, 30 Aug 2022 14:51:54 +0200
 
