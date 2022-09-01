@@ -79,7 +79,7 @@ override_dh_auto_install:
 			--kernelver $(KERNEL_ABI_VERSION)-$$flavour;		\
 		mv $$initrd-$(KERNEL_ABI_VERSION)-$$flavour $$initrd;		\
 		cp /usr/lib/ubuntu-core-initramfs/main/usr/lib/snapd/info	\
-		   debian/linux-image-uc20-$$flavour/boot/snapd-info; \
+		   debian/linux-image-uc20-efi-$$flavour/boot/snapd-info;	\
 	done
 endif
 
