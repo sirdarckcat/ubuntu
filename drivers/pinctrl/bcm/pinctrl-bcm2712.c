@@ -2,7 +2,7 @@
 /*
  * Driver for Broadcom BCM2712 GPIO units (pinctrl only)
  *
- * Copyright (C) 2021 Raspberry Pi (Trading) Ltd.
+ * Copyright (C) 2021 Raspberry Pi Ltd.
  * Copyright (C) 2012 Chris Boot, Simon Arlott, Stephen Warren
  *
  * Based heavily on the BCM2835 GPIO & pinctrl driver, which was inspired by:
@@ -625,14 +625,6 @@ static const struct pinmux_ops bcm2712_pmx_ops = {
 	.gpio_disable_free = bcm2712_pmx_gpio_disable_free,
 };
 
-static int bcm2712_pinconf_get(struct pinctrl_dev *pctldev,
-			unsigned pin, unsigned long *config)
-{
-	/* No way to read back config in HW */
-	// FIXME
-	return -ENOTSUPP;
-}
-
 static unsigned int bcm2712_pull_config_get(struct bcm2712_pinctrl *pc,
 					    unsigned int pin)
 {
@@ -664,6 +656,32 @@ static void bcm2712_pull_config_set(struct bcm2712_pinctrl *pc,
 	bcm2712_reg_wr(pc, BIT_TO_REG(bit), val);
 
 	spin_unlock_irqrestore(&pc->lock, flags);
+}
+
+static int bcm2712_pinconf_get(struct pinctrl_dev *pctldev,
+			unsigned pin, unsigned long *config)
+{
+	struct bcm2712_pinctrl *pc = pinctrl_dev_get_drvdata(pctldev);
+	enum pin_config_param param = pinconf_to_config_param(*config);
+	u32 arg;
+
+	switch (param) {
+	case PIN_CONFIG_BIAS_DISABLE:
+		arg = (bcm2712_pull_config_get(pc, pin) == BCM2712_PULL_NONE);
+		break;
+	case PIN_CONFIG_BIAS_PULL_DOWN:
+		arg = (bcm2712_pull_config_get(pc, pin) == BCM2712_PULL_DOWN);
+		break;
+	case PIN_CONFIG_BIAS_PULL_UP:
+		arg = (bcm2712_pull_config_get(pc, pin) == BCM2712_PULL_UP);
+		break;
+	default:
+		return -ENOTSUPP;
+	}
+
+	*config = pinconf_to_config_packed(param, arg);
+
+	return -ENOTSUPP;
 }
 
 static int bcm2712_pinconf_set(struct pinctrl_dev *pctldev,

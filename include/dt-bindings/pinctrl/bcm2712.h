@@ -2,7 +2,7 @@
 /*
  * pinctrl bindings for the BCM2712
  *
- * Copyright (C) 2021 Raspberry Pi (Trading) Ltd.
+ * Copyright (C) 2021-2022 Raspberry Pi Ltd.
  */
 
 #ifndef __DT_BINDINGS_PINCTRL_BCM2712_H__
