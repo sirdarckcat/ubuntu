@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
- * Copyright (C) 2021 Raspberry Pi (Trading) Ltd., All Rights Reserved.
+ * Copyright (C) 2021 Raspberry Pi Ltd., All Rights Reserved.
  */
 
 #include <linux/pci.h>
@@ -144,6 +144,7 @@ static void mip_irq_domain_free(struct irq_domain *domain,
 	spin_unlock(&priv->msi_map_lock);
 }
 
+#if 0
 static int mip_irq_domain_activate(struct irq_domain *domain,
 				   struct irq_data *d, bool reserve)
 {
@@ -178,6 +179,7 @@ static void mip_irq_domain_deactivate(struct irq_domain *domain,
 	writel(val, reg);
 	spin_unlock_irqrestore(&priv->hw_lock, flags);
 }
+#endif
 
 static const struct irq_domain_ops mip_irq_domain_ops = {
 	.alloc		= mip_irq_domain_alloc,
