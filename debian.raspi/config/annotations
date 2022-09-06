@@ -4,6 +4,8 @@
 
 include "../../debian.master/config/annotations"
 
+CONFIG_GPIO_SYSFS				policy<{'*': 'n'}> mark<ENFORCED> note<LP: #1918583>
+
 CONFIG_IMA_ARCH_POLICY				policy<{'*': 'n'}> mark<ENFORCED> note<LP: #1982090>
 CONFIG_VFIO					policy<{'*': 'm'}> mark<ENFORCED> note<LP: #1982090>
 
