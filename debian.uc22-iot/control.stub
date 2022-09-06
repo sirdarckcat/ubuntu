@@ -1,0 +1,27 @@
+Source: @SRCPKGNAME@
+Section: devel
+Priority: optional
+Maintainer: Ubuntu Kernel Team <kernel-team@lists.ubuntu.com>
+Standards-Version: 3.9.8
+Build-Depends:
+ dpkg (>= 1.13.19),
+ debhelper (>= 9),
+ ubuntu-core-initramfs,
+ kmod,
+ android-tools-mkbootimg,
+ linux-firmware
+Build-Depends-Arch:
+ @KERNEL_SOURCE@-image-unsigned-@KERNEL_ABI_VERSION@-capilano [amd64 arm64],
+ @KERNEL_SOURCE@-modules-@KERNEL_ABI_VERSION@-capilano,
+
+Package: @SRCPKGNAME@
+Architecture: amd64 arm64
+Section: devel
+Priority: optional
+Description: Empty package
+
+Package: linux-image-uc22-iot
+Architecture: armhf
+Depends: linux-firmware, wireless-regdb, linux-image-@KERNEL_ABI_VERSION@-iot, linux-modules-@KERNEL_ABI_VERSION@-iot
+Description: UC22 kernel image IoT
+ A kernel image and initrd for IoT UC22.
