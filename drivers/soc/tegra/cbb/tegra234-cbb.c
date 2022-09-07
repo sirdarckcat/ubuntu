@@ -12,6 +12,7 @@
 #include <linux/acpi.h>
 #include <linux/clk.h>
 #include <linux/cpufeature.h>
+#include <linux/cpuhotplug.h>
 #include <linux/debugfs.h>
 #include <linux/module.h>
 #include <linux/of.h>
@@ -159,6 +160,9 @@ struct tegra234_cbb {
 	u32 mn_attr1;
 	u32 mn_attr2;
 	u32 mn_user_bits;
+
+	int numa_node;
+	struct hlist_node cpuhp_node;
 };
 
 static inline struct tegra234_cbb *to_tegra234_cbb(struct tegra_cbb *cbb)
@@ -206,6 +210,8 @@ tegra234_cbb_write_access_allowed(struct platform_device *pdev, struct tegra234_
 
 	return false;
 }
+
+static int tegra234_cbb_hp_state;
 
 static void tegra234_cbb_fault_enable(struct tegra_cbb *cbb)
 {
@@ -681,8 +687,14 @@ static int tegra234_cbb_interrupt_enable(struct tegra_cbb *cbb)
 	struct tegra234_cbb *priv = to_tegra234_cbb(cbb);
 
 	if (priv->sec_irq) {
-		int err = devm_request_irq(cbb->dev, priv->sec_irq, tegra234_cbb_isr, 0,
-					   dev_name(cbb->dev), priv);
+		unsigned long irqflags = 0;
+		int err = 0;
+
+		if (num_possible_nodes() > 1)
+			irqflags = IRQF_NOBALANCING;
+
+		err = devm_request_irq(cbb->dev, priv->sec_irq, tegra234_cbb_isr,
+				       irqflags, dev_name(cbb->dev), priv);
 		if (err) {
 			dev_err(cbb->dev, "failed to register interrupt %u: %d\n", priv->sec_irq,
 				err);
@@ -1445,8 +1457,10 @@ tegra234_cbb_fabric *tegra234_cbb_acpi_get_fabric(struct device *dev)
 	}
 
 	for (entry = tegra234_cbb_acpi_uids; entry->hid; entry++) {
-		if (acpi_dev_hid_uid_match(adev, entry->hid, entry->uid))
+		if (acpi_dev_hid_uid_match(adev, entry->hid, entry->uid)) {
+			set_dev_node(dev, acpi_get_node(ACPI_HANDLE(dev)));
 			return entry->fabric;
+		}
 	}
 
 	return NULL;
@@ -1458,6 +1472,49 @@ static const struct acpi_device_id tegra241_cbb_acpi_ids[] = {
 	{ },
 };
 MODULE_DEVICE_TABLE(acpi, tegra241_cbb_acpi_ids);
+
+static int tegra234_cbb_online_cpu(unsigned int cpu, struct hlist_node *cpuhp_node)
+{
+	struct tegra234_cbb *cbb;
+	struct cpumask mask;
+
+	cbb = hlist_entry_safe(cpuhp_node, struct tegra234_cbb, cpuhp_node);
+
+	if (num_possible_nodes() > 1 && cbb->numa_node == cpu_to_node(cpu)) {
+		cpumask_clear(&mask);
+		cpumask_and(&mask, cpumask_of_node(cbb->numa_node), cpu_online_mask);
+
+		irq_set_affinity(cbb->sec_irq, &mask);
+
+		pr_debug("%s, cpu:%d, fab:%s, numa_node:0x%x, cpu_to_node:%d, mask:%*pbl\n",
+			 __func__, cpu, cbb->fabric->fab_list[cbb->fabric->fab_id].name,
+			 cbb->numa_node, cpu_to_node(cpu), cpumask_pr_args(&mask));
+	}
+
+	return 0;
+}
+
+static int tegra234_cbb_offline_cpu(unsigned int cpu, struct hlist_node *cpuhp_node)
+{
+	struct tegra234_cbb *cbb;
+	struct cpumask mask;
+
+	cbb = hlist_entry_safe(cpuhp_node, struct tegra234_cbb, cpuhp_node);
+
+	if (num_possible_nodes() > 1 && cbb->numa_node == cpu_to_node(cpu)) {
+		cpumask_clear(&mask);
+		cpumask_and(&mask, cpumask_of_node(cbb->numa_node), cpu_online_mask);
+		cpumask_andnot(&mask, &mask, cpumask_of(cpu));
+
+		irq_set_affinity(cbb->sec_irq, &mask);
+
+		pr_debug("%s, cpu:%d, fab:%s, numa_node:0x%x, cpu_to_node:%d, mask:%*pbl\n",
+				__func__, cpu, cbb->fabric->fab_list[cbb->fabric->fab_id].name,
+				cbb->numa_node, cpu_to_node(cpu), cpumask_pr_args(&mask));
+	}
+
+	return 0;
+}
 
 static int tegra234_cbb_probe(struct platform_device *pdev)
 {
@@ -1506,15 +1563,33 @@ static int tegra234_cbb_probe(struct platform_device *pdev)
 		return 0;
 	}
 
-	spin_lock_irqsave(&cbb_lock, flags);
-	list_add(&cbb->base.node, &cbb_list);
-	spin_unlock_irqrestore(&cbb_lock, flags);
-
 	/* set ERD bit to mask SError and generate interrupt to report error */
 	if (cbb->fabric->off_mask_erd)
 		tegra234_cbb_mask_serror(cbb);
 
-	return tegra_cbb_register(&cbb->base);
+	cbb->numa_node = dev_to_node(&pdev->dev);
+	if (cbb->numa_node != NUMA_NO_NODE && num_possible_nodes() > 1) {
+		dev_dbg(&pdev->dev, "fabric:%s, cbb->numa_node:0x%x\n",
+			cbb->fabric->fab_list[cbb->fabric->fab_id].name, cbb->numa_node);
+
+		err = cpuhp_state_add_instance(tegra234_cbb_hp_state, &cbb->cpuhp_node);
+		if (err)
+			return err;
+	}
+
+	err = tegra_cbb_register(&cbb->base);
+	if (err)
+		goto remove_hp_inst;
+
+	spin_lock_irqsave(&cbb_lock, flags);
+	list_add(&cbb->base.node, &cbb_list);
+	spin_unlock_irqrestore(&cbb_lock, flags);
+
+remove_hp_inst:
+	if (err && (tegra234_cbb_hp_state > 0))
+		cpuhp_state_remove_instance_nocalls(tegra234_cbb_hp_state, &cbb->cpuhp_node);
+
+	return err;
 }
 
 static int __maybe_unused tegra234_cbb_resume_noirq(struct device *dev)
@@ -1548,12 +1623,30 @@ static struct platform_driver tegra234_cbb_driver = {
 
 static int __init tegra234_cbb_init(void)
 {
-	return platform_driver_register(&tegra234_cbb_driver);
+	int ret;
+
+	if (num_possible_nodes() > 1) {
+		ret = cpuhp_setup_state_multi(CPUHP_AP_ONLINE_DYN, "tegra234_cbb:online",
+					      tegra234_cbb_online_cpu, tegra234_cbb_offline_cpu);
+		if (ret < 0)
+			return ret;
+
+		tegra234_cbb_hp_state = ret;
+	}
+
+	ret = platform_driver_register(&tegra234_cbb_driver);
+	if (ret && (tegra234_cbb_hp_state > 0))
+		cpuhp_remove_multi_state(tegra234_cbb_hp_state);
+
+	return ret;
+
 }
 pure_initcall(tegra234_cbb_init);
 
 static void __exit tegra234_cbb_exit(void)
 {
+	if (tegra234_cbb_hp_state > 0)
+		cpuhp_remove_multi_state(tegra234_cbb_hp_state);
 	platform_driver_unregister(&tegra234_cbb_driver);
 }
 module_exit(tegra234_cbb_exit);
