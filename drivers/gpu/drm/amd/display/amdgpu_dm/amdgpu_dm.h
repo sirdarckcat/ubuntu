@@ -526,6 +526,13 @@ struct amdgpu_display_manager {
 	bool disable_hpd_irq;
 	bool dmcub_trace_event_en;
 	/**
+	 * @aux_hpd_discon_quirk:
+	 *
+	 * quirk for hpd discon while aux is on-going.
+	 * occurred on certain intel platform
+	 */
+	bool aux_hpd_discon_quirk;
+	/**
 	 * @da_list:
 	 *
 	 * DAL fb memory allocation list, for communication with SMU.
