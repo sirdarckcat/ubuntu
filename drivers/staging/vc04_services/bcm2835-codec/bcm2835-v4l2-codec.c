@@ -1073,7 +1073,7 @@ static void handle_fmt_changed(struct bcm2835_codec_ctx *ctx,
 	struct vb2_queue *vq;
 	int ret;
 
-	v4l2_dbg(1, debug, &ctx->dev->v4l2_dev, "%s: Format changed: buff size min %u, rec %u, buff numerator min %u, rec %u\n",
+	v4l2_dbg(1, debug, &ctx->dev->v4l2_dev, "%s: Format changed: buff size min %u, rec %u, buff num min %u, rec %u\n",
 		 __func__,
 		 format->buffer_size_min,
 		 format->buffer_size_recommended,
