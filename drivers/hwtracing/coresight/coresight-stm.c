@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0
 /*
  * Copyright (c) 2015-2016, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2022 Qualcomm Innovation Center, Inc. All rights reserved.
  *
  * Description: CoreSight System Trace Macrocell driver
  *
@@ -431,7 +432,7 @@ static ssize_t notrace stm_generic_packet(struct stm_data *stm_data,
 	if (size > drvdata->write_bytes)
 		size = drvdata->write_bytes;
 	else
-		size = rounddown_pow_of_two(size);
+		size = size ? rounddown_pow_of_two(size) : size;
 
 	switch (packet) {
 	case STP_PACKET_FLAG:
