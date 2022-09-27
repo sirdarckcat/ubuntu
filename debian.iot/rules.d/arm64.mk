@@ -21,5 +21,6 @@ do_tools_cpupower = true
 do_tools_perf   = true
 do_tools_perf_jvmti = true
 do_tools_bpftool = true
+do_odm_drivers  = false
 
 do_dtbs		= true

@@ -26,4 +26,4 @@ do_tools_host = true
 do_extras_package = false
 do_tools_common = true
 do_tools_acpidbg = true
-do_odm_drivers  = true
+do_odm_drivers  = false
