@@ -11,7 +11,11 @@ uefi_signed     = true
 
 vdso		= vdso_install
 
-do_extras_package = true
+do_cloud_tools	= false
+do_doc_package	= false
+do_extras_package = false
+do_libc_dev_package =false
+o_source_package = false
 do_tools_usbip  = true
 do_tools_cpupower = true
 do_tools_perf   = true
