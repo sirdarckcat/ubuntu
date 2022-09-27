@@ -1523,8 +1523,10 @@ static int do_test(const char *alg, u32 type, u32 mask, int m, u32 num_mb)
 		ret = min(ret, tcrypt_test("lrw(aes)"));
 		ret = min(ret, tcrypt_test("xts(aes)"));
 		ret = min(ret, tcrypt_test("ctr(aes)"));
+#if !defined(CONFIG_CRYPTO_SUPPORT_TEGRA_TESTS)
 		ret = min(ret, tcrypt_test("rfc3686(ctr(aes))"));
 		ret = min(ret, tcrypt_test("xctr(aes)"));
+#endif
 		break;
 
 	case 11:
