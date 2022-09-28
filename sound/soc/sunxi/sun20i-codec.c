@@ -6,7 +6,6 @@
 #include <linux/of.h>
 #include <linux/platform_device.h>
 #include <linux/regmap.h>
-#include <linux/regulator/driver.h>
 #include <linux/reset.h>
 
 #include <sound/dmaengine_pcm.h>
@@ -796,61 +795,14 @@ static const struct regmap_config sun20i_codec_regmap_config = {
 	.max_register		= SUN20I_CODEC_ADC_CUR,
 };
 
-static const struct regulator_ops sun20i_codec_ldo_ops = {
-	.list_voltage		= regulator_list_voltage_linear,
-	.map_voltage		= regulator_map_voltage_linear,
-	.set_voltage_sel	= regulator_set_voltage_sel_regmap,
-	.get_voltage_sel	= regulator_get_voltage_sel_regmap,
-	.enable			= regulator_enable_regmap,
-	.disable		= regulator_disable_regmap,
-	.is_enabled		= regulator_is_enabled_regmap,
-};
-
-static const struct regulator_desc sun20i_codec_ldos[] = {
-	{
-		.name		= "aldo",
-		.supply_name	= "vdd33",
-		.of_match	= "aldo",
-		.regulators_node = "regulators",
-		.ops		= &sun20i_codec_ldo_ops,
-		.type		= REGULATOR_VOLTAGE,
-		.owner		= THIS_MODULE,
-		.n_voltages	= BIT(3),
-		.min_uV		= 1650000,
-		.uV_step	= 50000,
-		.vsel_reg	= SUN20I_CODEC_POWER,
-		.vsel_mask	= SUN20I_CODEC_POWER_ALDO_VOLTAGE_MASK,
-		.enable_reg	= SUN20I_CODEC_POWER,
-		.enable_mask	= SUN20I_CODEC_POWER_ALDO_EN_MASK,
-	},
-	{
-		.name		= "hpldo",
-		.supply_name	= "hpldoin",
-		.of_match	= "hpldo",
-		.regulators_node = "regulators",
-		.ops		= &sun20i_codec_ldo_ops,
-		.type		= REGULATOR_VOLTAGE,
-		.owner		= THIS_MODULE,
-		.n_voltages	= BIT(3),
-		.min_uV		= 1650000,
-		.uV_step	= 50000,
-		.vsel_reg	= SUN20I_CODEC_POWER,
-		.vsel_mask	= SUN20I_CODEC_POWER_HPLDO_VOLTAGE_MASK,
-		.enable_reg	= SUN20I_CODEC_POWER,
-		.enable_mask	= SUN20I_CODEC_POWER_HPLDO_EN_MASK,
-	},
-};
-
 static int sun20i_codec_probe(struct platform_device *pdev)
 {
-	struct regulator_config config = { .dev = &pdev->dev };
 	struct device *dev = &pdev->dev;
 	struct sun20i_codec *codec;
-	struct regulator_dev *rdev;
 	struct regmap *regmap;
 	struct resource *res;
 	void __iomem *base;
-	int i, ret;
+	int ret;
 
 	codec = devm_kzalloc(dev, sizeof(*codec), GFP_KERNEL);
 	if (!codec)
@@ -889,14 +841,6 @@ static int sun20i_codec_probe(struct platform_device *pdev)
 	if (IS_ERR(codec->reset))
 		return dev_err_probe(dev, PTR_ERR(codec->reset),
 				     "Failed to get reset\n");
-
-	for (i = 0; i < ARRAY_SIZE(sun20i_codec_ldos); ++i) {
-		const struct regulator_desc *desc = &sun20i_codec_ldos[i];
-
-		rdev = devm_regulator_register(dev, desc, &config);
-		if (IS_ERR(rdev))
-			return PTR_ERR(rdev);
-	}
 
 	ret = devm_snd_soc_register_component(dev, &sun20i_codec_component,
 					      &sun20i_codec_dai, 1);
