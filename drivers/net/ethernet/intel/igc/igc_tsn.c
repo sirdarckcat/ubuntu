@@ -95,7 +95,8 @@ static void igc_tsn_restore_retx_default(struct igc_adapter *adapter)
 static int igc_tsn_disable_offload(struct igc_adapter *adapter)
 {
 	struct igc_hw *hw = &adapter->hw;
-	u32 tqavctrl;
+	u32 tqavctrl, rxpbs;
+
 	int i;
 
 	wr32(IGC_GTXOFFSET, 0);
@@ -111,6 +112,11 @@ static int igc_tsn_disable_offload(struct igc_adapter *adapter)
 
 	if (igc_is_device_id_i226(hw))
 		igc_tsn_restore_retx_default(adapter);
+
+	rxpbs = rd32(IGC_RXPBS) & ~IGC_RXPBSIZE_SIZE_MASK;
+	rxpbs |= I225_RXPBSIZE_DEFAULT;
+
+	wr32(IGC_RXPBS, rxpbs);
 
 	tqavctrl = rd32(IGC_TQAVCTRL);
 	tqavctrl &= ~(IGC_TQAVCTRL_TRANSMIT_MODE_TSN |
