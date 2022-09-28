@@ -175,27 +175,15 @@ kds_wake_up_poll(struct kds_sched *kds)
 static int kds_polling_thread(void *data)
 {
 	struct kds_sched *kds = (struct kds_sched *)data;
-	struct kds_cu_mgmt *cu_mgmt = &kds->cu_mgmt;
-	struct kds_scu_mgmt *scu_mgmt = &kds->scu_mgmt;
-	struct xrt_cu **xcus = cu_mgmt->xcus;
-	struct xrt_cu **xscus = scu_mgmt->xcus;
 	int busy_cnt = 0;
 	int loop_cnt = 0;
-	int cu_idx = 0;
 
 	while (!kds->polling_stop) {
+		struct xrt_cu *xcu;
 		busy_cnt = 0;
-		for (cu_idx = 0; cu_idx < MAX_CUS; cu_idx++) {
-			if (!xcus[cu_idx])
-				continue;
 
-			if (xrt_cu_process_queues(xcus[cu_idx]) == XCU_BUSY)
-				busy_cnt += 1;
-		}
-		for (cu_idx = 0; cu_idx < MAX_CUS; cu_idx++) {
-			if (!xscus[cu_idx])
-				continue;
-			if (xrt_cu_process_queues(xscus[cu_idx]) == XCU_BUSY)
+		list_for_each_entry(xcu, &kds->alive_cus, cu) {
+			if (xrt_cu_process_queues(xcu) == XCU_BUSY)
 				busy_cnt += 1;
 		}
 
@@ -606,16 +594,9 @@ kds_submit_ert(struct kds_sched *kds, struct kds_command *xcmd)
 		}
 		break;
 	case OP_CONFIG:
+	case OP_START_SK:
 	case OP_CLK_CALIB:
 	case OP_VALIDATE:
-		break;
-	case OP_START_SK:
-		/* KDS should select a CU and set it in cu_mask */
-		do {
-			cu_idx = acquire_scu_idx(&kds->scu_mgmt, xcmd);
-		} while(cu_idx == -EAGAIN);
-		if (cu_idx < 0)
-			return cu_idx;
 		break;
 	default:
 		kds_err(xcmd->client, "Unknown opcode");
@@ -692,12 +673,12 @@ kds_del_cu_context(struct kds_sched *kds, struct kds_client *client,
 	int wait_ms;
 
 	if ((cu_idx >= MAX_CUS) || (!cu_mgmt->xcus[cu_idx])) {
-		kds_err(client, "CU(%d) not found", cu_idx);
+	        kds_err(client, "Client pid(%d) CU(%d) not found", pid_nr(client->pid), cu_idx);
 		return -EINVAL;
 	}
 
 	if (!test_and_clear_bit(cu_idx, client->cu_bitmap)) {
-		kds_err(client, "CU(%d) has never been reserved", cu_idx);
+		kds_err(client, "Client pid(%d) CU(%d) has never been reserved", pid_nr(client->pid), cu_idx);
 		return -EINVAL;
 	}
 
@@ -707,7 +688,7 @@ kds_del_cu_context(struct kds_sched *kds, struct kds_client *client,
 	if (submitted == completed)
 		goto skip;
 
-	if (kds->ert_disable) {
+	if (kds->ert_disable || kds->xgq_enable) {
 		wait_ms = 500;
 		xrt_cu_abort(cu_mgmt->xcus[cu_idx], client);
 
@@ -777,7 +758,7 @@ kds_add_scu_context(struct kds_sched *kds, struct kds_client *client,
 		   struct kds_ctx_info *info)
 {
 	struct kds_scu_mgmt *scu_mgmt = &kds->scu_mgmt;
-	u32 cu_idx = 0;
+	u32 cu_idx = info->cu_idx;
 	u32 prop = 0;
 	bool shared;
 	int ret = 0;
@@ -830,9 +811,10 @@ kds_del_scu_context(struct kds_sched *kds, struct kds_client *client,
 		   struct kds_ctx_info *info)
 {
 	struct kds_scu_mgmt *scu_mgmt = &kds->scu_mgmt;
-	u32 cu_idx = 0;
+	u32 cu_idx = info->cu_idx;
 	unsigned long submitted = 0;
 	unsigned long completed = 0;
+	bool bad_state = false;
 
 	if ((cu_idx >= MAX_CUS) || (!scu_mgmt->xcus[cu_idx])) {
 		kds_err(client, "SCU(%d) not found", cu_idx);
@@ -849,6 +831,28 @@ kds_del_scu_context(struct kds_sched *kds, struct kds_client *client,
 	completed = client_stat_read(client, scu_c_cnt[cu_idx]);
 	if (submitted == completed)
 		goto skip;
+
+	if (kds->xgq_enable) {
+		int wait_ms = 500;
+
+		xrt_cu_abort(scu_mgmt->xcus[cu_idx], client);
+
+		/* sub-device that handle command should do abort with a timeout */
+		do {
+			kds_warn(client, "%ld outstanding command(s) on SCU(%d)",
+				 submitted - completed, cu_idx);
+			msleep(wait_ms);
+			submitted = client_stat_read(client, scu_s_cnt[cu_idx]);
+			completed = client_stat_read(client, scu_c_cnt[cu_idx]);
+		} while (submitted != completed);
+
+		bad_state = xrt_cu_abort_done(scu_mgmt->xcus[cu_idx], client);
+	}
+
+	if (bad_state) {
+		kds->bad_state = 1;
+		kds_info(client, "CU(%d) hangs, please reset device", cu_idx);
+	}
 
 skip:
 	/* scu_mgmt->cu_refs is the critical section of multiple clients */
@@ -1005,6 +1009,7 @@ int kds_init_sched(struct kds_sched *kds)
 		return -ENOMEM;
 
 	INIT_LIST_HEAD(&kds->clients);
+	INIT_LIST_HEAD(&kds->alive_cus);
 	mutex_init(&kds->lock);
 	mutex_init(&kds->cu_mgmt.lock);
 	mutex_init(&kds->scu_mgmt.lock);
@@ -1180,21 +1185,10 @@ _kds_fini_client(struct kds_sched *kds, struct kds_client *client,
 	while (cctx->virt_cu_ref) {
 		info.cu_idx = CU_CTX_VIRT_CU;
 		info.curr_ctx = cctx;
+		info.cu_domain = 0;
 		kds_del_context(kds, client, &info);
 	}
 
-	bit = find_first_bit(client->cu_bitmap, MAX_CUS);
-	while (bit < MAX_CUS) {
-		/* Check whether this CU belongs to current slot */
-	        if (is_cu_in_ctx_slot(kds, cctx, bit, 0)) {
-			info.cu_idx = bit;
-			info.cu_domain = 0;
-			info.curr_ctx = cctx;
-			kds_del_context(kds, client, &info);
-		}
-		bit = find_next_bit(client->cu_bitmap, MAX_CUS, bit + 1);
-	};
-	bitmap_zero(client->cu_bitmap, MAX_CUS);
 	bit = find_first_bit(client->scu_bitmap, MAX_CUS);
 	while (bit < MAX_CUS) {
 		/* Check whether this SCU belongs to current slot */
@@ -1204,9 +1198,23 @@ _kds_fini_client(struct kds_sched *kds, struct kds_client *client,
 			info.curr_ctx = cctx;
 			kds_del_context(kds, client, &info);
 		}
+		kds_info(client,"Removing CU Domain[%d] CU Index [%d]",info.cu_domain,info.cu_idx);
 		bit = find_next_bit(client->scu_bitmap, MAX_CUS, bit + 1);
 	};
 	bitmap_zero(client->scu_bitmap, MAX_CUS);
+	bit = find_first_bit(client->cu_bitmap, MAX_CUS);
+	while (bit < MAX_CUS) {
+		/* Check whether this CU belongs to current slot */
+	        if (is_cu_in_ctx_slot(kds, cctx, bit, 0 /* regular CUs */)) {
+			info.cu_idx = bit;
+			info.cu_domain = 0;
+			info.curr_ctx = cctx;
+			kds_del_context(kds, client, &info);
+		}
+		kds_info(client,"Removing CU Domain[%d] CU Index [%d]",info.cu_domain,info.cu_idx);
+		bit = find_next_bit(client->cu_bitmap, MAX_CUS, bit + 1);
+	};
+	bitmap_zero(client->cu_bitmap, MAX_CUS);
 	mutex_unlock(&client->lock);
 
 	WARN_ON(cctx->num_ctx);
@@ -1277,8 +1285,8 @@ int kds_add_context(struct kds_sched *kds, struct kds_client *client,
 	}
 
 	++cctx->num_ctx;
-	kds_info(client, "Client pid(%d) add context CU(0x%x) shared(%s)",
-		 pid_nr(client->pid), cu_idx, shared? "true" : "false");
+	kds_info(client, "Client pid(%d) add context Domain(%d) CU(0x%x) shared(%s)",
+		 pid_nr(client->pid), info->cu_domain, cu_idx, shared? "true" : "false");
 	return 0;
 }
 
@@ -1322,8 +1330,8 @@ int kds_del_context(struct kds_sched *kds, struct kds_client *client,
 	}
 
 	--cctx->num_ctx;
-	kds_info(client, "Client pid(%d) del context CU(0x%x)",
-		 pid_nr(client->pid), cu_idx);
+	kds_info(client, "Client pid(%d) del context Domain(%d) CU(0x%x)",
+		 pid_nr(client->pid), info->cu_domain, cu_idx);
 	return 0;
 }
 
@@ -1384,6 +1392,7 @@ int kds_add_cu(struct kds_sched *kds, struct xrt_cu *xcu)
 		if (cu_mgmt->xcus[i] == NULL) {
 			insert_cu(cu_mgmt, i, xcu);
 			++cu_mgmt->num_cus;
+			list_add_tail(&xcu->cu, &kds->alive_cus);
 			break;
 		}
 	}
@@ -1404,7 +1413,9 @@ int kds_del_cu(struct kds_sched *kds, struct xrt_cu *xcu)
 			continue;
 
 		cu_mgmt->xcus[i] = NULL;
+		cu_mgmt->cu_intr[i] = 0;
 		--cu_mgmt->num_cus;
+		list_del(&xcu->cu);
 		cu_stat_write(cu_mgmt, usage[i], 0);
 		break;
 	}
@@ -1431,6 +1442,7 @@ int kds_add_scu(struct kds_sched *kds, struct xrt_cu *xcu)
 			xcu->info.cu_idx = i;
 			++scu_mgmt->num_cus;
 
+			list_add_tail(&xcu->cu, &kds->alive_cus);
 			return 0;
 		}
 	}
@@ -1441,13 +1453,21 @@ int kds_add_scu(struct kds_sched *kds, struct xrt_cu *xcu)
 int kds_del_scu(struct kds_sched *kds, struct xrt_cu *xcu)
 {
 	struct kds_scu_mgmt *scu_mgmt = &kds->scu_mgmt;
+	int i = 0;
 
 	if (scu_mgmt->num_cus == 0)
 		return -EINVAL;
 
-	--scu_mgmt->num_cus;
-	scu_mgmt->xcus[xcu->info.cu_idx] = NULL;
-	cu_stat_write(scu_mgmt, usage[xcu->info.cu_idx], 0);
+	for (i = 0; i < MAX_CUS; i++) {
+		if (scu_mgmt->xcus[i] != xcu)
+			continue;
+
+		scu_mgmt->xcus[i] = NULL;
+		--scu_mgmt->num_cus;
+		list_del(&xcu->cu);
+		cu_stat_write(scu_mgmt, usage[i], 0);
+		break;
+	}
 
 	return 0;
 }
@@ -1634,8 +1654,9 @@ int kds_cfg_update(struct kds_sched *kds)
 			if (!xcu)
 				continue;
 			if (!xcu->info.intr_enable) {
-				kds->cu_intr = false;
 				u32 cu_idx = xcu->info.cu_idx;
+
+				kds->cu_intr = false;
 				xcu_info(xcu, "CU(%d) doesnt support interrupt, running polling thread for all cus", cu_idx);
 				goto run_polling;
 			}
