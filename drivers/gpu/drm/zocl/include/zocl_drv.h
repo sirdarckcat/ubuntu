@@ -239,7 +239,7 @@ void zocl_init_mem(struct drm_zocl_dev *zdev, struct drm_zocl_slot *slot);
 void zocl_clear_mem(struct drm_zocl_dev *zdev);
 void zocl_clear_mem_slot(struct drm_zocl_dev *zdev, u32 slot_idx);
 int zocl_create_aie(struct drm_zocl_dev *zdev, struct axlf *axlf,
-		void *aie_res);
+		void *aie_res, uint8_t hw_gen);
 void zocl_destroy_aie(struct drm_zocl_dev *zdev);
 int zocl_aie_request_part_fd(struct drm_zocl_dev *zdev, void *data);
 int zocl_aie_reset(struct drm_zocl_dev *zdev);
@@ -287,7 +287,10 @@ struct platform_device *zocl_find_pdev(char *name);
 static inline struct drm_zocl_dev *
 zocl_get_zdev(void)
 {
-	return platform_get_drvdata(zocl_find_pdev("zyxclmm_drm"));
+	struct platform_device *pdev = zocl_find_pdev("zyxclmm_drm");
+	if(!pdev)
+		return NULL;
+	return platform_get_drvdata(pdev);
 }
 int get_apt_index_by_addr(struct drm_zocl_dev *zdev, phys_addr_t addr);
 int get_apt_index_by_cu_idx(struct drm_zocl_dev *zdev, int cu_idx);
