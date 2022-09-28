@@ -380,41 +380,21 @@ struct ethtool_eee {
 	__u32	reserved[2];
 };
 
-#if 0
 /**
  * struct ethtool_fp - Frame Preemption information
  * @cmd: ETHTOOL_{G,S}FP
- * @fp_supported: If frame preemption is supported.
- * @fp_enabled: If frame preemption should be advertised to the link partner
- *	as enabled.
- * @supported_queues_mask: Bitmask indicating which queues support being
- *	configured as preemptible (bit 0 -> queue 0, bit N -> queue N).
- * @preemptible_queues_mask: Bitmask indicating which queues are
- *	configured as preemptible (bit 0 -> queue 0, bit N -> queue N).
- * @min_frag_size: Minimum size for all non-final fragment size.
+ * @enabled: If frame preemption should be advertised to the link partner
+ *   as enabled.
+ * @add_frag_size: Minimum size for all non-final fragment size.
  */
 struct ethtool_fp {
-	__u32	cmd;
-	__u8	enabled;
-	__u32	add_frag_size;
-	__u32	reserved[2];
+  __u32 cmd;
+  __u8  enabled;
+  __u32 add_frag_size;
+  __u8  disable_verify;
+  __u8  verified;
+  __u32 reserved[2];
 };
-#endif
-/**
- * struct ethtool_fp - Frame Preemption information
- *
- * @enabled: Enable frame preemption.
- * @add_frag_size: Minimum size for additional (non-final) fragments
- * in bytes, for the value defined in the IEEE 802.3-2018 standard see
- * ethtool_frag_size_to_mult().
- */
-struct ethtool_fp {
-   u8 enabled;
-   u32 add_frag_size;
-   u8 disable_verify;
-   u8 verified;
-};
-
 
 /**
  * struct ethtool_modinfo - plugin module eeprom information
