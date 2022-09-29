@@ -305,6 +305,7 @@ static __maybe_unused int mdio_bus_phy_suspend(struct device *dev)
 
 static __maybe_unused int mdio_bus_phy_resume(struct device *dev)
 {
+	struct ethtool_wolinfo wol = { .cmd = ETHTOOL_GWOL };
 	struct phy_device *phydev = to_phy_device(dev);
 	int ret;
 
@@ -345,6 +346,13 @@ no_resume:
 			irq_wake_thread(phydev->irq, phydev);
 		}
 	}
+	
+	/* If the PHY has WOL option still enabled, reconfigure the WOL mainly
+	 * to clear the WOL event status.
+	 */
+	phy_ethtool_get_wol(phydev, &wol);
+	if (wol.wolopts)
+		phy_ethtool_set_wol(phydev, &wol);
 
 	if (phydev->attached_dev && phydev->adjust_link)
 		phy_start_machine(phydev);
