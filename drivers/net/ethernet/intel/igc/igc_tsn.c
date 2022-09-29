@@ -257,6 +257,19 @@ skip_cbs:
 		wr32(IGC_TXQCTL(i), txqctl);
 	}
 
+	nsec = rd32(IGC_SYSTIML);
+	sec = rd32(IGC_SYSTIMH);
+	systim = ktime_set(sec, nsec);
+	if (ktime_compare(systim, base_time) > 0) {
+		s64 n = div64_s64(ktime_sub_ns(systim, base_time), cycle);
+
+		base_time = ktime_add_ns(base_time, (n + 1) * cycle);
+	}
+
+	baset_h = div_s64_rem(base_time, NSEC_PER_SEC, &baset_l);
+	wr32(IGC_BASET_H, baset_h);
+	wr32(IGC_BASET_L, baset_l);
+
 	tqavctrl = rd32(IGC_TQAVCTRL) &
 		~(IGC_TQAVCTRL_MIN_FRAG_MASK | IGC_TQAVCTRL_PREEMPT_ENA);
 
