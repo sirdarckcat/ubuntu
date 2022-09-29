@@ -99,3 +99,12 @@ CONFIG_USB_SERIAL_CONSOLE                       policy<{ 'amd64-iot': 'y', 'arm6
 CONFIG_VFIO                                     policy<{ 'arm64-iot': 'y', 'amd64-iot': 'y' }>
 CONFIG_VFIO_PCI                                 policy<{ 'arm64-iot': 'y', 'amd64-iot': 'y' }>
 CONFIG_VMXNET3                                  policy<{ 'amd64': 'm', 'arm64-iot': 'm' }>
+
+#
+# ODM drivers
+#
+CONFIG_AAEON_IWMI_WDT                           policy<{'amd64': '-'}
+CONFIG_GPIO_AAEON                               policy<{'amd64': '-'}
+CONFIG_LEDS_AAEON                               policy<{'amd64': '-'}
+CONFIG_MFD_AAEON                                policy<{'amd64': '-'}
+CONFIG_SENSORS_AAEON                            policy<{'amd64': '-'}
