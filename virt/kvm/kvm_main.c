@@ -5661,13 +5661,21 @@ static void hardware_disable_nolock(void *junk)
 	__this_cpu_write(hardware_enabled, false);
 }
 
+__weak int kvm_arch_offline_cpu(unsigned int cpu)
+{
+	return 0;
+}
+
 static int kvm_offline_cpu(unsigned int cpu)
 {
-	mutex_lock(&kvm_usage_lock);
-	if (kvm_usage_count)
+	int r = 0;
+
+	mutex_lock(&kvm_lock);
+	r = kvm_arch_offline_cpu(cpu);
+	if (!r && kvm_usage_count)
 		hardware_disable_nolock(NULL);
-	mutex_unlock(&kvm_usage_lock);
-	return 0;
+	mutex_unlock(&kvm_lock);
+	return r;
 }
 
 static void hardware_disable_all_nolock(void)
