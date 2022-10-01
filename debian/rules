@@ -36,7 +36,6 @@ debian/control:
 %:
 	dh $@
 
-ifneq (,$(filter $(DEB_HOST_ARCH),amd64 arm64))
 override_dh_auto_build: signing = $(CURDIR)/SIGNING
 override_dh_auto_build: signingv = $(signing)/$(VERSION)
 override_dh_auto_build: signing_tar = $(SOURCE)_$(VERSION)_$(DEB_HOST_ARCH).tar.gz
@@ -78,31 +77,6 @@ override_dh_auto_build:
 	{ echo "tarball"; } >$(signingv)/control/options
 	cd $(signing) && tar czvf ../../$(signing_tar) .
 	dpkg-distaddfile $(signing_tar) raw-signing -
-else
-override_dh_auto_install:
-	set -x;									\
-	for flavour in $(FLAVOURS); do						\
-		pkg="linux-image-$(KERNEL_ABI_VERSION)-$$flavour";		\
-		(								\
-			apt-get download $$pkg;					\
-			dpkg-deb -x $${pkg}_*.deb $$flavour;			\
-		);								\
-		mkdir -p debian/linux-image-uc22-$$flavour/boot;		\
-		initrd="$$flavour/boot/initrd.img";	\
-		efi="debian/linux-image-uc22-$$flavour/boot/kernel.efi";	\
-		ubuntu-core-initramfs create-initrd --output $$initrd		\
-			--feature main server					\
-			--kernelver $(KERNEL_ABI_VERSION)-$$flavour;		\
-		ubuntu-core-initramfs create-efi --unsigned --output $$efi	\
-			--stub /usr/lib/ubuntu-core-initramfs/efi/linuxarm.efi.stub \
-			--kernel $$flavour/boot/vmlinuz				\
-			--kernelver $(KERNEL_ABI_VERSION)-$$flavour		\
-			--initrd $$initrd;					\
-		mv $$efi-$(KERNEL_ABI_VERSION)-$$flavour $$efi;			\
-		cp /usr/lib/ubuntu-core-initramfs/main/usr/lib/snapd/info	\
-		   debian/linux-image-uc22-$$flavour/boot/snapd-info; \
-	done
-endif
 
 printchanges:
 	@prev_ver=$$(dpkg-parsechangelog -l$(DEBIAN)/changelog -o1 -c1 -SVersion);	\
