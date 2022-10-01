@@ -8,10 +8,10 @@ Build-Depends:
  debhelper (>= 9),
  ubuntu-core-initramfs,
  kmod,
- android-tools-mkbootimg,
+ android-tools-mkbootimg [arm64],
  linux-firmware
 Build-Depends-Arch:
- @KERNEL_SOURCE@-image-unsigned-@KERNEL_ABI_VERSION@-capilano [amd64 arm64],
+ @KERNEL_SOURCE@-image-unsigned-@KERNEL_ABI_VERSION@-capilano,
  @KERNEL_SOURCE@-modules-@KERNEL_ABI_VERSION@-capilano,
 
 Package: @SRCPKGNAME@
