@@ -722,16 +722,15 @@ config I2C_LPC2K
 	  This driver can also be built as a module.  If so, the module
 	  will be called i2c-lpc2k.
 
-config I2C_MLXBF
+config I2C_MELLANOX
         tristate "Mellanox BlueField I2C controller"
-        depends on MELLANOX_PLATFORM && ARM64
-        select I2C_SLAVE
+        depends on (MELLANOX_PLATFORM && ARM64) || COMPILE_TEST
         help
-          Enabling this option will add I2C SMBus support for Mellanox BlueField
-          system.
+          Enabling this option will add specific I2C SMBus support for Mellanox
+          BlueField system.
 
           This driver can also be built as a module.  If so, the module will be
-          called i2c-mlxbf.
+          called i2c-mlx.
 
           This driver implements an I2C SMBus host controller and enables both
           master and slave functions.
