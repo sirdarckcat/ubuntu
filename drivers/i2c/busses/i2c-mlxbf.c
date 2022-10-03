@@ -340,8 +340,7 @@ enum {
  * Timeout is given in microsends. Note also that timeout handling is not
  * exact.
  */
-#define SMBUS_TIMEOUT               (300 * 1000) /* 300ms */
-#define SMBUS_LOCK_POLL_TIMEOUT           (300 * 1000) /* 300ms */
+#define SMBUS_TIMEOUT   (300 * 1000) /* 300ms */
 
 /* Encapsulates timing parameters */
 struct mlx_i2c_timings {
@@ -575,25 +574,6 @@ static bool mlx_smbus_master_wait_for_idle(struct mlx_i2c_priv *priv)
 }
 
 /*
- * wait for the lock to be released before acquiring it.
- */
-static bool mlx_smbus_master_lock(struct mlx_i2c_priv *priv)
-{
-	if (mlx_smbus_poll(priv->smbus->io, SMBUS_MASTER_GW,
-			   1 << MASTER_LOCK_BIT_OFF, true,
-			   SMBUS_LOCK_POLL_TIMEOUT))
-		return true;
-
-	return false;
-}
-
-static void mlx_smbus_master_unlock(struct mlx_i2c_priv *priv)
-{
-	/* Clear the gw to clear the lock */
-	writel(0, priv->smbus->io + SMBUS_MASTER_GW);
-}
-
-/*
  * Poll SMBus master status and return transaction status,
  * i.e. whether succeeded or failed. I2C and SMBus fault codes
  * are returned as negative numbers from most calls, with zero
@@ -764,17 +744,9 @@ static int mlx_smbus_start_transaction(struct mlx_i2c_priv *priv,
 	slave     = request->slave & 0x7f;
 	addr      = slave << 1;
 
-	/* Try to acquire the smbus gw lock before any reads of the GW register since
-	 * a read sets the lock.
-	 */
-	if (WARN_ON(!mlx_smbus_master_lock(priv)))
+	/* First of all, check whether the HW is idle */
+	if (WARN_ON(!mlx_smbus_master_wait_for_idle(priv)))
 		return -EBUSY;
-
-	/* Check whether the HW is idle */
-	if (WARN_ON(!mlx_smbus_master_wait_for_idle(priv))) {
-		mlx_smbus_master_unlock(priv);
-		return -EBUSY;
-	}
 
 	/* Set first byte */
 	data_desc[data_idx++] = addr;
@@ -798,10 +770,8 @@ static int mlx_smbus_start_transaction(struct mlx_i2c_priv *priv,
 		if (flags & I2C_F_WRITE) {
 			write_en   = 1;
 			write_len += operation->length;
-			if (data_idx + operation->length > MASTER_DATA_DESC_SIZE) {
-				mlx_smbus_master_unlock(priv);
+			if (data_idx + operation->length > MASTER_DATA_DESC_SIZE)
 				return -ENOBUFS;
-			}
 			memcpy(data_desc + data_idx,
 			       operation->buffer, operation->length);
 			data_idx  += operation->length;
@@ -832,10 +802,8 @@ static int mlx_smbus_start_transaction(struct mlx_i2c_priv *priv,
 	if (write_en) {
 		ret = mlx_smbus_enable(priv, slave, write_len, block_en,
 				       pec_en, 0);
-		if (ret) {
-			mlx_smbus_master_unlock(priv);
+		if (ret != 0)
 			return ret;
-		}
 	}
 
 	if (read_en) {
@@ -861,8 +829,6 @@ static int mlx_smbus_start_transaction(struct mlx_i2c_priv *priv,
 		smbus_write(priv->smbus->io, SMBUS_MASTER_FSM,
 			    SMBUS_MASTER_FSM_PS_STATE_MASK);
 	}
-
-	mlx_smbus_master_unlock(priv);
 
 	return ret;
 }
