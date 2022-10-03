@@ -69,8 +69,10 @@
  * Master. Default value is set to 400MHz.
  */
 #define BLUEFIELD_TYU_PLL_OUT_FREQ  (400 * 1000 * 1000)
-/* Reference clock - 156 MHz */
-#define BLUEFIELD_PLL_IN_FREQ       156250000
+/* Reference clock for Bluefield 1 - 156 MHz */
+#define BLUEFIELD_TYU_PLL_IN_FREQ   (156 * 1000 * 1000)
+/* Reference clock for BlueField 2 - 200 MHz */
+#define BLUEFIELD_YU_PLL_IN_FREQ    (200 * 1000 * 1000)
 
 /* PLL registers */
 #define I2C_CORE_PLL_REG0		0x0
@@ -1556,7 +1558,7 @@ static u64 calculate_freq_from_tyu(struct mlx_i2c_resource *corepll_res)
 	u16 core_f;
 	u8  core_od, core_r;
 
-	pad_frequency = BLUEFIELD_PLL_IN_FREQ;
+	pad_frequency = BLUEFIELD_TYU_PLL_IN_FREQ;
 
 	corepll_val  = smbus_read(corepll_res->io, I2C_CORE_PLL_REG1);
 
@@ -1588,7 +1590,7 @@ static u64 calculate_freq_from_yu(struct mlx_i2c_resource *corepll_res)
 	u32 core_f;
 	u8  core_od, core_r;
 
-	pad_frequency = BLUEFIELD_PLL_IN_FREQ;
+	pad_frequency = BLUEFIELD_YU_PLL_IN_FREQ;
 
 	corepll_reg1_val = smbus_read(corepll_res->io, I2C_CORE_PLL_REG1);
 	corepll_reg2_val = smbus_read(corepll_res->io, I2C_CORE_PLL_REG2);
@@ -1596,7 +1598,7 @@ static u64 calculate_freq_from_yu(struct mlx_i2c_resource *corepll_res)
 	/* Get Core PLL configuration bits */
 	core_f  =  corepll_reg1_val        & 0x3ffffff; /* 26 bits */
 	core_r  = (corepll_reg1_val >> 26) & 0x000003f; /*  6 bits */
-	core_od = corepll_reg2_val & 0x000000f; /*  4 bits */
+	core_od = (corepll_reg2_val >>  1) & 0x000000f; /*  4 bits */
 
 	/*
 	 * Compute PLL output frequency as follow:
