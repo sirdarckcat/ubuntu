@@ -1,3 +1,136 @@
+linux-iot (5.15.0-1001.1) UNRELEASED; urgency=medium
+
+  * Miscellaneous Ubuntu changes
+    - [Packaging] iot packaging
+    - [Packaging] update variants
+    - [Packaging] Update Ubuntu.md
+    - UBUNTU [Packaging] Update update.conf
+    - [Config] updateconfigs for QCOM_SMCINVOKE
+    - [Config] Modify debian.iot annotations to be based on master annotations
+    - dts: fixup board ids for qualcomm devices
+    - [Config] Ensure that config.common.ports exists as it is required by
+      x-kernel snap plugin
+    - [Config] Port configuration changes from previous release
+    - [Config] Enable qmi cooling module
+
+  * Miscellaneous upstream changes
+    - FROMLIST: clk: qcom: gcc: Add UFS_CARD and UFS_PHY GDSCs for SM8150
+    - FROMLIST: arm64: dts: qcom: sm8150: Add ufs power-domain entries
+    - FROMLIST: dt-bindings: qcom,pdc: Add compatible for SM8150
+    - FROMLIST: pinctrl: qcom: sm8150: Specify PDC map
+    - FROMLIST: arm64: dts: qcom: sm8150: Add pdc interrupt controller node
+    - FROMLIST: arm64: dts: qcom: sm8150: Add PDC as the interrupt parent for tlmm
+    - FROMLIST: net: stmmac: Add support for SM8150
+    - FROMLIST: net: stmmac: dwmac-qcom-ethqos: Adjust rgmii loopback_en per
+      platform
+    - FROMLIST: dt-bindings: net: qcom,ethqos: Document SM8150 SoC compatible
+    - FROMLIST: clk: qcom: gcc: sm8150: Fix some identation issues
+    - FROMLIST: clk: qcom: gcc: Add emac GDSC support for SM8150
+    - FROMLIST: clk: qcom: gcc-sm8150: Use ALWAYS_ON flag as a workaround for emac
+      gdsc
+    - FROMLIST: arm64: dts: qcom: sm8150: add ethernet node
+    - FROMLIST: arm64: dts: qcom: sa8155p-adp: Enable ethernet node
+    - UPSTREAM: arm64: dts: qcom: sm8150: Add fastrpc nodes
+    - UPSTREAM: arm64: dts: qcom: sa8155p-adp: Enable remoteproc capabilities
+    - UPSTREAM: net: stmmac: dwmac-qcom-ethqos: add platform level clocks
+      management
+    - FROMLIST: dt-bindings: qcom-bam: Convert binding to YAML
+    - FROMLIST: dt-bindings: qcom-bam: Add 'interconnects' & 'interconnect-names'
+      to optional properties
+    - FROMLIST: dt-bindings: qcom-bam: Add 'iommus' to optional properties
+    - FROMLIST: dt-bindings: qcom-bam: Add "powered remotely" mode
+    - FROMLIST: dt-bindings: qcom-qce: Convert bindings to yaml
+    - FROMLIST: dt-bindings: qcom-qce: Add 'interconnects' and 'interconnect-
+      names'
+    - FROMLIST: dt-bindings: qcom-qce: Move 'clocks' to optional properties
+    - FROMLIST: dt-bindings: qcom-qce: Add 'iommus' to optional properties
+    - FROMLIST: dt-bindings: crypto : Add new compatible strings for qcom-qce
+    - FROMLIST: arm64/dts: qcom: Use new compatibles for crypto nodes
+    - FROMLIST: dma: qcom: bam_dma: Add support to initialize interconnect path
+    - FROMLIST: crypto: qce: core: Add support to initialize interconnect path
+    - FROMLIST: crypto: qce: Add new compatibles for qce crypto driver
+    - FROMLIST: crypto: qce: core: Make clocks optional
+    - FROMLIST: crypto: qce: Print a failure msg in case probe() fails
+    - FROMLIST: crypto: qce: Defer probing if BAM dma channel is not yet
+      initialized
+    - FROMLIST: crypto: qce: Add 'sm8250-qce' compatible string check
+    - FROMLIST: crypto: qce: Add 'sm8150-qce' compatible string check
+    - FROMLIST: arm64/dts: qcom: sm8250: Add dt entries to support crypto engine.
+    - FROMLIST: arm64/dts: qcom: sm8150: Add dt entries to support crypto engine.
+    - UPSTREAM: PCI: qcom: Replace ops with struct pcie_cfg in pcie match data
+    - FROMLIST: dt-bindings: pci: qcom: Document PCIe bindings for SM8150 SoC
+    - FROMLIST: dt-bindings: phy: qcom,qmp: Add SM8150 PCIe PHY bindings
+    - FROMLIST: clk: qcom: gcc: Add PCIe0 and PCIe1 GDSC for SM8150
+    - FROMLIST: phy: qcom-qmp: Add SM8150 PCIe QMP PHYs
+    - FROMLIST: PCI: qcom: Add SM8150 SoC support
+    - FROMLIST: arm64: dts: qcom: sm8150: Add PCIe nodes
+    - FROMLIST: arm64: dts: qcom: sa8155: Enable PCIe nodes
+    - UPSTREAM: arm64: dts: qcom: sm8150: Add support for LMh node
+    - UPSTREAM: thermal/drivers/qcom/lmh: Add support for sm8150
+    - UPSTREAM: dt-bindings: thermal: Add sm8150 compatible string for LMh
+    - FROMLIST: dt-bindings: mmc: sdhci-msm: Add compatible string for sm8150
+    - FROMLIST: arm64: dts: qcom: sm8150: Add support for SDC2
+    - FROMLIST: arm64: dts: qcom: sa8155p-adp: Add support for uSD card
+    - UPSTREAM: misc: fastrpc: separate fastrpc device from channel context
+    - UPSTREAM: misc: fastrpc: add support for FASTRPC_IOCTL_MEM_MAP/UNMAP
+    - UPSTREAM: misc: fastrpc: Add support to get DSP capabilities
+    - UPSTREAM: dt-bindings: misc: add property to support non-secure DSP
+    - UPSTREAM: misc: fastrpc: add secure domain support
+    - UPSTREAM: misc: fastrpc: check before loading process to the DSP
+    - UPSTREAM: dt-bindings: misc: add fastrpc domain vmid property
+    - UPSTREAM: misc: fastrpc: Update number of max fastrpc sessions
+    - UPSTREAM: misc: fastrpc: Add support to secure memory map
+    - UPSTREAM: misc: fastrpc: Add helper function to get list and page
+    - UPSTREAM: misc: fastrpc: Add fdlist implementation
+    - UPSTREAM: misc: fastrpc: copy to user only for non-DMA-BUF heap buffers
+    - UPSTREAM: misc: fastrpc: Add dma handle implementation
+    - UPSTREAM: arm64: dts: qcom: sm8350: Add fastrpc nodes
+    - UPSTREAM: arm64: dts: qcom: add non-secure domain property to fastrpc nodes
+    - DON'T UPSTREAM: arm64: dts: qcom: sm8150: Fix SDC2 iommu sid value
+    - FROMLIST: arm64: dts: qcom: sa8155p-adp: Disable multiple Tx and Rx queues
+      for ethernet IP
+    - scsi: ufs: core: Export hibern8 entry and exit functions
+    - scsi: ufs: ufs-qcom: Enter and exit hibern8 during clock scaling
+    - DON'T UPSTREAM: firmware: qcom_scm: Add invoke and callback commands for smc
+      invoke
+    - DON'T UPSTREAM: soc: qcom: Introduce smc invoke driver
+    - DON'T UPSTREAM: arm64: dts: sm8150: add smcinvoke node
+    - DON'T UPSTREAM: smcinvoke: allow invoke commands without arguments
+    - DON'T UPSTREAM: arm64: dts: qcom: sa8155p-adp: Add 'msm-id' and 'msm-name'
+    - DON'T UPSTREAM: dt-bindings: arm: qcom: Add compatible for SA8155p IOT v2
+      adp board
+    - DON'T UPSTREAM: arm64: dts: qcom: sa8155p-iot-v2-adp: Add base dts file
+    - FROMLIST: firmware: qcom_scm: Add support for tsens reinit workaround
+    - FROMLIST: thermal: qcom: tsens: Add support for 'needs_reinit_wa' for sm8150
+    - FROMLIST: thermal: qcom: tsens: Implement re-initialization workaround quirk
+    - UPSTREAM: dt-bindings: leds: Add Qualcomm Light Pulse Generator binding
+    - UPSTREAM: leds: Add driver for Qualcomm LPG
+    - FROMGIT: arm64: dts: qcom: pm8150b: add Light Pulse Generator device node
+    - FROMGIT: arm64: dts: qcom: pm8150l: add Light Pulse Generator device node
+    - FROMGIT: arm64: dts: qcom: qrb5165-rb5: declare tri-led user leds
+    - DON'T UPSTREAM: arm64: dts: qcom: sa8155p: Fix msm-id and msm-name for
+      sa8155p-adp board
+    - FROMLIST: coresight: etm4x: Fix crash observed on Qcom ETM parts with 'Low
+      power override'
+    - DON'T UPSTREAM: Revert "FROMLIST: arm64: dts: qcom: sa8155p-adp: Add support
+      for uSD card"
+    - FROMLIST: arm64: dts: qcom: Fix sm8150 fastrpc node - use correct iommu
+      values
+    - DON'T UPSTREAM: arm64: dts: qcom: sa8155p-iot-v2-adp: Disable uSD card
+      suuport
+    - FROMLIST: thermal: qcom: qmi_cooling: Add skeletal qmi cooling driver
+    - FROMLIST: thermal: qcom: Add Kconfig entry & compilation support for qmi
+      cooling driver
+    - FROMLIST: dt-bindings: thermal: Add qcom,qmi-tmd-device and qcom,tmd-device
+      yaml bindings
+    - FROMLIST: MAINTAINERS: Add entry for Qualcomm Cooling Driver
+    - FROMLIST: arm64: dts: qcom: sm8150: Add qmi cooling device nodes
+    - FROMLIST: arm64: dts: qcom: sa8155p-adp: Enable qmi cooling device
+    - FROMLIST: arm64: defconfig: Enable Qualcomm QMI cooling device driver
+    - DON'T UPSTREAM: arm64: dts: qcom: sa8155p-adp & sa8155p-iot-v2-adp
+ 
+ -- Nathan Sweetman <nathan.sweetman@canonical.com>  Thu, 06 Oct 2022 05:58:33 +0000
+
 linux-iot (5.15.0-1000.0) jammy; urgency=low
 
   * dummy entry

@@ -1,5 +1,7 @@
 # Recreate any symlinks created since the orig.
 # Remove any files deleted from the orig.
+rm -f 'Documentation/devicetree/bindings/crypto/qcom-qce.txt'
+rm -f 'Documentation/devicetree/bindings/dma/qcom_bam_dma.txt'
 rm -f 'arch/hexagon/include/asm/timer-regs.h'
 rm -f 'drivers/gpu/drm/amd/display/dc/dsc/qp_tables.h'
 rm -f 'drivers/gpu/drm/vmwgfx/vmwgfx_thp.c'
@@ -10,6 +12,8 @@ rm -f 'tools/build/feature/test-libpython-version.c'
 rm -f 'tools/perf/arch/arm64/util/machine.c'
 rm -f 'tools/perf/arch/powerpc/util/machine.c'
 rm -f 'tools/perf/util/bpf_skel/bperf.h'
+chmod +x 'arch/arm64/boot/dts/qcom/apq8016-sbc.dts'
+chmod +x 'arch/arm64/boot/dts/qcom/apq8096-db820c.dts'
 chmod +x 'debian/cloud-tools/hv_get_dhcp_info'
 chmod +x 'debian/cloud-tools/hv_get_dns_info'
 chmod +x 'debian/cloud-tools/hv_set_ifconfig'
