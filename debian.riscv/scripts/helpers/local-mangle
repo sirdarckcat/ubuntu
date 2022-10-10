@@ -1,0 +1,6 @@
+#!/bin/bash -eu
+
+. debian/debian.env
+
+# BugLink: https://bugs.launchpad.net/bugs/1988984
+sed 's/CONFIG_PWM_SIFIVE=y/CONFIG_PWM_SIFIVE=m/' -i ${DEBIAN}/config/config.common.ubuntu
