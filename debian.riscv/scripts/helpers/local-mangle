@@ -4,3 +4,6 @@
 
 # BugLink: https://bugs.launchpad.net/bugs/1988984
 sed 's/CONFIG_PWM_SIFIVE=y/CONFIG_PWM_SIFIVE=m/' -i ${DEBIAN}/config/config.common.ubuntu
+
+# BugLink: https://bugs.launchpad.net/bugs/1967130
+sed 's/CONFIG_VMAP_STACK=y/# CONFIG_VMAP_STACK is not set/' -i ${DEBIAN}/config/config.common.ubuntu
