@@ -8,7 +8,6 @@ title: Mellanox I2C SMBus on BlueField SoCs
 
 maintainers:
   - Khalil Blaiech <kblaiech@nvidia.com>
-  - Asmaa Mnebhi <asmaa@nvidia.com>
 
 allOf:
   - $ref: /schemas/i2c/i2c-controller.yaml#
@@ -18,15 +17,11 @@ properties:
     enum:
       - mellanox,i2c-mlxbf1
       - mellanox,i2c-mlxbf2
-      - mellanox,i2c-mlxbf3
 
   reg:
-    minItems: 5
-    maxItems: 6
+    minItems: 3
     items:
-      - description: Smbus timer registers
-      - description: Smbus master registers
-      - description: Smbus slave registers
+      - description: Smbus block registers
       - description: Cause master registers
       - description: Cause slave registers
       - description: Cause coalesce registers
@@ -63,9 +58,7 @@ examples:
   - |
     i2c@2804000 {
         compatible = "mellanox,i2c-mlxbf1";
-        reg = <0x02804000 0x40>,
-              <0x02804200 0x200>,
-              <0x02804400 0x200>,
+        reg = <0x02804000 0x800>,
               <0x02801200 0x020>,
               <0x02801260 0x020>;
         interrupts = <57>;
@@ -75,25 +68,10 @@ examples:
   - |
     i2c@2808800 {
         compatible = "mellanox,i2c-mlxbf2";
-        reg = <0x02808800 0x40>,
-              <0x02808a00 0x200>,
-              <0x02808c00 0x200>,
+        reg = <0x02808800 0x600>,
               <0x02808e00 0x020>,
               <0x02808e20 0x020>,
               <0x02808e40 0x010>;
         interrupts = <57>;
-        clock-frequency = <400000>;
-    };
-
-  - |
-    i2c@2808800 {
-        compatible = "mellanox,i2c-mlxbf3";
-        reg = <0x13404480 0x40>,
-              <0x13404200 0x200>,
-              <0x13404000 0x200>,
-              <0x13404400 0x020>,
-              <0x13404420 0x020>,
-              <0x13404440 0x010>;
-        interrupts = <35>;
         clock-frequency = <400000>;
     };
