@@ -714,6 +714,15 @@ const struct iwl_cfg iwlax210_2ax_cfg_ty_gf_a0 = {
 	.num_rbds = IWL_NUM_RBDS_AX210_HE,
 };
 
+const struct iwl_cfg iwlax210_2ax_cfg_ty_gf_a0_lock_ucode_v63 = {
+	.name = "Intel(R) Wi-Fi 6 AX210 160MHz",
+	.fw_name_pre = IWL_TY_A_GF_A_FW_PRE,
+	.uhb_supported = true,
+	IWL_DEVICE_AX210,
+	.num_rbds = IWL_NUM_RBDS_AX210_HE,
+	.lock_ucode_api_max = 63,
+};
+
 const struct iwl_cfg iwlax411_2ax_cfg_so_gf4_a0 = {
 	.name = iwl_ax411_name,
 	.fw_name_pre = IWL_SO_A_GF4_A_FW_PRE,
