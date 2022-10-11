@@ -396,6 +396,7 @@ struct iwl_cfg {
 	u8 max_tx_agg_size;
 	u8 ucode_api_max;
 	u8 ucode_api_min;
+	u8 lock_ucode_api_max;
 	u16 num_rbds;
 	u32 min_umac_error_event_table;
 	u32 d3_debug_data_base_addr;
@@ -610,6 +611,7 @@ extern const struct iwl_cfg iwlax210_2ax_cfg_so_hr_a0;
 extern const struct iwl_cfg iwlax211_2ax_cfg_so_gf_a0;
 extern const struct iwl_cfg iwlax211_2ax_cfg_so_gf_a0_long;
 extern const struct iwl_cfg iwlax210_2ax_cfg_ty_gf_a0;
+extern const struct iwl_cfg iwlax210_2ax_cfg_ty_gf_a0_lock_ucode_v63;
 extern const struct iwl_cfg iwlax411_2ax_cfg_so_gf4_a0;
 extern const struct iwl_cfg iwlax411_2ax_cfg_so_gf4_a0_long;
 extern const struct iwl_cfg iwlax411_2ax_cfg_sosnj_gf4_a0;
