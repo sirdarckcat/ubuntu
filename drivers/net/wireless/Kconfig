@@ -36,6 +36,12 @@ source "drivers/net/wireless/ti/Kconfig"
 source "drivers/net/wireless/zydas/Kconfig"
 source "drivers/net/wireless/quantenna/Kconfig"
 
+config WIRELESS_ALLCONFIG
+	bool "WA"
+	select WEXT_PRIV
+	select WIRELESS_EXT
+	select NL80211_TESTMODE
+
 config PCMCIA_RAYCS
 	tristate "Aviator/Raytheon 2.4GHz wireless support"
 	depends on PCMCIA
