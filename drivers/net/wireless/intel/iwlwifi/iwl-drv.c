@@ -176,7 +176,13 @@ static int iwl_request_firmware(struct iwl_drv *drv, bool first)
 	}
 
 	if (first) {
-		drv->fw_index = cfg->ucode_api_max;
+		if (cfg->lock_ucode_api_max) {
+			IWL_INFO(drv, "Lock firmware API version to %d\n",
+				 cfg->lock_ucode_api_max);
+			drv->fw_index = cfg->lock_ucode_api_max;
+		}
+		else
+			drv->fw_index = cfg->ucode_api_max;
 		sprintf(tag, "%d", drv->fw_index);
 	} else {
 		drv->fw_index--;
