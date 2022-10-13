@@ -1883,12 +1883,6 @@ static void pex_ep_event_pex_rst_deassert(struct tegra_pcie_dw *pcie)
 	val = (upper_32_bits(ep->msi_mem_phys) & MSIX_ADDR_MATCH_HIGH_OFF_MASK);
 	dw_pcie_writel_dbi(pci, MSIX_ADDR_MATCH_HIGH_OFF, val);
 
-	ret = dw_pcie_ep_init_complete(ep);
-	if (ret) {
-		dev_err(dev, "Failed to complete initialization: %d\n", ret);
-		goto fail_init_complete;
-	}
-
 	dw_pcie_ep_init_notify(ep);
 
 	/* Program the private control to allow sending LTR upstream */
@@ -1908,9 +1902,6 @@ static void pex_ep_event_pex_rst_deassert(struct tegra_pcie_dw *pcie)
 
 	return;
 
-fail_init_complete:
-	reset_control_assert(pcie->core_rst);
-	tegra_pcie_disable_phy(pcie);
 fail_phy:
 	reset_control_assert(pcie->core_apb_rst);
 fail_core_apb_rst:
