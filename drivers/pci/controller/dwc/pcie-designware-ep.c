@@ -771,6 +771,14 @@ err_remove_edma:
 }
 EXPORT_SYMBOL_GPL(dw_pcie_ep_init_complete);
 
+void dw_pcie_ep_deinit_notify(struct dw_pcie_ep *ep)
+{
+	struct pci_epc *epc = ep->epc;
+
+	pci_epc_deinit_notify(epc);
+}
+EXPORT_SYMBOL_GPL(dw_pcie_ep_deinit_notify);
+
 int dw_pcie_ep_init(struct dw_pcie_ep *ep)
 {
 	int ret;
