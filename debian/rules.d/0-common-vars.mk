@@ -119,8 +119,13 @@ CROSS_COMPILE ?= $(DEB_HOST_GNU_TYPE)-
 # If a given kernel wants to change this, they can do so via their own
 # $(DEBIAN)/rules.d/hooks.mk and $(DEBIAN)/rules.d/$(arch).mk files
 #
-export gcc?=gcc-12
-GCC_BUILD_DEPENDS=\ $(gcc), $(gcc)-aarch64-linux-gnu [arm64] <cross>, $(gcc)-arm-linux-gnueabihf [armhf] <cross>, $(gcc)-powerpc64le-linux-gnu [ppc64el] <cross>, $(gcc)-riscv64-linux-gnu [riscv64] <cross>, $(gcc)-s390x-linux-gnu [s390x] <cross>, $(gcc)-x86-64-linux-gnu [amd64] <cross>,
+# FIXME (juergh): Use gcc-11 for armhf
+ifeq ($(arch),armhf)
+export gcc := gcc-11
+else
+export gcc := gcc-12
+endif
+GCC_BUILD_DEPENDS=\ gcc-12 [arm64], gcc-11 [armhf], gcc-12-aarch64-linux-gnu [arm64] <cross>, gcc-11-arm-linux-gnueabihf [armhf] <cross>,
 
 abidir		:= $(CURDIR)/$(DEBIAN)/__abi.current/$(arch)
 prev_abidir	:= $(CURDIR)/$(DEBIAN)/abi/$(arch)
