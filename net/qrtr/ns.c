@@ -3,11 +3,13 @@
  * Copyright (c) 2015, Sony Mobile Communications Inc.
  * Copyright (c) 2013, The Linux Foundation. All rights reserved.
  * Copyright (c) 2020, Linaro Ltd.
+ * Copyright (c) 2022, Qualcomm Innovation Center, Inc. All rights reserved.
  */
 
 #include <linux/module.h>
 #include <linux/qrtr.h>
 #include <linux/workqueue.h>
+#include <linux/xarray.h>
 #include <net/sock.h>
 
 #include "qrtr.h"
@@ -15,7 +17,7 @@
 #define CREATE_TRACE_POINTS
 #include <trace/events/qrtr.h>
 
-static RADIX_TREE(nodes, GFP_KERNEL);
+static DEFINE_XARRAY(nodes);
 
 static struct {
 	struct socket *sock;
@@ -85,7 +87,7 @@ static struct qrtr_node *node_get(unsigned int node_id)
 {
 	struct qrtr_node *node;
 
-	node = radix_tree_lookup(&nodes, node_id);
+	node = xa_load(&nodes, node_id);
 	if (node)
 		return node;
 
@@ -102,10 +104,7 @@ static struct qrtr_node *node_get(unsigned int node_id)
 	node->id = node_id;
 	xa_init(&node->servers);
 
-	if (radix_tree_insert(&nodes, node_id, node)) {
-		kfree(node);
-		return NULL;
-	}
+	xa_store(&nodes, node_id, node, GFP_KERNEL);
 
 	node_count++;
 
@@ -595,8 +594,6 @@ static int ctrl_cmd_new_lookup(struct sockaddr_qrtr *from,
 		xa_for_each(&node->servers, srv_idx, srv) {
 			if (!server_match(srv, &filter))
 				continue;
-
-			lookup_notify(from, srv, true);
 		}
 	}
 
