@@ -229,6 +229,7 @@ static int announce_servers(struct sockaddr_qrtr *sq)
 			return ret;
 		}
 	}
+
 	return 0;
 }
 
@@ -488,6 +489,7 @@ static int ctrl_cmd_del_client(struct sockaddr_qrtr *from,
 			return ret;
 		}
 	}
+
 	return 0;
 }
 
@@ -594,6 +596,8 @@ static int ctrl_cmd_new_lookup(struct sockaddr_qrtr *from,
 		xa_for_each(&node->servers, srv_idx, srv) {
 			if (!server_match(srv, &filter))
 				continue;
+
+			lookup_notify(from, srv, true);
 		}
 	}
 
