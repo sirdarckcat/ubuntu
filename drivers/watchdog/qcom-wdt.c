@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /* Copyright (c) 2014, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2022 Qualcomm Innovation Center, Inc. All rights reserved.
  */
 #include <linux/bits.h>
 #include <linux/clk.h>
@@ -298,9 +299,9 @@ static int qcom_wdt_probe(struct platform_device *pdev)
 	 */
 	if (qcom_wdt_is_running(&wdt->wdd)) {
 		qcom_wdt_start(&wdt->wdd);
-		set_bit(WDOG_HW_RUNNING, &wdt->wdd.status);
 	}
 
+	set_bit(WDOG_HW_RUNNING, &wdt->wdd.status);
 	ret = devm_watchdog_register_device(dev, &wdt->wdd);
 	if (ret)
 		return ret;
