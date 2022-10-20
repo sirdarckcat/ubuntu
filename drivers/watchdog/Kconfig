@@ -813,6 +813,15 @@ config QCOM_WDT
 	  To compile this driver as a module, choose M here: the
 	  module will be called qcom_wdt.
 
+config QCOM_WDT_IPI_PING
+	depends on QCOM_WDT
+	bool "Qualcomm Technologies, Inc. Watchdog ipi ping"
+	default n
+	help
+	  This boolean flag gives the watchdog driver the ability to send a
+	  keep-alive ping to other cpu's if it is set to 1. Otherwise, when
+	  it is set to 0 no keep alive pings will be sent.
+
 config MESON_GXBB_WATCHDOG
 	tristate "Amlogic Meson GXBB SoCs watchdog support"
 	depends on ARCH_MESON || COMPILE_TEST
