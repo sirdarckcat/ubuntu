@@ -45,6 +45,7 @@
 #include <linux/types.h>	/* For standard types (like size_t) */
 #include <linux/watchdog.h>	/* For watchdog specific items */
 #include <linux/uaccess.h>	/* For copy_to_user/put_user/... */
+#include <linux/sched/clock.h>
 
 #include "watchdog_core.h"
 #include "watchdog_pretimeout.h"
@@ -70,6 +71,38 @@ static void watchdog_set_open_deadline(struct watchdog_core_data *data)
 {
 	data->open_deadline = open_timeout ?
 		ktime_get() + ktime_set(open_timeout, 0) : KTIME_MAX;
+}
+
+static void watchdog_keep_alive_response(void *info)
+{
+	struct watchdog_device *wdd = info;
+	int cpu = smp_processor_id();
+	cpumask_set_cpu(cpu, &wdd->alive_mask);
+	wdd->ping_end[cpu] = sched_clock();
+	/* Make sure alive mask is cleared and set in order */
+	smp_mb();
+}
+
+
+/*
+ * If this function does not return, it implies one of the
+ * other cpu's is not responsive.
+ */
+static void watchdog_ping_other_cpus(struct watchdog_device *wdd)
+{
+	int cpu;
+
+	cpumask_clear(&wdd->alive_mask);
+	/* Make sure alive mask is cleared and set in order */
+	smp_mb();
+	for_each_cpu(cpu, cpu_online_mask) {
+		if (!wdd->cpu_idle_pc_state[cpu]) {
+			wdd->ping_start[cpu] = sched_clock();
+			smp_call_function_single(cpu,
+						 watchdog_keep_alive_response,
+						 wdd, 1);
+		}
+	}
 }
 
 static inline bool watchdog_need_worker(struct watchdog_device *wdd)
@@ -144,7 +177,7 @@ static int __watchdog_ping(struct watchdog_device *wdd)
 {
 	struct watchdog_core_data *wd_data = wdd->wd_data;
 	ktime_t earliest_keepalive, now;
-	int err;
+	int err, cpu;
 
 	earliest_keepalive = ktime_add(wd_data->last_hw_keepalive,
 				       ms_to_ktime(wdd->min_hw_heartbeat_ms));
@@ -156,6 +189,12 @@ static int __watchdog_ping(struct watchdog_device *wdd)
 			      HRTIMER_MODE_REL_HARD);
 		return 0;
 	}
+
+	for_each_cpu(cpu, cpu_present_mask)
+		wdd->ping_start[cpu] = wdd->ping_end[cpu] = 0;
+
+	if (wdd->do_ipi_ping)
+		watchdog_ping_other_cpus(wdd);
 
 	wd_data->last_hw_keepalive = now;
 
