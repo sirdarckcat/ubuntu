@@ -9,6 +9,8 @@
  *
  *	(c) Copyright 2021 Hewlett Packard Enterprise Development LP.
  *
+ *      (c) Copyright 2022 Qualcomm Innovation Center, Inc. All rights reserved.
+ *
  *	This source code is part of the generic code that can be used
  *	by all the watchdog timer drivers.
  *
@@ -253,7 +255,7 @@ static int watchdog_start(struct watchdog_device *wdd)
 	set_bit(_WDOG_KEEPALIVE, &wd_data->status);
 
 	started_at = ktime_get();
-	if (watchdog_hw_running(wdd) && wdd->ops->ping) {
+	if (watchdog_hw_running(wdd) && wdd->ops->ping && watchdog_active(wdd)) {
 		err = __watchdog_ping(wdd);
 		if (err == 0) {
 			set_bit(WDOG_ACTIVE, &wdd->status);
