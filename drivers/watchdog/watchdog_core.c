@@ -7,6 +7,8 @@
  *
  *	(c) Copyright 2008-2011 Wim Van Sebroeck <wim@iguana.be>.
  *
+ *	(c) Copyright 2022 Qualcomm Innovation Center, Inc. All rights reserved.
+ *
  *	This source code is part of the generic code that can be used
  *	by all the watchdog timer drivers.
  *
@@ -35,6 +37,7 @@
 #include <linux/err.h>		/* For IS_ERR macros */
 #include <linux/of.h>		/* For of_get_timeout_sec */
 #include <linux/suspend.h>
+#include <linux/cpu_pm.h>
 
 #include "watchdog_core.h"	/* For watchdog_dev_register/... */
 
@@ -169,6 +172,28 @@ static int watchdog_reboot_notifier(struct notifier_block *nb,
 	}
 
 	return NOTIFY_DONE;
+}
+
+static int watchdog_cpu_pm_notifier(struct notifier_block *this,
+			      unsigned long action, void *v)
+{
+	struct watchdog_device *wdd = container_of(this,
+				struct watchdog_device, wdog_cpu_pm_nb);
+	int cpu;
+
+	cpu = raw_smp_processor_id();
+
+	switch (action) {
+	case CPU_PM_ENTER:
+		wdd->cpu_idle_pc_state[cpu] = 1;
+		break;
+	case CPU_PM_ENTER_FAILED:
+	case CPU_PM_EXIT:
+		wdd->cpu_idle_pc_state[cpu] = 0;
+		break;
+	}
+
+	return NOTIFY_OK;
 }
 
 static int watchdog_restart_notifier(struct notifier_block *nb,
@@ -311,6 +336,11 @@ static int __watchdog_register_device(struct watchdog_device *wdd)
 		}
 	}
 
+	if (!IPI_CORES_IN_LPM) {
+		wdd->wdog_cpu_pm_nb.notifier_call = watchdog_cpu_pm_notifier;
+		cpu_pm_register_notifier(&wdd->wdog_cpu_pm_nb);
+	}
+
 	if (wdd->ops->restart) {
 		wdd->restart_nb.notifier_call = watchdog_restart_notifier;
 
@@ -376,6 +406,9 @@ static void __watchdog_unregister_device(struct watchdog_device *wdd)
 
 	if (test_bit(WDOG_STOP_ON_REBOOT, &wdd->status))
 		unregister_reboot_notifier(&wdd->reboot_nb);
+
+	if (!IPI_CORES_IN_LPM)
+		cpu_pm_unregister_notifier(&wdd->wdog_cpu_pm_nb);
 
 	watchdog_dev_unregister(wdd);
 	ida_simple_remove(&watchdog_ida, wdd->id);
