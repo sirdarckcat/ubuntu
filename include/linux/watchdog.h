@@ -117,6 +117,8 @@ struct watchdog_device {
 	unsigned long long ping_start[NR_CPUS];
 	unsigned long long ping_end[NR_CPUS];
 	int cpu_idle_pc_state[NR_CPUS];
+	struct notifier_block wdog_cpu_pm_nb;
+
 /* Bit numbers for status flags */
 #define WDOG_ACTIVE		0	/* Is the watchdog running/active */
 #define WDOG_NO_WAY_OUT		1	/* Is 'nowayout' feature set ? */
@@ -134,6 +136,19 @@ struct watchdog_device {
 #define WATCHDOG_IPI_PING 1
 #else
 #define WATCHDOG_IPI_PING 0
+#endif
+
+/*
+ * Watchdog ipi optimization:
+ * Does not ping cores in low power mode at pet time to save power.
+ * This feature is enabled by default.
+ *
+ * Can be turned off, by enabling CONFIG_QCOM_WDT_IPI_ENABLE.
+ */
+#ifdef CONFIG_QCOM_WDT_IPI_ENABLE
+#define IPI_CORES_IN_LPM 1
+#else
+#define IPI_CORES_IN_LPM 0
 #endif
 
 /* Use the following function to check whether or not the watchdog is active */
