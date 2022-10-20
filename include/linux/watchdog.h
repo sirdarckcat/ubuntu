@@ -111,6 +111,12 @@ struct watchdog_device {
 	void *driver_data;
 	struct watchdog_core_data *wd_data;
 	unsigned long status;
+/* adding support for ipi ping function */
+	cpumask_t alive_mask;
+	bool do_ipi_ping;
+	unsigned long long ping_start[NR_CPUS];
+	unsigned long long ping_end[NR_CPUS];
+	int cpu_idle_pc_state[NR_CPUS];
 /* Bit numbers for status flags */
 #define WDOG_ACTIVE		0	/* Is the watchdog running/active */
 #define WDOG_NO_WAY_OUT		1	/* Is 'nowayout' feature set ? */
@@ -123,6 +129,12 @@ struct watchdog_device {
 
 #define WATCHDOG_NOWAYOUT		IS_BUILTIN(CONFIG_WATCHDOG_NOWAYOUT)
 #define WATCHDOG_NOWAYOUT_INIT_STATUS	(WATCHDOG_NOWAYOUT << WDOG_NO_WAY_OUT)
+
+#ifdef CONFIG_QCOM_WDT_IPI_PING
+#define WATCHDOG_IPI_PING 1
+#else
+#define WATCHDOG_IPI_PING 0
+#endif
 
 /* Use the following function to check whether or not the watchdog is active */
 static inline bool watchdog_active(struct watchdog_device *wdd)
