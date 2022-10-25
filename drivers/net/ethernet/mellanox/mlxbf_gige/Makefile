@@ -7,4 +7,5 @@ mlxbf_gige-y := mlxbf_gige_ethtool.o \
 		mlxbf_gige_main.o \
 		mlxbf_gige_mdio.o \
 		mlxbf_gige_rx.o   \
-		mlxbf_gige_tx.o
+		mlxbf_gige_tx.o   \
+		mlxbf_gige_uphy.o
