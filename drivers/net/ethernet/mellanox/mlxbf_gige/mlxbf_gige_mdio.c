@@ -113,24 +113,6 @@ static struct mlxbf_gige_mdio_gw mlxbf_gige_mdio_gw_t[] = {
 /* Busy bit is set by software and cleared by hardware */
 #define MLXBF_GIGE_MDIO_SET_BUSY	0x1
 
-#define MLXBF_GIGE_BF2_COREPLL_ADDR 0x02800c30
-#define MLXBF_GIGE_BF2_COREPLL_SIZE 0x0000000c
-#define MLXBF_GIGE_BF3_COREPLL_ADDR 0x13409824
-#define MLXBF_GIGE_BF3_COREPLL_SIZE 0x00000010
-
-static struct resource corepll_params[] = {
-	[MLXBF_GIGE_VERSION_BF2] = {
-		.start = MLXBF_GIGE_BF2_COREPLL_ADDR,
-		.end = MLXBF_GIGE_BF2_COREPLL_ADDR + MLXBF_GIGE_BF2_COREPLL_SIZE - 1,
-		.name = "COREPLL_RES"
-	},
-	[MLXBF_GIGE_VERSION_BF3] = {
-		.start = MLXBF_GIGE_BF3_COREPLL_ADDR,
-		.end = MLXBF_GIGE_BF3_COREPLL_ADDR + MLXBF_GIGE_BF3_COREPLL_SIZE - 1,
-		.name = "COREPLL_RES"
-	}
-};
-
 /* Returns core clock i1clk in Hz */
 static u64 calculate_i1clk(struct mlxbf_gige *priv)
 {
@@ -294,30 +276,11 @@ static void mlxbf_gige_mdio_cfg(struct mlxbf_gige *priv)
 int mlxbf_gige_mdio_probe(struct platform_device *pdev, struct mlxbf_gige *priv)
 {
 	struct device *dev = &pdev->dev;
-	struct resource *res;
 	int ret;
-
-	if (priv->hw_version > MLXBF_GIGE_VERSION_BF3)
-		return -ENODEV;
 
 	priv->mdio_io = devm_platform_ioremap_resource(pdev, MLXBF_GIGE_RES_MDIO9);
 	if (IS_ERR(priv->mdio_io))
 		return PTR_ERR(priv->mdio_io);
-
-	/* clk resource shared with other drivers so cannot use
-	 * devm_platform_ioremap_resource
-	 */
-	res = platform_get_resource(pdev, IORESOURCE_MEM, MLXBF_GIGE_RES_CLK);
-	if (!res) {
-		/* For backward compatibility with older ACPI tables, also keep
-		 * CLK resource internal to the driver.
-		 */
-		res = &corepll_params[priv->hw_version];
-	}
-
-	priv->clk_io = devm_ioremap(dev, res->start, resource_size(res));
-	if (!priv->clk_io)
-		return -ENOMEM;
 
 	priv->mdio_gw = &mlxbf_gige_mdio_gw_t[priv->hw_version];
 
