@@ -18,13 +18,25 @@
 
 #include "mlxbf_gige.h"
 #include "mlxbf_gige_regs.h"
+#include "mlxbf_gige_uphy.h"
 
-#define DRV_VERSION 1.27
+#define MLXBF_GIGE_BF2_COREPLL_ADDR 0x02800c30
+#define MLXBF_GIGE_BF2_COREPLL_SIZE 0x0000000c
+#define MLXBF_GIGE_BF3_COREPLL_ADDR 0x13409824
+#define MLXBF_GIGE_BF3_COREPLL_SIZE 0x00000020
 
-/* This setting defines the version of the ACPI table
- * content that is compatible with this driver version.
- */
-#define MLXBF_GIGE_ACPI_TABLE_VERSION 2
+static struct resource corepll_params[] = {
+	[MLXBF_GIGE_VERSION_BF2] = {
+		.start = MLXBF_GIGE_BF2_COREPLL_ADDR,
+		.end = MLXBF_GIGE_BF2_COREPLL_ADDR + MLXBF_GIGE_BF2_COREPLL_SIZE - 1,
+		.name = "COREPLL_RES"
+	},
+	[MLXBF_GIGE_VERSION_BF3] = {
+		.start = MLXBF_GIGE_BF3_COREPLL_ADDR,
+		.end = MLXBF_GIGE_BF3_COREPLL_ADDR + MLXBF_GIGE_BF3_COREPLL_SIZE - 1,
+		.name = "COREPLL_RES"
+	}
+};
 
 /* Allocate SKB whose payload pointer aligns with the Bluefield
  * hardware DMA limitation, i.e. DMA operation can't cross
@@ -371,31 +383,39 @@ static int mlxbf_gige_probe(struct platform_device *pdev)
 {
 	struct phy_device *phydev;
 	struct net_device *netdev;
+	struct resource *clk_res;
 	struct mlxbf_gige *priv;
 	void __iomem *llu_base;
 	void __iomem *plu_base;
+	void __iomem *clk_io;
 	void __iomem *base;
 	int addr, phy_irq;
-	u32 version;
+	u64 soc_version;
 	u64 control;
 	int err;
-
-	version = 0;
-	err = device_property_read_u32(&pdev->dev, "version", &version);
-	if (err) {
-		dev_err(&pdev->dev, "ACPI table version not found\n");
-		return -EINVAL;
-	}
-
-	if (version != MLXBF_GIGE_ACPI_TABLE_VERSION) {
-		dev_err(&pdev->dev, "ACPI table version mismatch: expected %d found %d\n",
-			MLXBF_GIGE_ACPI_TABLE_VERSION, version);
-		return -EINVAL;
-	}
 
 	base = devm_platform_ioremap_resource(pdev, MLXBF_GIGE_RES_MAC);
 	if (IS_ERR(base))
 		return PTR_ERR(base);
+
+	soc_version = readq(base + MLXBF_GIGE_VERSION);
+	if (soc_version > MLXBF_GIGE_VERSION_BF3)
+		return -ENODEV;
+
+	/* clk resource shared with other drivers so cannot use
+	 * devm_platform_ioremap_resource
+	 */
+	clk_res = platform_get_resource(pdev, IORESOURCE_MEM, MLXBF_GIGE_RES_CLK);
+	if (!clk_res) {
+		/* For backward compatibility with older ACPI tables, also keep
+		 * CLK resource internal to the driver.
+		 */
+		clk_res = &corepll_params[soc_version];
+	}
+
+	clk_io = devm_ioremap(&pdev->dev, clk_res->start, resource_size(clk_res));
+	if (!clk_io)
+		return -ENOMEM;
 
 	llu_base = devm_platform_ioremap_resource(pdev, MLXBF_GIGE_RES_LLU);
 	if (IS_ERR(llu_base))
@@ -426,16 +446,22 @@ static int mlxbf_gige_probe(struct platform_device *pdev)
 
 	spin_lock_init(&priv->lock);
 
-	priv->hw_version = readq(base + MLXBF_GIGE_VERSION);
+	priv->clk_io = clk_io;
+	priv->base = base;
+	priv->llu_base = llu_base;
+	priv->plu_base = plu_base;
+	priv->hw_version = soc_version;
+
+	if (priv->hw_version == MLXBF_GIGE_VERSION_BF3) {
+		err = mlxbf_gige_config_uphy(priv);
+		if (err)
+			return err;
+	}
 
 	/* Attach MDIO device */
 	err = mlxbf_gige_mdio_probe(pdev, priv);
 	if (err)
 		return err;
-
-	priv->base = base;
-	priv->llu_base = llu_base;
-	priv->plu_base = plu_base;
 
 	priv->rx_q_entries = MLXBF_GIGE_DEFAULT_RXQ_SZ;
 	priv->tx_q_entries = MLXBF_GIGE_DEFAULT_TXQ_SZ;
@@ -538,4 +564,4 @@ MODULE_DESCRIPTION("Mellanox BlueField SoC Gigabit Ethernet Driver");
 MODULE_AUTHOR("David Thompson <davthompson@nvidia.com>");
 MODULE_AUTHOR("Asmaa Mnebhi <asmaa@nvidia.com>");
 MODULE_LICENSE("Dual BSD/GPL");
-MODULE_VERSION(__stringify(DRV_VERSION));
+
