@@ -1121,8 +1121,9 @@ static void igc_tx_ctxtdesc(struct igc_ring *tx_ring,
 			    u32 mss_l4len_idx)
 {
 	struct igc_adv_tx_context_desc *context_desc;
-	u16 i = tx_ring->next_to_use;
-
+	u16 i;
+ 
+	i = tx_ring->next_to_use;
 	context_desc = IGC_TX_CTXTDESC(tx_ring, i);
 
 	i++;
