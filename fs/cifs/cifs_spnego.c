@@ -205,7 +205,7 @@ init_cifs_spnego(void)
 	 * spnego upcalls.
 	 */
 
-	cred = prepare_kernel_cred(NULL);
+	cred = prepare_kernel_cred(&init_task);
 	if (!cred)
 		return -ENOMEM;
 
