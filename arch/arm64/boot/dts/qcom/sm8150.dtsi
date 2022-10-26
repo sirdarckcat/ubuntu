@@ -2964,6 +2964,29 @@
 			qcom,bcm-voters = <&apps_bcm_voter>;
 		};
 
+		npucc: clock-controller@9910000 {
+			compatible = "qcom,npucc-sm8150";
+			reg = <0x0 0x09910000 0x0 0x10000>;
+			reg-names = "cc_base";
+			clocks = <&rpmhcc RPMH_CXO_CLK>,
+				 <&gcc GCC_NPU_GPLL0_CLK_SRC>,
+				 <&gcc GCC_NPU_GPLL0_DIV_CLK_SRC>,
+				 <&gcc GCC_NPU_AXI_CLK>,
+				 <&gcc GCC_NPU_TRIG_CLK>,
+				 <&gcc GCC_NPU_AT_CLK>,
+				 <&gcc GCC_NPU_CFG_AHB_CLK>;
+			clock-names = "bi_tcxo",
+				      "gcc_npu_gpll0_clk_src",
+				      "gcc_npu_gpll0_div_clk_src",
+				      "gcc_npu_axi_clk",
+				      "gcc_npu_trig_clk",
+				      "gcc_npu_at_clk",
+				      "gcc_npu_cfg_ahb_clk";
+			#clock-cells = <1>;
+			#reset-cells = <1>;
+			#power-domain-cells = <1>;
+		};
+
 		usb_1: usb@a6f8800 {
 			compatible = "qcom,sm8150-dwc3", "qcom,dwc3";
 			reg = <0 0x0a6f8800 0 0x400>;
