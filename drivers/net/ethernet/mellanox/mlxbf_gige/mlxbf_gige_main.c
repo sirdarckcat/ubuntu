@@ -436,7 +436,6 @@ static int mlxbf_gige_probe(struct platform_device *pdev)
 
 	SET_NETDEV_DEV(netdev, &pdev->dev);
 	netdev->netdev_ops = &mlxbf_gige_netdev_ops;
-	netdev->ethtool_ops = &mlxbf_gige_ethtool_ops;
 	priv = netdev_priv(netdev);
 	priv->netdev = netdev;
 
@@ -453,9 +452,12 @@ static int mlxbf_gige_probe(struct platform_device *pdev)
 	priv->hw_version = soc_version;
 
 	if (priv->hw_version == MLXBF_GIGE_VERSION_BF3) {
+		netdev->ethtool_ops = &mlxbf_gige_bf3_ethtool_ops;
 		err = mlxbf_gige_config_uphy(priv);
 		if (err)
 			return err;
+	} else {
+		netdev->ethtool_ops = &mlxbf_gige_bf2_ethtool_ops;
 	}
 
 	/* Attach MDIO device */
