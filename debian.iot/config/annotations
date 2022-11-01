@@ -6211,7 +6211,6 @@ CONFIG_STE10XP                                  policy<{'arm64': 'n', 'amd64-iot
 CONFIG_STK3310                                  policy<{'arm64': 'n', 'amd64-iot': 'm'}>
 CONFIG_STK8312                                  policy<{'arm64': 'n', 'amd64-iot': 'm'}>
 CONFIG_STK8BA50                                 policy<{'arm64': 'n', 'amd64-iot': 'm'}>
-CONFIG_STM                                      policy<{'arm64': 'n', 'amd64-iot': 'm', 'arm64-iot-debug': 'y'}>
 CONFIG_STMMAC_ETH                               policy<{'arm64': 'y', 'amd64-iot': 'm'}>
 CONFIG_STMMAC_PCI                               policy<{'arm64': 'n', 'amd64-iot': 'm'}>
 CONFIG_STMMAC_PLATFORM                          policy<{'arm64': 'y', 'amd64-iot': 'm'}>
@@ -7413,6 +7412,16 @@ CONFIG_CC_OPTIMIZE_FOR_SIZE                     policy<{'amd64': 'n', 'arm64': '
 CONFIG_CGROUP_DEBUG                             policy<{'amd64': 'n', 'arm64': 'n', 'arm64-iot-debug': 'y'}>
 CONFIG_CMA_DEBUGFS                              policy<{'arm64': 'n', 'arm64-iot-debug': 'y'}>
 CONFIG_CORESIGHT                                policy<{'arm64': 'n', 'armhf': 'n', 'arm64-iot-debug': 'y'}>
+CONFIG_CORESIGHT_CTI                            policy<{'amd64': 'n', 'arm64': '-', 'arm64-iot-debug': 'y'}>
+CONFIG_CORESIGHT_DUMMY                          policy<{'amd64': 'n', 'arm64': '-', 'arm64-iot-debug': 'y'}>
+CONFIG_CORESIGHT_HWEVENT                        policy<{'amd64': 'n', 'arm64': '-', 'arm64-iot-debug': 'y'}>
+CONFIG_CORESIGHT_LINKS_AND_SINKS                policy<{'amd64': 'n', 'arm64': '-', 'arm64-iot-debug': 'y'}>
+CONFIG_CORESIGHT_LINK_AND_SINK_TMC              policy<{'amd64': 'n', 'arm64': '-', 'arm64-iot-debug': 'y'}>
+CONFIG_CORESIGHT_SOURCE_ETM4X                   policy<{'amd64': 'n', 'arm64': '-', 'arm64-iot-debug': 'y'}>
+CONFIG_CORESIGHT_STM                            policy<{'amd64': 'n', 'arm64': '-', 'arm64-iot-debug': 'y'}>
+CONFIG_CORESIGHT_TGU                            policy<{'amd64': 'n', 'arm64': '-', 'arm64-iot-debug': 'y'}>
+CONFIG_CORESIGHT_TPDA                           policy<{'amd64': 'n', 'arm64': '-', 'arm64-iot-debug': 'y'}>
+CONFIG_CORESIGHT_TPDM                           policy<{'amd64': 'n', 'arm64': '-', 'arm64-iot-debug': 'y'}>
 CONFIG_DEBUG_ATOMIC_SLEEP                       policy<{'amd64': 'n', 'arm64': 'n', 'arm64-iot-debug': 'y'}>
 CONFIG_DEBUG_CREDENTIALS                        policy<{'amd64': 'n', 'arm64': 'n', 'arm64-iot-debug': 'y'}>
 CONFIG_DEBUG_KMEMLEAK                           policy<{'amd64': 'n', 'arm64': 'n', 'arm64-iot-debug': 'y'}>
@@ -7434,10 +7443,12 @@ CONFIG_IGB_HWMON                                policy<{'amd64': 'y', 'arm64': '
 CONFIG_LOCK_TORTURE_TEST                        policy<{'amd64': 'n', 'arm64': 'n', 'arm64-iot-debug': 'm'}>
 CONFIG_PAGE_EXTENSION                           policy<{'amd64': 'n', 'arm64': 'n', 'arm64-iot-debug': 'y'}>
 CONFIG_PAGE_OWNER                               policy<{'amd64': 'n', 'arm64': 'n', 'arm64-iot-debug': 'y'}>
+CONFIG_PID_IN_CONTEXTIDR                        policy<{'am64' : 'n', 'arm64': 'n', 'arm64-iot-debug': 'y'}>
 CONFIG_PID_IN_CONTEXTIDR                        policy<{'arm64': 'n', 'armhf': 'n', 'arm64-iot-debug': 'y'}>
 CONFIG_PROVE_LOCKING                            policy<{'amd64': 'n', 'arm64': 'n', 'arm64-iot-debug': 'y'}>
 CONFIG_RCU_TORTURE_TEST                         policy<{'amd64': 'n', 'arm64': 'n', 'arm64-iot-debug': 'm'}>
 CONFIG_RTC_DRV_PCF2127                          policy<{'amd64': 'm', 'arm64': 'm', 'arm64-iot-debug': 'n'}>
-CONFIG_STM_SOURCE_FTRACE                        policy<{'arm64': '-', 'amd64-iot': 'm', 'arm64-iot-debug': 'm'}>
+CONFIG_STM                                      policy<{'arm64': 'n', 'amd64-iot': 'm', 'arm64-iot-debug': 'y'}>
+CONFIG_STM_SOURCE_FTRACE                        policy<{'arm64': '-', 'amd64-iot': 'm', 'arm64-iot-debug': 'y'}>
 CONFIG_VIDEO_ADV_DEBUG                          policy<{'amd64': 'n', 'arm64': 'n', 'arm64-iot-debug': 'y'}>
 CONFIG_WQ_WATCHDOG                              policy<{'amd64': 'n', 'arm64': 'n', 'arm64-iot-debug': 'y'}>
