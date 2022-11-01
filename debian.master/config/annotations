@@ -2845,13 +2845,13 @@ CONFIG_INTEL_TH_PTI                             policy<{'amd64': 'm', 'arm64': '
 CONFIG_INTEL_TH_DEBUG                           policy<{'amd64': 'n', 'arm64': 'n', 'armhf': 'n', 'ppc64el': 'n', 's390x': 'n'}>
 
 # Menu: Device Drivers >> HW tracing support >> System Trace Module devices
-CONFIG_STM                                      policy<{'amd64': 'm', 'arm64': 'm', 'armhf': 'm', 'ppc64el': 'm', 's390x': 'm'}>
+CONFIG_STM                                      policy<{'amd64': 'm', 'arm64': 'y', 'armhf': 'm', 'ppc64el': 'm', 's390x': 'm'}>
 CONFIG_STM_PROTO_BASIC                          policy<{'amd64': 'm', 'arm64': 'm', 'armhf': 'm', 'ppc64el': 'm', 's390x': 'm'}>
 CONFIG_STM_PROTO_SYS_T                          policy<{'amd64': 'm', 'arm64': 'm', 'armhf': 'm', 'ppc64el': 'm', 's390x': 'm'}>
 CONFIG_STM_DUMMY                                policy<{'amd64': 'm', 'arm64': 'm', 'armhf': 'm', 'ppc64el': 'm', 's390x': 'm'}>
 CONFIG_STM_SOURCE_CONSOLE                       policy<{'amd64': 'm', 'arm64': 'm', 'armhf': 'm', 'ppc64el': 'm', 's390x': 'm'}>
 CONFIG_STM_SOURCE_HEARTBEAT                     policy<{'amd64': 'm', 'arm64': 'm', 'armhf': 'm', 'ppc64el': 'm', 's390x': 'm'}>
-CONFIG_STM_SOURCE_FTRACE                        policy<{'amd64': 'm', 'arm64': 'm', 'armhf': 'm', 'ppc64el': 'm', 's390x': 'm'}>
+CONFIG_STM_SOURCE_FTRACE                        policy<{'amd64': 'm', 'arm64': 'y', 'armhf': 'm', 'ppc64el': 'm', 's390x': 'm'}>
 
 # Menu: Device Drivers >> Hardware Monitoring support
 CONFIG_HWMON                                    policy<{'amd64': 'y', 'arm64': 'y', 'armhf': 'y', 'ppc64el': 'y', 's390x': 'n'}>
@@ -11612,7 +11612,7 @@ CONFIG_STRICT_DEVMEM                            mark<ENFORCED>
 
 # Menu: Kernel hacking >> $(SRCARCH) Debugging
 CONFIG_DEBUG_ENTRY                              policy<{'amd64': 'n', 's390x': 'n'}>
-CONFIG_PID_IN_CONTEXTIDR                        policy<{'arm64': 'n', 'armhf': 'n'}>
+CONFIG_PID_IN_CONTEXTIDR                        policy<{'arm64': 'y', 'armhf': 'n'}>
 CONFIG_EARLY_PRINTK                             policy<{'amd64': 'y', 'ppc64el': 'y', 's390x': 'y'}>
 CONFIG_DEBUG_WX                                 policy<{'amd64': 'y', 'arm64': 'y', 'armhf': 'y', 'ppc64el': 'y', 's390x': 'y'}>
 
@@ -11677,9 +11677,19 @@ CONFIG_UNWINDER_ORC                             policy<{'amd64': 'n'}>
 CONFIG_UNWINDER_GUESS                           policy<{'amd64': 'n'}>
 
 # Menu: Kernel hacking >> $(SRCARCH) Debugging >> CoreSight Tracing Support
-CONFIG_CORESIGHT                                policy<{'arm64': 'n', 'armhf': 'n'}>
+CONFIG_CORESIGHT                                policy<{'arm64': 'y', 'armhf': 'n'}>
 
 # Menu: Kernel hacking >> $(SRCARCH) Debugging >> CoreSight Tracing Support >> CoreSight Link and Sink drivers
+CONFIG_CORESIGHT_LINK_AND_SINK_TMC              policy<{'arm64': 'y', 'armhf': 'n'}>
+CONFIG_CORESIGHT_LINKS_AND_SINKS                policy<{'arm64': 'y', 'armhf': 'n'}>
+CONFIG_CORESIGHT_SOURCE_ETM4X                   policy<{'arm64': 'y', 'armhf': 'n'}>
+CONFIG_CORESIGHT_STM                            policy<{'arm64': 'y', 'armhf': 'n'}>
+CONFIG_CORESIGHT_CTI                            policy<{'arm64': 'y', 'armhf': 'n'}>
+CONFIG_CORESIGHT_DUMMY                          policy<{'arm64': 'y', 'armhf': 'n'}>
+CONFIG_CORESIGHT_TPDA                           policy<{'arm64': 'y', 'armhf': 'n'}>
+CONFIG_CORESIGHT_TPDM                           policy<{'arm64': 'y', 'armhf': 'n'}>
+CONFIG_CORESIGHT_TGU                            policy<{'arm64': 'y', 'armhf': 'n'}>
+CONFIG_CORESIGHT_HWEVENT                        policy<{'arm64': 'y', 'armhf': 'n'}>
 
 # Menu: Kernel hacking >> $(SRCARCH) Debugging >> Early debugging console >> Architecture: powerpc
 
