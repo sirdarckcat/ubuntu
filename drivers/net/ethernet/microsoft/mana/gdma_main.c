@@ -1276,7 +1276,7 @@ static int mana_gd_setup_irqs(struct pci_dev *pdev)
 		err = request_irq(irq, mana_gd_intr, 0, gic->name, gic);
 		if (err)
 			goto free_mask;
-		irq_set_affinity_and_hint(irq, req_mask);
+		irq_set_affinity_hint(irq, req_mask);
 		cpumask_clear(req_mask);
 	}
 	free_cpumask_var(req_mask);
