@@ -14959,7 +14959,8 @@ out:
 #define NL80211_FLAG_CLEAR_SKB		0x20
 #define NL80211_FLAG_NO_WIPHY_MTX	0x40
 
-static int nl80211_pre_doit(const struct genl_ops *ops, struct sk_buff *skb,
+static int nl80211_pre_doit(const struct genl_split_ops *ops,
+			    struct sk_buff *skb,
 			    struct genl_info *info)
 {
 	struct cfg80211_registered_device *rdev = NULL;
@@ -15018,7 +15019,8 @@ static int nl80211_pre_doit(const struct genl_ops *ops, struct sk_buff *skb,
 	return 0;
 }
 
-static void nl80211_post_doit(const struct genl_ops *ops, struct sk_buff *skb,
+static void nl80211_post_doit(const struct genl_split_ops *ops,
+			      struct sk_buff *skb,
 			      struct genl_info *info)
 {
 	if (info->user_ptr[1]) {
