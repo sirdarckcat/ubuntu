@@ -4,6 +4,9 @@
 
 include "../../debian.master/config/annotations"
 
+CONFIG_DRM_SIMPLEDRM				policy<{'*': 'n'}> mark<ENFORCED> note<LP: #1976147>
+CONFIG_FB_SIMPLE				policy<{'*': 'y'}> mark<ENFORCED> note<LP: #1976147>
+
 CONFIG_VIRTIO_PCI				policy<{'*': 'm'}> mark<ENFORCED> note<LP: #1959102>
 
 CONFIG_MFD_RASPBERRYPI_POE_HAT			policy<{'*': 'm'}> mark<ENFORCED> note<LP: #1958854>
