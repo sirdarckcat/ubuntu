@@ -4,9 +4,9 @@
 
 include ../../debian.master/config/annotations
 # Follow the generic settings instead of the lowlatency ones
-CONFIG_HZ_250                                   policy<{'amd64': 'y'}>
-CONFIG_HZ_1000                                  policy<{'amd64': 'n'}>
-CONFIG_PREEMPT_VOLUNTARY                        policy<{'amd64': 'y'}>
-CONFIG_LATENCYTOP                               policy<{'amd64': 'n'}>
-CONFIG_IRQ_FORCED_THREADING_DEFAULT             policy<{'amd64': 'n'}>
-CONFIG_PREEMPT                                  policy<{'amd64': 'n'}>
+CONFIG_HZ_250                                   policy<{'amd64': 'y', 'arm64': 'y'}>
+CONFIG_HZ_1000                                  policy<{'amd64': 'n', 'arm64': 'n'}>
+CONFIG_PREEMPT_VOLUNTARY                        policy<{'amd64': 'y', 'arm64': 'y'}>
+CONFIG_LATENCYTOP                               policy<{'amd64': 'n', 'arm64': 'n'}>
+CONFIG_IRQ_FORCED_THREADING_DEFAULT             policy<{'amd64': 'n', 'arm64': 'n'}>
+CONFIG_PREEMPT                                  policy<{'amd64': 'n', 'arm64': 'n'}>
