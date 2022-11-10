@@ -362,15 +362,17 @@ static int fastrpc_map_lookup(struct fastrpc_user *fl, int fd,
 			ret = fastrpc_map_get(map);
 			if (ret) {
 				dev_dbg(sess->dev, "%s: Failed to get map fd=%d ret=%d\n",
-						__func__, fd, ret);
+					__func__, fd, ret);
 				break;
 			}
 		}
+
 		*ppmap = map;
 		ret = 0;
 		break;
 	}
 	spin_unlock(&fl->lock);
+
 	return ret;
 }
 
