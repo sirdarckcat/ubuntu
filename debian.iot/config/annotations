@@ -3,6 +3,7 @@
 # ARCH: x86 arm arm64 s390 powerpc
 
 include ../../debian.master/config/annotations
+
 # Follow the generic settings instead of the lowlatency ones
 CONFIG_HZ_250                                   policy<{'amd64': 'y', 'arm64': 'y'}>
 CONFIG_HZ_1000                                  policy<{'amd64': 'n', 'arm64': 'n'}>
@@ -10,3 +11,8 @@ CONFIG_PREEMPT_VOLUNTARY                        policy<{'amd64': 'y', 'arm64': '
 CONFIG_LATENCYTOP                               policy<{'amd64': 'n', 'arm64': 'n'}>
 CONFIG_IRQ_FORCED_THREADING_DEFAULT             policy<{'amd64': 'n', 'arm64': 'n'}>
 CONFIG_PREEMPT                                  policy<{'amd64': 'n', 'arm64': 'n'}>
+
+# Disable ODM drivers
+CONFIG_SENSORS_AHC1EC0_HWMON                    policy<{'amd64': '-'}>
+CONFIG_MFD_AHC1EC0                              policy<{'amd64': '-'}>
+CONFIG_AHC1EC0_WDT                              policy<{'amd64': '-'}>
