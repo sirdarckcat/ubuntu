@@ -82,8 +82,6 @@ MODULE_PARM_DESC(disable_bypass,
 	.type = disable_bypass ? S2CR_TYPE_FAULT : S2CR_TYPE_BYPASS,	\
 }
 
-#define INVALID_CBNDX			0xff
-
 static bool using_legacy_binding, using_generic_binding;
 
 struct arm_smmu_option_prop {
@@ -1146,18 +1144,9 @@ static int arm_smmu_get_dma_cookie(struct device *dev,
 				    struct arm_smmu_domain *smmu_domain,
 				    struct io_pgtable_ops *pgtbl_ops)
 {
-	struct iommu_domain *domain = &smmu_domain->domain;
-	int ret;
+	bool fast = smmu_domain->mapping_cfg.fast;
 
-	if (domain->type == IOMMU_DOMAIN_DMA)
-		return iommu_get_dma_cookie(domain);
-	else if (smmu_domain->mapping_cfg.fast) {
-		ret = fast_smmu_init_mapping(dev, domain, pgtbl_ops);
-		if (ret)
-			return ret;
-	}
-
-	return 0;
+	return fast ? fast_smmu_init_mapping(dev, &smmu_domain->domain, pgtbl_ops) : 0;
 }
 
 static void arm_smmu_put_dma_cookie(struct iommu_domain *domain)
@@ -1423,6 +1412,7 @@ static int arm_smmu_init_domain_context(struct iommu_domain *domain,
 		goto out_clear_smmu;
 	}
 
+	iop = container_of(pgtbl_ops, struct io_pgtable, ops);
 	/* Update the domain's page sizes to reflect the page table format */
 	domain->pgsize_bitmap = pgtbl_cfg->pgsize_bitmap;
 
@@ -1483,19 +1473,14 @@ static int arm_smmu_init_domain_context(struct iommu_domain *domain,
 
 out_logger:
 	smmu_domain->logger = NULL;
+out_free_io_pgtable:
+	qcom_free_io_pgtable_ops(smmu_domain->pgtbl_ops);
 out_clear_smmu:
-	arm_smmu_destroy_domain_context(domain);
+	__arm_smmu_free_bitmap(smmu->context_map, cfg->cbndx);
 	smmu_domain->smmu = NULL;
 out_unlock:
 	mutex_unlock(&smmu_domain->init_mutex);
 	return ret;
-}
-
-static void arm_smmu_domain_reinit(struct arm_smmu_domain *smmu_domain)
-{
-	smmu_domain->cfg.irptndx = ARM_SMMU_INVALID_IRPTNDX;
-	smmu_domain->cfg.cbndx = INVALID_CBNDX;
-	smmu_domain->secure_vmid = VMID_INVAL;
 }
 
 static void arm_smmu_destroy_domain_context(struct iommu_domain *domain)
@@ -1535,7 +1520,6 @@ static void arm_smmu_destroy_domain_context(struct iommu_domain *domain)
 	__arm_smmu_free_bitmap(smmu->context_map, cfg->cbndx);
 
 	arm_smmu_rpm_put(smmu);
-	arm_smmu_domain_reinit(smmu_domain);
 }
 
 static struct iommu_domain *arm_smmu_domain_alloc(unsigned type)
@@ -1560,7 +1544,7 @@ static struct iommu_domain *arm_smmu_domain_alloc(unsigned type)
 	spin_lock_init(&smmu_domain->cb_lock);
 	spin_lock_init(&smmu_domain->sync_lock);
 	spin_lock_init(&smmu_domain->iotlb_gather_lock);
-	arm_smmu_domain_reinit(smmu_domain);
+	smmu_domain->secure_vmid = VMID_INVAL;
 
 	return &smmu_domain->domain;
 }
