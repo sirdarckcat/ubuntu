@@ -272,7 +272,7 @@ EXPORT_SYMBOL	 vmlinux 0x00000000	__gnet_stats_copy_queue
 EXPORT_SYMBOL	 vmlinux 0x00000000	__hci_cmd_send
 EXPORT_SYMBOL	 vmlinux 0x00000000	__hci_cmd_sync
 EXPORT_SYMBOL	 vmlinux 0x00000000	__hci_cmd_sync_ev
-EXPORT_SYMBOL	 vmlinux 0x00000000	__hsiphash_aligned
+EXPORT_SYMBOL	 vmlinux 0x00000000	__hsiphash_unaligned
 EXPORT_SYMBOL	 vmlinux 0x00000000	__hw_addr_init
 EXPORT_SYMBOL	 vmlinux 0x00000000	__hw_addr_ref_sync_dev
 EXPORT_SYMBOL	 vmlinux 0x00000000	__hw_addr_ref_unsync_dev
@@ -444,7 +444,7 @@ EXPORT_SYMBOL	 vmlinux 0x00000000	__sg_free_table
 EXPORT_SYMBOL	 vmlinux 0x00000000	__sg_page_iter_dma_next
 EXPORT_SYMBOL	 vmlinux 0x00000000	__sg_page_iter_next
 EXPORT_SYMBOL	 vmlinux 0x00000000	__sg_page_iter_start
-EXPORT_SYMBOL	 vmlinux 0x00000000	__siphash_aligned
+EXPORT_SYMBOL	 vmlinux 0x00000000	__siphash_unaligned
 EXPORT_SYMBOL	 vmlinux 0x00000000	__sk_backlog_rcv
 EXPORT_SYMBOL	 vmlinux 0x00000000	__sk_dst_check
 EXPORT_SYMBOL	 vmlinux 0x00000000	__sk_mem_raise_allocated
@@ -3092,6 +3092,7 @@ EXPORT_SYMBOL	 vmlinux 0x00000000	jbd2_journal_destroy
 EXPORT_SYMBOL	 vmlinux 0x00000000	jbd2_journal_dirty_metadata
 EXPORT_SYMBOL	 vmlinux 0x00000000	jbd2_journal_errno
 EXPORT_SYMBOL	 vmlinux 0x00000000	jbd2_journal_extend
+EXPORT_SYMBOL	 vmlinux 0x00000000	jbd2_journal_finish_inode_data_buffers
 EXPORT_SYMBOL	 vmlinux 0x00000000	jbd2_journal_flush
 EXPORT_SYMBOL	 vmlinux 0x00000000	jbd2_journal_force_commit
 EXPORT_SYMBOL	 vmlinux 0x00000000	jbd2_journal_force_commit_nested
@@ -3117,6 +3118,7 @@ EXPORT_SYMBOL	 vmlinux 0x00000000	jbd2_journal_start
 EXPORT_SYMBOL	 vmlinux 0x00000000	jbd2_journal_start_commit
 EXPORT_SYMBOL	 vmlinux 0x00000000	jbd2_journal_start_reserved
 EXPORT_SYMBOL	 vmlinux 0x00000000	jbd2_journal_stop
+EXPORT_SYMBOL	 vmlinux 0x00000000	jbd2_journal_submit_inode_data_buffers
 EXPORT_SYMBOL	 vmlinux 0x00000000	jbd2_journal_try_to_free_buffers
 EXPORT_SYMBOL	 vmlinux 0x00000000	jbd2_journal_unlock_updates
 EXPORT_SYMBOL	 vmlinux 0x00000000	jbd2_journal_update_sb_errno
@@ -5425,6 +5427,7 @@ EXPORT_SYMBOL	 vmlinux 0x00000000	udp6_csum_init
 EXPORT_SYMBOL	 vmlinux 0x00000000	udp6_seq_ops
 EXPORT_SYMBOL	 vmlinux 0x00000000	udp6_set_csum
 EXPORT_SYMBOL	 vmlinux 0x00000000	udp_disconnect
+EXPORT_SYMBOL	 vmlinux 0x00000000	udp_encap_disable
 EXPORT_SYMBOL	 vmlinux 0x00000000	udp_encap_enable
 EXPORT_SYMBOL	 vmlinux 0x00000000	udp_flow_hashrnd
 EXPORT_SYMBOL	 vmlinux 0x00000000	udp_flush_pending_frames
@@ -6665,6 +6668,7 @@ EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	__wait_rcu_gp
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	__wake_up_locked
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	__wake_up_locked_key
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	__wake_up_locked_key_bookmark
+EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	__wake_up_pollfree
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	__wake_up_sync
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	__wake_up_sync_key
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	__xas_next
@@ -6672,7 +6676,6 @@ EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	__xas_prev
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	__xdp_release_frame
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	__xenbus_register_backend
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	__xenbus_register_frontend
-EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	__xfrm_state_mtu
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	_copy_from_pages
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	_proc_mkdir
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	_snd_pcm_stream_lock_irqsave
@@ -8497,10 +8500,10 @@ EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	gnttab_map_refs
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	gnttab_max_grant_frames
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	gnttab_pages_clear_private
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	gnttab_pages_set_private
-EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	gnttab_query_foreign_access
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	gnttab_release_grant_reference
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	gnttab_request_free_callback
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	gnttab_setup_auto_xlat_frames
+EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	gnttab_try_end_foreign_access
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	gnttab_unmap_refs
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	gnttab_unmap_refs_async
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	gnttab_unmap_refs_sync
@@ -9045,7 +9048,9 @@ EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	irq_work_queue
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	irq_work_run
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	irq_work_sync
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	irqchip_fwnode_ops
+EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	is_binary_blacklisted
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	is_current_mnt_ns
+EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	is_hash_blacklisted
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	is_skb_forwardable
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	is_software_node
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	iterate_mounts
@@ -10002,6 +10007,7 @@ EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	pci_set_cacheline_size
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	pci_set_host_bridge_release
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	pci_set_pcie_reset_state
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	pci_slots_kset
+EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	pci_speed_string
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	pci_stop_and_remove_bus_device_locked
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	pci_stop_root_bus
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	pci_store_saved_state
@@ -10021,6 +10027,7 @@ EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	pci_write_msi_msg
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	pcie_bus_configure_settings
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	pcie_flr
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	pcie_has_flr
+EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	pcie_link_speed
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	pcie_update_link_speed
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	pciserial_init_ports
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	pciserial_remove_ports
@@ -12285,7 +12292,6 @@ EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	virtio_config_disable
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	virtio_config_enable
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	virtio_device_freeze
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	virtio_device_restore
-EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	virtio_finalize_features
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	virtio_max_dma_size
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	virtqueue_add_inbuf
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	virtqueue_add_inbuf_ctx
@@ -12557,6 +12563,7 @@ EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	xfrm_output
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	xfrm_output_resume
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	xfrm_probe_algs
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	xfrm_state_afinfo_get_rcu
+EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	xfrm_state_mtu
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	xhci_dbg_trace
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	xhci_ext_cap_init
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	xhci_gen_setup
