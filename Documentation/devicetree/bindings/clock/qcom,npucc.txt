@@ -1,0 +1,19 @@
+Qualcomm Technologies, Inc. NPU Clock & Reset Controller Binding
+----------------------------------------------------------------
+
+Required properties :
+- compatible : must contain "qcom,npucc-sm8150".
+- reg : shall contain base register location and length.
+- #clock-cells : shall contain 1.
+- #reset-cells : shall contain 1.
+- #power-domain-cells : shall contain 1.
+
+Example:
+	npucc: clock-controller@9910000 {
+		compatible = "qcom,npucc-sm8150";
+		reg = <0x0 0x09910000 0x0 0x10000>;
+		reg-names = "cc_base";
+		#clock-cells = <1>;
+		#reset-cells = <1>;
+		#power-domain-cells = <1>;
+	};
