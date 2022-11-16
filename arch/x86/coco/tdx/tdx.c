@@ -45,6 +45,8 @@
 
 #define TDREPORT_SUBTYPE_0	0
 
+#define ATTR_SEPT_VE_DISABLE   BIT(28)
+
 /*
  * Wrapper for standard use of __tdx_hypercall with no output aside from
  * return code.
