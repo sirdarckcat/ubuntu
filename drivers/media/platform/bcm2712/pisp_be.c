@@ -1426,6 +1426,7 @@ static const struct v4l2_ioctl_ops pispbe_node_ioctl_ops = {
 	.vidioc_enum_fmt_vid_cap = pispbe_node_enum_fmt,
 	.vidioc_enum_fmt_vid_out = pispbe_node_enum_fmt,
 	.vidioc_enum_fmt_meta_cap = pispbe_node_enum_fmt,
+	.vidioc_enum_fmt_meta_out = pispbe_node_enum_fmt,
 	.vidioc_enum_framesizes = pispbe_enum_framesizes,
 	.vidioc_create_bufs = vb2_ioctl_create_bufs,
 	.vidioc_prepare_buf = vb2_ioctl_prepare_buf,
