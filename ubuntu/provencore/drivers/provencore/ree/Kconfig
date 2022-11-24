@@ -1,0 +1,98 @@
+config PROVENCORE_REE
+    tristate "REE driver"
+    default y
+    depends on HAVE_ARM_SMCCC
+    help
+        REE driver is handling communication sessions between user applications
+        or kernel drivers and Provencore services. It is using reserved shared
+        memory to handle data exchange between secure (S) and non secure (NS)
+        world. It is using SMC for NS-->S signalling and dedicated SGI for
+        S-->NS signalling.
+
+if PROVENCORE_REE
+
+config PROVENCORE_DTS_CONFIGURATION
+    bool "Enable shared memory and secure irq configuration in dts"
+    default n
+    help
+        Shared memory used for data exchange between NS and S worlds is DDR and
+        corresponding area can be fixed and reserved through dts system so as
+        secure to non secure IRQ setup.
+        Below is an example of the entry that can be added to "reserved-memory"
+        node of the platform dts file:
+                pnc_reserved: pnc@0xC0000000 {
+                    compatible = "pnc,reserved";
+                    reg = <0xC0000000 0x200000>;
+                    interrupts-extended = <&intc 2 14 IRQ_TYPE_LEVEL_HIGH>;
+                };
+        If not set, random pages are allocated at each REE driver start-up.
+        In all cases, shared memory geometry is forwarded to secure world at
+        each REE driver start-up.
+
+config PROVENCORE_NON_SECURE_IRQ
+    int "Index of secure to non secure interrupt"
+    default 14
+    help
+        Fixed index for the interrupt registered by REE driver at start-up.
+        Default value is a commonly unused SGI, but, as soon as Provencore
+        kernel is supporting it, secure to non secure interrupt can also be an
+        unused SPI, e.g PROVENCORE_NON_SECURE_IRQ larger than 32 and smaller
+        than the irq count on the platform.
+
+config PROVENCORE_IRQ_DOMAIN_NUMBER
+    int "Set value to identify registered IRQ as a generic IRQ"
+    depends on IRQ_DOMAIN
+    default 2
+    help
+        By default, REE driver registers an irq handler to the
+        PROVENCORE_NON_SECURE_IRQ expected to be an unused SGI. REE driver then
+        gives SGI PROVENCORE_IRQ_DOMAIN_NUMBER attribute during virtual irq
+        mapping. It is expected platform's interrupt controller code to be
+        patched accordingly, with same PROVENCORE_IRQ_DOMAIN_NUMBER value as the
+        one used by REE driver, in order to correctly handle this SGI as a
+        generic IRQ.
+        Otherwise, as soon as Provencore kernel is supporting it, REE driver can
+        register PROVENCORE_NON_SECURE_IRQ as a SPI, thus removing the need for
+        any patch in Linux platform's interrupt controller. To indicate secure
+        to non secure IRQ is a SPI, PROVENCORE_IRQ_DOMAIN_NUMBER shall be set to
+        0.
+
+config PROVENCORE_IRQ_TYPE_LEVEL_HIGH
+    bool "Force usage of IRQ_TYPE_LEVEL_HIGH"
+    default n
+    help
+        By default when CONFIG_ARM_GIC_V3 is set, REE driver registers an irq with
+        IRQ_TYPE_EDGE_RISING. However it can happen that CONFIG_ARM_GIC_V3 is set
+        but IRQ_TYPE_LEVEL_HIGH is actually needed.
+        If set, IRQ_TYPE_LEVEL_HIGH is enforced.
+        If not set, CONFIG_ARM_GIC_V3 determines if IRQ_TYPE_EDGE_RISING or
+        IRQ_TYPE_LEVEL_HIGH is used.
+
+config PROVENCORE_INTERRUPT_CONTROLLER_COMPATIBLE_NODE
+    string "The compatible node for platform's interrupt controller"
+    depends on IRQ_DOMAIN
+    default "arm,gic-v3"
+    help
+        Driver will always try to find the correct interrupt node according to the
+        value of compatible node. If this node cannot be found, driver will try to
+        find PROVENCORE_INTERRUPT_CONTROLLER_NODE_NAME.
+
+config PROVENCORE_INTERRUPT_CONTROLLER_NODE_NAME
+    string "Explicit name for platform's interrupt controller node"
+    depends on IRQ_DOMAIN
+    default "interrupt-controller"
+    help
+        Driver will try to find the correct interrupt controller node according to
+        the value of node name when PROVENCORE_INTERRUPT_CONTROLLER_COMPATIBLE_NODE
+        is not found.
+
+config PROVENCORE_REE_SERVICE_TIMEOUT
+    int "Time to wait for Secure service (default 0 is no timeout)"
+    default 0
+    help
+        When opening communication session, this value allows to apply a timeout
+        to wait for secure world acknowledge.
+        If not set, a user application or a kernel driver can wait indefinitely
+        for secure world acknowledge when configurng a new session.
+
+endif # PROVENCORE_REE
