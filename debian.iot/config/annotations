@@ -2092,6 +2092,7 @@ CONFIG_GPIO_BD71828                             policy<{'arm64': '-'}>
 CONFIG_GPIO_BRCMSTB                             policy<{'arm64': '-'}>
 CONFIG_GPIO_BT8XX                               policy<{'arm64': 'n'}>
 CONFIG_GPIO_CADENCE                             policy<{'arm64': 'n'}>
+CONFIG_GPIO_CDEV_V1                             policy<{'arm64': 'y', 'amd64-iot': 'y'}>
 CONFIG_GPIO_DA9052                              policy<{'arm64': '-', 'amd64-iot': 'm'}>
 CONFIG_GPIO_DA9055                              policy<{'arm64': '-', 'amd64-iot': 'm'}>
 CONFIG_GPIO_DAVINCI                             policy<{'arm64': '-'}>
@@ -2574,6 +2575,7 @@ CONFIG_IMA_LOAD_X509                            policy<{'arm64': '-', 'amd64-iot
 CONFIG_IMA_NG_TEMPLATE                          policy<{'arm64': '-', 'amd64-iot': 'y'}>
 CONFIG_IMA_READ_POLICY                          policy<{'arm64': '-', 'amd64-iot': 'n'}>
 CONFIG_IMA_SIG_TEMPLATE                         policy<{'arm64': '-', 'amd64-iot': 'n'}>
+CONFIG_IMA_TEMPLATE                             policy<{'arm64': '-', 'amd64-iot': 'n'}>
 CONFIG_IMA_TRUSTED_KEYRING                      policy<{'arm64': '-', 'amd64-iot': 'y'}>
 CONFIG_IMA_WRITE_POLICY                         policy<{'arm64': '-', 'amd64-iot': 'n'}>
 CONFIG_IMG_ASCII_LCD                            policy<{'arm64': '-', 'amd64-iot': 'm'}>
@@ -6667,6 +6669,7 @@ CONFIG_USB_CHIPIDEA_IMX                         policy<{'arm64': 'y'}>
 CONFIG_USB_CHIPIDEA_MSM                         policy<{'arm64': 'y', 'amd64-iot': 'm'}>
 CONFIG_USB_CHIPIDEA_PCI                         policy<{'arm64': 'y', 'amd64-iot': 'm'}>
 CONFIG_USB_CHIPIDEA_TEGRA                       policy<{'arm64': 'y'}>
+CONFIG_USB_CONFIGFS                             policy<{'arm64': 'y', 'amd64-iot': 'm'}>
 CONFIG_USB_CONFIGFS_F_HID                       policy<{'arm64': 'n', 'amd64-iot': 'y'}>
 CONFIG_USB_CONFIGFS_F_LB_SS                     policy<{'arm64': 'n', 'amd64-iot': 'y'}>
 CONFIG_USB_CONFIGFS_F_MIDI                      policy<{'arm64': 'n', 'amd64-iot': 'y'}>
@@ -7412,16 +7415,16 @@ CONFIG_CC_OPTIMIZE_FOR_SIZE                     policy<{'amd64': 'n', 'arm64': '
 CONFIG_CGROUP_DEBUG                             policy<{'amd64': 'n', 'arm64': 'n', 'arm64-iot-debug': 'y'}>
 CONFIG_CMA_DEBUGFS                              policy<{'arm64': 'n', 'arm64-iot-debug': 'y'}>
 CONFIG_CORESIGHT                                policy<{'arm64': 'n', 'armhf': 'n', 'arm64-iot-debug': 'y'}>
-CONFIG_CORESIGHT_CTI                            policy<{'amd64': 'n', 'arm64': '-', 'arm64-iot-debug': 'y'}>
-CONFIG_CORESIGHT_DUMMY                          policy<{'amd64': 'n', 'arm64': '-', 'arm64-iot-debug': 'y'}>
-CONFIG_CORESIGHT_HWEVENT                        policy<{'amd64': 'n', 'arm64': '-', 'arm64-iot-debug': 'y'}>
-CONFIG_CORESIGHT_LINKS_AND_SINKS                policy<{'amd64': 'n', 'arm64': '-', 'arm64-iot-debug': 'y'}>
-CONFIG_CORESIGHT_LINK_AND_SINK_TMC              policy<{'amd64': 'n', 'arm64': '-', 'arm64-iot-debug': 'y'}>
-CONFIG_CORESIGHT_SOURCE_ETM4X                   policy<{'amd64': 'n', 'arm64': '-', 'arm64-iot-debug': 'y'}>
-CONFIG_CORESIGHT_STM                            policy<{'amd64': 'n', 'arm64': '-', 'arm64-iot-debug': 'y'}>
-CONFIG_CORESIGHT_TGU                            policy<{'amd64': 'n', 'arm64': '-', 'arm64-iot-debug': 'y'}>
-CONFIG_CORESIGHT_TPDA                           policy<{'amd64': 'n', 'arm64': '-', 'arm64-iot-debug': 'y'}>
-CONFIG_CORESIGHT_TPDM                           policy<{'amd64': 'n', 'arm64': '-', 'arm64-iot-debug': 'y'}>
+CONFIG_CORESIGHT_CTI                            policy<{'amd64': '-', 'arm64': '-', 'arm64-iot-debug': 'y'}>
+CONFIG_CORESIGHT_DUMMY                          policy<{'amd64': '-', 'arm64': '-', 'arm64-iot-debug': 'y'}>
+CONFIG_CORESIGHT_HWEVENT                        policy<{'amd64': '-', 'arm64': '-', 'arm64-iot-debug': 'y'}>
+CONFIG_CORESIGHT_LINKS_AND_SINKS                policy<{'amd64': '-', 'arm64': '-', 'arm64-iot-debug': 'y'}>
+CONFIG_CORESIGHT_LINK_AND_SINK_TMC              policy<{'amd64': '-', 'arm64': '-', 'arm64-iot-debug': 'y'}>
+CONFIG_CORESIGHT_SOURCE_ETM4X                   policy<{'amd64': '-', 'arm64': '-', 'arm64-iot-debug': 'y'}>
+CONFIG_CORESIGHT_STM                            policy<{'amd64': '-', 'arm64': '-', 'arm64-iot-debug': 'y'}>
+CONFIG_CORESIGHT_TGU                            policy<{'amd64': '-', 'arm64': '-', 'arm64-iot-debug': 'y'}>
+CONFIG_CORESIGHT_TPDA                           policy<{'amd64': '-', 'arm64': '-', 'arm64-iot-debug': 'y'}>
+CONFIG_CORESIGHT_TPDM                           policy<{'amd64': '-', 'arm64': '-', 'arm64-iot-debug': 'y'}>
 CONFIG_DEBUG_ATOMIC_SLEEP                       policy<{'amd64': 'n', 'arm64': 'n', 'arm64-iot-debug': 'y'}>
 CONFIG_DEBUG_CREDENTIALS                        policy<{'amd64': 'n', 'arm64': 'n', 'arm64-iot-debug': 'y'}>
 CONFIG_DEBUG_KMEMLEAK                           policy<{'amd64': 'n', 'arm64': 'n', 'arm64-iot-debug': 'y'}>
@@ -7449,6 +7452,6 @@ CONFIG_PROVE_LOCKING                            policy<{'amd64': 'n', 'arm64': '
 CONFIG_RCU_TORTURE_TEST                         policy<{'amd64': 'n', 'arm64': 'n', 'arm64-iot-debug': 'm'}>
 CONFIG_RTC_DRV_PCF2127                          policy<{'amd64': 'm', 'arm64': 'm', 'arm64-iot-debug': 'n'}>
 CONFIG_STM                                      policy<{'arm64': 'n', 'amd64-iot': 'm', 'arm64-iot-debug': 'y'}>
-CONFIG_STM_SOURCE_FTRACE                        policy<{'arm64': '-', 'amd64-iot': 'm', 'arm64-iot-debug': 'y'}>
+CONFIG_STM_SOURCE_FTRACE                        policy<{'arm64': '-', 'amd64-iot': 'm', 'arm64-iot-debug': 'm'}>
 CONFIG_VIDEO_ADV_DEBUG                          policy<{'amd64': 'n', 'arm64': 'n', 'arm64-iot-debug': 'y'}>
 CONFIG_WQ_WATCHDOG                              policy<{'amd64': 'n', 'arm64': 'n', 'arm64-iot-debug': 'y'}>
