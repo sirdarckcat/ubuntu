@@ -25,7 +25,6 @@
 #include <linux/rp1_platform.h>
 #include <linux/reset.h>
 #include <linux/slab.h>
-#include "../net/ethernet/cadence/macb.h"
 
 #include <dt-bindings/mfd/rp1.h>
 
@@ -61,6 +60,9 @@
 #define MSIX_CFG_IACK           BIT(2)
 #define MSIX_CFG_TEST           BIT(1)
 #define MSIX_CFG_ENABLE         BIT(0)
+
+#define INTSTATL		0x108
+#define INTSTATH		0x10c
 
 struct rp1_dev {
 	struct pci_dev *pdev;
@@ -163,8 +165,14 @@ static void rp1_chained_handle_irq(struct irq_desc *desc)
 	struct rp1_dev *rp1 = desc->irq_data.chip_data;
 	int hwirq = desc->irq_data.hwirq & 0x3f;
 	int new_irq;
+	u32 intstat;
 
 	rp1 = g_rp1;
+	intstat = readl(rp1->msix_cfg_regs +
+			((hwirq < 32) ? INTSTATL : INTSTATH));
+	if (!(intstat & BIT(hwirq % 32)))
+		return;
+
 	new_irq = irq_linear_revmap(rp1->domain, hwirq);
 
 	chained_irq_enter(chip, desc);
