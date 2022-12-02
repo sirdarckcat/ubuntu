@@ -978,6 +978,49 @@ static void xfrm_hash_ptrs_get(const struct net *net, struct xfrm_hash_state_ptr
 	} while (read_seqcount_retry(&net->xfrm.xfrm_state_hash_generation, sequence));
 }
 
+static struct xfrm_state *__xfrm_state_lookup_all(struct net *net, u32 mark,
+						  const xfrm_address_t *daddr,
+						  __be32 spi, u8 proto,
+						  unsigned short family,
+						  struct xfrm_dev_offload *xdo)
+{
+	unsigned int h = xfrm_spi_hash(net, daddr, spi, proto, family);
+	struct xfrm_state *x;
+
+	hlist_for_each_entry_rcu(x, net->xfrm.state_byspi + h, byspi) {
+#ifdef CONFIG_XFRM_OFFLOAD
+		if (xdo->type == XFRM_DEV_OFFLOAD_PACKET) {
+			if (x->xso.type != XFRM_DEV_OFFLOAD_PACKET)
+				/* HW states are in the head of list, there is
+				 * no need to iterate further.
+				 */
+				break;
+
+			/* Packet offload: both policy and SA should
+			 * have same device.
+			 */
+			if (xdo->dev != x->xso.dev)
+				continue;
+		} else if (x->xso.type == XFRM_DEV_OFFLOAD_PACKET)
+			/* Skip HW policy for SW lookups */
+			continue;
+#endif
+		if (x->props.family != family ||
+		    x->id.spi       != spi ||
+		    x->id.proto     != proto ||
+		    !xfrm_addr_equal(&x->id.daddr, daddr, family))
+			continue;
+
+		if ((mark & x->mark.m) != x->mark.v)
+			continue;
+		if (!xfrm_state_hold_rcu(x))
+			continue;
+		return x;
+	}
+
+	return NULL;
+}
+
 static struct xfrm_state *__xfrm_state_lookup(const struct xfrm_hash_state_ptrs *state_ptrs,
 					      u32 mark,
 					      const xfrm_address_t *daddr,
@@ -1127,6 +1170,23 @@ xfrm_state_find(const xfrm_address_t *daddr, const xfrm_address_t *saddr,
 
 	h = __xfrm_dst_hash(daddr, saddr, tmpl->reqid, encap_family, state_ptrs.hmask);
 	hlist_for_each_entry_rcu(x, state_ptrs.bydst + h, bydst) {
+#ifdef CONFIG_XFRM_OFFLOAD
+		if (pol->xdo.type == XFRM_DEV_OFFLOAD_PACKET) {
+			if (x->xso.type != XFRM_DEV_OFFLOAD_PACKET)
+				/* HW states are in the head of list, there is
+				 * no need to iterate further.
+				 */
+				break;
+
+			/* Packet offload: both policy and SA should
+			 * have same device.
+			 */
+			if (pol->xdo.dev != x->xso.dev)
+				continue;
+		} else if (x->xso.type == XFRM_DEV_OFFLOAD_PACKET)
+			/* Skip HW policy for SW lookups */
+			continue;
+#endif
 		if (x->props.family == encap_family &&
 		    x->props.reqid == tmpl->reqid &&
 		    (mark & x->mark.m) == x->mark.v &&
@@ -1145,6 +1205,23 @@ xfrm_state_find(const xfrm_address_t *daddr, const xfrm_address_t *saddr,
 	h_wildcard = __xfrm_dst_hash(daddr, &saddr_wildcard, tmpl->reqid,
 				     encap_family, state_ptrs.hmask);
 	hlist_for_each_entry_rcu(x, state_ptrs.bydst + h_wildcard, bydst) {
+#ifdef CONFIG_XFRM_OFFLOAD
+		if (pol->xdo.type == XFRM_DEV_OFFLOAD_PACKET) {
+			if (x->xso.type != XFRM_DEV_OFFLOAD_PACKET)
+				/* HW states are in the head of list, there is
+				 * no need to iterate further.
+				 */
+				break;
+
+			/* Packet offload: both policy and SA should
+			 * have same device.
+			 */
+			if (pol->xdo.dev != x->xso.dev)
+				continue;
+		} else if (x->xso.type == XFRM_DEV_OFFLOAD_PACKET)
+			/* Skip HW policy for SW lookups */
+			continue;
+#endif
 		if (x->props.family == encap_family &&
 		    x->props.reqid == tmpl->reqid &&
 		    (mark & x->mark.m) == x->mark.v &&
@@ -1162,8 +1239,10 @@ found:
 	x = best;
 	if (!x && !error && !acquire_in_progress) {
 		if (tmpl->id.spi &&
-		    (x0 = __xfrm_state_lookup(&state_ptrs, mark, daddr, tmpl->id.spi,
-					      tmpl->id.proto, encap_family)) != NULL) {
+		    (x0 = __xfrm_state_lookup_all(net, mark, daddr,
+						  tmpl->id.spi, tmpl->id.proto,
+						  encap_family,
+						  &pol->xdo)) != NULL) {
 			to_put = x0;
 			error = -EEXIST;
 			goto out;
@@ -1197,7 +1276,31 @@ found:
 			x = NULL;
 			goto out;
 		}
+#ifdef CONFIG_XFRM_OFFLOAD
+		if (pol->xdo.type == XFRM_DEV_OFFLOAD_PACKET) {
+			struct xfrm_dev_offload *xdo = &pol->xdo;
+			struct xfrm_dev_offload *xso = &x->xso;
 
+			xso->type = XFRM_DEV_OFFLOAD_PACKET;
+			xso->dir = xdo->dir;
+			xso->dev = xdo->dev;
+			xso->real_dev = xdo->real_dev;
+			netdev_tracker_alloc(xso->dev, &xso->dev_tracker,
+					     GFP_ATOMIC);
+			error = xso->dev->xfrmdev_ops->xdo_dev_state_add(x);
+			if (error) {
+				xso->dir = 0;
+				netdev_put(xso->dev, &xso->dev_tracker);
+				xso->dev = NULL;
+				xso->real_dev = NULL;
+				xso->type = XFRM_DEV_OFFLOAD_UNSPECIFIED;
+				x->km.state = XFRM_STATE_DEAD;
+				to_put = x;
+				x = NULL;
+				goto out;
+			}
+		}
+#endif
 		if (km_query(x, tmpl, pol) == 0) {
 			spin_lock_bh(&net->xfrm.xfrm_state_lock);
 			x->km.state = XFRM_STATE_ACQ;
@@ -1221,6 +1324,18 @@ found:
 			xfrm_hash_grow_check(net, x->bydst.next != NULL);
 			spin_unlock_bh(&net->xfrm.xfrm_state_lock);
 		} else {
+#ifdef CONFIG_XFRM_OFFLOAD
+			struct xfrm_dev_offload *xso = &x->xso;
+
+			if (xso->type == XFRM_DEV_OFFLOAD_PACKET) {
+				xso->dev->xfrmdev_ops->xdo_dev_state_delete(x);
+				xso->dir = 0;
+				netdev_put(xso->dev, &xso->dev_tracker);
+				xso->dev = NULL;
+				xso->real_dev = NULL;
+				xso->type = XFRM_DEV_OFFLOAD_UNSPECIFIED;
+			}
+#endif
 			x->km.state = XFRM_STATE_DEAD;
 			to_put = x;
 			x = NULL;
