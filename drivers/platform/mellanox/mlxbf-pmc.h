@@ -364,7 +364,7 @@ struct mlxbf_pmc_events mlxbf2_hnfnet_events[] = {
 {0x32, "DDN_DIAG_W_INGRESS"},
 {0x33, "DDN_DIAG_C_INGRESS"},
 {0x34, "DDN_DIAG_CORE_SENT"},
-{0x35, "NDN_DIAG_S_OUT_OF_CRED"},
+{0x35, "NDN_DIAG_N_OUT_OF_CRED"},
 {0x36, "NDN_DIAG_S_OUT_OF_CRED"},
 {0x37, "NDN_DIAG_E_OUT_OF_CRED"},
 {0x38, "NDN_DIAG_W_OUT_OF_CRED"},
