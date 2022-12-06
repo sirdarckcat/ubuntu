@@ -20,6 +20,10 @@
 #endif
 #include <linux/dma-buf.h>
 
+#if LINUX_VERSION_CODE > KERNEL_VERSION(5, 15, 0)
+MODULE_IMPORT_NS(DMA_BUF);
+#endif
+
 _mali_osk_errcode_t mali_mem_secure_attach_dma_buf(mali_mem_secure *secure_mem, u32 size, int mem_fd)
 {
 	struct dma_buf *buf;
