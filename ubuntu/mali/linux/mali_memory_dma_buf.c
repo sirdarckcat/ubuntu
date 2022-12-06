@@ -34,6 +34,10 @@
 #include "mali_memory_virtual.h"
 #include "mali_pp_job.h"
 
+#if LINUX_VERSION_CODE > KERNEL_VERSION(5, 15, 0)
+MODULE_IMPORT_NS(DMA_BUF);
+#endif
+
 /*
  * Map DMA buf attachment \a mem into \a session at virtual address \a virt.
  */
