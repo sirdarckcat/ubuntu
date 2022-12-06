@@ -801,8 +801,11 @@ _mali_osk_errcode_t mali_mem_os_init(void)
 	dma_set_attr(DMA_ATTR_WRITE_COMBINE, &dma_attrs_wc);
 #endif
 
+#if LINUX_VERSION_CODE > KERNEL_VERSION(5, 15, 0)
+	register_shrinker(&mali_mem_os_allocator.shrinker, "mali");
+#else
 	register_shrinker(&mali_mem_os_allocator.shrinker);
-
+#endif
 	return _MALI_OSK_ERR_OK;
 }
 
