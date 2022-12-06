@@ -1162,9 +1162,9 @@ static unsigned long rp1_clock_recalc_rate(struct clk_hw *hw,
 	div = clockman_read(clockman, data->div_int_reg);
 	frac = (data->div_frac_reg != 0) ?
 		clockman_read(clockman, data->div_frac_reg) : 0;
-	pr_err("div_int [%x]=%x, div_frac [%x]=%x\n",
-	       data->div_int_reg, (u32)div,
-	       data->div_frac_reg, (u32)frac);
+	pr_debug("div_int [%x]=%x, div_frac [%x]=%x\n",
+		 data->div_int_reg, (u32)div,
+		 data->div_frac_reg, (u32)frac);
 
 	/* If the integer portion of the divider is 0, treat it as 2^16 */
 	if (!div)
