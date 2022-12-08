@@ -6,6 +6,7 @@
 
 include "../../debian.master/config/annotations"
 
+CONFIG_BACKLIGHT_PWM                            policy<{'arm64': 'y'}> note<'X13s required'>
 CONFIG_BATTERY_QCOM_BATTMGR                     policy<{'arm64': 'm'}> note<'X13s patchset'>
 CONFIG_BLK_DEV_NVME                             policy<{'arm64': 'y'}> note<'X13s required'>
 CONFIG_DRM                                      policy<{'arm64': 'y'}> note<'X13s required'>
