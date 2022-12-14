@@ -16,6 +16,7 @@
 #include <dt-bindings/interconnect/qcom,sm8150.h>
 #include <dt-bindings/thermal/qcom,tmd.h>
 #include <dt-bindings/thermal/thermal.h>
+#include <dt-bindings/soc/qcom,dcc_v2.h>
 
 / {
 	interrupt-parent = <&intc>;
@@ -1611,6 +1612,15 @@
 				#size-cells = <0>;
 				status = "disabled";
 			};
+		};
+
+		dcc: dcc_v2@10a2000 {
+			compatible = "qcom,dcc-v2";
+			reg = <0 0x10a2000 0 0x1000>,
+			      <0 0x10ad000 0 0x3000>;
+			reg-names = "dcc-base", "dcc-ram-base";
+
+			dcc-ram-offset = <0x5000>;
 		};
 
 		config_noc: interconnect@1500000 {
