@@ -1,1 +1,0 @@
-obj-$(CONFIG_PROVENCORE_REE) += ree/
