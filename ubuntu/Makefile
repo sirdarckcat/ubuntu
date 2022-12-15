@@ -43,10 +43,6 @@ obj-$(CONFIG_UBUNTU_HOST)      += ubuntu-host/
 ##
 ##
 ##
-obj-y += provencore/drivers/provencore/
-##
-##
-##
 ##
 ##
 ##
