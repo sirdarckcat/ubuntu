@@ -762,6 +762,12 @@ static int rd1173_remove(struct spi_device *spi)
 	return 0;
 }
 
+static const struct spi_device_id rd1173_device_id[] = {
+	{ .name = "cpld-rd1173", .driver_data = &chip_rd1173 },
+	{ /* sentinel */ }
+};
+MODULE_DEVICE_TABLE(spi, rd1173_device_id);
+
 #ifdef CONFIG_OF
 static const struct of_device_id rd1173_of_match[] = {
 	{ .compatible = "pensando,cpld-rd1173", .data = &chip_rd1173 },
@@ -777,6 +783,7 @@ static struct spi_driver rd1173_driver = {
 		.name  = "i2c-rd1173",
 		.of_match_table = of_match_ptr(rd1173_of_match),
 	},
+	.id_table = rd1173_device_id,
 };
 module_spi_driver(rd1173_driver);
 
