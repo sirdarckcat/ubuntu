@@ -19,3 +19,10 @@ do_tools_perf_jvmti = true
 do_tools_bpftool = true
 
 do_dtbs		= true
+
+# laptop
+do_doc_package		= false
+do_extras_package	= false
+do_libc_dev_package	= false
+do_source_package	= false
+do_tools_hyperv		= false
