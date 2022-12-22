@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: GPL-2.0
-// Copyright (c) 2011-2018, The Linux Foundation. All rights reserved.
-// Copyright (c) 2018, Linaro Limited
-
+/* Copyright (c) 2011-2018, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2018, Linaro Limited
+ * Copyright (c) 2022 Qualcomm Innovation Center, Inc. All rights reserved.
+ */
 #include <linux/completion.h>
 #include <linux/device.h>
 #include <linux/dma-buf.h>
@@ -225,7 +226,6 @@ struct fastrpc_invoke_ctx {
 	struct kref refcount;
 	struct list_head node; /* list of ctxs */
 	struct completion work;
-	struct work_struct put_work;
 	struct fastrpc_msg msg;
 	struct fastrpc_user *fl;
 	union fastrpc_remote_arg *rpra;
@@ -475,14 +475,6 @@ static void fastrpc_context_put(struct fastrpc_invoke_ctx *ctx)
 	kref_put(&ctx->refcount, fastrpc_context_free);
 }
 
-static void fastrpc_context_put_wq(struct work_struct *work)
-{
-	struct fastrpc_invoke_ctx *ctx =
-			container_of(work, struct fastrpc_invoke_ctx, put_work);
-
-	fastrpc_context_put(ctx);
-}
-
 #define CMP(aa, bb) ((aa) == (bb) ? 0 : (aa) < (bb) ? -1 : 1)
 static int olaps_cmp(const void *a, const void *b)
 {
@@ -546,6 +538,7 @@ static struct fastrpc_invoke_ctx *fastrpc_context_alloc(
 		return ERR_PTR(-ENOMEM);
 
 	INIT_LIST_HEAD(&ctx->node);
+	kref_init(&ctx->refcount);
 	ctx->fl = user;
 	ctx->nscalars = REMOTE_SCALARS_LENGTH(sc);
 	ctx->nbufs = REMOTE_SCALARS_INBUFS(sc) +
@@ -578,7 +571,6 @@ static struct fastrpc_invoke_ctx *fastrpc_context_alloc(
 	ctx->tgid = user->tgid;
 	ctx->cctx = cctx;
 	init_completion(&ctx->work);
-	INIT_WORK(&ctx->put_work, fastrpc_context_put_wq);
 
 	spin_lock(&user->lock);
 	list_add_tail(&ctx->node, &user->pending);
@@ -593,8 +585,6 @@ static struct fastrpc_invoke_ctx *fastrpc_context_alloc(
 	}
 	ctx->ctxid = ret << 4;
 	spin_unlock_irqrestore(&cctx->lock, flags);
-
-	kref_init(&ctx->refcount);
 
 	return ctx;
 err_idr:
@@ -1069,12 +1059,8 @@ static int fastrpc_invoke_send(struct fastrpc_session_ctx *sctx,
 	msg->sc = ctx->sc;
 	msg->addr = ctx->buf ? ctx->buf->phys : 0;
 	msg->size = roundup(ctx->msg_sz, PAGE_SIZE);
-	fastrpc_context_get(ctx);
 
 	ret = rpmsg_send(cctx->rpdev->ept, (void *)msg, sizeof(*msg));
-
-	if (ret)
-		fastrpc_context_put(ctx);
 
 	return ret;
 
@@ -2195,13 +2181,6 @@ static int fastrpc_rpmsg_callback(struct rpmsg_device *rpdev, void *data,
 
 	ctx->retval = rsp->retval;
 	complete(&ctx->work);
-
-	/*
-	 * The DMA buffer associated with the context cannot be freed in
-	 * interrupt context so schedule it through a worker thread to
-	 * avoid a kernel BUG.
-	 */
-	schedule_work(&ctx->put_work);
 
 	return 0;
 }
