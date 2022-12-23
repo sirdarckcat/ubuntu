@@ -691,6 +691,12 @@ static const struct of_device_id spidev_dt_ids[] = {
 	{},
 };
 MODULE_DEVICE_TABLE(of, spidev_dt_ids);
+
+static const struct spi_device_id pensando_ids[] = {
+	{ .name = "cpld" },
+	{}
+};
+MODULE_DEVICE_TABLE(spi, pensando_ids);
 #endif
 
 #ifdef CONFIG_ACPI
