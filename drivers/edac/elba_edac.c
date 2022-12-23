@@ -439,6 +439,7 @@ static const struct of_device_id elba_edac_mc_of_match[] = {
 	{.compatible = "pensando,elba-edac-mc"},
 	{},
 };
+MODULE_DEVICE_TABLE(of, elba_edac_mc_of_match);
 
 static struct platform_driver elba_edac_mc_driver = {
 	.probe = elba_edac_mc_probe,
