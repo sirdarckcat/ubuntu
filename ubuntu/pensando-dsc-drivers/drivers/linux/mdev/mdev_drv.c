@@ -493,6 +493,7 @@ static const struct of_device_id mdev_of_match[] = {
 	{.compatible = "pensando,mcrypt"},
 	{/* end of table */}
 };
+MODULE_DEVICE_TABLE(of, mdev_of_match);
 
 static struct platform_driver mdev_driver = {
 	.probe = mdev_probe,
