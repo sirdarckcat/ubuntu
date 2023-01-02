@@ -13,6 +13,8 @@
 
 #define BRCMF_FW_MAX_BOARD_TYPES	8
 
+#define CY_FW_DEFAULT_PATH		"cypress/"
+
 /**
  * struct brcmf_firmware_mapping - Used to map chipid/revmask to firmware
  *	filename and nvram filename. Each bus type implementation should create
@@ -33,6 +35,11 @@ struct brcmf_firmware_mapping {
 static const char BRCM_ ## fw_name ## _FIRMWARE_BASENAME[] = \
 	BRCMF_FW_DEFAULT_PATH fw_base; \
 MODULE_FIRMWARE(BRCMF_FW_DEFAULT_PATH fw_base ".bin")
+
+#define CY_FW_DEF(fw_name, fw_base) \
+static const char BRCM_ ## fw_name ## _FIRMWARE_BASENAME[] = \
+	CY_FW_DEFAULT_PATH fw_base; \
+MODULE_FIRMWARE(CY_FW_DEFAULT_PATH fw_base ".bin")
 
 /* Firmware and Country Local Matrix files */
 #define BRCMF_FW_CLM_DEF(fw_name, fw_base) \
