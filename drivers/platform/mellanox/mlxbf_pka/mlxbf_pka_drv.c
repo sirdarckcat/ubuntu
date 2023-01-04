@@ -467,7 +467,7 @@ static long pka_drv_ring_ioctl(void *device_data,
 	} else if (cmd == PKA_CLEAR_RING_COUNTERS) {
 		return pka_dev_clear_ring_counters(ring_dev->ring);
 	} else if (cmd == PKA_GET_RANDOM_BYTES) {
-		pka_dev_trng_info_t *trng_data;
+		pka_dev_trng_info_t trng_data;
 		pka_dev_shim_t *shim;
 		bool trng_present;
 		uint32_t byte_cnt;
@@ -476,12 +476,17 @@ static long pka_drv_ring_ioctl(void *device_data,
 
 		ret = -ENOENT;
 		shim = ring_dev->ring->shim;
-		trng_data = (pka_dev_trng_info_t *)arg;
+		ret = copy_from_user(&trng_data, (void __user *)(arg), sizeof(pka_dev_trng_info_t));
+		if (ret) {
+			PKA_DEBUG(PKA_DRIVER, "Failed to copy user request.\n");
+			return -EFAULT;
+		}
+
 		/*
 		 * We need byte count which is multiple of 4 as
 		 * required by pka_dev_trng_read() interface.
 		 */
-		byte_cnt = round_up(trng_data->count, 4);
+		byte_cnt = round_up(trng_data.count, 4);
 
 		data = kzalloc(byte_cnt, GFP_KERNEL);
 		if (data == NULL) {
@@ -502,7 +507,7 @@ static long pka_drv_ring_ioctl(void *device_data,
 			return ret;
 		}
 
-		ret = copy_to_user((void __user *)(trng_data->data), data, trng_data->count);
+		ret = copy_to_user((void __user *)(trng_data.data), data, trng_data.count);
 		kfree(data);
 		return ret ? -EFAULT : 0;
 	}
