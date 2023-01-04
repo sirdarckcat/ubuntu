@@ -777,6 +777,14 @@
 			no-map;
 		};
 
+		cdsp_sensor_mem: cdsp_sensor_region {
+			compatible = "shared-dma-pool";
+			alloc-ranges = <0x0 0x00000000 0x0 0xffffffff>;
+			reusable;
+			alignment = <0x0 0x400000>;
+			size = <0x0 0x30000000>;
+		};
+
 		/* global autoconfigured region for contiguous allocations */
 		system_cma: linux,cma {
 			compatible = "shared-dma-pool";
@@ -4298,3 +4306,4 @@
 #include "sm8150-coresight.dtsi"
 #include "msm-arm-smmu-sm8150.dtsi"
 #include "sm8150-gpu.dtsi"
+#include "sm8150-dma-heaps.dtsi"
