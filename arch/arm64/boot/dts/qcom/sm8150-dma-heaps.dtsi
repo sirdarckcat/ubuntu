@@ -1,0 +1,25 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/*
+ * Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
+ */
+#include <dt-bindings/arm/msm/qcom_dma_heap_dt_constants.h>
+
+&soc {
+	qcom,dma-heaps {
+		compatible = "qcom,dma-heaps";
+
+		qcom,qseecom {
+			qcom,dma-heap-name = "qcom,qseecom";
+			qcom,dma-heap-type = <HEAP_TYPE_CARVEOUT>;
+			memory-region = <&qseecom_mem>;
+		};
+
+		qcom,cdsp_sensor {
+			qcom,dma-heap-name = "qcom,cdsp-sensor";
+			qcom,dma-heap-type = <HEAP_TYPE_CMA>;
+			memory-region = <&cdsp_sensor_mem>;
+		};
+
+	};
+};
+
