@@ -1191,13 +1191,13 @@ static int devlink_nl_cmd_rate_get_dumpit(struct sk_buff *msg,
 					  struct netlink_callback *cb)
 {
 	struct devlink_nl_dump_state *state = devlink_dump_state(cb);
-	struct devlink_rate *devlink_rate;
 	struct devlink *devlink;
-	unsigned long index;
-	int idx = 0;
 	int err = 0;
 
-	devlinks_xa_for_each_registered_get(sock_net(msg->sk), index, devlink) {
+	devlink_dump_for_each_instance_get(msg, state, devlink) {
+		struct devlink_rate *devlink_rate;
+		int idx = 0;
+
 		devl_lock(devlink);
 		list_for_each_entry(devlink_rate, &devlink->rate_list, list) {
 			enum devlink_command cmd = DEVLINK_CMD_RATE_NEW;
@@ -1213,6 +1213,7 @@ static int devlink_nl_cmd_rate_get_dumpit(struct sk_buff *msg,
 			if (err) {
 				devl_unlock(devlink);
 				devlink_put(devlink);
+				state->idx = idx;
 				goto out;
 			}
 			idx++;
@@ -1224,7 +1225,6 @@ out:
 	if (err != -EMSGSIZE)
 		return err;
 
-	state->idx = idx;
 	return msg->len;
 }
 
@@ -1331,12 +1331,13 @@ static int devlink_nl_cmd_port_get_dumpit(struct sk_buff *msg,
 {
 	struct devlink_nl_dump_state *state = devlink_dump_state(cb);
 	struct devlink *devlink;
-	struct devlink_port *devlink_port;
-	unsigned long index, port_index;
-	int idx = 0;
 	int err;
 
-	devlinks_xa_for_each_registered_get(sock_net(msg->sk), index, devlink) {
+	devlink_dump_for_each_instance_get(msg, state, devlink) {
+		struct devlink_port *devlink_port;
+		unsigned long port_index;
+		int idx = 0;
+
 		devl_lock(devlink);
 		xa_for_each(&devlink->ports, port_index, devlink_port) {
 			if (idx < state->idx) {
@@ -1351,6 +1352,7 @@ static int devlink_nl_cmd_port_get_dumpit(struct sk_buff *msg,
 			if (err) {
 				devl_unlock(devlink);
 				devlink_put(devlink);
+				state->idx = idx;
 				goto out;
 			}
 			idx++;
@@ -1359,7 +1361,6 @@ static int devlink_nl_cmd_port_get_dumpit(struct sk_buff *msg,
 		devlink_put(devlink);
 	}
 out:
-	state->idx = idx;
 	return msg->len;
 }
 
@@ -2008,11 +2009,11 @@ static int devlink_nl_cmd_linecard_get_dumpit(struct sk_buff *msg,
 	struct devlink_nl_dump_state *state = devlink_dump_state(cb);
 	struct devlink_linecard *linecard;
 	struct devlink *devlink;
-	unsigned long index;
-	int idx = 0;
 	int err;
 
-	devlinks_xa_for_each_registered_get(sock_net(msg->sk), index, devlink) {
+	devlink_dump_for_each_instance_get(msg, state, devlink) {
+		int idx = 0;
+
 		mutex_lock(&devlink->linecards_lock);
 		list_for_each_entry(linecard, &devlink->linecard_list, list) {
 			if (idx < state->idx) {
@@ -2030,6 +2031,7 @@ static int devlink_nl_cmd_linecard_get_dumpit(struct sk_buff *msg,
 			if (err) {
 				mutex_unlock(&devlink->linecards_lock);
 				devlink_put(devlink);
+				state->idx = idx;
 				goto out;
 			}
 			idx++;
@@ -2038,7 +2040,6 @@ static int devlink_nl_cmd_linecard_get_dumpit(struct sk_buff *msg,
 		devlink_put(devlink);
 	}
 out:
-	state->idx = idx;
 	return msg->len;
 }
 
@@ -2269,12 +2270,12 @@ static int devlink_nl_cmd_sb_get_dumpit(struct sk_buff *msg,
 {
 	struct devlink_nl_dump_state *state = devlink_dump_state(cb);
 	struct devlink *devlink;
-	struct devlink_sb *devlink_sb;
-	unsigned long index;
-	int idx = 0;
 	int err;
 
-	devlinks_xa_for_each_registered_get(sock_net(msg->sk), index, devlink) {
+	devlink_dump_for_each_instance_get(msg, state, devlink) {
+		struct devlink_sb *devlink_sb;
+		int idx = 0;
+
 		devl_lock(devlink);
 		list_for_each_entry(devlink_sb, &devlink->sb_list, list) {
 			if (idx < state->idx) {
@@ -2289,6 +2290,7 @@ static int devlink_nl_cmd_sb_get_dumpit(struct sk_buff *msg,
 			if (err) {
 				devl_unlock(devlink);
 				devlink_put(devlink);
+				state->idx = idx;
 				goto out;
 			}
 			idx++;
@@ -2297,7 +2299,6 @@ static int devlink_nl_cmd_sb_get_dumpit(struct sk_buff *msg,
 		devlink_put(devlink);
 	}
 out:
-	state->idx = idx;
 	return msg->len;
 }
 
@@ -5200,13 +5201,13 @@ static int devlink_nl_cmd_param_get_dumpit(struct sk_buff *msg,
 					   struct netlink_callback *cb)
 {
 	struct devlink_nl_dump_state *state = devlink_dump_state(cb);
-	struct devlink_param_item *param_item;
 	struct devlink *devlink;
-	unsigned long index;
-	int idx = 0;
 	int err = 0;
 
-	devlinks_xa_for_each_registered_get(sock_net(msg->sk), index, devlink) {
+	devlink_dump_for_each_instance_get(msg, state, devlink) {
+		struct devlink_param_item *param_item;
+		int idx = 0;
+
 		devl_lock(devlink);
 		list_for_each_entry(param_item, &devlink->param_list, list) {
 			if (idx < state->idx) {
@@ -5223,6 +5224,7 @@ static int devlink_nl_cmd_param_get_dumpit(struct sk_buff *msg,
 			} else if (err) {
 				devl_unlock(devlink);
 				devlink_put(devlink);
+				state->idx = idx;
 				goto out;
 			}
 			idx++;
@@ -5234,7 +5236,6 @@ out:
 	if (err != -EMSGSIZE)
 		return err;
 
-	state->idx = idx;
 	return msg->len;
 }
 
@@ -7672,14 +7673,15 @@ devlink_nl_cmd_health_reporter_get_dumpit(struct sk_buff *msg,
 					  struct netlink_callback *cb)
 {
 	struct devlink_nl_dump_state *state = devlink_dump_state(cb);
-	struct devlink_health_reporter *reporter;
-	unsigned long index, port_index;
-	struct devlink_port *port;
 	struct devlink *devlink;
-	int idx = 0;
 	int err;
 
-	devlinks_xa_for_each_registered_get(sock_net(msg->sk), index, devlink) {
+	devlink_dump_for_each_instance_get(msg, state, devlink) {
+		struct devlink_health_reporter *reporter;
+		struct devlink_port *port;
+		unsigned long port_index;
+		int idx = 0;
+
 		mutex_lock(&devlink->reporters_lock);
 		list_for_each_entry(reporter, &devlink->reporter_list,
 				    list) {
@@ -7694,6 +7696,7 @@ devlink_nl_cmd_health_reporter_get_dumpit(struct sk_buff *msg,
 			if (err) {
 				mutex_unlock(&devlink->reporters_lock);
 				devlink_put(devlink);
+				state->idx = idx;
 				goto out;
 			}
 			idx++;
@@ -7717,6 +7720,7 @@ devlink_nl_cmd_health_reporter_get_dumpit(struct sk_buff *msg,
 					mutex_unlock(&port->reporters_lock);
 					devl_unlock(devlink);
 					devlink_put(devlink);
+					state->idx = idx;
 					goto out;
 				}
 				idx++;
@@ -7727,7 +7731,6 @@ devlink_nl_cmd_health_reporter_get_dumpit(struct sk_buff *msg,
 		devlink_put(devlink);
 	}
 out:
-	state->idx = idx;
 	return msg->len;
 }
 
@@ -8253,13 +8256,13 @@ static int devlink_nl_cmd_trap_get_dumpit(struct sk_buff *msg,
 					  struct netlink_callback *cb)
 {
 	struct devlink_nl_dump_state *state = devlink_dump_state(cb);
-	struct devlink_trap_item *trap_item;
 	struct devlink *devlink;
-	unsigned long index;
-	int idx = 0;
 	int err;
 
-	devlinks_xa_for_each_registered_get(sock_net(msg->sk), index, devlink) {
+	devlink_dump_for_each_instance_get(msg, state, devlink) {
+		struct devlink_trap_item *trap_item;
+		int idx = 0;
+
 		devl_lock(devlink);
 		list_for_each_entry(trap_item, &devlink->trap_list, list) {
 			if (idx < state->idx) {
@@ -8274,6 +8277,7 @@ static int devlink_nl_cmd_trap_get_dumpit(struct sk_buff *msg,
 			if (err) {
 				devl_unlock(devlink);
 				devlink_put(devlink);
+				state->idx = idx;
 				goto out;
 			}
 			idx++;
@@ -8282,7 +8286,6 @@ static int devlink_nl_cmd_trap_get_dumpit(struct sk_buff *msg,
 		devlink_put(devlink);
 	}
 out:
-	state->idx = idx;
 	return msg->len;
 }
 
@@ -8469,14 +8472,14 @@ static int devlink_nl_cmd_trap_group_get_dumpit(struct sk_buff *msg,
 {
 	struct devlink_nl_dump_state *state = devlink_dump_state(cb);
 	enum devlink_command cmd = DEVLINK_CMD_TRAP_GROUP_NEW;
-	struct devlink_trap_group_item *group_item;
 	u32 portid = NETLINK_CB(cb->skb).portid;
 	struct devlink *devlink;
-	unsigned long index;
-	int idx = 0;
 	int err;
 
-	devlinks_xa_for_each_registered_get(sock_net(msg->sk), index, devlink) {
+	devlink_dump_for_each_instance_get(msg, state, devlink) {
+		struct devlink_trap_group_item *group_item;
+		int idx = 0;
+
 		devl_lock(devlink);
 		list_for_each_entry(group_item, &devlink->trap_group_list,
 				    list) {
@@ -8492,6 +8495,7 @@ static int devlink_nl_cmd_trap_group_get_dumpit(struct sk_buff *msg,
 			if (err) {
 				devl_unlock(devlink);
 				devlink_put(devlink);
+				state->idx = idx;
 				goto out;
 			}
 			idx++;
@@ -8500,7 +8504,6 @@ static int devlink_nl_cmd_trap_group_get_dumpit(struct sk_buff *msg,
 		devlink_put(devlink);
 	}
 out:
-	state->idx = idx;
 	return msg->len;
 }
 
@@ -8773,14 +8776,14 @@ static int devlink_nl_cmd_trap_policer_get_dumpit(struct sk_buff *msg,
 {
 	struct devlink_nl_dump_state *state = devlink_dump_state(cb);
 	enum devlink_command cmd = DEVLINK_CMD_TRAP_POLICER_NEW;
-	struct devlink_trap_policer_item *policer_item;
 	u32 portid = NETLINK_CB(cb->skb).portid;
 	struct devlink *devlink;
-	unsigned long index;
-	int idx = 0;
 	int err;
 
-	devlinks_xa_for_each_registered_get(sock_net(msg->sk), index, devlink) {
+	devlink_dump_for_each_instance_get(msg, state, devlink) {
+		struct devlink_trap_policer_item *policer_item;
+		int idx = 0;
+
 		devl_lock(devlink);
 		list_for_each_entry(policer_item, &devlink->trap_policer_list,
 				    list) {
@@ -8796,6 +8799,7 @@ static int devlink_nl_cmd_trap_policer_get_dumpit(struct sk_buff *msg,
 			if (err) {
 				devl_unlock(devlink);
 				devlink_put(devlink);
+				state->idx = idx;
 				goto out;
 			}
 			idx++;
@@ -8804,7 +8808,6 @@ static int devlink_nl_cmd_trap_policer_get_dumpit(struct sk_buff *msg,
 		devlink_put(devlink);
 	}
 out:
-	state->idx = idx;
 	return msg->len;
 }
 
