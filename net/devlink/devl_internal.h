@@ -96,9 +96,31 @@ struct devlink *
 devlinks_xa_find_get_next(struct net *net, unsigned long *indexp,
 			  xa_mark_t filter);
 
-/* Netlink */
+/* state held across netlink dumps */
+struct devlink_nl_dump_state {
+	int idx;
+	union {
+		/* DEVLINK_CMD_REGION_READ */
+		struct {
+			u64 start_offset;
+		};
+		/* DEVLINK_CMD_HEALTH_REPORTER_DUMP_GET */
+		struct {
+			u64 dump_ts;
+		};
+	};
+};
+
 void devlink_notify_unregister(struct devlink *devlink);
 void devlink_notify_register(struct devlink *devlink);
+
+static inline struct devlink_nl_dump_state *
+devlink_dump_state(struct netlink_callback *cb)
+{
+	NL_ASSET_DUMP_CTX_FITS(struct devlink_nl_dump_state);
+
+	return (struct devlink_nl_dump_state *)cb->ctx;
+}
 
 /* Ports */
 int devlink_port_netdevice_event(struct notifier_block *nb,
