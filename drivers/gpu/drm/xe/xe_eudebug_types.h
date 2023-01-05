@@ -1,0 +1,169 @@
+/* SPDX-License-Identifier: MIT */
+/*
+ * Copyright © 2023 Intel Corporation
+ */
+
+#ifndef __XE_EUDEBUG_TYPES_H_
+
+#include <linux/completion.h>
+#include <linux/kfifo.h>
+#include <linux/kref.h>
+#include <linux/mutex.h>
+#include <linux/rbtree.h>
+#include <linux/rhashtable.h>
+#include <linux/wait.h>
+#include <linux/xarray.h>
+
+#include <uapi/drm/xe_drm.h>
+
+struct xe_device;
+struct task_struct;
+struct xe_eudebug_event;
+
+#define CONFIG_DRM_XE_DEBUGGER_EVENT_QUEUE_SIZE 64
+
+/**
+ * struct xe_eudebug_handle - eudebug resource handle
+ */
+struct xe_eudebug_handle {
+	/** @key: key value in rhashtable <key:id> */
+	u64 key;
+
+	/** @id: opaque handle id for xarray <id:key> */
+	int id;
+
+	/** @rh_head: rhashtable head */
+	struct rhash_head rh_head;
+};
+
+/**
+ * struct xe_eudebug_resource - Resource map for one resource
+ */
+struct xe_eudebug_resource {
+	/** @xa: xarrays for <id->key> */
+	struct xarray xa;
+
+	/** @rh rhashtable for <key->id> */
+	struct rhashtable rh;
+};
+
+#define XE_EUDEBUG_RES_TYPE_CLIENT	0
+#define XE_EUDEBUG_RES_TYPE_VM		1
+#define XE_EUDEBUG_RES_TYPE_COUNT	(XE_EUDEBUG_RES_TYPE_VM + 1)
+
+/**
+ * struct xe_eudebug_resources - eudebug resources for all types
+ */
+struct xe_eudebug_resources {
+	/** @lock: guards access into rt */
+	struct mutex lock;
+
+	/** @rt: resource maps for all types */
+	struct xe_eudebug_resource rt[XE_EUDEBUG_RES_TYPE_COUNT];
+};
+
+/**
+ * struct xe_eudebug - Top level struct for eudebug: the connection
+ */
+struct xe_eudebug {
+	/** @ref: kref counter for this struct */
+	struct kref ref;
+
+	/** @rcu: rcu_head for rcu destruction */
+	struct rcu_head rcu;
+
+	/** @connection_link: our link into the xe_device:eudebug.list */
+	struct list_head connection_link;
+
+	struct {
+		/** @status: connected = 1, disconnected = error */
+#define XE_EUDEBUG_STATUS_CONNECTED 1
+		int status;
+
+		/** @lock: guards access to status */
+		spinlock_t lock;
+	} connection;
+
+	/** @xe: the parent device we are serving */
+	struct xe_device *xe;
+
+	/** @target_task: the task that we are debugging */
+	struct task_struct *target_task;
+
+	/** @res: the resource maps we track for target_task */
+	struct xe_eudebug_resources *res;
+
+	/** @session: session number for this connection (for logs) */
+	u64 session;
+
+	/** @events: kfifo queue of to-be-delivered events */
+	struct {
+		/** @lock: guards access to fifo */
+		spinlock_t lock;
+
+		/** @fifo: queue of events pending */
+		DECLARE_KFIFO(fifo,
+			      struct xe_eudebug_event *,
+			      CONFIG_DRM_XE_DEBUGGER_EVENT_QUEUE_SIZE);
+
+		/** @write_done: waitqueue for signalling write to fifo */
+		wait_queue_head_t write_done;
+
+		/** @read_done: waitqueue for signalling read from fifo */
+		wait_queue_head_t read_done;
+
+		/** @event_seqno: seqno counter to stamp events for fifo */
+		atomic_long_t seqno;
+	} events;
+
+};
+
+/**
+ * struct xe_eudebug_event - Internal base event struct for eudebug
+ */
+struct xe_eudebug_event {
+	/** @len: length of this event, including payload */
+	u32 len;
+
+	/** @type: message type */
+	u16 type;
+
+	/** @flags: message flags */
+	u16 flags;
+
+	/** @seqno: sequence number for ordering */
+	u64 seqno;
+
+	/** @reserved: reserved field MBZ */
+	u64 reserved;
+
+	/** @data: payload bytes */
+	u8 data[];
+};
+
+/**
+ * struct xe_eudebug_event_open - Internal event for client open/close
+ */
+struct xe_eudebug_event_open {
+	/** @base: base event */
+	struct xe_eudebug_event base;
+
+	/** @client_handle: opaque handle for client */
+	u64 client_handle;
+};
+
+/**
+ * struct xe_eudebug_event_vm - Internal event for vm open/close
+ */
+struct xe_eudebug_event_vm {
+	/** @base: base event */
+	struct xe_eudebug_event base;
+
+	/** @client_handle: client containing the vm open/close */
+	u64 client_handle;
+
+	/** @vm_handle: vm handle it's open/close */
+	u64 vm_handle;
+};
+
+#endif
