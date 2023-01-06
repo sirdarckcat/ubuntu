@@ -113,6 +113,9 @@ struct devlink_nl_dump_state {
 					       &state->instance));	\
 	     state->instance++, state->idx = 0)
 
+struct devlink *
+devlink_get_from_attrs_lock(struct net *net, struct nlattr **attrs);
+
 void devlink_notify_unregister(struct devlink *devlink);
 void devlink_notify_register(struct devlink *devlink);
 
