@@ -1,36 +1,109 @@
-name: pc-kernel
-version: null
-version-script: |
-    . debian/debian.env
-    dpkg-parsechangelog -l $DEBIAN/changelog -S version
-summary: The Ubuntu generic Linux kernel
-description: This Ubuntu generic Linux kernel
-grade: stable
-confinement: strict
+name: zynqmp-kernel
+summary: The Xilinx Kernel for ZynqMP SoCs
+description: The Xilinx Kernel for ZynqMP SoCs as a snap
+grade: devel
+confinement: devmode
 type: kernel
+adopt-info: kernel
+
+architectures:
+  - build-on: [amd64, arm64]
+    build-for: arm64
+
+build-base: core22
+assumes:
+  - kernel-assets
 
 parts:
   kernel:
+    after:
+      - firmware
     plugin: kernel
-    source: .
+    source: https://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-xilinx-zynqmp/+git/jammy
     source-type: git
-    kconfigflavour: generic
-    kconfigs:
-      - CONFIG_DEBUG_INFO=n
-    override-build: |
-      cp debian/scripts/retpoline-extract-one \
-        $SNAPCRAFT_PART_BUILD/scripts/ubuntu-retpoline-extract-one
-      snapcraftctl build
+    source-depth: 1
+    source-branch: master-next
+    kernel-kconfigflavour: "xilinx-zynqmp"
     kernel-with-firmware: false
+    kernel-enable-zfs-support: true
+    kernel-initrd-compression: lz4
+    kernel-initrd-stage-firmware: true
+    kernel-initrd-modules:
+      - libarc4
+      - tpm_tis
+    kernel-kconfigs:
+      - CONFIG_DEBUG_INFO=n
+      - CONFIG_SYSTEM_TRUSTED_KEYS=""
+      - CONFIG_SYSTEM_REVOCATION_KEYS=""
+      - CONFIG_AUTOFS_FS=y
+      - CONFIG_TCG_TIS_SPI=y
+    override-build: |
+      craftctl default
+      kernel_version=$(dpkg-parsechangelog -l ${CRAFT_PART_SRC}/debian.zynqmp/changelog -S version)
+      craftctl set version=${kernel_version}
+    override-prime: |
+      craftctl default
+      ${CRAFT_STAGE}/trim-firmware ${CRAFT_PRIME}
+    stage:
+      - config-*
+      - initrd.img
+      - kernel.img
+      - lib
+      - modules
+      - System.map-*
+      - Image.gz-*
+      - dtbs/xilinx/zynqmp-smk-k26-revA.dtb
+      - dtbs/xilinx/smk-k26-revA-sck-kr-g-revA.dtb
+      - dtbs/xilinx/smk-k26-revA-sck-kv-g-revA.dtb
+      - dtbs/xilinx/smk-k26-revA-sck-kr-g-revB.dtb
+      - dtbs/xilinx/smk-k26-revA-sck-kv-g-revB.dtb
+    prime:
+      - -initrd.img
+      - -kernel.img
+
   firmware:
-    plugin: nil
+    plugin: dump
+    source: https://git.launchpad.net/~canonical-kernel-snaps/+git/kernel-snaps-uc22
+    source-type: git
+    source-branch: main
     stage-packages:
       - linux-firmware
     organize:
       lib/firmware: firmware
     prime:
-      - -usr
-      - -lib
+      - firmware
+
+  mkimage:
+    plugin: nil
+    after:
+      - kernel
+      - meta-files
     build-packages:
-      - cpio
-      - libssl-dev
+      - u-boot-tools
+      - device-tree-compiler
+    override-build:
+      mkimage -f ${CRAFT_STAGE}/meta/image-zynqmp.its ${CRAFT_STAGE}/image.fit
+    prime:
+      - image.fit
+
+  meta-files:
+    plugin: nil
+    source: meta-files
+    override-build: |
+      mkdir -p "$SNAPCRAFT_PART_INSTALL"/meta
+      cp -a * "$SNAPCRAFT_PART_INSTALL"/meta
+    stage:
+      - meta/image-zynqmp.its
+      - meta/kernel.yaml
+
+
+
+build-packages:
+    - android-tools-mkbootimg
+    - bison
+    - cpio
+    - dirmngr
+    - dpkg-dev
+    - flex
+    - gcc-aarch64-linux-gnu
+    - libelf-dev
