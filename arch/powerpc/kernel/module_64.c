@@ -236,10 +236,11 @@ static void dedotify_versions(struct modversion_info *vers,
 {
 	struct modversion_info *end;
 
-	for (end = (void *)vers + size; vers < end; vers++)
+	for (end = (void *)vers + size; vers < end; vers = (void *)vers + vers->next) {
 		if (vers->name[0] == '.') {
 			memmove(vers->name, vers->name+1, strlen(vers->name));
 		}
+	}
 }
 
 /*
