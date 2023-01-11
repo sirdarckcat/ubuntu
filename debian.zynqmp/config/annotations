@@ -643,3 +643,11 @@ CONFIG_ARM64_64K_PAGES                          policy<{'arm64-lowlatency': 'n',
 # Menu: Processor type and features >> Virtual address space size >> Architecture: arm64
 CONFIG_ARM64_VA_BITS_39                         policy<{'arm64-lowlatency': 'n', 'arm64-xilinx-zynqmp': 'n'}>
 #
+
+CONFIG_ARM_SMMU                                 policy<{'arm64-xilinx-zynqmp': 'n'}>
+CONFIG_ARM_SMMU_LEGACY_DT_BINDINGS              policy<{'arm64-xilinx-zynqmp': '-'}>
+CONFIG_ARM_SMMU_V3_SVA                          policy<{'arm64-xilinx-zynqmp': '-'}>
+CONFIG_ARM_SMMU_DISABLE_BYPASS_BY_DEFAULT       policy<{'arm64-xilinx-zynqmp': '-'}>
+CONFIG_ARM_SMMU_V3                              policy<{'arm64-xilinx-zynqmp': 'n'}>
+
+CONFIG_ARM_SMMU                                 mark<ENFORCED> note<LP:#1997028>
