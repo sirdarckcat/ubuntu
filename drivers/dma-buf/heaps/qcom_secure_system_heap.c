@@ -432,6 +432,7 @@ static void system_heap_free(struct qcom_sg_buffer *buffer)
 		}
 		dynamic_page_pool_free(sys_heap->pool_list[j], page);
 	}
+	atomic_long_sub(buffer->len, &sys_heap->total_allocated);
 	sg_free_table(table);
 	kfree(buffer);
 }
@@ -453,17 +454,19 @@ static struct page *alloc_largest_available(struct dynamic_page_pool **pools,
 	*page_from_secure_pool = true;
 
 	for (i = 0; i < NUM_ORDERS; i++) {
+		unsigned long flags;
+
 		if (size <  (PAGE_SIZE << orders[i]))
 			continue;
 		if (max_order < orders[i])
 			continue;
 
-		mutex_lock(&pools[i]->mutex);
+		spin_lock_irqsave(&pools[i]->lock, flags);
 		if (pools[i]->high_count)
 			page = dynamic_page_pool_remove(pools[i], true);
 		else if (pools[i]->low_count)
 			page = dynamic_page_pool_remove(pools[i], false);
-		mutex_unlock(&pools[i]->mutex);
+		spin_unlock_irqrestore(&pools[i]->lock, flags);
 
 		if (!page)
 			continue;
@@ -497,6 +500,7 @@ static struct dma_buf *system_heap_allocate(struct dma_heap *heap,
 	int total_pages = 0, num_non_secure_pages = 0;
 	int ret = -ENOMEM, hyp_ret = 0;
 	int perms;
+	int vmid;
 
 	buffer = kzalloc(sizeof(*buffer), GFP_KERNEL);
 	if (!buffer)
@@ -561,8 +565,9 @@ static struct dma_buf *system_heap_allocate(struct dma_heap *heap,
 	}
 
 	perms = msm_secure_get_vmid_perms(sys_heap->vmid);
+	vmid = get_secure_vmid(sys_heap->vmid);
 	buffer->vmperm = mem_buf_vmperm_alloc_staticvm(table,
-				&sys_heap->vmid, &perms, 1);
+				&vmid, &perms, 1);
 
 	if (IS_ERR(buffer->vmperm)) {
 		ret = PTR_ERR(buffer->vmperm);
@@ -583,7 +588,7 @@ static struct dma_buf *system_heap_allocate(struct dma_heap *heap,
 
 	if (num_non_secure_pages)
 		sg_free_table(&non_secure_table);
-
+	atomic_long_add(len, &sys_heap->total_allocated);
 	return dmabuf;
 
 vmperm_release:
@@ -622,6 +627,46 @@ static long get_pool_size_bytes(struct dma_heap *heap)
 	return total_size << PAGE_SHIFT;
 }
 
+int qcom_secure_system_heap_freeze(void)
+{
+	struct qcom_secure_system_heap *sys_heap;
+	long sz;
+
+	/*
+	 * It is expected that the buffers are freed by the clients
+	 * before the freeze. DMABUF framework tracks the unfreed memory
+	 * by the total_allocated struct member.
+	 */
+	cancel_delayed_work_sync(&prefetch_work);
+	list_for_each_entry(sys_heap, &secure_heaps, list) {
+		sz = atomic_long_read(&sys_heap->total_allocated);
+		if (sz) {
+			pr_err("%s: %lx bytes of allocation not freed for VMID: %d. Aborting freeze.\n",
+				__func__, sz, sys_heap->vmid);
+			return -EBUSY;
+		}
+
+		dynamic_page_pool_release_pools(sys_heap->pool_list);
+	}
+	return 0;
+}
+
+int qcom_secure_system_heap_restore(void)
+{
+	struct qcom_secure_system_heap *sys_heap;
+
+	list_for_each_entry(sys_heap, &secure_heaps, list) {
+		sys_heap->pool_list = dynamic_page_pool_create_pools(sys_heap->vmid,
+					free_secure_pages);
+		if (IS_ERR(sys_heap->pool_list)) {
+			pr_err("%s: Pool creation failed for VMID: %d, err: %d\n",
+				__func__, sys_heap->vmid,
+				PTR_ERR(sys_heap->pool_list));
+		}
+	}
+	return 0;
+}
+
 static const struct dma_heap_ops system_heap_ops = {
 	.allocate = system_heap_allocate,
 	.get_pool_size = get_pool_size_bytes,
@@ -654,6 +699,12 @@ void qcom_secure_system_heap_create(const char *name, const char *secure_system_
 	struct dma_heap *heap;
 	struct qcom_secure_system_heap *sys_heap;
 	int ret;
+
+	if (get_secure_vmid(vmid) == -EINVAL || hweight_long(vmid) != 1) {
+		pr_err("Invalid VMID or supplied more than one VMID\n");
+		ret = -EINVAL;
+		goto out;
+	}
 
 	ret = dynamic_page_pool_init_shrinker();
 	if (ret)
