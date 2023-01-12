@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (c) 2020-2021, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2022 Qualcomm Innovation Center, Inc. All rights reserved.
  */
 
 #include <linux/of.h>
@@ -37,8 +38,6 @@ static int populate_heap(struct device_node *node,
 	}
 
 	/* Optional properties */
-	heap->is_dynamic = of_property_read_bool(node, "qcom,dynamic-heap");
-
 	heap->is_uncached = of_property_read_bool(node, "qcom,uncached-heap");
 
 	ret = of_property_read_u32(node, "qcom,token", &heap->token);
@@ -111,6 +110,7 @@ static int heap_dt_init(struct device_node *mem_node,
 			of_reserved_mem_device_release(dev);
 		}
 	}
+	heap->is_nomap =  of_property_read_bool(mem_node, "no-map");
 
 	return ret;
 }
@@ -136,34 +136,33 @@ static void release_reserved_memory_regions(struct platform_heap *heaps,
 struct platform_data *parse_heap_dt(struct platform_device *pdev)
 {
 	struct platform_data *pdata = NULL;
-	struct platform_heap *heaps = NULL;
 	struct device_node *node;
 	struct device_node *mem_node;
 	struct platform_device *new_dev = NULL;
 	const struct device_node *dt_node = pdev->dev.of_node;
 	int ret;
-	u32 num_heaps = 0;
 	int idx = 0;
-
-	for_each_available_child_of_node(dt_node, node)
-		num_heaps++;
-
-	if (!num_heaps)
-		return ERR_PTR(-EINVAL);
 
 	pdata = kzalloc(sizeof(*pdata), GFP_KERNEL);
 	if (!pdata)
 		return ERR_PTR(-ENOMEM);
 
-	heaps = kcalloc(num_heaps, sizeof(struct platform_heap),
-			GFP_KERNEL);
-	if (!heaps) {
+	for_each_available_child_of_node(dt_node, node)
+		pdata->nr++;
+
+	/*
+	 * No heaps defined in the devicetree. However, there may be other
+	 * heaps (e.g. system heaps) that do not need to be defined in the
+	 * devicetree.
+	 */
+	if (!pdata->nr)
+		goto out;
+
+	pdata->heaps = kcalloc(pdata->nr, sizeof(*pdata->heaps), GFP_KERNEL);
+	if (!pdata->heaps) {
 		kfree(pdata);
 		return ERR_PTR(-ENOMEM);
 	}
-
-	pdata->heaps = heaps;
-	pdata->nr = num_heaps;
 
 	for_each_available_child_of_node(dt_node, node) {
 		new_dev = of_platform_device_create(node, NULL, &pdev->dev);
@@ -191,6 +190,8 @@ struct platform_data *parse_heap_dt(struct platform_device *pdev)
 
 		++idx;
 	}
+
+out:
 	return pdata;
 
 free_heaps:
