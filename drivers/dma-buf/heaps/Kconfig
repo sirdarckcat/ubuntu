@@ -1,15 +1,22 @@
-config DMABUF_HEAPS_DEFERRED_FREE
-	tristate
+menuconfig DMABUF_HEAPS_DEFERRED_FREE
+	bool "DMA-BUF heaps deferred-free library"
+	help
+	  Choose this option to enable the DMA-BUF heaps deferred-free library.
+
+menuconfig DMABUF_HEAPS_PAGE_POOL
+	bool "DMA-BUF heaps page-pool library"
+	help
+	  Choose this option to enable the DMA-BUF heaps page-pool library.
 
 config DMABUF_HEAPS_SYSTEM
-	bool "DMA-BUF System Heap"
-	depends on DMABUF_HEAPS
+	tristate "DMA-BUF System Heap"
+	depends on DMABUF_HEAPS && DMABUF_HEAPS_DEFERRED_FREE && DMABUF_HEAPS_PAGE_POOL
 	help
 	  Choose this option to enable the system dmabuf heap. The system heap
 	  is backed by pages from the buddy allocator. If in doubt, say Y.
 
 config DMABUF_HEAPS_CMA
-	bool "DMA-BUF CMA Heap"
+	tristate "DMA-BUF CMA Heap"
 	depends on DMABUF_HEAPS && DMA_CMA
 	help
 	  Choose this option to enable dma-buf CMA heap. This heap is backed
@@ -79,3 +86,23 @@ config QCOM_DMABUF_HEAPS_CARVEOUT
 	help
 	  Choose this option to build the QCOM DMA-BUF Carveout heap.
 	  If in doubt, say Y here.
+
+config QCOM_DMABUF_HEAPS_BITSTREAM_CONTIG
+	bool "QCOM DMA-BUF Bitstream Contiguous Heap"
+	depends on QCOM_DMABUF_HEAPS && QCOM_SECURE_BUFFER
+	depends on QCOM_DMABUF_HEAPS_CMA
+	help
+	  Choose this option to build the QCOM bitstream contiguous
+	  heap. This heap, allocates memory from the display heap
+	  and then assigns to the CP_BITSTREAM endpoint, before
+	  returning this allocation to user space. It uses the name
+	  'system-secure'. If in doubt, say N here.
+
+config QCOM_DMABUF_HEAPS_TUI_CARVEOUT
+	bool "QCOM DMA-BUF TUI Carveout Heap"
+	depends on QCOM_DMABUF_HEAPS
+	help
+	  Choose this option to build the QCOM Trusted UI carvout heap.
+	  This heap is controlled from an ioctl, and memory is transferred
+	  to it from the Primary VM. Not GKI-Compatible as it cannot
+	  be built as a module.
