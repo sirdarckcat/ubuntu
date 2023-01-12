@@ -7,6 +7,7 @@
  *
  * Copyright (C) 2011 Google, Inc.
  * Copyright (c) 2020-2021, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2022 Qualcomm Innovation Center, Inc. All rights reserved.
  */
 
 #include <linux/dma-mapping.h>
@@ -24,6 +25,7 @@
 #include <linux/dma-buf.h>
 #include <linux/dma-heap.h>
 #include <linux/qcom_dma_heap.h>
+#include <linux/types.h>
 
 #include "qcom_dma_heap_secure_utils.h"
 #include "qcom_sg_ops.h"
@@ -31,18 +33,35 @@
 
 #define CARVEOUT_ALLOCATE_FAIL -1
 
+static LIST_HEAD(secure_carveout_heaps);
+
+
+/*
+ * @pool_refcount_priv -
+ *	Cookie set by carveout_heap_add_memory for use with its callbacks.
+ *	Cookie provider will call carveout_heap_remove_memory if refcount
+ *	reaches zero.
+ * @pool_refcount_get -
+ *	Function callback to Increase refcount. Returns 0
+ *	on success and fails if refcount is already zero.
+ * @pool_refcount_put - Function callback to decrease refcount.
+ */
 struct carveout_heap {
 	struct dma_heap *heap;
 	struct rw_semaphore mem_sem;
 	struct gen_pool *pool;
 	struct device *dev;
 	bool is_secure;
+	bool is_nomap;
 	phys_addr_t base;
+	ssize_t size;
 };
 
 struct secure_carveout_heap {
 	u32 token;
 	struct carveout_heap carveout_heap;
+	struct list_head list;
+	atomic_long_t total_allocated;
 };
 
 static void sc_heap_free(struct qcom_sg_buffer *buffer);
@@ -148,6 +167,8 @@ static struct dma_buf *__carveout_heap_allocate(struct carveout_heap *carveout_h
 	buffer->heap = carveout_heap->heap;
 	buffer->len = len;
 	buffer->free = buffer_free;
+	if (carveout_heap->is_nomap)
+		buffer->uncached = true;
 
 	table = &buffer->sg_table;
 	ret = sg_alloc_table(table, 1, GFP_KERNEL);
@@ -162,7 +183,7 @@ static struct dma_buf *__carveout_heap_allocate(struct carveout_heap *carveout_h
 
 	sg_set_page(table->sgl, pfn_to_page(PFN_DOWN(paddr)), len, 0);
 
-	if (!carveout_heap->is_secure)
+	if (!carveout_heap->is_secure && !carveout_heap->is_nomap)
 		pages_sync_for_device(dev, sg_page(table->sgl),
 				      buffer->len, DMA_FROM_DEVICE);
 
@@ -209,10 +230,13 @@ static void carveout_heap_free(struct qcom_sg_buffer *buffer)
 
 	dev = carveout_heap->dev;
 
-	carveout_pages_zero(page, buffer->len, PAGE_KERNEL);
-
-	pages_sync_for_device(dev, page,
+	if (!carveout_heap->is_nomap) {
+		carveout_pages_zero(page, buffer->len, PAGE_KERNEL);
+		pages_sync_for_device(dev, page,
 			      buffer->len, DMA_BIDIRECTIONAL);
+	} else {
+		carveout_pages_zero(page, buffer->len, pgprot_writecombine(PAGE_KERNEL));
+	}
 
 	carveout_free(carveout_heap, paddr, buffer->len);
 	sg_free_table(table);
@@ -297,98 +321,23 @@ static int carveout_init_heap_memory(struct carveout_heap *co_heap,
 		return -ENOMEM;
 
 	co_heap->base = base;
+	co_heap->size = size;
 	gen_pool_add(co_heap->pool, co_heap->base, size, -1);
 
 	return 0;
 }
-
-int carveout_heap_add_memory(char *heap_name,
-			     struct sg_table *sgt)
-{
-	struct dma_heap *heap;
-	struct carveout_heap *carveout_heap;
-	int ret;
-
-	if (!sgt || sgt->nents != 1)
-		return -EINVAL;
-
-	heap = dma_heap_find(heap_name);
-	if (!heap)
-		return -EINVAL;
-
-	carveout_heap = dma_heap_get_drvdata(heap);
-
-	down_write(&carveout_heap->mem_sem);
-	if (carveout_heap->pool) {
-		ret = -EBUSY;
-		goto unlock;
-	}
-
-	ret = carveout_init_heap_memory(carveout_heap,
-					page_to_phys(sg_page(sgt->sgl)),
-					sgt->sgl->length, true);
-unlock:
-	up_write(&carveout_heap->mem_sem);
-	return ret;
-}
-EXPORT_SYMBOL(carveout_heap_add_memory);
-
-int carveout_heap_remove_memory(char *heap_name,
-				struct sg_table *sgt)
-{
-	struct dma_heap *heap;
-	struct carveout_heap *carveout_heap;
-	phys_addr_t base;
-	int ret = 0;
-
-	if (!sgt || sgt->nents != 1)
-		return -EINVAL;
-
-	heap = dma_heap_find(heap_name);
-	if (!heap)
-		return -EINVAL;
-
-	carveout_heap = dma_heap_get_drvdata(heap);
-
-	down_write(&carveout_heap->mem_sem);
-	if (!carveout_heap->pool) {
-		ret = -EINVAL;
-		goto unlock;
-	}
-
-	base = page_to_phys(sg_page(sgt->sgl));
-	if (carveout_heap->base != base) {
-		ret = -EINVAL;
-		goto unlock;
-	}
-
-	if (gen_pool_size(carveout_heap->pool) !=
-	    gen_pool_avail(carveout_heap->pool)) {
-		ret = -EBUSY;
-		goto unlock;
-	}
-
-	gen_pool_destroy(carveout_heap->pool);
-	carveout_heap->pool = NULL;
-unlock:
-	up_write(&carveout_heap->mem_sem);
-	return ret;
-}
-EXPORT_SYMBOL(carveout_heap_remove_memory);
 
 static int __carveout_heap_init(struct platform_heap *heap_data,
 				struct carveout_heap *carveout_heap,
 				bool sync)
 {
 	struct device *dev = heap_data->dev;
-	bool dynamic_heap = heap_data->is_dynamic;
 	int ret = 0;
 
 	carveout_heap->dev = dev;
-	if (!dynamic_heap)
-		ret = carveout_init_heap_memory(carveout_heap,
-						heap_data->base,
-						heap_data->size, sync);
+	ret = carveout_init_heap_memory(carveout_heap,
+					heap_data->base,
+					heap_data->size, sync);
 
 	init_rwsem(&carveout_heap->mem_sem);
 
@@ -411,11 +360,12 @@ int qcom_carveout_heap_create(struct platform_heap *heap_data)
 	if (!carveout_heap)
 		return -ENOMEM;
 
-	ret = __carveout_heap_init(heap_data, carveout_heap, true);
+	ret = __carveout_heap_init(heap_data, carveout_heap, !heap_data->is_nomap);
 	if (ret)
 		goto err;
 
 	carveout_heap->is_secure = false;
+	carveout_heap->is_nomap = heap_data->is_nomap;
 
 	exp_info.name = heap_data->name;
 	exp_info.ops = &carveout_heap_ops;
@@ -452,10 +402,16 @@ static struct dma_buf *sc_heap_allocate(struct dma_heap *heap,
 					unsigned long heap_flags)
 {
 	struct secure_carveout_heap *sc_heap;
+	struct dma_buf *dbuf;
 
 	sc_heap = dma_heap_get_drvdata(heap);
-	return  __carveout_heap_allocate(&sc_heap->carveout_heap, len,
+	dbuf = __carveout_heap_allocate(&sc_heap->carveout_heap, len,
 					 fd_flags, heap_flags, sc_heap_free);
+	if (IS_ERR(dbuf))
+		return dbuf;
+	atomic_long_add(len, &sc_heap->total_allocated);
+
+	return dbuf;
 }
 
 static void sc_heap_free(struct qcom_sg_buffer *buffer)
@@ -467,11 +423,53 @@ static void sc_heap_free(struct qcom_sg_buffer *buffer)
 
 	sc_heap = dma_heap_get_drvdata(buffer->heap);
 
-	if (qcom_is_buffer_hlos_accessible(sc_heap->token))
-		carveout_pages_zero(page, buffer->len, PAGE_KERNEL);
+	if (qcom_is_buffer_hlos_accessible(sc_heap->token)) {
+		if (!buffer->uncached)
+			carveout_pages_zero(page, buffer->len, PAGE_KERNEL);
+		else
+			carveout_pages_zero(page, buffer->len, pgprot_writecombine(PAGE_KERNEL));
+	}
 	carveout_free(&sc_heap->carveout_heap, paddr, buffer->len);
 	sg_free_table(table);
+	atomic_long_sub(buffer->len, &sc_heap->total_allocated);
 	kfree(buffer);
+}
+
+int qcom_secure_carveout_heap_freeze(void)
+{
+	long sz;
+	struct secure_carveout_heap *sc_heap;
+
+	/*
+	 * It is expected that the buffers are freed by the clients
+	 * before the freeze. DMABUF framework tracks the unfreed memory
+	 * by the total_allocated struct member.
+	 */
+	list_for_each_entry(sc_heap, &secure_carveout_heaps, list) {
+		sz = atomic_long_read(&sc_heap->total_allocated);
+		if (sz) {
+			pr_err("%s: %s: %lx bytes of allocations not freed. Aborting freeze\n",
+				__func__,
+				dma_heap_get_name(sc_heap->carveout_heap.heap),
+				sz);
+			return -EBUSY;
+		}
+	}
+	return 0;
+}
+
+int qcom_secure_carveout_heap_restore(void)
+{
+	struct secure_carveout_heap *sc_heap;
+	int ret;
+
+	list_for_each_entry(sc_heap, &secure_carveout_heaps, list) {
+		ret = hyp_assign_from_flags(sc_heap->carveout_heap.base,
+				sc_heap->carveout_heap.size,
+				sc_heap->token);
+		BUG_ON(ret);
+	}
+	return 0;
 }
 
 static struct dma_heap_ops sc_heap_ops = {
@@ -513,6 +511,7 @@ int qcom_secure_carveout_heap_create(struct platform_heap *heap_data)
 		goto destroy_heap;
 	}
 
+	list_add(&sc_heap->list, &secure_carveout_heaps);
 	return 0;
 
 destroy_heap:
