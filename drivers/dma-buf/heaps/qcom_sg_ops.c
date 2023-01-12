@@ -123,14 +123,18 @@ static struct sg_table *qcom_sg_map_dma_buf(struct dma_buf_attachment *attachmen
 	if (buffer->uncached || !mem_buf_vmperm_can_cmo(vmperm))
 		attrs |= DMA_ATTR_SKIP_CPU_SYNC;
 
-	if (attrs & DMA_ATTR_DELAYED_UNMAP)
+	if (attrs & DMA_ATTR_DELAYED_UNMAP) {
 		ret = msm_dma_map_sgtable(attachment->dev, table, direction,
 					  attachment->dmabuf, attrs);
-	else
+	} else if (!a->mapped) {
 		ret = dma_map_sgtable(attachment->dev, table, direction, attrs);
+	} else {
+		dev_err(attachment->dev, "Error: Dma-buf is already mapped!\n");
+		ret = -EBUSY;
+	}
 
 	if (ret) {
-		table = ERR_PTR(-ENOMEM);
+		table = ERR_PTR(ret);
 		goto err_map_sgtable;
 	}
 
@@ -456,39 +460,42 @@ static void *qcom_sg_do_vmap(struct qcom_sg_buffer *buffer)
 	return vaddr;
 }
 
-static void *qcom_sg_vmap(struct dma_buf *dmabuf)
+static int qcom_sg_vmap(struct dma_buf *dmabuf, struct dma_buf_map *map)
 {
 	struct qcom_sg_buffer *buffer = dmabuf->priv;
 	void *vaddr;
+	int ret = 0;
 
 	mem_buf_vmperm_pin(buffer->vmperm);
 	if (!mem_buf_vmperm_can_vmap(buffer->vmperm)) {
 		mem_buf_vmperm_unpin(buffer->vmperm);
-		return ERR_PTR(-EPERM);
+		return -EPERM;
 	}
 
 	mutex_lock(&buffer->lock);
 	if (buffer->vmap_cnt) {
 		buffer->vmap_cnt++;
-		vaddr = buffer->vaddr;
+		dma_buf_map_set_vaddr(map, buffer->vaddr);
 		goto out;
 	}
 
 	vaddr = qcom_sg_do_vmap(buffer);
 	if (IS_ERR(vaddr)) {
+		ret = PTR_ERR(vaddr);
 		mem_buf_vmperm_unpin(buffer->vmperm);
 		goto out;
 	}
 
 	buffer->vaddr = vaddr;
 	buffer->vmap_cnt++;
+	dma_buf_map_set_vaddr(map, buffer->vaddr);
 out:
 	mutex_unlock(&buffer->lock);
 
-	return vaddr;
+	return ret;
 }
 
-static void qcom_sg_vunmap(struct dma_buf *dmabuf, void *vaddr)
+static void qcom_sg_vunmap(struct dma_buf *dmabuf, struct dma_buf_map *map)
 {
 	struct qcom_sg_buffer *buffer = dmabuf->priv;
 
@@ -499,6 +506,7 @@ static void qcom_sg_vunmap(struct dma_buf *dmabuf, void *vaddr)
 	}
 	mem_buf_vmperm_unpin(buffer->vmperm);
 	mutex_unlock(&buffer->lock);
+	dma_buf_map_clear(map);
 }
 
 static void qcom_sg_release(struct dma_buf *dmabuf)
