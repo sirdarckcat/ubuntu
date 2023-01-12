@@ -113,7 +113,7 @@ static int _mali_osk_get_compatible_name(const char **out_string)
 _mali_osk_errcode_t _mali_osk_resource_initialize(void)
 {
 	mali_bool mali_is_450 = MALI_FALSE, mali_is_470 = MALI_FALSE;
-	int i, pp_core_num = 0, l2_core_num = 0;
+	int i, pp_core_num = 0, l2_core_num = 0, irq = 0;
 	struct resource *res;
 	const char *compatible_name = NULL;
 
@@ -128,9 +128,9 @@ _mali_osk_errcode_t _mali_osk_resource_initialize(void)
 	}
 
 	for (i = 0; i < MALI_OSK_RESOURCE_WITH_IRQ_NUMBER; i++) {
-		res = platform_get_resource_byname(mali_platform_device, IORESOURCE_IRQ, mali_osk_resource_bank[i].irq_name);
-		if (res) {
-			mali_osk_resource_bank[i].irq = res->start;
+		irq = platform_get_irq_byname_optional(mali_platform_device, mali_osk_resource_bank[i].irq_name);
+		if (irq > 0) {
+			mali_osk_resource_bank[i].irq = irq;
 		} else {
 			mali_osk_resource_bank[i].base = MALI_OSK_INVALID_RESOURCE_ADDRESS;
 		}
