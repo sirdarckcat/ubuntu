@@ -36,6 +36,7 @@
 #include <linux/ns_common.h>
 #include <linux/idr.h>
 #include <linux/skbuff.h>
+#include <linux/notifier.h>
 
 struct user_namespace;
 struct proc_dir_entry;
@@ -110,6 +111,7 @@ struct net {
 	u32			hash_mix;
 
 	struct net_device       *loopback_dev;          /* The loopback */
+	struct raw_notifier_head	netdev_chain;
 
 	/* core fib_rules */
 	struct list_head	rules_ops;
