@@ -82,6 +82,16 @@ config MLXBF_TRIO
 	 This driver supports the TRIO PCIe root complex interface on
 	 Mellanox BlueField SoCs.
 
+config MLXBF_PTM
+        tristate "BlueField Power and Thermal Management debugfs interface"
+        depends on ARM64
+        depends on DEBUG_FS
+        help
+          If you say yes to this option, support will added for the
+          mlxbf-ptm driver.  This driver provides debugfs interface
+          to userspace with information related to power and thermal
+          management of the Bluefield device.
+
 source "drivers/platform/mellanox/mlxbf_pka/Kconfig"
 
 endif # MELLANOX_PLATFORM
