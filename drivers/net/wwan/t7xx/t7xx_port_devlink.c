@@ -570,6 +570,7 @@ void t7xx_devlink_unregister(struct t7xx_pci_dev *t7xx_dev)
 {
 	struct devlink *dl_ctx = priv_to_devlink(t7xx_dev->dl);
 
+	devlink_reload_disable(dl_ctx);
 	devlink_unregister(dl_ctx);
 	devlink_free(dl_ctx);
 }
