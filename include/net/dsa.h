@@ -693,6 +693,17 @@ struct dsa_switch_ops {
 			       struct ethtool_ts_info *ts);
 
 	/*
+	 * ethtool MAC merge layer
+	 */
+	int	(*get_mm)(struct dsa_switch *ds, int port,
+			  struct ethtool_mm_state *state);
+	int	(*set_mm)(struct dsa_switch *ds, int port,
+			  struct ethtool_mm_cfg *cfg,
+			  struct netlink_ext_ack *extack);
+	void	(*get_mm_stats)(struct dsa_switch *ds, int port,
+				struct ethtool_mm_stats *stats);
+
+	/*
 	 * Suspend and resume
 	 */
 	int	(*suspend)(struct dsa_switch *ds);
