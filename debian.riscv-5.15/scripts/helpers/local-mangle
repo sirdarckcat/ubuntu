@@ -2,6 +2,11 @@
 
 . debian/debian.env
 
+# Ressurect old jammy:linux-riscv based config and rules.d
+rsync -avc --delete "debian.riscv/config/" "${DEBIAN}/config"
+rsync -avc --delete "debian.riscv/rules.d/" "${DEBIAN}/rules.d"
+rsync -avc --delete "debian.riscv/control.d/generic.inclusion-list" "${DEBIAN}/control.d/generic.inclusion-list"
+
 # Do not enforce DMESG_RESTRICT in focal
 sed -i 's/CONFIG_SECURITY_DMESG_RESTRICT=y/# CONFIG_SECURITY_DMESG_RESTRICT is not set/' ${DEBIAN}/config/config.common.ubuntu
 sed -i "s/CONFIG_SECURITY_DMESG_RESTRICT                  policy<{'riscv64': 'y'}>/CONFIG_SECURITY_DMESG_RESTRICT                  policy<{'riscv64': 'n'}>/" ${DEBIAN}/config/annotations
