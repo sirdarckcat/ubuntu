@@ -1,3 +1,246 @@
+linux-laptop (6.5.0-1000.0) mantic; urgency=medium
+
+  * Initial dummy version of linux-laptop for Mantic.
+
+ -- Juerg Haefliger <juerg.haefliger@canonical.com>  Mon, 07 Aug 2023 17:47:44 +0200
+
+linux-unstable (6.5.0-4.4) mantic; urgency=medium
+
+  * mantic/linux-unstable: 6.5.0-4.4 -proposed tracker (LP: #2029086)
+
+  * Miscellaneous Ubuntu changes
+    - [Packaging] Add .NOTPARALLEL
+    - [Packaging] Remove meaningless $(header_arch)
+    - [Packaging] Fix File exists error in install-arch-headers
+    - [Packaging] clean debian/linux-* directories
+    - [Packaging] remove hmake
+    - [Packaging] install headers to debian/linux-libc-dev directly
+    - [Config] define CONFIG options for arm64 instead of arm64-generic
+    - [Config] update annotations after rebase to v6.5-rc4
+    - [Packaging] temporarily disable Rust support
+
+  [ Upstream Kernel Changes ]
+
+  * Rebase to v6.5-rc4
+
+ -- Andrea Righi <andrea.righi@canonical.com>  Mon, 31 Jul 2023 08:41:59 +0200
+
+linux-unstable (6.5.0-3.3) mantic; urgency=medium
+
+  * mantic/linux-unstable: 6.5.0-3.3 -proposed tracker (LP: #2028779)
+
+  * enable Rust support in the kernel (LP: #2007654)
+    - SAUCE: rust: support rustc-1.69.0
+    - [Packaging] depend on rustc-1.69.0
+
+  * Packaging resync (LP: #1786013)
+    - [Packaging] resync update-dkms-versions helper
+    - [Packaging] resync getabis
+
+  * Fix UBSAN in Intel EDAC driver (LP: #2028746)
+    - EDAC/i10nm: Skip the absent memory controllers
+
+  * Ship kernel modules Zstd compressed (LP: #2028568)
+    - SAUCE: Support but do not require compressed modules
+    - [Config] Enable support for ZSTD compressed modules
+    - [Packaging] ZSTD compress modules
+
+  * update apparmor and LSM stacking patch set (LP: #2028253)
+    - SAUCE: apparmor3.2.0 [02/60]: rename SK_CTX() to aa_sock and make it an
+      inline fn
+    - SAUCE: apparmor3.2.0 [05/60]: Add sysctls for additional controls of unpriv
+      userns restrictions
+    - SAUCE: apparmor3.2.0 [08/60]: Stacking v38: LSM: Identify modules by more
+      than name
+    - SAUCE: apparmor3.2.0 [09/60]: Stacking v38: LSM: Add an LSM identifier for
+      external use
+    - SAUCE: apparmor3.2.0 [10/60]: Stacking v38: LSM: Identify the process
+      attributes for each module
+    - SAUCE: apparmor3.2.0 [11/60]: Stacking v38: LSM: Maintain a table of LSM
+      attribute data
+    - SAUCE: apparmor3.2.0 [12/60]: Stacking v38: proc: Use lsmids instead of lsm
+      names for attrs
+    - SAUCE: apparmor3.2.0 [13/60]: Stacking v38: integrity: disassociate
+      ima_filter_rule from security_audit_rule
+    - SAUCE: apparmor3.2.0 [14/60]: Stacking v38: LSM: Infrastructure management
+      of the sock security
+    - SAUCE: apparmor3.2.0 [15/60]: Stacking v38: LSM: Add the lsmblob data
+      structure.
+    - SAUCE: apparmor3.2.0 [16/60]: Stacking v38: LSM: provide lsm name and id
+      slot mappings
+    - SAUCE: apparmor3.2.0 [17/60]: Stacking v38: IMA: avoid label collisions with
+      stacked LSMs
+    - SAUCE: apparmor3.2.0 [18/60]: Stacking v38: LSM: Use lsmblob in
+      security_audit_rule_match
+    - SAUCE: apparmor3.2.0 [19/60]: Stacking v38: LSM: Use lsmblob in
+      security_kernel_act_as
+    - SAUCE: apparmor3.2.0 [20/60]: Stacking v38: LSM: Use lsmblob in
+      security_secctx_to_secid
+    - SAUCE: apparmor3.2.0 [21/60]: Stacking v38: LSM: Use lsmblob in
+      security_secid_to_secctx
+    - SAUCE: apparmor3.2.0 [22/60]: Stacking v38: LSM: Use lsmblob in
+      security_ipc_getsecid
+    - SAUCE: apparmor3.2.0 [23/60]: Stacking v38: LSM: Use lsmblob in
+      security_current_getsecid
+    - SAUCE: apparmor3.2.0 [24/60]: Stacking v38: LSM: Use lsmblob in
+      security_inode_getsecid
+    - SAUCE: apparmor3.2.0 [25/60]: Stacking v38: LSM: Use lsmblob in
+      security_cred_getsecid
+    - SAUCE: apparmor3.2.0 [26/60]: Stacking v38: LSM: Specify which LSM to
+      display
+    - SAUCE: apparmor3.2.0 [28/60]: Stacking v38: LSM: Ensure the correct LSM
+      context releaser
+    - SAUCE: apparmor3.2.0 [29/60]: Stacking v38: LSM: Use lsmcontext in
+      security_secid_to_secctx
+    - SAUCE: apparmor3.2.0 [30/60]: Stacking v38: LSM: Use lsmcontext in
+      security_inode_getsecctx
+    - SAUCE: apparmor3.2.0 [31/60]: Stacking v38: Use lsmcontext in
+      security_dentry_init_security
+    - SAUCE: apparmor3.2.0 [32/60]: Stacking v38: LSM: security_secid_to_secctx in
+      netlink netfilter
+    - SAUCE: apparmor3.2.0 [33/60]: Stacking v38: NET: Store LSM netlabel data in
+      a lsmblob
+    - SAUCE: apparmor3.2.0 [34/60]: Stacking v38: binder: Pass LSM identifier for
+      confirmation
+    - SAUCE: apparmor3.2.0 [35/60]: Stacking v38: LSM: security_secid_to_secctx
+      module selection
+    - SAUCE: apparmor3.2.0 [36/60]: Stacking v38: Audit: Keep multiple LSM data in
+      audit_names
+    - SAUCE: apparmor3.2.0 [37/60]: Stacking v38: Audit: Create audit_stamp
+      structure
+    - SAUCE: apparmor3.2.0 [38/60]: Stacking v38: LSM: Add a function to report
+      multiple LSMs
+    - SAUCE: apparmor3.2.0 [39/60]: Stacking v38: Audit: Allow multiple records in
+      an audit_buffer
+    - SAUCE: apparmor3.2.0 [40/60]: Stacking v38: Audit: Add record for multiple
+      task security contexts
+    - SAUCE: apparmor3.2.0 [41/60]: Stacking v38: audit: multiple subject lsm
+      values for netlabel
+    - SAUCE: apparmor3.2.0 [42/60]: Stacking v38: Audit: Add record for multiple
+      object contexts
+    - SAUCE: apparmor3.2.0 [43/60]: Stacking v38: netlabel: Use a struct lsmblob
+      in audit data
+    - SAUCE: apparmor3.2.0 [44/60]: Stacking v38: LSM: Removed scaffolding
+      function lsmcontext_init
+    - SAUCE: apparmor3.2.0 [45/60]: Stacking v38: AppArmor: Remove the exclusive
+      flag
+    - SAUCE: apparmor3.2.0 [46/60]: combine common_audit_data and
+      apparmor_audit_data
+    - SAUCE: apparmor3.2.0 [47/60]: setup slab cache for audit data
+    - SAUCE: apparmor3.2.0 [48/60]: rename audit_data->label to
+      audit_data->subj_label
+    - SAUCE: apparmor3.2.0 [49/60]: pass cred through to audit info.
+    - SAUCE: apparmor3.2.0 [50/60]: Improve debug print infrastructure
+    - SAUCE: apparmor3.2.0 [51/60]: add the ability for profiles to have a
+      learning cache
+    - SAUCE: apparmor3.2.0 [52/60]: enable userspace upcall for mediation
+    - SAUCE: apparmor3.2.0 [53/60]: cache buffers on percpu list if there is lock
+      contention
+    - SAUCE: apparmor3.2.0 [55/60]: advertise availability of exended perms
+    - SAUCE: apparmor3.2.0 [60/60]: [Config] enable
+      CONFIG_SECURITY_APPARMOR_RESTRICT_USERNS
+
+  * LSM stacking and AppArmor for 6.2: additional fixes (LP: #2017903) // update
+    apparmor and LSM stacking patch set (LP: #2028253)
+    - SAUCE: apparmor3.2.0 [57/60]: fix profile verification and enable it
+
+  * udev fails to make prctl() syscall with apparmor=0 (as used by maas by
+    default) (LP: #2016908) // update apparmor and LSM stacking patch set
+    (LP: #2028253)
+    - SAUCE: apparmor3.2.0 [27/60]: Stacking v38: Fix prctl() syscall with
+      apparmor=0
+
+  * kinetic: apply new apparmor and LSM stacking patch set (LP: #1989983) //
+    update apparmor and LSM stacking patch set (LP: #2028253)
+    - SAUCE: apparmor3.2.0 [01/60]: add/use fns to print hash string hex value
+    - SAUCE: apparmor3.2.0 [03/60]: patch to provide compatibility with v2.x net
+      rules
+    - SAUCE: apparmor3.2.0 [04/60]: add user namespace creation mediation
+    - SAUCE: apparmor3.2.0 [06/60]: af_unix mediation
+    - SAUCE: apparmor3.2.0 [07/60]: Add fine grained mediation of posix mqueues
+
+  * Miscellaneous Ubuntu changes
+    - [Packaging] Use consistent llvm/clang for rust
+
+  [ Upstream Kernel Changes ]
+
+  * Rebase to v6.5-rc3
+
+ -- Andrea Righi <andrea.righi@canonical.com>  Fri, 28 Jul 2023 07:44:20 +0200
+
+linux-unstable (6.5.0-2.2) mantic; urgency=medium
+
+  * mantic/linux-unstable: 6.5.0-2.2 -proposed tracker (LP: #2027953)
+
+  * Remove non-LPAE kernel flavor (LP: #2025265)
+    - [Packaging] Rename armhf generic-lpae flavor to generic
+
+  * Please enable Renesas RZ platform serial installer (LP: #2022361)
+    - [Config] enable hihope RZ/G2M serial console
+
+  * Miscellaneous Ubuntu changes
+    - [Packaging] snap: Remove old configs handling
+    - [Packaging] checks/final-checks: Remove old configs handling
+    - [Packaging] checks/final-checks: check existance of Makefile first
+    - [Packaging] checks/final-checks: Fix shellcheck issues
+    - [Packaging] add libstdc++-dev to the build dependencies
+    - [Config] update annotations after rebase to v6.5-rc2
+
+  * Miscellaneous upstream changes
+    - kbuild: rust: avoid creating temporary files
+    - rust: fix bindgen build error with UBSAN_BOUNDS_STRICT
+
+  [ Upstream Kernel Changes ]
+
+  * Rebase to v6.5-rc2
+
+ -- Andrea Righi <andrea.righi@canonical.com>  Tue, 18 Jul 2023 10:14:14 +0200
+
+linux-unstable (6.5.0-1.1) mantic; urgency=medium
+
+  * mantic/linux-unstable: 6.5.0-1.1 -proposed tracker (LP: #2026689)
+
+  * CVE-2023-31248
+    - netfilter: nf_tables: do not ignore genmask when looking up chain by id
+
+  * CVE-2023-35001
+    - netfilter: nf_tables: prevent OOB access in nft_byteorder_eval
+
+  * HDMI output with More than one child device for port B in VBT error
+    (LP: #2025195)
+    - SAUCE: drm/i915/quirks: Add multiple VBT quirk for HP ZBook Power G10
+
+  * CVE-2023-2640 // CVE-2023-32629
+    - SAUCE: overlayfs: default to userxattr when mounted from non initial user
+      namespace
+
+  * Packaging resync (LP: #1786013)
+    - [Packaging] resync update-dkms-versions helper
+
+  * enable Rust support in the kernel (LP: #2007654)
+    - SAUCE: btf, scripts: rust: drop is_rust_module.sh
+    - [Packaging] add rust dependencies
+
+  * CVE-2023-2612
+    - SAUCE: shiftfs: prevent lock unbalance in shiftfs_create_object()
+
+  * Miscellaneous Ubuntu changes
+    - SAUCE: shiftfs: support linux 6.5
+    - [Config] update annotations after rebase to v6.5-rc1
+    - [Config] temporarily disable Rust
+
+  [ Upstream Kernel Changes ]
+
+  * Rebase to v6.5-rc1
+
+ -- Andrea Righi <andrea.righi@canonical.com>  Mon, 10 Jul 2023 09:15:26 +0200
+
+linux-unstable (6.5.0-0.0) mantic; urgency=medium
+
+  * Empty entry
+
+ -- Andrea Righi <andrea.righi@canonical.com>  Wed, 05 Jul 2023 12:48:39 +0200
+
 linux-unstable (6.4.0-8.8) mantic; urgency=medium
 
   * mantic/linux-unstable: 6.4.0-8.8 -proposed tracker (LP: #2025018)
