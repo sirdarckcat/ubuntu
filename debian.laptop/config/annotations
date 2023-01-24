@@ -1345,7 +1345,7 @@ CONFIG_CDNS_I3C_MASTER                          policy<{'arm64': 'm'}>
 CONFIG_CDROM                                    policy<{'arm64': 'y'}>
 CONFIG_CDROM_PKTCDVD                            policy<{'arm64': 'n'}>
 CONFIG_CEC_CH7322                               policy<{'arm64': 'm'}>
-CONFIG_CEC_CORE                                 policy<{'arm64': 'm'}>
+CONFIG_CEC_CORE                                 policy<{'arm64': 'y'}>
 CONFIG_CEC_CROS_EC                              policy<{'arm64': 'm'}>
 CONFIG_CEC_GPIO                                 policy<{'arm64': 'm'}>
 CONFIG_CEC_MESON_AO                             policy<{'arm64': 'm'}>
@@ -2486,7 +2486,7 @@ CONFIG_DPS310                                   policy<{'arm64': 'm'}>
 CONFIG_DQL                                      policy<{'arm64': 'y'}>
 CONFIG_DRAGONRISE_FF                            policy<{'arm64': 'y'}>
 CONFIG_DRBD_FAULT_INJECTION                     policy<{'arm64': 'n'}>
-CONFIG_DRM                                      policy<{'arm64': 'm'}>
+CONFIG_DRM                                      policy<{'arm64': 'y'}>
 CONFIG_DRM_ACCEL                                policy<{'arm64': 'y'}>
 CONFIG_DRM_AMDGPU                               policy<{'arm64': 'm'}>
 CONFIG_DRM_AMDGPU_CIK                           policy<{'arm64': 'y'}>
@@ -2517,13 +2517,14 @@ CONFIG_DRM_CHRONTEL_CH7033                      policy<{'arm64': 'm'}>
 CONFIG_DRM_CIRRUS_QEMU                          policy<{'arm64': 'm'}>
 CONFIG_DRM_CROS_EC_ANX7688                      policy<{'arm64': 'm'}>
 CONFIG_DRM_DEBUG_DP_MST_TOPOLOGY_REFS           policy<{'arm64': 'n'}>
+CONFIG_DRM_DEBUG_MM                             policy<{'arm64': 'n'}>
 CONFIG_DRM_DEBUG_MODESET_LOCK                   policy<{'arm64': 'n'}>
 CONFIG_DRM_DISPLAY_CONNECTOR                    policy<{'arm64': 'm'}>
 CONFIG_DRM_DISPLAY_DP_HELPER                    policy<{'arm64': 'y'}>
 CONFIG_DRM_DISPLAY_HDCP_HELPER                  policy<{'arm64': 'y'}>
 CONFIG_DRM_DISPLAY_HDMI_HELPER                  policy<{'arm64': 'y'}>
-CONFIG_DRM_DISPLAY_HELPER                       policy<{'arm64': 'm'}>
-CONFIG_DRM_DP_AUX_BUS                           policy<{'arm64': 'm'}>
+CONFIG_DRM_DISPLAY_HELPER                       policy<{'arm64': 'y'}>
+CONFIG_DRM_DP_AUX_BUS                           policy<{'arm64': 'y'}>
 CONFIG_DRM_DP_AUX_CHARDEV                       policy<{'arm64': 'y'}>
 CONFIG_DRM_DP_CEC                               policy<{'arm64': 'y'}>
 CONFIG_DRM_DW_HDMI                              policy<{'arm64': 'm'}>
@@ -2566,7 +2567,7 @@ CONFIG_DRM_IMX_LCDIF                            policy<{'arm64': 'm'}>
 CONFIG_DRM_ITE_IT6505                           policy<{'arm64': 'm'}>
 CONFIG_DRM_ITE_IT66121                          policy<{'arm64': 'm'}>
 CONFIG_DRM_KMB_DISPLAY                          policy<{'arm64': 'm'}>
-CONFIG_DRM_KMS_HELPER                           policy<{'arm64': 'm'}>
+CONFIG_DRM_KMS_HELPER                           policy<{'arm64': 'y'}>
 CONFIG_DRM_KOMEDA                               policy<{'arm64': 'm'}>
 CONFIG_DRM_LEGACY                               policy<{'arm64': 'n'}>
 CONFIG_DRM_LEGACY                               note<'Consider re-enabling but not signing the modules'>
@@ -2625,7 +2626,7 @@ CONFIG_DRM_PANEL_BOE_TV101WUM_NL6               policy<{'arm64': 'm'}>
 CONFIG_DRM_PANEL_BRIDGE                         policy<{'arm64': 'y'}>
 CONFIG_DRM_PANEL_DSI_CM                         policy<{'arm64': 'm'}>
 CONFIG_DRM_PANEL_EBBG_FT8719                    policy<{'arm64': 'm'}>
-CONFIG_DRM_PANEL_EDP                            policy<{'arm64': 'm'}>
+CONFIG_DRM_PANEL_EDP                            policy<{'arm64': 'y'}>
 CONFIG_DRM_PANEL_ELIDA_KD35T133                 policy<{'arm64': 'm'}>
 CONFIG_DRM_PANEL_FEIXIN_K101_IM2BA02            policy<{'arm64': 'm'}>
 CONFIG_DRM_PANEL_FEIYANG_FY07024DI26A30D        policy<{'arm64': 'm'}>
@@ -3242,10 +3243,10 @@ CONFIG_FB_SM750                                 policy<{'arm64': 'm'}>
 CONFIG_FB_SMSCUFX                               policy<{'arm64': 'm'}>
 CONFIG_FB_SSD1307                               policy<{'arm64': 'm'}>
 CONFIG_FB_SVGALIB                               policy<{'arm64': 'm'}>
-CONFIG_FB_SYS_COPYAREA                          policy<{'arm64': 'm'}>
-CONFIG_FB_SYS_FILLRECT                          policy<{'arm64': 'm'}>
-CONFIG_FB_SYS_FOPS                              policy<{'arm64': 'm'}>
-CONFIG_FB_SYS_IMAGEBLIT                         policy<{'arm64': 'm'}>
+CONFIG_FB_SYS_COPYAREA                          policy<{'arm64': 'y'}>
+CONFIG_FB_SYS_FILLRECT                          policy<{'arm64': 'y'}>
+CONFIG_FB_SYS_FOPS                              policy<{'arm64': 'y'}>
+CONFIG_FB_SYS_IMAGEBLIT                         policy<{'arm64': 'y'}>
 CONFIG_FB_TFT                                   policy<{'arm64': 'm'}>
 CONFIG_FB_TFT_AGM1264K_FL                       policy<{'arm64': 'm'}>
 CONFIG_FB_TFT_BD663474                          policy<{'arm64': 'm'}>
@@ -4082,7 +4083,7 @@ CONFIG_HZ_250                                   policy<{'arm64': 'y'}>
 CONFIG_HZ_300                                   policy<{'arm64': 'n'}>
 CONFIG_HZ_PERIODIC                              policy<{'arm64': 'n'}>
 CONFIG_I2C                                      policy<{'arm64': 'y'}>
-CONFIG_I2C_ALGOBIT                              policy<{'arm64': 'm'}>
+CONFIG_I2C_ALGOBIT                              policy<{'arm64': 'y'}>
 CONFIG_I2C_ALGOPCA                              policy<{'arm64': 'm'}>
 CONFIG_I2C_ALI1535                              policy<{'arm64': 'm'}>
 CONFIG_I2C_ALI1563                              policy<{'arm64': 'm'}>
@@ -5410,7 +5411,6 @@ CONFIG_MEDIA_ALTERA_CI                          policy<{'arm64': 'm'}>
 CONFIG_MEDIA_ANALOG_TV_SUPPORT                  policy<{'arm64': 'y'}>
 CONFIG_MEDIA_ATTACH                             policy<{'arm64': 'y'}>
 CONFIG_MEDIA_CAMERA_SUPPORT                     policy<{'arm64': 'y'}>
-CONFIG_MEDIA_CEC_RC                             policy<{'arm64': 'y'}>
 CONFIG_MEDIA_CEC_SUPPORT                        policy<{'arm64': 'y'}>
 CONFIG_MEDIA_COMMON_OPTIONS                     policy<{'arm64': 'y'}>
 CONFIG_MEDIA_CONTROLLER                         policy<{'arm64': 'y'}>
