@@ -6495,7 +6495,8 @@ static const struct tlsdev_ops cxgb4_ktls_ops = {
 
 #if IS_ENABLED(CONFIG_CHELSIO_IPSEC_INLINE)
 
-static int cxgb4_xfrm_add_state(struct xfrm_state *x)
+static int cxgb4_xfrm_add_state(struct xfrm_state *x,
+				struct netlink_ext_ack *extack)
 {
 	struct adapter *adap = netdev2adap(x->xso.dev);
 	int ret;
@@ -6509,7 +6510,7 @@ static int cxgb4_xfrm_add_state(struct xfrm_state *x)
 	if (ret)
 		goto out_unlock;
 
-	ret = adap->uld[CXGB4_ULD_IPSEC].xfrmdev_ops->xdo_dev_state_add(x);
+	ret = adap->uld[CXGB4_ULD_IPSEC].xfrmdev_ops->xdo_dev_state_add(x, extack);
 
 out_unlock:
 	mutex_unlock(&uld_mutex);
