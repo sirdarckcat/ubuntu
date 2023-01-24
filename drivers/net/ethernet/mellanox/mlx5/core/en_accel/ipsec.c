@@ -306,7 +306,8 @@ static void mlx5e_xfrm_fs_del_rule(struct mlx5e_priv *priv,
 				      &sa_entry->ipsec_rule);
 }
 
-static int mlx5e_xfrm_add_state(struct xfrm_state *x)
+static int mlx5e_xfrm_add_state(struct xfrm_state *x,
+				struct netlink_ext_ack *extack)
 {
 	struct mlx5e_ipsec_sa_entry *sa_entry = NULL;
 	struct net_device *netdev = x->xso.real_dev;
