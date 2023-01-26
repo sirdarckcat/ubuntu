@@ -50,7 +50,9 @@ struct xe_eudebug_resource {
 
 #define XE_EUDEBUG_RES_TYPE_CLIENT	0
 #define XE_EUDEBUG_RES_TYPE_VM		1
-#define XE_EUDEBUG_RES_TYPE_COUNT	(XE_EUDEBUG_RES_TYPE_VM + 1)
+#define XE_EUDEBUG_RES_TYPE_EXEC_QUEUE	2
+#define XE_EUDEBUG_RES_TYPE_LRC		3
+#define XE_EUDEBUG_RES_TYPE_COUNT	(XE_EUDEBUG_RES_TYPE_LRC + 1)
 
 /**
  * struct xe_eudebug_resources - eudebug resources for all types
@@ -171,6 +173,33 @@ struct xe_eudebug_event_vm {
 
 	/** @vm_handle: vm handle it's open/close */
 	u64 vm_handle;
+};
+
+/**
+ * struct xe_eudebug_event_exec_queue - Internal event for
+ * exec_queue create/destroy
+ */
+struct xe_eudebug_event_exec_queue {
+	/** @base: base event */
+	struct xe_eudebug_event base;
+
+	/** @client_handle: client for the engine create/destroy */
+	u64 client_handle;
+
+	/** @vm_handle: vm handle for the engine create/destroy */
+	u64 vm_handle;
+
+	/** @exec_queue_handle: engine handle */
+	u64 exec_queue_handle;
+
+	/** @engine_handle: engine class */
+	u32 engine_class;
+
+	/** @width: submission width (number BB per exec) for this exec queue */
+	u32 width;
+
+	/** @lrc_handles: handles for each logical ring context created with this exec queue */
+	u64 lrc_handle[] __counted_by(width);
 };
 
 #endif
