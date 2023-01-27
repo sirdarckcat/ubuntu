@@ -1,0 +1,100 @@
+// SPDX-License-Identifier: GPL-2.0
+
+#include <dt-bindings/power/raspberrypi-power.h>
+
+&soc {
+	firmware: firmware {
+		compatible = "raspberrypi,bcm2835-firmware", "simple-mfd";
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		mboxes = <&mailbox>;
+		dma-ranges;
+
+		firmware_clocks: clocks {
+			compatible = "raspberrypi,firmware-clocks";
+			#clock-cells = <1>;
+		};
+
+		reset: reset {
+			compatible = "raspberrypi,firmware-reset";
+			#reset-cells = <1>;
+		};
+
+		vcio: vcio {
+			compatible = "raspberrypi,vcio";
+		};
+	};
+
+	power: power {
+		compatible = "raspberrypi,bcm2835-power";
+		firmware = <&firmware>;
+		#power-domain-cells = <1>;
+	};
+
+	fb: fb {
+		compatible = "brcm,bcm2708-fb";
+		firmware = <&firmware>;
+		status = "okay";
+	};
+};
+
+/ {
+	__overrides__ {
+		arm_freq;
+	};
+};
+
+&dma32 {
+	/* The VPU firmware uses DMA channel 11 for VCHIQ */
+	brcm,dma-channel-mask = <0x03f>;
+};
+
+&dma40 {
+	/* The VPU firmware DMA channel 11 for VCHIQ */
+	brcm,dma-channel-mask = <0x07c0>;
+};
+
+&hdmi0 {
+	dmas = <&dma40 (10|(1<<27)|(1<<24)|(10<<16)|(15<<20))>;
+};
+
+&hdmi1 {
+	dmas = <&dma40 (17|(1<<27)|(1<<24)|(10<<16)|(15<<20))>;
+};
+
+&usb {
+	power-domains = <&power RPI_POWER_DOMAIN_USB>;
+};
+
+&xhci {
+	power-domains = <&power RPI_POWER_DOMAIN_USB>;
+};
+
+&rmem {
+	/*
+	 * RPi4's co-processor will copy the board's bootloader configuration
+	 * into memory for the OS to consume. It'll also update this node with
+	 * its placement information.
+	 */
+	blconfig: nvram@0 {
+		compatible = "raspberrypi,bootloader-config", "nvmem-rmem";
+		#address-cells = <1>;
+		#size-cells = <1>;
+		reg = <0x0 0x0 0x0>;
+		no-map;
+		status = "disabled";
+	};
+};
+
+&cpu_thermal {
+	// Add some labels
+	thermal_trips: trips {
+		cpu-crit {
+			// Raise upstream limit of 90C
+			temperature = <110000>;
+		};
+	};
+	cooling_maps: cooling-maps {
+	};
+};
