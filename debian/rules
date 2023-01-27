@@ -21,9 +21,18 @@ clean: debian/control
 	rm -rf debian/tmp SIGNING
 	dh_clean
 
+# Revoked certificates are not available at .dsc prepartion time
+# Use 5.15.0-60 abi as the flag day transition ABI
+ifneq ("$(wildcard /usr/lib/linux/$(KERNEL_ABI_VERSION)-generic/canonical-revoked-certs.pem)","")
+UBUNTU_COMPATIBLE_SIGNING=$(shell grep -qx ' *Subject: C = GB, ST = Isle of Man, O = Canonical Ltd., OU = Secure Boot, CN = Canonical Ltd. Secure Boot Signing (2021 v3)' /usr/lib/linux/$(KERNEL_ABI_VERSION)-$(firstword $(FLAVOURS))/canonical-revoked-certs.pem && echo core/2)
+else
+UBUNTU_COMPATIBLE_SIGNING=$(shell dpkg --compare-versions $(KERNEL_ABI_VERSION) ge 5.15.0-60 && echo core/2)
+endif
+
 debian/control:
 	sed <$(DEBIAN)/control.stub >debian/control			\
 		-e 's/@SERIES@/$(SERIES)/g'				\
+		-e 's|\(^Maintainer:.*\)|\1\nXSC-Ubuntu-Compatible-Signing: $(UBUNTU_COMPATIBLE_SIGNING)|g' \
 		-e 's/@KERNEL_ABI_VERSION@/$(KERNEL_ABI_VERSION)/g'	\
 		-e 's/@SRCPKGNAME@/$(SOURCE)/g'				\
 		-e 's/@KERNEL_SOURCE@/$(KERNEL_SOURCE)/g'
