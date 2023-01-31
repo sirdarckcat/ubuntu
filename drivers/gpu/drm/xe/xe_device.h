@@ -7,6 +7,7 @@
 #define _XE_DEVICE_H_
 
 #include <drm/drm_util.h>
+#include <drm/drm_ioctl.h>
 
 #include "xe_device_types.h"
 #include "xe_gt_types.h"
@@ -203,5 +204,38 @@ void xe_file_put(struct xe_file *xef);
 	flush_workqueue(wq__)
 #define LNL_FLUSH_WORK(wrk__) \
 	flush_work(wrk__)
+
+#if IS_ENABLED(CONFIG_DRM_XE_EUDEBUG)
+static inline int xe_eudebug_needs_lock(const unsigned int cmd)
+{
+	const unsigned int xe_cmd = DRM_IOCTL_NR(cmd) - DRM_COMMAND_BASE;
+
+	switch (xe_cmd) {
+	case DRM_XE_VM_CREATE:
+	case DRM_XE_VM_DESTROY:
+	case DRM_XE_VM_BIND:
+	case DRM_XE_EXEC_QUEUE_CREATE:
+	case DRM_XE_EXEC_QUEUE_DESTROY:
+	case DRM_XE_EUDEBUG_CONNECT:
+		return 1;
+	}
+
+	return 0;
+}
+
+static inline void xe_eudebug_discovery_lock(struct xe_device *xe, unsigned int cmd)
+{
+	if (xe_eudebug_needs_lock(cmd))
+		down_read(&xe->eudebug.discovery_lock);
+}
+static inline void xe_eudebug_discovery_unlock(struct xe_device *xe, unsigned int cmd)
+{
+	if (xe_eudebug_needs_lock(cmd))
+		up_read(&xe->eudebug.discovery_lock);
+}
+#else
+static inline void xe_eudebug_discovery_lock(struct xe_device *xe, unsigned int cmd) { }
+static inline void xe_eudebug_discovery_unlock(struct xe_device *xe, unsigned int cmd) { }
+#endif /* CONFIG_DRM_XE_EUDEBUG */
 
 #endif

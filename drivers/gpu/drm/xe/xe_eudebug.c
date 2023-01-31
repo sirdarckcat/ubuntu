@@ -299,6 +299,8 @@ static bool xe_eudebug_detach(struct xe_device *xe,
 	}
 	spin_unlock(&d->connection.lock);
 
+	flush_work(&d->discovery_work);
+
 	if (!detached)
 		return false;
 
@@ -409,7 +411,7 @@ static struct task_struct *find_task_get(struct xe_file *xef)
 }
 
 static struct xe_eudebug *
-xe_eudebug_get(struct xe_file *xef)
+_xe_eudebug_get(struct xe_file *xef)
 {
 	struct task_struct *task;
 	struct xe_eudebug *d;
@@ -428,6 +430,24 @@ xe_eudebug_get(struct xe_file *xef)
 	if (xe_eudebug_detached(d)) {
 		xe_eudebug_put(d);
 		return NULL;
+	}
+
+	return d;
+}
+
+static struct xe_eudebug *
+xe_eudebug_get(struct xe_file *xef)
+{
+	struct xe_eudebug *d;
+
+	lockdep_assert_held(&xef->xe->eudebug.discovery_lock);
+
+	d = _xe_eudebug_get(xef);
+	if (d) {
+		if (!completion_done(&d->discovery)) {
+			xe_eudebug_put(d);
+			d = NULL;
+		}
 	}
 
 	return d;
@@ -813,6 +833,10 @@ static long xe_eudebug_ioctl(struct file *file,
 	struct xe_eudebug * const d = file->private_data;
 	long ret;
 
+	if (cmd != DRM_XE_EUDEBUG_IOCTL_READ_EVENT &&
+	    !completion_done(&d->discovery))
+		return -EBUSY;
+
 	switch (cmd) {
 	case DRM_XE_EUDEBUG_IOCTL_READ_EVENT:
 		ret = xe_eudebug_read_event(d, arg,
@@ -833,6 +857,8 @@ static const struct file_operations fops = {
 	.read		= xe_eudebug_read,
 	.unlocked_ioctl	= xe_eudebug_ioctl,
 };
+
+static void discovery_work_fn(struct work_struct *work);
 
 static int
 xe_eudebug_connect(struct xe_device *xe,
@@ -868,9 +894,11 @@ xe_eudebug_connect(struct xe_device *xe,
 	spin_lock_init(&d->connection.lock);
 	init_waitqueue_head(&d->events.write_done);
 	init_waitqueue_head(&d->events.read_done);
+	init_completion(&d->discovery);
 
 	spin_lock_init(&d->events.lock);
 	INIT_KFIFO(d->events.fifo);
+	INIT_WORK(&d->discovery_work, discovery_work_fn);
 
 	d->res = xe_eudebug_resources_alloc();
 	if (IS_ERR(d->res)) {
@@ -887,6 +915,9 @@ xe_eudebug_connect(struct xe_device *xe,
 		err = fd;
 		goto err_detach;
 	}
+
+	kref_get(&d->ref);
+	queue_work(xe->eudebug.ordered_wq, &d->discovery_work);
 
 	eu_dbg(d, "connected session %lld", d->session);
 
@@ -922,13 +953,18 @@ void xe_eudebug_init(struct xe_device *xe)
 
 	spin_lock_init(&xe->clients.lock);
 	INIT_LIST_HEAD(&xe->clients.list);
+	init_rwsem(&xe->eudebug.discovery_lock);
 
-	xe->eudebug.available = true;
+	xe->eudebug.ordered_wq = alloc_ordered_workqueue("xe-eudebug-ordered-wq", 0);
+	xe->eudebug.available = !!xe->eudebug.ordered_wq;
 }
 
 void xe_eudebug_fini(struct xe_device *xe)
 {
 	xe_assert(xe, list_empty_careful(&xe->eudebug.list));
+
+	if (xe->eudebug.ordered_wq)
+		destroy_workqueue(xe->eudebug.ordered_wq);
 }
 
 static int send_open_event(struct xe_eudebug *d, u32 flags, const u64 handle,
@@ -994,21 +1030,25 @@ void xe_eudebug_file_open(struct xe_file *xef)
 	struct xe_eudebug *d;
 
 	INIT_LIST_HEAD(&xef->eudebug.client_link);
+
+	down_read(&xef->xe->eudebug.discovery_lock);
+
 	spin_lock(&xef->xe->clients.lock);
 	list_add_tail(&xef->eudebug.client_link, &xef->xe->clients.list);
 	spin_unlock(&xef->xe->clients.lock);
 
 	d = xe_eudebug_get(xef);
-	if (!d)
-		return;
+	if (d)
+		xe_eudebug_event_put(d, client_create_event(d, xef));
 
-	xe_eudebug_event_put(d, client_create_event(d, xef));
+	up_read(&xef->xe->eudebug.discovery_lock);
 }
 
 void xe_eudebug_file_close(struct xe_file *xef)
 {
 	struct xe_eudebug *d;
 
+	down_read(&xef->xe->eudebug.discovery_lock);
 	d = xe_eudebug_get(xef);
 	if (d)
 		xe_eudebug_event_put(d, client_destroy_event(d, xef));
@@ -1016,6 +1056,8 @@ void xe_eudebug_file_close(struct xe_file *xef)
 	spin_lock(&xef->xe->clients.lock);
 	list_del_init(&xef->eudebug.client_link);
 	spin_unlock(&xef->xe->clients.lock);
+
+	up_read(&xef->xe->eudebug.discovery_lock);
 }
 
 static int send_vm_event(struct xe_eudebug *d, u32 flags,
@@ -1115,4 +1157,87 @@ void xe_eudebug_vm_destroy(struct xe_file *xef, struct xe_vm *vm)
 		return;
 
 	xe_eudebug_event_put(d, vm_destroy_event(d, xef, vm));
+}
+
+static int discover_client(struct xe_eudebug *d, struct xe_file *xef)
+{
+	struct xe_vm *vm;
+	unsigned long i;
+	int err;
+
+	err = client_create_event(d, xef);
+	if (err)
+		return err;
+
+	xa_for_each(&xef->vm.xa, i, vm) {
+		err = vm_create_event(d, xef, vm);
+		if (err)
+			break;
+	}
+
+	return err;
+}
+
+static bool xe_eudebug_task_match(struct xe_eudebug *d, struct xe_file *xef)
+{
+	struct task_struct *task;
+	bool match;
+
+	task = find_task_get(xef);
+	if (!task)
+		return false;
+
+	match = same_thread_group(d->target_task, task);
+
+	put_task_struct(task);
+
+	return match;
+}
+
+static void discover_clients(struct xe_device *xe, struct xe_eudebug *d)
+{
+	struct xe_file *xef;
+	int err;
+
+	list_for_each_entry(xef, &xe->clients.list, eudebug.client_link) {
+		if (xe_eudebug_detached(d))
+			break;
+
+		if (xe_eudebug_task_match(d, xef))
+			err = discover_client(d, xef);
+		else
+			err = 0;
+
+		if (err) {
+			eu_dbg(d, "discover client %p: %d\n", xef, err);
+			break;
+		}
+	}
+}
+
+static void discovery_work_fn(struct work_struct *work)
+{
+	struct xe_eudebug *d = container_of(work, typeof(*d),
+					    discovery_work);
+	struct xe_device *xe = d->xe;
+
+	if (xe_eudebug_detached(d)) {
+		complete_all(&d->discovery);
+		xe_eudebug_put(d);
+		return;
+	}
+
+	down_write(&xe->eudebug.discovery_lock);
+
+	eu_dbg(d, "Discovery start for %lld\n", d->session);
+
+	discover_clients(xe, d);
+
+	eu_dbg(d, "Discovery end for %lld\n", d->session);
+
+	complete_all(&d->discovery);
+
+	up_write(&xe->eudebug.discovery_lock);
+
+	xe_eudebug_put(d);
 }
