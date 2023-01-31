@@ -558,6 +558,12 @@ struct xe_device {
 
 		/** @available: is the debugging functionality available */
 		bool available;
+
+		/** @ordered_wq: used to discovery */
+		struct workqueue_struct *ordered_wq;
+
+		/** discovery_lock: used for discovery to block xe ioctls */
+		struct rw_semaphore discovery_lock;
 	} eudebug;
 #endif
 

@@ -19,6 +19,7 @@
 struct xe_device;
 struct task_struct;
 struct xe_eudebug_event;
+struct workqueue_struct;
 
 #define CONFIG_DRM_XE_DEBUGGER_EVENT_QUEUE_SIZE 64
 
@@ -95,6 +96,12 @@ struct xe_eudebug {
 
 	/** @session: session number for this connection (for logs) */
 	u64 session;
+
+	/** @discovery: completion to wait for discovery */
+	struct completion discovery;
+
+	/** @discovery_work: worker to discover resources for target_task */
+	struct work_struct discovery_work;
 
 	/** @events: kfifo queue of to-be-delivered events */
 	struct {

@@ -209,8 +209,11 @@ static long xe_drm_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 		return -ECANCELED;
 
 	ret = xe_pm_runtime_get_ioctl(xe);
-	if (ret >= 0)
+	if (ret >= 0) {
+		xe_eudebug_discovery_lock(xe, cmd);
 		ret = drm_ioctl(file, cmd, arg);
+		xe_eudebug_discovery_unlock(xe, cmd);
+	}
 	xe_pm_runtime_put(xe);
 
 	return ret;
@@ -227,8 +230,11 @@ static long xe_drm_compat_ioctl(struct file *file, unsigned int cmd, unsigned lo
 		return -ECANCELED;
 
 	ret = xe_pm_runtime_get_ioctl(xe);
-	if (ret >= 0)
+	if (ret >= 0) {
+		xe_eudebug_discovery_lock(xe, cmd);
 		ret = drm_compat_ioctl(file, cmd, arg);
+		xe_eudebug_discovery_unlock(xe, cmd);
+	}
 	xe_pm_runtime_put(xe);
 
 	return ret;
