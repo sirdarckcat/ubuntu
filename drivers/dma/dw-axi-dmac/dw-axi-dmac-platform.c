@@ -12,6 +12,7 @@
 #include <linux/device.h>
 #include <linux/dmaengine.h>
 #include <linux/dmapool.h>
+#include <linux/dma-direct.h>
 #include <linux/dma-mapping.h>
 #include <linux/err.h>
 #include <linux/interrupt.h>
@@ -627,7 +628,7 @@ static int dw_axi_dma_set_hw_desc(struct axi_dma_chan *chan,
 	switch (chan->direction) {
 	case DMA_MEM_TO_DEV:
 		reg_width = __ffs(chan->config.dst_addr_width);
-		device_addr = chan->config.dst_addr;
+		device_addr = phys_to_dma(chan->chip->dev, chan->config.dst_addr);
 		ctllo = reg_width << CH_CTL_L_DST_WIDTH_POS |
 			mem_width << CH_CTL_L_SRC_WIDTH_POS |
 			DWAXIDMAC_BURST_TRANS_LEN_1 << CH_CTL_L_DST_MSIZE_POS |
@@ -638,7 +639,7 @@ static int dw_axi_dma_set_hw_desc(struct axi_dma_chan *chan,
 		break;
 	case DMA_DEV_TO_MEM:
 		reg_width = __ffs(chan->config.src_addr_width);
-		device_addr = chan->config.src_addr;
+		device_addr = phys_to_dma(chan->chip->dev, chan->config.src_addr);
 		ctllo = reg_width << CH_CTL_L_SRC_WIDTH_POS |
 			mem_width << CH_CTL_L_DST_WIDTH_POS |
 			DWAXIDMAC_BURST_TRANS_LEN_4 << CH_CTL_L_DST_MSIZE_POS |
