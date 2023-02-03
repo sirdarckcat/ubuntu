@@ -365,6 +365,7 @@ int ionic_probe(struct platform_device *pfdev)
 	}
 
 	if (ionic->ident.port.type == IONIC_ETH_HOST_MGMT ||
+	    ionic->ident.port.type == IONIC_ETH_MNIC_OOB_MGMT ||
 	    ionic->ident.port.type == IONIC_ETH_MNIC_INTERNAL_MGMT)
 		ionic->is_mgmt_nic = true;
 
