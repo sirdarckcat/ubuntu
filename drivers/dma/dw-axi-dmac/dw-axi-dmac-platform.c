@@ -222,7 +222,18 @@ static void axi_dma_hw_init(struct axi_dma_chip *chip)
 {
 	int ret;
 	u32 i;
+	int retries = 1000;
 
+	axi_dma_iowrite32(chip, DMAC_RESET, 1);
+	while (axi_dma_ioread32(chip, DMAC_RESET)) {
+		retries--;
+		if (!retries) {
+			dev_err(chip->dev, "%s: DMAC failed to reset\n",
+				__func__);
+			return;
+		}
+		cpu_relax();
+	}
 	for (i = 0; i < chip->dw->hdata->nr_channels; i++) {
 		axi_chan_irq_disable(&chip->dw->chan[i], DWAXIDMAC_IRQ_ALL);
 		axi_chan_disable(&chip->dw->chan[i]);
