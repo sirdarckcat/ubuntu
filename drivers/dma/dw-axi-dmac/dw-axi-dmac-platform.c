@@ -93,7 +93,7 @@ static inline void axi_chan_config_write(struct axi_dma_chan *chan,
 
 	cfg_lo = (config->dst_multblk_type << CH_CFG_L_DST_MULTBLK_TYPE_POS |
 		  config->src_multblk_type << CH_CFG_L_SRC_MULTBLK_TYPE_POS);
-	if (chan->chip->dw->hdata->reg_map_8_channels &&
+	if (!chan->chip->dw->hdata->reg_map_cfg2 &&
 	    !chan->chip->dw->hdata->use_cfg2) {
 		cfg_hi = config->tt_fc << CH_CFG_H_TT_FC_POS |
 			 config->hs_sel_src << CH_CFG_H_HS_SEL_SRC_POS |
@@ -1319,6 +1319,8 @@ static int parse_device_properties(struct axi_dma_chip *chip)
 	chip->dw->hdata->nr_channels = tmp;
 	if (tmp <= DMA_REG_MAP_CH_REF)
 		chip->dw->hdata->reg_map_8_channels = true;
+	else
+		chip->dw->hdata->reg_map_cfg2 = true;
 
 	ret = device_property_read_u32(dev, "snps,dma-masters", &tmp);
 	if (ret)
@@ -1327,6 +1329,10 @@ static int parse_device_properties(struct axi_dma_chip *chip)
 		return -EINVAL;
 
 	chip->dw->hdata->nr_masters = tmp;
+
+	ret = device_property_read_u32(dev, "snps,dma-targets", &tmp);
+	if (!ret && tmp > 16)
+		chip->dw->hdata->reg_map_cfg2 = true;
 
 	ret = device_property_read_u32(dev, "snps,data-width", &tmp);
 	if (ret)
