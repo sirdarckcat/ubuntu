@@ -186,6 +186,8 @@ CONFIG_ARCH_BRCMSTB                             policy<{'arm64': 'n'}>
 CONFIG_ARCH_MESON                               policy<{'arm64': 'n'}>
 CONFIG_ARCH_SPARX5                              policy<{'arm64': 'n'}>
 CONFIG_ARCH_SPRD                                policy<{'arm64': 'n'}>
+CONFIG_ARCH_THUNDER                             policy<{'arm64': 'n'}>
+CONFIG_ARCH_THUNDER2                            policy<{'arm64': 'n'}>
 CONFIG_ARCNET                                   policy<{'arm64': 'n', 'amd64-iot': 'm'}>
 CONFIG_ARCNET_1051                              policy<{'arm64': '-', 'amd64-iot': 'm'}>
 CONFIG_ARCNET_1201                              policy<{'arm64': '-', 'amd64-iot': 'm'}>
@@ -562,7 +564,7 @@ CONFIG_CARL9170_HWRNG                           policy<{'arm64': '-', 'amd64-iot
 CONFIG_CARL9170_LEDS                            policy<{'arm64': '-', 'amd64-iot': 'y'}>
 CONFIG_CARMINE_DRAM_CUSTOM                      policy<{'arm64': '-', 'amd64-iot': 'n'}>
 CONFIG_CASSINI                                  policy<{'arm64': 'n', 'amd64-iot': 'm'}>
-CONFIG_CAVIUM_CPT                               policy<{'arm64': 'n'}>
+CONFIG_CAVIUM_CPT                               policy<{'arm64': '-'}>
 CONFIG_CAVIUM_PTP                               policy<{'arm64': 'n', 'amd64-iot': 'm'}>
 CONFIG_CB710_CORE                               policy<{'arm64': 'n', 'amd64-iot': 'm'}>
 CONFIG_CB710_DEBUG                              policy<{'arm64': '-', 'amd64-iot': 'n'}>
@@ -875,6 +877,8 @@ CONFIG_CRYPTO_DEV_KEEMBAY_OCS_HCU               policy<{'arm64': 'n'}>
 CONFIG_CRYPTO_DEV_KEEMBAY_OCS_HCU_HMAC_SHA224   policy<{'arm64': '-'}>
 CONFIG_CRYPTO_DEV_MARVELL_CESA                  policy<{'arm64': 'n'}>
 CONFIG_CRYPTO_DEV_NITROX_CNN55XX                policy<{'arm64': 'n', 'amd64-iot': 'm'}>
+CONFIG_CRYPTO_DEV_OCTEONTX2_CPT                 policy<{'arm64': '-'}>
+CONFIG_CRYPTO_DEV_OCTEONTX_CPT                  policy<{'arm64': '-'}>
 CONFIG_CRYPTO_DEV_QCE                           policy<{'arm64': 'y'}>
 CONFIG_CRYPTO_DEV_SAFEXCEL                      policy<{'arm64': 'n', 'amd64-iot': 'm'}>
 CONFIG_CRYPTO_DEV_SP_CCP                        policy<{'arm64': '-', 'amd64-iot': 'y'}>
@@ -1591,7 +1595,7 @@ CONFIG_FONT_SUN12x22                            policy<{'arm64': '-', 'amd64-iot
 CONFIG_FONT_SUN8x16                             policy<{'arm64': '-', 'amd64-iot': 'n'}>
 CONFIG_FONT_TER16x32                            policy<{'arm64': '-', 'amd64-iot': 'y'}>
 CONFIG_FORCEDETH                                policy<{'arm64': 'n', 'amd64-iot': 'm'}>
-CONFIG_FORCE_MAX_ZONEORDER                      policy<{'arm64-iot': '13', 'arm64-iot-debug' :'13'}>
+CONFIG_FORCE_MAX_ZONEORDER                      policy<{'arm64-iot': '11', 'arm64-iot-debug' :'11'}>
 CONFIG_FORTIFY_SOURCE                           policy<{'arm64': 'n', 'amd64-iot': 'y'}>
 CONFIG_FPGA                                     policy<{'arm64': 'y', 'amd64-iot': 'm'}>
 CONFIG_FPGA_DFL                                 policy<{'arm64': 'n', 'amd64-iot': 'm'}>
@@ -1739,7 +1743,7 @@ CONFIG_GPIO_SL28CPLD                            policy<{'arm64': '-'}>
 CONFIG_GPIO_SPRD                                policy<{'arm64': '-'}>
 CONFIG_GPIO_STMPE                               policy<{'arm64': '-'}>
 CONFIG_GPIO_TC3589X                             policy<{'arm64': 'n'}>
-CONFIG_GPIO_THUNDERX                            policy<{'arm64': 'n'}>
+CONFIG_GPIO_THUNDERX                            policy<{'arm64': '-'}>
 CONFIG_GPIO_TPIC2810                            policy<{'arm64': 'n', 'amd64-iot': 'm'}>
 CONFIG_GPIO_TPS65086                            policy<{'arm64': '-', 'amd64-iot': 'm'}>
 CONFIG_GPIO_TPS65218                            policy<{'arm64': 'n'}>
@@ -1757,6 +1761,7 @@ CONFIG_GPIO_WATCHDOG                            policy<{'arm64': 'n'}>
 CONFIG_GPIO_WM831X                              policy<{'arm64': '-', 'amd64-iot': 'm'}>
 CONFIG_GPIO_WM8350                              policy<{'arm64': '-', 'amd64-iot': 'm'}>
 CONFIG_GPIO_WM8994                              policy<{'arm64': 'n', 'amd64-iot': 'm'}>
+CONFIG_GPIO_XLP                                 policy<{'arm64': '-'}>
 CONFIG_GPIO_XRA1403                             policy<{'arm64': 'n', 'amd64-iot': 'm'}>
 CONFIG_GREENASIA_FF                             policy<{'arm64': '-', 'amd64-iot': 'y'}>
 CONFIG_GREYBUS                                  policy<{'arm64': 'n', 'amd64-iot': 'm'}>
@@ -1978,6 +1983,7 @@ CONFIG_HWSPINLOCK_QCOM                          policy<{'arm64': 'y'}>
 CONFIG_HWSPINLOCK_SPRD                          policy<{'arm64': '-'}>
 CONFIG_HWSPINLOCK_SUN6I                         policy<{'arm64': 'n'}>
 CONFIG_HW_RANDOM_BA431                          policy<{'arm64': 'n', 'amd64-iot': 'm'}>
+CONFIG_HW_RANDOM_CAVIUM                         policy<{'arm64': '-'}>
 CONFIG_HW_RANDOM_MESON                          policy<{'arm64': '-'}>
 CONFIG_HW_RANDOM_TIMERIOMEM                     policy<{'arm64': 'n', 'amd64-iot': 'm'}>
 CONFIG_HW_RANDOM_TPM                            policy<{'arm64': '-', 'amd64-iot': 'y'}>
@@ -2054,7 +2060,7 @@ CONFIG_I2C_VIPERBOARD                           policy<{'arm64': '-', 'amd64-iot
 CONFIG_I2C_VIRTIO                               policy<{'arm64': 'n', 'amd64-iot': 'm'}>
 CONFIG_I2C_XGENE_SLIMPRO                        policy<{'arm64': 'n'}>
 CONFIG_I2C_XILINX                               policy<{'arm64': 'n', 'amd64-iot': 'm'}>
-CONFIG_I2C_XLP9XX                               policy<{'arm64': 'n'}>
+CONFIG_I2C_XLP9XX                               policy<{'arm64': '-'}>
 CONFIG_I3C                                      policy<{'arm64': 'n', 'amd64-iot': 'm'}>
 CONFIG_I40E                                     policy<{'arm64': 'n', 'amd64-iot': 'm'}>
 CONFIG_I40EVF                                   policy<{'arm64': 'n', 'amd64-iot': 'm'}>
@@ -5273,7 +5279,7 @@ CONFIG_SPI_SPRD                                 policy<{'arm64': '-'}>
 CONFIG_SPI_SPRD_ADI                             policy<{'arm64': '-'}>
 CONFIG_SPI_TLE62X0                              policy<{'arm64': 'n', 'amd64-iot': 'm'}>
 CONFIG_SPI_XCOMM                                policy<{'arm64': 'n', 'amd64-iot': 'm'}>
-CONFIG_SPI_XLP                                  policy<{'arm64': 'n'}>
+CONFIG_SPI_XLP                                  policy<{'arm64': '-'}>
 CONFIG_SPI_ZYNQMP_GQSPI                         policy<{'arm64': 'n', 'amd64-iot': 'm'}>
 CONFIG_SPMI                                     policy<{'arm64': 'y', 'amd64-iot': 'm'}>
 CONFIG_SPMI_HISI3670                            policy<{'arm64': 'n', 'amd64-iot': 'm'}>
@@ -5419,6 +5425,7 @@ CONFIG_THERMAL_NETLINK                          policy<{'arm64': 'n', 'amd64-iot
 CONFIG_THERMAL_STATISTICS                       policy<{'arm64': 'n', 'amd64-iot': 'y'}>
 CONFIG_THERMAL_WRITABLE_TRIPS                   policy<{'arm64': 'n', 'amd64-iot': 'y'}>
 CONFIG_THRUSTMASTER_FF                          policy<{'arm64': '-', 'amd64-iot': 'y'}>
+CONFIG_THUNDERX2_PMU                            policy<{'arm64': '-'}>
 CONFIG_THUNDER_NIC_BGX                          policy<{'arm64': 'y', 'amd64-iot': 'm'}>
 CONFIG_THUNDER_NIC_PF                           policy<{'arm64': 'y', 'amd64-iot': 'm'}>
 CONFIG_THUNDER_NIC_RGX                          policy<{'arm64': 'y', 'amd64-iot': 'm'}>
@@ -6362,6 +6369,8 @@ CONFIG_ZSWAP_DEFAULT_ON                         policy<{'arm64': '-', 'amd64-iot
 CONFIG_ZSWAP_ZPOOL_DEFAULT_Z3FOLD               policy<{'arm64': '-', 'amd64-iot': 'n'}>
 CONFIG_ZSWAP_ZPOOL_DEFAULT_ZBUD                 policy<{'arm64': '-', 'amd64-iot': 'y'}>
 CONFIG_ZSWAP_ZPOOL_DEFAULT_ZSMALLOC             policy<{'arm64': '-', 'amd64-iot': 'n'}>
+
+
 
 
 #
