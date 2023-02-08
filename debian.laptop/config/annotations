@@ -7,6 +7,7 @@
 include "../../debian.master/config/annotations"
 
 CONFIG_BATTERY_QCOM_BATTMGR                     policy<{'arm64': 'm'}> note<'X13s patchset'>
+CONFIG_BLK_DEV_NVME                             policy<{'arm64': 'y'}> note<'X13s required'>
 CONFIG_DRM                                      policy<{'arm64': 'y'}> note<'X13s required'>
 CONFIG_DRM_PANEL_EDP                            policy<{'arm64': 'y'}> note<'X13s required'>
 CONFIG_QCOM_PMIC_GLINK                          policy<{'arm64': 'm'}> note<'X13s patchset'>
@@ -30,3 +31,5 @@ CONFIG_FB_SYS_IMAGEBLIT                         policy<{'arm64': 'y'}>
 CONFIG_I2C_ALGOBIT                              policy<{'arm64': 'y'}>
 CONFIG_LD_VERSION                               policy<{'arm64': '24000'}>
 CONFIG_MEDIA_CEC_RC                             policy<{'arm64': '-'}>
+CONFIG_NVME_COMMON                              policy<{'arm64': 'y'}>
+CONFIG_NVME_CORE                                policy<{'arm64': 'y'}>
