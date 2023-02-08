@@ -6,5 +6,13 @@
 
 include "../../debian.master/config/annotations"
 
+CONFIG_BATTERY_QCOM_BATTMGR                     policy<{'arm64': 'm'}> note<'X13s patchset'>
+CONFIG_QCOM_PMIC_GLINK                          policy<{'arm64': 'm'}> note<'X13s patchset'>
+CONFIG_QCOM_TEE                                 policy<{'arm64': 'y'}> note<'X13s patchset'>
+CONFIG_QCOM_TEE_UEFISECAPP                      policy<{'arm64': 'y'}> note<'X13s patchset'>
+CONFIG_TYPEC_MUX_GPIO_SBU                       policy<{'arm64': 'm'}> note<'X13s patchset'>
+
+# ---- Annotations without notes ----
+
 CONFIG_AS_VERSION                               policy<{'arm64': '24000'}>
 CONFIG_LD_VERSION                               policy<{'arm64': '24000'}>
