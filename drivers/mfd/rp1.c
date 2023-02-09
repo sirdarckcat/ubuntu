@@ -165,20 +165,16 @@ static void rp1_chained_handle_irq(struct irq_desc *desc)
 	struct rp1_dev *rp1 = desc->irq_data.chip_data;
 	int hwirq = desc->irq_data.hwirq & 0x3f;
 	int new_irq;
-	u32 intstat;
 
 	rp1 = g_rp1;
-	intstat = readl(rp1->msix_cfg_regs +
-			((hwirq < 32) ? INTSTATL : INTSTATH));
-	if (!(intstat & BIT(hwirq % 32)))
-		return;
-
-	new_irq = irq_linear_revmap(rp1->domain, hwirq);
 
 	chained_irq_enter(chip, desc);
+
+	new_irq = irq_linear_revmap(rp1->domain, hwirq);
 	generic_handle_irq(new_irq);
 	if (rp1_level_triggered_irq[hwirq])
 		msix_cfg_set(rp1, hwirq, MSIX_CFG_IACK);
+
 	chained_irq_exit(chip, desc);
 }
 
