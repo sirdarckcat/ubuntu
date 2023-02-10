@@ -1,0 +1,6 @@
+#!/bin/bash -eu
+
+. debian/debian.env
+
+# Jammy toolchain does not support -march=rv64ima_zicbom
+sed -i '/^CONFIG_RISCV_ISA_ZICBOM/d' "$DEBIAN/config/annotations"
