@@ -6,7 +6,6 @@ DEBIAN=$(shell awk -F= '($$1 == "DEBIAN") { print $$2 }' <debian/debian.env)
 
 SERIES=$(shell dpkg-parsechangelog -l$(DEBIAN)/changelog -SDistribution | sed -e 's/-\(security\|updates\|proposed\)$$//')
 SOURCE=$(shell dpkg-parsechangelog -l$(DEBIAN)/changelog -SSource)
-KERNEL_SOURCE=$(shell echo "$(SOURCE)" | sed -e 's/-uc20-efi//')
 
 VERSION=$(shell dpkg-parsechangelog -l$(DEBIAN)/changelog -SVersion)
 KERNEL_ABI_VERSION=$(shell echo "$(VERSION)" | sed -ne 's/\([0-9]*\.[0-9]*\.[0-9]*\-[0-9]*\)\..*/\1/p')
@@ -25,8 +24,7 @@ debian/control:
 	sed <$(DEBIAN)/control.stub >debian/control			\
 		-e 's/@SERIES@/$(SERIES)/g'				\
 		-e 's/@KERNEL_ABI_VERSION@/$(KERNEL_ABI_VERSION)/g'	\
-		-e 's/@SRCPKGNAME@/$(SOURCE)/g'				\
-		-e 's/@KERNEL_SOURCE@/$(KERNEL_SOURCE)/g'
+		-e 's/@SRCPKGNAME@/$(SOURCE)/g'
 	cp $(DEBIAN)/changelog debian/changelog
 
 .PHONY: debian/control
@@ -43,6 +41,7 @@ override_dh_auto_build: efi = $(outdir)/kernel.efi
 override_dh_auto_build:
 	install -d $(signingv)/control
 	mkdir -p $(outdir)
+	set -x;									\
 	for flavour in $(FLAVOURS); do						\
 		pkg="linux-image-unsigned-$(KERNEL_ABI_VERSION)-$$flavour";	\
 		(								\
@@ -50,7 +49,12 @@ override_dh_auto_build:
 			apt-get download $$pkg;					\
 			dpkg-deb -x $${pkg}_*.deb $$flavour;			\
 		);								\
+		if [ "$(DEB_HOST_ARCH)" = "arm64" ]; then \
+			mv $(outdir)/$$flavour/boot/vmlinuz-$(KERNEL_ABI_VERSION)-$$flavour $(outdir)/$$flavour/boot/vmlinuz-$(KERNEL_ABI_VERSION)-$$flavour.gz; \
+			gzip -d $(outdir)/$$flavour/boot/vmlinuz-$(KERNEL_ABI_VERSION)-$$flavour.gz; \
+		fi; \
 		ubuntu-core-initramfs create-initrd --output $(initrd)		\
+			--feature main server					\
 			--kernelver $(KERNEL_ABI_VERSION)-$$flavour;		\
 		ubuntu-core-initramfs create-efi --unsigned --output $(efi)	\
 			--kernel $(outdir)/$$flavour/boot/vmlinuz		\
@@ -59,6 +63,7 @@ override_dh_auto_build:
 		cp -p $(efi)-$(KERNEL_ABI_VERSION)-$$flavour			\
 			$(signingv)/vmlinuz-$(KERNEL_ABI_VERSION)-$$flavour.efi;\
 	done
+	cp /usr/lib/ubuntu-core-initramfs/main/usr/lib/snapd/info $(signingv)/snapd-info
 	{ echo "tarball"; } >$(signingv)/control/options
 	cd $(signing) && tar czvf ../../$(signing_tar) .
 	dpkg-distaddfile $(signing_tar) raw-signing -
