@@ -453,6 +453,10 @@ spi0_cs_pins: &rp1_spi0_cs_gpio7 {};
 };
 
 &gio {
+	// The GPIOs above 35 are not used on Pi 5, so shrink the upper bank
+	// to reduce the clutter in gpioinfo/pinctrl
+	brcm,gpio-bank-widths = <32 4>;
+
 	gpio-line-names =
 		"-", // GPIO_000
 		"2712_BOOT_CS_N", // GPIO_001
