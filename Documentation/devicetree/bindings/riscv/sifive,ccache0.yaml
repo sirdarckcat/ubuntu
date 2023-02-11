@@ -78,6 +78,11 @@ properties:
 
   next-level-cache: true
 
+  uncached-offset:
+    $ref: /schemas/types.yaml#/definitions/uint64
+    description: |
+      Uncached memory offset for handling non-coherent DMA transactions.
+
   memory-region:
     maxItems: 1
     description: |
