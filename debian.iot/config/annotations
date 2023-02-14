@@ -220,7 +220,6 @@ CONFIG_ARM_SMMU_DISABLE_BYPASS_BY_DEFAULT       policy<{'arm64': 'y'}>
 CONFIG_AS3935                                   policy<{'arm64': 'n', 'amd64-iot': 'm'}>
 CONFIG_AS73211                                  policy<{'arm64': 'n', 'amd64-iot': 'm'}>
 CONFIG_ASYMMETRIC_TPM_KEY_SUBTYPE               policy<{'arm64': '-', 'amd64-iot': 'm'}>
-CONFIG_ASYNC_RAID6_TEST                         policy<{'arm64': '-', 'amd64-iot': 'n'}>
 CONFIG_ASYNC_TX_DMA                             policy<{'arm64': 'n', 'amd64-iot': 'y'}>
 CONFIG_AT76C50X_USB                             policy<{'arm64': 'n', 'amd64-iot': 'm'}>
 CONFIG_AT803X_PHY                               policy<{'arm64': 'y', 'amd64-iot': 'm'}>
@@ -426,11 +425,9 @@ CONFIG_BLK_CGROUP_FC_APPID                      policy<{'arm64': '-', 'amd64-iot
 CONFIG_BLK_CGROUP_IOPRIO                        policy<{'arm64': 'n', 'amd64-iot': 'y'}>
 CONFIG_BLK_DEV_3W_XXXX_RAID                     policy<{'arm64': 'n', 'amd64-iot': 'm'}>
 CONFIG_BLK_DEV_CRYPTOLOOP                       policy<{'arm64': 'n', 'amd64-iot': 'm'}>
-CONFIG_BLK_DEV_DM                               policy<{'amd64': 'y', 'arm64': 'n'}> mark<ENFORCED> note<LP:#560717>
 CONFIG_BLK_DEV_DRBD                             policy<{'arm64': 'n', 'amd64-iot': 'm'}>
 CONFIG_BLK_DEV_IO_TRACE                         policy<{'arm64': 'n', 'amd64-iot': 'y'}>
 CONFIG_BLK_DEV_LOOP_MIN_COUNT                   policy<{'amd64': '256', 'arm64': '256'}>
-CONFIG_BLK_DEV_MD                               policy<{'amd64': 'y', 'arm64': 'n'}>
 CONFIG_BLK_DEV_PCIESSD_MTIP32XX                 policy<{'arm64': 'n', 'amd64-iot': 'm'}>
 CONFIG_BLK_DEV_RAM                              policy<{'arm64': 'n', 'amd64-iot': 'm'}>
 CONFIG_BLK_DEV_RAM_COUNT                        policy<{'arm64': '-', 'amd64-iot': '16'}>
@@ -439,7 +436,6 @@ CONFIG_BLK_DEV_RBD                              policy<{'arm64': 'n', 'amd64-iot
 CONFIG_BLK_DEV_RSXX                             policy<{'arm64': 'n', 'amd64-iot': 'm'}>
 CONFIG_BLK_DEV_SR                               policy<{'arm64': 'n', 'amd64-iot': 'y'}>
 CONFIG_BLK_DEV_SX8                              policy<{'arm64': 'n', 'amd64-iot': 'm'}>
-CONFIG_BLK_DEV_ZONED                            policy<{'arm64': 'n', 'amd64-iot': 'y'}>
 CONFIG_BLK_INLINE_ENCRYPTION_FALLBACK           policy<{'arm64': 'n', 'amd64-iot': 'y'}>
 CONFIG_BLK_SED_OPAL                             policy<{'arm64': 'n', 'amd64-iot': 'y'}>
 CONFIG_BLK_WBT                                  policy<{'arm64': 'n', 'amd64-iot': 'y'}>
@@ -810,7 +806,6 @@ CONFIG_COMMON_CLK_WM831X                        policy<{'arm64': '-', 'amd64-iot
 CONFIG_COMMON_CLK_XLNX_CLKWZRD                  policy<{'arm64': 'n'}>
 CONFIG_COMMON_RESET_HI3660                      policy<{'arm64': 'y'}>
 CONFIG_COMMON_RESET_HI6220                      policy<{'arm64': 'y'}>
-CONFIG_CONNECTOR                                policy<{'arm64': 'n', 'amd64-iot': 'y'}>
 CONFIG_CORDIC                                   policy<{'arm64': 'n', 'amd64-iot': 'm'}>
 CONFIG_CORE_DUMP_DEFAULT_ELF_HEADERS            policy<{'arm64': 'n', 'amd64-iot': 'y'}>
 CONFIG_CORTINA_PHY                              policy<{'arm64': 'n', 'amd64-iot': 'm'}>
@@ -851,7 +846,7 @@ CONFIG_CRYPTO_AES_ARM64_CE_BLK                  policy<{'arm64': 'y'}>
 CONFIG_CRYPTO_AES_ARM64_CE_CCM                  policy<{'arm64': 'y'}>
 CONFIG_CRYPTO_AES_TI                            policy<{'arm64': 'n', 'amd64-iot': 'm'}>
 CONFIG_CRYPTO_ANSI_CPRNG                        policy<{'arm64': 'y', 'amd64-iot': 'm'}>
-CONFIG_CRYPTO_AUTHENC                           policy<{'arm64': 'y', 'amd64-iot': 'm'}>
+CONFIG_CRYPTO_AUTHENC                           policy<{'arm64': 'y', 'amd64-iot': 'y'}>
 CONFIG_CRYPTO_BLAKE2S                           policy<{'arm64': '-', 'amd64-iot': '-'}>
 CONFIG_CRYPTO_BLOWFISH                          policy<{'arm64': 'n', 'amd64-iot': 'm'}>
 CONFIG_CRYPTO_CAMELLIA                          policy<{'arm64': 'n', 'amd64-iot': 'm'}>
@@ -889,6 +884,7 @@ CONFIG_CRYPTO_DRBG_HASH                         policy<{'arm64': 'n', 'amd64-iot
 CONFIG_CRYPTO_ECDSA                             policy<{'arm64': 'n', 'amd64-iot': 'm'}>
 CONFIG_CRYPTO_ECHAINIV                          policy<{'arm64': 'y', 'amd64-iot': 'm'}>
 CONFIG_CRYPTO_ECRDSA                            policy<{'arm64': 'n', 'amd64-iot': 'm'}>
+CONFIG_CRYPTO_ESSIV 				policy<{'arm64': 'y', 'amd64-iot': 'y'}>
 CONFIG_CRYPTO_FCRYPT                            policy<{'arm64': 'n', 'amd64-iot': 'm'}>
 CONFIG_CRYPTO_GCM                               policy<{'arm64': 'm', 'amd64-iot': 'y'}>
 CONFIG_CRYPTO_GHASH                             policy<{'arm64': 'm', 'amd64-iot': 'y'}>
@@ -992,39 +988,7 @@ CONFIG_DMA_BCM2835                              policy<{'arm64': 'n'}>
 CONFIG_DMA_RESTRICTED_POOL                      policy<{'arm64': 'n'}>
 CONFIG_DMA_SUN6I                                policy<{'arm64': 'n'}>
 CONFIG_DMI_SYSFS                                policy<{'arm64': 'n', 'amd64-iot': 'm'}>
-CONFIG_DM_CACHE                                 policy<{'amd64': 'm', 'arm64': '-'}>
-CONFIG_DM_CACHE_SMQ                             policy<{'arm64': '-', 'amd64-iot': 'm'}>
-CONFIG_DM_CLONE                                 policy<{'amd64': 'm', 'arm64': '-'}>
-CONFIG_DM_CRYPT                                 policy<{'amd64': 'm', 'arm64': '-'}>
-CONFIG_DM_DEBUG                                 policy<{'amd64': 'n', 'arm64': '-'}>
-CONFIG_DM_DEBUG_BLOCK_MANAGER_LOCKING           policy<{'amd64': 'n', 'arm64': '-'}>
-CONFIG_DM_DELAY                                 policy<{'amd64': 'm', 'arm64': '-'}>
-CONFIG_DM_DUST                                  policy<{'amd64': 'n', 'arm64': '-'}>
-CONFIG_DM_EBS                                   policy<{'amd64': 'm', 'arm64': '-', 'ppc64el': 'm', 's390x': 'm'}>
-CONFIG_DM_ERA                                   policy<{'amd64': 'm', 'arm64': '-'}>
-CONFIG_DM_FLAKEY                                policy<{'amd64': 'm', 'arm64': '-'}>
-CONFIG_DM_INIT                                  policy<{'arm64': '-', 'amd64-iot': 'y'}>
-CONFIG_DM_INTEGRITY                             policy<{'amd64': 'm', 'arm64': '-'}>
-CONFIG_DM_LOG_USERSPACE                         policy<{'amd64': 'm', 'arm64': '-'}>
-CONFIG_DM_LOG_WRITES                            policy<{'amd64': 'm', 'arm64': '-'}>
-CONFIG_DM_MIRROR                                policy<{'amd64': 'm', 'arm64': '-'}>
-CONFIG_DM_MULTIPATH                             policy<{'amd64': 'm', 'arm64': '-'}>
-CONFIG_DM_MULTIPATH_HST                         policy<{'arm64': '-', 'amd64-iot': 'm'}>
-CONFIG_DM_MULTIPATH_IOA                         policy<{'arm64': '-', 'amd64-iot': 'm'}>
-CONFIG_DM_MULTIPATH_QL                          policy<{'arm64': '-', 'amd64-iot': 'm'}>
-CONFIG_DM_MULTIPATH_ST                          policy<{'arm64': '-', 'amd64-iot': 'm'}>
-CONFIG_DM_RAID                                  policy<{'amd64': 'm', 'arm64': '-'}>
-CONFIG_DM_SNAPSHOT                              policy<{'amd64': 'm', 'arm64': '-'}>
-CONFIG_DM_SWITCH                                policy<{'amd64': 'm', 'arm64': '-'}>
-CONFIG_DM_THIN_PROVISIONING                     policy<{'amd64': 'm', 'arm64': '-'}>
-CONFIG_DM_UEVENT                                policy<{'amd64': 'y', 'arm64': '-'}>
-CONFIG_DM_UNSTRIPED                             policy<{'amd64': 'm', 'arm64': '-'}>
-CONFIG_DM_VERITY                                policy<{'amd64': 'm', 'arm64': '-'}>
-CONFIG_DM_VERITY_FEC                            policy<{'arm64': '-', 'amd64-iot': 'n'}>
-CONFIG_DM_VERITY_VERIFY_ROOTHASH_SIG            policy<{'arm64': '-', 'amd64-iot': 'y'}>
-CONFIG_DM_WRITECACHE                            policy<{'amd64': 'm', 'arm64': '-'}>
-CONFIG_DM_ZERO                                  policy<{'amd64': 'm', 'arm64': '-'}>
-CONFIG_DM_ZONED                                 policy<{'arm64': '-', 'amd64-iot': 'm'}>
+CONFIG_DM_CRYPT                                 policy<{'amd64': 'y', 'arm64': 'y'}>
 CONFIG_DNET                                     policy<{'arm64': 'n', 'amd64-iot': 'm'}>
 CONFIG_DP83640_PHY                              policy<{'arm64': '-', 'amd64-iot': 'm'}>
 CONFIG_DP83822_PHY                              policy<{'arm64': 'n', 'amd64-iot': 'm'}>
@@ -1564,7 +1528,6 @@ CONFIG_FB_TFT_WATTEROTT                         policy<{'arm64': '-', 'amd64-iot
 CONFIG_FB_TILEBLITTING                          policy<{'arm64': 'n', 'amd64-iot': 'y'}>
 CONFIG_FB_TRIDENT                               policy<{'arm64': 'n', 'amd64-iot': 'm'}>
 CONFIG_FB_UDL                                   policy<{'arm64': 'n', 'amd64-iot': 'm'}>
-CONFIG_FB_UVESA                                 policy<{'arm64': '-', 'amd64-iot': 'm'}>
 CONFIG_FB_VOODOO1                               policy<{'arm64': 'n', 'amd64-iot': 'm'}>
 CONFIG_FB_VT8623                                policy<{'arm64': 'n', 'amd64-iot': 'm'}>
 CONFIG_FB_XILINX                                policy<{'arm64': 'n'}>
@@ -2743,15 +2706,7 @@ CONFIG_MDIO_XGENE                               policy<{'arm64': 'n'}>
 CONFIG_MDM_GCC_9607                             policy<{'arm64': 'n'}>
 CONFIG_MDM_GCC_9615                             policy<{'arm64': 'n'}>
 CONFIG_MDM_LCC_9615                             policy<{'arm64': 'n'}>
-CONFIG_MD_AUTODETECT                            policy<{'arm64': '-', 'amd64-iot': 'y'}>
 CONFIG_MD_CLUSTER                               policy<{'arm64': '-', 'amd64-iot': 'm'}>
-CONFIG_MD_FAULTY                                policy<{'amd64': 'm', 'arm64': '-'}>
-CONFIG_MD_LINEAR                                policy<{'amd64': 'm', 'arm64': '-'}>
-CONFIG_MD_MULTIPATH                             policy<{'amd64': 'm', 'arm64': '-'}>
-CONFIG_MD_RAID0                                 policy<{'amd64': 'm', 'arm64': '-'}>
-CONFIG_MD_RAID1                                 policy<{'amd64': 'm', 'arm64': '-'}>
-CONFIG_MD_RAID10                                policy<{'amd64': 'm', 'arm64': '-'}>
-CONFIG_MD_RAID456                               policy<{'amd64': 'm', 'arm64': '-'}>
 CONFIG_MEDIATEK_GE_PHY                          policy<{'arm64': 'n', 'amd64-iot': 'm'}>
 CONFIG_MEDIATEK_MT6360_ADC                      policy<{'arm64': '-', 'amd64-iot': 'm'}>
 CONFIG_MEDIATEK_MT6577_AUXADC                   policy<{'arm64': 'n'}>
@@ -3792,7 +3747,6 @@ CONFIG_PRESTERA_PCI                             policy<{'arm64': '-', 'amd64-iot
 CONFIG_PRINTER                                  policy<{'arm64': '-', 'amd64-iot': 'm'}>
 CONFIG_PRINT_QUOTA_WARNING                      policy<{'arm64': 'y', 'amd64-iot': 'n'}>
 CONFIG_PRISM2_USB                               policy<{'arm64': 'n', 'amd64-iot': 'm'}>
-CONFIG_PROC_EVENTS                              policy<{'arm64': '-', 'amd64-iot': 'y'}>
 CONFIG_PROC_KCORE                               policy<{'arm64': 'n', 'amd64-iot': 'y'}>
 CONFIG_PROC_VMCORE_DEVICE_DUMP                  policy<{'arm64': 'n', 'amd64-iot': 'y'}>
 CONFIG_PROVE_LOCKING                            policy<{'amd64': 'n', 'arm64': 'n'}>
@@ -6343,7 +6297,6 @@ CONFIG_ZD1211RW_DEBUG                           policy<{'arm64': '-', 'amd64-iot
 CONFIG_ZEROPLUS_FF                              policy<{'arm64': '-', 'amd64-iot': 'y'}>
 CONFIG_ZIIRAVE_WATCHDOG                         policy<{'arm64': 'n', 'amd64-iot': 'm'}>
 CONFIG_ZISOFS                                   policy<{'arm64': '-', 'amd64-iot': 'y'}>
-CONFIG_ZONEFS_FS                                policy<{'arm64': '-', 'amd64-iot': 'm'}>
 CONFIG_ZONE_DEVICE                              policy<{'arm64': '-', 'amd64-iot': 'y'}>
 CONFIG_ZOPT2201                                 policy<{'arm64': 'n', 'amd64-iot': 'm'}>
 CONFIG_ZPA2326                                  policy<{'arm64': 'n', 'amd64-iot': 'm'}>
@@ -6369,9 +6322,6 @@ CONFIG_ZSWAP_DEFAULT_ON                         policy<{'arm64': '-', 'amd64-iot
 CONFIG_ZSWAP_ZPOOL_DEFAULT_Z3FOLD               policy<{'arm64': '-', 'amd64-iot': 'n'}>
 CONFIG_ZSWAP_ZPOOL_DEFAULT_ZBUD                 policy<{'arm64': '-', 'amd64-iot': 'y'}>
 CONFIG_ZSWAP_ZPOOL_DEFAULT_ZSMALLOC             policy<{'arm64': '-', 'amd64-iot': 'n'}>
-
-
-
 
 #
 # ODM drivers
