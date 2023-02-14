@@ -7,8 +7,15 @@
 include "../../debian.master/config/annotations"
 
 CONFIG_ARM_QCOM_CPUFREQ_HW                      policy<{'arm64': 'y'}> note<'X13s set to y'>
+CONFIG_ARM_SCMI_CPUFREQ                         policy<{'arm64': 'y'}> note<'X13s set to y'>
+CONFIG_ARM_SCMI_POWER_DOMAIN                    policy<{'arm64': 'y'}> note<'X13s set to y'>
+CONFIG_ARM_SCPI_CPUFREQ                         policy<{'arm64': 'y'}> note<'X13s set to y'>
+CONFIG_ARM_SCPI_POWER_DOMAIN                    policy<{'arm64': 'y'}> note<'X13s set to y'>
+CONFIG_ARM_SCPI_PROTOCOL                        policy<{'arm64': 'y'}> note<'X13s set to y'>
 CONFIG_BATTERY_QCOM_BATTMGR                     policy<{'arm64': 'm'}> note<'X13s patchset'>
 CONFIG_COMMON_CLK_QCOM                          policy<{'arm64': 'y'}> note<'X13s set to y'>
+CONFIG_COMMON_CLK_SCMI                          policy<{'arm64': 'y'}> note<'X13s set to y'>
+CONFIG_COMMON_CLK_SCPI                          policy<{'arm64': 'y'}> note<'X13s set to y'>
 CONFIG_HWSPINLOCK_QCOM                          policy<{'arm64': 'y'}> note<'X13s set to y'>
 CONFIG_INTERCONNECT_QCOM_BCM_VOTER              policy<{'arm64': 'y'}> note<'X13s set to y'>
 CONFIG_INTERCONNECT_QCOM_RPMH                   policy<{'arm64': 'y'}> note<'X13s set to y'>
@@ -33,6 +40,8 @@ CONFIG_QCOM_TEE                                 policy<{'arm64': 'y'}> note<'X13
 CONFIG_QCOM_TEE_UEFISECAPP                      policy<{'arm64': 'y'}> note<'X13s patchset'>
 CONFIG_QCOM_TSENS                               policy<{'arm64': 'y'}> note<'X13s set to y'>
 CONFIG_REGMAP_SPMI                              policy<{'arm64': 'y'}> note<'X13s set to y'>
+CONFIG_REGULATOR_FIXED_VOLTAGE                  policy<{'arm64': 'y'}> note<'X13s set to y'>
+CONFIG_REGULATOR_GPIO                           policy<{'arm64': 'y'}> note<'X13s set to y'>
 CONFIG_REGULATOR_QCOM_RPMH                      policy<{'arm64': 'y'}> note<'X13s set to y'>
 CONFIG_REGULATOR_QCOM_SMD_RPM                   policy<{'arm64': 'y'}> note<'X13s set to y'>
 CONFIG_REGULATOR_QCOM_SPMI                      policy<{'arm64': 'y'}> note<'X13s set to y'>
@@ -44,6 +53,7 @@ CONFIG_SC_DISPCC_8280XP                         policy<{'arm64': 'y'}> note<'X13
 CONFIG_SC_GCC_8280XP                            policy<{'arm64': 'y'}> note<'X13s set to y'>
 CONFIG_SC_GPUCC_8280XP                          policy<{'arm64': 'y'}> note<'X13s set to y'>
 CONFIG_SERIAL_QCOM_GENI                         policy<{'arm64': 'y'}> note<'X13s set to y'>
+CONFIG_SPMI_MSM_PMIC_ARB                        policy<{'arm64': 'y'}> note<'X13s set to y'>
 CONFIG_SYSFB_SIMPLEFB                           policy<{'arm64': 'n'}> note<'X13s required'>
 CONFIG_TYPEC_MUX_GPIO_SBU                       policy<{'arm64': 'm'}> note<'X13s patchset'>
 CONFIG_USB_DWC3_QCOM                            policy<{'arm64': 'y'}> note<'X13s set to y'>
