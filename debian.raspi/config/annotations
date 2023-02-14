@@ -3,24 +3,124 @@
 # ARCH: arm64 armhf
 # FLAVOUR: arm64-raspi armhf-raspi armhf-raspi-nolpae
 
+CONFIG_ARCH_BCM_63XX                            policy<{'armhf': 'n'}> note<'Introduced by rpi-6.2.y'>
 CONFIG_ARM_LPAE                                 policy<{'armhf': 'y', 'armhf-raspi-nolpae': 'n'}> note<'LP: #1896761'>
+CONFIG_BACKLIGHT_RPI                            policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_BCM2708_VCMEM                            policy<{'arm64': 'y', 'armhf': 'y'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_BCM2835_DEVGPIOMEM                       policy<{'arm64': 'y', 'armhf': 'y'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_BCM2835_SMI                              policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_BCM2835_SMI_DEV                          policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_BCM_VCIO                                 policy<{'arm64': 'y', 'armhf': 'y'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_BCM_VC_SM_CMA                            policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
 CONFIG_BLK_DEV_NVME                             policy<{'arm64': 'y', 'armhf': 'y'}> note<'LP: #1919319'>
+CONFIG_BRCM_CHAR_DRIVERS                        policy<{'arm64': 'y', 'armhf': 'y'}> note<'Introduced by rpi-6.2.y'>
 CONFIG_BRCM_TRACING                             policy<{'arm64': 'n', 'armhf': 'n'}> note<'LP: #1893905'>
 CONFIG_CGROUP_HUGETLB                           policy<{'arm64': 'y', 'armhf': 'y', 'armhf-raspi-nolpae': '-'}> note<'LP: #1933627'>
+CONFIG_COMMON_CLK_HIFIBERRY_DACPLUSHD           policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_COMMON_CLK_HIFIBERRY_DACPRO              policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_DMA_BCM2708                              policy<{'arm64': 'y', 'armhf': 'y'}> note<'Introduced by rpi-6.2.y'>
 CONFIG_DRM_DISPLAY_CONNECTOR                    policy<{'arm64': 'm', 'armhf': 'm'}> note<'LP: #1916721'>
+CONFIG_DRM_PANEL_ILITEK_ILI9806E                policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_DRM_PANEL_TPO_Y17P                       policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
 CONFIG_DRM_SIMPLEDRM                            policy<{'arm64': 'n', 'armhf': 'n'}> note<'LP: #1976147'>
 CONFIG_DRM_SIMPLE_BRIDGE                        policy<{'arm64': 'm', 'armhf': 'm'}> note<'LP: #1916721'>
+CONFIG_FB_BCM2708                               policy<{'arm64': 'y', 'armhf': 'y'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_FB_RPISENSE                              policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
 CONFIG_FB_SIMPLE                                policy<{'arm64': 'y', 'armhf': 'y'}> note<'LP: #1976147'>
+CONFIG_FIQ                                      policy<{'armhf': 'y'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_GPIO_BCM_VIRT                            policy<{'arm64': 'y', 'armhf': 'y'}> note<'Introduced by rpi-6.2.y'>
 CONFIG_GPIO_CDEV_V1                             policy<{'arm64': 'y', 'armhf': 'y'}> note<'LP: #1919973'>
+CONFIG_GPIO_FSM                                 policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_GPIO_PWM                                 policy<{'arm64': 'n', 'armhf': 'n'}> note<'Introduced by rpi-6.2.y'>
 CONFIG_GPIO_SYSFS                               policy<{'arm64': 'n', 'armhf': 'n'}> note<'LP: #1918583'>
 CONFIG_HIBERNATION                              policy<{'arm64': 'n', 'armhf': 'n'}> note<'LP: #1914009'>
 CONFIG_HIGHMEM                                  policy<{'armhf': 'y', 'armhf-raspi-nolpae': 'n'}> note<'LP: #1896761'>
 CONFIG_HUGETLBFS                                policy<{'arm64': 'y', 'armhf': 'y', 'armhf-raspi-nolpae': '-'}> note<'LP: #1933627'>
+CONFIG_I2C_BCM2708                              policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_I2C_BCM2708_BAUDRATE                     policy<{'arm64': '100000', 'armhf': '100000'}> note<'Introduced by rpi-6.2.y'>
 CONFIG_IMA_ARCH_POLICY                          policy<{'arm64': 'n', 'armhf': 'n'}> note<'LP: #1982090'>
 CONFIG_JOYSTICK_FSIA6B                          policy<{'arm64': 'm', 'armhf': 'm'}> note<'LP: #1995968'>
+CONFIG_JOYSTICK_RPISENSE                        policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_LEDS_TRIGGER_ACTPWR                      policy<{'arm64': 'y', 'armhf': 'y'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_LEDS_TRIGGER_INPUT                       policy<{'arm64': 'y', 'armhf': 'y'}> note<'Introduced by rpi-6.2.y'>
 CONFIG_MEDIA_CEC_RC                             policy<{'arm64': 'y', 'armhf': 'y'}> note<'LP: #1916721'>
+CONFIG_MFD_RASPBERRYPI_POE_HAT                  policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_MFD_RPISENSE_CORE                        policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_MMC_BCM2835_DMA                          policy<{'arm64': 'y', 'armhf': 'y'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_MMC_BCM2835_MMC                          policy<{'arm64': 'y', 'armhf': 'y'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_MMC_BCM2835_PIO_DMA_BARRIER              policy<{'arm64': '2', 'armhf': '2'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_MMC_BCM2835_SDHOST                       policy<{'arm64': 'y', 'armhf': 'y'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_OF_CONFIGFS                              policy<{'arm64': 'y', 'armhf': 'y'}> note<'Introduced by rpi-6.2.y'>
 CONFIG_PREEMPT                                  policy<{'arm64': 'y', 'armhf': 'y'}> note<'LP: #1890808'>
+CONFIG_RPIVID_MEM                               policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_RPI_AXIPERF                              policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_RPI_POE_POWER                            policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_SND_AUDIOINJECTOR_ISOLATED_SOUNDCARD     policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_SND_AUDIOINJECTOR_OCTO_SOUNDCARD         policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_SND_AUDIOINJECTOR_PI_SOUNDCARD           policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_SND_AUDIOSENSE_PI                        policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_SND_BCM2708_SOC_ADAU1977_ADC             policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_SND_BCM2708_SOC_ALLO_BOSS2_DAC           policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_SND_BCM2708_SOC_ALLO_BOSS_DAC            policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_SND_BCM2708_SOC_ALLO_DIGIONE             policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_SND_BCM2708_SOC_ALLO_KATANA_DAC          policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_SND_BCM2708_SOC_ALLO_PIANO_DAC           policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_SND_BCM2708_SOC_ALLO_PIANO_DAC_PLUS      policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_SND_BCM2708_SOC_CHIPDIP_DAC              policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_SND_BCM2708_SOC_DIONAUDIO_LOCO           policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_SND_BCM2708_SOC_DIONAUDIO_LOCO_V2        policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_SND_BCM2708_SOC_FE_PI_AUDIO              policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_SND_BCM2708_SOC_GOOGLEVOICEHAT_SOUNDCARD policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_SND_BCM2708_SOC_HIFIBERRY_AMP            policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_SND_BCM2708_SOC_HIFIBERRY_DAC            policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_SND_BCM2708_SOC_HIFIBERRY_DACPLUS        policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_SND_BCM2708_SOC_HIFIBERRY_DACPLUSADC     policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_SND_BCM2708_SOC_HIFIBERRY_DACPLUSADCPRO  policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_SND_BCM2708_SOC_HIFIBERRY_DACPLUSDSP     policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_SND_BCM2708_SOC_HIFIBERRY_DACPLUSHD      policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_SND_BCM2708_SOC_HIFIBERRY_DIGI           policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_SND_BCM2708_SOC_IQAUDIO_CODEC            policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_SND_BCM2708_SOC_IQAUDIO_DAC              policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_SND_BCM2708_SOC_IQAUDIO_DIGI             policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_SND_BCM2708_SOC_I_SABRE_Q2M              policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_SND_BCM2708_SOC_JUSTBOOM_BOTH            policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_SND_BCM2708_SOC_JUSTBOOM_DAC             policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_SND_BCM2708_SOC_JUSTBOOM_DIGI            policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_SND_BCM2708_SOC_PIFI_40                  policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_SND_BCM2708_SOC_RPI_CIRRUS               policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_SND_BCM2708_SOC_RPI_DAC                  policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_SND_BCM2708_SOC_RPI_PROTO                policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_SND_DACBERRY400                          policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_SND_DIGIDAC1_SOUNDCARD                   policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_SND_PISOUND                              policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_SND_RPI_SIMPLE_SOUNDCARD                 policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_SND_RPI_WM8804_SOUNDCARD                 policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_SND_SOC_AD193X                           policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_SND_SOC_AD193X_I2C                       policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_SND_SOC_AD193X_SPI                       policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_SND_SOC_ADAU1977                         policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_SND_SOC_ADAU1977_I2C                     policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_SND_SOC_ARIZONA                          policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_SND_SOC_I_SABRE_CODEC                    policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_SND_SOC_MA120X0P                         policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_SND_SOC_PCM1794A                         policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_SND_SOC_TAS5713                          policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_SND_SOC_WM5102                           policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_USB_DWCOTG                               policy<{'arm64': 'y', 'armhf': 'y'}> note<'Introduced by rpi-6.2.y'>
 CONFIG_VFIO                                     policy<{'arm64': 'm', 'armhf': 'm'}> note<'LP: #1982090'>
+CONFIG_VIDEO_AD5398                             policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_VIDEO_ARDUCAM_64MP                       policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_VIDEO_ARDUCAM_PIVARIETY                  policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_VIDEO_BCM2835_UNICAM                     policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_VIDEO_CODEC_BCM2835                      policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_VIDEO_IMX296                             policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_VIDEO_IMX477                             policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_VIDEO_IMX519                             policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_VIDEO_IMX708                             policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_VIDEO_IRS1125                            policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_VIDEO_ISP_BCM2835                        policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_VIDEO_OV2311                             policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_VIDEO_RPIVID                             policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
 CONFIG_VIRTIO_PCI                               policy<{'arm64': 'm', 'armhf': 'm'}> note<'LP: #1959102'>
 CONFIG_VMSPLIT_2G                               policy<{'armhf': 'n', 'armhf-raspi-nolpae': 'y'}> note<'LP: #1896761'>
 CONFIG_VMSPLIT_3G                               policy<{'armhf': 'y', 'armhf-raspi-nolpae': 'n'}> note<'LP: #1896761'>
