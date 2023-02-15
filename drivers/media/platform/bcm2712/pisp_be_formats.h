@@ -2,7 +2,7 @@
 /*
  * PiSP Back End driver image format definitions.
  *
- * Copyright (c) 2021 Raspberry Pi Trading Ltd.
+ * Copyright (c) 2021 Raspberry Pi Ltd.
  */
 
 #ifndef _PISP_BE_FORMATS_
@@ -472,6 +472,43 @@ static const struct pisp_be_format supported_formats[] = {
 	{
 		.fourcc		    = V4L2_PIX_FMT_SGBRG14,
 		.bit_depth	    = 16,
+		.align		    = 32,
+		.plane_factor	    = { P8(1.0) },
+		.num_planes	    = 1,
+		.colorspace_mask    = COLORSPACE_MASK_RAW,
+		.colorspace_default = V4L2_COLORSPACE_RAW,
+	},
+	/* Bayer formats - 16-bit PiSP Compressed */
+	{
+		.fourcc		    = V4L2_PIX_FMT_PISP_COMP1_BGGR,
+		.bit_depth	    = 8,
+		.align		    = 32,
+		.plane_factor	    = { P8(1.0) },
+		.num_planes	    = 1,
+		.colorspace_mask    = COLORSPACE_MASK_RAW,
+		.colorspace_default = V4L2_COLORSPACE_RAW,
+	},
+	{
+		.fourcc		    = V4L2_PIX_FMT_PISP_COMP1_RGGB,
+		.bit_depth	    = 8,
+		.align		    = 32,
+		.plane_factor	    = { P8(1.0) },
+		.num_planes	    = 1,
+		.colorspace_mask    = COLORSPACE_MASK_RAW,
+		.colorspace_default = V4L2_COLORSPACE_RAW,
+	},
+	{
+		.fourcc		    = V4L2_PIX_FMT_PISP_COMP1_GRBG,
+		.bit_depth	    = 8,
+		.align		    = 32,
+		.plane_factor	    = { P8(1.0) },
+		.num_planes	    = 1,
+		.colorspace_mask    = COLORSPACE_MASK_RAW,
+		.colorspace_default = V4L2_COLORSPACE_RAW,
+	},
+	{
+		.fourcc		    = V4L2_PIX_FMT_PISP_COMP1_GBRG,
+		.bit_depth	    = 8,
 		.align		    = 32,
 		.plane_factor	    = { P8(1.0) },
 		.num_planes	    = 1,
