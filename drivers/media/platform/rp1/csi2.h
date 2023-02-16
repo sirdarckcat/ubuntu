@@ -42,7 +42,7 @@ struct csi2_device {
 	u32 num_lanes;
 	u32 active_data_lanes;
 	u32 dphy_freq;
-	bool eop_is_eof;
+	bool multipacket_line;
 	unsigned int num_lines[CSI2_NUM_CHANNELS];
 
 	struct media_pad pad[CSI2_NUM_CHANNELS*2];

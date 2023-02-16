@@ -420,7 +420,7 @@ void csi2_open_rx(struct csi2_device *csi2)
 	dw_csi2_host_write(csi2, RESETN, 0xffffffff);
 	usleep_range(10, 50);
 
-	if (csi2->eop_is_eof)
+	if (!csi2->multipacket_line)
 		csi2_reg_write(csi2, CSI2_CTRL, EOP_IS_EOL);
 }
 
