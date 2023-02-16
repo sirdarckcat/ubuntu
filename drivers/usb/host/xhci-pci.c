@@ -177,7 +177,9 @@ static void xhci_pci_quirks(struct device *dev, struct xhci_hcd *xhci)
 	    (pdev->device == 0x15e0 || pdev->device == 0x15e1))
 		xhci->quirks |= XHCI_SNPS_BROKEN_SUSPEND;
 
-	if (pdev->vendor == PCI_VENDOR_ID_AMD && pdev->device == 0x15e5) {
+	if (pdev->vendor == PCI_VENDOR_ID_AMD &&
+		(pdev->device == 0x15e5 ||
+		 pdev->device == 0x1505)) {
 		xhci->quirks |= XHCI_DISABLE_SPARSE;
 		xhci->quirks |= XHCI_RESET_ON_RESUME;
 	}
