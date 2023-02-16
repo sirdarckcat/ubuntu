@@ -148,6 +148,24 @@
 
 	clocks: clocks {
 	};
+
+       cam1_clk: cam1_clk {
+               compatible = "fixed-clock";
+               #clock-cells = <0>;
+               status = "disabled";
+       };
+
+       cam0_clk: cam0_clk {
+               compatible = "fixed-clock";
+               #clock-cells = <0>;
+               status = "disabled";
+       };
+
+       cam_dummy_reg: cam_dummy_reg {
+               compatible = "regulator-fixed";
+               regulator-name = "cam-dummy-reg";
+               status = "okay";
+       };
 };
 
 rp1_target: &pcie2 {
@@ -209,8 +227,6 @@ i2c_rp1boot: &_i2c3 { };
 
 gpio: &rp1_gpio {
 	status = "okay";
-	pinctrl-0 = <&rp1_uart0_14_15>;
-	pinctrl-names = "default";
 };
 
 i2c0: &rp1_i2c0 { };
@@ -229,11 +245,14 @@ spi2: &rp1_spi2 { };
 spi3: &rp1_spi3 { };
 spi4: &rp1_spi4 { };
 spi5: &rp1_spi5 { };
-uart0: &rp1_uart0 { status = "okay"; };
+uart0: &rp1_uart0 { };
 uart1: &rp1_uart1 { };
 uart2: &rp1_uart2 { };
 uart3: &rp1_uart3 { };
 uart4: &rp1_uart4 { };
+
+cam0_reg: &cam_dummy_reg {  status = "okay"; };
+cam1_reg: &rp1_cam1_reg { status = "okay"; };
 
 &rp1_usb0 {
 	status = "okay";
@@ -247,8 +266,28 @@ uart4: &rp1_uart4 { };
 
 i2c0if: &i2c0 {};
 i2c0mux: &i2c0 {};
-i2c_csi_dsi: &i2c6 {};
+i2c_csi_dsi: &rp1_i2c4 { // Note: This is for MIPI1 connector only
+	pinctrl-0 = <&rp1_i2c4_40_41>;
+	pinctrl-names = "default";
+};
+i2c_vc: &rp1_i2c0 {      // This is pins 27,28 on the header (not MIPI)
+	pinctrl-0 = <&rp1_i2c0_0_1>;
+	pinctrl-names = "default";
+};
 
+csi0: &rp1_csi0 { };
+csi1: &rp1_csi1 { };
+dsi0: &rp1_dsi0 { };
+dsi1: &rp1_dsi1 { };
+dpi: &rp1_dpi { };
+dpi_18bit_cpadhi_gpio0: &rp1_dpi_18bit_cpadhi_gpio0 { };
+dpi_18bit_cpadhi_gpio2: &rp1_dpi_18bit_cpadhi_gpio2 { };
+dpi_18bit_gpio0:        &rp1_dpi_18bit_gpio0        { };
+dpi_18bit_gpio2:        &rp1_dpi_18bit_gpio2        { };
+dpi_16bit_cpadhi_gpio0: &rp1_dpi_16bit_cpadhi_gpio0 { };
+dpi_16bit_cpadhi_gpio2: &rp1_dpi_16bit_cpadhi_gpio2 { };
+dpi_16bit_gpio0:        &rp1_dpi_16bit_gpio0        { };
+dpi_16bit_gpio2:        &rp1_dpi_16bit_gpio2        { };
 
 &ddc0 {
 	status = "disabled";
@@ -651,6 +690,7 @@ spi0_cs_pins: &rp1_spi0_cs_gpio7 {};
 		random = <&random>, "status";
 		spi = <&spi0>, "status";
 		uart0 = <&uart0>, "status";
+		vec = <&rp1_vec>, "status";
 
 		act_led_activelow = <&act_led>, "active-low?";
 		act_led_trigger = <&act_led>, "linux,default-trigger";
