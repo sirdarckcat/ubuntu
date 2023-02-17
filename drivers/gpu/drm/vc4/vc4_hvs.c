@@ -422,7 +422,7 @@ static void vc4_hvs_irq_enable_eof(const struct vc4_hvs *hvs,
 				   unsigned int channel)
 {
 	struct vc4_dev *vc4 = hvs->vc4;
-	u32 irq_mask = vc4->is_vc5 ?
+	u32 irq_mask = vc4->gen == VC4_GEN_5 ?
 		SCALER5_DISPCTRL_DSPEIEOF(channel) :
 		SCALER_DISPCTRL_DSPEIEOF(channel);
 
@@ -434,7 +434,7 @@ static void vc4_hvs_irq_clear_eof(const struct vc4_hvs *hvs,
 				  unsigned int channel)
 {
 	struct vc4_dev *vc4 = hvs->vc4;
-	u32 irq_mask = vc4->is_vc5 ?
+	u32 irq_mask = vc4->gen == VC4_GEN_5 ?
 		SCALER5_DISPCTRL_DSPEIEOF(channel) :
 		SCALER_DISPCTRL_DSPEIEOF(channel);
 
@@ -738,7 +738,7 @@ static int vc4_hvs_init_channel(struct vc4_hvs *hvs, struct drm_crtc *crtc,
 	/* Reload the LUT, since the SRAMs would have been disabled if
 	 * all CRTCs had SCALER_DISPBKGND_GAMMA unset at once.
 	 */
-	if (!vc4->is_vc5)
+	if (vc4->gen == VC4_GEN_4)
 		vc4_hvs_lut_load(hvs, vc4_crtc);
 	else
 		vc5_hvs_lut_load(hvs, vc4_crtc);
@@ -786,7 +786,7 @@ static int vc4_hvs_gamma_check(struct drm_crtc *crtc,
 	struct drm_device *dev = crtc->dev;
 	struct vc4_dev *vc4 = to_vc4_dev(dev);
 
-	if (!vc4->is_vc5)
+	if (vc4->gen == VC4_GEN_4)
 		return 0;
 
 	if (!crtc_state->color_mgmt_changed)
@@ -1040,7 +1040,7 @@ void vc4_hvs_atomic_flush(struct drm_crtc *crtc,
 		u32 dispbkgndx = HVS_READ(SCALER_DISPBKGNDX(channel));
 
 		if (crtc->state->gamma_lut) {
-			if (!vc4->is_vc5) {
+			if (vc4->gen == VC4_GEN_4) {
 				vc4_hvs_update_gamma_lut(hvs, vc4_crtc);
 				dispbkgndx |= SCALER_DISPBKGND_GAMMA;
 			} else {
@@ -1057,7 +1057,7 @@ void vc4_hvs_atomic_flush(struct drm_crtc *crtc,
 			 * should already be disabling/enabling the pipeline
 			 * when gamma changes.
 			 */
-			if (!vc4->is_vc5)
+			if (vc4->gen == VC4_GEN_4)
 				dispbkgndx &= ~SCALER_DISPBKGND_GAMMA;
 		}
 		HVS_WRITE(SCALER_DISPBKGNDX(channel), dispbkgndx);
