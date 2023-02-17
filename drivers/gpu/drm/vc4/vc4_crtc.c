@@ -1362,7 +1362,7 @@ int __vc4_crtc_init(struct drm_device *drm,
 	}
 
 
-	if (!vc4->gen == VC4_GEN_5) {
+	if (vc4->gen == VC4_GEN_4) {
 		/* We support CTM, but only for one CRTC at a time. It's therefore
 		 * implemented as private driver state in vc4_kms, not here.
 		 */
