@@ -56,6 +56,12 @@ config PENSANDO_SOC_SBUS
 	help
 	  Support for the Pensando SoC sbus read/write driver
 
+config PENSANDO_SOC_PENFW
+       bool "Pensando penfw driver"
+       default n
+       help
+         Driver module to interface secure boot config
+
 endmenu
 
 endif
