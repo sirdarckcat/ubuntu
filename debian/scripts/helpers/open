@@ -221,7 +221,7 @@ if [ -d "$DEBIAN/abi" ]; then
 fi
 
 # Create the new changelog entry:
-run debian/rules startnewrelease
+run fakeroot debian/rules startnewrelease
 run git add "$DEBIAN/changelog"
 
 # Create the commit
