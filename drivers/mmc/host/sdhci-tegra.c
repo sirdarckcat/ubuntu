@@ -183,6 +183,7 @@ struct sdhci_tegra {
 	unsigned long curr_clk_rate;
 	u8 tuned_tap_delay;
 	u32 stream_id;
+	bool skip_clk_rst;
 };
 
 static u16 tegra_sdhci_readw(struct sdhci_host *host, int reg)
@@ -743,6 +744,9 @@ static void tegra_sdhci_parse_dt(struct sdhci_host *host)
 
 	tegra_sdhci_parse_pad_autocal_dt(host);
 	tegra_sdhci_parse_tap_and_trim(host);
+
+	tegra_host->skip_clk_rst = device_property_read_bool(host->mmc->parent,
+							"nvidia,skip-clk-rst");
 }
 
 static void tegra_sdhci_set_clock(struct sdhci_host *host, unsigned int clock)
@@ -768,18 +772,20 @@ static void tegra_sdhci_set_clock(struct sdhci_host *host, unsigned int clock)
 	 * regardless of clock rate rounding, which may happen if the value
 	 * from clk_get_rate() is used.
 	 */
-	host_clk = tegra_host->ddr_signaling ? clock * 2 : clock;
+	if (!tegra_host->skip_clk_rst) {
+		host_clk = tegra_host->ddr_signaling ? clock * 2 : clock;
 
-	err = dev_pm_opp_set_rate(dev, host_clk);
-	if (err)
-		dev_err(dev, "failed to set clk rate to %luHz: %d\n",
-			host_clk, err);
+		err = dev_pm_opp_set_rate(dev, host_clk);
+		if (err)
+			dev_err(dev, "failed to set clk rate to %luHz: %d\n",
+				host_clk, err);
 
-	tegra_host->curr_clk_rate = clk_get_rate(pltfm_host->clk);
-	if (tegra_host->ddr_signaling)
-		host->max_clk = host_clk;
-	else
-		host->max_clk = clk_get_rate(pltfm_host->clk);
+		tegra_host->curr_clk_rate = clk_get_rate(pltfm_host->clk);
+		if (tegra_host->ddr_signaling)
+			host->max_clk = host_clk;
+		else
+			host->max_clk = clk_get_rate(pltfm_host->clk);
+	}
 
 	sdhci_set_clock(host, clock);
 
@@ -1734,7 +1740,7 @@ static int sdhci_tegra_probe(struct platform_device *pdev)
 	 * supporting separate TMCLK.
 	 */
 
-	if (soc_data->nvquirks & NVQUIRK_HAS_TMCLK) {
+	if (soc_data->nvquirks & NVQUIRK_HAS_TMCLK && !tegra_host->skip_clk_rst) {
 		clk = devm_clk_get(&pdev->dev, "tmclk");
 		if (IS_ERR(clk)) {
 			rc = PTR_ERR(clk);
@@ -1756,42 +1762,44 @@ static int sdhci_tegra_probe(struct platform_device *pdev)
 		tegra_host->tmclk = clk;
 	}
 
-	clk = devm_clk_get(mmc_dev(host->mmc), NULL);
-	if (IS_ERR(clk)) {
-		rc = dev_err_probe(&pdev->dev, PTR_ERR(clk),
-				   "failed to get clock\n");
-		goto err_clk_get;
+	if (!tegra_host->skip_clk_rst) {
+		clk = devm_clk_get(mmc_dev(host->mmc), NULL);
+		if (IS_ERR(clk)) {
+			rc = dev_err_probe(&pdev->dev, PTR_ERR(clk),
+					   "failed to get clock\n");
+			goto err_clk_get;
+		}
+		pltfm_host->clk = clk;
+
+		tegra_host->rst = devm_reset_control_get_exclusive(&pdev->dev,
+								   "sdhci");
+		if (IS_ERR(tegra_host->rst)) {
+			rc = PTR_ERR(tegra_host->rst);
+			dev_err(&pdev->dev, "failed to get reset control: %d\n", rc);
+			goto err_rst_get;
+		}
+
+		rc = devm_tegra_core_dev_init_opp_table_common(&pdev->dev);
+		if (rc)
+			goto err_rst_get;
+
+		pm_runtime_enable(&pdev->dev);
+		rc = pm_runtime_resume_and_get(&pdev->dev);
+		if (rc)
+			goto err_pm_get;
+
+		rc = reset_control_assert(tegra_host->rst);
+		if (rc)
+			goto err_rst_assert;
+
+		usleep_range(2000, 4000);
+
+		rc = reset_control_deassert(tegra_host->rst);
+		if (rc)
+			goto err_rst_assert;
+
+		usleep_range(2000, 4000);
 	}
-	pltfm_host->clk = clk;
-
-	tegra_host->rst = devm_reset_control_get_exclusive(&pdev->dev,
-							   "sdhci");
-	if (IS_ERR(tegra_host->rst)) {
-		rc = PTR_ERR(tegra_host->rst);
-		dev_err(&pdev->dev, "failed to get reset control: %d\n", rc);
-		goto err_rst_get;
-	}
-
-	rc = devm_tegra_core_dev_init_opp_table_common(&pdev->dev);
-	if (rc)
-		goto err_rst_get;
-
-	pm_runtime_enable(&pdev->dev);
-	rc = pm_runtime_resume_and_get(&pdev->dev);
-	if (rc)
-		goto err_pm_get;
-
-	rc = reset_control_assert(tegra_host->rst);
-	if (rc)
-		goto err_rst_assert;
-
-	usleep_range(2000, 4000);
-
-	rc = reset_control_deassert(tegra_host->rst);
-	if (rc)
-		goto err_rst_assert;
-
-	usleep_range(2000, 4000);
 
 	rc = sdhci_tegra_add_host(host);
 	if (rc)
@@ -1802,14 +1810,16 @@ static int sdhci_tegra_probe(struct platform_device *pdev)
 	return 0;
 
 err_add_host:
-	reset_control_assert(tegra_host->rst);
+	if (!tegra_host->skip_clk_rst)
+		reset_control_assert(tegra_host->rst);
 err_rst_assert:
 	pm_runtime_put_sync_suspend(&pdev->dev);
 err_pm_get:
 	pm_runtime_disable(&pdev->dev);
 err_rst_get:
 err_clk_get:
-	clk_disable_unprepare(tegra_host->tmclk);
+	if (!tegra_host->skip_clk_rst)
+		clk_disable_unprepare(tegra_host->tmclk);
 err_power_req:
 err_parse_dt:
 	sdhci_pltfm_free(pdev);
@@ -1824,13 +1834,15 @@ static void sdhci_tegra_remove(struct platform_device *pdev)
 
 	sdhci_remove_host(host, 0);
 
-	reset_control_assert(tegra_host->rst);
-	usleep_range(2000, 4000);
+	if (!tegra_host->skip_clk_rst) {
+		reset_control_assert(tegra_host->rst);
+		usleep_range(2000, 4000);
 
-	pm_runtime_put_sync_suspend(&pdev->dev);
-	pm_runtime_force_suspend(&pdev->dev);
+		pm_runtime_put_sync_suspend(&pdev->dev);
+		pm_runtime_force_suspend(&pdev->dev);
 
-	clk_disable_unprepare(tegra_host->tmclk);
+		clk_disable_unprepare(tegra_host->tmclk);
+	}
 	sdhci_pltfm_free(pdev);
 }
 
