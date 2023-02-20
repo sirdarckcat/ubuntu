@@ -59,8 +59,7 @@
 	};
 
 	vc4: gpu {
-		compatible = "brcm,bcm2711-vc5";
-		status = "disabled";
+		compatible = "brcm,bcm2712-vc6";
 	};
 
 	clk_27MHz: clk-27M {
@@ -78,9 +77,11 @@
 	};
 
 	hvs: hvs@107c580000 {
-		compatible = "brcm,bcm2711-hvs";
+		compatible = "brcm,bcm2712-hvs";
 		reg = <0x10 0x7c580000 0x1a000>;
-		interrupts = <GIC_SPI 97 IRQ_TYPE_LEVEL_HIGH>;
+		interrupt-parent = <&disp_intr>;
+		interrupts = <2>, <9>, <16>;
+		interrupt-names = "ch0-eof", "ch1-eof", "ch2-eof";
 		status = "disabled";
 	};
 
@@ -122,23 +123,16 @@
 		};
 
 		pixelvalve0: pixelvalve@7c410000 {
-			compatible = "brcm,bcm2711-pixelvalve0";
+			compatible = "brcm,bcm2712-pixelvalve0";
 			reg = <0x7c410000 0x100>;
 			interrupts = <GIC_SPI 101 IRQ_TYPE_LEVEL_HIGH>;
 			status = "disabled";
 		};
 
 		pixelvalve1: pixelvalve@7c411000 {
-			compatible = "brcm,bcm2711-pixelvalve1";
+			compatible = "brcm,bcm2712-pixelvalve1";
 			reg = <0x7c411000 0x100>;
 			interrupts = <GIC_SPI 110 IRQ_TYPE_LEVEL_HIGH>;
-			status = "disabled";
-		};
-
-		pixelvalve2: pixelvalve@7c412000 {
-			compatible = "brcm,bcm2711-pixelvalve2";
-			reg = <0x7c412000 0x100>;
-			interrupts = <GIC_SPI 101 IRQ_TYPE_LEVEL_HIGH>;
 			status = "disabled";
 		};
 
@@ -155,11 +149,28 @@
 			status = "disabled";
 		};
 
-		txp: txp@7c500000 {
-			compatible = "brcm,bcm2835-txp";
+		mop: mop@7c500000 {
+			compatible = "brcm,bcm2712-mop";
 			reg = <0x7c500000 0x20>;
-			interrupts = <GIC_SPI 75 IRQ_TYPE_LEVEL_HIGH>;
+			interrupt-parent = <&disp_intr>;
+			interrupts = <1>;
 			status = "disabled";
+		};
+
+		moplet: moplet@7c501000 {
+			compatible = "brcm,bcm2712-moplet";
+			reg = <0x7c501000 0x20>;
+			interrupt-parent = <&disp_intr>;
+			interrupts = <0>;
+			status = "disabled";
+		};
+
+		disp_intr: interrupt-controller@7c502000 {
+			compatible = "brcm,bcm2711-l2-intc", "brcm,l2-intc";
+			reg = <0x7c502000 0x30>;
+			interrupts = <GIC_SPI 97 IRQ_TYPE_LEVEL_HIGH>;
+			interrupt-controller;
+			#interrupt-cells = <1>;
 		};
 
 		dvp: clock@7c700000 {
@@ -168,27 +179,6 @@
 			clocks = <&clk_108MHz>;
 			#clock-cells = <1>;
 			#reset-cells = <1>;
-			status = "disabled";
-		};
-
-		hdmi0_bsc: i2c@7c704800 {
-			compatible = "brcm,brcmstb-i2c";
-			reg = <0x7c704800 0x58>;
-			interrupts = <GIC_SPI 115 IRQ_TYPE_LEVEL_HIGH>;
-			clock-frequency = <200000>;
-			#address-cells = <1>;
-			#size-cells = <0>;
-			status = "disabled";
-		};
-
-		hdmi1_bsc: i2c@7c709800 {
-			compatible = "brcm,brcmstb-i2c";
-			reg = <0x7c709800 0x58>;
-			interrupts = <GIC_SPI 115 IRQ_TYPE_LEVEL_HIGH>;
-			clock-frequency = <200000>;
-			#address-cells = <1>;
-			#size-cells = <0>;
-			status = "disabled";
 		};
 
 		/*
@@ -483,7 +473,7 @@
 			};
 		};
 
-		bsca: i2c@7d508200 {
+		ddc0: i2c@7d508200 {
 			compatible = "brcm,brcmstb-i2c";
 			reg = <0x7d508200 0x58>;
 			interrupt-parent = <&bsc_irq>;
@@ -494,7 +484,7 @@
 			status = "disabled";
 		};
 
-		bscb: i2c@7d508280 {
+		ddc1: i2c@7d508280 {
 			compatible = "brcm,brcmstb-i2c";
 			reg = <0x7d508280 0x58>;
 			interrupt-parent = <&bsc_irq>;
@@ -706,19 +696,17 @@
 			status = "disabled";
 		};
 
-		// XXX
 		hdmi0: hdmi@7ef00700 {
-			compatible = "brcm,bcm2711-hdmi0";
-			reg = <0x7ef00700 0x300>,
-			      <0x7ef00300 0x200>,
-			      <0x7ef00f00 0x80>,
-			      <0x7ef00f80 0x80>,
-			      <0x7ef01b00 0x200>,
-			      <0x7ef01f00 0x400>,
-			      <0x7ef00200 0x80>,
-			      <0x7ef04300 0x100>,
-			      <0x7ef20000 0x100>,
-			      <0x7ef00100 0x30>;
+			compatible = "brcm,bcm2712-hdmi0";
+			reg = <0x7c701400 0x300>,
+			      <0x7c701000 0x200>,
+			      <0x7c701d00 0x300>,
+			      <0x7c702000 0x80>,
+			      <0x7c703800 0x200>,
+			      <0x7c704000 0x800>,
+			      <0x7c700100 0x80>,
+			      <0x7d510800 0x100>,
+			      <0x7c720000 0x100>;
 			reg-names = "hdmi",
 				    "dvp",
 				    "phy",
@@ -727,42 +715,30 @@
 				    "metadata",
 				    "csc",
 				    "cec",
-				    "hd",
-				    "intr2";
-			resets = <&dvp 0>;
+				    "hd";
+			resets = <&dvp 1>;
 			interrupt-parent = <&aon_intr>;
-			interrupts = <0>, <1>, <2>,
-				     <3>, <4>, <5>;
+			interrupts = <1>, <2>, <3>,
+				     <7>, <8>;
 			interrupt-names = "cec-tx", "cec-rx", "cec-low",
-					  "wakeup", "hpd-connected", "hpd-removed";
+					  "hpd-connected", "hpd-removed";
 			ddc = <&ddc0>;
 			dmas = <&dma32 10>;
 			dma-names = "audio-rx";
 			status = "disabled";
 		};
 
-		// XXX
-		ddc0: i2c@7ef04500 {
-			compatible = "brcm,bcm2711-hdmi-i2c";
-			reg = <0x7ef04500 0x100>, <0x7ef00b00 0x300>;
-			reg-names = "bsc", "auto-i2c";
-			clock-frequency = <97500>;
-			status = "disabled";
-		};
-
-		// XXX
 		hdmi1: hdmi@7ef05700 {
-			compatible = "brcm,bcm2711-hdmi1";
-			reg = <0x7ef05700 0x300>,
-			      <0x7ef05300 0x200>,
-			      <0x7ef05f00 0x80>,
-			      <0x7ef05f80 0x80>,
-			      <0x7ef06b00 0x200>,
-			      <0x7ef06f00 0x400>,
-			      <0x7ef00280 0x80>,
-			      <0x7ef09300 0x100>,
-			      <0x7ef20000 0x100>,
-			      <0x7ef00100 0x30>;
+			compatible = "brcm,bcm2712-hdmi1";
+			reg = <0x7c706400 0x300>,
+			      <0x7c706000 0x200>,
+			      <0x7c706d00 0x300>,
+			      <0x7c707000 0x80>,
+			      <0x7c708800 0x200>,
+			      <0x7c709000 0x800>,
+			      <0x7c700180 0x80>,
+			      <0x7d511000 0x100>,
+			      <0x7c720000 0x100>;
 			reg-names = "hdmi",
 				    "dvp",
 				    "phy",
@@ -771,26 +747,16 @@
 				    "metadata",
 				    "csc",
 				    "cec",
-				    "hd",
-				    "intr2";
+				    "hd";
 			ddc = <&ddc1>;
-			resets = <&dvp 1>;
+			resets = <&dvp 2>;
 			interrupt-parent = <&aon_intr>;
-			interrupts = <8>, <7>, <6>,
-				     <9>, <10>, <11>;
+			interrupts = <11>, <12>, <13>,
+				     <14>, <15>;
 			interrupt-names = "cec-tx", "cec-rx", "cec-low",
-					  "wakeup", "hpd-connected", "hpd-removed";
+					  "hpd-connected", "hpd-removed";
 			dmas = <&dma32 17>;
 			dma-names = "audio-rx";
-			status = "disabled";
-		};
-
-		// XXX
-		ddc1: i2c@7ef09500 {
-			compatible = "brcm,bcm2711-hdmi-i2c";
-			reg = <0x7ef09500 0x100>, <0x7ef05b00 0x300>;
-			reg-names = "bsc", "auto-i2c";
-			clock-frequency = <97500>;
 			status = "disabled";
 		};
 
