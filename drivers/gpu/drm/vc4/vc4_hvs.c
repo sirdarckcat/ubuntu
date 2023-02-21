@@ -417,11 +417,14 @@ static int vc4_hvs_upload_linear_kernel(struct vc4_hvs *hvs,
 static void vc4_hvs_lut_load(struct vc4_hvs *hvs,
 			     struct vc4_crtc *vc4_crtc)
 {
-	struct drm_device *drm = &hvs->vc4->base;
+	struct vc4_dev *vc4 = hvs->vc4;
+	struct drm_device *drm = &vc4->base;
 	struct drm_crtc *crtc = &vc4_crtc->base;
 	struct vc4_crtc_state *vc4_state = to_vc4_crtc_state(crtc->state);
 	int idx;
 	u32 i;
+
+	WARN_ON_ONCE(vc4->gen > VC4_GEN_5);
 
 	if (!drm_dev_enter(drm, &idx))
 		return;
@@ -762,6 +765,8 @@ u8 vc4_hvs_get_fifo_frame_count(struct vc4_hvs *hvs, unsigned int fifo)
 	u8 field = 0;
 	int idx;
 
+	WARN_ON_ONCE(vc4->gen > VC4_GEN_6);
+
 	if (!drm_dev_enter(drm, &idx))
 		return 0;
 
@@ -794,6 +799,8 @@ int vc4_hvs_get_fifo_from_output(struct vc4_hvs *hvs, unsigned int output)
 	struct vc4_dev *vc4 = hvs->vc4;
 	u32 reg;
 	int ret;
+
+	WARN_ON_ONCE(vc4->gen > VC4_GEN_6);
 
 	switch (vc4->gen) {
 	case VC4_GEN_4:
@@ -884,6 +891,8 @@ static int vc4_hvs_init_channel(struct vc4_hvs *hvs, struct drm_crtc *crtc,
 	u32 dispctrl;
 	int idx;
 
+	WARN_ON_ONCE(vc4->gen > VC4_GEN_5);
+
 	if (!drm_dev_enter(drm, &idx))
 		return -ENODEV;
 
@@ -951,6 +960,8 @@ static int vc6_hvs_init_channel(struct vc4_hvs *hvs, struct drm_crtc *crtc,
 	u32 disp_ctrl1;
 	int idx;
 
+	WARN_ON_ONCE(vc4->gen != VC4_GEN_6);
+
 	if (!drm_dev_enter(drm, &idx))
 		return -ENODEV;
 
@@ -976,8 +987,11 @@ static int vc6_hvs_init_channel(struct vc4_hvs *hvs, struct drm_crtc *crtc,
 
 static void __vc4_hvs_stop_channel(struct vc4_hvs *hvs, unsigned int chan)
 {
-	struct drm_device *drm = &hvs->vc4->base;
+	struct vc4_dev *vc4 = hvs->vc4;
+	struct drm_device *drm = &vc4->base;
 	int idx;
+
+	WARN_ON_ONCE(vc4->gen > VC4_GEN_5);
 
 	if (!drm_dev_enter(drm, &idx))
 		return;
@@ -1008,6 +1022,8 @@ static void __vc6_hvs_stop_channel(struct vc4_hvs *hvs, unsigned int chan)
 	struct vc4_dev *vc4 = hvs->vc4;
 	struct drm_device *drm = &vc4->base;
 	int idx;
+
+	WARN_ON_ONCE(vc4->gen != VC4_GEN_6);
 
 	if (!drm_dev_enter(drm, &idx))
 		return;
@@ -1236,6 +1252,8 @@ void vc4_hvs_atomic_flush(struct drm_crtc *crtc,
 	bool found = false;
 	int idx;
 
+	WARN_ON_ONCE(vc4->gen > VC4_GEN_6);
+
 	if (!drm_dev_enter(dev, &idx)) {
 		vc4_crtc_send_vblank(crtc);
 		return;
@@ -1326,6 +1344,8 @@ void vc4_hvs_atomic_flush(struct drm_crtc *crtc,
 	if (crtc->state->color_mgmt_changed) {
 		u32 dispbkgndx = HVS_READ(SCALER_DISPBKGNDX(channel));
 
+		WARN_ON_ONCE(vc4->gen > VC4_GEN_5);
+
 		if (crtc->state->gamma_lut) {
 			if (vc4->gen == VC4_GEN_4) {
 				vc4_hvs_update_gamma_lut(hvs, vc4_crtc);
@@ -1366,6 +1386,8 @@ void vc4_hvs_mask_underrun(struct vc4_hvs *hvs, int channel)
 	u32 dispctrl;
 	int idx;
 
+	WARN_ON(vc4->gen > VC4_GEN_5);
+
 	if (!drm_dev_enter(drm, &idx))
 		return;
 
@@ -1385,6 +1407,8 @@ void vc4_hvs_unmask_underrun(struct vc4_hvs *hvs, int channel)
 	struct drm_device *drm = &vc4->base;
 	u32 dispctrl;
 	int idx;
+
+	WARN_ON(vc4->gen > VC4_GEN_5);
 
 	if (!drm_dev_enter(drm, &idx))
 		return;
@@ -1419,6 +1443,8 @@ static irqreturn_t vc4_hvs_irq_handler(int irq, void *data)
 	u32 control;
 	u32 status;
 	u32 dspeislur;
+
+	WARN_ON(vc4->gen > VC4_GEN_5);
 
 	/*
 	 * NOTE: We don't need to protect the register access using
@@ -1468,6 +1494,8 @@ static irqreturn_t vc6_hvs_eof_irq_handler(int irq, void *data)
 	struct vc4_dev *vc4 = to_vc4_dev(dev);
 	struct vc4_hvs *hvs = vc4->hvs;
 	unsigned int i;
+
+	WARN_ON(vc4->gen < VC4_GEN_6);
 
 	for (i = 0; i < HVS_NUM_CHANNELS; i++) {
 		if (!hvs->eof_irq[i].enabled)
