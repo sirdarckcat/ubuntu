@@ -33,3 +33,6 @@ CONFIG_PCI_MSI					mark<ENFORCED> note<LP: #1914283>
 
 CONFIG_VMWARE_PVSCSI				policy<{'amd64': 'm'}>
 CONFIG_VMWARE_PVSCSI				mark<ENFORCED> note<Needed for vmware vsphere>
+
+CONFIG_LOOPBACK_TARGET				policy<{'amd64': 'm', 'arm64': 'm'}>
+CONFIG_LOOPBACK_TARGET				mark<ENFORCED> note<Specifically requested by GKE. Must ensure tcm_loop.ko is in default module list>
