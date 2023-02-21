@@ -75,48 +75,7 @@ struct rp1_dev {
 	void __iomem *msix_cfg_regs;
 };
 
-static const bool rp1_level_triggered_irq[RP1_ACTUAL_IRQS] = {
-	[RP1_INT_IO_BANK0] = true,
-	[RP1_INT_IO_BANK1] = true,
-	[RP1_INT_IO_BANK2] = true,
-	[RP1_INT_ADC_FIFO] = true,
-	[RP1_INT_AUDIO_IN] = true,
-	[RP1_INT_AUDIO_OUT] = true,
-	[RP1_INT_DMA] = true,
-	[RP1_INT_PWM0] = true,
-	[RP1_INT_PWM1] = true,
-	[RP1_INT_ETH] = true,
-	[RP1_INT_I2C0] = true,
-	[RP1_INT_I2C1] = true,
-	[RP1_INT_I2C2] = true,
-	[RP1_INT_I2C3] = true,
-	[RP1_INT_I2C4] = true,
-	[RP1_INT_I2C5] = true,
-	[RP1_INT_I2C6] = true,
-	[RP1_INT_I2S0] = true,
-	[RP1_INT_I2S1] = true,
-	[RP1_INT_I2S2] = true,
-	[RP1_INT_SDIO0] = true,
-	[RP1_INT_SDIO1] = true,
-	[RP1_INT_SPI0] = true,
-	[RP1_INT_SPI1] = true,
-	[RP1_INT_SPI2] = true,
-	[RP1_INT_SPI3] = true,
-	[RP1_INT_SPI4] = true,
-	[RP1_INT_SPI5] = true,
-	[RP1_INT_SPI6] = true,
-	[RP1_INT_SPI7] = true,
-	[RP1_INT_SPI8] = true,
-	[RP1_INT_UART0] = true,
-	[RP1_INT_UART1] = true,
-	[RP1_INT_UART2] = true,
-	[RP1_INT_UART3] = true,
-	[RP1_INT_UART4] = true,
-	[RP1_INT_UART5] = true,
-	[RP1_INT_MIPI0] = true,
-	[RP1_INT_MIPI1] = true,
-	[RP1_INT_VIDEO_OUT] = true,
-};
+static bool rp1_level_triggered_irq[RP1_ACTUAL_IRQS] = { 0 };
 
 static struct rp1_dev *g_rp1;
 static u32 g_chip_id, g_platform;
@@ -137,6 +96,11 @@ static void msix_cfg_set(struct rp1_dev *rp1, unsigned int hwirq, u32 value)
 	writel(value, rp1->msix_cfg_regs + REG_SET + MSIX_CFG(hwirq));
 }
 
+static void msix_cfg_clr(struct rp1_dev *rp1, unsigned int hwirq, u32 value)
+{
+	writel(value, rp1->msix_cfg_regs + REG_CLR + MSIX_CFG(hwirq));
+}
+
 static void rp1_mask_irq(struct irq_data *irqd)
 {
 	struct rp1_dev *rp1 = irqd->domain->host_data;
@@ -153,17 +117,43 @@ static void rp1_unmask_irq(struct irq_data *irqd)
 	pci_msi_unmask_irq(pcie_irqd);
 }
 
+static int rp1_irq_set_type(struct irq_data *irqd, unsigned int type)
+{
+	struct rp1_dev *rp1 = irqd->domain->host_data;
+	unsigned int hwirq = (unsigned int)irqd->hwirq;
+	int ret = 0;
+
+	switch (type) {
+	case IRQ_TYPE_LEVEL_HIGH:
+		dev_dbg(rp1->dev, "MSIX IACK EN for irq %d\n", hwirq);
+		msix_cfg_set(rp1, hwirq, MSIX_CFG_IACK_EN);
+		rp1_level_triggered_irq[hwirq] = true;
+	break;
+	case IRQ_TYPE_EDGE_RISING:
+		msix_cfg_clr(rp1, hwirq, MSIX_CFG_IACK_EN);
+		rp1_level_triggered_irq[hwirq] = false;
+		break;
+	default:
+		ret = -EINVAL;
+		break;
+	}
+
+	return ret;
+}
+
+
 static struct irq_chip rp1_irq_chip = {
 	.name            = "rp1_irq_chip",
 	.irq_mask        = rp1_mask_irq,
 	.irq_unmask      = rp1_unmask_irq,
+	.irq_set_type    = rp1_irq_set_type,
 };
 
 static void rp1_chained_handle_irq(struct irq_desc *desc)
 {
 	struct irq_chip *chip = irq_desc_get_chip(desc);
 	struct rp1_dev *rp1 = desc->irq_data.chip_data;
-	int hwirq = desc->irq_data.hwirq & 0x3f;
+	unsigned int hwirq = desc->irq_data.hwirq & 0x3f;
 	int new_irq;
 
 	rp1 = g_rp1;
@@ -198,6 +188,7 @@ static int rp1_irq_activate(struct irq_domain *d, struct irq_data *irqd,
 		 pcie_irq);
 	pcie_irqd = irq_get_irq_data(pcie_irq);
 	rp1->pcie_irqds[irqd->hwirq] = pcie_irqd;
+	msix_cfg_set(rp1, (unsigned int)irqd->hwirq, MSIX_CFG_ENABLE);
 
 	return irq_domain_activate_irq(pcie_irqd, reserve);
 }
@@ -210,6 +201,7 @@ static void rp1_irq_deactivate(struct irq_domain *d, struct irq_data *irqd)
 	irq = pci_irq_vector(rp1->pdev, irqd->hwirq);
 	pr_debug("%s(%d, %ld) -> irq %d\n", __func__, irqd->irq, irqd->hwirq,
 		 irq);
+	msix_cfg_clr(rp1, (unsigned int)irqd->hwirq, MSIX_CFG_ENABLE);
 	return irq_domain_deactivate_irq(irq_get_irq_data(irq));
 }
 
@@ -279,7 +271,7 @@ static int rp1_probe(struct pci_dev *pdev, const struct pci_device_id *id)
 	err = pci_alloc_irq_vectors(pdev, RP1_IRQS, RP1_IRQS,
 				    PCI_IRQ_MSIX);
 	if (err != RP1_IRQS) {
-		pr_err("pci_alloc_irq_vectors failed - %d\n", err);
+		dev_err(&pdev->dev, "pci_alloc_irq_vectors failed - %d\n", err);
 		return err;
 	}
 
@@ -331,10 +323,6 @@ static int rp1_probe(struct pci_dev *pdev, const struct pci_device_id *id)
 		irq_set_chip_data(irq, rp1);
 		irq_set_chip_and_handler(irq, &rp1_irq_chip, handle_level_irq);
 		irq_set_probe(irq);
-		if (rp1_level_triggered_irq[i]) {
-			dev_dbg(&pdev->dev, "MSIX IACK EN for irq %d\n", i);
-			msix_cfg_set(rp1, i, MSIX_CFG_IACK_EN);
-		}
 		irq_set_chained_handler(pci_irq_vector(pdev, i),
 					rp1_chained_handle_irq);
 	}
