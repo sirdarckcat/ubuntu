@@ -454,8 +454,8 @@ spi0_cs_pins: &rp1_spi0_cs_gpio7 {};
 		suspend {
 			label = "suspend";
 			linux,code = <205>; // KEY_SUSPEND
-			interrupt-parent = <&gio_aon>;
-			interrupts = <12 IRQ_TYPE_EDGE_RISING>;
+			interrupt-parent = <&gio>;
+			interrupts = <14 IRQ_TYPE_EDGE_RISING>;
 			debounce-interval = <0>; // ms
 		};
 	};
