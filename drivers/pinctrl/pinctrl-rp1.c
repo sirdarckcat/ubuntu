@@ -404,6 +404,7 @@ static void rp1_output_enable(struct rp1_pin_info *pin, int value)
 	u32 padctrl = readl(pin->pad);
 
 	FLD_SET(padctrl, RP1_PAD_OUT_DISABLE, !value);
+	padctrl |= RP1_PAD_DRIVE_MASK; // XXX maximum drive strength (12mA)
 
 	writel(padctrl, pin->pad);
 }
