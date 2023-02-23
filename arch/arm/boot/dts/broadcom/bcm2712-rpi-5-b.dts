@@ -219,6 +219,8 @@ i2c_rp1boot: &_i2c3 { };
 &rp1_eth {
 	status = "okay";
 	phy-handle = <&phy1>;
+	phy-reset-gpios = <&rp1_gpio 32 GPIO_ACTIVE_LOW>;
+	phy-reset-duration = <5>;
 
 	phy1: ethernet-phy@1 {
 		reg = <0x1>;
@@ -635,13 +637,6 @@ spi0_cs_pins: &rp1_spi0_cs_gpio7 {};
 	usb_vbus_pins: usb_vbus_pins {
 		brcm,pins = <42>;
 		brcm,function = <BCM2712_FSEL_GPIO>;
-	};
-
-	eth_rst_n_hog {
-		gpio-hog;
-		gpios = <32 GPIO_ACTIVE_HIGH>;
-		output-high;
-		line-name = "ETH_RST_N";
 	};
 };
 
