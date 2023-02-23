@@ -299,8 +299,6 @@
 			interrupts = <RP1_INT_I2C1 IRQ_TYPE_LEVEL_HIGH>;
 			clocks = <&rp1_clocks RP1_CLK_SYS>;
 			status = "disabled";
-			pinctrl-names = "default";
-			pinctrl-0 = <&rp1_i2c1_2_3>;
 		};
 
 		rp1_i2c2: i2c@78000 {
@@ -352,8 +350,6 @@
 			#sound-dai-cells = <0>;
 			dmas = <&rp1_dma RP1_DMA_I2S0_TX>,<&rp1_dma RP1_DMA_I2S0_RX>;
 			dma-names = "tx", "rx";
-			pinctrl-names = "default";
-			pinctrl-0 = <&rp1_i2s0_18_21>;
 			status = "disabled";
 		};
 
@@ -366,8 +362,6 @@
 			#sound-dai-cells = <0>;
 			dmas = <&rp1_dma RP1_DMA_I2S1_TX>,<&rp1_dma RP1_DMA_I2S1_RX>;
 			dma-names = "tx", "rx";
-			pinctrl-names = "default";
-			pinctrl-0 = <&rp1_i2s1_18_21>;
 			status = "disabled";
 		};
 
@@ -677,12 +671,9 @@
 			          &rp1_clocks RP1_CLK_SDIO_TIMER
 			          &rp1_sdio_clk0>;
 			clock-names = "bus", "core", "timeout", "sdio";
-			pinctrl-names = "default";
-			pinctrl-0 = <&rp1_sdio0_22_27>;
 			/* Bank 0 VDDIO is fixed */
 			no-1-8-v;
 			bus-width = <4>;
-			// vqmmc-supply = <&rp1_sd_io_1v8_reg>;
 			vmmc-supply = <&rp1_vdd_3v3>;
 			broken-cd;
 			status = "disabled";
@@ -696,10 +687,7 @@
 			          &rp1_clocks RP1_CLK_SDIO_TIMER
 			          &rp1_sdio_clk1>;
 			clock-names = "bus", "core", "timeout", "sdio";
-			pinctrl-names = "default";
-			pinctrl-0 = <&rp1_sdio1_28_33>;
 			bus-width = <4>;
-			vqmmc-supply = <&rp1_sd_io_1v8_reg>;
 			vmmc-supply = <&rp1_vdd_3v3>;
 			/* Nerf SDR speeds */
 			sdhci-caps-mask = <0x3 0x0>;
@@ -884,49 +872,11 @@
 };
 
 / {
-	rp1_sd_io_1v8_reg: rp1_sd_io_1v8_reg {
-		compatible = "regulator-gpio";
-		regulator-name = "vdd-sd-io-py";
-		regulator-min-microvolt = <1800000>;
-		regulator-max-microvolt = <3300000>;
-		regulator-boot-on;
-		regulator-always-on;
-		regulator-settling-time-us = <50000>;
-		gpios = <&rp1_gpio 46 0/*GPIO_ACTIVE_HIGH*/>;
-		states = <1800000 0x1
-		          3300000 0x0>;
-		status = "okay";
-	};
-
 	rp1_vdd_3v3: rp1_vdd_3v3 {
 		compatible = "regulator-fixed";
 		regulator-name = "vdd-3v3";
 		regulator-min-microvolt = <3300000>;
 		regulator-max-microvolt = <3300000>;
 		regulator-always-on;
-	};
-
-	rp1_cam_reg: rp1_cam_reg {
-		compatible = "regulator-fixed";
-		regulator-name = "rp1_cam_reg";
-		enable-active-high;
-		status = "disabled";
-		gpio = <&rp1_gpio 39 0>; /* on PYTEST this GPIO is shared by both MIPI sockets */
-	};
-
-	rp1_cam0_reg: rp1_cam0_reg {
-		compatible = "regulator-fixed";
-		regulator-name = "rp1_cam0_reg";
-		enable-active-high;
-		status = "disabled";
-		gpio = <&rp1_gpio 34 0>; /* CD0_IO0_MICCLK, to MIPI 0 connector */
-	};
-
-	rp1_cam1_reg: rp1_cam1_reg {
-		compatible = "regulator-fixed";
-		regulator-name = "rp1_cam1_reg";
-		enable-active-high;
-		status = "disabled";
-		gpio = <&rp1_gpio 46 0>; /* CD1_IO0_MICCLK, to MIPI 1 connector */
 	};
 };
