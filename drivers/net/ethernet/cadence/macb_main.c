@@ -494,6 +494,19 @@ mdio_pm_exit:
 	return status;
 }
 
+static int macb_mdio_reset(struct mii_bus *bus)
+{
+	struct macb *bp = bus->priv;
+
+	if (bp->phy_reset_gpio) {
+		gpiod_set_value_cansleep(bp->phy_reset_gpio, 1);
+		msleep(bp->phy_reset_ms);
+		gpiod_set_value_cansleep(bp->phy_reset_gpio, 0);
+	}
+
+	return 0;
+}
+
 static void macb_init_buffers(struct macb *bp)
 {
 	struct macb_queue *queue;
@@ -969,6 +982,7 @@ static int macb_mii_init(struct macb *bp)
 	bp->mii_bus->write = &macb_mdio_write_c22;
 	bp->mii_bus->read_c45 = &macb_mdio_read_c45;
 	bp->mii_bus->write_c45 = &macb_mdio_write_c45;
+	bp->mii_bus->reset = &macb_mdio_reset;
 	snprintf(bp->mii_bus->id, MII_BUS_ID_SIZE, "%s-%x",
 		 bp->pdev->name, bp->pdev->id);
 	bp->mii_bus->priv = bp;
@@ -5198,6 +5212,21 @@ static int macb_probe(struct platform_device *pdev)
 		bp->phy_interface = PHY_INTERFACE_MODE_MII;
 	else
 		bp->phy_interface = interface;
+
+	/* optional PHY reset-related properties */
+	bp->phy_reset_gpio = devm_gpiod_get_optional(&pdev->dev, "phy-reset",
+						     GPIOD_OUT_LOW);
+	if (IS_ERR(bp->phy_reset_gpio)) {
+		dev_err(&pdev->dev, "Failed to obtain phy-reset gpio\n");
+		err = PTR_ERR(bp->phy_reset_gpio);
+		goto err_out_free_netdev;
+	}
+
+	bp->phy_reset_ms = 10;
+	of_property_read_u32(np, "phy-reset-duration", &bp->phy_reset_ms);
+	/* A sane reset duration should not be longer than 1s */
+	if (bp->phy_reset_ms > 1000)
+		bp->phy_reset_ms = 1000;
 
 	/* IP specific init */
 	err = init(pdev);
