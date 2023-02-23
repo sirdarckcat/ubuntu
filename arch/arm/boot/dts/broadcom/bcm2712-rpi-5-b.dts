@@ -233,11 +233,11 @@ gpio: &rp1_gpio {
 
 i2c0: &rp1_i2c0 { };
 i2c1: &rp1_i2c1 { };
-i2c3: &rp1_i2c2 { };
-i2c4: &rp1_i2c3 { };
-i2c5: &rp1_i2c4 { };
-i2c6: &rp1_i2c5 { };
-i2c7: &rp1_i2c6 { };
+i2c2: &rp1_i2c2 { };
+i2c3: &rp1_i2c3 { };
+i2c4: &rp1_i2c4 { };
+i2c5: &rp1_i2c5 { };
+i2c6: &rp1_i2c6 { };
 i2s:  &rp1_i2s0 { };
 pwm0: &rp1_pwm0 { };
 pwm1: &rp1_pwm1 { };
@@ -268,11 +268,20 @@ cam1_reg: &rp1_cam1_reg { status = "okay"; };
 
 i2c0if: &i2c0 {};
 i2c0mux: &i2c0 {};
-i2c_csi_dsi: &rp1_i2c4 { // Note: This is for MIPI1 connector only
+
+i2c_csi_dsi0: &i2c6 { // Note: This is for MIPI0 connector only
+	pinctrl-0 = <&rp1_i2c6_38_39>;
+	pinctrl-names = "default";
+};
+
+i2c_csi_dsi1: &i2c4 { // Note: This is for MIPI1 connector only
 	pinctrl-0 = <&rp1_i2c4_40_41>;
 	pinctrl-names = "default";
 };
-i2c_vc: &rp1_i2c0 {      // This is pins 27,28 on the header (not MIPI)
+
+i2c_csi_dsi: &i2c_csi_dsi1 { }; // An alias for compatibility
+
+i2c_vc: &i2c0 {      // This is pins 27,28 on the header (not MIPI)
 	pinctrl-0 = <&rp1_i2c0_0_1>;
 	pinctrl-names = "default";
 };
@@ -654,11 +663,11 @@ spi0_cs_pins: &rp1_spi0_cs_gpio7 {};
 		serial1 = &uart1;
 		i2c0 = &i2c0;
 		i2c1 = &i2c1;
+		i2c2 = &i2c2;
 		i2c3 = &i2c3;
 		i2c4 = &i2c4;
 		i2c5 = &i2c5;
 		i2c6 = &i2c6;
-		i2c7 = &i2c7;
 		spi0 = &spi0;
 		spi1 = &spi1;
 		spi2 = &spi2;
@@ -678,8 +687,17 @@ spi0_cs_pins: &rp1_spi0_cs_gpio7 {};
 		i2c_rp1boot = <&i2c_rp1boot>, "status";
 		i2c0 = <&i2c0>, "status";
 		i2c1 = <&i2c1>, "status";
+		i2c2 = <&i2c2>, "status";
+		i2c3 = <&i2c3>, "status";
+		i2c4 = <&i2c4>, "status";
+		i2c5 = <&i2c5>, "status";
+		i2c6 = <&i2c6>, "status";
+		i2c_csi_dsi = <&i2c_csi_dsi>, "status";
+		i2c_csi_dsi0 = <&i2c_csi_dsi0>, "status";
+		i2c_csi_dsi1 = <&i2c_csi_dsi1>, "status";
 		i2c0_baudrate = <&i2c0>, "clock-frequency:0";
 		i2c1_baudrate = <&i2c1>, "clock-frequency:0";
+		nvme = <&pcie1>, "status";
 		pwm0 = <&pwm0>, "status";
 		pwm1 = <&pwm1>, "status";
 		random = <&random>, "status";
