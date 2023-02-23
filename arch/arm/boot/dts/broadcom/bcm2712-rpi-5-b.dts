@@ -149,23 +149,39 @@
 	clocks: clocks {
 	};
 
-       cam1_clk: cam1_clk {
-               compatible = "fixed-clock";
-               #clock-cells = <0>;
-               status = "disabled";
-       };
+	cam1_clk: cam1_clk {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		status = "disabled";
+	};
 
-       cam0_clk: cam0_clk {
-               compatible = "fixed-clock";
-               #clock-cells = <0>;
-               status = "disabled";
-       };
+	cam0_clk: cam0_clk {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		status = "disabled";
+	};
 
-       cam_dummy_reg: cam_dummy_reg {
-               compatible = "regulator-fixed";
-               regulator-name = "cam-dummy-reg";
-               status = "okay";
-       };
+	cam0_reg: cam0_reg {
+		compatible = "regulator-fixed";
+		regulator-name = "cam0_reg";
+		enable-active-high;
+		status = "okay";
+		gpio = <&rp1_gpio 34 0>;  // CD0_IO0_MICCLK, to MIPI 0 connector
+	};
+
+	cam1_reg: cam1_reg {
+		compatible = "regulator-fixed";
+		regulator-name = "cam1_reg";
+		enable-active-high;
+		status = "okay";
+		gpio = <&rp1_gpio 46 0>;  // CD1_IO0_MICCLK, to MIPI 1 connector
+	};
+
+	cam_dummy_reg: cam_dummy_reg {
+		compatible = "regulator-fixed";
+		regulator-name = "cam-dummy-reg";
+		status = "okay";
+	};
 };
 
 rp1_target: &pcie2 {
@@ -253,9 +269,6 @@ uart2: &rp1_uart2 { };
 uart3: &rp1_uart3 { };
 uart4: &rp1_uart4 { };
 
-cam0_reg: &cam_dummy_reg {  status = "okay"; };
-cam1_reg: &rp1_cam1_reg { status = "okay"; };
-
 &rp1_usb0 {
 	status = "okay";
 };
@@ -284,6 +297,16 @@ i2c_csi_dsi: &i2c_csi_dsi1 { }; // An alias for compatibility
 i2c_vc: &i2c0 {      // This is pins 27,28 on the header (not MIPI)
 	pinctrl-0 = <&rp1_i2c0_0_1>;
 	pinctrl-names = "default";
+};
+
+&rp1_i2c1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&rp1_i2c1_2_3>;
+};
+
+&rp1_i2s0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&rp1_i2s0_18_21>;
 };
 
 csi0: &rp1_csi0 { };
