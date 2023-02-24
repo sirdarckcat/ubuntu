@@ -9,6 +9,7 @@
 #include <linux/interconnect.h>
 #include <linux/interrupt.h>
 #include <linux/kernel.h>
+#include <linux/list.h>
 #include <linux/module.h>
 #include <linux/of_address.h>
 #include <linux/of_platform.h>
@@ -44,6 +45,12 @@ struct qcom_cpufreq_data {
 	struct resource *res;
 	const struct qcom_cpufreq_soc_data *soc_data;
 
+	struct cpufreq_policy *policy;
+	struct qcom_cpufreq_irq_data *irq_data;
+	struct list_head irq_data_list;
+};
+
+struct qcom_cpufreq_irq_data {
 	/*
 	 * Mutex to synchronize between de-init sequence and re-starting LMh
 	 * polling/interrupts
@@ -52,11 +59,13 @@ struct qcom_cpufreq_data {
 	int throttle_irq;
 	bool cancel_throttle;
 	struct delayed_work throttle_work;
-	struct cpufreq_policy *policy;
+	struct list_head cpufreq_data_list;
+	struct list_head list;
 };
 
 static unsigned long cpu_hw_rate, xo_rate;
 static bool icc_scaling_enabled;
+static LIST_HEAD(qcom_cpufreq_irq_data_list);
 
 static int qcom_cpufreq_set_bw(struct cpufreq_policy *policy,
 			       unsigned long freq_khz)
@@ -283,43 +292,52 @@ static unsigned long qcom_lmh_get_throttle_freq(struct qcom_cpufreq_data *data)
 	return lval * xo_rate;
 }
 
-static void qcom_lmh_dcvs_notify(struct qcom_cpufreq_data *data)
+static void qcom_lmh_dcvs_notify(struct qcom_cpufreq_irq_data *data)
 {
 	unsigned long max_capacity, capacity, freq_hz, throttled_freq;
-	struct cpufreq_policy *policy = data->policy;
-	int cpu = cpumask_first(policy->related_cpus);
-	struct device *dev = get_cpu_device(cpu);
+	struct cpufreq_policy *policy;
+	struct qcom_cpufreq_data *_data;
+	struct device *dev;
 	struct dev_pm_opp *opp;
+	struct list_head *pos;
+	unsigned int freq;
+	int cpu;
+
+	mutex_lock(&data->throttle_lock);
+
+	list_for_each(pos, &data->cpufreq_data_list) {
+		_data = list_entry(pos, struct qcom_cpufreq_data, irq_data_list);
+		policy = _data->policy;
+		cpu = cpumask_first(policy->cpus);
+		dev = get_cpu_device(cpu);
+		/*
+		 * Get the h/w throttled frequency, normalize it using the
+		 * registered opp table and use it to calculate thermal pressure.
+		 */
+		freq = qcom_lmh_get_throttle_freq(policy->driver_data);
+		freq_hz = freq * HZ_PER_KHZ;
+
+		opp = dev_pm_opp_find_freq_floor(dev, &freq_hz);
+		if (IS_ERR(opp) && PTR_ERR(opp) == -ERANGE)
+			dev_pm_opp_find_freq_ceil(dev, &freq_hz);
+
+		throttled_freq = freq_hz / HZ_PER_KHZ;
+
+		/* Update thermal pressure */
+		max_capacity = arch_scale_cpu_capacity(cpu);
+		capacity = mult_frac(max_capacity, throttled_freq, policy->cpuinfo.max_freq);
+
+		/* Don't pass boost capacity to scheduler */
+		if (capacity > max_capacity)
+			capacity = max_capacity;
+
+		arch_set_thermal_pressure(policy->cpus,	max_capacity - capacity);
+	}
 
 	/*
-	 * Get the h/w throttled frequency, normalize it using the
-	 * registered opp table and use it to calculate thermal pressure.
-	 */
-	freq_hz = qcom_lmh_get_throttle_freq(data);
-
-	opp = dev_pm_opp_find_freq_floor(dev, &freq_hz);
-	if (IS_ERR(opp) && PTR_ERR(opp) == -ERANGE)
-		dev_pm_opp_find_freq_ceil(dev, &freq_hz);
-
-	throttled_freq = freq_hz / HZ_PER_KHZ;
-
-	/* Update thermal pressure */
-
-	max_capacity = arch_scale_cpu_capacity(cpu);
-	capacity = mult_frac(max_capacity, throttled_freq, policy->cpuinfo.max_freq);
-
-	/* Don't pass boost capacity to scheduler */
-	if (capacity > max_capacity)
-		capacity = max_capacity;
-
-	arch_set_thermal_pressure(policy->related_cpus,
-				  max_capacity - capacity);
-
-	/*
-	 * In the unlikely case policy is unregistered do not enable
+	 * In the unlikely case all policies are unregistered do not enable
 	 * polling or h/w interrupt
 	 */
-	mutex_lock(&data->throttle_lock);
 	if (data->cancel_throttle)
 		goto out;
 
@@ -339,25 +357,21 @@ out:
 
 static void qcom_lmh_dcvs_poll(struct work_struct *work)
 {
-	struct qcom_cpufreq_data *data;
+	struct qcom_cpufreq_irq_data *data;
 
-	data = container_of(work, struct qcom_cpufreq_data, throttle_work.work);
+	data = container_of(work, struct qcom_cpufreq_irq_data, throttle_work.work);
 	qcom_lmh_dcvs_notify(data);
 }
 
 static irqreturn_t qcom_lmh_dcvs_handle_irq(int irq, void *data)
 {
-	struct qcom_cpufreq_data *c_data = data;
+	struct qcom_cpufreq_irq_data *c_data = data;
 
 	/* Disable interrupt and enable polling */
 	disable_irq_nosync(c_data->throttle_irq);
-	schedule_delayed_work(&c_data->throttle_work, 0);
+	qcom_lmh_dcvs_notify(c_data);
 
-	if (c_data->soc_data->reg_intr_clr)
-		writel_relaxed(GT_IRQ_STATUS,
-			       c_data->base + c_data->soc_data->reg_intr_clr);
-
-	return IRQ_HANDLED;
+	return 0;
 }
 
 static const struct qcom_cpufreq_soc_data qcom_soc_data = {
@@ -389,27 +403,58 @@ MODULE_DEVICE_TABLE(of, qcom_cpufreq_hw_match);
 static int qcom_cpufreq_hw_lmh_init(struct cpufreq_policy *policy, int index)
 {
 	struct qcom_cpufreq_data *data = policy->driver_data;
+	struct qcom_cpufreq_irq_data *irq_data = NULL;
 	struct platform_device *pdev = cpufreq_get_driver_data();
+	struct list_head *pos;
 	char irq_name[15];
-	int ret;
+	int irq, ret;
 
 	/*
 	 * Look for LMh interrupt. If no interrupt line is specified /
 	 * if there is an error, allow cpufreq to be enabled as usual.
 	 */
-	data->throttle_irq = platform_get_irq(pdev, index);
-	if (data->throttle_irq <= 0)
-		return data->throttle_irq == -EPROBE_DEFER ? -EPROBE_DEFER : 0;
+	irq = platform_get_irq(pdev, index);
+	if (irq <= 0)
+		return irq == -EPROBE_DEFER ? -EPROBE_DEFER : 0;
 
-	data->cancel_throttle = false;
+	list_for_each(pos, &qcom_cpufreq_irq_data_list) {
+		irq_data = list_entry(pos, struct qcom_cpufreq_irq_data, list);
+		if (irq_data->throttle_irq == irq)
+			break;
+		irq_data = NULL;
+	}
+
+	if (irq_data) {
+		INIT_LIST_HEAD(&data->irq_data_list);
+		list_add_tail(&data->irq_data_list, &irq_data->cpufreq_data_list);
+		data->policy = policy;
+		data->irq_data = irq_data;
+		return 0;
+	}
+
+	irq_data = kmalloc(sizeof(*irq_data), GFP_KERNEL);
+	if (!irq_data)
+		return -ENOMEM;
+
+	irq_data->throttle_irq = irq;
+	irq_data->cancel_throttle = false;
+
+	INIT_LIST_HEAD(&irq_data->cpufreq_data_list);
+	INIT_LIST_HEAD(&data->irq_data_list);
+	list_add_tail(&data->irq_data_list, &irq_data->cpufreq_data_list);
+
+	mutex_init(&irq_data->throttle_lock);
+	INIT_DEFERRABLE_WORK(&irq_data->throttle_work, qcom_lmh_dcvs_poll);
+
+	INIT_LIST_HEAD(&irq_data->list);
+	list_add_tail(&irq_data->list, &qcom_cpufreq_irq_data_list);
+
+	data->irq_data = irq_data;
 	data->policy = policy;
 
-	mutex_init(&data->throttle_lock);
-	INIT_DEFERRABLE_WORK(&data->throttle_work, qcom_lmh_dcvs_poll);
-
 	snprintf(irq_name, sizeof(irq_name), "dcvsh-irq-%u", policy->cpu);
-	ret = request_threaded_irq(data->throttle_irq, NULL, qcom_lmh_dcvs_handle_irq,
-				   IRQF_ONESHOT, irq_name, data);
+	ret = request_threaded_irq(irq_data->throttle_irq, NULL, qcom_lmh_dcvs_handle_irq,
+				   IRQF_ONESHOT, irq_name, irq_data);
 	if (ret) {
 		dev_err(&pdev->dev, "Error registering %s: %d\n", irq_name, ret);
 		return 0;
@@ -420,15 +465,27 @@ static int qcom_cpufreq_hw_lmh_init(struct cpufreq_policy *policy, int index)
 
 static void qcom_cpufreq_hw_lmh_exit(struct qcom_cpufreq_data *data)
 {
-	if (data->throttle_irq <= 0)
+	struct qcom_cpufreq_irq_data *irq_data = data->irq_data;
+
+	if (!irq_data)
 		return;
 
-	mutex_lock(&data->throttle_lock);
-	data->cancel_throttle = true;
-	mutex_unlock(&data->throttle_lock);
+	mutex_lock(&irq_data->throttle_lock);
 
-	cancel_delayed_work_sync(&data->throttle_work);
-	free_irq(data->throttle_irq, data);
+	list_del(&data->irq_data_list);
+
+	if (!list_empty(&irq_data->cpufreq_data_list)) {
+		mutex_unlock(&irq_data->throttle_lock);
+		return;
+	}
+
+	irq_data->cancel_throttle = true;
+	mutex_unlock(&irq_data->throttle_lock);
+
+	cancel_delayed_work_sync(&irq_data->throttle_work);
+	free_irq(irq_data->throttle_irq, irq_data);
+	list_del(&irq_data->list);
+	kfree(irq_data);
 }
 
 static int qcom_cpufreq_hw_cpu_init(struct cpufreq_policy *policy)
