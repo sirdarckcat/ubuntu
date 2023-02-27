@@ -3,6 +3,621 @@
 # ARCH: amd64
 # FLAVOUR: amd64-oem
 
+CONFIG_ACCESSIBILITY                            policy<{'amd64': 'y'}>
+CONFIG_ACCESSIBILITY                            note<'LP: #1967702'>
+
+CONFIG_ACPI_CUSTOM_METHOD                       policy<{'amd64': 'n'}>
+CONFIG_ACPI_CUSTOM_METHOD                       note<'SECURITY: allows arbitrary execution'>
+
+CONFIG_AGP                                      policy<{'amd64': 'y'}>
+CONFIG_AGP                                      note<'not autoloadable'>
+
+CONFIG_ASYMMETRIC_KEY_TYPE                      policy<{'amd64': 'y'}>
+CONFIG_ASYMMETRIC_KEY_TYPE                      note<'module signing'>
+
+CONFIG_ASYMMETRIC_PUBLIC_KEY_SUBTYPE            policy<{'amd64': 'y'}>
+CONFIG_ASYMMETRIC_PUBLIC_KEY_SUBTYPE            note<'module signing'>
+
+CONFIG_ATA_PIIX                                 policy<{'amd64': 'y'}>
+CONFIG_ATA_PIIX                                 note<'LP: #1627324'>
+
+CONFIG_BINFMT_SCRIPT                            policy<{'amd64': 'y'}>
+CONFIG_BINFMT_SCRIPT                            note<'required if init is a shell script such as in initramfs-tools'>
+
+CONFIG_BLK_DEV_DM                               policy<{'amd64': 'y'}>
+CONFIG_BLK_DEV_DM                               note<'LP: #560717'>
+
+CONFIG_BLK_DEV_NVME                             policy<{'amd64': 'm'}>
+CONFIG_BLK_DEV_NVME                             note<'LP: #1759893'>
+
+CONFIG_BLK_DEV_RAM                              policy<{'amd64': 'm'}>
+CONFIG_BLK_DEV_RAM                              note<'LP: #1593293'>
+
+CONFIG_BLK_DEV_RAM_SIZE                         policy<{'amd64': '65536'}>
+CONFIG_BLK_DEV_RAM_SIZE                         note<'Ramdisk size should be a minimum of 64M'>
+
+CONFIG_BLK_DEV_SD                               policy<{'amd64': 'y'}>
+CONFIG_BLK_DEV_SD                               note<'LP: #1627330'>
+
+CONFIG_BLK_DEV_SR                               policy<{'amd64': 'y'}>
+CONFIG_BLK_DEV_SR                               note<'LP: #1627330'>
+
+CONFIG_BLK_DEV_THROTTLING                       policy<{'amd64': 'y'}>
+CONFIG_BLK_DEV_THROTTLING                       note<'CGROUP disk consumption control'>
+
+CONFIG_BPF_UNPRIV_DEFAULT_OFF                   policy<{'amd64': 'y'}>
+CONFIG_BPF_UNPRIV_DEFAULT_OFF                   note<'security reason'>
+
+CONFIG_CHR_DEV_SG                               policy<{'amd64': 'y'}>
+CONFIG_CHR_DEV_SG                               note<'not autoloadable'>
+
+CONFIG_CMA                                      policy<{'amd64': 'n'}>
+CONFIG_CMA                                      note<'LP: #1803206'>
+
+CONFIG_COMPAT_BRK                               policy<{'amd64': 'n'}>
+CONFIG_COMPAT_BRK                               note<'disables brk ASLR'>
+
+CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE         policy<{'amd64': 'n'}>
+CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE         note<'for bootspeed'>
+
+CONFIG_CPU_FREQ_GOV_CONSERVATIVE                policy<{'amd64': 'y'}>
+CONFIG_CPU_FREQ_GOV_CONSERVATIVE                note<'not autoloadable'>
+
+CONFIG_CPU_FREQ_GOV_ONDEMAND                    policy<{'amd64': 'y'}>
+CONFIG_CPU_FREQ_GOV_ONDEMAND                    note<'not autoloadable'>
+
+CONFIG_CPU_FREQ_GOV_PERFORMANCE                 policy<{'amd64': 'y'}>
+CONFIG_CPU_FREQ_GOV_PERFORMANCE                 note<'not autoloadable'>
+
+CONFIG_CPU_FREQ_GOV_POWERSAVE                   policy<{'amd64': 'y'}>
+CONFIG_CPU_FREQ_GOV_POWERSAVE                   note<'not autoloadable'>
+
+CONFIG_CPU_FREQ_GOV_USERSPACE                   policy<{'amd64': 'y'}>
+CONFIG_CPU_FREQ_GOV_USERSPACE                   note<'not autoloadable'>
+
+CONFIG_CPU_FREQ_STAT                            policy<{'amd64': 'y'}>
+CONFIG_CPU_FREQ_STAT                            note<'dependancy of boot essential'>
+
+CONFIG_CRASH_DUMP                               policy<{'amd64': 'y'}>
+CONFIG_CRASH_DUMP                               note<'LP: #1363180'>
+
+CONFIG_CRYPTO_SHA512                            policy<{'amd64': 'y'}>
+CONFIG_CRYPTO_SHA512                            note<'module signing'>
+
+CONFIG_CRYPTO_USER_API_ENABLE_OBSOLETE          policy<{'amd64': 'n'}>
+CONFIG_CRYPTO_USER_API_ENABLE_OBSOLETE          note<'Obsolete w/ no known userspace dependencies'>
+
+CONFIG_DEBUG_FS                                 policy<{'amd64': 'y'}>
+CONFIG_DEBUG_FS                                 note<'required debug option'>
+
+CONFIG_DEBUG_INFO                               policy<{'amd64': 'y'}>
+CONFIG_DEBUG_INFO                               note<'required for debug packages'>
+
+CONFIG_DEBUG_INFO_BTF                           policy<{'amd64': 'y'}>
+CONFIG_DEBUG_INFO_BTF                           note<'Needs newer pahole for armhf'>
+
+CONFIG_DEBUG_INFO_SPLIT                         policy<{'amd64': 'n'}>
+CONFIG_DEBUG_INFO_SPLIT                         note<'LP: #1413664'>
+
+CONFIG_DEBUG_KERNEL                             policy<{'amd64': 'y'}>
+CONFIG_DEBUG_KERNEL                             note<'required debug option'>
+
+CONFIG_DEFAULT_MMAP_MIN_ADDR                    policy<{'amd64': '65536'}>
+CONFIG_DEFAULT_MMAP_MIN_ADDR                    note<'LP: #1531327'>
+
+CONFIG_DEVTMPFS                                 policy<{'amd64': 'y'}>
+CONFIG_DEVTMPFS                                 note<'upstart requirement'>
+
+CONFIG_DEVTMPFS_MOUNT                           policy<{'amd64': 'y'}>
+CONFIG_DEVTMPFS_MOUNT                           note<'upstart requirement'>
+
+CONFIG_DRM_AMDGPU_CIK                           policy<{'amd64': 'y'}>
+CONFIG_DRM_AMDGPU_CIK                           note<'for zesty'>
+
+CONFIG_DRM_LEGACY                               policy<{'amd64': 'n'}>
+CONFIG_DRM_LEGACY                               note<'Consider re-enabling but not signing the modules'>
+
+CONFIG_DRM_MGAG200                              policy<{'amd64': 'm'}>
+CONFIG_DRM_MGAG200                              note<'LP: #1693337'>
+
+CONFIG_DRM_VBOXVIDEO                            policy<{'amd64': 'm'}>
+CONFIG_DRM_VBOXVIDEO                            note<'LP: #1718679'>
+
+CONFIG_DVB_DUMMY_FE                             policy<{'amd64': 'm'}>
+CONFIG_DVB_DUMMY_FE                             note<'expert use only'>
+
+CONFIG_ECRYPT_FS                                policy<{'amd64': 'y'}>
+CONFIG_ECRYPT_FS                                note<'not autoloadable'>
+
+CONFIG_EFIVAR_FS                                policy<{'amd64': 'y'}>
+CONFIG_EFIVAR_FS                                note<'needed for variable EFI update'>
+
+CONFIG_EVM                                      policy<{'amd64': 'y'}>
+CONFIG_EVM                                      note<'LP: #1643652'>
+
+CONFIG_EVM_ATTR_FSUUID                          policy<{'amd64': 'y'}>
+CONFIG_EVM_ATTR_FSUUID                          note<'LP: #1643652'>
+
+CONFIG_EVM_LOAD_X509                            policy<{'amd64': 'n'}>
+CONFIG_EVM_LOAD_X509                            note<'LP: #1643652'>
+
+CONFIG_EXT2_FS                                  policy<{'amd64': 'n'}>
+CONFIG_EXT2_FS                                  note<'ext4 handling via EXT4_USE_FOR_EXT23'>
+
+CONFIG_EXT3_FS                                  policy<{'amd64': 'n'}>
+CONFIG_EXT3_FS                                  note<'ext4 handling via EXT4_USE_FOR_EXT23'>
+
+CONFIG_FHANDLE                                  policy<{'amd64': 'y'}>
+CONFIG_FHANDLE                                  note<'LP: #1412543'>
+
+CONFIG_FUSE_FS                                  policy<{'amd64': 'y'}>
+CONFIG_FUSE_FS                                  note<'not autoloadable'>
+
+CONFIG_FW_LOADER_USER_HELPER_FALLBACK           policy<{'amd64': 'n'}>
+CONFIG_FW_LOADER_USER_HELPER_FALLBACK           note<'LP: #1398458'>
+
+CONFIG_GPIO_CDEV_V1                             policy<{'amd64': 'y'}>
+CONFIG_GPIO_CDEV_V1                             note<'LP: #1953613'>
+
+CONFIG_GPIO_TWL4030                             policy<{'amd64': 'm'}>
+CONFIG_GPIO_TWL4030                             note<'LP: #921934'>
+
+CONFIG_HIBERNATION                              policy<{'amd64': 'y'}>
+CONFIG_HIBERNATION                              note<'LP: #1867753'>
+
+CONFIG_HOTPLUG_PCI_PCIE                         policy<{'amd64': 'y'}>
+CONFIG_HOTPLUG_PCI_PCIE                         note<'LP: #1374440'>
+
+CONFIG_HOTPLUG_PCI_SHPC                         policy<{'amd64': 'y'}>
+CONFIG_HOTPLUG_PCI_SHPC                         note<'LP: #1374440'>
+
+CONFIG_I2C_CHARDEV                              policy<{'amd64': 'y'}>
+CONFIG_I2C_CHARDEV                              note<'LP: #1417032'>
+
+CONFIG_IDLE_PAGE_TRACKING                       policy<{'amd64': 'y'}>
+CONFIG_IDLE_PAGE_TRACKING                       note<'is there a cost associated with this?'>
+
+CONFIG_IIO_SIMPLE_DUMMY_BUFFER                  policy<{'amd64': 'n'}>
+CONFIG_IIO_SIMPLE_DUMMY_BUFFER                  note<'dummy driver'>
+
+CONFIG_IIO_SIMPLE_DUMMY_EVENTS                  policy<{'amd64': 'n'}>
+CONFIG_IIO_SIMPLE_DUMMY_EVENTS                  note<'dummy driver'>
+
+CONFIG_IMA                                      policy<{'amd64': 'y'}>
+CONFIG_IMA                                      note<'LP: #1643652'>
+
+CONFIG_IMA_APPRAISE                             policy<{'amd64': 'y'}>
+CONFIG_IMA_APPRAISE                             note<'LP: #1643652'>
+
+CONFIG_IMA_ARCH_POLICY                          policy<{'amd64': 'y'}>
+CONFIG_IMA_ARCH_POLICY                          note<'LP: #1866909'>
+
+CONFIG_IMA_BLACKLIST_KEYRING                    policy<{'amd64': 'n'}>
+CONFIG_IMA_BLACKLIST_KEYRING                    note<'LP: #1667490'>
+
+CONFIG_IMA_DEFAULT_HASH_SHA256                  policy<{'amd64': 'n'}>
+CONFIG_IMA_DEFAULT_HASH_SHA256                  note<'LP: #1643652'>
+
+CONFIG_IMA_KEXEC                                policy<{'amd64': 'y'}>
+CONFIG_IMA_KEXEC                                note<'LP: #1643652'>
+
+CONFIG_IMA_KEYRINGS_PERMIT_SIGNED_BY_BUILTIN_OR_SECONDARY policy<{'amd64': 'n'}>
+CONFIG_IMA_KEYRINGS_PERMIT_SIGNED_BY_BUILTIN_OR_SECONDARY note<'LP: #1667490'>
+
+CONFIG_IMA_LOAD_X509                            policy<{'amd64': 'n'}>
+CONFIG_IMA_LOAD_X509                            note<'LP: #1643652'>
+
+CONFIG_IMA_READ_POLICY                          policy<{'amd64': 'n'}>
+CONFIG_IMA_READ_POLICY                          note<'LP: #1866909'>
+
+CONFIG_IMA_SIG_TEMPLATE                         policy<{'amd64': 'n'}>
+CONFIG_IMA_SIG_TEMPLATE                         note<'LP: #1643652'>
+
+CONFIG_IMA_TRUSTED_KEYRING                      policy<{'amd64': 'y'}>
+CONFIG_IMA_TRUSTED_KEYRING                      note<'LP: #1643652'>
+
+CONFIG_IMA_WRITE_POLICY                         policy<{'amd64': 'n'}>
+CONFIG_IMA_WRITE_POLICY                         note<'LP: #1667490'>
+
+CONFIG_INPUT_UINPUT                             policy<{'amd64': 'y'}>
+CONFIG_INPUT_UINPUT                             note<'LP: #584812'>
+
+CONFIG_INTEGRITY_PLATFORM_KEYRING               policy<{'amd64': 'y'}>
+CONFIG_INTEGRITY_PLATFORM_KEYRING               note<'Required for lockdown'>
+
+CONFIG_INTEL_IOMMU_DEFAULT_ON                   policy<{'amd64': 'n'}>
+CONFIG_INTEL_IOMMU_DEFAULT_ON                   note<'the IOMMU can trigger boot failures'>
+
+CONFIG_IOMMU_DEBUGFS                            policy<{'amd64': 'n'}>
+CONFIG_IOMMU_DEBUGFS                            note<'LP: #1861057'>
+
+CONFIG_IPDDP                                    policy<{'amd64': 'n'}>
+CONFIG_IPDDP                                    note<'LP: #1559772'>
+
+CONFIG_IPV6                                     policy<{'amd64': 'y'}>
+CONFIG_IPV6                                     note<'if this is a module we get a module load for every ipv6 packet'>
+
+CONFIG_IP_PNP                                   policy<{'amd64': 'n'}>
+CONFIG_IP_PNP                                   note<'LP: #1259861'>
+
+CONFIG_KERNEL_ZSTD                              policy<{'amd64': 'y'}>
+CONFIG_KERNEL_ZSTD                              note<'LP: #1931725'>
+
+CONFIG_KEXEC_BZIMAGE_VERIFY_SIG                 policy<{'amd64': 'y'}>
+CONFIG_KEXEC_BZIMAGE_VERIFY_SIG                 note<'Q: check this is in sync with the kexec/kdump userspace'>
+
+CONFIG_KFENCE_STATIC_KEYS                       policy<{'amd64': 'n'}>
+CONFIG_KFENCE_STATIC_KEYS                       note<'LP: #1948038'>
+
+CONFIG_KGDB_SERIAL_CONSOLE                      policy<{'amd64': 'y'}>
+CONFIG_KGDB_SERIAL_CONSOLE                      note<'early debugging support'>
+
+CONFIG_KVM                                      policy<{'amd64': 'm'}>
+CONFIG_KVM                                      note<'LP: #1532886'>
+
+CONFIG_LATENCYTOP                               policy<{'amd64': 'n'}>
+CONFIG_LATENCYTOP                               note<'LP: #1655986'>
+
+CONFIG_LOCALVERSION_AUTO                        policy<{'amd64': 'n'}>
+CONFIG_LOCALVERSION_AUTO                        note<'triggers packaging failures'>
+
+CONFIG_MEMORY_HOTPLUG_DEFAULT_ONLINE            policy<{'amd64': 'y'}>
+CONFIG_MEMORY_HOTPLUG_DEFAULT_ONLINE            note<'LP: #1848492'>
+
+CONFIG_MFD_SM501                                policy<{'amd64': 'm'}>
+CONFIG_MFD_SM501                                note<'boot essential on OMAP4'>
+
+CONFIG_MMC_BLOCK                                policy<{'amd64': 'm'}>
+CONFIG_MMC_BLOCK                                note<'boot essential on armhf/arm64'>
+
+CONFIG_MMC_SDHCI                                policy<{'amd64': 'm'}>
+CONFIG_MMC_SDHCI                                note<'installation essential on omap/highbank'>
+
+CONFIG_MMC_SDHCI_PLTFM                          policy<{'amd64': 'm'}>
+CONFIG_MMC_SDHCI_PLTFM                          note<'boot essential on highbank'>
+
+CONFIG_MODIFY_LDT_SYSCALL                       policy<{'amd64': 'y'}>
+CONFIG_MODIFY_LDT_SYSCALL                       note<'Q: check this with security'>
+
+CONFIG_MODVERSIONS                              policy<{'amd64': 'y'}>
+CONFIG_MODVERSIONS                              note<'required as we have a livepatch/drivers modules signing key'>
+
+CONFIG_MTD                                      policy<{'amd64': 'm'}>
+CONFIG_MTD                                      note<'boot essential on arm'>
+
+CONFIG_MTD_BLOCK                                policy<{'amd64': 'm'}>
+CONFIG_MTD_BLOCK                                note<'boot essential on arm'>
+
+CONFIG_MTD_DOCG3                                policy<{'amd64': 'n'}>
+CONFIG_MTD_DOCG3                                note<'LP: #1792205'>
+
+CONFIG_MTD_NAND_DISKONCHIP_BBTWRITE             policy<{'amd64': 'n'}>
+CONFIG_MTD_NAND_DISKONCHIP_BBTWRITE             note<'can be enabled at runtime'>
+
+CONFIG_MTD_ONENAND_VERIFY_WRITE                 policy<{'amd64': 'y'}>
+CONFIG_MTD_ONENAND_VERIFY_WRITE                 note<'writes here are not checked in full without'>
+
+CONFIG_MTD_RAW_NAND                             policy<{'amd64': 'm'}>
+CONFIG_MTD_RAW_NAND                             note<'boot essential on arm'>
+
+CONFIG_NETWORK_PHY_TIMESTAMPING                 policy<{'amd64': 'y'}>
+CONFIG_NETWORK_PHY_TIMESTAMPING                 note<'LP: #1785816'>
+
+CONFIG_NET_9P                                   policy<{'amd64': 'm'}>
+CONFIG_NET_9P                                   note<'LP: #1557994'>
+
+CONFIG_NET_DROP_MONITOR                         policy<{'amd64': 'y'}>
+CONFIG_NET_DROP_MONITOR                         note<'LP: #1660634'>
+
+CONFIG_NET_SWITCHDEV                            policy<{'amd64': 'y'}>
+CONFIG_NET_SWITCHDEV                            note<'updated to y for s390x starting with focal'>
+
+CONFIG_NET_VENDOR_EMULEX                        policy<{'amd64': 'y'}>
+CONFIG_NET_VENDOR_EMULEX                        note<'LP: #1543165'>
+
+CONFIG_NLS                                      policy<{'amd64': 'y'}>
+CONFIG_NLS                                      note<'dependancy of boot essential'>
+
+CONFIG_NOP_USB_XCEIV                            policy<{'amd64': 'm'}>
+CONFIG_NOP_USB_XCEIV                            note<'boot essential on omap/highbank'>
+
+CONFIG_NOUVEAU_LEGACY_CTX_SUPPORT               policy<{'amd64': 'n'}>
+CONFIG_NOUVEAU_LEGACY_CTX_SUPPORT               note<'Selects CONFIG_DRM_LEGACY which is not wanted'>
+
+CONFIG_NO_HZ_IDLE                               policy<{'amd64': 'y'}>
+CONFIG_NO_HZ_IDLE                               note<'LP: #1413968'>
+
+CONFIG_NR_CPUS                                  policy<{'amd64': '8192'}>
+CONFIG_NR_CPUS                                  note<'LP: #1864198'>
+
+CONFIG_NUMA                                     policy<{'amd64': 'y'}>
+CONFIG_NUMA                                     note<'LP: #1557690'>
+
+CONFIG_NUMA_BALANCING_DEFAULT_ENABLED           policy<{'amd64': 'y'}>
+CONFIG_NUMA_BALANCING_DEFAULT_ENABLED           note<'LP: #1557690'>
+
+CONFIG_NUMA_EMU                                 policy<{'amd64': 'n'}>
+CONFIG_NUMA_EMU                                 note<'LP: #1864198'>
+
+CONFIG_NVMEM                                    policy<{'amd64': 'y'}>
+CONFIG_NVMEM                                    note<'LP: #1543165'>
+
+CONFIG_NVRAM                                    policy<{'amd64': 'm'}>
+CONFIG_NVRAM                                    note<'LP: #1837726'>
+
+CONFIG_N_GSM                                    policy<{'amd64': 'm'}>
+CONFIG_N_GSM                                    note<'LP: #1404670'>
+
+CONFIG_PAGE_POISONING                           policy<{'amd64': 'y'}>
+CONFIG_PAGE_POISONING                           note<'LP: #1783651'>
+
+CONFIG_PANIC_ON_OOPS                            policy<{'amd64': 'n'}>
+CONFIG_PANIC_ON_OOPS                            note<'keep working if at all possible'>
+
+CONFIG_PATA_HPT3X3_DMA                          policy<{'amd64': 'n'}>
+CONFIG_PATA_HPT3X3_DMA                          note<'DMA mode is documented problematic'>
+
+CONFIG_PCIEASPM_DEFAULT                         policy<{'amd64': 'y'}>
+CONFIG_PCIEASPM_DEFAULT                         note<'LP: #1398544'>
+
+CONFIG_PCIEPORTBUS                              policy<{'amd64': 'y'}>
+CONFIG_PCIEPORTBUS                              note<'LP: #1665404'>
+
+CONFIG_PINCTRL_CHERRYVIEW                       policy<{'amd64': 'y'}>
+CONFIG_PINCTRL_CHERRYVIEW                       note<'LP: #1630238'>
+
+CONFIG_PM                                       policy<{'amd64': 'y'}>
+CONFIG_PM                                       note<'LP: #1867753'>
+
+CONFIG_PREEMPT_NONE                             policy<{'amd64': 'n'}>
+CONFIG_PREEMPT_NONE                             note<'LP: #1543165'>
+
+CONFIG_PSI_DEFAULT_DISABLED                     policy<{'amd64': 'n'}>
+CONFIG_PSI_DEFAULT_DISABLED                     note<'LP: #1876044'>
+
+CONFIG_REGULATOR_FIXED_VOLTAGE                  policy<{'amd64': 'm'}>
+CONFIG_REGULATOR_FIXED_VOLTAGE                  note<'boot essential on arm'>
+
+CONFIG_REGULATOR_TWL4030                        policy<{'amd64': 'm'}>
+CONFIG_REGULATOR_TWL4030                        note<'boot requisite for omap4'>
+
+CONFIG_RTC_DRV_CMOS                             policy<{'amd64': 'y'}>
+CONFIG_RTC_DRV_CMOS                             note<'boot essential on i386/amd64'>
+
+CONFIG_RT_GROUP_SCHED                           policy<{'amd64': 'n'}>
+CONFIG_RT_GROUP_SCHED                           note<'LP: #1875665'>
+
+CONFIG_SAMPLE_TRACE_PRINTK                      policy<{'amd64': 'm'}>
+CONFIG_SAMPLE_TRACE_PRINTK                      note<'Required for ftrace selftests'>
+
+CONFIG_SATA_AHCI_PLATFORM                       policy<{'amd64': 'm'}>
+CONFIG_SATA_AHCI_PLATFORM                       note<'boot essential on highbank'>
+
+CONFIG_SCSI_IPR_DUMP                            policy<{'amd64': 'y'}>
+CONFIG_SCSI_IPR_DUMP                            note<'LP: #1343109'>
+
+CONFIG_SCSI_IPR_TRACE                           policy<{'amd64': 'y'}>
+CONFIG_SCSI_IPR_TRACE                           note<'LP: #1343109'>
+
+CONFIG_SCSI_VIRTIO                              policy<{'amd64': 'm'}>
+CONFIG_SCSI_VIRTIO                              note<'tech preview of new feature'>
+
+CONFIG_SECURITY_SAFESETID                       policy<{'amd64': 'y'}>
+CONFIG_SECURITY_SAFESETID                       note<'LP: #1845391'>
+
+CONFIG_SECURITY_SELINUX_DISABLE                 policy<{'amd64': 'n'}>
+CONFIG_SECURITY_SELINUX_DISABLE                 note<'LP: #1680315'>
+
+CONFIG_SERIAL_DEV_BUS                           policy<{'amd64': 'y'}>
+CONFIG_SERIAL_DEV_BUS                           note<'LP: #1739939'>
+
+CONFIG_SERIAL_DEV_CTRL_TTYPORT                  policy<{'amd64': 'y'}>
+CONFIG_SERIAL_DEV_CTRL_TTYPORT                  note<'LP: #1739939'>
+
+CONFIG_SMC                                      policy<{'amd64': 'm'}>
+CONFIG_SMC                                      note<'LP: #1789934'>
+
+CONFIG_SMC_DIAG                                 policy<{'amd64': 'm'}>
+CONFIG_SMC_DIAG                                 note<'LP: #1789934'>
+
+CONFIG_SND                                      policy<{'amd64': 'm'}>
+CONFIG_SND                                      note<'not autoloadable on omap'>
+
+CONFIG_SND_HDA_POWER_SAVE_DEFAULT               policy<{'amd64': '1'}>
+CONFIG_SND_HDA_POWER_SAVE_DEFAULT               note<'LP: #1804265'>
+
+CONFIG_SND_HDA_RECONFIG                         policy<{'amd64': 'y'}>
+CONFIG_SND_HDA_RECONFIG                         note<'allows fixes to be tested live'>
+
+CONFIG_SND_PCM_OSS                              policy<{'amd64': 'n'}>
+CONFIG_SND_PCM_OSS                              note<'deprecated in favour of pulseaudio emulation'>
+
+CONFIG_SND_SOC                                  policy<{'amd64': 'm'}>
+CONFIG_SND_SOC                                  note<'not autoloadable on omap'>
+
+CONFIG_SND_SOC_AMD_RENOIR                       policy<{'amd64': 'm'}>
+CONFIG_SND_SOC_AMD_RENOIR                       note<'LP: #1881046'>
+
+CONFIG_SND_SOC_AMD_RENOIR_MACH                  policy<{'amd64': 'm'}>
+CONFIG_SND_SOC_AMD_RENOIR_MACH                  note<'LP: #1881046'>
+
+CONFIG_SND_SOC_INTEL_CFL                        policy<{'amd64': 'n'}>
+CONFIG_SND_SOC_INTEL_CFL                        note<'deprecated'>
+
+CONFIG_SND_SOC_INTEL_CML_H                      policy<{'amd64': 'n'}>
+CONFIG_SND_SOC_INTEL_CML_H                      note<'deprecated'>
+
+CONFIG_SND_SOC_INTEL_CML_LP                     policy<{'amd64': 'n'}>
+CONFIG_SND_SOC_INTEL_CML_LP                     note<'deprecated'>
+
+CONFIG_SND_SOC_INTEL_CNL                        policy<{'amd64': 'n'}>
+CONFIG_SND_SOC_INTEL_CNL                        note<'deprecated'>
+
+CONFIG_SND_SOC_INTEL_SKYLAKE                    policy<{'amd64': 'n'}>
+CONFIG_SND_SOC_INTEL_SKYLAKE                    note<'deprecated'>
+
+CONFIG_SND_SOC_INTEL_SKYLAKE_HDAUDIO_CODEC      policy<{'amd64': 'y'}>
+CONFIG_SND_SOC_INTEL_SKYLAKE_HDAUDIO_CODEC      note<'LP: #1915117'>
+
+CONFIG_SND_SOC_INTEL_SOUNDWIRE_SOF_MACH         policy<{'amd64': 'm'}>
+CONFIG_SND_SOC_INTEL_SOUNDWIRE_SOF_MACH         note<'LP: #1921632'>
+
+CONFIG_SND_SOC_INTEL_USER_FRIENDLY_LONG_NAMES   policy<{'amd64': 'y'}>
+CONFIG_SND_SOC_INTEL_USER_FRIENDLY_LONG_NAMES   note<'LP: #1921632'>
+
+CONFIG_SND_SOC_SOF_HDA_AUDIO_CODEC              policy<{'amd64': 'y'}>
+CONFIG_SND_SOC_SOF_HDA_AUDIO_CODEC              note<'LP: #1848490'>
+
+CONFIG_SND_SOC_SOF_HDA_LINK                     policy<{'amd64': 'y'}>
+CONFIG_SND_SOC_SOF_HDA_LINK                     note<'LP: #1848490'>
+
+CONFIG_SOUND                                    policy<{'amd64': 'm'}>
+CONFIG_SOUND                                    note<'not autoloadable on omap'>
+
+CONFIG_SOUNDWIRE                                policy<{'amd64': 'm'}>
+CONFIG_SOUNDWIRE                                note<'LP: #1855685'>
+
+CONFIG_SOUND_OSS_CORE_PRECLAIM                  policy<{'amd64': 'n'}>
+CONFIG_SOUND_OSS_CORE_PRECLAIM                  note<'LP: #1385510'>
+
+CONFIG_SQUASHFS                                 policy<{'amd64': 'y'}>
+CONFIG_SQUASHFS                                 note<'LP: #1593134'>
+
+CONFIG_SQUASHFS_4K_DEVBLK_SIZE                  policy<{'amd64': 'n'}>
+CONFIG_SQUASHFS_4K_DEVBLK_SIZE                  note<'non-default block size'>
+
+CONFIG_SQUASHFS_DECOMP_MULTI_PERCPU             policy<{'amd64': 'y'}>
+CONFIG_SQUASHFS_DECOMP_MULTI_PERCPU             note<'LP: #1980861'>
+
+CONFIG_STACK_VALIDATION                         policy<{'amd64': 'y'}>
+CONFIG_STACK_VALIDATION                         note<'needed for livepatch'>
+
+CONFIG_SYSFS_DEPRECATED                         policy<{'amd64': 'n'}>
+CONFIG_SYSFS_DEPRECATED                         note<'ensure nothing is using these deprecated interfaces'>
+
+CONFIG_TCG_TIS_I2C_ATMEL                        policy<{'amd64': 'm'}>
+CONFIG_TCG_TIS_I2C_ATMEL                        note<'LP: #1643652'>
+
+CONFIG_TCG_TIS_I2C_INFINEON                     policy<{'amd64': 'm'}>
+CONFIG_TCG_TIS_I2C_INFINEON                     note<'LP: #1643652'>
+
+CONFIG_TCG_TIS_I2C_NUVOTON                      policy<{'amd64': 'm'}>
+CONFIG_TCG_TIS_I2C_NUVOTON                      note<'LP: #1643652'>
+
+CONFIG_TCG_TPM                                  policy<{'amd64': 'y'}>
+CONFIG_TCG_TPM                                  note<'needed for early validation'>
+
+CONFIG_TEST_BLACKHOLE_DEV                       policy<{'amd64': 'm'}>
+CONFIG_TEST_BLACKHOLE_DEV                       note<'Used by net selftests'>
+
+CONFIG_TMPFS_POSIX_ACL                          policy<{'amd64': 'y'}>
+CONFIG_TMPFS_POSIX_ACL                          note<'some /dev nodes require POSIX ACLs, like /dev/dsp'>
+
+CONFIG_TOUCHSCREEN_ELAN                         policy<{'amd64': 'y'}>
+CONFIG_TOUCHSCREEN_ELAN                         note<'LP: #1630238'>
+
+CONFIG_UBSAN                                    policy<{'amd64': 'y'}>
+CONFIG_UBSAN                                    note<'LP: #1942215'>
+
+CONFIG_UNWINDER_FRAME_POINTER                   policy<{'amd64': 'y'}>
+CONFIG_UNWINDER_FRAME_POINTER                   note<'needed for livepatch'>
+
+CONFIG_USB_EHCI_HCD                             policy<{'amd64': 'y'}>
+CONFIG_USB_EHCI_HCD                             note<'ensures USB 2.0/1.1 probe ordering'>
+
+CONFIG_USB_EHCI_HCD_PLATFORM                    policy<{'amd64': 'y'}>
+CONFIG_USB_EHCI_HCD_PLATFORM                    note<'Dont use the generic ehci/ohci code on omap, it doesnt work'>
+
+CONFIG_USB_HCD_BCMA                             policy<{'amd64': 'm'}>
+CONFIG_USB_HCD_BCMA                             note<'USB_{O,E}HCI_HCD_PLATFORM must be off on omap'>
+
+CONFIG_USB_HCD_SSB                              policy<{'amd64': 'm'}>
+CONFIG_USB_HCD_SSB                              note<'USB_{O,E}HCI_HCD_PLATFORM must be off on omap'>
+
+CONFIG_USB_M66592                               policy<{'amd64': 'n'}>
+CONFIG_USB_M66592                               note<'gadget device'>
+
+CONFIG_USB_MUSB_HDRC                            policy<{'amd64': 'm'}>
+CONFIG_USB_MUSB_HDRC                            note<'not autoloadable on omap'>
+
+CONFIG_USB_OTG                                  policy<{'amd64': 'n'}>
+CONFIG_USB_OTG                                  note<'LP: #1411295'>
+
+CONFIG_USB_SERIAL_DEBUG                         policy<{'amd64': 'm'}>
+CONFIG_USB_SERIAL_DEBUG                         note<'not actually debug'>
+
+CONFIG_USB_UHCI_HCD                             policy<{'amd64': 'y'}>
+CONFIG_USB_UHCI_HCD                             note<'ensures USB 2.0/1.1 probe ordering'>
+
+CONFIG_USB_XHCI_DBGCAP                          policy<{'amd64': 'y'}>
+CONFIG_USB_XHCI_DBGCAP                          note<'LP: #1730832'>
+
+CONFIG_USB_XHCI_HCD                             policy<{'amd64': 'y'}>
+CONFIG_USB_XHCI_HCD                             note<'ensures USB 2.0/1.1 probe ordering'>
+
+CONFIG_VFAT_FS                                  policy<{'amd64': 'y'}>
+CONFIG_VFAT_FS                                  note<'needed on arm to ensure we can write the kernel when replacing'>
+
+CONFIG_VFIO                                     policy<{'amd64': 'y'}>
+CONFIG_VFIO                                     note<'LP: #1636733'>
+
+CONFIG_VFIO_PCI                                 policy<{'amd64': 'y'}>
+CONFIG_VFIO_PCI                                 note<'LP: #1636733'>
+
+CONFIG_VIDEO_VIMC                               policy<{'amd64': 'm'}>
+CONFIG_VIDEO_VIMC                               note<'LP: #1831482'>
+
+CONFIG_VIRTIO_BLK                               policy<{'amd64': 'm'}>
+CONFIG_VIRTIO_BLK                               note<'KVM paravirt support -- not autoloadable'>
+
+CONFIG_VIRTIO_MMIO                              policy<{'amd64': 'y'}>
+CONFIG_VIRTIO_MMIO                              note<'LP: #1557689'>
+
+CONFIG_VIRTIO_NET                               policy<{'amd64': 'm'}>
+CONFIG_VIRTIO_NET                               note<'KVM paravirt support -- not autoloadable'>
+
+CONFIG_X509_CERTIFICATE_PARSER                  policy<{'amd64': 'y'}>
+CONFIG_X509_CERTIFICATE_PARSER                  note<'module signing'>
+
+CONFIG_X86_ACPI_CPUFREQ                         policy<{'amd64': 'y'}>
+CONFIG_X86_ACPI_CPUFREQ                         note<'not autoloadable'>
+
+CONFIG_X86_KERNEL_IBT                           policy<{'amd64': 'n'}>
+CONFIG_X86_KERNEL_IBT                           note<'LP: #1980484'>
+
+CONFIG_X86_PCC_CPUFREQ                          policy<{'amd64': 'y'}>
+CONFIG_X86_PCC_CPUFREQ                          note<'not autoloadable'>
+
+CONFIG_X86_POWERNOW_K8                          policy<{'amd64': 'y'}>
+CONFIG_X86_POWERNOW_K8                          note<'not autoloadable'>
+
+CONFIG_X86_SPEEDSTEP_CENTRINO                   policy<{'amd64': 'y'}>
+CONFIG_X86_SPEEDSTEP_CENTRINO                   note<'not autoloadable'>
+
+CONFIG_X86_UV                                   policy<{'amd64': 'y'}>
+CONFIG_X86_UV                                   note<'LP: #1863810'>
+
+CONFIG_XEN_512GB                                policy<{'amd64': 'y'}>
+CONFIG_XEN_512GB                                note<'Q: is this related to the utlemming questions on memory size?'>
+
+CONFIG_XEN_ACPI_PROCESSOR                       policy<{'amd64': 'y'}>
+CONFIG_XEN_ACPI_PROCESSOR                       note<'boot essential on XEN host'>
+
+CONFIG_XEN_BLKDEV_FRONTEND                      policy<{'amd64': 'y'}>
+CONFIG_XEN_BLKDEV_FRONTEND                      note<'not autoloadable -- XEN paravirt support'>
+
+CONFIG_XEN_NETDEV_FRONTEND                      policy<{'amd64': 'y'}>
+CONFIG_XEN_NETDEV_FRONTEND                      note<'not autoloadable -- XEN paravirt support'>
+
+CONFIG_XZ_DEC                                   policy<{'amd64': 'y'}>
+CONFIG_XZ_DEC                                   note<'boot essential -- initramfs decompressor'>
+
+CONFIG_ZONE_DMA                                 policy<{'amd64': 'y'}>
+CONFIG_ZONE_DMA                                 note<'LP: #1628523'>
+
+
+# ---- Annotations without notes ----
+
 CONFIG_104_QUAD_8                               policy<{'amd64': 'm'}>
 CONFIG_60XX_WDT                                 policy<{'amd64': 'm'}>
 CONFIG_64BIT                                    policy<{'amd64': 'y'}>
@@ -38,9 +653,6 @@ CONFIG_9P_FS_SECURITY                           policy<{'amd64': 'y'}>
 CONFIG_A11Y_BRAILLE_CONSOLE                     policy<{'amd64': 'n'}>
 CONFIG_ABP060MG                                 policy<{'amd64': 'm'}>
 CONFIG_AC97_BUS                                 policy<{'amd64': 'm'}>
-CONFIG_ACCESSIBILITY                            policy<{'amd64': 'y'}>
-CONFIG_ACCESSIBILITY                            note<'LP: #1967702'>
-
 CONFIG_ACENIC                                   policy<{'amd64': 'm'}>
 CONFIG_ACENIC_OMIT_TIGON_I                      policy<{'amd64': 'n'}>
 CONFIG_ACERHDF                                  policy<{'amd64': 'm'}>
@@ -66,9 +678,6 @@ CONFIG_ACPI_CONTAINER                           policy<{'amd64': 'y'}>
 CONFIG_ACPI_CPPC_LIB                            policy<{'amd64': 'y'}>
 CONFIG_ACPI_CPU_FREQ_PSS                        policy<{'amd64': 'y'}>
 CONFIG_ACPI_CUSTOM_DSDT_FILE                    policy<{'amd64': '""'}>
-CONFIG_ACPI_CUSTOM_METHOD                       policy<{'amd64': 'n'}>
-CONFIG_ACPI_CUSTOM_METHOD                       note<'SECURITY: allows arbitrary execution'>
-
 CONFIG_ACPI_DEBUG                               policy<{'amd64': 'y'}>
 CONFIG_ACPI_DEBUGGER                            policy<{'amd64': 'y'}>
 CONFIG_ACPI_DEBUGGER_USER                       policy<{'amd64': 'y'}>
@@ -247,9 +856,6 @@ CONFIG_AF_RXRPC_DEBUG                           policy<{'amd64': 'n'}>
 CONFIG_AF_RXRPC_INJECT_LOSS                     policy<{'amd64': 'n'}>
 CONFIG_AF_RXRPC_IPV6                            policy<{'amd64': 'y'}>
 CONFIG_AF_UNIX_OOB                              policy<{'amd64': 'y'}>
-CONFIG_AGP                                      policy<{'amd64': 'y'}>
-CONFIG_AGP                                      note<'not autoloadable'>
-
 CONFIG_AGP_AMD64                                policy<{'amd64': 'y'}>
 CONFIG_AGP_INTEL                                policy<{'amd64': 'y'}>
 CONFIG_AGP_SIS                                  policy<{'amd64': 'm'}>
@@ -446,12 +1052,6 @@ CONFIG_ASUS_NB_WMI                              policy<{'amd64': 'm'}>
 CONFIG_ASUS_TF103C_DOCK                         policy<{'amd64': 'm'}>
 CONFIG_ASUS_WIRELESS                            policy<{'amd64': 'm'}>
 CONFIG_ASUS_WMI                                 policy<{'amd64': 'm'}>
-CONFIG_ASYMMETRIC_KEY_TYPE                      policy<{'amd64': 'y'}>
-CONFIG_ASYMMETRIC_KEY_TYPE                      note<'module signing'>
-
-CONFIG_ASYMMETRIC_PUBLIC_KEY_SUBTYPE            policy<{'amd64': 'y'}>
-CONFIG_ASYMMETRIC_PUBLIC_KEY_SUBTYPE            note<'module signing'>
-
 CONFIG_ASYNC_CORE                               policy<{'amd64': 'm'}>
 CONFIG_ASYNC_MEMCPY                             policy<{'amd64': 'm'}>
 CONFIG_ASYNC_PQ                                 policy<{'amd64': 'm'}>
@@ -476,9 +1076,6 @@ CONFIG_ATA_BMDMA                                policy<{'amd64': 'y'}>
 CONFIG_ATA_FORCE                                policy<{'amd64': 'y'}>
 CONFIG_ATA_GENERIC                              policy<{'amd64': 'y'}>
 CONFIG_ATA_OVER_ETH                             policy<{'amd64': 'm'}>
-CONFIG_ATA_PIIX                                 policy<{'amd64': 'y'}>
-CONFIG_ATA_PIIX                                 note<'LP: #1627324'>
-
 CONFIG_ATA_SFF                                  policy<{'amd64': 'y'}>
 CONFIG_ATA_VERBOSE_ERROR                        policy<{'amd64': 'y'}>
 CONFIG_ATH10K                                   policy<{'amd64': 'm'}>
@@ -738,9 +1335,6 @@ CONFIG_BH1780                                   policy<{'amd64': 'm'}>
 CONFIG_BINARY_PRINTF                            policy<{'amd64': 'y'}>
 CONFIG_BINFMT_ELF                               policy<{'amd64': 'y'}>
 CONFIG_BINFMT_MISC                              policy<{'amd64': 'm'}>
-CONFIG_BINFMT_SCRIPT                            policy<{'amd64': 'y'}>
-CONFIG_BINFMT_SCRIPT                            note<'required if init is a shell script such as in initramfs-tools'>
-
 CONFIG_BITREVERSE                               policy<{'amd64': 'y'}>
 CONFIG_BLK_CGROUP                               policy<{'amd64': 'y'}>
 CONFIG_BLK_CGROUP_FC_APPID                      policy<{'amd64': 'y'}>
@@ -755,9 +1349,6 @@ CONFIG_BLK_DEV_3W_XXXX_RAID                     policy<{'amd64': 'm'}>
 CONFIG_BLK_DEV_BSG                              policy<{'amd64': 'y'}>
 CONFIG_BLK_DEV_BSGLIB                           policy<{'amd64': 'y'}>
 CONFIG_BLK_DEV_BSG_COMMON                       policy<{'amd64': 'y'}>
-CONFIG_BLK_DEV_DM                               policy<{'amd64': 'y'}>
-CONFIG_BLK_DEV_DM                               note<'LP: #560717'>
-
 CONFIG_BLK_DEV_DM_BUILTIN                       policy<{'amd64': 'y'}>
 CONFIG_BLK_DEV_DRBD                             policy<{'amd64': 'm'}>
 CONFIG_BLK_DEV_FD                               policy<{'amd64': 'm'}>
@@ -771,31 +1362,13 @@ CONFIG_BLK_DEV_LOOP_MIN_COUNT                   policy<{'amd64': '8'}>
 CONFIG_BLK_DEV_MD                               policy<{'amd64': 'y'}>
 CONFIG_BLK_DEV_NBD                              policy<{'amd64': 'm'}>
 CONFIG_BLK_DEV_NULL_BLK                         policy<{'amd64': 'm'}>
-CONFIG_BLK_DEV_NVME                             policy<{'amd64': 'm'}>
-CONFIG_BLK_DEV_NVME                             note<'LP: #1759893'>
-
 CONFIG_BLK_DEV_PCIESSD_MTIP32XX                 policy<{'amd64': 'm'}>
 CONFIG_BLK_DEV_PMEM                             policy<{'amd64': 'm'}>
-CONFIG_BLK_DEV_RAM                              policy<{'amd64': 'm'}>
-CONFIG_BLK_DEV_RAM                              note<'LP: #1593293'>
-
 CONFIG_BLK_DEV_RAM_COUNT                        policy<{'amd64': '16'}>
-CONFIG_BLK_DEV_RAM_SIZE                         policy<{'amd64': '65536'}>
-CONFIG_BLK_DEV_RAM_SIZE                         note<'Ramdisk size should be a minimum of 64M'>
-
 CONFIG_BLK_DEV_RBD                              policy<{'amd64': 'm'}>
 CONFIG_BLK_DEV_RNBD                             policy<{'amd64': 'y'}>
 CONFIG_BLK_DEV_RNBD_CLIENT                      policy<{'amd64': 'm'}>
 CONFIG_BLK_DEV_RNBD_SERVER                      policy<{'amd64': 'm'}>
-CONFIG_BLK_DEV_SD                               policy<{'amd64': 'y'}>
-CONFIG_BLK_DEV_SD                               note<'LP: #1627330'>
-
-CONFIG_BLK_DEV_SR                               policy<{'amd64': 'y'}>
-CONFIG_BLK_DEV_SR                               note<'LP: #1627330'>
-
-CONFIG_BLK_DEV_THROTTLING                       policy<{'amd64': 'y'}>
-CONFIG_BLK_DEV_THROTTLING                       note<'CGROUP disk consumption control'>
-
 CONFIG_BLK_DEV_THROTTLING_LOW                   policy<{'amd64': 'n'}>
 CONFIG_BLK_DEV_UBLK                             policy<{'amd64': 'n'}>
 CONFIG_BLK_DEV_ZONED                            policy<{'amd64': 'y'}>
@@ -874,9 +1447,6 @@ CONFIG_BPF_LSM                                  policy<{'amd64': 'y'}>
 CONFIG_BPF_PRELOAD                              policy<{'amd64': 'n'}>
 CONFIG_BPF_STREAM_PARSER                        policy<{'amd64': 'y'}>
 CONFIG_BPF_SYSCALL                              policy<{'amd64': 'y'}>
-CONFIG_BPF_UNPRIV_DEFAULT_OFF                   policy<{'amd64': 'y'}>
-CONFIG_BPF_UNPRIV_DEFAULT_OFF                   note<'security reason'>
-
 CONFIG_BPQETHER                                 policy<{'amd64': 'm'}>
 CONFIG_BQL                                      policy<{'amd64': 'y'}>
 CONFIG_BRANCH_PROFILE_NONE                      policy<{'amd64': 'y'}>
@@ -1221,9 +1791,6 @@ CONFIG_CHROMEOS_PSTORE                          policy<{'amd64': 'm'}>
 CONFIG_CHROMEOS_TBMC                            policy<{'amd64': 'm'}>
 CONFIG_CHROME_PLATFORMS                         policy<{'amd64': 'y'}>
 CONFIG_CHR_DEV_SCH                              policy<{'amd64': 'm'}>
-CONFIG_CHR_DEV_SG                               policy<{'amd64': 'y'}>
-CONFIG_CHR_DEV_SG                               note<'not autoloadable'>
-
 CONFIG_CHR_DEV_ST                               policy<{'amd64': 'm'}>
 CONFIG_CHTCRC_PMIC_OPREGION                     policy<{'amd64': 'y'}>
 CONFIG_CHT_DC_TI_PMIC_OPREGION                  policy<{'amd64': 'y'}>
@@ -1259,9 +1826,6 @@ CONFIG_CM3232                                   policy<{'amd64': 'm'}>
 CONFIG_CM3323                                   policy<{'amd64': 'm'}>
 CONFIG_CM3605                                   policy<{'amd64': 'm'}>
 CONFIG_CM36651                                  policy<{'amd64': 'm'}>
-CONFIG_CMA                                      policy<{'amd64': 'n'}>
-CONFIG_CMA                                      note<'LP: #1803206'>
-
 CONFIG_CMDLINE_BOOL                             policy<{'amd64': 'n'}>
 CONFIG_CMDLINE_PARTITION                        policy<{'amd64': 'y'}>
 CONFIG_CNIC                                     policy<{'amd64': 'm'}>
@@ -1425,9 +1989,6 @@ CONFIG_COMPAT                                   policy<{'amd64': 'y'}>
 CONFIG_COMPAT_32                                policy<{'amd64': 'y'}>
 CONFIG_COMPAT_32BIT_TIME                        policy<{'amd64': 'y'}>
 CONFIG_COMPAT_BINFMT_ELF                        policy<{'amd64': 'y'}>
-CONFIG_COMPAT_BRK                               policy<{'amd64': 'n'}>
-CONFIG_COMPAT_BRK                               note<'disables brk ASLR'>
-
 CONFIG_COMPAT_FOR_U64_ALIGNMENT                 policy<{'amd64': 'y'}>
 CONFIG_COMPAT_NETLINK_MESSAGES                  policy<{'amd64': 'y'}>
 CONFIG_COMPAT_OLD_SIGACTION                     policy<{'amd64': 'y'}>
@@ -1453,33 +2014,12 @@ CONFIG_CPU5_WDT                                 policy<{'amd64': 'm'}>
 CONFIG_CPUMASK_OFFSTACK                         policy<{'amd64': 'y'}>
 CONFIG_CPUSETS                                  policy<{'amd64': 'y'}>
 CONFIG_CPU_FREQ                                 policy<{'amd64': 'y'}>
-CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE         policy<{'amd64': 'n'}>
-CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE         note<'for bootspeed'>
-
 CONFIG_CPU_FREQ_DEFAULT_GOV_POWERSAVE           policy<{'amd64': 'n'}>
 CONFIG_CPU_FREQ_DEFAULT_GOV_SCHEDUTIL           policy<{'amd64': 'y'}>
 CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE           policy<{'amd64': 'n'}>
 CONFIG_CPU_FREQ_GOV_ATTR_SET                    policy<{'amd64': 'y'}>
 CONFIG_CPU_FREQ_GOV_COMMON                      policy<{'amd64': 'y'}>
-CONFIG_CPU_FREQ_GOV_CONSERVATIVE                policy<{'amd64': 'y'}>
-CONFIG_CPU_FREQ_GOV_CONSERVATIVE                note<'not autoloadable'>
-
-CONFIG_CPU_FREQ_GOV_ONDEMAND                    policy<{'amd64': 'y'}>
-CONFIG_CPU_FREQ_GOV_ONDEMAND                    note<'not autoloadable'>
-
-CONFIG_CPU_FREQ_GOV_PERFORMANCE                 policy<{'amd64': 'y'}>
-CONFIG_CPU_FREQ_GOV_PERFORMANCE                 note<'not autoloadable'>
-
-CONFIG_CPU_FREQ_GOV_POWERSAVE                   policy<{'amd64': 'y'}>
-CONFIG_CPU_FREQ_GOV_POWERSAVE                   note<'not autoloadable'>
-
 CONFIG_CPU_FREQ_GOV_SCHEDUTIL                   policy<{'amd64': 'y'}>
-CONFIG_CPU_FREQ_GOV_USERSPACE                   policy<{'amd64': 'y'}>
-CONFIG_CPU_FREQ_GOV_USERSPACE                   note<'not autoloadable'>
-
-CONFIG_CPU_FREQ_STAT                            policy<{'amd64': 'y'}>
-CONFIG_CPU_FREQ_STAT                            note<'dependancy of boot essential'>
-
 CONFIG_CPU_HOTPLUG_STATE_CONTROL                policy<{'amd64': 'n'}>
 CONFIG_CPU_IBPB_ENTRY                           policy<{'amd64': 'y'}>
 CONFIG_CPU_IBRS_ENTRY                           policy<{'amd64': 'y'}>
@@ -1500,9 +2040,6 @@ CONFIG_CRAMFS                                   policy<{'amd64': 'm'}>
 CONFIG_CRAMFS_BLOCKDEV                          policy<{'amd64': 'y'}>
 CONFIG_CRAMFS_MTD                               policy<{'amd64': 'y'}>
 CONFIG_CRASH_CORE                               policy<{'amd64': 'y'}>
-CONFIG_CRASH_DUMP                               policy<{'amd64': 'y'}>
-CONFIG_CRASH_DUMP                               note<'LP: #1363180'>
-
 CONFIG_CRC16                                    policy<{'amd64': 'y'}>
 CONFIG_CRC32                                    policy<{'amd64': 'y'}>
 CONFIG_CRC32_BIT                                policy<{'amd64': 'n'}>
@@ -1705,9 +2242,6 @@ CONFIG_CRYPTO_SHA1_SSSE3                        policy<{'amd64': 'm'}>
 CONFIG_CRYPTO_SHA256                            policy<{'amd64': 'y'}>
 CONFIG_CRYPTO_SHA256_SSSE3                      policy<{'amd64': 'm'}>
 CONFIG_CRYPTO_SHA3                              policy<{'amd64': 'm'}>
-CONFIG_CRYPTO_SHA512                            policy<{'amd64': 'y'}>
-CONFIG_CRYPTO_SHA512                            note<'module signing'>
-
 CONFIG_CRYPTO_SHA512_SSSE3                      policy<{'amd64': 'm'}>
 CONFIG_CRYPTO_SIMD                              policy<{'amd64': 'm'}>
 CONFIG_CRYPTO_SKCIPHER                          policy<{'amd64': 'y'}>
@@ -1731,9 +2265,6 @@ CONFIG_CRYPTO_TWOFISH_X86_64_3WAY               policy<{'amd64': 'm'}>
 CONFIG_CRYPTO_USER                              policy<{'amd64': 'm'}>
 CONFIG_CRYPTO_USER_API                          policy<{'amd64': 'm'}>
 CONFIG_CRYPTO_USER_API_AEAD                     policy<{'amd64': 'm'}>
-CONFIG_CRYPTO_USER_API_ENABLE_OBSOLETE          policy<{'amd64': 'n'}>
-CONFIG_CRYPTO_USER_API_ENABLE_OBSOLETE          note<'Obsolete w/ no known userspace dependencies'>
-
 CONFIG_CRYPTO_USER_API_HASH                     policy<{'amd64': 'm'}>
 CONFIG_CRYPTO_USER_API_RNG                      policy<{'amd64': 'm'}>
 CONFIG_CRYPTO_USER_API_RNG_CAVP                 policy<{'amd64': 'n'}>
@@ -1790,20 +2321,11 @@ CONFIG_DEBUG_DRIVER                             policy<{'amd64': 'n'}>
 CONFIG_DEBUG_ENTRY                              policy<{'amd64': 'n'}>
 CONFIG_DEBUG_FORCE_FUNCTION_ALIGN_64B           policy<{'amd64': 'n'}>
 CONFIG_DEBUG_FORCE_WEAK_PER_CPU                 policy<{'amd64': 'n'}>
-CONFIG_DEBUG_FS                                 policy<{'amd64': 'y'}>
-CONFIG_DEBUG_FS                                 note<'required debug option'>
-
 CONFIG_DEBUG_FS_ALLOW_ALL                       policy<{'amd64': 'y'}>
 CONFIG_DEBUG_FS_ALLOW_NONE                      policy<{'amd64': 'n'}>
 CONFIG_DEBUG_FS_DISALLOW_MOUNT                  policy<{'amd64': 'n'}>
 CONFIG_DEBUG_GPIO                               policy<{'amd64': 'n'}>
 CONFIG_DEBUG_HOTPLUG_CPU0                       policy<{'amd64': 'n'}>
-CONFIG_DEBUG_INFO                               policy<{'amd64': 'y'}>
-CONFIG_DEBUG_INFO                               note<'required for debug packages'>
-
-CONFIG_DEBUG_INFO_BTF                           policy<{'amd64': 'y'}>
-CONFIG_DEBUG_INFO_BTF                           note<'Needs newer pahole for armhf'>
-
 CONFIG_DEBUG_INFO_BTF_MODULES                   policy<{'amd64': 'y'}>
 CONFIG_DEBUG_INFO_COMPRESSED                    policy<{'amd64': 'n'}>
 CONFIG_DEBUG_INFO_DWARF4                        policy<{'amd64': 'n'}>
@@ -1811,13 +2333,7 @@ CONFIG_DEBUG_INFO_DWARF5                        policy<{'amd64': 'y'}>
 CONFIG_DEBUG_INFO_DWARF_TOOLCHAIN_DEFAULT       policy<{'amd64': 'n'}>
 CONFIG_DEBUG_INFO_NONE                          policy<{'amd64': 'n'}>
 CONFIG_DEBUG_INFO_REDUCED                       policy<{'amd64': 'n'}>
-CONFIG_DEBUG_INFO_SPLIT                         policy<{'amd64': 'n'}>
-CONFIG_DEBUG_INFO_SPLIT                         note<'LP: #1413664'>
-
 CONFIG_DEBUG_IRQFLAGS                           policy<{'amd64': 'n'}>
-CONFIG_DEBUG_KERNEL                             policy<{'amd64': 'y'}>
-CONFIG_DEBUG_KERNEL                             note<'required debug option'>
-
 CONFIG_DEBUG_KERNEL_DC                          policy<{'amd64': 'n'}>
 CONFIG_DEBUG_KMEMLEAK                           policy<{'amd64': 'n'}>
 CONFIG_DEBUG_KOBJECT                            policy<{'amd64': 'n'}>
@@ -1868,9 +2384,6 @@ CONFIG_DEFAULT_CUBIC                            policy<{'amd64': 'y'}>
 CONFIG_DEFAULT_HOSTNAME                         policy<{'amd64': '"(none)"'}>
 CONFIG_DEFAULT_HUNG_TASK_TIMEOUT                policy<{'amd64': '120'}>
 CONFIG_DEFAULT_INIT                             policy<{'amd64': '""'}>
-CONFIG_DEFAULT_MMAP_MIN_ADDR                    policy<{'amd64': '65536'}>
-CONFIG_DEFAULT_MMAP_MIN_ADDR                    note<'LP: #1531327'>
-
 CONFIG_DEFAULT_RENO                             policy<{'amd64': 'n'}>
 CONFIG_DEFAULT_SECURITY_APPARMOR                policy<{'amd64': 'y'}>
 CONFIG_DEFAULT_SECURITY_DAC                     policy<{'amd64': 'n'}>
@@ -1905,12 +2418,6 @@ CONFIG_DEVICE_MIGRATION                         policy<{'amd64': 'y'}>
 CONFIG_DEVICE_PRIVATE                           policy<{'amd64': 'y'}>
 CONFIG_DEVMEM                                   policy<{'amd64': 'y'}>
 CONFIG_DEVPORT                                  policy<{'amd64': 'y'}>
-CONFIG_DEVTMPFS                                 policy<{'amd64': 'y'}>
-CONFIG_DEVTMPFS                                 note<'upstart requirement'>
-
-CONFIG_DEVTMPFS_MOUNT                           policy<{'amd64': 'y'}>
-CONFIG_DEVTMPFS_MOUNT                           note<'upstart requirement'>
-
 CONFIG_DEVTMPFS_SAFE                            policy<{'amd64': 'y'}>
 CONFIG_DEV_APPLETALK                            policy<{'amd64': 'm'}>
 CONFIG_DEV_COREDUMP                             policy<{'amd64': 'y'}>
@@ -2014,9 +2521,6 @@ CONFIG_DRAGONRISE_FF                            policy<{'amd64': 'y'}>
 CONFIG_DRBD_FAULT_INJECTION                     policy<{'amd64': 'n'}>
 CONFIG_DRM                                      policy<{'amd64': 'm'}>
 CONFIG_DRM_AMDGPU                               policy<{'amd64': 'm'}>
-CONFIG_DRM_AMDGPU_CIK                           policy<{'amd64': 'y'}>
-CONFIG_DRM_AMDGPU_CIK                           note<'for zesty'>
-
 CONFIG_DRM_AMDGPU_SI                            policy<{'amd64': 'y'}>
 CONFIG_DRM_AMDGPU_USERPTR                       policy<{'amd64': 'y'}>
 CONFIG_DRM_AMD_ACP                              policy<{'amd64': 'y'}>
@@ -2081,13 +2585,7 @@ CONFIG_DRM_I915_USERFAULT_AUTOSUSPEND           policy<{'amd64': '250'}>
 CONFIG_DRM_I915_USERPTR                         policy<{'amd64': 'y'}>
 CONFIG_DRM_I915_WERROR                          policy<{'amd64': 'n'}>
 CONFIG_DRM_KMS_HELPER                           policy<{'amd64': 'm'}>
-CONFIG_DRM_LEGACY                               policy<{'amd64': 'n'}>
-CONFIG_DRM_LEGACY                               note<'Consider re-enabling but not signing the modules'>
-
 CONFIG_DRM_LOAD_EDID_FIRMWARE                   policy<{'amd64': 'y'}>
-CONFIG_DRM_MGAG200                              policy<{'amd64': 'm'}>
-CONFIG_DRM_MGAG200                              note<'LP: #1693337'>
-
 CONFIG_DRM_MIPI_DBI                             policy<{'amd64': 'm'}>
 CONFIG_DRM_MIPI_DSI                             policy<{'amd64': 'y'}>
 CONFIG_DRM_NOMODESET                            policy<{'amd64': 'y'}>
@@ -2113,9 +2611,6 @@ CONFIG_DRM_TTM                                  policy<{'amd64': 'm'}>
 CONFIG_DRM_TTM_HELPER                           policy<{'amd64': 'm'}>
 CONFIG_DRM_UDL                                  policy<{'amd64': 'm'}>
 CONFIG_DRM_USE_DYNAMIC_DEBUG                    policy<{'amd64': 'n'}>
-CONFIG_DRM_VBOXVIDEO                            policy<{'amd64': 'm'}>
-CONFIG_DRM_VBOXVIDEO                            note<'LP: #1718679'>
-
 CONFIG_DRM_VGEM                                 policy<{'amd64': 'm'}>
 CONFIG_DRM_VIRTIO_GPU                           policy<{'amd64': 'm'}>
 CONFIG_DRM_VKMS                                 policy<{'amd64': 'm'}>
@@ -2177,9 +2672,6 @@ CONFIG_DVB_DRX39XYJ                             policy<{'amd64': 'm'}>
 CONFIG_DVB_DRXD                                 policy<{'amd64': 'm'}>
 CONFIG_DVB_DRXK                                 policy<{'amd64': 'm'}>
 CONFIG_DVB_DS3000                               policy<{'amd64': 'm'}>
-CONFIG_DVB_DUMMY_FE                             policy<{'amd64': 'm'}>
-CONFIG_DVB_DUMMY_FE                             note<'expert use only'>
-
 CONFIG_DVB_DYNAMIC_MINORS                       policy<{'amd64': 'y'}>
 CONFIG_DVB_EC100                                policy<{'amd64': 'm'}>
 CONFIG_DVB_FIREDTV                              policy<{'amd64': 'm'}>
@@ -2359,9 +2851,6 @@ CONFIG_EARLY_PRINTK_USB                         policy<{'amd64': 'y'}>
 CONFIG_EARLY_PRINTK_USB_XDBC                    policy<{'amd64': 'y'}>
 CONFIG_EBC_C384_WDT                             policy<{'amd64': 'm'}>
 CONFIG_ECHO                                     policy<{'amd64': 'm'}>
-CONFIG_ECRYPT_FS                                policy<{'amd64': 'y'}>
-CONFIG_ECRYPT_FS                                note<'not autoloadable'>
-
 CONFIG_ECRYPT_FS_MESSAGING                      policy<{'amd64': 'y'}>
 CONFIG_EDAC                                     policy<{'amd64': 'y'}>
 CONFIG_EDAC_AMD64                               policy<{'amd64': 'm'}>
@@ -2400,9 +2889,6 @@ CONFIG_EEPROM_IDT_89HPESX                       policy<{'amd64': 'm'}>
 CONFIG_EEPROM_LEGACY                            policy<{'amd64': 'm'}>
 CONFIG_EEPROM_MAX6875                           policy<{'amd64': 'm'}>
 CONFIG_EFI                                      policy<{'amd64': 'y'}>
-CONFIG_EFIVAR_FS                                policy<{'amd64': 'y'}>
-CONFIG_EFIVAR_FS                                note<'needed for variable EFI update'>
-
 CONFIG_EFI_BOOTLOADER_CONTROL                   policy<{'amd64': 'm'}>
 CONFIG_EFI_CAPSULE_LOADER                       policy<{'amd64': 'm'}>
 CONFIG_EFI_COCO_SECRET                          policy<{'amd64': 'y'}>
@@ -2464,17 +2950,8 @@ CONFIG_ETHTOOL_NETLINK                          policy<{'amd64': 'y'}>
 CONFIG_EUROTECH_WDT                             policy<{'amd64': 'm'}>
 CONFIG_EVENTFD                                  policy<{'amd64': 'y'}>
 CONFIG_EVENT_TRACING                            policy<{'amd64': 'y'}>
-CONFIG_EVM                                      policy<{'amd64': 'y'}>
-CONFIG_EVM                                      note<'LP: #1643652'>
-
 CONFIG_EVM_ADD_XATTRS                           policy<{'amd64': 'y'}>
-CONFIG_EVM_ATTR_FSUUID                          policy<{'amd64': 'y'}>
-CONFIG_EVM_ATTR_FSUUID                          note<'LP: #1643652'>
-
 CONFIG_EVM_EXTRA_SMACK_XATTRS                   policy<{'amd64': 'y'}>
-CONFIG_EVM_LOAD_X509                            policy<{'amd64': 'n'}>
-CONFIG_EVM_LOAD_X509                            note<'LP: #1643652'>
-
 CONFIG_EXAR_WDT                                 policy<{'amd64': 'm'}>
 CONFIG_EXCLUSIVE_SYSTEM_RAM                     policy<{'amd64': 'y'}>
 CONFIG_EXFAT_DEFAULT_IOCHARSET                  policy<{'amd64': '"utf8"'}>
@@ -2482,12 +2959,6 @@ CONFIG_EXFAT_FS                                 policy<{'amd64': 'm'}>
 CONFIG_EXPERT                                   policy<{'amd64': 'y'}>
 CONFIG_EXPORTFS                                 policy<{'amd64': 'y'}>
 CONFIG_EXPORTFS_BLOCK_OPS                       policy<{'amd64': 'y'}>
-CONFIG_EXT2_FS                                  policy<{'amd64': 'n'}>
-CONFIG_EXT2_FS                                  note<'ext4 handling via EXT4_USE_FOR_EXT23'>
-
-CONFIG_EXT3_FS                                  policy<{'amd64': 'n'}>
-CONFIG_EXT3_FS                                  note<'ext4 handling via EXT4_USE_FOR_EXT23'>
-
 CONFIG_EXT4_DEBUG                               policy<{'amd64': 'n'}>
 CONFIG_EXT4_FS                                  policy<{'amd64': 'y'}>
 CONFIG_EXT4_FS_POSIX_ACL                        policy<{'amd64': 'y'}>
@@ -2679,9 +3150,6 @@ CONFIG_FCOE                                     policy<{'amd64': 'm'}>
 CONFIG_FCOE_FNIC                                policy<{'amd64': 'm'}>
 CONFIG_FDDI                                     policy<{'amd64': 'y'}>
 CONFIG_FEALNX                                   policy<{'amd64': 'm'}>
-CONFIG_FHANDLE                                  policy<{'amd64': 'y'}>
-CONFIG_FHANDLE                                  note<'LP: #1412543'>
-
 CONFIG_FIB_RULES                                policy<{'amd64': 'y'}>
 CONFIG_FIELDBUS_DEV                             policy<{'amd64': 'm'}>
 CONFIG_FILE_LOCKING                             policy<{'amd64': 'y'}>
@@ -2776,9 +3244,6 @@ CONFIG_FUNCTION_TRACER                          policy<{'amd64': 'y'}>
 CONFIG_FUN_CORE                                 policy<{'amd64': 'm'}>
 CONFIG_FUN_ETH                                  policy<{'amd64': 'm'}>
 CONFIG_FUSE_DAX                                 policy<{'amd64': 'y'}>
-CONFIG_FUSE_FS                                  policy<{'amd64': 'y'}>
-CONFIG_FUSE_FS                                  note<'not autoloadable'>
-
 CONFIG_FUSION                                   policy<{'amd64': 'y'}>
 CONFIG_FUSION_CTL                               policy<{'amd64': 'm'}>
 CONFIG_FUSION_FC                                policy<{'amd64': 'm'}>
@@ -2801,9 +3266,6 @@ CONFIG_FW_LOADER_COMPRESS_ZSTD                  policy<{'amd64': 'y'}>
 CONFIG_FW_LOADER_PAGED_BUF                      policy<{'amd64': 'y'}>
 CONFIG_FW_LOADER_SYSFS                          policy<{'amd64': 'y'}>
 CONFIG_FW_LOADER_USER_HELPER                    policy<{'amd64': 'y'}>
-CONFIG_FW_LOADER_USER_HELPER_FALLBACK           policy<{'amd64': 'n'}>
-CONFIG_FW_LOADER_USER_HELPER_FALLBACK           note<'LP: #1398458'>
-
 CONFIG_FW_UPLOAD                                policy<{'amd64': 'n'}>
 CONFIG_FXAS21002C                               policy<{'amd64': 'm'}>
 CONFIG_FXAS21002C_I2C                           policy<{'amd64': 'm'}>
@@ -2905,9 +3367,6 @@ CONFIG_GPIO_AMD_FCH                             policy<{'amd64': 'm'}>
 CONFIG_GPIO_ARIZONA                             policy<{'amd64': 'm'}>
 CONFIG_GPIO_BD9571MWV                           policy<{'amd64': 'm'}>
 CONFIG_GPIO_CDEV                                policy<{'amd64': 'y'}>
-CONFIG_GPIO_CDEV_V1                             policy<{'amd64': 'y'}>
-CONFIG_GPIO_CDEV_V1                             note<'LP: #1953613'>
-
 CONFIG_GPIO_CRYSTAL_COVE                        policy<{'amd64': 'y'}>
 CONFIG_GPIO_DA9052                              policy<{'amd64': 'm'}>
 CONFIG_GPIO_DA9055                              policy<{'amd64': 'm'}>
@@ -2958,9 +3417,6 @@ CONFIG_GPIO_TPS65910                            policy<{'amd64': 'y'}>
 CONFIG_GPIO_TPS65912                            policy<{'amd64': 'm'}>
 CONFIG_GPIO_TPS68470                            policy<{'amd64': 'm'}>
 CONFIG_GPIO_TQMX86                              policy<{'amd64': 'm'}>
-CONFIG_GPIO_TWL4030                             policy<{'amd64': 'm'}>
-CONFIG_GPIO_TWL4030                             note<'LP: #921934'>
-
 CONFIG_GPIO_TWL6040                             policy<{'amd64': 'm'}>
 CONFIG_GPIO_UCB1400                             policy<{'amd64': 'm'}>
 CONFIG_GPIO_VIPERBOARD                          policy<{'amd64': 'm'}>
@@ -3174,9 +3630,6 @@ CONFIG_HFSPLUS_FS                               policy<{'amd64': 'm'}>
 CONFIG_HFS_FS                                   policy<{'amd64': 'm'}>
 CONFIG_HI8435                                   policy<{'amd64': 'm'}>
 CONFIG_HIBERNATE_CALLBACKS                      policy<{'amd64': 'y'}>
-CONFIG_HIBERNATION                              policy<{'amd64': 'y'}>
-CONFIG_HIBERNATION                              note<'LP: #1867753'>
-
 CONFIG_HIBERNATION_SNAPSHOT_DEV                 policy<{'amd64': 'y'}>
 CONFIG_HID                                      policy<{'amd64': 'm'}>
 CONFIG_HIDRAW                                   policy<{'amd64': 'y'}>
@@ -3332,12 +3785,6 @@ CONFIG_HOTPLUG_PCI_ACPI_IBM                     policy<{'amd64': 'm'}>
 CONFIG_HOTPLUG_PCI_CPCI                         policy<{'amd64': 'y'}>
 CONFIG_HOTPLUG_PCI_CPCI_GENERIC                 policy<{'amd64': 'm'}>
 CONFIG_HOTPLUG_PCI_CPCI_ZT5550                  policy<{'amd64': 'm'}>
-CONFIG_HOTPLUG_PCI_PCIE                         policy<{'amd64': 'y'}>
-CONFIG_HOTPLUG_PCI_PCIE                         note<'LP: #1374440'>
-
-CONFIG_HOTPLUG_PCI_SHPC                         policy<{'amd64': 'y'}>
-CONFIG_HOTPLUG_PCI_SHPC                         note<'LP: #1374440'>
-
 CONFIG_HOTPLUG_SMT                              policy<{'amd64': 'y'}>
 CONFIG_HP03                                     policy<{'amd64': 'm'}>
 CONFIG_HP206C                                   policy<{'amd64': 'm'}>
@@ -3423,9 +3870,6 @@ CONFIG_I2C_AMD_MP2                              policy<{'amd64': 'm'}>
 CONFIG_I2C_BOARDINFO                            policy<{'amd64': 'y'}>
 CONFIG_I2C_CBUS_GPIO                            policy<{'amd64': 'm'}>
 CONFIG_I2C_CCGX_UCSI                            policy<{'amd64': 'm'}>
-CONFIG_I2C_CHARDEV                              policy<{'amd64': 'y'}>
-CONFIG_I2C_CHARDEV                              note<'LP: #1417032'>
-
 CONFIG_I2C_CHT_WC                               policy<{'amd64': 'm'}>
 CONFIG_I2C_COMPAT                               policy<{'amd64': 'y'}>
 CONFIG_I2C_CP2615                               policy<{'amd64': 'm'}>
@@ -3509,9 +3953,6 @@ CONFIG_ICPLUS_PHY                               policy<{'amd64': 'm'}>
 CONFIG_ICS932S401                               policy<{'amd64': 'm'}>
 CONFIG_IDEAPAD_LAPTOP                           policy<{'amd64': 'm'}>
 CONFIG_IDLE_INJECT                              policy<{'amd64': 'y'}>
-CONFIG_IDLE_PAGE_TRACKING                       policy<{'amd64': 'y'}>
-CONFIG_IDLE_PAGE_TRACKING                       note<'is there a cost associated with this?'>
-
 CONFIG_IE6XX_WDT                                policy<{'amd64': 'm'}>
 CONFIG_IEEE802154                               policy<{'amd64': 'm'}>
 CONFIG_IEEE802154_6LOWPAN                       policy<{'amd64': 'm'}>
@@ -3558,12 +3999,6 @@ CONFIG_IIO_MS_SENSORS_I2C                       policy<{'amd64': 'm'}>
 CONFIG_IIO_MUX                                  policy<{'amd64': 'm'}>
 CONFIG_IIO_RESCALE                              policy<{'amd64': 'm'}>
 CONFIG_IIO_SIMPLE_DUMMY                         policy<{'amd64': 'm'}>
-CONFIG_IIO_SIMPLE_DUMMY_BUFFER                  policy<{'amd64': 'n'}>
-CONFIG_IIO_SIMPLE_DUMMY_BUFFER                  note<'dummy driver'>
-
-CONFIG_IIO_SIMPLE_DUMMY_EVENTS                  policy<{'amd64': 'n'}>
-CONFIG_IIO_SIMPLE_DUMMY_EVENTS                  note<'dummy driver'>
-
 CONFIG_IIO_SSP_SENSORHUB                        policy<{'amd64': 'm'}>
 CONFIG_IIO_SSP_SENSORS_COMMONS                  policy<{'amd64': 'm'}>
 CONFIG_IIO_ST_ACCEL_3AXIS                       policy<{'amd64': 'm'}>
@@ -3598,56 +4033,20 @@ CONFIG_IIO_TRIGGERED_EVENT                      policy<{'amd64': 'm'}>
 CONFIG_IKCONFIG                                 policy<{'amd64': 'n'}>
 CONFIG_IKHEADERS                                policy<{'amd64': 'm'}>
 CONFIG_ILLEGAL_POINTER_VALUE                    policy<{'amd64': '0xdead000000000000'}>
-CONFIG_IMA                                      policy<{'amd64': 'y'}>
-CONFIG_IMA                                      note<'LP: #1643652'>
-
-CONFIG_IMA_APPRAISE                             policy<{'amd64': 'y'}>
-CONFIG_IMA_APPRAISE                             note<'LP: #1643652'>
-
 CONFIG_IMA_APPRAISE_BOOTPARAM                   policy<{'amd64': 'y'}>
 CONFIG_IMA_APPRAISE_BUILD_POLICY                policy<{'amd64': 'n'}>
 CONFIG_IMA_APPRAISE_MODSIG                      policy<{'amd64': 'y'}>
-CONFIG_IMA_ARCH_POLICY                          policy<{'amd64': 'y'}>
-CONFIG_IMA_ARCH_POLICY                          note<'LP: #1866909'>
-
-CONFIG_IMA_BLACKLIST_KEYRING                    policy<{'amd64': 'n'}>
-CONFIG_IMA_BLACKLIST_KEYRING                    note<'LP: #1667490'>
-
 CONFIG_IMA_DEFAULT_HASH                         policy<{'amd64': '"sha1"'}>
 CONFIG_IMA_DEFAULT_HASH_SHA1                    policy<{'amd64': 'y'}>
-CONFIG_IMA_DEFAULT_HASH_SHA256                  policy<{'amd64': 'n'}>
-CONFIG_IMA_DEFAULT_HASH_SHA256                  note<'LP: #1643652'>
-
 CONFIG_IMA_DEFAULT_HASH_SHA512                  policy<{'amd64': 'n'}>
 CONFIG_IMA_DEFAULT_TEMPLATE                     policy<{'amd64': '"ima-ng"'}>
 CONFIG_IMA_DISABLE_HTABLE                       policy<{'amd64': 'n'}>
-CONFIG_IMA_KEXEC                                policy<{'amd64': 'y'}>
-CONFIG_IMA_KEXEC                                note<'LP: #1643652'>
-
-CONFIG_IMA_KEYRINGS_PERMIT_SIGNED_BY_BUILTIN_OR_SECONDARY policy<{'amd64': 'n'}>
-CONFIG_IMA_KEYRINGS_PERMIT_SIGNED_BY_BUILTIN_OR_SECONDARY note<'LP: #1667490'>
-
-CONFIG_IMA_LOAD_X509                            policy<{'amd64': 'n'}>
-CONFIG_IMA_LOAD_X509                            note<'LP: #1643652'>
-
 CONFIG_IMA_LSM_RULES                            policy<{'amd64': 'y'}>
 CONFIG_IMA_MEASURE_ASYMMETRIC_KEYS              policy<{'amd64': 'y'}>
 CONFIG_IMA_MEASURE_PCR_IDX                      policy<{'amd64': '10'}>
 CONFIG_IMA_NG_TEMPLATE                          policy<{'amd64': 'y'}>
 CONFIG_IMA_QUEUE_EARLY_BOOT_KEYS                policy<{'amd64': 'y'}>
-CONFIG_IMA_READ_POLICY                          policy<{'amd64': 'n'}>
-CONFIG_IMA_READ_POLICY                          note<'LP: #1866909'>
-
 CONFIG_IMA_SECURE_AND_OR_TRUSTED_BOOT           policy<{'amd64': 'y'}>
-CONFIG_IMA_SIG_TEMPLATE                         policy<{'amd64': 'n'}>
-CONFIG_IMA_SIG_TEMPLATE                         note<'LP: #1643652'>
-
-CONFIG_IMA_TRUSTED_KEYRING                      policy<{'amd64': 'y'}>
-CONFIG_IMA_TRUSTED_KEYRING                      note<'LP: #1643652'>
-
-CONFIG_IMA_WRITE_POLICY                         policy<{'amd64': 'n'}>
-CONFIG_IMA_WRITE_POLICY                         note<'LP: #1667490'>
-
 CONFIG_IMG_ASCII_LCD                            policy<{'amd64': 'm'}>
 CONFIG_INA2XX_ADC                               policy<{'amd64': 'm'}>
 CONFIG_INET                                     policy<{'amd64': 'y'}>
@@ -3794,9 +4193,6 @@ CONFIG_INPUT_TOUCHSCREEN                        policy<{'amd64': 'y'}>
 CONFIG_INPUT_TWL4030_PWRBUTTON                  policy<{'amd64': 'm'}>
 CONFIG_INPUT_TWL4030_VIBRA                      policy<{'amd64': 'm'}>
 CONFIG_INPUT_TWL6040_VIBRA                      policy<{'amd64': 'm'}>
-CONFIG_INPUT_UINPUT                             policy<{'amd64': 'y'}>
-CONFIG_INPUT_UINPUT                             note<'LP: #584812'>
-
 CONFIG_INPUT_VIVALDIFMAP                        policy<{'amd64': 'y'}>
 CONFIG_INPUT_WM831X_ON                          policy<{'amd64': 'm'}>
 CONFIG_INPUT_XEN_KBDDEV_FRONTEND                policy<{'amd64': 'm'}>
@@ -3808,9 +4204,6 @@ CONFIG_INTEGRITY                                policy<{'amd64': 'y'}>
 CONFIG_INTEGRITY_ASYMMETRIC_KEYS                policy<{'amd64': 'y'}>
 CONFIG_INTEGRITY_AUDIT                          policy<{'amd64': 'y'}>
 CONFIG_INTEGRITY_MACHINE_KEYRING                policy<{'amd64': 'y'}>
-CONFIG_INTEGRITY_PLATFORM_KEYRING               policy<{'amd64': 'y'}>
-CONFIG_INTEGRITY_PLATFORM_KEYRING               note<'Required for lockdown'>
-
 CONFIG_INTEGRITY_SIGNATURE                      policy<{'amd64': 'y'}>
 CONFIG_INTEGRITY_TRUSTED_KEYRING                policy<{'amd64': 'y'}>
 CONFIG_INTEL_ATOMISP                            policy<{'amd64': 'y'}>
@@ -3833,9 +4226,6 @@ CONFIG_INTEL_IDXD_SVM                           policy<{'amd64': 'y'}>
 CONFIG_INTEL_INT0002_VGPIO                      policy<{'amd64': 'm'}>
 CONFIG_INTEL_IOATDMA                            policy<{'amd64': 'm'}>
 CONFIG_INTEL_IOMMU                              policy<{'amd64': 'y'}>
-CONFIG_INTEL_IOMMU_DEFAULT_ON                   policy<{'amd64': 'n'}>
-CONFIG_INTEL_IOMMU_DEFAULT_ON                   note<'the IOMMU can trigger boot failures'>
-
 CONFIG_INTEL_IOMMU_FLOPPY_WA                    policy<{'amd64': 'y'}>
 CONFIG_INTEL_IOMMU_SCALABLE_MODE_DEFAULT_ON     policy<{'amd64': 'n'}>
 CONFIG_INTEL_IOMMU_SVM                          policy<{'amd64': 'y'}>
@@ -3916,9 +4306,6 @@ CONFIG_INV_MPU6050_SPI                          policy<{'amd64': 'm'}>
 CONFIG_IOASID                                   policy<{'amd64': 'y'}>
 CONFIG_IOMMU_API                                policy<{'amd64': 'y'}>
 CONFIG_IOMMU_DEBUG                              policy<{'amd64': 'n'}>
-CONFIG_IOMMU_DEBUGFS                            policy<{'amd64': 'n'}>
-CONFIG_IOMMU_DEBUGFS                            note<'LP: #1861057'>
-
 CONFIG_IOMMU_DEFAULT_DMA_LAZY                   policy<{'amd64': 'y'}>
 CONFIG_IOMMU_DEFAULT_DMA_STRICT                 policy<{'amd64': 'n'}>
 CONFIG_IOMMU_DEFAULT_PASSTHROUGH                policy<{'amd64': 'n'}>
@@ -3964,9 +4351,6 @@ CONFIG_IP6_NF_TARGET_REJECT                     policy<{'amd64': 'm'}>
 CONFIG_IP6_NF_TARGET_SYNPROXY                   policy<{'amd64': 'm'}>
 CONFIG_IPACK_BUS                                policy<{'amd64': 'm'}>
 CONFIG_IPC_NS                                   policy<{'amd64': 'y'}>
-CONFIG_IPDDP                                    policy<{'amd64': 'n'}>
-CONFIG_IPDDP                                    note<'LP: #1559772'>
-
 CONFIG_IPMI_DEVICE_INTERFACE                    policy<{'amd64': 'm'}>
 CONFIG_IPMI_DMI_DECODE                          policy<{'amd64': 'y'}>
 CONFIG_IPMI_HANDLER                             policy<{'amd64': 'm'}>
@@ -3976,9 +4360,6 @@ CONFIG_IPMI_POWEROFF                            policy<{'amd64': 'm'}>
 CONFIG_IPMI_SI                                  policy<{'amd64': 'm'}>
 CONFIG_IPMI_SSIF                                policy<{'amd64': 'm'}>
 CONFIG_IPMI_WATCHDOG                            policy<{'amd64': 'm'}>
-CONFIG_IPV6                                     policy<{'amd64': 'y'}>
-CONFIG_IPV6                                     note<'if this is a module we get a module load for every ipv6 packet'>
-
 CONFIG_IPV6_FOU                                 policy<{'amd64': 'm'}>
 CONFIG_IPV6_FOU_TUNNEL                          policy<{'amd64': 'm'}>
 CONFIG_IPV6_GRE                                 policy<{'amd64': 'm'}>
@@ -4049,9 +4430,6 @@ CONFIG_IP_NF_TARGET_SYNPROXY                    policy<{'amd64': 'm'}>
 CONFIG_IP_NF_TARGET_TTL                         policy<{'amd64': 'm'}>
 CONFIG_IP_PIMSM_V1                              policy<{'amd64': 'y'}>
 CONFIG_IP_PIMSM_V2                              policy<{'amd64': 'y'}>
-CONFIG_IP_PNP                                   policy<{'amd64': 'n'}>
-CONFIG_IP_PNP                                   note<'LP: #1259861'>
-
 CONFIG_IP_ROUTE_CLASSID                         policy<{'amd64': 'y'}>
 CONFIG_IP_ROUTE_MULTIPATH                       policy<{'amd64': 'y'}>
 CONFIG_IP_ROUTE_VERBOSE                         policy<{'amd64': 'y'}>
@@ -4272,14 +4650,8 @@ CONFIG_KERNEL_LZ4                               policy<{'amd64': 'n'}>
 CONFIG_KERNEL_LZMA                              policy<{'amd64': 'n'}>
 CONFIG_KERNEL_LZO                               policy<{'amd64': 'n'}>
 CONFIG_KERNEL_XZ                                policy<{'amd64': 'n'}>
-CONFIG_KERNEL_ZSTD                              policy<{'amd64': 'y'}>
-CONFIG_KERNEL_ZSTD                              note<'LP: #1931725'>
-
 CONFIG_KERNFS                                   policy<{'amd64': 'y'}>
 CONFIG_KEXEC                                    policy<{'amd64': 'y'}>
-CONFIG_KEXEC_BZIMAGE_VERIFY_SIG                 policy<{'amd64': 'y'}>
-CONFIG_KEXEC_BZIMAGE_VERIFY_SIG                 note<'Q: check this is in sync with the kexec/kdump userspace'>
-
 CONFIG_KEXEC_CORE                               policy<{'amd64': 'y'}>
 CONFIG_KEXEC_FILE                               policy<{'amd64': 'y'}>
 CONFIG_KEXEC_JUMP                               policy<{'amd64': 'y'}>
@@ -4327,17 +4699,11 @@ CONFIG_KFENCE                                   policy<{'amd64': 'y'}>
 CONFIG_KFENCE_DEFERRABLE                        policy<{'amd64': 'n'}>
 CONFIG_KFENCE_NUM_OBJECTS                       policy<{'amd64': '255'}>
 CONFIG_KFENCE_SAMPLE_INTERVAL                   policy<{'amd64': '0'}>
-CONFIG_KFENCE_STATIC_KEYS                       policy<{'amd64': 'n'}>
-CONFIG_KFENCE_STATIC_KEYS                       note<'LP: #1948038'>
-
 CONFIG_KFENCE_STRESS_TEST_FAULTS                policy<{'amd64': '0'}>
 CONFIG_KGDB                                     policy<{'amd64': 'y'}>
 CONFIG_KGDB_HONOUR_BLOCKLIST                    policy<{'amd64': 'y'}>
 CONFIG_KGDB_KDB                                 policy<{'amd64': 'y'}>
 CONFIG_KGDB_LOW_LEVEL_TRAP                      policy<{'amd64': 'y'}>
-CONFIG_KGDB_SERIAL_CONSOLE                      policy<{'amd64': 'y'}>
-CONFIG_KGDB_SERIAL_CONSOLE                      note<'early debugging support'>
-
 CONFIG_KGDB_TESTS                               policy<{'amd64': 'n'}>
 CONFIG_KMX61                                    policy<{'amd64': 'm'}>
 CONFIG_KPROBES                                  policy<{'amd64': 'y'}>
@@ -4357,9 +4723,6 @@ CONFIG_KS8851_MLL                               policy<{'amd64': 'm'}>
 CONFIG_KSM                                      policy<{'amd64': 'y'}>
 CONFIG_KSZ884X_PCI                              policy<{'amd64': 'm'}>
 CONFIG_KUNIT                                    policy<{'amd64': 'n'}>
-CONFIG_KVM                                      policy<{'amd64': 'm'}>
-CONFIG_KVM                                      note<'LP: #1532886'>
-
 CONFIG_KVM_AMD                                  policy<{'amd64': 'm'}>
 CONFIG_KVM_AMD_SEV                              policy<{'amd64': 'y'}>
 CONFIG_KVM_ASYNC_PF                             policy<{'amd64': 'y'}>
@@ -4385,9 +4748,6 @@ CONFIG_L2TP_V3                                  policy<{'amd64': 'y'}>
 CONFIG_LAN743X                                  policy<{'amd64': 'm'}>
 CONFIG_LAPB                                     policy<{'amd64': 'm'}>
 CONFIG_LAPBETHER                                policy<{'amd64': 'm'}>
-CONFIG_LATENCYTOP                               policy<{'amd64': 'n'}>
-CONFIG_LATENCYTOP                               note<'LP: #1655986'>
-
 CONFIG_LATTICE_ECP3_CONFIG                      policy<{'amd64': 'm'}>
 CONFIG_LCD2S                                    policy<{'amd64': 'm'}>
 CONFIG_LCD_AMS369FG06                           policy<{'amd64': 'm'}>
@@ -4523,9 +4883,6 @@ CONFIG_LMK04832                                 policy<{'amd64': 'm'}>
 CONFIG_LMP91000                                 policy<{'amd64': 'm'}>
 CONFIG_LOAD_UEFI_KEYS                           policy<{'amd64': 'y'}>
 CONFIG_LOCALVERSION                             policy<{'amd64': '""'}>
-CONFIG_LOCALVERSION_AUTO                        policy<{'amd64': 'n'}>
-CONFIG_LOCALVERSION_AUTO                        note<'triggers packaging failures'>
-
 CONFIG_LOCKD                                    policy<{'amd64': 'm'}>
 CONFIG_LOCKDEP_SUPPORT                          policy<{'amd64': 'y'}>
 CONFIG_LOCKD_V4                                 policy<{'amd64': 'y'}>
@@ -4754,9 +5111,6 @@ CONFIG_MEMORY                                   policy<{'amd64': 'y'}>
 CONFIG_MEMORY_BALLOON                           policy<{'amd64': 'y'}>
 CONFIG_MEMORY_FAILURE                           policy<{'amd64': 'y'}>
 CONFIG_MEMORY_HOTPLUG                           policy<{'amd64': 'y'}>
-CONFIG_MEMORY_HOTPLUG_DEFAULT_ONLINE            policy<{'amd64': 'y'}>
-CONFIG_MEMORY_HOTPLUG_DEFAULT_ONLINE            note<'LP: #1848492'>
-
 CONFIG_MEMORY_HOTREMOVE                         policy<{'amd64': 'y'}>
 CONFIG_MEMORY_ISOLATION                         policy<{'amd64': 'y'}>
 CONFIG_MEMORY_NOTIFIER_ERROR_INJECT             policy<{'amd64': 'm'}>
@@ -4849,9 +5203,6 @@ CONFIG_MFD_RT5120                               policy<{'amd64': 'm'}>
 CONFIG_MFD_SI476X_CORE                          policy<{'amd64': 'm'}>
 CONFIG_MFD_SIMPLE_MFD_I2C                       policy<{'amd64': 'm'}>
 CONFIG_MFD_SKY81452                             policy<{'amd64': 'm'}>
-CONFIG_MFD_SM501                                policy<{'amd64': 'm'}>
-CONFIG_MFD_SM501                                note<'boot essential on OMAP4'>
-
 CONFIG_MFD_SM501_GPIO                           policy<{'amd64': 'y'}>
 CONFIG_MFD_SY7636A                              policy<{'amd64': 'm'}>
 CONFIG_MFD_SYSCON                               policy<{'amd64': 'y'}>
@@ -4983,9 +5334,6 @@ CONFIG_MMC                                      policy<{'amd64': 'y'}>
 CONFIG_MMC35240                                 policy<{'amd64': 'm'}>
 CONFIG_MMCONF_FAM10H                            policy<{'amd64': 'y'}>
 CONFIG_MMC_ALCOR                                policy<{'amd64': 'm'}>
-CONFIG_MMC_BLOCK                                policy<{'amd64': 'm'}>
-CONFIG_MMC_BLOCK                                note<'boot essential on armhf/arm64'>
-
 CONFIG_MMC_BLOCK_MINORS                         policy<{'amd64': '8'}>
 CONFIG_MMC_CB710                                policy<{'amd64': 'm'}>
 CONFIG_MMC_CQHCI                                policy<{'amd64': 'm'}>
@@ -4996,16 +5344,10 @@ CONFIG_MMC_MTK                                  policy<{'amd64': 'm'}>
 CONFIG_MMC_REALTEK_PCI                          policy<{'amd64': 'm'}>
 CONFIG_MMC_REALTEK_USB                          policy<{'amd64': 'm'}>
 CONFIG_MMC_RICOH_MMC                            policy<{'amd64': 'y'}>
-CONFIG_MMC_SDHCI                                policy<{'amd64': 'm'}>
-CONFIG_MMC_SDHCI                                note<'installation essential on omap/highbank'>
-
 CONFIG_MMC_SDHCI_ACPI                           policy<{'amd64': 'm'}>
 CONFIG_MMC_SDHCI_F_SDH30                        policy<{'amd64': 'm'}>
 CONFIG_MMC_SDHCI_IO_ACCESSORS                   policy<{'amd64': 'y'}>
 CONFIG_MMC_SDHCI_PCI                            policy<{'amd64': 'm'}>
-CONFIG_MMC_SDHCI_PLTFM                          policy<{'amd64': 'm'}>
-CONFIG_MMC_SDHCI_PLTFM                          note<'boot essential on highbank'>
-
 CONFIG_MMC_SDHCI_XENON                          policy<{'amd64': 'm'}>
 CONFIG_MMC_SDRICOH_CS                           policy<{'amd64': 'm'}>
 CONFIG_MMC_SPI                                  policy<{'amd64': 'm'}>
@@ -5024,9 +5366,6 @@ CONFIG_MMU_GATHER_MERGE_VMAS                    policy<{'amd64': 'y'}>
 CONFIG_MMU_GATHER_RCU_TABLE_FREE                policy<{'amd64': 'y'}>
 CONFIG_MMU_GATHER_TABLE_FREE                    policy<{'amd64': 'y'}>
 CONFIG_MMU_NOTIFIER                             policy<{'amd64': 'y'}>
-CONFIG_MODIFY_LDT_SYSCALL                       policy<{'amd64': 'y'}>
-CONFIG_MODIFY_LDT_SYSCALL                       note<'Q: check this with security'>
-
 CONFIG_MODPROBE_PATH                            policy<{'amd64': '"/sbin/modprobe"'}>
 CONFIG_MODULES                                  policy<{'amd64': 'y'}>
 CONFIG_MODULES_TREE_LOOKUP                      policy<{'amd64': 'y'}>
@@ -5055,9 +5394,6 @@ CONFIG_MODULE_SIG_SHA512                        policy<{'amd64': 'y'}>
 CONFIG_MODULE_SRCVERSION_ALL                    policy<{'amd64': 'y'}>
 CONFIG_MODULE_UNLOAD                            policy<{'amd64': 'y'}>
 CONFIG_MODULE_UNLOAD_TAINT_TRACKING             policy<{'amd64': 'n'}>
-CONFIG_MODVERSIONS                              policy<{'amd64': 'y'}>
-CONFIG_MODVERSIONS                              note<'required as we have a livepatch/drivers modules signing key'>
-
 CONFIG_MOST                                     policy<{'amd64': 'm'}>
 CONFIG_MOST_CDEV                                policy<{'amd64': 'm'}>
 CONFIG_MOST_COMPONENTS                          policy<{'amd64': 'm'}>
@@ -5151,18 +5487,12 @@ CONFIG_MT7921E                                  policy<{'amd64': 'm'}>
 CONFIG_MT7921S                                  policy<{'amd64': 'm'}>
 CONFIG_MT7921U                                  policy<{'amd64': 'm'}>
 CONFIG_MT7921_COMMON                            policy<{'amd64': 'm'}>
-CONFIG_MTD                                      policy<{'amd64': 'm'}>
-CONFIG_MTD                                      note<'boot essential on arm'>
-
 CONFIG_MTDRAM_ERASE_SIZE                        policy<{'amd64': '128'}>
 CONFIG_MTDRAM_TOTAL_SIZE                        policy<{'amd64': '4096'}>
 CONFIG_MTD_ABSENT                               policy<{'amd64': 'm'}>
 CONFIG_MTD_AMD76XROM                            policy<{'amd64': 'm'}>
 CONFIG_MTD_AR7_PARTS                            policy<{'amd64': 'm'}>
 CONFIG_MTD_BLKDEVS                              policy<{'amd64': 'm'}>
-CONFIG_MTD_BLOCK                                policy<{'amd64': 'm'}>
-CONFIG_MTD_BLOCK                                note<'boot essential on arm'>
-
 CONFIG_MTD_BLOCK2MTD                            policy<{'amd64': 'm'}>
 CONFIG_MTD_BLOCK_RO                             policy<{'amd64': 'm'}>
 CONFIG_MTD_CFI                                  policy<{'amd64': 'm'}>
@@ -5179,9 +5509,6 @@ CONFIG_MTD_COMPLEX_MAPPINGS                     policy<{'amd64': 'y'}>
 CONFIG_MTD_DATAFLASH                            policy<{'amd64': 'm'}>
 CONFIG_MTD_DATAFLASH_OTP                        policy<{'amd64': 'y'}>
 CONFIG_MTD_DATAFLASH_WRITE_VERIFY               policy<{'amd64': 'n'}>
-CONFIG_MTD_DOCG3                                policy<{'amd64': 'n'}>
-CONFIG_MTD_DOCG3                                note<'LP: #1792205'>
-
 CONFIG_MTD_ESB2ROM                              policy<{'amd64': 'm'}>
 CONFIG_MTD_GEN_PROBE                            policy<{'amd64': 'm'}>
 CONFIG_MTD_HYPERBUS                             policy<{'amd64': 'm'}>
@@ -5202,9 +5529,6 @@ CONFIG_MTD_NAND_CORE                            policy<{'amd64': 'm'}>
 CONFIG_MTD_NAND_DENALI                          policy<{'amd64': 'm'}>
 CONFIG_MTD_NAND_DENALI_PCI                      policy<{'amd64': 'm'}>
 CONFIG_MTD_NAND_DISKONCHIP                      policy<{'amd64': 'm'}>
-CONFIG_MTD_NAND_DISKONCHIP_BBTWRITE             policy<{'amd64': 'n'}>
-CONFIG_MTD_NAND_DISKONCHIP_BBTWRITE             note<'can be enabled at runtime'>
-
 CONFIG_MTD_NAND_DISKONCHIP_PROBE_ADDRESS        policy<{'amd64': '0'}>
 CONFIG_MTD_NAND_DISKONCHIP_PROBE_ADVANCED       policy<{'amd64': 'n'}>
 CONFIG_MTD_NAND_ECC                             policy<{'amd64': 'y'}>
@@ -5222,9 +5546,6 @@ CONFIG_MTD_ONENAND                              policy<{'amd64': 'm'}>
 CONFIG_MTD_ONENAND_2X_PROGRAM                   policy<{'amd64': 'y'}>
 CONFIG_MTD_ONENAND_GENERIC                      policy<{'amd64': 'm'}>
 CONFIG_MTD_ONENAND_OTP                          policy<{'amd64': 'n'}>
-CONFIG_MTD_ONENAND_VERIFY_WRITE                 policy<{'amd64': 'y'}>
-CONFIG_MTD_ONENAND_VERIFY_WRITE                 note<'writes here are not checked in full without'>
-
 CONFIG_MTD_OOPS                                 policy<{'amd64': 'm'}>
 CONFIG_MTD_PARTITIONED_MASTER                   policy<{'amd64': 'n'}>
 CONFIG_MTD_PCI                                  policy<{'amd64': 'm'}>
@@ -5241,9 +5562,6 @@ CONFIG_MTD_PMC551_DEBUG                         policy<{'amd64': 'n'}>
 CONFIG_MTD_PSTORE                               policy<{'amd64': 'm'}>
 CONFIG_MTD_QINFO_PROBE                          policy<{'amd64': 'm'}>
 CONFIG_MTD_RAM                                  policy<{'amd64': 'm'}>
-CONFIG_MTD_RAW_NAND                             policy<{'amd64': 'm'}>
-CONFIG_MTD_RAW_NAND                             note<'boot essential on arm'>
-
 CONFIG_MTD_REDBOOT_DIRECTORY_BLOCK              policy<{'amd64': '-1'}>
 CONFIG_MTD_REDBOOT_PARTS                        policy<{'amd64': 'm'}>
 CONFIG_MTD_REDBOOT_PARTS_READONLY               policy<{'amd64': 'n'}>
@@ -5413,14 +5731,8 @@ CONFIG_NETLINK_DIAG                             policy<{'amd64': 'm'}>
 CONFIG_NETPOLL                                  policy<{'amd64': 'y'}>
 CONFIG_NETROM                                   policy<{'amd64': 'm'}>
 CONFIG_NETWORK_FILESYSTEMS                      policy<{'amd64': 'y'}>
-CONFIG_NETWORK_PHY_TIMESTAMPING                 policy<{'amd64': 'y'}>
-CONFIG_NETWORK_PHY_TIMESTAMPING                 note<'LP: #1785816'>
-
 CONFIG_NETWORK_SECMARK                          policy<{'amd64': 'y'}>
 CONFIG_NETXEN_NIC                               policy<{'amd64': 'm'}>
-CONFIG_NET_9P                                   policy<{'amd64': 'm'}>
-CONFIG_NET_9P                                   note<'LP: #1557994'>
-
 CONFIG_NET_9P_DEBUG                             policy<{'amd64': 'n'}>
 CONFIG_NET_9P_FD                                policy<{'amd64': 'm'}>
 CONFIG_NET_9P_RDMA                              policy<{'amd64': 'm'}>
@@ -5463,9 +5775,6 @@ CONFIG_NET_CLS_U32                              policy<{'amd64': 'm'}>
 CONFIG_NET_CORE                                 policy<{'amd64': 'y'}>
 CONFIG_NET_DEVLINK                              policy<{'amd64': 'y'}>
 CONFIG_NET_DEV_REFCNT_TRACKER                   policy<{'amd64': 'n'}>
-CONFIG_NET_DROP_MONITOR                         policy<{'amd64': 'y'}>
-CONFIG_NET_DROP_MONITOR                         note<'LP: #1660634'>
-
 CONFIG_NET_DSA                                  policy<{'amd64': 'm'}>
 CONFIG_NET_DSA_AR9331                           policy<{'amd64': 'm'}>
 CONFIG_NET_DSA_BCM_SF2                          policy<{'amd64': 'm'}>
@@ -5597,9 +5906,6 @@ CONFIG_NET_SCH_TBF                              policy<{'amd64': 'm'}>
 CONFIG_NET_SCH_TEQL                             policy<{'amd64': 'm'}>
 CONFIG_NET_SELFTESTS                            policy<{'amd64': 'y'}>
 CONFIG_NET_SOCK_MSG                             policy<{'amd64': 'y'}>
-CONFIG_NET_SWITCHDEV                            policy<{'amd64': 'y'}>
-CONFIG_NET_SWITCHDEV                            note<'updated to y for s390x starting with focal'>
-
 CONFIG_NET_TC_SKB_EXT                           policy<{'amd64': 'y'}>
 CONFIG_NET_TEAM                                 policy<{'amd64': 'm'}>
 CONFIG_NET_TEAM_MODE_ACTIVEBACKUP               policy<{'amd64': 'm'}>
@@ -5633,9 +5939,6 @@ CONFIG_NET_VENDOR_CORTINA                       policy<{'amd64': 'y'}>
 CONFIG_NET_VENDOR_DAVICOM                       policy<{'amd64': 'y'}>
 CONFIG_NET_VENDOR_DEC                           policy<{'amd64': 'y'}>
 CONFIG_NET_VENDOR_DLINK                         policy<{'amd64': 'y'}>
-CONFIG_NET_VENDOR_EMULEX                        policy<{'amd64': 'y'}>
-CONFIG_NET_VENDOR_EMULEX                        note<'LP: #1543165'>
-
 CONFIG_NET_VENDOR_ENGLEDER                      policy<{'amd64': 'y'}>
 CONFIG_NET_VENDOR_EZCHIP                        policy<{'amd64': 'y'}>
 CONFIG_NET_VENDOR_FUJITSU                       policy<{'amd64': 'y'}>
@@ -5874,9 +6177,6 @@ CONFIG_NI_XGE_MANAGEMENT_ENET                   policy<{'amd64': 'm'}>
 CONFIG_NL80211_TESTMODE                         policy<{'amd64': 'n'}>
 CONFIG_NLATTR                                   policy<{'amd64': 'y'}>
 CONFIG_NLMON                                    policy<{'amd64': 'm'}>
-CONFIG_NLS                                      policy<{'amd64': 'y'}>
-CONFIG_NLS                                      note<'dependancy of boot essential'>
-
 CONFIG_NLS_ASCII                                policy<{'amd64': 'm'}>
 CONFIG_NLS_CODEPAGE_1250                        policy<{'amd64': 'm'}>
 CONFIG_NLS_CODEPAGE_1251                        policy<{'amd64': 'm'}>
@@ -5930,28 +6230,16 @@ CONFIG_NLS_UTF8                                 policy<{'amd64': 'm'}>
 CONFIG_NOA1305                                  policy<{'amd64': 'm'}>
 CONFIG_NODES_SHIFT                              policy<{'amd64': '10'}>
 CONFIG_NOP_TRACER                               policy<{'amd64': 'y'}>
-CONFIG_NOP_USB_XCEIV                            policy<{'amd64': 'm'}>
-CONFIG_NOP_USB_XCEIV                            note<'boot essential on omap/highbank'>
-
 CONFIG_NORTEL_HERMES                            policy<{'amd64': 'm'}>
 CONFIG_NOTIFIER_ERROR_INJECTION                 policy<{'amd64': 'm'}>
 CONFIG_NOUVEAU_DEBUG                            policy<{'amd64': '5'}>
 CONFIG_NOUVEAU_DEBUG_DEFAULT                    policy<{'amd64': '3'}>
 CONFIG_NOUVEAU_DEBUG_MMU                        policy<{'amd64': 'n'}>
 CONFIG_NOUVEAU_DEBUG_PUSH                       policy<{'amd64': 'n'}>
-CONFIG_NOUVEAU_LEGACY_CTX_SUPPORT               policy<{'amd64': 'n'}>
-CONFIG_NOUVEAU_LEGACY_CTX_SUPPORT               note<'Selects CONFIG_DRM_LEGACY which is not wanted'>
-
 CONFIG_NOZOMI                                   policy<{'amd64': 'm'}>
 CONFIG_NO_HZ                                    policy<{'amd64': 'y'}>
 CONFIG_NO_HZ_COMMON                             policy<{'amd64': 'y'}>
 CONFIG_NO_HZ_FULL                               policy<{'amd64': 'n'}>
-CONFIG_NO_HZ_IDLE                               policy<{'amd64': 'y'}>
-CONFIG_NO_HZ_IDLE                               note<'LP: #1413968'>
-
-CONFIG_NR_CPUS                                  policy<{'amd64': '8192'}>
-CONFIG_NR_CPUS                                  note<'LP: #1864198'>
-
 CONFIG_NR_CPUS_DEFAULT                          policy<{'amd64': '8192'}>
 CONFIG_NR_CPUS_RANGE_BEGIN                      policy<{'amd64': '8192'}>
 CONFIG_NR_CPUS_RANGE_END                        policy<{'amd64': '8192'}>
@@ -5977,24 +6265,12 @@ CONFIG_NTFS_DEBUG                               policy<{'amd64': 'n'}>
 CONFIG_NTFS_FS                                  policy<{'amd64': 'm'}>
 CONFIG_NTFS_RW                                  policy<{'amd64': 'n'}>
 CONFIG_NULL_TTY                                 policy<{'amd64': 'm'}>
-CONFIG_NUMA                                     policy<{'amd64': 'y'}>
-CONFIG_NUMA                                     note<'LP: #1557690'>
-
 CONFIG_NUMA_BALANCING                           policy<{'amd64': 'y'}>
-CONFIG_NUMA_BALANCING_DEFAULT_ENABLED           policy<{'amd64': 'y'}>
-CONFIG_NUMA_BALANCING_DEFAULT_ENABLED           note<'LP: #1557690'>
-
-CONFIG_NUMA_EMU                                 policy<{'amd64': 'n'}>
-CONFIG_NUMA_EMU                                 note<'LP: #1864198'>
-
 CONFIG_NUMA_KEEP_MEMINFO                        policy<{'amd64': 'y'}>
 CONFIG_NVDIMM_DAX                               policy<{'amd64': 'y'}>
 CONFIG_NVDIMM_KEYS                              policy<{'amd64': 'y'}>
 CONFIG_NVDIMM_PFN                               policy<{'amd64': 'y'}>
 CONFIG_NVIDIA_WMI_EC_BACKLIGHT                  policy<{'amd64': 'm'}>
-CONFIG_NVMEM                                    policy<{'amd64': 'y'}>
-CONFIG_NVMEM                                    note<'LP: #1543165'>
-
 CONFIG_NVMEM_RAVE_SP_EEPROM                     policy<{'amd64': 'm'}>
 CONFIG_NVMEM_RMEM                               policy<{'amd64': 'm'}>
 CONFIG_NVMEM_SPMI_SDAM                          policy<{'amd64': 'm'}>
@@ -6017,16 +6293,10 @@ CONFIG_NVME_TARGET_RDMA                         policy<{'amd64': 'm'}>
 CONFIG_NVME_TARGET_TCP                          policy<{'amd64': 'm'}>
 CONFIG_NVME_TCP                                 policy<{'amd64': 'm'}>
 CONFIG_NVME_VERBOSE_ERRORS                      policy<{'amd64': 'n'}>
-CONFIG_NVRAM                                    policy<{'amd64': 'm'}>
-CONFIG_NVRAM                                    note<'LP: #1837726'>
-
 CONFIG_NVSW_SN2201                              policy<{'amd64': 'm'}>
 CONFIG_NV_TCO                                   policy<{'amd64': 'm'}>
 CONFIG_NXP_C45_TJA11XX_PHY                      policy<{'amd64': 'm'}>
 CONFIG_NXP_TJA11XX_PHY                          policy<{'amd64': 'm'}>
-CONFIG_N_GSM                                    policy<{'amd64': 'm'}>
-CONFIG_N_GSM                                    note<'LP: #1404670'>
-
 CONFIG_N_HDLC                                   policy<{'amd64': 'm'}>
 CONFIG_OBJAGG                                   policy<{'amd64': 'm'}>
 CONFIG_OBJTOOL                                  policy<{'amd64': 'y'}>
@@ -6074,9 +6344,6 @@ CONFIG_PAGE_COUNTER                             policy<{'amd64': 'y'}>
 CONFIG_PAGE_EXTENSION                           policy<{'amd64': 'n'}>
 CONFIG_PAGE_IDLE_FLAG                           policy<{'amd64': 'y'}>
 CONFIG_PAGE_OWNER                               policy<{'amd64': 'n'}>
-CONFIG_PAGE_POISONING                           policy<{'amd64': 'y'}>
-CONFIG_PAGE_POISONING                           note<'LP: #1783651'>
-
 CONFIG_PAGE_POOL                                policy<{'amd64': 'y'}>
 CONFIG_PAGE_POOL_STATS                          policy<{'amd64': 'n'}>
 CONFIG_PAGE_REPORTING                           policy<{'amd64': 'y'}>
@@ -6092,9 +6359,6 @@ CONFIG_PANEL                                    policy<{'amd64': 'm'}>
 CONFIG_PANEL_CHANGE_MESSAGE                     policy<{'amd64': 'n'}>
 CONFIG_PANEL_PARPORT                            policy<{'amd64': '0'}>
 CONFIG_PANEL_PROFILE                            policy<{'amd64': '5'}>
-CONFIG_PANIC_ON_OOPS                            policy<{'amd64': 'n'}>
-CONFIG_PANIC_ON_OOPS                            note<'keep working if at all possible'>
-
 CONFIG_PANIC_ON_OOPS_VALUE                      policy<{'amd64': '0'}>
 CONFIG_PANIC_TIMEOUT                            policy<{'amd64': '0'}>
 CONFIG_PANTHERLORD_FF                           policy<{'amd64': 'y'}>
@@ -6151,9 +6415,6 @@ CONFIG_PATA_HPT366                              policy<{'amd64': 'm'}>
 CONFIG_PATA_HPT37X                              policy<{'amd64': 'm'}>
 CONFIG_PATA_HPT3X2N                             policy<{'amd64': 'm'}>
 CONFIG_PATA_HPT3X3                              policy<{'amd64': 'm'}>
-CONFIG_PATA_HPT3X3_DMA                          policy<{'amd64': 'n'}>
-CONFIG_PATA_HPT3X3_DMA                          note<'DMA mode is documented problematic'>
-
 CONFIG_PATA_IT8213                              policy<{'amd64': 'm'}>
 CONFIG_PATA_IT821X                              policy<{'amd64': 'm'}>
 CONFIG_PATA_JMICRON                             policy<{'amd64': 'm'}>
@@ -6196,15 +6457,9 @@ CONFIG_PCI200SYN                                policy<{'amd64': 'm'}>
 CONFIG_PCIEAER                                  policy<{'amd64': 'y'}>
 CONFIG_PCIEAER_INJECT                           policy<{'amd64': 'n'}>
 CONFIG_PCIEASPM                                 policy<{'amd64': 'y'}>
-CONFIG_PCIEASPM_DEFAULT                         policy<{'amd64': 'y'}>
-CONFIG_PCIEASPM_DEFAULT                         note<'LP: #1398544'>
-
 CONFIG_PCIEASPM_PERFORMANCE                     policy<{'amd64': 'n'}>
 CONFIG_PCIEASPM_POWERSAVE                       policy<{'amd64': 'n'}>
 CONFIG_PCIEASPM_POWER_SUPERSAVE                 policy<{'amd64': 'n'}>
-CONFIG_PCIEPORTBUS                              policy<{'amd64': 'y'}>
-CONFIG_PCIEPORTBUS                              note<'LP: #1665404'>
-
 CONFIG_PCIE_BUS_DEFAULT                         policy<{'amd64': 'y'}>
 CONFIG_PCIE_BUS_PEER2PEER                       policy<{'amd64': 'n'}>
 CONFIG_PCIE_BUS_PERFORMANCE                     policy<{'amd64': 'n'}>
@@ -6322,9 +6577,6 @@ CONFIG_PINCTRL_BAYTRAIL                         policy<{'amd64': 'y'}>
 CONFIG_PINCTRL_BROXTON                          policy<{'amd64': 'm'}>
 CONFIG_PINCTRL_CANNONLAKE                       policy<{'amd64': 'm'}>
 CONFIG_PINCTRL_CEDARFORK                        policy<{'amd64': 'm'}>
-CONFIG_PINCTRL_CHERRYVIEW                       policy<{'amd64': 'y'}>
-CONFIG_PINCTRL_CHERRYVIEW                       note<'LP: #1630238'>
-
 CONFIG_PINCTRL_CS47L15                          policy<{'amd64': 'y'}>
 CONFIG_PINCTRL_CS47L35                          policy<{'amd64': 'y'}>
 CONFIG_PINCTRL_CS47L85                          policy<{'amd64': 'y'}>
@@ -6362,9 +6614,6 @@ CONFIG_PLFXLC                                   policy<{'amd64': 'm'}>
 CONFIG_PLIP                                     policy<{'amd64': 'm'}>
 CONFIG_PLX_DMA                                  policy<{'amd64': 'm'}>
 CONFIG_PLX_HERMES                               policy<{'amd64': 'm'}>
-CONFIG_PM                                       policy<{'amd64': 'y'}>
-CONFIG_PM                                       note<'LP: #1867753'>
-
 CONFIG_PMBUS                                    policy<{'amd64': 'm'}>
 CONFIG_PMIC_ADP5520                             policy<{'amd64': 'y'}>
 CONFIG_PMIC_DA903X                              policy<{'amd64': 'y'}>
@@ -6437,9 +6686,6 @@ CONFIG_PREEMPTIRQ_DELAY_TEST                    policy<{'amd64': 'n'}>
 CONFIG_PREEMPT_BUILD                            policy<{'amd64': 'y'}>
 CONFIG_PREEMPT_COUNT                            policy<{'amd64': 'y'}>
 CONFIG_PREEMPT_DYNAMIC                          policy<{'amd64': 'y'}>
-CONFIG_PREEMPT_NONE                             policy<{'amd64': 'n'}>
-CONFIG_PREEMPT_NONE                             note<'LP: #1543165'>
-
 CONFIG_PREEMPT_NOTIFIERS                        policy<{'amd64': 'y'}>
 CONFIG_PREEMPT_RCU                              policy<{'amd64': 'y'}>
 CONFIG_PREEMPT_TRACER                           policy<{'amd64': 'n'}>
@@ -6478,9 +6724,6 @@ CONFIG_PSAMPLE                                  policy<{'amd64': 'm'}>
 CONFIG_PSE_CONTROLLER                           policy<{'amd64': 'y'}>
 CONFIG_PSE_REGULATOR                            policy<{'amd64': 'm'}>
 CONFIG_PSI                                      policy<{'amd64': 'y'}>
-CONFIG_PSI_DEFAULT_DISABLED                     policy<{'amd64': 'n'}>
-CONFIG_PSI_DEFAULT_DISABLED                     note<'LP: #1876044'>
-
 CONFIG_PSTORE                                   policy<{'amd64': 'y'}>
 CONFIG_PSTORE_842_COMPRESS                      policy<{'amd64': 'n'}>
 CONFIG_PSTORE_BLK                               policy<{'amd64': 'm'}>
@@ -6698,9 +6941,6 @@ CONFIG_REGULATOR_DA9210                         policy<{'amd64': 'm'}>
 CONFIG_REGULATOR_DA9211                         policy<{'amd64': 'm'}>
 CONFIG_REGULATOR_DEBUG                          policy<{'amd64': 'n'}>
 CONFIG_REGULATOR_FAN53555                       policy<{'amd64': 'm'}>
-CONFIG_REGULATOR_FIXED_VOLTAGE                  policy<{'amd64': 'm'}>
-CONFIG_REGULATOR_FIXED_VOLTAGE                  note<'boot essential on arm'>
-
 CONFIG_REGULATOR_GPIO                           policy<{'amd64': 'm'}>
 CONFIG_REGULATOR_ISL6271A                       policy<{'amd64': 'm'}>
 CONFIG_REGULATOR_ISL9305                        policy<{'amd64': 'm'}>
@@ -6778,9 +7018,6 @@ CONFIG_REGULATOR_TPS6586X                       policy<{'amd64': 'm'}>
 CONFIG_REGULATOR_TPS65910                       policy<{'amd64': 'm'}>
 CONFIG_REGULATOR_TPS65912                       policy<{'amd64': 'm'}>
 CONFIG_REGULATOR_TPS68470                       policy<{'amd64': 'm'}>
-CONFIG_REGULATOR_TWL4030                        policy<{'amd64': 'm'}>
-CONFIG_REGULATOR_TWL4030                        note<'boot requisite for omap4'>
-
 CONFIG_REGULATOR_USERSPACE_CONSUMER             policy<{'amd64': 'm'}>
 CONFIG_REGULATOR_VIRTUAL_CONSUMER               policy<{'amd64': 'm'}>
 CONFIG_REGULATOR_WM831X                         policy<{'amd64': 'm'}>
@@ -6901,9 +7138,6 @@ CONFIG_RTC_DRV_ABEOZ9                           policy<{'amd64': 'm'}>
 CONFIG_RTC_DRV_ABX80X                           policy<{'amd64': 'm'}>
 CONFIG_RTC_DRV_BQ32K                            policy<{'amd64': 'm'}>
 CONFIG_RTC_DRV_BQ4802                           policy<{'amd64': 'm'}>
-CONFIG_RTC_DRV_CMOS                             policy<{'amd64': 'y'}>
-CONFIG_RTC_DRV_CMOS                             note<'boot essential on i386/amd64'>
-
 CONFIG_RTC_DRV_CROS_EC                          policy<{'amd64': 'm'}>
 CONFIG_RTC_DRV_DA9052                           policy<{'amd64': 'm'}>
 CONFIG_RTC_DRV_DA9055                           policy<{'amd64': 'm'}>
@@ -7060,9 +7294,6 @@ CONFIG_RTW89_DEBUG                              policy<{'amd64': 'y'}>
 CONFIG_RTW89_DEBUGFS                            policy<{'amd64': 'y'}>
 CONFIG_RTW89_DEBUGMSG                           policy<{'amd64': 'y'}>
 CONFIG_RTW89_PCI                                policy<{'amd64': 'm'}>
-CONFIG_RT_GROUP_SCHED                           policy<{'amd64': 'n'}>
-CONFIG_RT_GROUP_SCHED                           note<'LP: #1875665'>
-
 CONFIG_RT_MUTEXES                               policy<{'amd64': 'y'}>
 CONFIG_RUNTIME_TESTING_MENU                     policy<{'amd64': 'y'}>
 CONFIG_RV                                       policy<{'amd64': 'y'}>
@@ -7089,9 +7320,6 @@ CONFIG_SAMPLE_RPMSG_CLIENT                      policy<{'amd64': 'n'}>
 CONFIG_SAMPLE_TRACE_ARRAY                       policy<{'amd64': 'm'}>
 CONFIG_SAMPLE_TRACE_CUSTOM_EVENTS               policy<{'amd64': 'n'}>
 CONFIG_SAMPLE_TRACE_EVENTS                      policy<{'amd64': 'n'}>
-CONFIG_SAMPLE_TRACE_PRINTK                      policy<{'amd64': 'm'}>
-CONFIG_SAMPLE_TRACE_PRINTK                      note<'Required for ftrace selftests'>
-
 CONFIG_SAMPLE_VFIO_MDEV_MBOCHS                  policy<{'amd64': 'n'}>
 CONFIG_SAMPLE_VFIO_MDEV_MDPY                    policy<{'amd64': 'n'}>
 CONFIG_SAMPLE_VFIO_MDEV_MDPY_FB                 policy<{'amd64': 'n'}>
@@ -7101,9 +7329,6 @@ CONFIG_SAMSUNG_LAPTOP                           policy<{'amd64': 'm'}>
 CONFIG_SAMSUNG_Q10                              policy<{'amd64': 'm'}>
 CONFIG_SATA_ACARD_AHCI                          policy<{'amd64': 'm'}>
 CONFIG_SATA_AHCI                                policy<{'amd64': 'm'}>
-CONFIG_SATA_AHCI_PLATFORM                       policy<{'amd64': 'm'}>
-CONFIG_SATA_AHCI_PLATFORM                       note<'boot essential on highbank'>
-
 CONFIG_SATA_DWC                                 policy<{'amd64': 'm'}>
 CONFIG_SATA_DWC_OLD_DMA                         policy<{'amd64': 'y'}>
 CONFIG_SATA_HOST                                policy<{'amd64': 'y'}>
@@ -7193,12 +7418,6 @@ CONFIG_SCSI_IMM                                 policy<{'amd64': 'm'}>
 CONFIG_SCSI_INIA100                             policy<{'amd64': 'm'}>
 CONFIG_SCSI_INITIO                              policy<{'amd64': 'm'}>
 CONFIG_SCSI_IPR                                 policy<{'amd64': 'm'}>
-CONFIG_SCSI_IPR_DUMP                            policy<{'amd64': 'y'}>
-CONFIG_SCSI_IPR_DUMP                            note<'LP: #1343109'>
-
-CONFIG_SCSI_IPR_TRACE                           policy<{'amd64': 'y'}>
-CONFIG_SCSI_IPR_TRACE                           note<'LP: #1343109'>
-
 CONFIG_SCSI_IPS                                 policy<{'amd64': 'm'}>
 CONFIG_SCSI_ISCI                                policy<{'amd64': 'm'}>
 CONFIG_SCSI_ISCSI_ATTRS                         policy<{'amd64': 'm'}>
@@ -7256,9 +7475,6 @@ CONFIG_SCSI_UFS_DWC_TC_PCI                      policy<{'amd64': 'm'}>
 CONFIG_SCSI_UFS_DWC_TC_PLATFORM                 policy<{'amd64': 'm'}>
 CONFIG_SCSI_UFS_HPB                             policy<{'amd64': 'y'}>
 CONFIG_SCSI_UFS_HWMON                           policy<{'amd64': 'n'}>
-CONFIG_SCSI_VIRTIO                              policy<{'amd64': 'm'}>
-CONFIG_SCSI_VIRTIO                              note<'tech preview of new feature'>
-
 CONFIG_SCSI_WD719X                              policy<{'amd64': 'm'}>
 CONFIG_SCTP_COOKIE_HMAC_MD5                     policy<{'amd64': 'y'}>
 CONFIG_SCTP_COOKIE_HMAC_SHA1                    policy<{'amd64': 'y'}>
@@ -7296,17 +7512,11 @@ CONFIG_SECURITY_NETWORK                         policy<{'amd64': 'y'}>
 CONFIG_SECURITY_NETWORK_XFRM                    policy<{'amd64': 'y'}>
 CONFIG_SECURITY_PATH                            policy<{'amd64': 'y'}>
 CONFIG_SECURITY_PERF_EVENTS_RESTRICT            policy<{'amd64': 'y'}>
-CONFIG_SECURITY_SAFESETID                       policy<{'amd64': 'y'}>
-CONFIG_SECURITY_SAFESETID                       note<'LP: #1845391'>
-
 CONFIG_SECURITY_SELINUX                         policy<{'amd64': 'y'}>
 CONFIG_SECURITY_SELINUX_AVC_STATS               policy<{'amd64': 'y'}>
 CONFIG_SECURITY_SELINUX_BOOTPARAM               policy<{'amd64': 'y'}>
 CONFIG_SECURITY_SELINUX_CHECKREQPROT_VALUE      policy<{'amd64': '1'}>
 CONFIG_SECURITY_SELINUX_DEVELOP                 policy<{'amd64': 'y'}>
-CONFIG_SECURITY_SELINUX_DISABLE                 policy<{'amd64': 'n'}>
-CONFIG_SECURITY_SELINUX_DISABLE                 note<'LP: #1680315'>
-
 CONFIG_SECURITY_SELINUX_SID2STR_CACHE_SIZE      policy<{'amd64': '256'}>
 CONFIG_SECURITY_SELINUX_SIDTAB_HASH_BITS        policy<{'amd64': '9'}>
 CONFIG_SECURITY_SMACK                           policy<{'amd64': 'y'}>
@@ -7608,12 +7818,6 @@ CONFIG_SERIAL_ARC                               policy<{'amd64': 'm'}>
 CONFIG_SERIAL_ARC_NR_PORTS                      policy<{'amd64': '1'}>
 CONFIG_SERIAL_CORE                              policy<{'amd64': 'y'}>
 CONFIG_SERIAL_CORE_CONSOLE                      policy<{'amd64': 'y'}>
-CONFIG_SERIAL_DEV_BUS                           policy<{'amd64': 'y'}>
-CONFIG_SERIAL_DEV_BUS                           note<'LP: #1739939'>
-
-CONFIG_SERIAL_DEV_CTRL_TTYPORT                  policy<{'amd64': 'y'}>
-CONFIG_SERIAL_DEV_CTRL_TTYPORT                  note<'LP: #1739939'>
-
 CONFIG_SERIAL_EARLYCON                          policy<{'amd64': 'y'}>
 CONFIG_SERIAL_FSL_LINFLEXUART                   policy<{'amd64': 'm'}>
 CONFIG_SERIAL_FSL_LPUART                        policy<{'amd64': 'm'}>
@@ -7723,12 +7927,6 @@ CONFIG_SMB_SERVER                               policy<{'amd64': 'm'}>
 CONFIG_SMB_SERVER_CHECK_CAP_NET_ADMIN           policy<{'amd64': 'y'}>
 CONFIG_SMB_SERVER_KERBEROS5                     policy<{'amd64': 'y'}>
 CONFIG_SMB_SERVER_SMBDIRECT                     policy<{'amd64': 'y'}>
-CONFIG_SMC                                      policy<{'amd64': 'm'}>
-CONFIG_SMC                                      note<'LP: #1789934'>
-
-CONFIG_SMC_DIAG                                 policy<{'amd64': 'm'}>
-CONFIG_SMC_DIAG                                 note<'LP: #1789934'>
-
 CONFIG_SMP                                      policy<{'amd64': 'y'}>
 CONFIG_SMSC37B787_WDT                           policy<{'amd64': 'm'}>
 CONFIG_SMSC911X                                 policy<{'amd64': 'm'}>
@@ -7741,9 +7939,6 @@ CONFIG_SMS_SIANO_MDTV                           policy<{'amd64': 'm'}>
 CONFIG_SMS_SIANO_RC                             policy<{'amd64': 'y'}>
 CONFIG_SMS_USB_DRV                              policy<{'amd64': 'm'}>
 CONFIG_SM_FTL                                   policy<{'amd64': 'm'}>
-CONFIG_SND                                      policy<{'amd64': 'm'}>
-CONFIG_SND                                      note<'not autoloadable on omap'>
-
 CONFIG_SND_AC97_CODEC                           policy<{'amd64': 'm'}>
 CONFIG_SND_AC97_POWER_SAVE                      policy<{'amd64': 'y'}>
 CONFIG_SND_AC97_POWER_SAVE_DEFAULT              policy<{'amd64': '0'}>
@@ -7839,13 +8034,7 @@ CONFIG_SND_HDA_INPUT_BEEP_MODE                  policy<{'amd64': '0'}>
 CONFIG_SND_HDA_INTEL                            policy<{'amd64': 'm'}>
 CONFIG_SND_HDA_INTEL_HDMI_SILENT_STREAM         policy<{'amd64': 'n'}>
 CONFIG_SND_HDA_PATCH_LOADER                     policy<{'amd64': 'y'}>
-CONFIG_SND_HDA_POWER_SAVE_DEFAULT               policy<{'amd64': '1'}>
-CONFIG_SND_HDA_POWER_SAVE_DEFAULT               note<'LP: #1804265'>
-
 CONFIG_SND_HDA_PREALLOC_SIZE                    policy<{'amd64': '0'}>
-CONFIG_SND_HDA_RECONFIG                         policy<{'amd64': 'y'}>
-CONFIG_SND_HDA_RECONFIG                         note<'allows fixes to be tested live'>
-
 CONFIG_SND_HDA_SCODEC_CS35L41                   policy<{'amd64': 'm'}>
 CONFIG_SND_HDA_SCODEC_CS35L41_I2C               policy<{'amd64': 'm'}>
 CONFIG_SND_HDA_SCODEC_CS35L41_SPI               policy<{'amd64': 'm'}>
@@ -7898,9 +8087,6 @@ CONFIG_SND_PCM                                  policy<{'amd64': 'm'}>
 CONFIG_SND_PCMCIA                               policy<{'amd64': 'y'}>
 CONFIG_SND_PCM_ELD                              policy<{'amd64': 'y'}>
 CONFIG_SND_PCM_IEC958                           policy<{'amd64': 'y'}>
-CONFIG_SND_PCM_OSS                              policy<{'amd64': 'n'}>
-CONFIG_SND_PCM_OSS                              note<'deprecated in favour of pulseaudio emulation'>
-
 CONFIG_SND_PCM_TIMER                            policy<{'amd64': 'y'}>
 CONFIG_SND_PCSP                                 policy<{'amd64': 'm'}>
 CONFIG_SND_PCXHR                                policy<{'amd64': 'm'}>
@@ -7925,9 +8111,6 @@ CONFIG_SND_SEQ_VIRMIDI                          policy<{'amd64': 'm'}>
 CONFIG_SND_SERIAL_U16550                        policy<{'amd64': 'm'}>
 CONFIG_SND_SIMPLE_CARD                          policy<{'amd64': 'm'}>
 CONFIG_SND_SIMPLE_CARD_UTILS                    policy<{'amd64': 'm'}>
-CONFIG_SND_SOC                                  policy<{'amd64': 'm'}>
-CONFIG_SND_SOC                                  note<'not autoloadable on omap'>
-
 CONFIG_SND_SOC_AC97_BUS                         policy<{'amd64': 'y'}>
 CONFIG_SND_SOC_AC97_CODEC                       policy<{'amd64': 'm'}>
 CONFIG_SND_SOC_ACPI                             policy<{'amd64': 'm'}>
@@ -7973,12 +8156,6 @@ CONFIG_SND_SOC_AMD_LEGACY_MACH                  policy<{'amd64': 'm'}>
 CONFIG_SND_SOC_AMD_MACH_COMMON                  policy<{'amd64': 'm'}>
 CONFIG_SND_SOC_AMD_PS                           policy<{'amd64': 'm'}>
 CONFIG_SND_SOC_AMD_PS_MACH                      policy<{'amd64': 'm'}>
-CONFIG_SND_SOC_AMD_RENOIR                       policy<{'amd64': 'm'}>
-CONFIG_SND_SOC_AMD_RENOIR                       note<'LP: #1881046'>
-
-CONFIG_SND_SOC_AMD_RENOIR_MACH                  policy<{'amd64': 'm'}>
-CONFIG_SND_SOC_AMD_RENOIR_MACH                  note<'LP: #1881046'>
-
 CONFIG_SND_SOC_AMD_RPL_ACP6x                    policy<{'amd64': 'm'}>
 CONFIG_SND_SOC_AMD_RV_RT5682_MACH               policy<{'amd64': 'm'}>
 CONFIG_SND_SOC_AMD_SOF_MACH                     policy<{'amd64': 'm'}>
@@ -8092,23 +8269,11 @@ CONFIG_SND_SOC_INTEL_BYT_CHT_DA7213_MACH        policy<{'amd64': 'm'}>
 CONFIG_SND_SOC_INTEL_BYT_CHT_ES8316_MACH        policy<{'amd64': 'm'}>
 CONFIG_SND_SOC_INTEL_BYT_CHT_NOCODEC_MACH       policy<{'amd64': 'n'}>
 CONFIG_SND_SOC_INTEL_CATPT                      policy<{'amd64': 'm'}>
-CONFIG_SND_SOC_INTEL_CFL                        policy<{'amd64': 'n'}>
-CONFIG_SND_SOC_INTEL_CFL                        note<'deprecated'>
-
 CONFIG_SND_SOC_INTEL_CHT_BSW_MAX98090_TI_MACH   policy<{'amd64': 'm'}>
 CONFIG_SND_SOC_INTEL_CHT_BSW_NAU8824_MACH       policy<{'amd64': 'm'}>
 CONFIG_SND_SOC_INTEL_CHT_BSW_RT5645_MACH        policy<{'amd64': 'm'}>
 CONFIG_SND_SOC_INTEL_CHT_BSW_RT5672_MACH        policy<{'amd64': 'm'}>
-CONFIG_SND_SOC_INTEL_CML_H                      policy<{'amd64': 'n'}>
-CONFIG_SND_SOC_INTEL_CML_H                      note<'deprecated'>
-
-CONFIG_SND_SOC_INTEL_CML_LP                     policy<{'amd64': 'n'}>
-CONFIG_SND_SOC_INTEL_CML_LP                     note<'deprecated'>
-
 CONFIG_SND_SOC_INTEL_CML_LP_DA7219_MAX98357A_MACH policy<{'amd64': 'm'}>
-CONFIG_SND_SOC_INTEL_CNL                        policy<{'amd64': 'n'}>
-CONFIG_SND_SOC_INTEL_CNL                        note<'deprecated'>
-
 CONFIG_SND_SOC_INTEL_DA7219_MAX98357A_GENERIC   policy<{'amd64': 'm'}>
 CONFIG_SND_SOC_INTEL_EHL_RT5660_MACH            policy<{'amd64': 'm'}>
 CONFIG_SND_SOC_INTEL_GLK                        policy<{'amd64': 'm'}>
@@ -8128,14 +8293,8 @@ CONFIG_SND_SOC_INTEL_SKL_HDA_DSP_GENERIC_MACH   policy<{'amd64': 'm'}>
 CONFIG_SND_SOC_INTEL_SKL_NAU88L25_MAX98357A_MACH policy<{'amd64': 'm'}>
 CONFIG_SND_SOC_INTEL_SKL_NAU88L25_SSM4567_MACH  policy<{'amd64': 'm'}>
 CONFIG_SND_SOC_INTEL_SKL_RT286_MACH             policy<{'amd64': 'm'}>
-CONFIG_SND_SOC_INTEL_SKYLAKE                    policy<{'amd64': 'n'}>
-CONFIG_SND_SOC_INTEL_SKYLAKE                    note<'deprecated'>
-
 CONFIG_SND_SOC_INTEL_SKYLAKE_COMMON             policy<{'amd64': 'm'}>
 CONFIG_SND_SOC_INTEL_SKYLAKE_FAMILY             policy<{'amd64': 'm'}>
-CONFIG_SND_SOC_INTEL_SKYLAKE_HDAUDIO_CODEC      policy<{'amd64': 'y'}>
-CONFIG_SND_SOC_INTEL_SKYLAKE_HDAUDIO_CODEC      note<'LP: #1915117'>
-
 CONFIG_SND_SOC_INTEL_SKYLAKE_SSP_CLK            policy<{'amd64': 'm'}>
 CONFIG_SND_SOC_INTEL_SOF_CIRRUS_COMMON          policy<{'amd64': 'm'}>
 CONFIG_SND_SOC_INTEL_SOF_CML_RT1011_RT5682_MACH policy<{'amd64': 'm'}>
@@ -8149,14 +8308,8 @@ CONFIG_SND_SOC_INTEL_SOF_REALTEK_COMMON         policy<{'amd64': 'm'}>
 CONFIG_SND_SOC_INTEL_SOF_RT5682_MACH            policy<{'amd64': 'm'}>
 CONFIG_SND_SOC_INTEL_SOF_SSP_AMP_MACH           policy<{'amd64': 'm'}>
 CONFIG_SND_SOC_INTEL_SOF_WM8804_MACH            policy<{'amd64': 'm'}>
-CONFIG_SND_SOC_INTEL_SOUNDWIRE_SOF_MACH         policy<{'amd64': 'm'}>
-CONFIG_SND_SOC_INTEL_SOUNDWIRE_SOF_MACH         note<'LP: #1921632'>
-
 CONFIG_SND_SOC_INTEL_SST                        policy<{'amd64': 'm'}>
 CONFIG_SND_SOC_INTEL_SST_TOPLEVEL               policy<{'amd64': 'y'}>
-CONFIG_SND_SOC_INTEL_USER_FRIENDLY_LONG_NAMES   policy<{'amd64': 'y'}>
-CONFIG_SND_SOC_INTEL_USER_FRIENDLY_LONG_NAMES   note<'LP: #1921632'>
-
 CONFIG_SND_SOC_LPASS_MACRO_COMMON               policy<{'amd64': 'm'}>
 CONFIG_SND_SOC_LPASS_RX_MACRO                   policy<{'amd64': 'm'}>
 CONFIG_SND_SOC_LPASS_TX_MACRO                   policy<{'amd64': 'm'}>
@@ -8276,13 +8429,7 @@ CONFIG_SND_SOC_SOF_DEVELOPER_SUPPORT            policy<{'amd64': 'n'}>
 CONFIG_SND_SOC_SOF_ELKHARTLAKE                  policy<{'amd64': 'm'}>
 CONFIG_SND_SOC_SOF_GEMINILAKE                   policy<{'amd64': 'm'}>
 CONFIG_SND_SOC_SOF_HDA                          policy<{'amd64': 'm'}>
-CONFIG_SND_SOC_SOF_HDA_AUDIO_CODEC              policy<{'amd64': 'y'}>
-CONFIG_SND_SOC_SOF_HDA_AUDIO_CODEC              note<'LP: #1848490'>
-
 CONFIG_SND_SOC_SOF_HDA_COMMON                   policy<{'amd64': 'm'}>
-CONFIG_SND_SOC_SOF_HDA_LINK                     policy<{'amd64': 'y'}>
-CONFIG_SND_SOC_SOF_HDA_LINK                     note<'LP: #1848490'>
-
 CONFIG_SND_SOC_SOF_HDA_LINK_BASELINE            policy<{'amd64': 'm'}>
 CONFIG_SND_SOC_SOF_HDA_PROBES                   policy<{'amd64': 'm'}>
 CONFIG_SND_SOC_SOF_ICELAKE                      policy<{'amd64': 'm'}>
@@ -8445,20 +8592,11 @@ CONFIG_SOLARIS_X86_PARTITION                    policy<{'amd64': 'y'}>
 CONFIG_SONYPI_COMPAT                            policy<{'amd64': 'y'}>
 CONFIG_SONY_FF                                  policy<{'amd64': 'y'}>
 CONFIG_SONY_LAPTOP                              policy<{'amd64': 'm'}>
-CONFIG_SOUND                                    policy<{'amd64': 'm'}>
-CONFIG_SOUND                                    note<'not autoloadable on omap'>
-
-CONFIG_SOUNDWIRE                                policy<{'amd64': 'm'}>
-CONFIG_SOUNDWIRE                                note<'LP: #1855685'>
-
 CONFIG_SOUNDWIRE_CADENCE                        policy<{'amd64': 'm'}>
 CONFIG_SOUNDWIRE_GENERIC_ALLOCATION             policy<{'amd64': 'm'}>
 CONFIG_SOUNDWIRE_INTEL                          policy<{'amd64': 'm'}>
 CONFIG_SOUNDWIRE_QCOM                           policy<{'amd64': 'm'}>
 CONFIG_SOUND_OSS_CORE                           policy<{'amd64': 'y'}>
-CONFIG_SOUND_OSS_CORE_PRECLAIM                  policy<{'amd64': 'n'}>
-CONFIG_SOUND_OSS_CORE_PRECLAIM                  note<'LP: #1385510'>
-
 CONFIG_SP5100_TCO                               policy<{'amd64': 'm'}>
 CONFIG_SPARSEMEM                                policy<{'amd64': 'y'}>
 CONFIG_SPARSEMEM_EXTREME                        policy<{'amd64': 'y'}>
@@ -8530,16 +8668,7 @@ CONFIG_SPMI_HISI3670                            policy<{'amd64': 'm'}>
 CONFIG_SPS30                                    policy<{'amd64': 'm'}>
 CONFIG_SPS30_I2C                                policy<{'amd64': 'm'}>
 CONFIG_SPS30_SERIAL                             policy<{'amd64': 'm'}>
-CONFIG_SQUASHFS                                 policy<{'amd64': 'y'}>
-CONFIG_SQUASHFS                                 note<'LP: #1593134'>
-
-CONFIG_SQUASHFS_4K_DEVBLK_SIZE                  policy<{'amd64': 'n'}>
-CONFIG_SQUASHFS_4K_DEVBLK_SIZE                  note<'non-default block size'>
-
 CONFIG_SQUASHFS_DECOMP_MULTI                    policy<{'amd64': 'n'}>
-CONFIG_SQUASHFS_DECOMP_MULTI_PERCPU             policy<{'amd64': 'y'}>
-CONFIG_SQUASHFS_DECOMP_MULTI_PERCPU             note<'LP: #1980861'>
-
 CONFIG_SQUASHFS_DECOMP_SINGLE                   policy<{'amd64': 'n'}>
 CONFIG_SQUASHFS_EMBEDDED                        policy<{'amd64': 'n'}>
 CONFIG_SQUASHFS_FILE_CACHE                      policy<{'amd64': 'n'}>
@@ -8577,9 +8706,6 @@ CONFIG_STACKTRACE                               policy<{'amd64': 'y'}>
 CONFIG_STACKTRACE_BUILD_ID                      policy<{'amd64': 'n'}>
 CONFIG_STACKTRACE_SUPPORT                       policy<{'amd64': 'y'}>
 CONFIG_STACK_TRACER                             policy<{'amd64': 'y'}>
-CONFIG_STACK_VALIDATION                         policy<{'amd64': 'y'}>
-CONFIG_STACK_VALIDATION                         note<'needed for livepatch'>
-
 CONFIG_STAGING                                  policy<{'amd64': 'y'}>
 CONFIG_STAGING_MEDIA                            policy<{'amd64': 'y'}>
 CONFIG_STAGING_MEDIA_DEPRECATED                 policy<{'amd64': 'n'}>
@@ -8672,9 +8798,6 @@ CONFIG_SYSCTL_EXCEPTION_TRACE                   policy<{'amd64': 'y'}>
 CONFIG_SYSFB                                    policy<{'amd64': 'y'}>
 CONFIG_SYSFB_SIMPLEFB                           policy<{'amd64': 'n'}>
 CONFIG_SYSFS                                    policy<{'amd64': 'y'}>
-CONFIG_SYSFS_DEPRECATED                         policy<{'amd64': 'n'}>
-CONFIG_SYSFS_DEPRECATED                         note<'ensure nothing is using these deprecated interfaces'>
-
 CONFIG_SYSFS_SYSCALL                            policy<{'amd64': 'y'}>
 CONFIG_SYSTEM76_ACPI                            policy<{'amd64': 'm'}>
 CONFIG_SYSTEMPORT                               policy<{'amd64': 'm'}>
@@ -8720,24 +8843,12 @@ CONFIG_TCG_NSC                                  policy<{'amd64': 'm'}>
 CONFIG_TCG_TIS                                  policy<{'amd64': 'y'}>
 CONFIG_TCG_TIS_CORE                             policy<{'amd64': 'y'}>
 CONFIG_TCG_TIS_I2C                              policy<{'amd64': 'm'}>
-CONFIG_TCG_TIS_I2C_ATMEL                        policy<{'amd64': 'm'}>
-CONFIG_TCG_TIS_I2C_ATMEL                        note<'LP: #1643652'>
-
 CONFIG_TCG_TIS_I2C_CR50                         policy<{'amd64': 'm'}>
-CONFIG_TCG_TIS_I2C_INFINEON                     policy<{'amd64': 'm'}>
-CONFIG_TCG_TIS_I2C_INFINEON                     note<'LP: #1643652'>
-
-CONFIG_TCG_TIS_I2C_NUVOTON                      policy<{'amd64': 'm'}>
-CONFIG_TCG_TIS_I2C_NUVOTON                      note<'LP: #1643652'>
-
 CONFIG_TCG_TIS_SPI                              policy<{'amd64': 'm'}>
 CONFIG_TCG_TIS_SPI_CR50                         policy<{'amd64': 'y'}>
 CONFIG_TCG_TIS_ST33ZP24                         policy<{'amd64': 'm'}>
 CONFIG_TCG_TIS_ST33ZP24_I2C                     policy<{'amd64': 'm'}>
 CONFIG_TCG_TIS_ST33ZP24_SPI                     policy<{'amd64': 'm'}>
-CONFIG_TCG_TPM                                  policy<{'amd64': 'y'}>
-CONFIG_TCG_TPM                                  note<'needed for early validation'>
-
 CONFIG_TCG_VTPM_PROXY                           policy<{'amd64': 'm'}>
 CONFIG_TCG_XEN                                  policy<{'amd64': 'm'}>
 CONFIG_TCM_FC                                   policy<{'amd64': 'm'}>
@@ -8774,9 +8885,6 @@ CONFIG_TERANETICS_PHY                           policy<{'amd64': 'm'}>
 CONFIG_TEST_ASYNC_DRIVER_PROBE                  policy<{'amd64': 'n'}>
 CONFIG_TEST_BITMAP                              policy<{'amd64': 'n'}>
 CONFIG_TEST_BITOPS                              policy<{'amd64': 'n'}>
-CONFIG_TEST_BLACKHOLE_DEV                       policy<{'amd64': 'm'}>
-CONFIG_TEST_BLACKHOLE_DEV                       note<'Used by net selftests'>
-
 CONFIG_TEST_BPF                                 policy<{'amd64': 'm'}>
 CONFIG_TEST_CLOCKSOURCE_WATCHDOG                policy<{'amd64': 'n'}>
 CONFIG_TEST_DIV64                               policy<{'amd64': 'n'}>
@@ -8904,9 +9012,6 @@ CONFIG_TMP007                                   policy<{'amd64': 'm'}>
 CONFIG_TMP117                                   policy<{'amd64': 'm'}>
 CONFIG_TMPFS                                    policy<{'amd64': 'y'}>
 CONFIG_TMPFS_INODE64                            policy<{'amd64': 'y'}>
-CONFIG_TMPFS_POSIX_ACL                          policy<{'amd64': 'y'}>
-CONFIG_TMPFS_POSIX_ACL                          note<'some /dev nodes require POSIX ACLs, like /dev/dsp'>
-
 CONFIG_TMPFS_XATTR                              policy<{'amd64': 'y'}>
 CONFIG_TOPSTAR_LAPTOP                           policy<{'amd64': 'm'}>
 CONFIG_TOSHIBA_BT_RFKILL                        policy<{'amd64': 'm'}>
@@ -8942,9 +9047,6 @@ CONFIG_TOUCHSCREEN_EDT_FT5X06                   policy<{'amd64': 'm'}>
 CONFIG_TOUCHSCREEN_EETI                         policy<{'amd64': 'm'}>
 CONFIG_TOUCHSCREEN_EGALAX_SERIAL                policy<{'amd64': 'm'}>
 CONFIG_TOUCHSCREEN_EKTF2127                     policy<{'amd64': 'm'}>
-CONFIG_TOUCHSCREEN_ELAN                         policy<{'amd64': 'y'}>
-CONFIG_TOUCHSCREEN_ELAN                         note<'LP: #1630238'>
-
 CONFIG_TOUCHSCREEN_ELO                          policy<{'amd64': 'm'}>
 CONFIG_TOUCHSCREEN_EXC3000                      policy<{'amd64': 'm'}>
 CONFIG_TOUCHSCREEN_FUJITSU                      policy<{'amd64': 'm'}>
@@ -9104,9 +9206,6 @@ CONFIG_UBIFS_FS_SECURITY                        policy<{'amd64': 'y'}>
 CONFIG_UBIFS_FS_XATTR                           policy<{'amd64': 'y'}>
 CONFIG_UBIFS_FS_ZLIB                            policy<{'amd64': 'y'}>
 CONFIG_UBIFS_FS_ZSTD                            policy<{'amd64': 'y'}>
-CONFIG_UBSAN                                    policy<{'amd64': 'y'}>
-CONFIG_UBSAN                                    note<'LP: #1942215'>
-
 CONFIG_UBSAN_ALIGNMENT                          policy<{'amd64': 'n'}>
 CONFIG_UBSAN_BOOL                               policy<{'amd64': 'y'}>
 CONFIG_UBSAN_BOUNDS                             policy<{'amd64': 'y'}>
@@ -9159,9 +9258,6 @@ CONFIG_UNIX98_PTYS                              policy<{'amd64': 'y'}>
 CONFIG_UNIXWARE_DISKLABEL                       policy<{'amd64': 'y'}>
 CONFIG_UNIX_DIAG                                policy<{'amd64': 'm'}>
 CONFIG_UNIX_SCM                                 policy<{'amd64': 'y'}>
-CONFIG_UNWINDER_FRAME_POINTER                   policy<{'amd64': 'y'}>
-CONFIG_UNWINDER_FRAME_POINTER                   note<'needed for livepatch'>
-
 CONFIG_UNWINDER_ORC                             policy<{'amd64': 'n'}>
 CONFIG_UPROBES                                  policy<{'amd64': 'y'}>
 CONFIG_UPROBE_EVENTS                            policy<{'amd64': 'y'}>
@@ -9258,12 +9354,6 @@ CONFIG_USB_DWC3_ULPI                            policy<{'amd64': 'y'}>
 CONFIG_USB_DYNAMIC_MINORS                       policy<{'amd64': 'y'}>
 CONFIG_USB_EG20T                                policy<{'amd64': 'm'}>
 CONFIG_USB_EHCI_FSL                             policy<{'amd64': 'm'}>
-CONFIG_USB_EHCI_HCD                             policy<{'amd64': 'y'}>
-CONFIG_USB_EHCI_HCD                             note<'ensures USB 2.0/1.1 probe ordering'>
-
-CONFIG_USB_EHCI_HCD_PLATFORM                    policy<{'amd64': 'y'}>
-CONFIG_USB_EHCI_HCD_PLATFORM                    note<'Dont use the generic ehci/ohci code on omap, it doesnt work'>
-
 CONFIG_USB_EHCI_PCI                             policy<{'amd64': 'y'}>
 CONFIG_USB_EHCI_ROOT_HUB_TT                     policy<{'amd64': 'y'}>
 CONFIG_USB_EHCI_TT_NEWSCHED                     policy<{'amd64': 'y'}>
@@ -9374,12 +9464,6 @@ CONFIG_USB_G_PRINTER                            policy<{'amd64': 'm'}>
 CONFIG_USB_G_SERIAL                             policy<{'amd64': 'm'}>
 CONFIG_USB_G_WEBCAM                             policy<{'amd64': 'm'}>
 CONFIG_USB_HACKRF                               policy<{'amd64': 'm'}>
-CONFIG_USB_HCD_BCMA                             policy<{'amd64': 'm'}>
-CONFIG_USB_HCD_BCMA                             note<'USB_{O,E}HCI_HCD_PLATFORM must be off on omap'>
-
-CONFIG_USB_HCD_SSB                              policy<{'amd64': 'm'}>
-CONFIG_USB_HCD_SSB                              note<'USB_{O,E}HCI_HCD_PLATFORM must be off on omap'>
-
 CONFIG_USB_HCD_TEST_MODE                        policy<{'amd64': 'n'}>
 CONFIG_USB_HID                                  policy<{'amd64': 'm'}>
 CONFIG_USB_HIDDEV                               policy<{'amd64': 'y'}>
@@ -9413,9 +9497,6 @@ CONFIG_USB_LGM_PHY                              policy<{'amd64': 'm'}>
 CONFIG_USB_LIBCOMPOSITE                         policy<{'amd64': 'm'}>
 CONFIG_USB_LINK_LAYER_TEST                      policy<{'amd64': 'm'}>
 CONFIG_USB_M5602                                policy<{'amd64': 'm'}>
-CONFIG_USB_M66592                               policy<{'amd64': 'n'}>
-CONFIG_USB_M66592                               note<'gadget device'>
-
 CONFIG_USB_MA901                                policy<{'amd64': 'm'}>
 CONFIG_USB_MASS_STORAGE                         policy<{'amd64': 'm'}>
 CONFIG_USB_MAX3420_UDC                          policy<{'amd64': 'm'}>
@@ -9429,9 +9510,6 @@ CONFIG_USB_MR800                                policy<{'amd64': 'm'}>
 CONFIG_USB_MSI2500                              policy<{'amd64': 'm'}>
 CONFIG_USB_MUSB_DUAL_ROLE                       policy<{'amd64': 'y'}>
 CONFIG_USB_MUSB_GADGET                          policy<{'amd64': 'n'}>
-CONFIG_USB_MUSB_HDRC                            policy<{'amd64': 'm'}>
-CONFIG_USB_MUSB_HDRC                            note<'not autoloadable on omap'>
-
 CONFIG_USB_MUSB_HOST                            policy<{'amd64': 'n'}>
 CONFIG_USB_MV_U3D                               policy<{'amd64': 'm'}>
 CONFIG_USB_MV_UDC                               policy<{'amd64': 'm'}>
@@ -9470,9 +9548,6 @@ CONFIG_USB_OHCI_HCD                             policy<{'amd64': 'y'}>
 CONFIG_USB_OHCI_HCD_PCI                         policy<{'amd64': 'y'}>
 CONFIG_USB_OHCI_HCD_PLATFORM                    policy<{'amd64': 'y'}>
 CONFIG_USB_OHCI_LITTLE_ENDIAN                   policy<{'amd64': 'y'}>
-CONFIG_USB_OTG                                  policy<{'amd64': 'n'}>
-CONFIG_USB_OTG                                  note<'LP: #1411295'>
-
 CONFIG_USB_OTG_DISABLE_EXTERNAL_HUB             policy<{'amd64': 'n'}>
 CONFIG_USB_OTG_PRODUCTLIST                      policy<{'amd64': 'n'}>
 CONFIG_USB_OXU210HP_HCD                         policy<{'amd64': 'm'}>
@@ -9504,9 +9579,6 @@ CONFIG_USB_SERIAL_CH341                         policy<{'amd64': 'm'}>
 CONFIG_USB_SERIAL_CP210X                        policy<{'amd64': 'm'}>
 CONFIG_USB_SERIAL_CYBERJACK                     policy<{'amd64': 'm'}>
 CONFIG_USB_SERIAL_CYPRESS_M8                    policy<{'amd64': 'm'}>
-CONFIG_USB_SERIAL_DEBUG                         policy<{'amd64': 'm'}>
-CONFIG_USB_SERIAL_DEBUG                         note<'not actually debug'>
-
 CONFIG_USB_SERIAL_DIGI_ACCELEPORT               policy<{'amd64': 'm'}>
 CONFIG_USB_SERIAL_EDGEPORT                      policy<{'amd64': 'm'}>
 CONFIG_USB_SERIAL_EDGEPORT_TI                   policy<{'amd64': 'm'}>
@@ -9587,9 +9659,6 @@ CONFIG_USB_TRANCEVIBRATOR                       policy<{'amd64': 'm'}>
 CONFIG_USB_U132_HCD                             policy<{'amd64': 'm'}>
 CONFIG_USB_UAS                                  policy<{'amd64': 'm'}>
 CONFIG_USB_UEAGLEATM                            policy<{'amd64': 'm'}>
-CONFIG_USB_UHCI_HCD                             policy<{'amd64': 'y'}>
-CONFIG_USB_UHCI_HCD                             note<'ensures USB 2.0/1.1 probe ordering'>
-
 CONFIG_USB_ULPI_BUS                             policy<{'amd64': 'm'}>
 CONFIG_USB_USBNET                               policy<{'amd64': 'm'}>
 CONFIG_USB_USS720                               policy<{'amd64': 'm'}>
@@ -9601,12 +9670,6 @@ CONFIG_USB_VIDEO_CLASS_INPUT_EVDEV              policy<{'amd64': 'y'}>
 CONFIG_USB_VL600                                policy<{'amd64': 'm'}>
 CONFIG_USB_WDM                                  policy<{'amd64': 'm'}>
 CONFIG_USB_XEN_HCD                              policy<{'amd64': 'm'}>
-CONFIG_USB_XHCI_DBGCAP                          policy<{'amd64': 'y'}>
-CONFIG_USB_XHCI_DBGCAP                          note<'LP: #1730832'>
-
-CONFIG_USB_XHCI_HCD                             policy<{'amd64': 'y'}>
-CONFIG_USB_XHCI_HCD                             note<'ensures USB 2.0/1.1 probe ordering'>
-
 CONFIG_USB_XHCI_PCI                             policy<{'amd64': 'm'}>
 CONFIG_USB_XHCI_PCI_RENESAS                     policy<{'amd64': 'm'}>
 CONFIG_USB_XHCI_PLATFORM                        policy<{'amd64': 'm'}>
@@ -9651,18 +9714,9 @@ CONFIG_VERSION_SIGNATURE                        policy<{'amd64': '""'}>
 CONFIG_VETH                                     policy<{'amd64': 'm'}>
 CONFIG_VF610_ADC                                policy<{'amd64': 'm'}>
 CONFIG_VF610_DAC                                policy<{'amd64': 'm'}>
-CONFIG_VFAT_FS                                  policy<{'amd64': 'y'}>
-CONFIG_VFAT_FS                                  note<'needed on arm to ensure we can write the kernel when replacing'>
-
-CONFIG_VFIO                                     policy<{'amd64': 'y'}>
-CONFIG_VFIO                                     note<'LP: #1636733'>
-
 CONFIG_VFIO_IOMMU_TYPE1                         policy<{'amd64': 'y'}>
 CONFIG_VFIO_MDEV                                policy<{'amd64': 'm'}>
 CONFIG_VFIO_NOIOMMU                             policy<{'amd64': 'y'}>
-CONFIG_VFIO_PCI                                 policy<{'amd64': 'y'}>
-CONFIG_VFIO_PCI                                 note<'LP: #1636733'>
-
 CONFIG_VFIO_PCI_CORE                            policy<{'amd64': 'y'}>
 CONFIG_VFIO_PCI_IGD                             policy<{'amd64': 'y'}>
 CONFIG_VFIO_PCI_INTX                            policy<{'amd64': 'y'}>
@@ -9911,9 +9965,6 @@ CONFIG_VIDEO_V4L2_TPG                           policy<{'amd64': 'm'}>
 CONFIG_VIDEO_VIA_CAMERA                         policy<{'amd64': 'm'}>
 CONFIG_VIDEO_VICODEC                            policy<{'amd64': 'm'}>
 CONFIG_VIDEO_VIM2M                              policy<{'amd64': 'm'}>
-CONFIG_VIDEO_VIMC                               policy<{'amd64': 'm'}>
-CONFIG_VIDEO_VIMC                               note<'LP: #1831482'>
-
 CONFIG_VIDEO_VIVID                              policy<{'amd64': 'm'}>
 CONFIG_VIDEO_VIVID_CEC                          policy<{'amd64': 'y'}>
 CONFIG_VIDEO_VIVID_MAX_DEVS                     policy<{'amd64': '64'}>
@@ -9927,9 +9978,6 @@ CONFIG_VIPERBOARD_ADC                           policy<{'amd64': 'm'}>
 CONFIG_VIRTIO                                   policy<{'amd64': 'y'}>
 CONFIG_VIRTIO_ANCHOR                            policy<{'amd64': 'y'}>
 CONFIG_VIRTIO_BALLOON                           policy<{'amd64': 'y'}>
-CONFIG_VIRTIO_BLK                               policy<{'amd64': 'm'}>
-CONFIG_VIRTIO_BLK                               note<'KVM paravirt support -- not autoloadable'>
-
 CONFIG_VIRTIO_CONSOLE                           policy<{'amd64': 'y'}>
 CONFIG_VIRTIO_DMA_SHARED_BUFFER                 policy<{'amd64': 'm'}>
 CONFIG_VIRTIO_FS                                policy<{'amd64': 'm'}>
@@ -9937,13 +9985,7 @@ CONFIG_VIRTIO_INPUT                             policy<{'amd64': 'm'}>
 CONFIG_VIRTIO_IOMMU                             policy<{'amd64': 'y'}>
 CONFIG_VIRTIO_MEM                               policy<{'amd64': 'm'}>
 CONFIG_VIRTIO_MENU                              policy<{'amd64': 'y'}>
-CONFIG_VIRTIO_MMIO                              policy<{'amd64': 'y'}>
-CONFIG_VIRTIO_MMIO                              note<'LP: #1557689'>
-
 CONFIG_VIRTIO_MMIO_CMDLINE_DEVICES              policy<{'amd64': 'y'}>
-CONFIG_VIRTIO_NET                               policy<{'amd64': 'm'}>
-CONFIG_VIRTIO_NET                               note<'KVM paravirt support -- not autoloadable'>
-
 CONFIG_VIRTIO_PCI                               policy<{'amd64': 'y'}>
 CONFIG_VIRTIO_PCI_LEGACY                        policy<{'amd64': 'y'}>
 CONFIG_VIRTIO_PCI_LIB                           policy<{'amd64': 'y'}>
@@ -10118,18 +10160,12 @@ CONFIG_WWAN_DEBUGFS                             policy<{'amd64': 'y'}>
 CONFIG_WWAN_HWSIM                               policy<{'amd64': 'm'}>
 CONFIG_WW_MUTEX_SELFTEST                        policy<{'amd64': 'n'}>
 CONFIG_X25                                      policy<{'amd64': 'm'}>
-CONFIG_X509_CERTIFICATE_PARSER                  policy<{'amd64': 'y'}>
-CONFIG_X509_CERTIFICATE_PARSER                  note<'module signing'>
-
 CONFIG_X86                                      policy<{'amd64': 'y'}>
 CONFIG_X86_16BIT                                policy<{'amd64': 'y'}>
 CONFIG_X86_5LEVEL                               policy<{'amd64': 'y'}>
 CONFIG_X86_64                                   policy<{'amd64': 'y'}>
 CONFIG_X86_64_ACPI_NUMA                         policy<{'amd64': 'y'}>
 CONFIG_X86_64_SMP                               policy<{'amd64': 'y'}>
-CONFIG_X86_ACPI_CPUFREQ                         policy<{'amd64': 'y'}>
-CONFIG_X86_ACPI_CPUFREQ                         note<'not autoloadable'>
-
 CONFIG_X86_ACPI_CPUFREQ_CPB                     policy<{'amd64': 'y'}>
 CONFIG_X86_AMD_FREQ_SENSITIVITY                 policy<{'amd64': 'm'}>
 CONFIG_X86_AMD_PLATFORM_DEVICE                  policy<{'amd64': 'y'}>
@@ -10162,9 +10198,6 @@ CONFIG_X86_INTEL_TSX_MODE_ON                    policy<{'amd64': 'n'}>
 CONFIG_X86_INTERNODE_CACHE_SHIFT                policy<{'amd64': '6'}>
 CONFIG_X86_IOPL_IOPERM                          policy<{'amd64': 'y'}>
 CONFIG_X86_IO_APIC                              policy<{'amd64': 'y'}>
-CONFIG_X86_KERNEL_IBT                           policy<{'amd64': 'n'}>
-CONFIG_X86_KERNEL_IBT                           note<'LP: #1980484'>
-
 CONFIG_X86_L1_CACHE_SHIFT                       policy<{'amd64': '6'}>
 CONFIG_X86_LOCAL_APIC                           policy<{'amd64': 'y'}>
 CONFIG_X86_MCE                                  policy<{'amd64': 'y'}>
@@ -10181,32 +10214,20 @@ CONFIG_X86_NEED_RELOCS                          policy<{'amd64': 'y'}>
 CONFIG_X86_NUMACHIP                             policy<{'amd64': 'y'}>
 CONFIG_X86_P4_CLOCKMOD                          policy<{'amd64': 'm'}>
 CONFIG_X86_PAT                                  policy<{'amd64': 'y'}>
-CONFIG_X86_PCC_CPUFREQ                          policy<{'amd64': 'y'}>
-CONFIG_X86_PCC_CPUFREQ                          note<'not autoloadable'>
-
 CONFIG_X86_PKG_TEMP_THERMAL                     policy<{'amd64': 'm'}>
 CONFIG_X86_PLATFORM_DEVICES                     policy<{'amd64': 'y'}>
 CONFIG_X86_PLATFORM_DRIVERS_DELL                policy<{'amd64': 'y'}>
 CONFIG_X86_PMEM_LEGACY                          policy<{'amd64': 'y'}>
 CONFIG_X86_PMEM_LEGACY_DEVICE                   policy<{'amd64': 'y'}>
 CONFIG_X86_PM_TIMER                             policy<{'amd64': 'y'}>
-CONFIG_X86_POWERNOW_K8                          policy<{'amd64': 'y'}>
-CONFIG_X86_POWERNOW_K8                          note<'not autoloadable'>
-
 CONFIG_X86_REROUTE_FOR_BROKEN_BOOT_IRQS         policy<{'amd64': 'y'}>
 CONFIG_X86_SGX                                  policy<{'amd64': 'y'}>
 CONFIG_X86_SGX_KVM                              policy<{'amd64': 'y'}>
-CONFIG_X86_SPEEDSTEP_CENTRINO                   policy<{'amd64': 'y'}>
-CONFIG_X86_SPEEDSTEP_CENTRINO                   note<'not autoloadable'>
-
 CONFIG_X86_SPEEDSTEP_LIB                        policy<{'amd64': 'm'}>
 CONFIG_X86_SUPPORTS_MEMORY_FAILURE              policy<{'amd64': 'y'}>
 CONFIG_X86_THERMAL_VECTOR                       policy<{'amd64': 'y'}>
 CONFIG_X86_TSC                                  policy<{'amd64': 'y'}>
 CONFIG_X86_UMIP                                 policy<{'amd64': 'y'}>
-CONFIG_X86_UV                                   policy<{'amd64': 'y'}>
-CONFIG_X86_UV                                   note<'LP: #1863810'>
-
 CONFIG_X86_VERBOSE_BOOTUP                       policy<{'amd64': 'n'}>
 CONFIG_X86_VMX_FEATURE_NAMES                    policy<{'amd64': 'y'}>
 CONFIG_X86_VSMP                                 policy<{'amd64': 'n'}>
@@ -10218,21 +10239,12 @@ CONFIG_XDP_SOCKETS                              policy<{'amd64': 'y'}>
 CONFIG_XDP_SOCKETS_DIAG                         policy<{'amd64': 'm'}>
 CONFIG_XEN                                      policy<{'amd64': 'y'}>
 CONFIG_XENFS                                    policy<{'amd64': 'm'}>
-CONFIG_XEN_512GB                                policy<{'amd64': 'y'}>
-CONFIG_XEN_512GB                                note<'Q: is this related to the utlemming questions on memory size?'>
-
 CONFIG_XEN_ACPI                                 policy<{'amd64': 'y'}>
-CONFIG_XEN_ACPI_PROCESSOR                       policy<{'amd64': 'y'}>
-CONFIG_XEN_ACPI_PROCESSOR                       note<'boot essential on XEN host'>
-
 CONFIG_XEN_AUTO_XLATE                           policy<{'amd64': 'y'}>
 CONFIG_XEN_BACKEND                              policy<{'amd64': 'y'}>
 CONFIG_XEN_BALLOON                              policy<{'amd64': 'y'}>
 CONFIG_XEN_BALLOON_MEMORY_HOTPLUG               policy<{'amd64': 'y'}>
 CONFIG_XEN_BLKDEV_BACKEND                       policy<{'amd64': 'm'}>
-CONFIG_XEN_BLKDEV_FRONTEND                      policy<{'amd64': 'y'}>
-CONFIG_XEN_BLKDEV_FRONTEND                      note<'not autoloadable -- XEN paravirt support'>
-
 CONFIG_XEN_COMPAT_XENFS                         policy<{'amd64': 'y'}>
 CONFIG_XEN_DEBUG_FS                             policy<{'amd64': 'n'}>
 CONFIG_XEN_DEV_EVTCHN                           policy<{'amd64': 'm'}>
@@ -10250,9 +10262,6 @@ CONFIG_XEN_HAVE_VPMU                            policy<{'amd64': 'y'}>
 CONFIG_XEN_MCE_LOG                              policy<{'amd64': 'y'}>
 CONFIG_XEN_MEMORY_HOTPLUG_LIMIT                 policy<{'amd64': '512'}>
 CONFIG_XEN_NETDEV_BACKEND                       policy<{'amd64': 'm'}>
-CONFIG_XEN_NETDEV_FRONTEND                      policy<{'amd64': 'y'}>
-CONFIG_XEN_NETDEV_FRONTEND                      note<'not autoloadable -- XEN paravirt support'>
-
 CONFIG_XEN_PCIDEV_BACKEND                       policy<{'amd64': 'm'}>
 CONFIG_XEN_PCIDEV_FRONTEND                      policy<{'amd64': 'm'}>
 CONFIG_XEN_PCI_STUB                             policy<{'amd64': 'y'}>
@@ -10317,9 +10326,6 @@ CONFIG_XOR_BLOCKS                               policy<{'amd64': 'm'}>
 CONFIG_XPOWER_PMIC_OPREGION                     policy<{'amd64': 'y'}>
 CONFIG_XPS                                      policy<{'amd64': 'y'}>
 CONFIG_XXHASH                                   policy<{'amd64': 'y'}>
-CONFIG_XZ_DEC                                   policy<{'amd64': 'y'}>
-CONFIG_XZ_DEC                                   note<'boot essential -- initramfs decompressor'>
-
 CONFIG_XZ_DEC_ARM                               policy<{'amd64': 'y'}>
 CONFIG_XZ_DEC_ARMTHUMB                          policy<{'amd64': 'y'}>
 CONFIG_XZ_DEC_BCJ                               policy<{'amd64': 'y'}>
@@ -10351,9 +10357,6 @@ CONFIG_ZLIB_DEFLATE                             policy<{'amd64': 'y'}>
 CONFIG_ZLIB_INFLATE                             policy<{'amd64': 'y'}>
 CONFIG_ZONEFS_FS                                policy<{'amd64': 'm'}>
 CONFIG_ZONE_DEVICE                              policy<{'amd64': 'y'}>
-CONFIG_ZONE_DMA                                 policy<{'amd64': 'y'}>
-CONFIG_ZONE_DMA                                 note<'LP: #1628523'>
-
 CONFIG_ZONE_DMA32                               policy<{'amd64': 'y'}>
 CONFIG_ZOPT2201                                 policy<{'amd64': 'm'}>
 CONFIG_ZPA2326                                  policy<{'amd64': 'm'}>
