@@ -45,6 +45,9 @@
 	};
 };
 
+pciex1: &pcie1 { };
+pciex4: &pcie2 { };
+
 &dma32 {
 	/* The VPU firmware uses DMA channel 11 for VCHIQ */
 	brcm,dma-channel-mask = <0x03f>;
