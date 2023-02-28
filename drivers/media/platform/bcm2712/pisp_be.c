@@ -358,7 +358,7 @@ static int get_addr_3(dma_addr_t addr[3], struct pispbe_buffer *buf,
 		 * buffer formats, where there are 3 image planes, e.g.
 		 * for the V4L2_PIX_FMT_YUV420 format.
 		 */
-		addr[p] = addr[0] + ((size * plane_factor) >> 8);
+		addr[p] = addr[0] + ((size * plane_factor) >> 3);
 		plane_factor += node->pisp_format->plane_factor[p];
 	}
 
@@ -1092,7 +1092,7 @@ static void set_plane_params(struct v4l2_format *f,
 
 	for (i = 0; i < nplanes; i++) {
 		struct v4l2_plane_pix_format *p = &f->fmt.pix_mp.plane_fmt[i];
-		u64 bpl, plane_size;
+		unsigned int bpl, plane_size;
 
 		bpl = (f->fmt.pix_mp.width * fmt->bit_depth) >> 3;
 		bpl = ALIGN(max(p->bytesperline, bpl), fmt->align);
@@ -1101,9 +1101,9 @@ static void set_plane_params(struct v4l2_format *f,
 		      (nplanes > 1 ? fmt->plane_factor[i] : total_plane_factor);
 		/*
 		 * The shift is to divide out the plane_factor fixed point
-		 * scaling of 256.
+		 * scaling of 8.
 		 */
-		plane_size = max(p->sizeimage, plane_size >> 8);
+		plane_size = max(p->sizeimage, plane_size >> 3);
 
 		p->bytesperline = bpl;
 		p->sizeimage = plane_size;
