@@ -1092,7 +1092,7 @@ static void set_plane_params(struct v4l2_format *f,
 
 	for (i = 0; i < nplanes; i++) {
 		struct v4l2_plane_pix_format *p = &f->fmt.pix_mp.plane_fmt[i];
-		unsigned int bpl, plane_size;
+		u64 bpl, plane_size;
 
 		bpl = (f->fmt.pix_mp.width * fmt->bit_depth) >> 3;
 		bpl = ALIGN(max(p->bytesperline, bpl), fmt->align);
