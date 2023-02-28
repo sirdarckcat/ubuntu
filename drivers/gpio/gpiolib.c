@@ -2146,6 +2146,16 @@ static int gpiochip_to_irq(struct gpio_chip *chip, unsigned offset)
 {
 	struct irq_domain *domain = chip->irq.domain;
 
+#ifdef CONFIG_GPIOLIB_IRQCHIP
+	/*
+	 * Avoid race condition with other code, which tries to lookup
+	 * an IRQ before the irqchip has been properly registered,
+	 * i.e. while gpiochip is still being brought up.
+	 */
+	if (!chip->irq.initialized)
+		return -EPROBE_DEFER;
+#endif
+
 	if (!gpiochip_irqchip_irq_valid(chip, offset))
 		return -ENXIO;
 
@@ -2320,6 +2330,15 @@ static int gpiochip_add_irqchip(struct gpio_chip *gpiochip,
 	gpiochip_set_irq_hooks(gpiochip);
 
 	acpi_gpiochip_request_interrupts(gpiochip);
+
+	/*
+	 * Using barrier() here to prevent compiler from reordering
+	 * gc->irq.initialized before initialization of above
+	 * GPIO chip irq members.
+	 */
+	barrier();
+
+	gpiochip->irq.initialized = true;
 
 	return 0;
 }
