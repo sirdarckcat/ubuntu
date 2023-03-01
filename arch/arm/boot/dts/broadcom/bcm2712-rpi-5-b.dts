@@ -60,19 +60,19 @@
 		reg = <0 0 0x28000000>;
 	};
 
-// The PWR LED is driven by RP1, so no control (yet?)
-#if 0
-	leds {
+	leds: leds {
 		compatible = "gpio-leds";
 
+		// The PWR LED is driven by RP1, so no control (yet?)
+		#if 0
 		pwr_led: ledpwr {
 			label = "PWR";
 			gpios = <&gio 8 GPIO_ACTIVE_LOW>;
 			default-state = "keep";
 			linux,default-trigger = "default-on";
 		};
+		#endif
 	};
-#endif
 
 	leds-pwm {
 		compatible = "pwm-leds";
@@ -85,14 +85,6 @@
 			linux,default-trigger = "mmc0";
 		};
 	};
-
-        vdd_3v3_reg: fixedregulator_3v3 {
-                compatible = "regulator-fixed";
-                regulator-always-on;
-                regulator-max-microvolt = <3300000>;
-                regulator-min-microvolt = <3300000>;
-                regulator-name = "3v3";
-        };
 
 	sd_io_1v8_reg: sd_io_1v8_reg {
 		compatible = "regulator-gpio";
