@@ -247,6 +247,8 @@ i2c4: &rp1_i2c4 { };
 i2c5: &rp1_i2c5 { };
 i2c6: &rp1_i2c6 { };
 i2s:  &rp1_i2s0 { };
+i2s_clk_producer: &rp1_i2s0 { };
+i2s_clk_consumer: &rp1_i2s1 { };
 pwm0: &rp1_pwm0 { };
 pwm1: &rp1_pwm1 { };
 spi0: &rp1_spi0 { };
@@ -299,6 +301,11 @@ i2c_vc: &i2c0 {      // This is pins 27,28 on the header (not MIPI)
 &rp1_i2s0 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&rp1_i2s0_18_21>;
+};
+
+&rp1_i2s1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&rp1_i2s1_18_21>;
 };
 
 csi0: &rp1_csi0 { };
