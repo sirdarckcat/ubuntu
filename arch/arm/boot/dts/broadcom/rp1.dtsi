@@ -341,6 +341,26 @@
 			status = "disabled";
 		};
 
+		rp1_pwm0: pwm@98000 {
+			compatible = "raspberrypi,rp1-pwm";
+			reg = <0xc0 0x40098000  0x0 0x100>;
+			#pwm-cells = <3>;
+			clocks = <&rp1_clocks RP1_CLK_PWM0>;
+			assigned-clocks = <&rp1_clocks RP1_CLK_PWM0>;
+			assigned-clock-rates = <100000000>;
+			status = "disabled";
+		};
+
+		rp1_pwm1: pwm@9c000 {
+			compatible = "raspberrypi,rp1-pwm";
+			reg = <0xc0 0x4009c000  0x0 0x100>;
+			#pwm-cells = <3>;
+			clocks = <&rp1_clocks RP1_CLK_PWM1>;
+			assigned-clocks = <&rp1_clocks RP1_CLK_PWM1>;
+			assigned-clock-rates = <100000000>;
+			status = "disabled";
+		};
+
 		rp1_i2s0: i2s@a0000 {
 			reg = <0xc0 0x400a0000  0x0 0x1000>;
 			compatible = "snps,designware-i2s";
@@ -373,26 +393,6 @@
 			status = "disabled";
 		};
 
-		rp1_pwm0: pwm@98000 {
-			compatible = "raspberrypi,rp1-pwm";
-			reg = <0xc0 0x40098000  0x0 0x100>;
-			#pwm-cells = <3>;
-			clocks = <&rp1_clocks RP1_CLK_PWM0>;
-			assigned-clocks = <&rp1_clocks RP1_CLK_PWM0>;
-			assigned-clock-rates = <100000000>;
-			status = "disabled";
-		};
-
-		rp1_pwm1: pwm@9c000 {
-			compatible = "raspberrypi,rp1-pwm";
-			reg = <0xc0 0x4009c000  0x0 0x100>;
-			#pwm-cells = <3>;
-			clocks = <&rp1_clocks RP1_CLK_PWM1>;
-			assigned-clocks = <&rp1_clocks RP1_CLK_PWM1>;
-			assigned-clock-rates = <100000000>;
-			status = "disabled";
-		};
-
 		rp1_sdio_clk0: sdio_clk0@b0004 {
 			compatible = "raspberrypi,rp1-sdio-clk";
 			reg = <0xc0 0x400b0004 0x0 0x1c>;
@@ -408,6 +408,16 @@
 			clocks = <&sdio_src &sdhci_core>;
 			clock-names = "src", "base";
 			#clock-cells = <0>;
+			status = "disabled";
+		};
+
+		rp1_adc: adc@c8000 {
+			compatible = "raspberrypi,rp1-adc";
+			reg = <0xc0 0x400c8000 0x0 0x4000>;
+			clocks = <&rp1_clocks RP1_CLK_ADC>;
+			clock-names = "adcclk";
+			#clock-cells = <0>;
+			vref-supply = <&rp1_vdd_3v3>;
 			status = "disabled";
 		};
 
