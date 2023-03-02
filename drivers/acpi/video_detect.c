@@ -770,6 +770,7 @@ static enum acpi_backlight_type __acpi_video_get_backlight_type(bool native)
 	static DEFINE_MUTEX(init_mutex);
 	static bool nvidia_wmi_ec_present;
 	static bool apple_gmux_present;
+	static bool dell_uart_backlight_present;
 	static bool native_available;
 	static bool init_done;
 	static long video_caps;
@@ -784,6 +785,7 @@ static enum acpi_backlight_type __acpi_video_get_backlight_type(bool native)
 				    &video_caps, NULL);
 		nvidia_wmi_ec_present = nvidia_wmi_ec_supported();
 		apple_gmux_present = apple_gmux_detect(NULL, NULL);
+		dell_uart_backlight_present = acpi_dev_found("DELL0501");
 		init_done = true;
 	}
 	if (native)
@@ -807,6 +809,9 @@ static enum acpi_backlight_type __acpi_video_get_backlight_type(bool native)
 
 	if (apple_gmux_present)
 		return acpi_backlight_apple_gmux;
+
+	if (dell_uart_backlight_present)
+		return acpi_backlight_native;
 
 	/* Use ACPI video if available, except when native should be preferred. */
 	if ((video_caps & ACPI_VIDEO_BACKLIGHT) &&
