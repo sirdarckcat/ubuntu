@@ -279,8 +279,8 @@ uart4: &rp1_uart4 { };
 
 // A few extra labels to keep overlays happy
 
-i2c0if: &i2c0 {};
-i2c0mux: &i2c0 {};
+i2c0if: &rp1_gpio {};
+i2c0mux: &rp1_gpio {};
 
 i2c_csi_dsi0: &i2c6 { // Note: This is for MIPI0 connector only
 	pinctrl-0 = <&rp1_i2c6_38_39>;
