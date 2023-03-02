@@ -61,7 +61,7 @@
  * selection of an inapplicable video mode.
  */
 
-static char * rp1vec_tv_norm_str;
+static char *rp1vec_tv_norm_str;
 module_param_named(tv_norm, rp1vec_tv_norm_str, charp, 0600);
 MODULE_PARM_DESC(tv_norm, "Default TV norm.\n"
 		 "\t\tSupported: NTSC, NTSC-J, NTSC-443, PAL, PAL-M, PAL-N,\n"
@@ -80,7 +80,7 @@ const char * const rp1vec_tvstd_names[] = {
 	[RP1VEC_TVSTD_DEFAULT]  = "",
 };
 
-static int rp1vec_parse_tv_norm(const char * str)
+static int rp1vec_parse_tv_norm(const char *str)
 {
 	int i;
 
@@ -204,29 +204,29 @@ static void rp1vec_connector_destroy(struct drm_connector *connector)
 }
 
 static const struct drm_display_mode rp1vec_base_modes[4] = {
-        { /* Full size 525/60i with Rec.601 pixel rate */
+	{ /* Full size 525/60i with Rec.601 pixel rate */
 		DRM_MODE("720x480i", DRM_MODE_TYPE_DRIVER, 13500,
-			720, 720 + 14, 720 + 14 + 64, 858, 0,
-			480, 480 + 7, 480 + 7 + 6, 525, 0,
-			DRM_MODE_FLAG_INTERLACE)
+			 720, 720 + 14, 720 + 14 + 64, 858, 0,
+			 480, 480 + 7, 480 + 7 + 6, 525, 0,
+			 DRM_MODE_FLAG_INTERLACE)
 	},
 	{ /* Since 640/13.5MHz isn't certain to fit on all TVs... */
 		DRM_MODE("688x432i", DRM_MODE_TYPE_DRIVER, 15429,
-			688, 688 + 76, 688 + 76 + 72, 980, 0,
-			432, 432 + 31, 432 + 31 + 6, 525, 0,
-			DRM_MODE_FLAG_INTERLACE)
+			 688, 688 + 76, 688 + 76 + 72, 980, 0,
+			 432, 432 + 31, 432 + 31 + 6, 525, 0,
+			 DRM_MODE_FLAG_INTERLACE)
 	},
 	{ /* Full size 625/50i with Rec.601 pixel rate */
 		DRM_MODE("720x576i", DRM_MODE_TYPE_DRIVER, 13500,
-			720, 720 + 20, 720 + 20 + 64, 864, 0,
-			576, 576 + 4, 576 + 4 + 6, 625, 0,
-			DRM_MODE_FLAG_INTERLACE)
+			 720, 720 + 20, 720 + 20 + 64, 864, 0,
+			 576, 576 + 4, 576 + 4 + 6, 625, 0,
+			 DRM_MODE_FLAG_INTERLACE)
 	},
 	{ /* Square(ish) pixel mode */
 		DRM_MODE("768x576i", DRM_MODE_TYPE_DRIVER, 15429,
-			768, 768 + 36, 768 + 36 + 72, 987, 0,
-			576, 576 + 4, 576 + 4 + 6, 625, 0,
-			DRM_MODE_FLAG_INTERLACE)
+			 768, 768 + 36, 768 + 36 + 72, 987, 0,
+			 576, 576 + 4, 576 + 4 + 6, 625, 0,
+			 DRM_MODE_FLAG_INTERLACE)
 	}
 };
 
@@ -248,10 +248,10 @@ static int rp1vec_connector_get_modes(struct drm_connector *connector)
 	bool ok625 = RP1VEC_TVSTD_SUPPORT_625(priv->tv_norm);
 	int i, prog, margin, n = 0;
 
-       pref = ok525 ? "688x432i" : "688x512i";
-	for(i = 0; i < ARRAY_SIZE(crops); i++) {
+	pref = ok525 ? "688x432i" : "688x512i";
+	for (i = 0; i < ARRAY_SIZE(crops); i++) {
 		if (crops[i][0] ? ok625 : ok525) {
-			for(prog = 0; prog < 2; prog++) {
+			for (prog = 0; prog < 2; prog++) {
 				struct drm_display_mode *mode =
 					drm_mode_duplicate(connector->dev, &rp1vec_base_modes[crops[i][1]]);
 
@@ -293,7 +293,7 @@ static void rp1vec_connector_reset(struct drm_connector *connector)
 		connector->state->tv.mode = priv->tv_norm;
 }
 
-static int rp1vec_connector_atomic_check(struct drm_connector * conn,
+static int rp1vec_connector_atomic_check(struct drm_connector *conn,
 					struct drm_atomic_state *state)
 {	struct drm_connector_state *old_state =
 		drm_atomic_get_old_connector_state(state, conn);
@@ -322,8 +322,8 @@ static enum drm_mode_status rp1vec_mode_valid(struct drm_device *dev,
 	 */
 	int i;
 
-	for(i = 0; i < ARRAY_SIZE(rp1vec_base_modes); i++) {
-		const struct drm_display_mode * b = rp1vec_base_modes + i;
+	for (i = 0; i < ARRAY_SIZE(rp1vec_base_modes); i++) {
+		const struct drm_display_mode *b = rp1vec_base_modes + i;
 		int prog = !(mode->flags & DRM_MODE_FLAG_INTERLACE);
 
 		if (ABS_DIFF(mode->clock, b->clock) < 2   &&
@@ -396,7 +396,7 @@ static int rp1vec_platform_probe(struct platform_device *pdev)
 	struct device *dev = &pdev->dev;
 	struct drm_device *drm;
 	struct rp1vec_priv *priv;
-	const char * str;
+	const char *str;
 	int i, ret;
 
 	dev_info(dev, __func__);

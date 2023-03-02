@@ -298,7 +298,8 @@ void rp1vec_hw_setup(struct rp1vec_priv *priv,
 		mode_family = (tvstd == RP1VEC_TVSTD_PAL_M || tvstd == RP1VEC_TVSTD_PAL60) ? 2 : 0;
 	mode_narrow = (mode->clock >= 14336);
 	hwm = &rp1vec_hwmodes[mode_family][mode_ilaced][mode_narrow];
-	pr_info("%s: in_fmt=\'%c%c%c%c\' mode=%dx%d%s [%d%d%d] tvstd=%d (%s)",
+	dev_info(&priv->pdev->dev,
+		"%s: in_fmt=\'%c%c%c%c\' mode=%dx%d%s [%d%d%d] tvstd=%d (%s)",
 		__func__, in_format, in_format>>8, in_format>>16, in_format>>24,
 		mode->hdisplay, mode->vdisplay, (mode_ilaced)?"i":"",
 		mode_family, mode_ilaced, mode_narrow,
@@ -373,7 +374,7 @@ void rp1vec_hw_setup(struct rp1vec_priv *priv,
 			break;
 	}
 	if (i >= ARRAY_SIZE(my_formats)) {
-		pr_err("%s: rp1vec_hw_setup: bad input format\n", __func__);
+		dev_err(&priv->pdev->dev, "%s: bad input format\n", __func__);
 		i = 0;
 	}
 	VEC_WRITE(VEC_IMASK, my_formats[i].mask);
@@ -385,7 +386,8 @@ void rp1vec_hw_setup(struct rp1vec_priv *priv,
 
 	i = rp1vec_hw_busy(priv);
 	if (i)
-		pr_warn("%s: VEC unexpectedly busy at start (0x%08x)",
+		dev_warn(&priv->pdev->dev,
+			"%s: VEC unexpectedly busy at start (0x%08x)",
 			__func__, VEC_READ(VEC_STATUS));
 
 	VEC_WRITE(VEC_CONTROL,
@@ -420,7 +422,7 @@ void rp1vec_hw_stop(struct rp1vec_priv *priv)
 	i = down_timeout(&priv->finished, HZ/10);
 	VEC_WRITE(VEC_IRQ_ENABLES, 0);
 	if (i)
-		pr_warn("%s: down_timeout %d\n", __func__, i);
+		dev_warn(&priv->pdev->dev, "%s: down_timeout %d\n", __func__, i);
 }
 
 void rp1vec_hw_vblank_ctrl(struct rp1vec_priv *priv, int enable)
@@ -435,6 +437,7 @@ irqreturn_t rp1vec_hw_isr(int irq, void *dev)
 {
 	struct rp1vec_priv *priv = dev;
 	u32 u = VEC_READ(VEC_IRQ_FLAGS);
+
 	if (u) {
 		VEC_WRITE(VEC_IRQ_FLAGS, u);
 		if (u & VEC_IRQ_FLAGS_DMA_BITS)
