@@ -23,12 +23,7 @@ unsigned_ver = $(shell echo $(ver) | sed -e 's/\.[^.]\+$$//')
 src_headers = $(unsigned_src)-headers-$(abi)
 src_headers_arch = linux-headers-$(abi)-azure
 
-ifneq ($(wildcard /CurrentlyBuilding),)
-UBUNTU_COMPATIBLE_SIGNING=$(shell grep -qx ' *Subject: C = GB, ST = Isle of Man, O = Canonical Ltd., OU = Secure Boot, CN = Canonical Ltd. Secure Boot Signing (2021 v3)' /usr/lib/linux/$(abi)-azure/canonical-revoked-certs.pem && echo ubuntu/4)
-else
-UBUNTU_COMPATIBLE_SIGNING=$(shell dpkg --compare-versions $(abi) ge 5.15.0-1033 && echo ubuntu/4)
-endif
-
+UBUNTU_COMPATIBLE_SIGNING=ubuntu/4
 
 # We build our control file.  This has to be done before dh runs otherwise
 # we have no binary files and we will not run the appropriate targets.

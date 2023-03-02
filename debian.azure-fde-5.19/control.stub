@@ -15,19 +15,19 @@ Build-Depends-Arch:
  linux-buildinfo-ABI-azure,
 Vcs-Git: git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/jammy -b azure-fde-5.19
 
-Package: linux-image-unsigned-ABI-azure-fde-5.19
+Package: linux-image-unsigned-ABI-azure-fde
 Architecture: amd64
 Depends: ${unsigned:Depends}
 Suggests: ${unsigned:Suggests}
-Conflicts: linux-image-ABI-azure-fde-5.19
+Conflicts: linux-image-ABI-azure-fde
 Provides: ${unsigned:Provides}
 Built-Using: UNSIGNED_SRC_PACKAGE (= UNSIGNED_SRC_VERSION)
 Description: EFI Linux kernel image for azure
  An EFI kernel image for azure including initrd.
 
-Package: linux-image-unsigned-ABI-azure-fde-5.19-dbgsym
+Package: linux-image-unsigned-ABI-azure-fde-dbgsym
 Section: devel
 Architecture: amd64
-Depends: linux-image-unsigned-ABI-azure-5.19-dbgsym
+Depends: linux-image-unsigned-ABI-azure-dbgsym
 Description: EFI Linux kernel image for azure
  A link to the debugging symbols for the EFI azure kernel.
