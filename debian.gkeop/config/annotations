@@ -2,6 +2,17 @@
 # FORMAT: 3
 # ARCH: x86
 
+
+#########################
+# NOTE: The following modules should be included 
+# in the default included modules (linux-modules) not 
+# linux-modules-extra:
+#
+# drivers/target/loopback/tcm_loop.ko  (CONFIG_LOOPBACK_TARGET)
+# drivers/target/loopback/target_core*.ko  (CONFIG_LOOPBACK_TARGET)
+
+
+
 CONFIG_MODVERSIONS              policy<{'amd64': 'y'}>
 CONFIG_MODVERSIONS              mark<ENFORCED> note<LP: #1898716>
 
