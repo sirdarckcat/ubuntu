@@ -2082,7 +2082,7 @@ static const struct rp1_clk_desc clk_desc_array[] = {
 
 	[RP1_CLK_ADC] = REGISTER_CLK(
 				.name = "clk_adc",
-				.parents = {"-"},
+				.parents = {"xosc"},
 				.num_std_parents = 1,
 				.num_aux_parents = 0,
 				.ctrl_reg = CLK_ADC_CTRL,
