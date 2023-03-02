@@ -4,6 +4,15 @@
 
 include "../../debian.master/config/annotations"
 
+#########################
+# NOTE: The following modules should be included 
+# in the default included modules (linux-modules) not 
+# linux-modules-extra:
+#
+# drivers/target/loopback/tcm_loop.ko  (CONFIG_LOOPBACK_TARGET)
+# drivers/target/loopback/target_core*.ko  (CONFIG_LOOPBACK_TARGET)
+#
+ 
 # Menu: Device Drivers >> Block devices
 CONFIG_BLK_DEV_FD                               policy<{'amd64': 'n', 'arm64': '-'}>
 CONFIG_BLK_DEV_FD                               mark<ENFORCED> note<LP:1729673>
@@ -59,6 +68,14 @@ CONFIG_SYSTEM_TRUSTED_KEYS			policy<{'amd64': '"debian/canonical-certs.pem"', 'a
 
 CONFIG_ATARI_PARTITION				policy<{'amd64': 'n', 'arm64': 'n'}>
 CONFIG_ATARI_PARTITION				mark<ENFORCED> note<LP:1908264>
+
+
+ 
+CONFIG_LOOPBACK_TARGET                         policy<{'amd64': 'm', 'arm64': 'm'}>
+CONFIG_LOOPBACK_TARGET                         mark<ENFORCED> note<Specifically requested by GKE. Must ensure tcm_loop.ko is in default module list>
+
+
+
 
 # The following was requested in Focal/5.4 
 # CONFIG_AUFS_FS does not exist in 5.13?
