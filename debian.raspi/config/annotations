@@ -3,12 +3,15 @@
 # ARCH: arm64 armhf
 # FLAVOUR: arm64-raspi armhf-raspi armhf-raspi-nolpae
 
+CONFIG_AIX_PARTITION                            policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not desired on Pi'>
 CONFIG_AMBA_PL08X                               policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not supported on Pi'>
+CONFIG_AMIGA_PARTITION                          policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not desired on Pi'>
 CONFIG_ARCH_BCM_63XX                            policy<{'armhf': 'n'}> note<'Introduced by rpi-6.2.y'>
 CONFIG_ARM_CCI_PMU                              policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not supported on Pi'>
 CONFIG_ARM_CCN                                  policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
 CONFIG_ARM_LPAE                                 policy<{'armhf': 'y', 'armhf-raspi-nolpae': 'n'}> note<'LP: #1896761'>
 CONFIG_ATA                                      policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
+CONFIG_ATARI_PARTITION                          policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not desired on Pi'>
 CONFIG_BACKLIGHT_CLASS_DEVICE                   policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
 CONFIG_BACKLIGHT_KTD253                         policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
 CONFIG_BACKLIGHT_MT6370                         policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
@@ -27,12 +30,14 @@ CONFIG_BLK_DEV_DM                               policy<{'arm64': 'm', 'armhf': '
 CONFIG_BLK_DEV_MD                               policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
 CONFIG_BLK_DEV_NVME                             policy<{'arm64': 'y', 'armhf': 'y'}> note<'LP: #1919319'>
 CONFIG_BLK_DEV_SR                               policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
+CONFIG_BPFILTER                                 policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not desired on Pi'>
 CONFIG_BRCMSTB_GISB_ARB                         policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
 CONFIG_BRCM_CHAR_DRIVERS                        policy<{'arm64': 'y', 'armhf': 'y'}> note<'Introduced by rpi-6.2.y'>
 CONFIG_BRCM_TRACING                             policy<{'arm64': 'n', 'armhf': 'n'}> note<'LP: #1893905'>
 CONFIG_CGROUP_HUGETLB                           policy<{'arm64': 'y', 'armhf': 'y', 'armhf-raspi-nolpae': '-'}> note<'LP: #1933627'>
 CONFIG_CHARGER_MANAGER                          policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
 CONFIG_CHROME_PLATFORMS                         policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not supported on Pi'>
+CONFIG_CMDLINE_PARTITION                        policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not desired on Pi'>
 CONFIG_COMMON_CLK_HIFIBERRY_DACPLUSHD           policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
 CONFIG_COMMON_CLK_HIFIBERRY_DACPRO              policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
 CONFIG_COMMON_CLK_XGENE                         policy<{'arm64': 'n'}> note<'Not supported on Pi'>
@@ -46,6 +51,7 @@ CONFIG_CRYPTO_LIB_GF128MUL                      policy<{'arm64': 'm', 'armhf': '
 CONFIG_CRYPTO_NULL                              policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
 CONFIG_CRYPTO_SEQIV                             policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
 CONFIG_CRYPTO_XTS                               policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
+CONFIG_CXL_BUS                                  policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not desired on Pi'>
 CONFIG_DAX                                      policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
 CONFIG_DEVFREQ_GOV_PASSIVE                      policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
 CONFIG_DEVFREQ_GOV_PERFORMANCE                  policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
@@ -68,6 +74,7 @@ CONFIG_FB_RPISENSE                              policy<{'arm64': 'm', 'armhf': '
 CONFIG_FB_SIMPLE                                policy<{'arm64': 'y', 'armhf': 'y'}> note<'LP: #1976147'>
 CONFIG_FIQ                                      policy<{'armhf': 'y'}> note<'Introduced by rpi-6.2.y'>
 CONFIG_FIRMWARE_MEMMAP                          policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not supported on Pi'>
+CONFIG_FUNCTION_ERROR_INJECTION                 policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not desired on Pi'>
 CONFIG_FUSE_FS                                  policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
 CONFIG_GPIO_BCM_VIRT                            policy<{'arm64': 'y', 'armhf': 'y'}> note<'Introduced by rpi-6.2.y'>
 CONFIG_GPIO_CDEV_V1                             policy<{'arm64': 'y', 'armhf': 'y'}> note<'LP: #1919973'>
@@ -87,6 +94,8 @@ CONFIG_I2C_BCM2708_BAUDRATE                     policy<{'arm64': '100000', 'armh
 CONFIG_I2C_CHARDEV                              policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
 CONFIG_I2C_DESIGNWARE_PLATFORM                  policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
 CONFIG_I2C_EMEV2                                policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not supported on Pi armhf'>
+CONFIG_I2C_SLAVE                                policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not desired on Pi'>
+CONFIG_IDLE_PAGE_TRACKING                       policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not desired on Pi'>
 CONFIG_IMA_ARCH_POLICY                          policy<{'arm64': 'n', 'armhf': 'n'}> note<'LP: #1982090'>
 CONFIG_INPUT_UINPUT                             policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
 CONFIG_IOMMU_SUPPORT                            policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not supported on Pi'>
@@ -94,24 +103,49 @@ CONFIG_IPMI_HANDLER                             policy<{'arm64': 'n', 'armhf': '
 CONFIG_IPV6                                     policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
 CONFIG_JOYSTICK_FSIA6B                          policy<{'arm64': 'm', 'armhf': 'm'}> note<'LP: #1995968'>
 CONFIG_JOYSTICK_RPISENSE                        policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_KARMA_PARTITION                          policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not desired on Pi'>
 CONFIG_KEXEC_FILE                               policy<{'arm64': 'n'}> note<'Not supported on Pi'>
 CONFIG_KEYBOARD_ATKBD                           policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
+CONFIG_KSM                                      policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not desired on Pi'>
+CONFIG_LAN966X_SWITCH                           policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not desired on Pi'>
+CONFIG_LDM_PARTITION                            policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not desired on Pi'>
 CONFIG_LEDS_TRIGGER_ACTPWR                      policy<{'arm64': 'y', 'armhf': 'y'}> note<'Introduced by rpi-6.2.y'>
 CONFIG_LEDS_TRIGGER_INPUT                       policy<{'arm64': 'y', 'armhf': 'y'}> note<'Introduced by rpi-6.2.y'>
 CONFIG_LIBNVDIMM                                policy<{'arm64': 'm', 'armhf-raspi': 'm'}> note<'Not essential on Pi'>
 CONFIG_MEDIA_CEC_RC                             policy<{'arm64': 'y', 'armhf': 'y'}> note<'LP: #1916721'>
+CONFIG_MFD_88PM860X                             policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not desired on Pi'>
+CONFIG_MFD_AAT2870_CORE                         policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not desired on Pi'>
+CONFIG_MFD_AS3711                               policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not desired on Pi'>
 CONFIG_MFD_AS3722                               policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
+CONFIG_MFD_DA9052_I2C                           policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not desired on Pi'>
+CONFIG_MFD_DA9052_SPI                           policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not desired on Pi'>
+CONFIG_MFD_DA9055                               policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not desired on Pi'>
 CONFIG_MFD_DA9063                               policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
+CONFIG_MFD_LP8788                               policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not desired on Pi'>
 CONFIG_MFD_MAX14577                             policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
+CONFIG_MFD_MAX77620                             policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not desired on Pi'>
 CONFIG_MFD_MAX77686                             policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
 CONFIG_MFD_MAX77693                             policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
+CONFIG_MFD_MAX77843                             policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not desired on Pi'>
+CONFIG_MFD_MAX8925                              policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not desired on Pi'>
+CONFIG_MFD_MAX8997                              policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not desired on Pi'>
+CONFIG_MFD_MAX8998                              policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not desired on Pi'>
 CONFIG_MFD_PALMAS                               policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
 CONFIG_MFD_RASPBERRYPI_POE_HAT                  policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_MFD_RC5T583                              policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not desired on Pi'>
 CONFIG_MFD_RPISENSE_CORE                        policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
 CONFIG_MFD_SEC_CORE                             policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
 CONFIG_MFD_STMFX                                policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
+CONFIG_MFD_TC3589X                              policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not desired on Pi'>
+CONFIG_MFD_TPS65090                             policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not desired on Pi'>
+CONFIG_MFD_TPS6586X                             policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not desired on Pi'>
+CONFIG_MFD_TPS65910                             policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not desired on Pi'>
 CONFIG_MFD_TPS65912_I2C                         policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
 CONFIG_MFD_TPS65912_SPI                         policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
+CONFIG_MFD_WM831X_I2C                           policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not desired on Pi'>
+CONFIG_MFD_WM831X_SPI                           policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not desired on Pi'>
+CONFIG_MFD_WM8350_I2C                           policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not desired on Pi'>
+CONFIG_MFD_WM8400                               policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not desired on Pi'>
 CONFIG_MICROCHIP_PIT64B                         policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not supported on Pi'>
 CONFIG_MMC_ARMMMCI                              policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
 CONFIG_MMC_BCM2835_DMA                          policy<{'arm64': 'y', 'armhf': 'y'}> note<'Introduced by rpi-6.2.y'>
@@ -119,7 +153,9 @@ CONFIG_MMC_BCM2835_MMC                          policy<{'arm64': 'y', 'armhf': '
 CONFIG_MMC_BCM2835_PIO_DMA_BARRIER              policy<{'arm64': '2', 'armhf': '2'}> note<'Introduced by rpi-6.2.y'>
 CONFIG_MMC_BCM2835_SDHOST                       policy<{'arm64': 'y', 'armhf': 'y'}> note<'Introduced by rpi-6.2.y'>
 CONFIG_NET_DROP_MONITOR                         policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
+CONFIG_NET_NCSI                                 policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not desired on Pi'>
 CONFIG_OF_CONFIGFS                              policy<{'arm64': 'y', 'armhf': 'y'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_OSF_PARTITION                            policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not desired on Pi'>
 CONFIG_PCIE_CADENCE_PLAT_HOST                   policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not supported on Pi'>
 CONFIG_PCIE_XILINX                              policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not supported on Pi'>
 CONFIG_PCI_HOST_GENERIC                         policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
@@ -148,11 +184,14 @@ CONFIG_RPIVID_MEM                               policy<{'arm64': 'm', 'armhf': '
 CONFIG_RPI_AXIPERF                              policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
 CONFIG_RPI_POE_POWER                            policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
 CONFIG_RTC_DRV_PL031                            policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
+CONFIG_RV                                       policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not desired on Pi'>
+CONFIG_SERIAL_8250_DMA                          policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not desired on Pi'>
 CONFIG_SERIAL_8250_FINTEK                       policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not supported on Pi'>
 CONFIG_SERIAL_EARLYCON_ARM_SEMIHOST             policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not supported on Pi'>
 CONFIG_SERIAL_MAX310X                           policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
 CONFIG_SERIAL_SCCNXP                            policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
 CONFIG_SERIO                                    policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
+CONFIG_SGI_PARTITION                            policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not desired on Pi'>
 CONFIG_SND_AUDIOINJECTOR_ISOLATED_SOUNDCARD     policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
 CONFIG_SND_AUDIOINJECTOR_OCTO_SOUNDCARD         policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
 CONFIG_SND_AUDIOINJECTOR_PI_SOUNDCARD           policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
@@ -206,16 +245,21 @@ CONFIG_SND_SOC_TAS5713                          policy<{'arm64': 'm', 'armhf': '
 CONFIG_SND_SOC_WM5102                           policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
 CONFIG_SPI_FSL_SPI                              policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
 CONFIG_SRAM                                     policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not supported on Pi'>
+CONFIG_SUN_PARTITION                            policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not desired on Pi'>
+CONFIG_SW_SYNC                                  policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not desired on Pi'>
+CONFIG_SYSV68_PARTITION                         policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not desired on Pi'>
 CONFIG_TCG_TIS                                  policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
 CONFIG_TUN                                      policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
 CONFIG_TWL4030_CORE                             policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not supported on Pi'>
 CONFIG_TWL6040_CORE                             policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not supported on Pi'>
+CONFIG_ULTRIX_PARTITION                         policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not desired on Pi'>
 CONFIG_USB_DWCOTG                               policy<{'arm64': 'y', 'armhf': 'y'}> note<'Introduced by rpi-6.2.y'>
 CONFIG_USB_EHCI_HCD                             policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
 CONFIG_USB_HCD_SSB                              policy<{'arm64': 'm', 'armhf': 'n'}> note<'Not essential on Pi'>
 CONFIG_USB_OHCI_HCD                             policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
 CONFIG_USB_UHCI_HCD                             policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
 CONFIG_USB_ULPI                                 policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not supported on Pi'>
+CONFIG_VCAP                                     policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not desired on Pi'>
 CONFIG_VFIO                                     policy<{'arm64': 'm', 'armhf': 'm'}> note<'LP: #1982090'>
 CONFIG_VIDEO_AD5398                             policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
 CONFIG_VIDEO_ARDUCAM_64MP                       policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
@@ -420,7 +464,6 @@ CONFIG_AIC7XXX_REG_PRETTY_PRINT                 policy<{'arm64': 'y', 'armhf': '
 CONFIG_AIC7XXX_RESET_DELAY_MS                   policy<{'arm64': '5000', 'armhf': '5000'}>
 CONFIG_AIC94XX_DEBUG                            policy<{'arm64': 'n', 'armhf': 'n'}>
 CONFIG_AIO                                      policy<{'arm64': 'y', 'armhf': 'y'}>
-CONFIG_AIX_PARTITION                            policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_AK09911                                  policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_AK8974                                   policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_AK8975                                   policy<{'arm64': 'm', 'armhf': 'm'}>
@@ -445,7 +488,6 @@ CONFIG_AMD8111_ETH                              policy<{'arm64': 'm', 'armhf': '
 CONFIG_AMD_PHY                                  policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_AMD_XGBE                                 policy<{'arm64': 'm'}>
 CONFIG_AMD_XGBE_DCB                             policy<{'arm64': 'n'}>
-CONFIG_AMIGA_PARTITION                          policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_AMT                                      policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_ANDROID_BINDERFS                         policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_ANDROID_BINDER_DEVICES                   policy<{'arm64': '""', 'armhf': '""'}>
@@ -823,7 +865,6 @@ CONFIG_AT76C50X_USB                             policy<{'arm64': 'm', 'armhf': '
 CONFIG_AT803X_PHY                               policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_ATAGS                                    policy<{'armhf': 'y'}>
 CONFIG_ATALK                                    policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_ATARI_PARTITION                          policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_ATA_BMDMA                                policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_ATA_FORCE                                policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_ATA_GENERIC                              policy<{'arm64': 'm', 'armhf': 'm'}>
@@ -970,27 +1011,20 @@ CONFIG_B53_MMAP_DRIVER                          policy<{'arm64': 'm', 'armhf': '
 CONFIG_B53_SERDES                               policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_B53_SPI_DRIVER                           policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_B53_SRAB_DRIVER                          policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_BACKLIGHT_88PM860X                       policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_BACKLIGHT_AAT2870                        policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_BACKLIGHT_ADP8860                        policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_BACKLIGHT_ADP8870                        policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_BACKLIGHT_ARCXCNN                        policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_BACKLIGHT_AS3711                         policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_BACKLIGHT_BD6107                         policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_BACKLIGHT_DA9052                         policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_BACKLIGHT_GPIO                           policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_BACKLIGHT_LED                            policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_BACKLIGHT_LM3533                         policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_BACKLIGHT_LM3630A                        policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_BACKLIGHT_LM3639                         policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_BACKLIGHT_LP855X                         policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_BACKLIGHT_LP8788                         policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_BACKLIGHT_LV5207LP                       policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_BACKLIGHT_MAX8925                        policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_BACKLIGHT_PWM                            policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_BACKLIGHT_QCOM_WLED                      policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_BACKLIGHT_TPS65217                       policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_BACKLIGHT_WM831X                         policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_BACKTRACE_SELF_TEST                      policy<{'arm64': 'n', 'armhf': 'n'}>
 CONFIG_BACKTRACE_VERBOSE                        policy<{'armhf': 'n'}>
 CONFIG_BALLOON_COMPACTION                       policy<{'arm64': 'y', 'armhf': 'y'}>
@@ -1005,7 +1039,6 @@ CONFIG_BATMAN_ADV_DEBUG                         policy<{'arm64': 'n', 'armhf': '
 CONFIG_BATMAN_ADV_MCAST                         policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_BATMAN_ADV_NC                            policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_BATMAN_ADV_TRACING                       policy<{'arm64': 'n', 'armhf': 'n'}>
-CONFIG_BATTERY_88PM860X                         policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_BATTERY_ACT8945A                         policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_BATTERY_AXP20X                           policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_BATTERY_BQ27XXX                          policy<{'arm64': 'm', 'armhf': 'm'}>
@@ -1014,7 +1047,6 @@ CONFIG_BATTERY_BQ27XXX_HDQ                      policy<{'arm64': 'm', 'armhf': '
 CONFIG_BATTERY_BQ27XXX_I2C                      policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_BATTERY_CPCAP                            policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_BATTERY_CW2015                           policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_BATTERY_DA9052                           policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_BATTERY_DA9150                           policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_BATTERY_DS2760                           policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_BATTERY_DS2780                           policy<{'arm64': 'm', 'armhf': 'm'}>
@@ -1192,13 +1224,10 @@ CONFIG_BOSCH_BNO055_I2C                         policy<{'arm64': 'm', 'armhf': '
 CONFIG_BOSCH_BNO055_SERIAL                      policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_BOUNCE                                   policy<{'armhf-raspi': 'y'}>
 CONFIG_BPF                                      policy<{'arm64': 'y', 'armhf': 'y'}>
-CONFIG_BPFILTER                                 policy<{'arm64': 'y', 'armhf': 'y'}>
-CONFIG_BPFILTER_UMH                             policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_BPF_EVENTS                               policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_BPF_JIT                                  policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_BPF_JIT_ALWAYS_ON                        policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_BPF_JIT_DEFAULT_ON                       policy<{'arm64': 'y', 'armhf': 'y'}>
-CONFIG_BPF_KPROBE_OVERRIDE                      policy<{'arm64': 'n', 'armhf': 'y'}>
 CONFIG_BPF_LIRC_MODE2                           policy<{'arm64': 'n', 'armhf': 'n'}>
 CONFIG_BPF_LSM                                  policy<{'arm64': 'n', 'armhf': 'n'}>
 CONFIG_BPF_PRELOAD                              policy<{'arm64': 'n', 'armhf': 'n'}>
@@ -1484,7 +1513,6 @@ CONFIG_CGROUP_PIDS                              policy<{'arm64': 'y', 'armhf': '
 CONFIG_CGROUP_RDMA                              policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_CGROUP_SCHED                             policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_CGROUP_WRITEBACK                         policy<{'arm64': 'y', 'armhf': 'y'}>
-CONFIG_CHARGER_88PM860X                         policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_CHARGER_ADP5061                          policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_CHARGER_AXP20X                           policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_CHARGER_BD99954                          policy<{'arm64': 'm', 'armhf': 'm'}>
@@ -1501,15 +1529,12 @@ CONFIG_CHARGER_DETECTOR_MAX14656                policy<{'arm64': 'm', 'armhf': '
 CONFIG_CHARGER_GPIO                             policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_CHARGER_ISP1704                          policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_CHARGER_LP8727                           policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_CHARGER_LP8788                           policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_CHARGER_LT3651                           policy<{'arm64': 'n', 'armhf': 'n'}>
 CONFIG_CHARGER_LTC4162L                         policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_CHARGER_MAX14577                         policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_CHARGER_MAX77693                         policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_CHARGER_MAX77976                         policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_CHARGER_MAX8903                          policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_CHARGER_MAX8997                          policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_CHARGER_MAX8998                          policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_CHARGER_MP2629                           policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_CHARGER_MT6360                           policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_CHARGER_MT6370                           policy<{'arm64': 'm', 'armhf': 'm'}>
@@ -1518,7 +1543,6 @@ CONFIG_CHARGER_RK817                            policy<{'arm64': 'm', 'armhf': '
 CONFIG_CHARGER_RT9455                           policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_CHARGER_SBS                              policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_CHARGER_SMB347                           policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_CHARGER_TPS65090                         policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_CHARGER_TPS65217                         policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_CHARGER_UCS1002                          policy<{'arm64': 'n', 'armhf': 'n'}>
 CONFIG_CHARLCD                                  policy<{'arm64': 'm', 'armhf': 'm'}>
@@ -1586,7 +1610,6 @@ CONFIG_CMDLINE                                  policy<{'arm64': '"console=ttyAM
 CONFIG_CMDLINE_EXTEND                           policy<{'armhf': 'n'}>
 CONFIG_CMDLINE_FORCE                            policy<{'arm64': 'n', 'armhf': 'n'}>
 CONFIG_CMDLINE_FROM_BOOTLOADER                  policy<{'arm64': 'y', 'armhf': 'y'}>
-CONFIG_CMDLINE_PARTITION                        policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_CNIC                                     policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_CODA_FS                                  policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_COMEDI                                   policy<{'arm64': 'm', 'armhf': 'm'}>
@@ -1697,7 +1720,6 @@ CONFIG_COMMON_CLK_SI544                         policy<{'arm64': 'm', 'armhf': '
 CONFIG_COMMON_CLK_SI570                         policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_COMMON_CLK_VC5                           policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_COMMON_CLK_VC7                           policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_COMMON_CLK_WM831X                        policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_COMMON_CLK_XLNX_CLKWZRD                  policy<{'arm64': 'n', 'armhf': 'n'}>
 CONFIG_COMPACTION                               policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_COMPACT_UNEVICTABLE_DEFAULT              policy<{'arm64': '1', 'armhf': '1'}>
@@ -2005,27 +2027,15 @@ CONFIG_CW1200                                   policy<{'arm64': 'm', 'armhf': '
 CONFIG_CW1200_WLAN_SDIO                         policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_CW1200_WLAN_SPI                          policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_CXD2880_SPI_DRV                          policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_CXL_BUS                                  policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_CXL_MEM                                  policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_CXL_MEM_RAW_COMMANDS                     policy<{'arm64': 'n', 'armhf': 'n'}>
-CONFIG_CXL_PCI                                  policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_CXL_PMEM                                 policy<{'arm64': 'm', 'armhf-raspi': 'm'}>
-CONFIG_CXL_PORT                                 policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_CXL_REGION                               policy<{'arm64': 'y'}>
-CONFIG_CXL_REGION_INVALIDATION_TEST             policy<{'arm64': 'n'}>
 CONFIG_CYPRESS_FIRMWARE                         policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_DA280                                    policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_DA311                                    policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_DA9052_WATCHDOG                          policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_DA9055_WATCHDOG                          policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_DA9062_THERMAL                           policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_DA9062_WATCHDOG                          policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_DA9063_WATCHDOG                          policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_DA9150_GPADC                             policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_DAMON                                    policy<{'arm64': 'n', 'armhf': 'n'}>
 CONFIG_DAVICOM_PHY                              policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_DA_MON_EVENTS                            policy<{'arm64': 'y', 'armhf': 'y'}>
-CONFIG_DA_MON_EVENTS_ID                         policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_DCACHE_WORD_ACCESS                       policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_DCB                                      policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_DEBUG_ALIGN_RODATA                       policy<{'armhf': 'y'}>
@@ -2742,8 +2752,6 @@ CONFIG_EXTCON_GPIO                              policy<{'arm64': 'm', 'armhf': '
 CONFIG_EXTCON_MAX14577                          policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_EXTCON_MAX3355                           policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_EXTCON_MAX77693                          policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_EXTCON_MAX77843                          policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_EXTCON_MAX8997                           policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_EXTCON_PALMAS                            policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_EXTCON_PTN5150                           policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_EXTCON_RT8973A                           policy<{'arm64': 'm', 'armhf': 'm'}>
@@ -2989,7 +2997,6 @@ CONFIG_FTRACE_SYSCALLS                          policy<{'arm64': 'y', 'armhf': '
 CONFIG_FTWDT010_WATCHDOG                        policy<{'armhf': 'n'}>
 CONFIG_FUJITSU_ERRATUM_010001                   policy<{'arm64': 'y'}>
 CONFIG_FUNCTION_ALIGNMENT                       policy<{'arm64': '0', 'armhf': '0'}>
-CONFIG_FUNCTION_ERROR_INJECTION                 policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_FUNCTION_GRAPH_TRACER                    policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_FUNCTION_PROFILER                        policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_FUNCTION_TRACER                          policy<{'arm64': 'y', 'armhf': 'y'}>
@@ -3080,7 +3087,6 @@ CONFIG_GENERIC_VDSO_TIME_NS                     policy<{'arm64': 'y'}>
 CONFIG_GENEVE                                   policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_GENWQE                                   policy<{'arm64': 'm'}>
 CONFIG_GENWQE_PLATFORM_ERROR_RECOVERY           policy<{'arm64': '0'}>
-CONFIG_GET_FREE_REGION                          policy<{'arm64': 'y'}>
 CONFIG_GFS2_FS                                  policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_GFS2_FS_LOCKING_DLM                      policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_GLOB                                     policy<{'arm64': 'y', 'armhf': 'y'}>
@@ -3111,8 +3117,6 @@ CONFIG_GPIO_BD9571MWV                           policy<{'arm64': 'm', 'armhf': '
 CONFIG_GPIO_BT8XX                               policy<{'arm64': 'n', 'armhf': 'n'}>
 CONFIG_GPIO_CADENCE                             policy<{'arm64': 'n', 'armhf': 'n'}>
 CONFIG_GPIO_CDEV                                policy<{'arm64': 'y', 'armhf': 'y'}>
-CONFIG_GPIO_DA9052                              policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_GPIO_DA9055                              policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_GPIO_DLN2                                policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_GPIO_DWAPB                               policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_GPIO_FTGPIO010                           policy<{'arm64': 'n', 'armhf': 'n'}>
@@ -3135,7 +3139,6 @@ CONFIG_GPIO_MAX7300                             policy<{'arm64': 'm', 'armhf': '
 CONFIG_GPIO_MAX7301                             policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_GPIO_MAX730X                             policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_GPIO_MAX732X                             policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_GPIO_MAX77620                            policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_GPIO_MB86S7X                             policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_GPIO_MC33880                             policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_GPIO_MENZ127                             policy<{'arm64': 'm', 'armhf': 'm'}>
@@ -3149,25 +3152,19 @@ CONFIG_GPIO_PCIE_IDIO_24                        policy<{'arm64': 'n', 'armhf': '
 CONFIG_GPIO_PCI_IDIO_16                         policy<{'arm64': 'n', 'armhf': 'n'}>
 CONFIG_GPIO_PISOSR                              policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_GPIO_RASPBERRYPI_EXP                     policy<{'arm64': 'y', 'armhf': 'y'}>
-CONFIG_GPIO_RC5T583                             policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_GPIO_RDC321X                             policy<{'arm64': 'n', 'armhf': 'n'}>
 CONFIG_GPIO_SIM                                 policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_GPIO_SIOX                                policy<{'arm64': 'n', 'armhf': 'n'}>
 CONFIG_GPIO_SYSCON                              policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_GPIO_TC3589X                             policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_GPIO_TPIC2810                            policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_GPIO_TPS65086                            policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_GPIO_TPS65218                            policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_GPIO_TPS6586X                            policy<{'arm64': 'y', 'armhf': 'y'}>
-CONFIG_GPIO_TPS65910                            policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_GPIO_TPS65912                            policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_GPIO_UCB1400                             policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_GPIO_VIPERBOARD                          policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_GPIO_VIRTIO                              policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_GPIO_WATCHDOG                            policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_GPIO_WCD934X                             policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_GPIO_WM831X                              policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_GPIO_WM8350                              policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_GPIO_WM8994                              policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_GPIO_XGENE                               policy<{'arm64': 'n'}>
 CONFIG_GPIO_XILINX                              policy<{'arm64': 'n', 'armhf': 'n'}>
@@ -3612,9 +3609,6 @@ CONFIG_I2C_SIMTEC                               policy<{'arm64': 'm', 'armhf': '
 CONFIG_I2C_SIS5595                              policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_I2C_SIS630                               policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_I2C_SIS96X                               policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_I2C_SLAVE                                policy<{'arm64': 'y', 'armhf': 'y'}>
-CONFIG_I2C_SLAVE_EEPROM                         policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_I2C_SLAVE_TESTUNIT                       policy<{'arm64': 'n', 'armhf': 'n'}>
 CONFIG_I2C_SMBUS                                policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_I2C_STUB                                 policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_I2C_TAOS_EVM                             policy<{'arm64': 'm', 'armhf': 'm'}>
@@ -3635,7 +3629,6 @@ CONFIG_ICE                                      policy<{'arm64': 'n', 'armhf': '
 CONFIG_ICP10100                                 policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_ICPLUS_PHY                               policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_ICS932S401                               policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_IDLE_PAGE_TRACKING                       policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_IEEE802154                               policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_IEEE802154_6LOWPAN                       policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_IEEE802154_ADF7242                       policy<{'arm64': 'm', 'armhf': 'm'}>
@@ -3803,7 +3796,6 @@ CONFIG_INIT_STACK_NONE                          policy<{'arm64': 'y', 'armhf': '
 CONFIG_INOTIFY_USER                             policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_INPUT                                    policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_INPUT_88PM80X_ONKEY                      policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_INPUT_88PM860X_ONKEY                     policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_INPUT_AD714X                             policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_INPUT_AD714X_I2C                         policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_INPUT_AD714X_SPI                         policy<{'arm64': 'm', 'armhf': 'm'}>
@@ -3821,8 +3813,6 @@ CONFIG_INPUT_CMA3000                            policy<{'arm64': 'm', 'armhf': '
 CONFIG_INPUT_CMA3000_I2C                        policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_INPUT_CPCAP_PWRBUTTON                    policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_INPUT_DA7280_HAPTICS                     policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_INPUT_DA9052_ONKEY                       policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_INPUT_DA9055_ONKEY                       policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_INPUT_DA9063_ONKEY                       policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_INPUT_DRV260X_HAPTICS                    policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_INPUT_DRV2665_HAPTICS                    policy<{'arm64': 'm', 'armhf': 'm'}>
@@ -3835,7 +3825,6 @@ CONFIG_INPUT_GPIO_BEEPER                        policy<{'arm64': 'm', 'armhf': '
 CONFIG_INPUT_GPIO_DECODER                       policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_INPUT_GPIO_ROTARY_ENCODER                policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_INPUT_GPIO_VIBRA                         policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_INPUT_IBM_PANEL                          policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_INPUT_IMS_PCU                            policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_INPUT_IQS269A                            policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_INPUT_IQS626A                            policy<{'arm64': 'm', 'armhf': 'm'}>
@@ -3848,8 +3837,6 @@ CONFIG_INPUT_KXTJ9                              policy<{'arm64': 'm', 'armhf': '
 CONFIG_INPUT_LEDS                               policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_INPUT_MATRIXKMAP                         policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_INPUT_MAX77693_HAPTIC                    policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_INPUT_MAX8925_ONKEY                      policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_INPUT_MAX8997_HAPTIC                     policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_INPUT_MC13783_PWRBUTTON                  policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_INPUT_MISC                               policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_INPUT_MMA8450                            policy<{'arm64': 'm', 'armhf': 'm'}>
@@ -3877,7 +3864,6 @@ CONFIG_INPUT_TOUCHSCREEN                        policy<{'arm64': 'y', 'armhf': '
 CONFIG_INPUT_TPS65218_PWRBUTTON                 policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_INPUT_TPS65219_PWRBUTTON                 policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_INPUT_VIVALDIFMAP                        policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_INPUT_WM831X_ON                          policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_INPUT_YEALINK                            policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_INTEGRITY                                policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_INTEGRITY_ASYMMETRIC_KEYS                policy<{'arm64': 'y', 'armhf': 'y'}>
@@ -3938,7 +3924,6 @@ CONFIG_IP6_NF_TARGET_SYNPROXY                   policy<{'arm64': 'm', 'armhf': '
 CONFIG_IPACK_BUS                                policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_IPC_NS                                   policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_IPDDP                                    policy<{'arm64': 'n', 'armhf': 'n'}>
-CONFIG_IPMB_DEVICE_INTERFACE                    policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_IPV6_FOU                                 policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_IPV6_FOU_TUNNEL                          policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_IPV6_GRE                                 policy<{'arm64': 'm', 'armhf': 'm'}>
@@ -4203,7 +4188,6 @@ CONFIG_KALLSYMS                                 policy<{'arm64': 'y', 'armhf': '
 CONFIG_KALLSYMS_ALL                             policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_KALLSYMS_BASE_RELATIVE                   policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_KALLSYMS_SELFTEST                        policy<{'arm64': 'n', 'armhf': 'n'}>
-CONFIG_KARMA_PARTITION                          policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_KASAN                                    policy<{'arm64': 'n', 'armhf': 'n'}>
 CONFIG_KCMP                                     policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_KCOV                                     policy<{'arm64': 'n', 'armhf': 'n'}>
@@ -4249,7 +4233,6 @@ CONFIG_KEYBOARD_SAMSUNG                         policy<{'arm64': 'm', 'armhf': '
 CONFIG_KEYBOARD_STMPE                           policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_KEYBOARD_STOWAWAY                        policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_KEYBOARD_SUNKBD                          policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_KEYBOARD_TC3589X                         policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_KEYBOARD_TCA6416                         policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_KEYBOARD_TCA8418                         policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_KEYBOARD_TM2_TOUCHKEY                    policy<{'arm64': 'm', 'armhf': 'm'}>
@@ -4279,7 +4262,6 @@ CONFIG_KS7010                                   policy<{'arm64': 'm', 'armhf': '
 CONFIG_KS8842                                   policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_KS8851                                   policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_KS8851_MLL                               policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_KSM                                      policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_KSZ884X_PCI                              policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_KUNIT                                    policy<{'arm64': 'n', 'armhf': 'n'}>
 CONFIG_KUSER_HELPERS                            policy<{'arm64': 'y', 'armhf': 'y'}>
@@ -4298,7 +4280,6 @@ CONFIG_L2TP_ETH                                 policy<{'arm64': 'm', 'armhf': '
 CONFIG_L2TP_IP                                  policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_L2TP_V3                                  policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_LAN743X                                  policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_LAN966X_SWITCH                           policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_LAPB                                     policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_LAPBETHER                                policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_LATENCYTOP                               policy<{'arm64': 'n', 'armhf': 'n'}>
@@ -4318,13 +4299,10 @@ CONFIG_LCD_PLATFORM                             policy<{'arm64': 'm', 'armhf': '
 CONFIG_LCD_TDO24M                               policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_LCD_VGG2432A4                            policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_LDISC_AUTOLOAD                           policy<{'arm64': 'y', 'armhf': 'y'}>
-CONFIG_LDM_DEBUG                                policy<{'arm64': 'n', 'armhf': 'n'}>
-CONFIG_LDM_PARTITION                            policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_LD_IS_BFD                                policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_LD_ORPHAN_WARN                           policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_LD_ORPHAN_WARN_LEVEL                     policy<{'arm64': '"warn"', 'armhf': '"warn"'}>
 CONFIG_LD_VERSION                               policy<{'arm64': '24000', 'armhf': '24000'}>
-CONFIG_LEDS_88PM860X                            policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_LEDS_AAT1290                             policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_LEDS_AN30259A                            policy<{'arm64': 'n', 'armhf': 'n'}>
 CONFIG_LEDS_AS3645A                             policy<{'arm64': 'm', 'armhf': 'm'}>
@@ -4340,7 +4318,6 @@ CONFIG_LEDS_CLASS_FLASH                         policy<{'arm64': 'm', 'armhf': '
 CONFIG_LEDS_CLASS_MULTICOLOR                    policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_LEDS_CPCAP                               policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_LEDS_CR0014114                           policy<{'arm64': 'n', 'armhf': 'n'}>
-CONFIG_LEDS_DA9052                              policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_LEDS_DAC124S085                          policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_LEDS_EL15203000                          policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_LEDS_GPIO                                policy<{'arm64': 'y', 'armhf': 'y'}>
@@ -4362,11 +4339,9 @@ CONFIG_LEDS_LP5523                              policy<{'arm64': 'm', 'armhf': '
 CONFIG_LEDS_LP5562                              policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_LEDS_LP55XX_COMMON                       policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_LEDS_LP8501                              policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_LEDS_LP8788                              policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_LEDS_LP8860                              policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_LEDS_LT3593                              policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_LEDS_MAX77693                            policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_LEDS_MAX8997                             policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_LEDS_MC13783                             policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_LEDS_MENF21BMC                           policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_LEDS_MLXREG                              policy<{'arm64': 'm', 'armhf': 'm'}>
@@ -4410,8 +4385,6 @@ CONFIG_LEDS_TRIGGER_TIMER                       policy<{'arm64': 'y', 'armhf': '
 CONFIG_LEDS_TRIGGER_TRANSIENT                   policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_LEDS_TRIGGER_TTY                         policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_LEDS_USER                                policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_LEDS_WM831X_STATUS                       policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_LEDS_WM8350                              policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_LED_TRIGGER_PHY                          policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_LEGACY_PTYS                              policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_LEGACY_PTY_COUNT                         policy<{'arm64': '256', 'armhf': '256'}>
@@ -4478,7 +4451,6 @@ CONFIG_LOGO_LINUX_VGA16                         policy<{'arm64': 'n', 'armhf': '
 CONFIG_LOG_BUF_SHIFT                            policy<{'arm64': '17', 'armhf': '17'}>
 CONFIG_LOG_CPU_MAX_BUF_SHIFT                    policy<{'arm64': '12', 'armhf': '12'}>
 CONFIG_LOOPBACK_TARGET                          policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_LP8788_ADC                               policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_LPC_ICH                                  policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_LPC_SCH                                  policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_LP_CONSOLE                               policy<{'arm64': 'n', 'armhf': 'n'}>
@@ -4564,9 +4536,7 @@ CONFIG_MAX5481                                  policy<{'arm64': 'm', 'armhf': '
 CONFIG_MAX5487                                  policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_MAX5821                                  policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_MAX63XX_WATCHDOG                         policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_MAX77620_THERMAL                         policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_MAX77620_WATCHDOG                        policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_MAX8925_POWER                            policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_MAX9611                                  policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_MAXIM_THERMOCOUPLE                       policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_MAXLINEAR_GPHY                           policy<{'arm64': 'm', 'armhf': 'm'}>
@@ -4705,13 +4675,10 @@ CONFIG_MEN_Z188_ADC                             policy<{'arm64': 'm', 'armhf': '
 CONFIG_MESSAGE_LOGLEVEL_DEFAULT                 policy<{'arm64': '4', 'armhf': '4'}>
 CONFIG_MFD_88PM800                              policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_MFD_88PM805                              policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_MFD_88PM860X                             policy<{'arm64': 'y', 'armhf': 'y'}>
-CONFIG_MFD_AAT2870_CORE                         policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_MFD_ACT8945A                             policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_MFD_ARIZONA                              policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_MFD_ARIZONA_I2C                          policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_MFD_ARIZONA_SPI                          policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_MFD_AS3711                               policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_MFD_ASIC3                                policy<{'armhf': 'y'}>
 CONFIG_MFD_ATC260X                              policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_MFD_ATC260X_I2C                          policy<{'arm64': 'm', 'armhf': 'm'}>
@@ -4729,9 +4696,6 @@ CONFIG_MFD_CS47L35                              policy<{'arm64': 'n', 'armhf': '
 CONFIG_MFD_CS47L85                              policy<{'arm64': 'n', 'armhf': 'n'}>
 CONFIG_MFD_CS47L90                              policy<{'arm64': 'n', 'armhf': 'n'}>
 CONFIG_MFD_CS47L92                              policy<{'arm64': 'y', 'armhf': 'y'}>
-CONFIG_MFD_DA9052_I2C                           policy<{'arm64': 'y', 'armhf': 'y'}>
-CONFIG_MFD_DA9052_SPI                           policy<{'arm64': 'y', 'armhf': 'y'}>
-CONFIG_MFD_DA9055                               policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_MFD_DA9062                               policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_MFD_DA9150                               policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_MFD_DLN2                                 policy<{'arm64': 'm', 'armhf': 'm'}>
@@ -4745,18 +4709,12 @@ CONFIG_MFD_KEMPLD                               policy<{'arm64': 'm', 'armhf': '
 CONFIG_MFD_LM3533                               policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_MFD_LOCHNAGAR                            policy<{'arm64': 'n', 'armhf': 'n'}>
 CONFIG_MFD_LP3943                               policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_MFD_LP8788                               policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_MFD_MADERA                               policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_MFD_MADERA_I2C                           policy<{'arm64': 'n', 'armhf': 'n'}>
 CONFIG_MFD_MADERA_SPI                           policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_MFD_MAX77620                             policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_MFD_MAX77650                             policy<{'arm64': 'n', 'armhf': 'n'}>
 CONFIG_MFD_MAX77714                             policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_MFD_MAX77843                             policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_MFD_MAX8907                              policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_MFD_MAX8925                              policy<{'arm64': 'y', 'armhf': 'y'}>
-CONFIG_MFD_MAX8997                              policy<{'arm64': 'y', 'armhf': 'y'}>
-CONFIG_MFD_MAX8998                              policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_MFD_MC13XXX                              policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_MFD_MC13XXX_I2C                          policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_MFD_MC13XXX_SPI                          policy<{'arm64': 'm', 'armhf': 'm'}>
@@ -4770,7 +4728,6 @@ CONFIG_MFD_OCELOT                               policy<{'arm64': 'm', 'armhf': '
 CONFIG_MFD_PCF50633                             policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_MFD_PM8XXX                               policy<{'armhf': 'm'}>
 CONFIG_MFD_QCOM_PM8008                          policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_MFD_RC5T583                              policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_MFD_RDC321X                              policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_MFD_RETU                                 policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_MFD_RK808                                policy<{'arm64': 'm', 'armhf': 'm'}>
@@ -4794,7 +4751,6 @@ CONFIG_MFD_STPMIC1                              policy<{'arm64': 'n', 'armhf': '
 CONFIG_MFD_SY7636A                              policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_MFD_SYSCON                               policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_MFD_T7L66XB                              policy<{'armhf': 'y'}>
-CONFIG_MFD_TC3589X                              policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_MFD_TC6387XB                             policy<{'armhf': 'y'}>
 CONFIG_MFD_TC6393XB                             policy<{'armhf': 'y'}>
 CONFIG_MFD_TI_AM335X_TSCADC                     policy<{'arm64': 'm', 'armhf': 'm'}>
@@ -4803,12 +4759,9 @@ CONFIG_MFD_TI_LP873X                            policy<{'arm64': 'm', 'armhf': '
 CONFIG_MFD_TI_LP87565                           policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_MFD_TMIO                                 policy<{'armhf': 'y'}>
 CONFIG_MFD_TPS65086                             policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_MFD_TPS65090                             policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_MFD_TPS65217                             policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_MFD_TPS65218                             policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_MFD_TPS65219                             policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_MFD_TPS6586X                             policy<{'arm64': 'y', 'armhf': 'y'}>
-CONFIG_MFD_TPS65910                             policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_MFD_TPS65912                             policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_MFD_TQMX86                               policy<{'arm64': 'n', 'armhf': 'n'}>
 CONFIG_MFD_VIPERBOARD                           policy<{'arm64': 'm', 'armhf': 'm'}>
@@ -4817,12 +4770,6 @@ CONFIG_MFD_WCD934X                              policy<{'arm64': 'm', 'armhf': '
 CONFIG_MFD_WL1273_CORE                          policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_MFD_WM5102                               policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_MFD_WM5110                               policy<{'arm64': 'y', 'armhf': 'y'}>
-CONFIG_MFD_WM831X                               policy<{'arm64': 'y', 'armhf': 'y'}>
-CONFIG_MFD_WM831X_I2C                           policy<{'arm64': 'y', 'armhf': 'y'}>
-CONFIG_MFD_WM831X_SPI                           policy<{'arm64': 'y', 'armhf': 'y'}>
-CONFIG_MFD_WM8350                               policy<{'arm64': 'y', 'armhf': 'y'}>
-CONFIG_MFD_WM8350_I2C                           policy<{'arm64': 'y', 'armhf': 'y'}>
-CONFIG_MFD_WM8400                               policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_MFD_WM8994                               policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_MFD_WM8997                               policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_MFD_WM8998                               policy<{'arm64': 'y', 'armhf': 'y'}>
@@ -5220,8 +5167,6 @@ CONFIG_NATIONAL_PHY                             policy<{'arm64': 'm', 'armhf': '
 CONFIG_NATSEMI                                  policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_NAU7802                                  policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_NBPFAXI_DMA                              policy<{'armhf': 'm'}>
-CONFIG_NCSI_OEM_CMD_GET_MAC                     policy<{'arm64': 'n', 'armhf': 'n'}>
-CONFIG_NCSI_OEM_CMD_KEEP_PHY                    policy<{'arm64': 'n', 'armhf': 'n'}>
 CONFIG_NDC_DIS_DYNAMIC_CACHING                  policy<{'arm64': 'y'}>
 CONFIG_ND_BTT                                   policy<{'arm64': 'm', 'armhf-raspi': 'm'}>
 CONFIG_ND_CLAIM                                 policy<{'arm64': 'y', 'armhf-raspi': 'y'}>
@@ -5466,7 +5411,6 @@ CONFIG_NET_KEY                                  policy<{'arm64': 'm', 'armhf': '
 CONFIG_NET_KEY_MIGRATE                          policy<{'arm64': 'n', 'armhf': 'n'}>
 CONFIG_NET_L3_MASTER_DEV                        policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_NET_MPLS_GSO                             policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_NET_NCSI                                 policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_NET_NS                                   policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_NET_NSH                                  policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_NET_NS_REFCNT_TRACKER                    policy<{'arm64': 'n', 'armhf': 'n'}>
@@ -5941,7 +5885,6 @@ CONFIG_OPTEE                                    policy<{'arm64': 'n', 'armhf': '
 CONFIG_OPTPROBES                                policy<{'armhf': 'y'}>
 CONFIG_ORANGEFS_FS                              policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_ORINOCO_USB                              policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_OSF_PARTITION                            policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_OSNOISE_TRACER                           policy<{'arm64': 'n', 'armhf': 'n'}>
 CONFIG_OVERLAY_FS                               policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_OVERLAY_FS_INDEX                         policy<{'arm64': 'n', 'armhf': 'n'}>
@@ -5962,7 +5905,6 @@ CONFIG_PACKING                                  policy<{'arm64': 'y', 'armhf': '
 CONFIG_PADATA                                   policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_PAGE_COUNTER                             policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_PAGE_EXTENSION                           policy<{'arm64': 'n', 'armhf': 'y'}>
-CONFIG_PAGE_IDLE_FLAG                           policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_PAGE_OFFSET                              policy<{'armhf-raspi': '0xC0000000', 'armhf-raspi-nolpae': '0x80000000'}>
 CONFIG_PAGE_OWNER                               policy<{'arm64': 'n', 'armhf': 'n'}>
 CONFIG_PAGE_POISONING                           policy<{'arm64': 'y', 'armhf': 'y'}>
@@ -6095,7 +6037,6 @@ CONFIG_PCIPCWATCHDOG                            policy<{'arm64': 'm', 'armhf': '
 CONFIG_PCI_ATMEL                                policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_PCI_ATS                                  policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_PCI_DEBUG                                policy<{'arm64': 'n', 'armhf': 'n'}>
-CONFIG_PCI_DOE                                  policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_PCI_DOMAINS                              policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_PCI_DOMAINS_GENERIC                      policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_PCI_ECAM                                 policy<{'arm64': 'y', 'armhf': 'y'}>
@@ -6171,7 +6112,6 @@ CONFIG_PINCTRL_CS47L92                          policy<{'arm64': 'y', 'armhf': '
 CONFIG_PINCTRL_CY8C95X0                         policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_PINCTRL_DA9062                           policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_PINCTRL_MADERA                           policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_PINCTRL_MAX77620                         policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_PINCTRL_MCP23S08                         policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_PINCTRL_MCP23S08_I2C                     policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_PINCTRL_MCP23S08_SPI                     policy<{'arm64': 'm', 'armhf': 'm'}>
@@ -6196,7 +6136,6 @@ CONFIG_PLX_DMA                                  policy<{'arm64': 'm', 'armhf': '
 CONFIG_PLX_HERMES                               policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_PM                                       policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_PMBUS                                    policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_PMIC_DA9052                              policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_PMS7003                                  policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_PM_ADVANCED_DEBUG                        policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_PM_CLK                                   policy<{'arm64': 'y', 'armhf': 'y'}>
@@ -6443,28 +6382,25 @@ CONFIG_REED_SOLOMON_DEC8                        policy<{'arm64': 'y', 'armhf': '
 CONFIG_REED_SOLOMON_ENC8                        policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_REED_SOLOMON_TEST                        policy<{'arm64': 'n', 'armhf': 'n'}>
 CONFIG_REGMAP                                   policy<{'arm64': 'y', 'armhf': 'y'}>
-CONFIG_REGMAP_I2C                               policy<{'arm64': 'y', 'armhf': 'y'}>
+CONFIG_REGMAP_I2C                               policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_REGMAP_I3C                               policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_REGMAP_IRQ                               policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_REGMAP_MMIO                              policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_REGMAP_SLIMBUS                           policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_REGMAP_SOUNDWIRE                         policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_REGMAP_SOUNDWIRE_MBQ                     policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_REGMAP_SPI                               policy<{'arm64': 'y', 'armhf': 'y'}>
+CONFIG_REGMAP_SPI                               policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_REGMAP_SPI_AVMM                          policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_REGMAP_SPMI                              policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_REGMAP_W1                                policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_REGULATOR                                policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_REGULATOR_88PG86X                        policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_REGULATOR_88PM800                        policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_REGULATOR_88PM8607                       policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_REGULATOR_AAT2870                        policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_REGULATOR_ACT8865                        policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_REGULATOR_ACT8945A                       policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_REGULATOR_AD5398                         policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_REGULATOR_ARIZONA_LDO1                   policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_REGULATOR_ARIZONA_MICSUPP                policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_REGULATOR_AS3711                         policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_REGULATOR_AS3722                         policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_REGULATOR_ATC260X                        policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_REGULATOR_AXP20X                         policy<{'arm64': 'm', 'armhf': 'm'}>
@@ -6474,8 +6410,6 @@ CONFIG_REGULATOR_BD71828                        policy<{'arm64': 'm', 'armhf': '
 CONFIG_REGULATOR_BD9571MWV                      policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_REGULATOR_BD957XMUF                      policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_REGULATOR_CPCAP                          policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_REGULATOR_DA9052                         policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_REGULATOR_DA9055                         policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_REGULATOR_DA9062                         policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_REGULATOR_DA9063                         policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_REGULATOR_DA9121                         policy<{'arm64': 'm', 'armhf': 'm'}>
@@ -6498,13 +6432,11 @@ CONFIG_REGULATOR_LP872X                         policy<{'arm64': 'm', 'armhf': '
 CONFIG_REGULATOR_LP873X                         policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_REGULATOR_LP8755                         policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_REGULATOR_LP87565                        policy<{'arm64': 'n', 'armhf': 'n'}>
-CONFIG_REGULATOR_LP8788                         policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_REGULATOR_LTC3589                        policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_REGULATOR_LTC3676                        policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_REGULATOR_MAX14577                       policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_REGULATOR_MAX1586                        policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_REGULATOR_MAX20086                       policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_REGULATOR_MAX77620                       policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_REGULATOR_MAX77686                       policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_REGULATOR_MAX77693                       policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_REGULATOR_MAX77802                       policy<{'arm64': 'm', 'armhf': 'm'}>
@@ -6513,11 +6445,8 @@ CONFIG_REGULATOR_MAX8649                        policy<{'arm64': 'm', 'armhf': '
 CONFIG_REGULATOR_MAX8660                        policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_REGULATOR_MAX8893                        policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_REGULATOR_MAX8907                        policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_REGULATOR_MAX8925                        policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_REGULATOR_MAX8952                        policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_REGULATOR_MAX8973                        policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_REGULATOR_MAX8997                        policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_REGULATOR_MAX8998                        policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_REGULATOR_MC13783                        policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_REGULATOR_MC13892                        policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_REGULATOR_MC13XXX_CORE                   policy<{'arm64': 'm', 'armhf': 'm'}>
@@ -6550,7 +6479,6 @@ CONFIG_REGULATOR_QCOM_LABIBB                    policy<{'arm64': 'm', 'armhf': '
 CONFIG_REGULATOR_QCOM_SPMI                      policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_REGULATOR_QCOM_USB_VBUS                  policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_REGULATOR_RASPBERRYPI_TOUCHSCREEN_ATTINY policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_REGULATOR_RC5T583                        policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_REGULATOR_RK808                          policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_REGULATOR_RN5T618                        policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_REGULATOR_ROHM                           policy<{'arm64': 'm', 'armhf': 'm'}>
@@ -6582,21 +6510,15 @@ CONFIG_REGULATOR_TPS6286X                       policy<{'arm64': 'm', 'armhf': '
 CONFIG_REGULATOR_TPS65023                       policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_REGULATOR_TPS6507X                       policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_REGULATOR_TPS65086                       policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_REGULATOR_TPS65090                       policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_REGULATOR_TPS65132                       policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_REGULATOR_TPS65217                       policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_REGULATOR_TPS65218                       policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_REGULATOR_TPS65219                       policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_REGULATOR_TPS6524X                       policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_REGULATOR_TPS6586X                       policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_REGULATOR_TPS65910                       policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_REGULATOR_TPS65912                       policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_REGULATOR_USERSPACE_CONSUMER             policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_REGULATOR_VCTRL                          policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_REGULATOR_VIRTUAL_CONSUMER               policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_REGULATOR_WM831X                         policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_REGULATOR_WM8350                         policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_REGULATOR_WM8400                         policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_REGULATOR_WM8994                         policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_REISERFS_CHECK                           policy<{'arm64': 'n', 'armhf': 'n'}>
 CONFIG_REISERFS_FS                              policy<{'arm64': 'm', 'armhf': 'm'}>
@@ -6703,7 +6625,6 @@ CONFIG_RT73USB                                  policy<{'arm64': 'm', 'armhf': '
 CONFIG_RTC_CLASS                                policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_RTC_DEBUG                                policy<{'arm64': 'n', 'armhf': 'n'}>
 CONFIG_RTC_DRV_88PM80X                          policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_RTC_DRV_88PM860X                         policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_RTC_DRV_ABB5ZES3                         policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_RTC_DRV_ABEOZ9                           policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_RTC_DRV_ABX80X                           policy<{'arm64': 'm', 'armhf': 'm'}>
@@ -6714,8 +6635,6 @@ CONFIG_RTC_DRV_BQ4802                           policy<{'arm64': 'm', 'armhf': '
 CONFIG_RTC_DRV_CADENCE                          policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_RTC_DRV_CMOS                             policy<{'armhf': 'y'}>
 CONFIG_RTC_DRV_CPCAP                            policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_RTC_DRV_DA9052                           policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_RTC_DRV_DA9055                           policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_RTC_DRV_DA9063                           policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_RTC_DRV_DS1286                           policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_RTC_DRV_DS1302                           policy<{'arm64': 'm', 'armhf': 'm'}>
@@ -6750,7 +6669,6 @@ CONFIG_RTC_DRV_HYM8563                          policy<{'arm64': 'm', 'armhf': '
 CONFIG_RTC_DRV_ISL12022                         policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_RTC_DRV_ISL12026                         policy<{'arm64': 'n', 'armhf': 'n'}>
 CONFIG_RTC_DRV_ISL1208                          policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_RTC_DRV_LP8788                           policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_RTC_DRV_M41T80                           policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_RTC_DRV_M41T80_WDT                       policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_RTC_DRV_M41T93                           policy<{'arm64': 'm', 'armhf': 'm'}>
@@ -6763,9 +6681,6 @@ CONFIG_RTC_DRV_MAX6902                          policy<{'arm64': 'm', 'armhf': '
 CONFIG_RTC_DRV_MAX6916                          policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_RTC_DRV_MAX77686                         policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_RTC_DRV_MAX8907                          policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_RTC_DRV_MAX8925                          policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_RTC_DRV_MAX8997                          policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_RTC_DRV_MAX8998                          policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_RTC_DRV_MC13XXX                          policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_RTC_DRV_MCP795                           policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_RTC_DRV_MSM6242                          policy<{'arm64': 'm', 'armhf': 'm'}>
@@ -6785,7 +6700,6 @@ CONFIG_RTC_DRV_PL030                            policy<{'arm64': 'm', 'armhf': '
 CONFIG_RTC_DRV_PM8XXX                           policy<{'armhf': 'm'}>
 CONFIG_RTC_DRV_R7301                            policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_RTC_DRV_R9701                            policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_RTC_DRV_RC5T583                          policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_RTC_DRV_RC5T619                          policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_RTC_DRV_RK808                            policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_RTC_DRV_RP5C01                           policy<{'arm64': 'm', 'armhf': 'm'}>
@@ -6806,11 +6720,7 @@ CONFIG_RTC_DRV_S5M                              policy<{'arm64': 'm', 'armhf': '
 CONFIG_RTC_DRV_SD3078                           policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_RTC_DRV_STK17TA8                         policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_RTC_DRV_TEST                             policy<{'arm64': 'n', 'armhf': 'n'}>
-CONFIG_RTC_DRV_TPS6586X                         policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_RTC_DRV_TPS65910                         policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_RTC_DRV_V3020                            policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_RTC_DRV_WM831X                           policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_RTC_DRV_WM8350                           policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_RTC_DRV_X1205                            policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_RTC_DRV_ZYNQMP                           policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_RTC_HCTOSYS                              policy<{'arm64': 'y', 'armhf': 'y'}>
@@ -6888,11 +6798,6 @@ CONFIG_RTW89_PCI                                policy<{'arm64': 'm', 'armhf': '
 CONFIG_RT_GROUP_SCHED                           policy<{'arm64': 'n', 'armhf': 'n'}>
 CONFIG_RT_MUTEXES                               policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_RUNTIME_TESTING_MENU                     policy<{'arm64': 'y', 'armhf': 'y'}>
-CONFIG_RV                                       policy<{'arm64': 'y', 'armhf': 'y'}>
-CONFIG_RV_MON_WWNR                              policy<{'arm64': 'y', 'armhf': 'y'}>
-CONFIG_RV_REACTORS                              policy<{'arm64': 'y', 'armhf': 'y'}>
-CONFIG_RV_REACT_PANIC                           policy<{'arm64': 'y', 'armhf': 'y'}>
-CONFIG_RV_REACT_PRINTK                          policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_RWSEM_SPIN_ON_OWNER                      policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_RXKAD                                    policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_RXPERF                                   policy<{'arm64': 'm', 'armhf': 'm'}>
@@ -7136,8 +7041,6 @@ CONFIG_SENSORS_BH1770                           policy<{'arm64': 'm', 'armhf': '
 CONFIG_SENSORS_BPA_RS600                        policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_SENSORS_CORSAIR_CPRO                     policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_SENSORS_CORSAIR_PSU                      policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_SENSORS_DA9052_ADC                       policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_SENSORS_DA9055                           policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_SENSORS_DELTA_AHE50DC_FAN                policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_SENSORS_DME1737                          policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_SENSORS_DPS920AB                         policy<{'arm64': 'm', 'armhf': 'm'}>
@@ -7328,8 +7231,6 @@ CONFIG_SENSORS_W83795                           policy<{'arm64': 'm', 'armhf': '
 CONFIG_SENSORS_W83795_FANCTRL                   policy<{'arm64': 'n', 'armhf': 'n'}>
 CONFIG_SENSORS_W83L785TS                        policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_SENSORS_W83L786NG                        policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_SENSORS_WM831X                           policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_SENSORS_WM8350                           policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_SENSORS_XDPE122                          policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_SENSORS_XDPE122_REGULATOR                policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_SENSORS_XDPE152                          policy<{'arm64': 'm', 'armhf': 'm'}>
@@ -7340,7 +7241,6 @@ CONFIG_SERIAL_8250_BCM2835AUX                   policy<{'arm64': 'y', 'armhf': '
 CONFIG_SERIAL_8250_CONSOLE                      policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_SERIAL_8250_DEPRECATED_OPTIONS           policy<{'arm64': 'n', 'armhf': 'n'}>
 CONFIG_SERIAL_8250_DETECT_IRQ                   policy<{'arm64': 'n', 'armhf': 'n'}>
-CONFIG_SERIAL_8250_DMA                          policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_SERIAL_8250_DW                           policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_SERIAL_8250_DWLIB                        policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_SERIAL_8250_EXTENDED                     policy<{'arm64': 'y', 'armhf': 'y'}>
@@ -7421,7 +7321,6 @@ CONFIG_SFC_SRIOV                                policy<{'arm64': 'y', 'armhf': '
 CONFIG_SFP                                      policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_SF_PDMA                                  policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_SGETMASK_SYSCALL                         policy<{'arm64': 'y', 'armhf': 'y'}>
-CONFIG_SGI_PARTITION                            policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_SGL_ALLOC                                policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_SG_POOL                                  policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_SHADOW_CALL_STACK                        policy<{'arm64': 'n'}>
@@ -7999,7 +7898,6 @@ CONFIG_SSB_SDIOHOST                             policy<{'arm64': 'y', 'armhf': '
 CONFIG_SSB_SDIOHOST_POSSIBLE                    policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_SSB_SPROM                                policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_SSFDC                                    policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_SSIF_IPMI_BMC                            policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_STACKDEPOT                               policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_STACKPROTECTOR                           policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_STACKPROTECTOR_PER_TASK                  policy<{'arm64': 'y', 'armhf': 'y'}>
@@ -8050,7 +7948,6 @@ CONFIG_SUNRPC_DISABLE_INSECURE_ENCTYPES         policy<{'arm64': 'n', 'armhf': '
 CONFIG_SUNRPC_GSS                               policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_SUNRPC_SWAP                              policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_SUNRPC_XPRT_RDMA                         policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_SUN_PARTITION                            policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_SURFACE_PLATFORMS                        policy<{'arm64': 'n'}>
 CONFIG_SUSPEND                                  policy<{'arm64': 'n', 'armhf': 'n'}>
 CONFIG_SVC_I3C_MASTER                           policy<{'arm64': 'm', 'armhf': 'm'}>
@@ -8059,7 +7956,6 @@ CONFIG_SWIOTLB                                  policy<{'arm64': 'y', 'armhf-ras
 CONFIG_SWPHY                                    policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_SWP_EMULATE                              policy<{'armhf': 'y'}>
 CONFIG_SWP_EMULATION                            policy<{'arm64': 'y'}>
-CONFIG_SW_SYNC                                  policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_SX9310                                   policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_SX9324                                   policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_SX9360                                   policy<{'arm64': 'm', 'armhf': 'm'}>
@@ -8090,7 +7986,6 @@ CONFIG_SYSTEM_REVOCATION_KEYS                   policy<{'arm64': '"debian/canoni
 CONFIG_SYSTEM_REVOCATION_LIST                   policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_SYSTEM_TRUSTED_KEYRING                   policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_SYSTEM_TRUSTED_KEYS                      policy<{'arm64': '"debian/canonical-certs.pem"', 'armhf': '"debian/canonical-certs.pem"'}>
-CONFIG_SYSV68_PARTITION                         policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_SYSVIPC                                  policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_SYSVIPC_COMPAT                           policy<{'arm64': 'y'}>
 CONFIG_SYSVIPC_SYSCTL                           policy<{'arm64': 'y', 'armhf': 'y'}>
@@ -8277,7 +8172,6 @@ CONFIG_TMPFS                                    policy<{'arm64': 'y', 'armhf': '
 CONFIG_TMPFS_INODE64                            policy<{'arm64': 'y'}>
 CONFIG_TMPFS_POSIX_ACL                          policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_TMPFS_XATTR                              policy<{'arm64': 'y', 'armhf': 'y'}>
-CONFIG_TOUCHSCREEN_88PM860X                     policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_TOUCHSCREEN_AD7877                       policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_TOUCHSCREEN_AD7879                       policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_TOUCHSCREEN_AD7879_I2C                   policy<{'arm64': 'm', 'armhf': 'm'}>
@@ -8301,7 +8195,6 @@ CONFIG_TOUCHSCREEN_CYTTSP5                      policy<{'arm64': 'm', 'armhf': '
 CONFIG_TOUCHSCREEN_CYTTSP_CORE                  policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_TOUCHSCREEN_CYTTSP_I2C                   policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_TOUCHSCREEN_CYTTSP_SPI                   policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_TOUCHSCREEN_DA9052                       policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_TOUCHSCREEN_DYNAPRO                      policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_TOUCHSCREEN_EDT_FT5X06                   policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_TOUCHSCREEN_EETI                         policy<{'arm64': 'm', 'armhf': 'm'}>
@@ -8381,7 +8274,6 @@ CONFIG_TOUCHSCREEN_USB_ZYTRONIC                 policy<{'arm64': 'y', 'armhf': '
 CONFIG_TOUCHSCREEN_WACOM_I2C                    policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_TOUCHSCREEN_WACOM_W8001                  policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_TOUCHSCREEN_WDT87XX_I2C                  policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_TOUCHSCREEN_WM831X                       policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_TOUCHSCREEN_WM9705                       policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_TOUCHSCREEN_WM9712                       policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_TOUCHSCREEN_WM9713                       policy<{'arm64': 'y', 'armhf': 'y'}>
@@ -8502,7 +8394,6 @@ CONFIG_UIO_PCI_GENERIC                          policy<{'arm64': 'm', 'armhf': '
 CONFIG_UIO_PDRV_GENIRQ                          policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_UIO_PRUSS                                policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_UIO_SERCOS3                              policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_ULTRIX_PARTITION                         policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_UNCOMPRESS_INCLUDE                       policy<{'armhf': '"debug/uncompress.h"'}>
 CONFIG_UNICODE                                  policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_UNICODE_NORMALIZATION_SELFTEST           policy<{'arm64': 'n', 'armhf': 'n'}>
@@ -8939,7 +8830,6 @@ CONFIG_USB_ZR364XX                              policy<{'arm64': 'm'}>
 CONFIG_USELIB                                   policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_USERFAULTFD                              policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_USERIO                                   policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_USERMODE_DRIVER                          policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_USER_DECRYPTED_DATA                      policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_USER_NS                                  policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_USE_OF                                   policy<{'armhf': 'y'}>
@@ -8953,7 +8843,6 @@ CONFIG_V4L_MEM2MEM_DRIVERS                      policy<{'arm64': 'y', 'armhf': '
 CONFIG_V4L_PLATFORM_DRIVERS                     policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_V4L_TEST_DRIVERS                         policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_VALIDATE_FS_PARSER                       policy<{'arm64': 'y', 'armhf': 'y'}>
-CONFIG_VCAP                                     policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_VCHIQ_CDEV                               policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_VCNL3020                                 policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_VCNL4000                                 policy<{'arm64': 'm', 'armhf': 'm'}>
@@ -9362,11 +9251,6 @@ CONFIG_WLAN_VENDOR_ZYDAS                        policy<{'arm64': 'y', 'armhf': '
 CONFIG_WLCORE                                   policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_WLCORE_SDIO                              policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_WLCORE_SPI                               policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_WM831X_BACKUP                            policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_WM831X_POWER                             policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_WM831X_WATCHDOG                          policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_WM8350_POWER                             policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_WM8350_WATCHDOG                          policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_WQ_POWER_EFFICIENT_DEFAULT               policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_WQ_WATCHDOG                              policy<{'arm64': 'n', 'armhf': 'n'}>
 CONFIG_WWAN_DEBUGFS                             policy<{'arm64': 'y', 'armhf': 'y'}>
