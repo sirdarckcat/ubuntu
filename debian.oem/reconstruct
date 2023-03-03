@@ -1,5 +1,10 @@
 # Recreate any symlinks created since the orig.
 # Remove any files deleted from the orig.
+rm -f 'Documentation/devicetree/bindings/phy/amlogic,meson-g12a-usb2-phy.yaml'
+rm -f 'Documentation/devicetree/bindings/phy/amlogic,meson-g12a-usb3-pcie-phy.yaml'
+rm -f 'drivers/gpu/drm/vmwgfx/vmwgfx_hashtab.c'
+rm -f 'drivers/gpu/drm/vmwgfx/vmwgfx_hashtab.h'
+chmod +x 'Documentation/devicetree/bindings/sound/everest,es8326.yaml'
 chmod +x 'debian/cloud-tools/hv_get_dhcp_info'
 chmod +x 'debian/cloud-tools/hv_get_dns_info'
 chmod +x 'debian/cloud-tools/hv_set_ifconfig'
@@ -48,7 +53,12 @@ chmod +x 'debian/templates/image.prerm.in'
 chmod +x 'debian/tests-build/check-aliases'
 chmod +x 'debian/tests/rebuild'
 chmod +x 'debian/tests/ubuntu-regression-suite'
+chmod +x 'drivers/gpu/drm/vmwgfx/vmwgfx_msg_arm64.h'
 chmod +x 'drivers/watchdog/f71808e_wdt.c'
+chmod +x 'scripts/atomic/atomics.tbl'
+chmod +x 'sound/soc/codecs/es8326.c'
+chmod +x 'sound/soc/codecs/es8326.h'
+chmod +x 'tools/testing/selftests/filesystems/fat/run_fat_tests.sh'
 chmod +x 'update-dkms-versions'
 chmod +x 'update-version-dkms'
 exit 0
