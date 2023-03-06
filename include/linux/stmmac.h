@@ -275,6 +275,7 @@ struct plat_stmmacenet_data {
 	bool sph_disable;
 	int mac2mac_rgmii_speed;
 	bool mac2mac_en;
+	bool no_autonegotiation;
 	int mac2mac_link;
 	bool early_eth;
 };
