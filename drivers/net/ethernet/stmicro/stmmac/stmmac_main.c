@@ -7291,7 +7291,7 @@ int stmmac_dvr_probe(struct device *device,
 	pm_runtime_set_active(device);
 	pm_runtime_enable(device);
 
-	if (!priv->plat->mac2mac_en &&
+	if ((priv->plat->no_autonegotiation || !priv->plat->mac2mac_en) &&
 	    priv->hw->pcs != STMMAC_PCS_TBI &&
 	    priv->hw->pcs != STMMAC_PCS_RTBI) {
 		/* MDIO bus Registration */
