@@ -469,6 +469,9 @@ stmmac_probe_config_dt(struct platform_device *pdev, u8 *mac)
 	/* Flag for mac2mac feature support*/
 	plat->mac2mac_en = of_property_read_bool(np, "mac2mac");
 
+	/* Flag for no autonegotiation feature support*/
+	plat->no_autonegotiation = of_property_read_bool(np, "no-autonegotiation");
+
 	/* Default to get clk_csr from stmmac_clk_crs_set(),
 	 * or get clk_csr from device tree.
 	 */
@@ -481,7 +484,7 @@ stmmac_probe_config_dt(struct platform_device *pdev, u8 *mac)
 	if (of_property_read_u32(np, "snps,phy-addr", &plat->phy_addr) == 0)
 		dev_warn(&pdev->dev, "snps,phy-addr property is deprecated\n");
 
-	if (!plat->mac2mac_en) {
+	if (plat->no_autonegotiation || !plat->mac2mac_en) {
 		rc = stmmac_mdio_setup(plat, np, &pdev->dev);
 		if (rc) {
 			ret = ERR_PTR(rc);
