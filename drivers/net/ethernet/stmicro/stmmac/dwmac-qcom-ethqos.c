@@ -94,6 +94,46 @@ struct qcom_ethqos {
 	bool rgmii_config_looback_en;
 };
 
+static int turn_off_autoneg_func(struct qcom_ethqos *ethqos)
+{
+	int phydata;
+
+	struct platform_device *pdev = ethqos->pdev;
+	struct net_device *dev = platform_get_drvdata(pdev);
+	struct stmmac_priv *priv = netdev_priv(dev);
+	struct mii_bus *bus = priv->mii;
+
+	if (!(&pdev->dev))
+		return 1;
+
+	if (!bus) {
+		dev_err(&pdev->dev, "qcom-ethqos: no mdio bus\n");
+		return 1;
+	}
+
+	if (!bus->read || !bus->write) {
+		dev_err(&pdev->dev, "qcom-ethqos: mdio bus no read or write\n");
+		return 1;
+	}
+
+	phydata = bus->read(bus, priv->plat->phy_addr, MII_BMCR);
+	phydata |= BMCR_RESET;
+	if (bus->write(bus, priv->plat->phy_addr, MII_BMCR, phydata) < 0) {
+		dev_err(&pdev->dev, "bus->write BMCR_RESET error\n");
+		return 1;
+	}
+
+	/* Disable auto neg */
+	phydata = bus->read(bus, priv->plat->phy_addr, MII_BMCR);
+	phydata &= ~(BMCR_ANENABLE);
+	if (bus->write(bus, priv->plat->phy_addr, MII_BMCR, phydata) < 0) {
+		dev_err(&pdev->dev, "bus->write MII_BMCR error\n");
+		return 1;
+	}
+	phydata = bus->read(bus, priv->plat->phy_addr, MII_BMCR);
+	return 0;
+}
+
 static int rgmii_readl(struct qcom_ethqos *ethqos, unsigned int offset)
 {
 	return readl(ethqos->rgmii_base + offset);
@@ -570,6 +610,11 @@ static int qcom_ethqos_probe(struct platform_device *pdev)
 
 	if (plat_dat->mac2mac_en)
 		plat_dat->mac2mac_link = -1;
+
+	if (plat_dat->mac2mac_en
+	    && of_property_read_bool(np, "no-autonegotiation")) {
+		turn_off_autoneg_func(ethqos);
+	}
 
 	return ret;
 
