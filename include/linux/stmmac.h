@@ -273,5 +273,9 @@ struct plat_stmmacenet_data {
 	int msi_tx_base_vec;
 	bool use_phy_wol;
 	bool sph_disable;
+	int mac2mac_rgmii_speed;
+	bool mac2mac_en;
+	int mac2mac_link;
+	bool early_eth;
 };
 #endif
