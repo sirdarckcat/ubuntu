@@ -3830,9 +3830,11 @@ static int stmmac_open(struct net_device *dev)
 
 	stmmac_init_coalesce(priv);
 
-	phylink_start(priv->phylink);
-	/* We may have called phylink_speed_down before */
-	phylink_speed_up(priv->phylink);
+	if (!priv->plat->mac2mac_en) {
+		phylink_start(priv->phylink);
+		/* We may have called phylink_speed_down before */
+		phylink_speed_up(priv->phylink);
+	}
 
 	ret = stmmac_request_irq(dev);
 	if (ret)
@@ -3852,6 +3854,7 @@ static int stmmac_open(struct net_device *dev)
 	return 0;
 
 irq_error:
+	if (!priv->plat->mac2mac_en)
 	phylink_stop(priv->phylink);
 
 	for (chan = 0; chan < priv->plat->tx_queues_to_use; chan++)
@@ -3861,7 +3864,8 @@ irq_error:
 init_error:
 	free_dma_desc_resources(priv);
 dma_desc_error:
-	phylink_disconnect_phy(priv->phylink);
+	if (!priv->plat->mac2mac_en)
+		phylink_disconnect_phy(priv->phylink);
 init_phy_error:
 	pm_runtime_put(priv->device);
 	return ret;
@@ -3890,11 +3894,13 @@ static int stmmac_release(struct net_device *dev)
 
 	netif_tx_disable(dev);
 
-	if (device_may_wakeup(priv->device))
+	if (device_may_wakeup(priv->device) && !priv->plat->mac2mac_en)
 		phylink_speed_down(priv->phylink, false);
 	/* Stop and disconnect the PHY */
-	phylink_stop(priv->phylink);
-	phylink_disconnect_phy(priv->phylink);
+	if (!priv->plat->mac2mac_en) {
+		phylink_stop(priv->phylink);
+		phylink_disconnect_phy(priv->phylink);
+	}
 
 	stmmac_disable_all_queues(priv);
 
@@ -5932,7 +5938,8 @@ static int stmmac_ioctl(struct net_device *dev, struct ifreq *rq, int cmd)
 	case SIOCGMIIPHY:
 	case SIOCGMIIREG:
 	case SIOCSMIIREG:
-		ret = phylink_mii_ioctl(priv->phylink, rq, cmd);
+		if (!priv->plat->mac2mac_en)
+			ret = phylink_mii_ioctl(priv->phylink, rq, cmd);
 		break;
 	case SIOCSHWTSTAMP:
 		ret = stmmac_hwtstamp_set(dev, rq);
@@ -7284,7 +7291,8 @@ int stmmac_dvr_probe(struct device *device,
 	pm_runtime_set_active(device);
 	pm_runtime_enable(device);
 
-	if (priv->hw->pcs != STMMAC_PCS_TBI &&
+	if (!priv->plat->mac2mac_en &&
+	    priv->hw->pcs != STMMAC_PCS_TBI &&
 	    priv->hw->pcs != STMMAC_PCS_RTBI) {
 		/* MDIO bus Registration */
 		ret = stmmac_mdio_register(ndev);
@@ -7305,7 +7313,9 @@ int stmmac_dvr_probe(struct device *device,
 			goto error_xpcs_setup;
 	}
 
-	ret = stmmac_phy_setup(priv);
+	if (!priv->plat->mac2mac_en)
+		ret = stmmac_phy_setup(priv);
+
 	if (ret) {
 		netdev_err(ndev, "failed to setup phy (%d)\n", ret);
 		goto error_phy_setup;
@@ -7333,7 +7343,8 @@ int stmmac_dvr_probe(struct device *device,
 	return ret;
 
 error_netdev_register:
-	phylink_destroy(priv->phylink);
+	if (!priv->plat->mac2mac_en)
+		phylink_destroy(priv->phylink);
 error_xpcs_setup:
 error_phy_setup:
 	if (priv->hw->pcs != STMMAC_PCS_TBI &&
@@ -7373,7 +7384,8 @@ int stmmac_dvr_remove(struct device *dev)
 #ifdef CONFIG_DEBUG_FS
 	stmmac_exit_fs(ndev);
 #endif
-	phylink_destroy(priv->phylink);
+	if (!priv->plat->mac2mac_en)
+		phylink_destroy(priv->phylink);
 	if (priv->plat->stmmac_rst)
 		reset_control_assert(priv->plat->stmmac_rst);
 	reset_control_assert(priv->plat->stmmac_ahb_rst);
@@ -7438,15 +7450,17 @@ int stmmac_suspend(struct device *dev)
 
 	mutex_unlock(&priv->lock);
 
-	rtnl_lock();
-	if (device_may_wakeup(priv->device) && priv->plat->pmt) {
-		phylink_suspend(priv->phylink, true);
-	} else {
-		if (device_may_wakeup(priv->device))
-			phylink_speed_down(priv->phylink, false);
-		phylink_suspend(priv->phylink, false);
+	if (!priv->plat->mac2mac_en) {
+		rtnl_lock();
+		if (device_may_wakeup(priv->device) && priv->plat->pmt) {
+			phylink_suspend(priv->phylink, true);
+		} else {
+			if (device_may_wakeup(priv->device))
+				phylink_speed_down(priv->phylink, false);
+			phylink_suspend(priv->phylink, false);
+		}
+		rtnl_unlock();
 	}
-	rtnl_unlock();
 
 	if (priv->dma_cap.fpesel) {
 		/* Disable FPE */
@@ -7533,14 +7547,17 @@ int stmmac_resume(struct device *dev)
 			return ret;
 	}
 
-	rtnl_lock();
-	if (device_may_wakeup(priv->device) && priv->plat->pmt) {
-		phylink_resume(priv->phylink);
-	} else {
-		phylink_resume(priv->phylink);
-		if (device_may_wakeup(priv->device))
-			phylink_speed_up(priv->phylink);
+	if (!priv->plat->mac2mac_en) {
+		rtnl_lock();
+		if (device_may_wakeup(priv->device) && priv->plat->pmt) {
+			phylink_resume(priv->phylink);
+		} else {
+			phylink_resume(priv->phylink);
+			if (device_may_wakeup(priv->device))
+				phylink_speed_up(priv->phylink);
+		}
 	}
+
 	rtnl_unlock();
 
 	rtnl_lock();
