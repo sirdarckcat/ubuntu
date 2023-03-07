@@ -1,0 +1,797 @@
+/* Copyright (c) 2021 Lantronix Inc. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+#include "sm8150.dtsi"
+#include "pm8150.dtsi"
+#include "sm8150-qed-qups.dtsi"
+
+&tlmm {
+    /delete-node/ bt_en_default;
+    /delete-node/ wlan_en_default;
+
+	sdc2_on: sdc2_on {
+		clk {
+			pins = "sdc2_clk";
+			bias-disable;		/* No pull */
+			drive-strength = <16>;	/* 16 MA */
+		};
+
+		cmd {
+			pins = "sdc2_cmd";
+			bias-pull-up;		/* pull up */
+			drive-strength = <16>;	/* 16 MA */
+		};
+
+		data {
+			pins = "sdc2_data";
+			bias-pull-up;		/* pull up */
+			drive-strength = <16>;	/* 16 MA */
+		};
+	};
+
+	sdc2_off: sdc2_off {
+		clk {
+			pins = "sdc2_clk";
+			bias-disable;		/* No pull */
+			drive-strength = <2>;	/* 2 MA */
+		};
+
+		cmd {
+			pins = "sdc2_cmd";
+			bias-pull-up;		/* pull up */
+			drive-strength = <2>;	/* 2 MA */
+		};
+
+		data {
+			pins = "sdc2_data";
+			bias-pull-up;		/* pull up */
+			drive-strength = <2>;	/* 2 MA */
+		};
+
+	};
+
+	fpga_spi_reset_default: fpga_spi_reset_default {
+		mux {
+			pins = "gpio62";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio62";
+			drive-strength =<2>;
+			bias-pull-down;
+		};
+	};
+
+	fpga_spi_nconfig_default: fpga_spi_nconfig_default {
+		mux {
+			pins = "gpio75";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio75";
+			drive-strength =<2>;
+			bias-pull-down;
+		};
+	};
+
+	fpga_spi_done_default: fpga_spi_done_default {
+		mux {
+			pins = "gpio80";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio80";
+			bias-pull-down;
+		};
+	};
+
+	fpga_spi_programn_default: fpga_spi_programn_default {
+		mux {
+			pins = "gpio139";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio139";
+			drive-strength =<2>;
+			bias-pull-down;
+		};
+	};
+
+	fpga_spi_initn_default: fpga_spi_initn_default {
+		mux {
+			pins = "gpio138";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio138";
+			bias-pull-down;
+		};
+	};
+
+	qed_eth_pwr_default: qed_eth_pwr_default {
+		mux {
+			pins = "gpio17", "gpio34";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio17", "gpio34";
+			drive-strength =<8>;
+			bias-pull-down;
+		};
+	};
+
+	qed_bt_wifi_pwr_default: qed_bt_wifi_pwr_default {
+		mux {
+            pins = "gpio63", "gpio66", "gpio169", "gpio172";
+			function = "gpio";
+		};
+		config {
+            pins = "gpio63", "gpio66", "gpio169", "gpio172";
+			drive-strength =<8>;
+			bias-pull-down;
+		};
+	};
+
+	qed_bt_pcm_default: qed_bt_pcm_default {
+		mux {
+			pins = "gpio149", "gpio150", "gpio151", "gpio152";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio149", "gpio150", "gpio151", "gpio152";
+			drive-strength =<2>;
+			bias-pull-down;
+		};
+	};
+
+	qed_lte_default: qed_lte_default {
+		mux {
+			pins = "gpio32", "gpio102", "gpio132", "gpio133", "gpio134", "gpio135";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio32", "gpio102", "gpio132", "gpio133", "gpio134", "gpio135";
+#if 1
+			drive-strength =<2>;
+			bias-pull-down;
+#else
+			input-enable;
+#endif
+		};
+	};
+
+	qed_lte_status_default: qed_lte_status_default {
+		mux {
+			pins = "gpio104", "gpio131";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio104", "gpio131";
+			input-enable;
+		};
+	};
+
+	/* BT Pin Control */
+	qupv3_se13_ctsrx: qupv3_se13_ctsrx {
+		mux {
+			pins = "gpio43", "gpio46";
+			function = "qup13";
+		};
+
+		config {
+			pins = "gpio43", "gpio46";
+			drive-strength = <2>;
+			bias-disable;
+		};
+	};
+
+	qupv3_se13_rts: qupv3_se13_rts {
+		mux {
+			pins = "gpio44";
+			function = "qup13";
+		};
+
+		config {
+			pins = "gpio44";
+			drive-strength = <2>;
+			bias-pull-down;
+		};
+	};
+
+	qupv3_se13_tx: qupv3_se13_tx {
+		mux {
+			pins = "gpio45";
+			function = "qup13";
+		};
+
+		config {
+			pins = "gpio45";
+			drive-strength = <2>;
+			bias-pull-up;
+		};
+   }; /* BT Pin Control */
+
+	/* 169MHz RF module Pin Control */
+	qupv3_se7_ctsrx: qupv3_se7_ctsrx {
+		mux {
+			pins = "gpio98", "gpio101";
+			function = "qup7";
+		};
+
+		config {
+			pins = "gpio98", "gpio101";
+			drive-strength = <2>;
+			bias-disable;
+		};
+	};
+
+	qupv3_se7_rts: qupv3_se7_rts {
+		mux {
+			pins = "gpio99";
+			function = "qup7";
+		};
+
+		config {
+			pins = "gpio99";
+			drive-strength = <2>;
+			bias-pull-down;
+		};
+	};
+
+	qupv3_se7_tx: qupv3_se7_tx {
+		mux {
+			pins = "gpio100";
+			function = "qup7";
+		};
+
+		config {
+			pins = "gpio100";
+			drive-strength = <2>;
+			bias-pull-up;
+		};
+   }; /* 169MHz RF module Pin Control */
+
+	/*  RS485 Pin Control */
+	qupv3_se18_ctsrx: qupv3_se18_ctsrx {
+		mux {
+			pins = "gpio23", "gpio26";
+			function = "qup18";
+		};
+
+		config {
+			pins = "gpio23", "gpio26";
+			drive-strength = <2>;
+			bias-disable;
+		};
+	};
+
+	qupv3_se18_rts: qupv3_se18_rts {
+		mux {
+			pins = "gpio24";
+			function = "qup18";
+		};
+
+		config {
+			pins = "gpio24";
+			drive-strength = <2>;
+			bias-pull-down;
+		};
+	};
+
+	qupv3_se18_tx: qupv3_se18_tx {
+		mux {
+			pins = "gpio25";
+			function = "qup18";
+		};
+
+		config {
+			pins = "gpio25";
+			drive-strength = <2>;
+			bias-pull-up;
+		};
+   }; /*  RS485 Pin Control */
+
+	/* Balance Meter Board Pin Control */
+	qupv3_se11_2uart_pins: qupv3_se11_2uart_pins {
+		mux {
+				pins = "gpio92", "gpio93";
+				function = "qup11";
+		};
+		config {
+				pins = "gpio92", "gpio93";
+				drive-strength = <2>;
+				bias-disable;
+		};
+	}; /* Balance Meter Board Pin Control */
+
+	/* GNSS Pin Control */
+	qupv3_se4_2uart_pins: qupv3_se4_2uart_pins {
+		mux {
+			pins = "gpio41", "gpio42";
+			function = "qup9";
+		};
+
+		config {
+			pins = "gpio41", "gpio42";
+			drive-strength = <2>;
+			bias-disable;
+		};
+	}; /* GNSS Pin Control */
+
+	/* PLC Pin Control */
+	qupv3_se16_2uart_pins: qupv3_se16_2uart_pins {
+		mux {
+			pins = "gpio83", "gpio84";
+			function = "qup16";
+		};
+
+		config {
+			pins = "gpio83", "gpio84";
+			drive-strength = <2>;
+			bias-disable;
+		};
+	}; /* PLC Pin Control */
+
+	lis2dh12_int1_default: lis2dh12_int1_default {
+		mux {
+			pins = "gpio142";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio142";
+			drive-strength = <16>;
+			bias-pull-down;
+		};
+	};
+
+	lis2dh12_int2_default: lis2dh12_int2_default {
+		mux {
+			pins = "gpio153";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio153";
+			drive-strength = <16>;
+			bias-pull-down;
+		};
+	};
+
+	nxp_rtc_int_default: nxp_rtc_int_default {
+		mux {
+			pins = "gpio97";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio97";
+			drive-strength = <16>;
+			bias-pull-down;
+		};
+	};
+
+	/* TODO: not referenced yet */
+	key_rotary_switch {
+		key_rotary_default: key_rotary_default {
+			pins = "gpio81";
+			function = "gpio";
+			input-enable;
+			bias-pull-up;
+		};
+	};
+
+	/* TODO: not referenced yet */
+	pcie0_wake_qed_default: pcie0_wake_qed_default {
+		mux {
+			pins = "gpio37";
+			function = "gpio";
+		};
+
+		config {
+			pins = "gpio37";
+			drive-strength = <2>;
+			bias-disable;
+		};
+	};
+
+	nxp_rtc_int_default: nxp_rtc_int_default {
+		mux {
+			pins = "gpio97";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio97";
+			drive-strength = <16>;
+			bias-pull-down;
+		};
+	};
+
+	meter_board_default: meter_board_default {
+		mux {
+			pins = "gpio82";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio82";
+			drive-strength =<2>;
+			bias-pull-down;
+		};
+	};
+}; /* tlmm */
+
+&sdhc_2 {
+    status = "okay";
+	/* cd-gpios = <&tlmm 4 GPIO_ACTIVE_LOW>; */
+	pinctrl-names = "default", "sleep";
+	pinctrl-0 = <&sdc2_on>;
+	pinctrl-1 = <&sdc2_off>;
+	vqmmc-supply = <&vreg_l13c_2p96>; /* IO line power */
+	vmmc-supply = <&vreg_l17a_2p96>;  /* Card power line */
+	bus-width = <4>;
+    no-sd;
+    no-emmc;
+    non-removable;
+};
+
+/* /delete-node/ &bluetooth; */
+&soc {
+	/* fpga spi control device	*/
+	fpga_spi_device {
+		compatible = "ltx,fpga-device-ecp5";
+		label = "fpga-spi-device-ecp5";
+		pinctrl-names = "default";
+		pinctrl-0 = <&fpga_spi_power_default
+			&fpga_spi_reset_default
+			&fpga_spi_done_default
+			&fpga_spi_programn_default
+			&fpga_spi_initn_default>;
+		fpga-gpios = <&pm8150_2_gpios 10 GPIO_ACTIVE_HIGH>, /* POWER */
+			<&tlmm 62 GPIO_ACTIVE_HIGH>, /* FPGA reset */
+			<&tlmm 80 GPIO_OPEN_DRAIN>, /* ecp5 DONE configuration */
+			<&tlmm 139 GPIO_ACTIVE_HIGH>, /* ecp5 PROGRAMN */
+			<&tlmm 138 GPIO_OPEN_DRAIN>; /* ecp5 INITN */
+		fpga-fw-bus = /bits/ 8 <0x0>;
+		fpga-config-bus = /bits/ 8 <0x1>;
+	};
+
+	/* QED test pci */
+	igc_mac {
+		compatible = "qed,igc-mac";
+		label = "qed-igc-mac";
+        /* placeholder, gets populated by abl */
+		mac-address = [000000000000];
+	};
+
+	/* QED power control device	*/
+	qed_pwr {
+		compatible = "ltx,qed-power";
+		label = "qed-power-device";
+		pinctrl-names = "default";
+		pinctrl-0 = <&qed_eth_pwr_default &qed_bt_wifi_pwr_default
+			&qed_bt_pcm_default &qed_lte_default &qed_lte_status_default &vsc_reset_default>;
+		pwr-gpios = <&tlmm 34 GPIO_ACTIVE_HIGH>, /* i226/i210 PWR EN */
+			<&tlmm 17 GPIO_ACTIVE_HIGH>, /* i226/i210 PCIE EN */
+			<&tlmm 63 GPIO_ACTIVE_HIGH>, /* WIFI VDD EN */
+			<&tlmm 66 GPIO_ACTIVE_HIGH>, /* WIFI VDDIO EN */
+			<&tlmm 169 GPIO_ACTIVE_HIGH>, /* BT power */
+			<&tlmm 172 GPIO_ACTIVE_HIGH>, /* WIFI power */
+			<&tlmm 135 GPIO_ACTIVE_HIGH>, /* LTE ON_OFF */
+			<&tlmm 131 GPIO_ACTIVE_HIGH>, /* LTE PWRMON */
+			<&tlmm 104 GPIO_ACTIVE_HIGH>, /* LTE SW RDY */
+			<&tlmm 32 GPIO_ACTIVE_HIGH>, /* LTE USB FORCE BOOT */
+			<&tlmm 102 GPIO_ACTIVE_HIGH>, /* LTE FAST SHDN */
+			<&tlmm 133 GPIO_ACTIVE_HIGH>, /* LTE SHDN */
+			<&tlmm 134 GPIO_ACTIVE_HIGH>, /* LTE GPIO 4 */
+			<&tlmm 132 GPIO_ACTIVE_HIGH>, /* LTE GPIO 2 SPARE*/
+			<&tlmm 149 GPIO_ACTIVE_HIGH>, /* BT PCM default from BT out */
+			<&tlmm 150 GPIO_ACTIVE_HIGH>, /* BT PCM default from BT in */
+			<&tlmm 151 GPIO_ACTIVE_HIGH>, /* BT PCM default from BT out */
+			<&tlmm 152 GPIO_ACTIVE_HIGH>; /* BT PCM default from BT out */
+		vsc,reset-gpio = <&tlmm 148 GPIO_ACTIVE_LOW>; /* VSC reset */
+		/* <&tlmm 35 GPIO_ACTIVE_HIGH>, i226/i210 PCIE reset */
+#if 1
+		/* enable wifi on boot */
+		qed,wifi_en;
+		/* enable bt on boot */
+		qed,bt_en;
+		/* enable lte on boot */
+		qed,lte_en;
+#endif
+		/* enable vsc switch on boot */
+		vsc,reset;
+	};
+
+	meter_board_rst {
+		compatible = "meter-brd-rst";
+		label = "meter-brd-rst";
+		pinctrl-names = "default";
+		pinctl-0 = <&meter_board_default>;
+		reset-gpios = <&tlmm 82 GPIO_ACTIVE_LOW>;
+		status = "ok";
+    };
+
+	rotary_switch {
+		compatible = "gpio-keys";
+		label = "rotary-switch";
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&key_rotary_default>;
+
+		rotary_change {
+			label = "rotary-switch";
+			gpios = <&tlmm 81 GPIO_ACTIVE_HIGH>;
+			linux,input-type = <1>;
+			linux,code = <KEY_HOME>;
+			gpio-key,wakeup;
+			debounce-interval = <15>;
+			linux,can-disable;
+		};
+	};
+};
+
+/* &qupv3_se8_i2c {
+	status = "disabled";
+}; */
+
+/* &qupv3_se8_spi {
+	status = "ok";
+}; */
+
+&spmi_bus {
+        pm8150_4: pmic@4 {
+		compatible = "qcom,pm8150", "qcom,spmi-pmic";
+		reg = <0x4 SPMI_USID>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+        pon_2: power-on@800 {
+			compatible = "qcom,pm8916-pon";
+			reg = <0x0800>;
+
+			status = "disabled";
+		};
+
+		pm8150_2_temp: temp-alarm@2400 {
+			compatible = "qcom,spmi-temp-alarm";
+			reg = <0x2400>;
+			interrupts = <0x4 0x24 0x0 IRQ_TYPE_EDGE_BOTH>;
+			io-channels = <&pmm8155au_2_adc ADC5_DIE_TEMP>;
+			io-channel-names = "thermal";
+			#thermal-sensor-cells = <0>;
+		};
+
+		pm8150_2_adc: adc@3100 {
+			compatible = "qcom,spmi-adc5";
+			reg = <0x3100>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+			#io-channel-cells = <1>;
+			interrupts = <0x4 0x31 0x0 IRQ_TYPE_EDGE_RISING>;
+
+			ref-gnd@0 {
+				reg = <ADC5_REF_GND>;
+				qcom,pre-scaling = <1 1>;
+				label = "ref_gnd";
+			};
+
+			vref-1p25@1 {
+				reg = <ADC5_1P25VREF>;
+				qcom,pre-scaling = <1 1>;
+				label = "vref_1p25";
+			};
+
+			die-temp@6 {
+				reg = <ADC5_DIE_TEMP>;
+				qcom,pre-scaling = <1 1>;
+				label = "die_temp";
+			};
+		};
+
+		pm8150_2_gpios: gpio@c000 {
+			compatible = "qcom,pm8150-gpio";
+			reg = <0xc000>;
+			gpio-controller;
+			gpio-ranges = <&pmm8155au_2_gpios 0 0 10>;
+			interrupt-controller;
+			#interrupt-cells = <2>;
+			fpga_spi_power {
+				fpga_spi_power_default: fpga_spi_power_default {
+					pins = "gpio10";
+					function = "normal";
+					input-enable;
+					bias-pull-down;
+					power-source = <0>;
+				};
+			};
+		};
+	};
+
+	/* TODO: not needed? */
+	pmic@5 {
+		compatible = "qcom,pm8150", "qcom,spmi-pmic";
+		reg = <0x5 SPMI_USID>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+	};
+};
+
+&qupv3_id_0 {
+	status = "okay";
+
+	/* 169MHz RF module 4-wire */
+	serial_rf: serial@89c000 {
+		status = "okay";
+		compatible = "qcom,geni-uart";
+		reg = <0 0x89c000 0 0x4000>;
+		clock-names = "se";
+		clocks = <&gcc GCC_QUPV3_WRAP0_S7_CLK>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&qupv3_se7_ctsrx>, <&qupv3_se7_rts>, <&qupv3_se7_tx>;
+		/* interrupts = <GIC_SPI 608 IRQ_TYPE_LEVEL_HIGH>, <&tlmm 101 IRQ_TYPE_NONE>; */
+		interrupts = <GIC_SPI 608 IRQ_TYPE_LEVEL_HIGH>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+	};
+};
+
+&qupv3_id_1 {
+	status = "okay";
+
+	/* Balance Meter serial 2-wire*/
+	serial_balance_meter: serial@a8c000 {
+		status = "okay";
+		compatible = "qcom,geni-uart";
+		reg = <0 0xa8c000 0 0x4000>;
+		reg-names = "se";
+		clock-names = "se";
+		clocks = <&gcc GCC_QUPV3_WRAP1_S3_CLK>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&qupv3_se11_2uart_pins>;
+		interrupts = <GIC_SPI 356 IRQ_TYPE_LEVEL_HIGH>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+	};
+
+	/* PLC serial 2-wire */
+	serial_plc: serial@a94000 {
+		status = "okay";
+		compatible = "qcom,geni-uart";
+		reg = <0 0xa94000 0 0x4000>;
+		reg-names = "se";
+		clock-names = "se";
+		clocks = <&gcc GCC_QUPV3_WRAP1_S5_CLK>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&qupv3_se16_2uart_pins>;
+		interrupts = <GIC_SPI 358 IRQ_TYPE_LEVEL_HIGH>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+	};
+
+	/* GNSS UART Instance for CDP/MTP platform  2-wire */
+	serial_gnss: serial@a84000 {
+		status = "okay";
+		compatible = "qcom,geni-uart";
+		reg = <0 0xa84000 0 0x4000>;
+		reg-names = "se";
+		clock-names = "se";
+		clocks = <&gcc GCC_QUPV3_WRAP1_S1_CLK>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&qupv3_se4_2uart_pins>;
+		interrupts = <GIC_SPI 354 IRQ_TYPE_LEVEL_HIGH>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+	};
+};
+
+&qupv3_id_2 {
+	status = "okay";
+
+	/* BT serial 4-wire */
+	serial_bt: serial@c8c000 {
+		status = "okay";
+		compatible = "qcom,geni-uart";
+		reg = <0 0x00c8c000 0 0x4000>;
+		clock-names = "se";
+		clocks = <&gcc GCC_QUPV3_WRAP2_S3_CLK>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&qupv3_se13_ctsrx>, <&qupv3_se13_rts>, <&qupv3_se13_tx>;
+		/* interrupts = <GIC_SPI 585 IRQ_TYPE_LEVEL_HIGH>, <&tlmm 46 IRQ_TYPE_NONE>; */
+		interrupts = <GIC_SPI 585 IRQ_TYPE_LEVEL_HIGH>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+	};
+
+	/* RS485 serial 4-wire*/
+	serial_rs485: serial@c84000 {
+		status = "okay";
+		compatible = "qcom,geni-uart";
+		reg = <0 0x00c84000 0 0x4000>;
+		clock-names = "se";
+		clocks = <&gcc GCC_QUPV3_WRAP2_S1_CLK>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&qupv3_se18_ctsrx>, <&qupv3_se18_rts>, <&qupv3_se18_tx>;
+		/* interrupts = <GIC_SPI 583 IRQ_TYPE_LEVEL_HIGH>, <&tlmm 26 IRQ_TYPE_NONE>; */
+		interrupts = <GIC_SPI 583 IRQ_TYPE_LEVEL_HIGH>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+	};
+};
+
+&i2c17 {
+	status = "okay";
+
+	/* accelerometer */
+	lis2dh12_accel@19 {
+		status = "okay";
+		compatible = "st,lis2dh12-accel";
+		reg = <0x19>;
+		interrupt-parent = <&tlmm>;
+		interrupts = <142 IRQ_TYPE_EDGE_RISING>,
+				   <152 IRQ_TYPE_EDGE_RISING>;
+		st,drdy-int-pin = <1>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&lis2dh12_int1_default
+			&lis2dh12_int2_default>;
+	};
+
+	/* rtc */
+	nxp_rtc@51 {
+		status = "okay";
+		compatible = "nxp,pcf2129";
+		reg = <0x51>;
+		interrupt-parent = <&tlmm>;
+		interrupts = <97 IRQ_TYPE_EDGE_RISING>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&nxp_rtc_int_default>;
+	};
+};
+
+&pm8150_gpios {
+	gpio6_dc {
+		gpio6_dc_def: gpio6_dc_def {
+			pins = "gpio6";
+			function = "normal";
+			bias-disable;
+			input-enable;
+			power-source = <0>;
+		};
+	};
+
+	gpio7_ac{
+		gpio7_dc_def: gpio7_dc_def {
+			pins = "gpio7";
+			function = "normal";
+			bias-disable;
+			input-enable;
+			power-source = <0>;
+		};
+	};
+
+	gpio9_rf_rst {
+			gpio9_rf_rst_def: gpio9_rf_rst_def {
+			pins = "gpio9";
+			function = "normal";
+			bias-pull-up;
+			input-enable;
+			power-source = <0>;
+		};
+	};
+
+	gpio10_rf_sleep {
+		gpio10_rf_sleep_def: gpio10_rf_sleep_def {
+			 pins = "gpio10";
+			 function = "normal";
+			 bias-pull-down;
+			 input-enable;
+			 power-source = <0>;
+		};
+	};
+};
