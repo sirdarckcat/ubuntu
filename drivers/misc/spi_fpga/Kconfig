@@ -1,0 +1,10 @@
+#
+# FPGA control spi driver
+#
+menu "FPGA control spi driver"
+config FPGA_ARMCTL
+       default n
+       tristate "FPGA control ARM side support"
+       depends on SPI_QUP
+
+endmenu
