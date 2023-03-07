@@ -16,6 +16,9 @@
 
 #include <net/ipv6.h>
 
+#include <linux/of.h>
+#include <linux/platform_device.h>
+
 #include "igc.h"
 #include "igc_hw.h"
 #include "igc_tsn.h"
@@ -68,6 +71,9 @@ static const struct pci_device_id igc_pci_tbl[] = {
 };
 
 MODULE_DEVICE_TABLE(pci, igc_pci_tbl);
+
+/* MAC address from DTS */
+static struct device_node *of_node;
 
 enum latency_range {
 	lowest_latency = 0,
@@ -6496,6 +6502,10 @@ static int igc_probe(struct pci_dev *pdev,
 	if (err)
 		return err;
 
+	if (!pdev->dev.of_node && of_node) {
+		pdev->dev.of_node = of_node;
+	}
+
 	pci_using_dac = 0;
 	err = dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(64));
 	if (!err) {
@@ -7171,6 +7181,41 @@ void igc_enable_tx_ring(struct igc_ring *ring)
 	igc_configure_tx_ring(adapter, ring);
 }
 
+static const struct of_device_id igc_mac_match_table[] = {
+	{ .compatible = "qed,igc-mac", },
+	{}
+};
+
+MODULE_DEVICE_TABLE(of, igc_mac_match_table);
+
+static int igc_mac_probe(struct platform_device *pdev)
+{
+	struct device *dev = &pdev->dev;
+	if (!pdev->dev.of_node) {
+		dev_err(dev, "failed to get platform data\n");
+		return -ENODEV;
+	}
+
+	of_node = pdev->dev.of_node;
+
+	return 0;
+}
+
+static int igc_mac_remove(struct platform_device *pdev)
+{
+        return 0;
+}
+
+static struct platform_driver igc_mac_plat_driver = {
+        .driver = {
+                .name   = "qed_igc_mac",
+                .of_match_table = of_match_ptr(igc_mac_match_table),
+        },
+        .probe = igc_mac_probe,
+        .remove = igc_mac_remove,
+};
+
+
 /**
  * igc_init_module - Driver Registration Routine
  *
@@ -7183,6 +7228,12 @@ static int __init igc_init_module(void)
 
 	pr_info("%s\n", igc_driver_string);
 	pr_info("%s\n", igc_copyright);
+
+	ret = platform_driver_register(&igc_mac_plat_driver);
+	if (ret) {
+		pr_err("%s\n", "Failed to register igc pcie platform driver");
+		return ret;
+	}
 
 	ret = pci_register_driver(&igc_driver);
 	return ret;
@@ -7199,6 +7250,7 @@ module_init(igc_init_module);
 static void __exit igc_exit_module(void)
 {
 	pci_unregister_driver(&igc_driver);
+	platform_driver_unregister(&igc_mac_plat_driver);
 }
 
 module_exit(igc_exit_module);
