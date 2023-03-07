@@ -62,3 +62,4 @@ obj-$(CONFIG_HISI_HIKEY_USB)	+= hisi_hikey_usb.o
 obj-$(CONFIG_HI6421V600_IRQ)	+= hi6421v600-irq.o
 obj-$(CONFIG_QSEECOM)           += qseecom.o
 obj-$(CONFIG_FPGA_ARMCTL) 	+= spi_fpga/
+obj-$(CONFIG_QED_BTWIFI_PWR) 	+= qed-pwr/
