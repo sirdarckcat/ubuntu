@@ -4,7 +4,9 @@
 [ ! -L 'arch/arm64/boot/dts/overlays' ] && ln -sf '../../../arm/boot/dts/overlays' 'arch/arm64/boot/dts/overlays'
 [ ! -L 'debian.raspi/control.d/raspi-nolpae.inclusion-list' ] && ln -sf 'raspi.inclusion-list' 'debian.raspi/control.d/raspi-nolpae.inclusion-list'
 # Remove any files deleted from the orig.
+rm -f 'Documentation/devicetree/bindings/media/i2c/ak7375.txt'
 rm -f 'drivers/gpu/drm/tests/drm_kunit_helpers.h'
+rm -f 'scripts/is_rust_module.sh'
 rm -f 'tools/testing/selftests/net/bpf/Makefile'
 rm -f 'tools/testing/selftests/net/bpf/nat6to4.c'
 chmod +x 'arch/arm/boot/dts/overlays/anyspi-overlay.dts'
@@ -66,6 +68,7 @@ chmod +x 'debian/tests-build/check-aliases'
 chmod +x 'debian/tests/rebuild'
 chmod +x 'debian/tests/ubuntu-regression-suite'
 chmod +x 'drivers/watchdog/f71808e_wdt.c'
+chmod +x 'scripts/is_rust_module.sh'
 chmod +x 'update-dkms-versions'
 chmod +x 'update-version-dkms'
 exit 0
