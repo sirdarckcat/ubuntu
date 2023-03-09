@@ -529,6 +529,7 @@ static int rp1_pll_core_on(struct clk_hw *hw)
 	struct rp1_pll_core *pll_core = container_of(hw, struct rp1_pll_core, hw);
 	struct rp1_clockman *clockman = pll_core->clockman;
 	const struct rp1_pll_core_data *data = pll_core->data;
+	u32 fbdiv_frac;
 	ktime_t timeout;
 
 	dev_dbg(clockman->dev, "%s: (%s)\n", __func__, data->name);
@@ -536,11 +537,18 @@ static int rp1_pll_core_on(struct clk_hw *hw)
 		return 0;
 
 	spin_lock(&clockman->regs_lock);
-	/*
-	 * Come out of reset.
-	 * todo: We only need DS turned on if we are doing fractional divide.
-	 */
-	clockman_write(clockman, data->pwr_reg, ~PLL_PWR_MASK);
+
+	if (!(clockman_read(clockman, data->cs_reg) & PLL_CS_LOCK)) {
+		/* Reset to a known state. */
+		clockman_write(clockman, data->pwr_reg, PLL_PWR_MASK);
+		clockman_write(clockman, data->fbdiv_int_reg, 20);
+		clockman_write(clockman, data->fbdiv_frac_reg, 0);
+		clockman_write(clockman, data->cs_reg, 1 << PLL_CS_REFDIV_SHIFT);
+	}
+
+	/* Come out of reset. */
+	fbdiv_frac = clockman_read(clockman, data->fbdiv_frac_reg);
+	clockman_write(clockman, data->pwr_reg, fbdiv_frac ? 0 : PLL_PWR_DSMPD);
 	spin_unlock(&clockman->regs_lock);
 
 	/* Wait for the PLL to lock. */
@@ -630,6 +638,7 @@ static int rp1_pll_core_set_rate(struct clk_hw *hw,
 					 &fbdiv_int, &fbdiv_frac);
 
 	spin_lock(&clockman->regs_lock);
+	clockman_write(clockman, data->pwr_reg, fbdiv_frac ? 0 : PLL_PWR_DSMPD);
 	clockman_write(clockman, data->fbdiv_int_reg, fbdiv_int);
 	clockman_write(clockman, data->fbdiv_frac_reg, fbdiv_frac);
 	spin_unlock(&clockman->regs_lock);
