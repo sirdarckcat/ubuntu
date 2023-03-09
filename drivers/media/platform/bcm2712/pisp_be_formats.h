@@ -329,7 +329,7 @@ static const struct pisp_be_format supported_formats[] = {
 		.colorspace_mask    = COLORSPACE_MASK_RAW,
 		.colorspace_default = V4L2_COLORSPACE_RAW,
 	},
- 	/* Bayer formats - 16-bit */
+	/* Bayer formats - 16-bit */
 	{
 		.fourcc		    = V4L2_PIX_FMT_SRGGB16,
 		.bit_depth	    = 16,

@@ -211,7 +211,7 @@ struct pispbe_dev {
 	void __iomem *be_reg_base;
 	struct clk *clk;
 	int irq;
-	uint8_t done, started;
+	u8 done, started;
 	spinlock_t hw_lock; /* protects "hw_busy" flag and streaming_map */
 };
 
@@ -276,9 +276,9 @@ static void hw_queue_job(struct pispbe_dev *pispbe,
 	 */
 	for (u = 0; u < N_HW_ADDRESSES; ++u) {
 		write_reg(pispbe, PISP_BE_IO_INPUT_ADDR0_LO_OFFSET + 8 * u,
-			(u32)(hw_dma_addrs[u]));
+			  (u32)(hw_dma_addrs[u]));
 		write_reg(pispbe, PISP_BE_IO_INPUT_ADDR0_LO_OFFSET + 8 * u + 4,
-			(u32)(hw_dma_addrs[u] >> 32));
+			  (u32)(hw_dma_addrs[u] >> 32));
 	}
 	write_reg(pispbe, PISP_BE_GLOBAL_BAYER_ENABLE_OFFSET, hw_enables[0]);
 	write_reg(pispbe, PISP_BE_GLOBAL_RGB_ENABLE_OFFSET, hw_enables[1]);
@@ -390,7 +390,7 @@ static void fixup_addrs_enables(dma_addr_t addrs[N_HW_ADDRESSES],
 	 * to 3 planes.
 	 */
 	ret = get_addr_3(addrs, buf[MAIN_INPUT_NODE],
-			&node_group->node[MAIN_INPUT_NODE]);
+			 &node_group->node[MAIN_INPUT_NODE]);
 	if (ret <= 0) {
 		/*
 		 * This shouldn't happen; pispbe_schedule_internal should insist
@@ -451,7 +451,7 @@ static void fixup_addrs_enables(dma_addr_t addrs[N_HW_ADDRESSES],
 	/* Main image output channels. */
 	for (i = 0; i < PISP_BACK_END_NUM_OUTPUTS; i++) {
 		ret = get_addr_3(addrs + 7 + 3 * i, buf[OUTPUT0_NODE + i],
-				&node_group->node[OUTPUT0_NODE + i]);
+				 &node_group->node[OUTPUT0_NODE + i]);
 		if (ret <= 0)
 			hw_enables[1] &= ~(PISP_BE_RGB_ENABLE_OUTPUT0 << i);
 	}
@@ -493,7 +493,7 @@ static int pispbe_schedule_internal(struct pispbe_node_group *node_group,
 	 * which must include at least a config buffer and a main input image.
 	 * (Note that streaming_map is protected by hw_lock, which is held.)
 	 */
-	if ((((1u<<CONFIG_NODE)|(1u<<MAIN_INPUT_NODE)) & ~(node_group->streaming_map)) == 0) {
+	if ((((1u << CONFIG_NODE) | (1u << MAIN_INPUT_NODE)) & ~(node_group->streaming_map)) == 0) {
 		/* remember: srcimages, captures then metadata */
 		struct pispbe_buffer *buf[PISPBE_NUM_NODES];
 		struct pispbe_buffer *rbuf[PISPBE_NUM_RECURRENT_INPUTS];
@@ -505,7 +505,7 @@ static int pispbe_schedule_internal(struct pispbe_node_group *node_group,
 
 		for (i = 0; i < PISPBE_NUM_NODES; i++) {
 			buf[i] = NULL;
-			if (node_group->streaming_map & (1u<<i)) {
+			if (node_group->streaming_map & (1u << i)) {
 				struct pispbe_node *node = &node_group->node[i];
 
 				spin_lock_irqsave(&node->ready_lock, flags1);
@@ -514,7 +514,7 @@ static int pispbe_schedule_internal(struct pispbe_node_group *node_group,
 					struct pispbe_buffer, ready_list);
 				spin_unlock_irqrestore(&node->ready_lock,
 						       flags1);
-				if (buf[i] == NULL)
+				if (!buf[i])
 					goto nothing_to_do;
 			}
 		}
@@ -569,7 +569,7 @@ static int pispbe_schedule_internal(struct pispbe_node_group *node_group,
 		rbuf[RECURRENT_TDN_INPUT] = get_last_buffer(&node_group->node[TDN_OUTPUT_NODE]);
 		if (config_tiles_buffer->config.global.bayer_enables &
 		    PISP_BE_BAYER_ENABLE_TDN_OUTPUT) {
-			if (buf[TDN_OUTPUT_NODE] == NULL) {
+			if (!buf[TDN_OUTPUT_NODE]) {
 				if (++node_group->node[TDN_OUTPUT_NODE].last_index >=
 				      node_group->node[TDN_OUTPUT_NODE].queue.num_buffers)
 					node_group->node[TDN_OUTPUT_NODE].last_index = 0;
@@ -586,7 +586,7 @@ static int pispbe_schedule_internal(struct pispbe_node_group *node_group,
 		rbuf[RECURRENT_STITCH_INPUT] = get_last_buffer(&node_group->node[STITCH_OUTPUT_NODE]);
 		if (config_tiles_buffer->config.global.bayer_enables &
 		    PISP_BE_BAYER_ENABLE_STITCH_OUTPUT) {
-			if (buf[STITCH_OUTPUT_NODE] == NULL) {
+			if (!buf[STITCH_OUTPUT_NODE]) {
 				if (++node_group->node[STITCH_OUTPUT_NODE].last_index >=
 				      node_group->node[STITCH_OUTPUT_NODE].queue.num_buffers)
 					node_group->node[STITCH_OUTPUT_NODE].last_index = 0;
@@ -685,7 +685,7 @@ static void pispbe_isr_jobdone(struct pispbe_dev *pispbe, struct pispbe_job *job
 	int i;
 
 	v4l2_ctrl_request_complete(buf[0]->vb.vb2_buf.req_obj.req,
-				&node_group->hdlr);
+				   &node_group->hdlr);
 
 	for (i = 0; i < PISPBE_NUM_NODES; i++) {
 		if (buf[i]) {
@@ -699,7 +699,7 @@ static void pispbe_isr_jobdone(struct pispbe_dev *pispbe, struct pispbe_job *job
 static irqreturn_t pispbe_isr(int irq, void *dev)
 {
 	struct pispbe_dev *pispbe = (struct pispbe_dev *)dev;
-	uint8_t started, done;
+	u8 started, done;
 	int can_queue_another = 0;
 	u32 u;
 
@@ -1382,7 +1382,7 @@ static int pispbe_node_reqbufs(struct file *file, void *priv,
 	}
 
 	v4l2_dbg(1, debug, &NODE_GET_V4L2(node),
-		"Reqbufs for node %s returned %d\n",
+		 "Reqbufs for node %s returned %d\n",
 		NODE_NAME(node), ret);
 
 	return ret;
@@ -1587,7 +1587,7 @@ static int pispbe_mc_register_node(struct pispbe_node_group *node_group, int i)
 	node->intf_devnode = media_devnode_create(&node_group->mdev,
 						  MEDIA_INTF_T_V4L_VIDEO, 0,
 						  VIDEO_MAJOR, node->vfd.minor);
-	if (node->intf_devnode == NULL) {
+	if (!node->intf_devnode) {
 		ret = -ENOMEM;
 		goto error_devnode_create;
 	}
@@ -1595,7 +1595,7 @@ static int pispbe_mc_register_node(struct pispbe_node_group *node_group, int i)
 	node->intf_link = media_create_intf_link(
 		entity, &node->intf_devnode->intf,
 		MEDIA_LNK_FL_IMMUTABLE | MEDIA_LNK_FL_ENABLED);
-	if (node->intf_link == NULL) {
+	if (!node->intf_link) {
 		ret = -ENOMEM;
 		goto error_create_intf_link;
 	}
@@ -1661,7 +1661,7 @@ static int pispbe_mc_register_node_group(struct pispbe_node_group *node_group)
 	node_group->mdev.ops = &pispbe_media_ops;
 
 	v4l2_info(&node_group->v4l2_dev,
-		"Register entity for node_group %d\n",
+		  "Register entity for node_group %d\n",
 		node_group->id);
 
 	node_group->entity.name = PISPBE_NAME;
@@ -1673,11 +1673,11 @@ static int pispbe_mc_register_node_group(struct pispbe_node_group *node_group)
 			MEDIA_PAD_FL_SINK :
 			MEDIA_PAD_FL_SOURCE;
 	ret = media_entity_pads_init(&node_group->entity,
-				PISPBE_NUM_NODES, node_group->pad);
+				     PISPBE_NUM_NODES, node_group->pad);
 	if (ret)
 		goto done;
 	ret = media_device_register_entity(&node_group->mdev,
-					&node_group->entity);
+					   &node_group->entity);
 	if (ret)
 		goto done;
 	entity_registered = 1;
@@ -1747,7 +1747,7 @@ static void pispbe_destroy_node_group(struct pispbe_node_group *node_group)
 
 	pispbe_mc_unregister_node_group(node_group);
 
-	for (i = PISPBE_NUM_NODES-1; i >= 0; i--)
+	for (i = PISPBE_NUM_NODES - 1; i >= 0; i--)
 		video_unregister_device(&node_group->node[i].vfd);
 
 	v4l2_device_unregister(&node_group->v4l2_dev);
@@ -1790,7 +1790,7 @@ static int pispbe_probe(struct platform_device *pdev)
 		goto done_err;
 	}
 	dev_info(&pdev->dev, "%s: Enabled clock, rate=%lu\n",
-	       __func__, clk_get_rate(pispbe->clk));
+		 __func__, clk_get_rate(pispbe->clk));
 
 	pispbe->irq = platform_get_irq(pdev, 0);
 	if (pispbe->irq <= 0) {
@@ -1839,7 +1839,7 @@ static int pispbe_remove(struct platform_device *pdev)
 	struct pispbe_dev *pispbe = platform_get_drvdata(pdev);
 	int i;
 
-	for (i = PISPBE_NUM_NODE_GROUPS-1; i >= 0; i--)
+	for (i = PISPBE_NUM_NODE_GROUPS - 1; i >= 0; i--)
 		pispbe_destroy_node_group(&pispbe->node_group[i]);
 
 	return 0;

@@ -94,279 +94,279 @@ enum pisp_be_dirty {
 };
 
 struct pisp_be_global_config {
-	uint32_t bayer_enables;
-	uint32_t rgb_enables;
-	uint8_t bayer_order;
-	uint8_t pad[3];
+	u32 bayer_enables;
+	u32 rgb_enables;
+	u8 bayer_order;
+	u8 pad[3];
 };
 
 struct pisp_be_input_buffer_config {
 	/* low 32 bits followed by high 32 bits (for each of up to three planes) */
-	uint32_t addr[3][2];
+	u32 addr[3][2];
 };
 
 struct pisp_be_dpc_config {
-	uint8_t coeff_level;
-	uint8_t coeff_range;
-	uint8_t pad;
+	u8 coeff_level;
+	u8 coeff_range;
+	u8 pad;
 #define PISP_BE_DPC_FLAG_FOLDBACK 1
-	uint8_t flags;
+	u8 flags;
 };
 
 struct pisp_be_geq_config {
-	uint16_t offset;
-#define PISP_BE_GEQ_SHARPER (1 << 15)
+	u16 offset;
+#define PISP_BE_GEQ_SHARPER BIT(15)
 #define PISP_BE_GEQ_SLOPE ((1 << 10) - 1)
 	/* top bit is the "sharper" flag, slope value is bottom 10 bits */
-	uint16_t slope_sharper;
-	uint16_t min;
-	uint16_t max;
+	u16 slope_sharper;
+	u16 min;
+	u16 max;
 };
 
 struct pisp_be_tdn_input_buffer_config {
 	/* low 32 bits followed by high 32 bits */
-	uint32_t addr[2];
+	u32 addr[2];
 };
 
 struct pisp_be_tdn_config {
-	uint16_t black_level;
-	uint16_t ratio;
-	uint16_t noise_constant;
-	uint16_t noise_slope;
-	uint16_t threshold;
-	uint8_t reset;
-	uint8_t pad;
+	u16 black_level;
+	u16 ratio;
+	u16 noise_constant;
+	u16 noise_slope;
+	u16 threshold;
+	u8 reset;
+	u8 pad;
 };
 
 struct pisp_be_tdn_output_buffer_config {
 	/* low 32 bits followed by high 32 bits */
-	uint32_t addr[2];
+	u32 addr[2];
 };
 
 struct pisp_be_sdn_config {
-	uint16_t black_level;
-	uint8_t leakage;
-	uint8_t pad;
-	uint16_t noise_constant;
-	uint16_t noise_slope;
-	uint16_t noise_constant2;
-	uint16_t noise_slope2;
+	u16 black_level;
+	u8 leakage;
+	u8 pad;
+	u16 noise_constant;
+	u16 noise_slope;
+	u16 noise_constant2;
+	u16 noise_slope2;
 };
 
 struct pisp_be_stitch_input_buffer_config {
 	/* low 32 bits followed by high 32 bits */
-	uint32_t addr[2];
+	u32 addr[2];
 };
 
 #define PISP_BE_STITCH_STREAMING_LONG 0x8000
 #define PISP_BE_STITCH_EXPOSURE_RATIO_MASK 0x7fff
 
 struct pisp_be_stitch_config {
-	uint16_t threshold_lo;
-	uint8_t threshold_diff_power;
-	uint8_t pad;
+	u16 threshold_lo;
+	u8 threshold_diff_power;
+	u8 pad;
 
 	/* top bit indicates whether streaming input is the long exposure */
-	uint16_t exposure_ratio;
+	u16 exposure_ratio;
 
-	uint8_t motion_threshold_256;
-	uint8_t motion_threshold_recip;
+	u8 motion_threshold_256;
+	u8 motion_threshold_recip;
 };
 
 struct pisp_be_stitch_output_buffer_config {
 	/* low 32 bits followed by high 32 bits */
-	uint32_t addr[2];
+	u32 addr[2];
 };
 
 struct pisp_be_cdn_config {
-	uint16_t thresh;
-	uint8_t iir_strength;
-	uint8_t g_adjust;
+	u16 thresh;
+	u8 iir_strength;
+	u8 g_adjust;
 };
 
 #define PISP_BE_LSC_LOG_GRID_SIZE 5
-#define PISP_BE_LSC_GRID_SIZE (1 << PISP_BE_LSC_LOG_GRID_SIZE)
+#define PISP_BE_LSC_GRID_SIZE BIT(PISP_BE_LSC_LOG_GRID_SIZE)
 #define PISP_BE_LSC_STEP_PRECISION 18
 
 struct pisp_be_lsc_config {
 	/* (1<<18) / grid_cell_width */
-	uint16_t grid_step_x;
+	u16 grid_step_x;
 	/* (1<<18) / grid_cell_height */
-	uint16_t grid_step_y;
+	u16 grid_step_y;
 	/* RGB gains jointly encoded in 32 bits */
-	uint32_t lut_packed[PISP_BE_LSC_GRID_SIZE + 1]
+	u32 lut_packed[PISP_BE_LSC_GRID_SIZE + 1]
 			   [PISP_BE_LSC_GRID_SIZE + 1];
 };
 
 struct pisp_be_lsc_extra {
-	uint16_t offset_x;
-	uint16_t offset_y;
+	u16 offset_x;
+	u16 offset_y;
 };
 
 #define PISP_BE_CAC_LOG_GRID_SIZE 3
-#define PISP_BE_CAC_GRID_SIZE (1 << PISP_BE_CAC_LOG_GRID_SIZE)
+#define PISP_BE_CAC_GRID_SIZE BIT(PISP_BE_CAC_LOG_GRID_SIZE)
 #define PISP_BE_CAC_STEP_PRECISION 20
 
 struct pisp_be_cac_config {
 	/* (1<<20) / grid_cell_width */
-	uint16_t grid_step_x;
+	u16 grid_step_x;
 	/* (1<<20) / grid_cell_height */
-	uint16_t grid_step_y;
+	u16 grid_step_y;
 	/* [gridy][gridx][rb][xy] */
-	int8_t lut[PISP_BE_CAC_GRID_SIZE + 1][PISP_BE_CAC_GRID_SIZE + 1][2][2];
+	s8 lut[PISP_BE_CAC_GRID_SIZE + 1][PISP_BE_CAC_GRID_SIZE + 1][2][2];
 };
 
 struct pisp_be_cac_extra {
-	uint16_t offset_x;
-	uint16_t offset_y;
+	u16 offset_x;
+	u16 offset_y;
 };
 
 #define PISP_BE_DEBIN_NUM_COEFFS 4
 
 struct pisp_be_debin_config {
-	int8_t coeffs[PISP_BE_DEBIN_NUM_COEFFS];
-	int8_t h_enable;
-	int8_t v_enable;
-	int8_t pad[2];
+	s8 coeffs[PISP_BE_DEBIN_NUM_COEFFS];
+	s8 h_enable;
+	s8 v_enable;
+	s8 pad[2];
 };
 
 #define PISP_BE_TONEMAP_LUT_SIZE 64
 
 struct pisp_be_tonemap_config {
-	uint16_t detail_constant;
-	uint16_t detail_slope;
-	uint16_t iir_strength;
-	uint16_t strength;
-	uint32_t lut[PISP_BE_TONEMAP_LUT_SIZE];
+	u16 detail_constant;
+	u16 detail_slope;
+	u16 iir_strength;
+	u16 strength;
+	u32 lut[PISP_BE_TONEMAP_LUT_SIZE];
 };
 
 struct pisp_be_demosaic_config {
-	uint8_t sharper;
-	uint8_t fc_mode;
-	uint8_t pad[2];
+	u8 sharper;
+	u8 fc_mode;
+	u8 pad[2];
 };
 
 struct pisp_be_ccm_config {
-	int16_t coeffs[9];
-	uint8_t pad[2];
-	int32_t offsets[3];
+	s16 coeffs[9];
+	u8 pad[2];
+	s32 offsets[3];
 };
 
 struct pisp_be_sat_control_config {
-	uint8_t shift_r;
-	uint8_t shift_g;
-	uint8_t shift_b;
-	uint8_t pad;
+	u8 shift_r;
+	u8 shift_g;
+	u8 shift_b;
+	u8 pad;
 };
 
 struct pisp_be_false_colour_config {
-	uint8_t distance;
-	uint8_t pad[3];
+	u8 distance;
+	u8 pad[3];
 };
 
 #define PISP_BE_SHARPEN_SIZE 5
 #define PISP_BE_SHARPEN_FUNC_NUM_POINTS 9
 
 struct pisp_be_sharpen_config {
-	int8_t kernel0[PISP_BE_SHARPEN_SIZE * PISP_BE_SHARPEN_SIZE];
-	int8_t pad0[3];
-	int8_t kernel1[PISP_BE_SHARPEN_SIZE * PISP_BE_SHARPEN_SIZE];
-	int8_t pad1[3];
-	int8_t kernel2[PISP_BE_SHARPEN_SIZE * PISP_BE_SHARPEN_SIZE];
-	int8_t pad2[3];
-	int8_t kernel3[PISP_BE_SHARPEN_SIZE * PISP_BE_SHARPEN_SIZE];
-	int8_t pad3[3];
-	int8_t kernel4[PISP_BE_SHARPEN_SIZE * PISP_BE_SHARPEN_SIZE];
-	int8_t pad4[3];
-	uint16_t threshold_offset0;
-	uint16_t threshold_slope0;
-	uint16_t scale0;
-	uint16_t pad5;
-	uint16_t threshold_offset1;
-	uint16_t threshold_slope1;
-	uint16_t scale1;
-	uint16_t pad6;
-	uint16_t threshold_offset2;
-	uint16_t threshold_slope2;
-	uint16_t scale2;
-	uint16_t pad7;
-	uint16_t threshold_offset3;
-	uint16_t threshold_slope3;
-	uint16_t scale3;
-	uint16_t pad8;
-	uint16_t threshold_offset4;
-	uint16_t threshold_slope4;
-	uint16_t scale4;
-	uint16_t pad9;
-	uint16_t positive_strength;
-	uint16_t positive_pre_limit;
-	uint16_t positive_func[PISP_BE_SHARPEN_FUNC_NUM_POINTS];
-	uint16_t positive_limit;
-	uint16_t negative_strength;
-	uint16_t negative_pre_limit;
-	uint16_t negative_func[PISP_BE_SHARPEN_FUNC_NUM_POINTS];
-	uint16_t negative_limit;
-	uint8_t enables;
-	uint8_t white;
-	uint8_t black;
-	uint8_t grey;
+	s8 kernel0[PISP_BE_SHARPEN_SIZE * PISP_BE_SHARPEN_SIZE];
+	s8 pad0[3];
+	s8 kernel1[PISP_BE_SHARPEN_SIZE * PISP_BE_SHARPEN_SIZE];
+	s8 pad1[3];
+	s8 kernel2[PISP_BE_SHARPEN_SIZE * PISP_BE_SHARPEN_SIZE];
+	s8 pad2[3];
+	s8 kernel3[PISP_BE_SHARPEN_SIZE * PISP_BE_SHARPEN_SIZE];
+	s8 pad3[3];
+	s8 kernel4[PISP_BE_SHARPEN_SIZE * PISP_BE_SHARPEN_SIZE];
+	s8 pad4[3];
+	u16 threshold_offset0;
+	u16 threshold_slope0;
+	u16 scale0;
+	u16 pad5;
+	u16 threshold_offset1;
+	u16 threshold_slope1;
+	u16 scale1;
+	u16 pad6;
+	u16 threshold_offset2;
+	u16 threshold_slope2;
+	u16 scale2;
+	u16 pad7;
+	u16 threshold_offset3;
+	u16 threshold_slope3;
+	u16 scale3;
+	u16 pad8;
+	u16 threshold_offset4;
+	u16 threshold_slope4;
+	u16 scale4;
+	u16 pad9;
+	u16 positive_strength;
+	u16 positive_pre_limit;
+	u16 positive_func[PISP_BE_SHARPEN_FUNC_NUM_POINTS];
+	u16 positive_limit;
+	u16 negative_strength;
+	u16 negative_pre_limit;
+	u16 negative_func[PISP_BE_SHARPEN_FUNC_NUM_POINTS];
+	u16 negative_limit;
+	u8 enables;
+	u8 white;
+	u8 black;
+	u8 grey;
 };
 
 struct pisp_be_sh_fc_combine_config {
-	uint8_t y_factor;
-	uint8_t c1_factor;
-	uint8_t c2_factor;
-	uint8_t pad;
+	u8 y_factor;
+	u8 c1_factor;
+	u8 c2_factor;
+	u8 pad;
 };
 
 #define PISP_BE_GAMMA_LUT_SIZE 64
 
 struct pisp_be_gamma_config {
-	uint32_t lut[PISP_BE_GAMMA_LUT_SIZE];
+	u32 lut[PISP_BE_GAMMA_LUT_SIZE];
 };
 
 struct pisp_be_crop_config {
-	uint16_t offset_x, offset_y;
-	uint16_t width, height;
+	u16 offset_x, offset_y;
+	u16 width, height;
 };
 
 #define PISP_BE_RESAMPLE_FILTER_SIZE 96
 
 struct pisp_be_resample_config {
-	uint16_t scale_factor_h, scale_factor_v;
-	int16_t coef[PISP_BE_RESAMPLE_FILTER_SIZE];
+	u16 scale_factor_h, scale_factor_v;
+	s16 coef[PISP_BE_RESAMPLE_FILTER_SIZE];
 };
 
 struct pisp_be_resample_extra {
-	uint16_t scaled_width;
-	uint16_t scaled_height;
-	int16_t initial_phase_h[3];
-	int16_t initial_phase_v[3];
+	u16 scaled_width;
+	u16 scaled_height;
+	s16 initial_phase_h[3];
+	s16 initial_phase_v[3];
 };
 
 struct pisp_be_downscale_config {
-	uint16_t scale_factor_h;
-	uint16_t scale_factor_v;
-	uint16_t scale_recip_h;
-	uint16_t scale_recip_v;
+	u16 scale_factor_h;
+	u16 scale_factor_v;
+	u16 scale_recip_h;
+	u16 scale_recip_v;
 };
 
 struct pisp_be_downscale_extra {
-	uint16_t scaled_width;
-	uint16_t scaled_height;
+	u16 scaled_width;
+	u16 scaled_height;
 };
 
 struct pisp_be_hog_config {
-	uint8_t compute_signed;
-	uint8_t channel_mix[3];
-	uint32_t stride;
+	u8 compute_signed;
+	u8 channel_mix[3];
+	u32 stride;
 };
 
 struct pisp_be_axi_config {
-	uint8_t r_qos; /* Read QoS */
-	uint8_t r_cache_prot; /* Read { prot[2:0], cache[3:0] } */
-	uint8_t w_qos; /* Write QoS */
-	uint8_t w_cache_prot; /* Write { prot[2:0], cache[3:0] } */
+	u8 r_qos; /* Read QoS */
+	u8 r_cache_prot; /* Read { prot[2:0], cache[3:0] } */
+	u8 w_qos; /* Write QoS */
+	u8 w_cache_prot; /* Write { prot[2:0], cache[3:0] } */
 };
 
 enum pisp_be_transform {
@@ -379,22 +379,22 @@ enum pisp_be_transform {
 
 struct pisp_be_output_format_config {
 	struct pisp_image_format_config image;
-	uint8_t transform;
-	uint8_t pad[3];
-	uint16_t lo;
-	uint16_t hi;
-	uint16_t lo2;
-	uint16_t hi2;
+	u8 transform;
+	u8 pad[3];
+	u16 lo;
+	u16 hi;
+	u16 lo2;
+	u16 hi2;
 };
 
 struct pisp_be_output_buffer_config {
 	/* low 32 bits followed by high 32 bits (for each of 3 planes) */
-	uint32_t addr[3][2];
+	u32 addr[3][2];
 };
 
 struct pisp_be_hog_buffer_config {
 	/* low 32 bits followed by high 32 bits */
-	uint32_t addr[2];
+	u32 addr[2];
 };
 
 struct pisp_be_config {
@@ -454,9 +454,9 @@ struct pisp_be_config {
 	struct pisp_be_resample_extra resample_extra[PISP_BACK_END_NUM_OUTPUTS];
 	struct pisp_be_crop_config crop;
 	struct pisp_image_format_config hog_format;
-	uint32_t dirty_flags_bayer; /* these use pisp_be_bayer_enable */
-	uint32_t dirty_flags_rgb; /* use pisp_be_rgb_enable */
-	uint32_t dirty_flags_extra; /* these use pisp_be_dirty_t */
+	u32 dirty_flags_bayer; /* these use pisp_be_bayer_enable */
+	u32 dirty_flags_rgb; /* use pisp_be_rgb_enable */
+	u32 dirty_flags_extra; /* these use pisp_be_dirty_t */
 };
 
 /*
@@ -472,52 +472,52 @@ enum pisp_tile_edge {
 };
 
 struct pisp_tile {
-	uint8_t edge; // enum pisp_tile_edge
-	uint8_t pad0[3];
+	u8 edge; // enum pisp_tile_edge
+	u8 pad0[3];
 	// 4 bytes
-	uint32_t input_addr_offset;
-	uint32_t input_addr_offset2;
-	uint16_t input_offset_x;
-	uint16_t input_offset_y;
-	uint16_t input_width;
-	uint16_t input_height;
+	u32 input_addr_offset;
+	u32 input_addr_offset2;
+	u16 input_offset_x;
+	u16 input_offset_y;
+	u16 input_width;
+	u16 input_height;
 	// 20 bytes
-	uint32_t tdn_input_addr_offset;
-	uint32_t tdn_output_addr_offset;
-	uint32_t stitch_input_addr_offset;
-	uint32_t stitch_output_addr_offset;
+	u32 tdn_input_addr_offset;
+	u32 tdn_output_addr_offset;
+	u32 stitch_input_addr_offset;
+	u32 stitch_output_addr_offset;
 	// 36 bytes
-	uint32_t lsc_grid_offset_x;
-	uint32_t lsc_grid_offset_y;
+	u32 lsc_grid_offset_x;
+	u32 lsc_grid_offset_y;
 	// 44 bytes
-	uint32_t cac_grid_offset_x;
-	uint32_t cac_grid_offset_y;
+	u32 cac_grid_offset_x;
+	u32 cac_grid_offset_y;
 	// 52 bytes
-	uint16_t crop_x_start[PISP_BACK_END_NUM_OUTPUTS];
-	uint16_t crop_x_end[PISP_BACK_END_NUM_OUTPUTS];
-	uint16_t crop_y_start[PISP_BACK_END_NUM_OUTPUTS];
-	uint16_t crop_y_end[PISP_BACK_END_NUM_OUTPUTS];
+	u16 crop_x_start[PISP_BACK_END_NUM_OUTPUTS];
+	u16 crop_x_end[PISP_BACK_END_NUM_OUTPUTS];
+	u16 crop_y_start[PISP_BACK_END_NUM_OUTPUTS];
+	u16 crop_y_end[PISP_BACK_END_NUM_OUTPUTS];
 	// 68 bytes
 	/* Ordering is planes then branches */
-	uint16_t downscale_phase_x[3 * PISP_BACK_END_NUM_OUTPUTS];
-	uint16_t downscale_phase_y[3 * PISP_BACK_END_NUM_OUTPUTS];
+	u16 downscale_phase_x[3 * PISP_BACK_END_NUM_OUTPUTS];
+	u16 downscale_phase_y[3 * PISP_BACK_END_NUM_OUTPUTS];
 	// 92 bytes
-	uint16_t resample_in_width[PISP_BACK_END_NUM_OUTPUTS];
-	uint16_t resample_in_height[PISP_BACK_END_NUM_OUTPUTS];
+	u16 resample_in_width[PISP_BACK_END_NUM_OUTPUTS];
+	u16 resample_in_height[PISP_BACK_END_NUM_OUTPUTS];
 	// 100 bytes
 	/* Ordering is planes then branches */
-	uint16_t resample_phase_x[3 * PISP_BACK_END_NUM_OUTPUTS];
-	uint16_t resample_phase_y[3 * PISP_BACK_END_NUM_OUTPUTS];
+	u16 resample_phase_x[3 * PISP_BACK_END_NUM_OUTPUTS];
+	u16 resample_phase_y[3 * PISP_BACK_END_NUM_OUTPUTS];
 	// 124 bytes
-	uint16_t output_offset_x[PISP_BACK_END_NUM_OUTPUTS];
-	uint16_t output_offset_y[PISP_BACK_END_NUM_OUTPUTS];
-	uint16_t output_width[PISP_BACK_END_NUM_OUTPUTS];
-	uint16_t output_height[PISP_BACK_END_NUM_OUTPUTS];
+	u16 output_offset_x[PISP_BACK_END_NUM_OUTPUTS];
+	u16 output_offset_y[PISP_BACK_END_NUM_OUTPUTS];
+	u16 output_width[PISP_BACK_END_NUM_OUTPUTS];
+	u16 output_height[PISP_BACK_END_NUM_OUTPUTS];
 	// 140 bytes
-	uint32_t output_addr_offset[PISP_BACK_END_NUM_OUTPUTS];
-	uint32_t output_addr_offset2[PISP_BACK_END_NUM_OUTPUTS];
+	u32 output_addr_offset[PISP_BACK_END_NUM_OUTPUTS];
+	u32 output_addr_offset2[PISP_BACK_END_NUM_OUTPUTS];
 	// 156 bytes
-	uint32_t output_hog_addr_offset;
+	u32 output_hog_addr_offset;
 	// 160 bytes
 };
 
