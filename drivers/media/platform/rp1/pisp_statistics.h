@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0-only
+/* SPDX-License-Identifier: GPL-2.0 */
 /*
  * RP1 PiSP Front End statistics definitions
  *
@@ -15,18 +15,18 @@
 #define PISP_AGC_STATS_NUM_ROW_SUMS 512
 
 struct pisp_agc_statistics_zone {
-	uint64_t Y_sum;
-	uint32_t counted;
-	uint32_t pad;
+	u64 Y_sum;
+	u32 counted;
+	u32 pad;
 };
 
 struct pisp_agc_statistics {
-	uint32_t row_sums[PISP_AGC_STATS_NUM_ROW_SUMS];
+	u32 row_sums[PISP_AGC_STATS_NUM_ROW_SUMS];
 	/*
 	 * 32-bits per bin means an image (just less than) 16384x16384 pixels
 	 * in size can weight every pixel from 0 to 15.
 	 */
-	uint32_t histogram[PISP_AGC_STATS_NUM_BINS];
+	u32 histogram[PISP_AGC_STATS_NUM_BINS];
 	struct pisp_agc_statistics_zone floating[PISP_FLOATING_STATS_NUM_ZONES];
 };
 
@@ -34,10 +34,10 @@ struct pisp_agc_statistics {
 #define PISP_AWB_STATS_NUM_ZONES (PISP_AWB_STATS_SIZE * PISP_AWB_STATS_SIZE)
 
 struct pisp_awb_statistics_zone {
-	uint32_t R_sum;
-	uint32_t G_sum;
-	uint32_t B_sum;
-	uint32_t counted;
+	u32 R_sum;
+	u32 G_sum;
+	u32 B_sum;
+	u32 counted;
 };
 
 struct pisp_awb_statistics {
@@ -49,8 +49,8 @@ struct pisp_awb_statistics {
 #define PISP_CDAF_STATS_NUM_FOMS (PISP_CDAF_STATS_SIZE * PISP_CDAF_STATS_SIZE)
 
 struct pisp_cdaf_statistics {
-	uint64_t foms[PISP_CDAF_STATS_NUM_FOMS];
-	uint64_t floating[PISP_FLOATING_STATS_NUM_ZONES];
+	u64 foms[PISP_CDAF_STATS_NUM_FOMS];
+	u64 floating[PISP_FLOATING_STATS_NUM_ZONES];
 };
 
 struct pisp_statistics {

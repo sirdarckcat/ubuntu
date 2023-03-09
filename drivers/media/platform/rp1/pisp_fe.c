@@ -53,8 +53,8 @@ module_param(pisp_fe_debug, int, 0644);
 MODULE_PARM_DESC(pisp_fe_debug, "Debug level 0-3");
 
 struct pisp_fe_config_param {
-	uint32_t dirty_flags;
-	uint32_t dirty_flags_extra;
+	u32 dirty_flags;
+	u32 dirty_flags_extra;
 	size_t offset;
 	size_t size;
 };
@@ -128,24 +128,8 @@ static int pisp_regs_show(struct seq_file *s, void *data)
 
 DEFINE_SHOW_ATTRIBUTE(pisp_regs);
 
-/*
-  REG_WR(fe, PISP_FE_OUTPUT_AXI_OFFSET,   0xFA103227);  // Variable QOS, panic mode! Burst length 8
-  REG_WR(fe, PISP_FE_OUTPUT_PANIC_OFFSET, 0x01000100);  // We want to provoke panic in this test
-
-AXI shim converts the "panic" qos levels to a panic flag
-    REG_WR(BUSFABRIC_AXISHIM_BASE,
-           BUSFABRIC_AXISHIM_MIPI0_ISP_AXI4M_PANIC_OFFSET,
-           (0x2 <<  BUSFABRIC_AXISHIM_MIPI0_ISP_AXI4M_PANIC_CFG_QOS_LSB) |
-           (1   <<  BUSFABRIC_AXISHIM_MIPI0_ISP_AXI4M_PANIC_ENA_QOS_LSB));
-    REG_WR(BUSFABRIC_AXISHIM_BASE,
-           BUSFABRIC_AXISHIM_MIPI0_ISP_AXI4M_QOS_OFFSET,
-           (0xF <<  BUSFABRIC_AXISHIM_MIPI0_ISP_AXI4M_QOS_LEVEL_RD_LSB) |
-           (0x4 <<  BUSFABRIC_AXISHIM_MIPI0_ISP_AXI4M_QOS_LEVEL_WR_LSB)
-*/
 static void pisp_fe_set_null_config(struct pisp_fe_device *fe)
 {
-	pisp_fe_dbg(2, "%s: begin\n", __func__);
-
 	memset(&null_cfg, 0, sizeof(null_cfg));
 
 	SET_NULL_CFG_REG(0x064, 0x00080001);
@@ -218,19 +202,19 @@ void pisp_fe_submit_job(struct pisp_fe_device *fe, struct vb2_buffer **vb2_bufs,
 	dma_addr_t addr;
 	u32 status;
 
-	pisp_fe_dbg(2, "%s: begin\n", __func__);
-
 	if (vb2_bufs[FE_CONFIG_PAD])
 		cfg = vb2_plane_vaddr(vb2_bufs[FE_CONFIG_PAD], 0);
 
 	/* Buffer config. */
 	if (vb2_bufs[FE_OUTPUT0_PAD]) {
-		addr = vb2_dma_contig_plane_dma_addr(vb2_bufs[FE_OUTPUT0_PAD], 0);
+		addr = vb2_dma_contig_plane_dma_addr(vb2_bufs[FE_OUTPUT0_PAD],
+						     0);
 		cfg->output_buffer[0].addr_lo = addr & 0xffffffff;
 		cfg->output_buffer[0].addr_hi = addr >> 32;
 	}
 	if (vb2_bufs[FE_OUTPUT1_PAD]) {
-		addr = vb2_dma_contig_plane_dma_addr(vb2_bufs[FE_OUTPUT1_PAD], 0);
+		addr = vb2_dma_contig_plane_dma_addr(vb2_bufs[FE_OUTPUT1_PAD],
+						     0);
 		cfg->output_buffer[1].addr_lo = addr & 0xffffffff;
 		cfg->output_buffer[1].addr_hi = addr >> 32;
 	}
@@ -278,48 +262,40 @@ void pisp_fe_submit_job(struct pisp_fe_device *fe, struct vb2_buffer **vb2_bufs,
 		const struct pisp_fe_config_param *p = &pisp_fe_config_map[i];
 
 		if (cfg->dirty_flags & p->dirty_flags ||
-			cfg->dirty_flags_extra & p->dirty_flags_extra)
+		    cfg->dirty_flags_extra & p->dirty_flags_extra)
 			pisp_config_write(fe, cfg, p->offset, p->size);
 	}
 
 	/* Unconditionally write buffer, input, output parameters */
 	pisp_config_write(fe, cfg, 0,
-		sizeof(cfg->stats_buffer) + sizeof(cfg->output_buffer) +
-						sizeof(cfg->input_buffer));
+			  sizeof(cfg->stats_buffer) +
+				sizeof(cfg->output_buffer) +
+				sizeof(cfg->input_buffer));
 	pisp_config_write(fe, cfg,
-				offsetof(struct pisp_fe_config, input) +
+			  offsetof(struct pisp_fe_config, input) +
 				offsetof(struct pisp_fe_input_config, format),
-				sizeof(cfg->input.format));
+			  sizeof(cfg->input.format));
 	pisp_config_write(fe, cfg,
-			offsetof(struct pisp_fe_config, ch[0]) +
-			offsetof(struct pisp_fe_output_branch_config, output),
-			sizeof(cfg->ch[0].output.format));
+			  offsetof(struct pisp_fe_config, ch[0]) +
+			  offsetof(struct pisp_fe_output_branch_config, output),
+			  sizeof(cfg->ch[0].output.format));
 
 	pisp_fe_reg_write(fe, CONTROL, QUEUE);
-	pisp_fe_dbg(2, "%s: end\n", __func__);
 }
 
 void pisp_fe_start(struct pisp_fe_device *fe)
 {
-	pisp_fe_dbg(2, "%s: begin\n", __func__);
-
 	pisp_fe_reg_write(fe, CONTROL, RESET);
 	pisp_fe_reg_write(fe, INT_STATUS, -1);
 	pisp_fe_reg_write(fe, INT_EN, EOF + SOF + LINES0 + LINES1);
 	fe->inframe_count = 0;
-
-	pisp_fe_dbg(2, "%s: end\n", __func__);
 }
 
 void pisp_fe_stop(struct pisp_fe_device *fe)
 {
-	pisp_fe_dbg(2, "%s: begin\n", __func__);
-
 	pisp_fe_reg_write(fe, INT_EN, 0);
 	pisp_fe_reg_write(fe, CONTROL, ABORT);
 	usleep_range(1000, 2000);
-
-	pisp_fe_dbg(2, "%s: end\n", __func__);
 }
 
 static struct pisp_fe_device *to_pisp_fe_device(struct v4l2_subdev *subdev)
@@ -327,7 +303,8 @@ static struct pisp_fe_device *to_pisp_fe_device(struct v4l2_subdev *subdev)
 	return container_of(subdev, struct pisp_fe_device, sd);
 }
 
-static int pisp_fe_pad_get_fmt(struct v4l2_subdev *sd, struct v4l2_subdev_state *state,
+static int pisp_fe_pad_get_fmt(struct v4l2_subdev *sd,
+			       struct v4l2_subdev_state *state,
 			       struct v4l2_subdev_format *format)
 {
 	struct pisp_fe_device *fe = to_pisp_fe_device(sd);
@@ -341,8 +318,9 @@ static int pisp_fe_pad_get_fmt(struct v4l2_subdev *sd, struct v4l2_subdev_state 
 	return 0;
 }
 
-static int pisp_fe_pad_set_fmt(struct v4l2_subdev *sd, struct v4l2_subdev_state *state,
-			struct v4l2_subdev_format *format)
+static int pisp_fe_pad_set_fmt(struct v4l2_subdev *sd,
+			       struct v4l2_subdev_state *state,
+			       struct v4l2_subdev_format *format)
 {
 	struct pisp_fe_device *fe = to_pisp_fe_device(sd);
 
@@ -355,7 +333,8 @@ static int pisp_fe_pad_set_fmt(struct v4l2_subdev *sd, struct v4l2_subdev_state 
 	return 0;
 }
 
-static int pisp_fe_link_validate(struct v4l2_subdev *sd, struct media_link *link,
+static int pisp_fe_link_validate(struct v4l2_subdev *sd,
+				 struct media_link *link,
 				 struct v4l2_subdev_format *source_fmt,
 				 struct v4l2_subdev_format *sink_fmt)
 {
@@ -370,10 +349,12 @@ static int pisp_fe_link_validate(struct v4l2_subdev *sd, struct media_link *link
 	    source_fmt->format.width != sink_fmt->format.width ||
 	    source_fmt->format.code != sink_fmt->format.code) {
 		pisp_fe_err("%s: format does not match (source %ux%u 0x%x, sink %ux%u 0x%x)\n",
-			     __func__,
-			     source_fmt->format.width, source_fmt->format.height,
+			    __func__,
+			     source_fmt->format.width,
+			     source_fmt->format.height,
 			     source_fmt->format.code,
-			     sink_fmt->format.width, sink_fmt->format.height,
+			     sink_fmt->format.width,
+			     sink_fmt->format.height,
 			     sink_fmt->format.code);
 		return -EPIPE;
 	}

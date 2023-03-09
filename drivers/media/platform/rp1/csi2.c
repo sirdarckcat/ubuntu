@@ -185,7 +185,8 @@ static inline void set_testen(struct csi2_device *csi2, u32 val)
 {
 	u32 ctrl1 = dw_csi2_host_read(csi2, PHY_TST_CTRL1);
 
-	dw_csi2_host_write(csi2, PHY_TST_CTRL1, (ctrl1 & ~(1 << 16)) | (val << 16));
+	dw_csi2_host_write(csi2, PHY_TST_CTRL1,
+			   (ctrl1 & ~(1 << 16)) | (val << 16));
 }
 
 static inline void set_testdin(struct csi2_device *csi2, u32 val)
@@ -196,7 +197,7 @@ static inline void set_testdin(struct csi2_device *csi2, u32 val)
 }
 
 static uint8_t dphy_transaction(struct csi2_device *csi2,
-				uint8_t test_code, uint8_t test_data)
+				u8 test_code, uint8_t test_data)
 {
 	/* See page 101 of the MIPI DPHY databook. */
 	set_tstclk(csi2, 1);
@@ -213,7 +214,7 @@ static uint8_t dphy_transaction(struct csi2_device *csi2,
 static void dphy_set_hsfreqrange(struct csi2_device *csi2, uint32_t freq)
 {
 	/* See page 258 of MIPI DPHY databook. */
-	uint8_t hsfreqrange = 0;
+	u8 hsfreqrange = 0;
 
 	if (freq < 80 || freq > 1000)
 		return;
@@ -341,7 +342,8 @@ void csi2_set_buffer(struct csi2_device *csi2, unsigned int channel,
 }
 
 void csi2_set_compression(struct csi2_device *csi2, unsigned int channel,
-			  unsigned int mode, unsigned int shift, unsigned int offset)
+			  unsigned int mode, unsigned int shift,
+			  unsigned int offset)
 {
 	u32 compression = 0;
 
@@ -352,8 +354,9 @@ void csi2_set_compression(struct csi2_device *csi2, unsigned int channel,
 }
 
 void csi2_start_channel(struct csi2_device *csi2, unsigned int channel,
-			uint16_t dt, enum csi2_mode mode, bool auto_arm,
-			bool pack_bytes, unsigned int width, unsigned int height)
+			u16 dt, enum csi2_mode mode, bool auto_arm,
+			bool pack_bytes, unsigned int width,
+			unsigned int height)
 {
 	u32 ctrl;
 
@@ -487,11 +490,11 @@ int csi2_link_validate(struct v4l2_subdev *sd, struct media_link *link,
 	    source_fmt->format.width != sink_fmt->format.width ||
 	    source_fmt->format.code != sink_fmt->format.code) {
 		csi2_err("%s: format does not match (source %ux%u 0x%x, sink %ux%u 0x%x)\n",
-			__func__,
-			source_fmt->format.width, source_fmt->format.height,
-			source_fmt->format.code,
-			sink_fmt->format.width, sink_fmt->format.height,
-			sink_fmt->format.code);
+			 __func__,
+			 source_fmt->format.width, source_fmt->format.height,
+			 source_fmt->format.code,
+			 sink_fmt->format.width, sink_fmt->format.height,
+			 sink_fmt->format.code);
 		return -EPIPE;
 	}
 

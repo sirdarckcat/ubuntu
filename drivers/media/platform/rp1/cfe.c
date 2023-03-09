@@ -580,8 +580,6 @@ static void cfe_prepare_next_job(struct cfe_device *cfe)
 {
 	unsigned int i;
 
-	cfe_dbg(2, "%s: begin\n", __func__);
-
 	for (i = 0; i < NUM_NODES; i++) {
 		struct cfe_node *node = &cfe->node[i];
 
@@ -628,7 +626,8 @@ static inline void sof_isr_handler(struct cfe_node *node)
 {
 	struct cfe_device *cfe = node->cfe;
 
-	cfe_dbg(3, "%s: [%s] seq %d\n", __func__, node_desc[node->id].name, cfe->sequence);
+	cfe_dbg(3, "%s: [%s] seq %d\n", __func__, node_desc[node->id].name,
+		cfe->sequence);
 
 	//BUG_ON(!node->next_frm);
 	node->cur_frm = node->next_frm;
@@ -654,7 +653,8 @@ static inline void eof_isr_handler(struct cfe_node *node)
 {
 	struct cfe_device *cfe = node->cfe;
 
-	cfe_dbg(3, "%s: [%s] seq %d\n", __func__, node_desc[node->id].name, cfe->sequence);
+	cfe_dbg(3, "%s: [%s] seq %d\n", __func__, node_desc[node->id].name,
+		cfe->sequence);
 
 	//BUG_ON(!node->cur_frm);
 	if (node->cur_frm)
@@ -685,7 +685,8 @@ static irqreturn_t cfe_isr(int irq, void *dev)
 
 	csi2_isr(&cfe->csi2, sof, eof, lci);
 	if (cfe->fe_csi2_channel != -1)
-		pisp_fe_isr(&cfe->fe, sof + CSI2_NUM_CHANNELS, eof + CSI2_NUM_CHANNELS);
+		pisp_fe_isr(&cfe->fe, sof + CSI2_NUM_CHANNELS,
+			    eof + CSI2_NUM_CHANNELS);
 
 	for (i = 0; i < NUM_NODES; i++) {
 		struct cfe_node *node = &cfe->node[i];
@@ -763,7 +764,7 @@ static int cfe_enum_fmt_vid_cap(struct file *file, void *priv,
 
 		if (formats[i].flags & CFE_FORMAT_FLAG_META_OUT ||
 		    formats[i].flags & CFE_FORMAT_FLAG_META_CAP)
-		    continue;
+			continue;
 
 		if (j == f->index) {
 			f->pixelformat =
@@ -790,7 +791,7 @@ static int cfe_enum_fmt_vid_cap(struct file *file, void *priv,
 }
 
 static int cfe_g_fmt(struct file *file, void *priv,
-			     struct v4l2_format *f)
+		     struct v4l2_format *f)
 {
 	struct cfe_node *node = video_drvdata(file);
 	struct cfe_device *cfe = node->cfe;
@@ -1012,7 +1013,8 @@ static void cfe_buffer_queue(struct vb2_buffer *vb)
 	unsigned long flags;
 	bool prepare;
 
-	cfe_dbg(2, "%s: [%s] buffer %p\n", __func__, node_desc[node->id].name, vb);
+	cfe_dbg(2, "%s: [%s] buffer %p\n", __func__, node_desc[node->id].name,
+		vb);
 
 	spin_lock_irqsave(&cfe->dma_queue_lock, flags);
 
@@ -1056,7 +1058,8 @@ static void cfe_start_channel(struct cfe_node *node)
 	if (node->id == FE_OUT0) {
 		WARN_ON(cfe->fe_csi2_channel == -1);
 		cfe_dbg(2, "%s: %s using csi2 channel %d\n",
-			__func__, node_desc[node->id].name, cfe->fe_csi2_channel);
+			__func__, node_desc[node->id].name,
+			cfe->fe_csi2_channel);
 
 		pad = &cfe->csi2.pad[cfe->fe_csi2_channel];
 		cfe_subdev_link_get_format(pad, &source_fmt);
@@ -1076,7 +1079,8 @@ static void cfe_start_channel(struct cfe_node *node)
 	} else if (is_csi2_node(node->id)) {
 		u32 mode = CSI2_MODE_NORMAL;
 
-		pad = &cfe->csi2.pad[node_desc[node->id].link_pad - CSI2_NUM_CHANNELS];
+		pad = &cfe->csi2.pad[node_desc[node->id].link_pad -
+							CSI2_NUM_CHANNELS];
 		cfe_subdev_link_get_format(pad, &source_fmt);
 		fmt = find_format_by_code(source_fmt.format.code);
 
@@ -1087,7 +1091,8 @@ static void cfe_start_channel(struct cfe_node *node)
 			else if (node->fmt.fmt.pix.pixelformat ==
 					fmt->remap[CFE_REMAP_COMPRESSED]) {
 				mode = CSI2_MODE_COMPRESSED;
-				csi2_set_compression(&cfe->csi2, node->id, 1, 0, 0);
+				csi2_set_compression(&cfe->csi2, node->id, 1,
+						     0, 0);
 			}
 		}
 		/* Unconditionally start this CSI2 channel. */
@@ -1111,7 +1116,8 @@ static void cfe_stop_channel(struct cfe_node *node)
 	struct cfe_device *cfe = node->cfe;
 	bool fe_stopped = !test_any_node(cfe, NODE_STREAMING, true);
 
-	cfe_dbg(2, "%s: [%s] fe_stopped %d\n", __func__, node_desc[node->id].name, fe_stopped);
+	cfe_dbg(2, "%s: [%s] fe_stopped %d\n", __func__,
+		node_desc[node->id].name, fe_stopped);
 
 	if (fe_stopped && is_fe_node(node->id)) {
 		csi2_stop_channel(&cfe->csi2, cfe->fe_csi2_channel);
@@ -1131,7 +1137,7 @@ static void cfe_return_buffers(struct cfe_node *node,
 	cfe_dbg(2, "%s: [%s]\n", __func__, node_desc[node->id].name);
 
 	spin_lock_irqsave(&cfe->dma_queue_lock, flags);
-	list_for_each_entry_safe (buf, tmp, &node->dma_queue, list) {
+	list_for_each_entry_safe(buf, tmp, &node->dma_queue, list) {
 		list_del(&buf->list);
 		vb2_buffer_done(&buf->vb.vb2_buf, state);
 	}
@@ -1164,7 +1170,8 @@ static int cfe_start_streaming(struct vb2_queue *vq, unsigned int count)
 	}
 
 	if (!test_any_node(cfe, NODE_STREAMING, false)) {
-		ret = media_pipeline_start(node->video_dev.entity.pads, &cfe->pipe);
+		ret = media_pipeline_start(node->video_dev.entity.pads,
+					   &cfe->pipe);
 		if (ret < 0) {
 			cfe_err("Failed to start media pipeline: %d\n", ret);
 			goto err_pm_put;
@@ -1184,7 +1191,7 @@ static int cfe_start_streaming(struct vb2_queue *vq, unsigned int count)
 	cfe_dbg(1, "Running with %u data lanes\n", cfe->csi2.active_data_lanes);
 
 	ret = v4l2_subdev_call(cfe->sensor, pad, get_mbus_config, 0,
-			&mbus_config);
+			       &mbus_config);
 	if (ret < 0 && ret != -ENOIOCTLCMD) {
 		cfe_err("g_mbus_config failed\n");
 		goto err_pm_put;
@@ -1488,7 +1495,7 @@ static int cfe_video_link_validate(struct media_link *link)
 		}
 
 		fmt = find_format_by_code(source_fmt.format.code);
-		if (!fmt || (fmt->fourcc != pix_fmt->pixelformat)) {
+		if (!fmt || fmt->fourcc != pix_fmt->pixelformat) {
 			cfe_err("Format mismatch!\n");
 			return -EINVAL;
 		}
@@ -1527,7 +1534,7 @@ int cfe_video_link_notify(struct media_link *link, u32 flags,
 		return 0;
 
 	cfe->fe_csi2_channel = -1;
-	if ((link->sink->entity == fe) && (link->flags & MEDIA_LNK_FL_ENABLED)) {
+	if (link->sink->entity == fe && (link->flags & MEDIA_LNK_FL_ENABLED)) {
 		if (link->source->index == node_desc[CSI2_CH0].link_pad)
 			cfe->fe_csi2_channel = CSI2_CH0;
 		else if (link->source->index == node_desc[CSI2_CH2].link_pad)
@@ -1540,7 +1547,8 @@ int cfe_video_link_notify(struct media_link *link, u32 flags,
 		cfe_dbg(1, "%s: Found CSI2:%d -> FE:0 link\n", __func__,
 			cfe->fe_csi2_channel);
 	else
-		cfe_dbg(1, "%s: Unable to find CSI2:x -> FE:0 link\n", __func__);
+		cfe_dbg(1, "%s: Unable to find CSI2:x -> FE:0 link\n",
+			__func__);
 
 	return 0;
 }
@@ -1744,17 +1752,18 @@ static int link_node_pads(struct cfe_device *cfe)
 		}
 
 		/* CSI2 channel # -> /dev/video# */
-		ret = media_create_pad_link(
-			&cfe->csi2.sd.entity, node_desc[i].link_pad,
-			&node->video_dev.entity, 0, 0);
+		ret = media_create_pad_link(&cfe->csi2.sd.entity,
+					    node_desc[i].link_pad,
+					    &node->video_dev.entity, 0, 0);
 		if (ret)
 			return ret;
 
 		if (node->id != CSI2_CH1_EMBEDDED) {
 			/* CSI2 channel # -> FE Input */
-			ret = media_create_pad_link(
-				&cfe->csi2.sd.entity, node_desc[i].link_pad,
-				&cfe->fe.sd.entity, FE_STREAM_PAD, 0);
+			ret = media_create_pad_link(&cfe->csi2.sd.entity,
+						    node_desc[i].link_pad,
+						    &cfe->fe.sd.entity,
+						    FE_STREAM_PAD, 0);
 			if (ret)
 				return ret;
 		}
@@ -1779,8 +1788,7 @@ static int link_node_pads(struct cfe_device *cfe)
 			src_pad = 0;
 		}
 
-		ret = media_create_pad_link(src, src_pad, dst, dst_pad,
-					    0);
+		ret = media_create_pad_link(src, src_pad, dst, dst_pad, 0);
 		if (ret)
 			return ret;
 	}
@@ -2099,8 +2107,6 @@ err_cfe_put:
 static int cfe_remove(struct platform_device *pdev)
 {
 	struct cfe_device *cfe = platform_get_drvdata(pdev);
-
-	cfe_dbg(3, "%s\n", __func__);
 
 	v4l2_async_nf_unregister(&cfe->notifier);
 	v4l2_device_unregister(&cfe->v4l2_dev);

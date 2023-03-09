@@ -23,14 +23,13 @@ enum csi2_mode {
 };
 
 struct csi2_cfg {
-	uint16_t width;
-	uint16_t height;
-	uint32_t stride;
-	uint32_t buffer_size;
+	u16 width;
+	u16 height;
+	u32 stride;
+	u32 buffer_size;
 };
 
 struct csi2_device {
-
 	/* Parent V4l2 device */
 	struct v4l2_device *v4l2_dev;
 
@@ -45,19 +44,22 @@ struct csi2_device {
 	bool multipacket_line;
 	unsigned int num_lines[CSI2_NUM_CHANNELS];
 
-	struct media_pad pad[CSI2_NUM_CHANNELS*2];
+	struct media_pad pad[CSI2_NUM_CHANNELS * 2];
 	struct v4l2_subdev sd;
-	struct v4l2_subdev_format format[CSI2_NUM_CHANNELS*2];
+	struct v4l2_subdev_format format[CSI2_NUM_CHANNELS * 2];
 };
 
 void csi2_isr(struct csi2_device *csi2, bool *sof, bool *eof, bool *lci);
 void csi2_set_buffer(struct csi2_device *csi2, unsigned int channel,
-		     dma_addr_t dmaaddr, unsigned int stride, unsigned int size);
+		     dma_addr_t dmaaddr, unsigned int stride,
+		     unsigned int size);
 void csi2_set_compression(struct csi2_device *csi2, unsigned int channel,
-			  unsigned int mode, unsigned int shift, unsigned int offset);
+			  unsigned int mode, unsigned int shift,
+			  unsigned int offset);
 void csi2_start_channel(struct csi2_device *csi2, unsigned int channel,
-			uint16_t dt, enum csi2_mode mode, bool auto_arm,
-			bool pack_bytes, unsigned int width, unsigned int height);
+			u16 dt, enum csi2_mode mode, bool auto_arm,
+			bool pack_bytes, unsigned int width,
+			unsigned int height);
 void csi2_stop_channel(struct csi2_device *csi2, unsigned int channel);
 void csi2_open_rx(struct csi2_device *csi2);
 void csi2_close_rx(struct csi2_device *csi2);

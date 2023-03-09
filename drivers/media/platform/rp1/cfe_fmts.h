@@ -18,8 +18,8 @@ enum cfe_remap_types {
 	CFE_NUM_REMAP,
 };
 
-#define CFE_FORMAT_FLAG_META_OUT	(1 << 0)
-#define CFE_FORMAT_FLAG_META_CAP	(1 << 1)
+#define CFE_FORMAT_FLAG_META_OUT	BIT(0)
+#define CFE_FORMAT_FLAG_META_CAP	BIT(1)
 
 struct cfe_fmt {
 	u32 fourcc;
