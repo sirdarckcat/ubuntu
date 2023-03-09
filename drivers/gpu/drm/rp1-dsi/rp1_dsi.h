@@ -1,6 +1,8 @@
 /* SPDX-License-Identifier: GPL-2.0 */
 /*
  * DRM Driver for DSI output on Raspberry Pi RP1
+ *
+ * Copyright (c) 2023 Raspberry Pi Limited.
  */
 
 #include <linux/types.h>
@@ -29,7 +31,6 @@
 /* ---------------------------------------------------------------------- */
 
 struct rp1dsi_priv {
-
 	/* DRM and platform device pointers */
 	struct drm_device *drm;
 	struct platform_device *pdev;
@@ -62,8 +63,8 @@ struct rp1dsi_priv {
 /* Functions to control the DSI/DPI/DMA block				  */
 
 void rp1dsi_dma_setup(struct rp1dsi_priv *priv,
-		u32 in_format, enum mipi_dsi_pixel_format out_format,
-		struct drm_display_mode const *mode);
+		      u32 in_format, enum mipi_dsi_pixel_format out_format,
+		      struct drm_display_mode const *mode);
 void rp1dsi_dma_update(struct rp1dsi_priv *priv, dma_addr_t addr, u32 offset, u32 stride);
 void rp1dsi_dma_stop(struct rp1dsi_priv *priv);
 int rp1dsi_dma_busy(struct rp1dsi_priv *priv);

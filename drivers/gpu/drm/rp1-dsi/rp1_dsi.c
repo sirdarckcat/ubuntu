@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /*
  * DRM Driver for DSI output on Raspberry Pi RP1
+ *
+ * Copyright (c) 2023 Raspberry Pi Limited.
  */
 
 #include <linux/module.h>
@@ -49,7 +51,7 @@
 #include "rp1_dsi.h"
 
 static void rp1dsi_pipe_update(struct drm_simple_display_pipe *pipe,
-			      struct drm_plane_state *old_state)
+			       struct drm_plane_state *old_state)
 {
 	struct drm_pending_vblank_event *event;
 	unsigned long flags;
@@ -72,7 +74,7 @@ static void rp1dsi_pipe_update(struct drm_simple_display_pipe *pipe,
 			}
 			if (!priv->dma_running) {
 				rp1dsi_dma_setup(priv,
-						fb->format->format, priv->display_format,
+						 fb->format->format, priv->display_format,
 						&pipe->crtc.state->mode);
 				priv->dma_running = true;
 			}
@@ -97,8 +99,8 @@ static void rp1dsi_pipe_update(struct drm_simple_display_pipe *pipe,
 }
 
 static void rp1dsi_pipe_enable(struct drm_simple_display_pipe *pipe,
-			      struct drm_crtc_state *crtc_state,
-			      struct drm_plane_state *plane_state)
+			       struct drm_crtc_state *crtc_state,
+			       struct drm_plane_state *plane_state)
 {
 	struct rp1dsi_priv *priv = pipe->crtc.dev->dev_private;
 
@@ -247,7 +249,7 @@ static int rp1dsi_bind(struct rp1dsi_priv *priv)
 	ret = drm_dev_register(drm, 0);
 
 	if (ret == 0)
-		drm_fbdev_generic_setup(drm, 32); /* the "32" is preferred BPP */
+		drm_fbdev_generic_setup(drm, 32);
 
 rtn:
 	if (ret)
@@ -271,11 +273,9 @@ int rp1dsi_host_attach(struct mipi_dsi_host *host, struct mipi_dsi_device *dsi)
 {
 	struct rp1dsi_priv *priv = container_of(host, struct rp1dsi_priv, dsi_host);
 
-	dev_info(&priv->pdev->dev, __func__);
-	dev_info(&priv->pdev->dev, "%s: Attach DSI device name=%s channel=%d "
-		"lanes=%d format=%d flags=0x%lx hs_rate=%lu lp_rate=%lu",
-		__func__, dsi->name, dsi->channel, dsi->lanes, dsi->format,
-		dsi->mode_flags, dsi->hs_rate, dsi->lp_rate);
+	dev_info(&priv->pdev->dev, "%s: Attach DSI device name=%s channel=%d lanes=%d format=%d flags=0x%lx hs_rate=%lu lp_rate=%lu",
+		 __func__, dsi->name, dsi->channel, dsi->lanes, dsi->format,
+		 dsi->mode_flags, dsi->hs_rate, dsi->lp_rate);
 	priv->vc              = dsi->channel & 3;
 	priv->lanes           = dsi->lanes;
 	priv->display_format  = dsi->format;
@@ -294,8 +294,6 @@ int rp1dsi_host_attach(struct mipi_dsi_host *host, struct mipi_dsi_device *dsi)
 int rp1dsi_host_detach(struct mipi_dsi_host *host, struct mipi_dsi_device *dsi)
 {
 	struct rp1dsi_priv *priv = container_of(host, struct rp1dsi_priv, dsi_host);
-
-	dev_info(&priv->pdev->dev, "%s", __func__);
 
 	/*
 	 * Unregister the DRM driver.
@@ -346,7 +344,7 @@ static int rp1dsi_platform_probe(struct platform_device *pdev)
 		return ret;
 	}
 	priv = drmm_kzalloc(drm, sizeof(*priv), GFP_KERNEL);
-	if (priv == NULL) {
+	if (!priv) {
 		ret = -ENOMEM;
 		goto err_free_drm;
 	}
@@ -382,7 +380,9 @@ static int rp1dsi_platform_probe(struct platform_device *pdev)
 	for (i = 0; i < RP1DSI_NUM_HW_BLOCKS; i++) {
 		priv->hw_base[i] =
 			devm_ioremap_resource(dev,
-					      platform_get_resource(priv->pdev, IORESOURCE_MEM, i));
+					      platform_get_resource(priv->pdev,
+								    IORESOURCE_MEM,
+								    i));
 		if (IS_ERR(priv->hw_base[i])) {
 			ret = PTR_ERR(priv->hw_base[i]);
 			dev_err(dev, "Error memory mapping regs[%d]\n", i);

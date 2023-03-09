@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /*
  * DRM Driver for DSI output on Raspberry Pi RP1
+ *
+ * Copyright (c) 2023 Raspberry Pi Limited.
  */
 
 #include <linux/kernel.h>
@@ -20,77 +22,77 @@
 // Control
 #define DPI_DMA_CONTROL				      0x0
 #define DPI_DMA_CONTROL_ARM_SHIFT		      0
-#define DPI_DMA_CONTROL_ARM_MASK		      (1 <<  DPI_DMA_CONTROL_ARM_SHIFT)
+#define DPI_DMA_CONTROL_ARM_MASK		      BIT(DPI_DMA_CONTROL_ARM_SHIFT)
 #define DPI_DMA_CONTROL_ALIGN16_SHIFT		      2
-#define DPI_DMA_CONTROL_ALIGN16_MASK		      (1 << DPI_DMA_CONTROL_ALIGN16_SHIFT)
+#define DPI_DMA_CONTROL_ALIGN16_MASK		      BIT(DPI_DMA_CONTROL_ALIGN16_SHIFT)
 #define DPI_DMA_CONTROL_AUTO_REPEAT_SHIFT	      1
-#define DPI_DMA_CONTROL_AUTO_REPEAT_MASK	      (1 << DPI_DMA_CONTROL_AUTO_REPEAT_SHIFT)
+#define DPI_DMA_CONTROL_AUTO_REPEAT_MASK	      BIT(DPI_DMA_CONTROL_AUTO_REPEAT_SHIFT)
 #define DPI_DMA_CONTROL_HIGH_WATER_SHIFT	      3
 #define DPI_DMA_CONTROL_HIGH_WATER_MASK		      (0x1FF << DPI_DMA_CONTROL_HIGH_WATER_SHIFT)
 #define DPI_DMA_CONTROL_DEN_POL_SHIFT		      12
-#define DPI_DMA_CONTROL_DEN_POL_MASK		      (1 << DPI_DMA_CONTROL_DEN_POL_SHIFT)
+#define DPI_DMA_CONTROL_DEN_POL_MASK		      BIT(DPI_DMA_CONTROL_DEN_POL_SHIFT)
 #define DPI_DMA_CONTROL_HSYNC_POL_SHIFT		      13
-#define DPI_DMA_CONTROL_HSYNC_POL_MASK		      (1 << DPI_DMA_CONTROL_HSYNC_POL_SHIFT)
+#define DPI_DMA_CONTROL_HSYNC_POL_MASK		      BIT(DPI_DMA_CONTROL_HSYNC_POL_SHIFT)
 #define DPI_DMA_CONTROL_VSYNC_POL_SHIFT		      14
-#define DPI_DMA_CONTROL_VSYNC_POL_MASK		      (1 << DPI_DMA_CONTROL_VSYNC_POL_SHIFT)
+#define DPI_DMA_CONTROL_VSYNC_POL_MASK		      BIT(DPI_DMA_CONTROL_VSYNC_POL_SHIFT)
 #define DPI_DMA_CONTROL_COLORM_SHIFT		      15
-#define DPI_DMA_CONTROL_COLORM_MASK		      (1 << DPI_DMA_CONTROL_COLORM_SHIFT)
+#define DPI_DMA_CONTROL_COLORM_MASK		      BIT(DPI_DMA_CONTROL_COLORM_SHIFT)
 #define DPI_DMA_CONTROL_SHUTDN_SHIFT		      16
-#define DPI_DMA_CONTROL_SHUTDN_MASK		      (1 << DPI_DMA_CONTROL_SHUTDN_SHIFT)
+#define DPI_DMA_CONTROL_SHUTDN_MASK		      BIT(DPI_DMA_CONTROL_SHUTDN_SHIFT)
 #define DPI_DMA_CONTROL_HBP_EN_SHIFT		      17
-#define DPI_DMA_CONTROL_HBP_EN_MASK		      (1 << DPI_DMA_CONTROL_HBP_EN_SHIFT)
+#define DPI_DMA_CONTROL_HBP_EN_MASK		      BIT(DPI_DMA_CONTROL_HBP_EN_SHIFT)
 #define DPI_DMA_CONTROL_HFP_EN_SHIFT		      18
-#define DPI_DMA_CONTROL_HFP_EN_MASK		      (1 << DPI_DMA_CONTROL_HFP_EN_SHIFT)
+#define DPI_DMA_CONTROL_HFP_EN_MASK		      BIT(DPI_DMA_CONTROL_HFP_EN_SHIFT)
 #define DPI_DMA_CONTROL_VBP_EN_SHIFT		      19
-#define DPI_DMA_CONTROL_VBP_EN_MASK		      (1 << DPI_DMA_CONTROL_VBP_EN_SHIFT)
+#define DPI_DMA_CONTROL_VBP_EN_MASK		      BIT(DPI_DMA_CONTROL_VBP_EN_SHIFT)
 #define DPI_DMA_CONTROL_VFP_EN_SHIFT		      20
-#define DPI_DMA_CONTROL_VFP_EN_MASK		      (1 << DPI_DMA_CONTROL_VFP_EN_SHIFT)
+#define DPI_DMA_CONTROL_VFP_EN_MASK		      BIT(DPI_DMA_CONTROL_VFP_EN_SHIFT)
 #define DPI_DMA_CONTROL_HSYNC_EN_SHIFT		      21
-#define DPI_DMA_CONTROL_HSYNC_EN_MASK		      (1 << DPI_DMA_CONTROL_HSYNC_EN_SHIFT)
+#define DPI_DMA_CONTROL_HSYNC_EN_MASK		      BIT(DPI_DMA_CONTROL_HSYNC_EN_SHIFT)
 #define DPI_DMA_CONTROL_VSYNC_EN_SHIFT		      22
-#define DPI_DMA_CONTROL_VSYNC_EN_MASK		      (1 << DPI_DMA_CONTROL_VSYNC_EN_SHIFT)
+#define DPI_DMA_CONTROL_VSYNC_EN_MASK		      BIT(DPI_DMA_CONTROL_VSYNC_EN_SHIFT)
 #define DPI_DMA_CONTROL_FORCE_IMMED_SHIFT	      23
-#define DPI_DMA_CONTROL_FORCE_IMMED_MASK	      (1 << DPI_DMA_CONTROL_FORCE_IMMED_SHIFT)
+#define DPI_DMA_CONTROL_FORCE_IMMED_MASK	      BIT(DPI_DMA_CONTROL_FORCE_IMMED_SHIFT)
 #define DPI_DMA_CONTROL_FORCE_DRAIN_SHIFT	      24
-#define DPI_DMA_CONTROL_FORCE_DRAIN_MASK	      (1 << DPI_DMA_CONTROL_FORCE_DRAIN_SHIFT)
+#define DPI_DMA_CONTROL_FORCE_DRAIN_MASK	      BIT(DPI_DMA_CONTROL_FORCE_DRAIN_SHIFT)
 #define DPI_DMA_CONTROL_FORCE_EMPTY_SHIFT	      25
-#define DPI_DMA_CONTROL_FORCE_EMPTY_MASK	      (1 << DPI_DMA_CONTROL_FORCE_EMPTY_SHIFT)
+#define DPI_DMA_CONTROL_FORCE_EMPTY_MASK	      BIT(DPI_DMA_CONTROL_FORCE_EMPTY_SHIFT)
 
 // IRQ_ENABLES
 #define DPI_DMA_IRQ_EN				      0x04
 #define DPI_DMA_IRQ_EN_DMA_READY_SHIFT		      0
-#define DPI_DMA_IRQ_EN_DMA_READY_MASK		      (1 << DPI_DMA_IRQ_EN_DMA_READY_SHIFT)
+#define DPI_DMA_IRQ_EN_DMA_READY_MASK		      BIT(DPI_DMA_IRQ_EN_DMA_READY_SHIFT)
 #define DPI_DMA_IRQ_EN_UNDERFLOW_SHIFT		      1
-#define DPI_DMA_IRQ_EN_UNDERFLOW_MASK		      (1 << DPI_DMA_IRQ_EN_UNDERFLOW_SHIFT)
+#define DPI_DMA_IRQ_EN_UNDERFLOW_MASK		      BIT(DPI_DMA_IRQ_EN_UNDERFLOW_SHIFT)
 #define DPI_DMA_IRQ_EN_FRAME_START_SHIFT	      2
-#define DPI_DMA_IRQ_EN_FRAME_START_MASK		      (1 << DPI_DMA_IRQ_EN_FRAME_START_SHIFT)
+#define DPI_DMA_IRQ_EN_FRAME_START_MASK		      BIT(DPI_DMA_IRQ_EN_FRAME_START_SHIFT)
 #define DPI_DMA_IRQ_EN_AFIFO_EMPTY_SHIFT	      3
-#define DPI_DMA_IRQ_EN_AFIFO_EMPTY_MASK		      (1 << DPI_DMA_IRQ_EN_AFIFO_EMPTY_SHIFT)
+#define DPI_DMA_IRQ_EN_AFIFO_EMPTY_MASK		      BIT(DPI_DMA_IRQ_EN_AFIFO_EMPTY_SHIFT)
 #define DPI_DMA_IRQ_EN_TE_SHIFT			      4
-#define DPI_DMA_IRQ_EN_TE_MASK			      (1 << DPI_DMA_IRQ_EN_TE_SHIFT)
+#define DPI_DMA_IRQ_EN_TE_MASK			      BIT(DPI_DMA_IRQ_EN_TE_SHIFT)
 #define DPI_DMA_IRQ_EN_ERROR_SHIFT		      5
-#define DPI_DMA_IRQ_EN_ERROR_MASK		      (1 << DPI_DMA_IRQ_EN_ERROR_SHIFT)
+#define DPI_DMA_IRQ_EN_ERROR_MASK		      BIT(DPI_DMA_IRQ_EN_ERROR_SHIFT)
 #define DPI_DMA_IRQ_EN_MATCH_SHIFT		      6
-#define DPI_DMA_IRQ_EN_MATCH_MASK		      (1 << DPI_DMA_IRQ_EN_MATCH_SHIFT)
+#define DPI_DMA_IRQ_EN_MATCH_MASK		      BIT(DPI_DMA_IRQ_EN_MATCH_SHIFT)
 #define DPI_DMA_IRQ_EN_MATCH_LINE_SHIFT		      16
 #define DPI_DMA_IRQ_EN_MATCH_LINE_MASK		      (0xFFF << DPI_DMA_IRQ_EN_MATCH_LINE_SHIFT)
 
 // IRQ_FLAGS
 #define DPI_DMA_IRQ_FLAGS			      0x08
 #define DPI_DMA_IRQ_FLAGS_DMA_READY_SHIFT	      0
-#define DPI_DMA_IRQ_FLAGS_DMA_READY_MASK	      (1 << DPI_DMA_IRQ_FLAGS_DMA_READY_SHIFT)
+#define DPI_DMA_IRQ_FLAGS_DMA_READY_MASK	      BIT(DPI_DMA_IRQ_FLAGS_DMA_READY_SHIFT)
 #define DPI_DMA_IRQ_FLAGS_UNDERFLOW_SHIFT	      1
-#define DPI_DMA_IRQ_FLAGS_UNDERFLOW_MASK	      (1 << DPI_DMA_IRQ_FLAGS_UNDERFLOW_SHIFT)
+#define DPI_DMA_IRQ_FLAGS_UNDERFLOW_MASK	      BIT(DPI_DMA_IRQ_FLAGS_UNDERFLOW_SHIFT)
 #define DPI_DMA_IRQ_FLAGS_FRAME_START_SHIFT	      2
-#define DPI_DMA_IRQ_FLAGS_FRAME_START_MASK	      (1 << DPI_DMA_IRQ_FLAGS_FRAME_START_SHIFT)
+#define DPI_DMA_IRQ_FLAGS_FRAME_START_MASK	      BIT(DPI_DMA_IRQ_FLAGS_FRAME_START_SHIFT)
 #define DPI_DMA_IRQ_FLAGS_AFIFO_EMPTY_SHIFT	      3
-#define DPI_DMA_IRQ_FLAGS_AFIFO_EMPTY_MASK	      (1 << DPI_DMA_IRQ_FLAGS_AFIFO_EMPTY_SHIFT)
+#define DPI_DMA_IRQ_FLAGS_AFIFO_EMPTY_MASK	      BIT(DPI_DMA_IRQ_FLAGS_AFIFO_EMPTY_SHIFT)
 #define DPI_DMA_IRQ_FLAGS_TE_SHIFT		      4
-#define DPI_DMA_IRQ_FLAGS_TE_MASK		      (1 << DPI_DMA_IRQ_FLAGS_TE_SHIFT)
+#define DPI_DMA_IRQ_FLAGS_TE_MASK		      BIT(DPI_DMA_IRQ_FLAGS_TE_SHIFT)
 #define DPI_DMA_IRQ_FLAGS_ERROR_SHIFT		      5
-#define DPI_DMA_IRQ_FLAGS_ERROR_MASK		      (1 << DPI_DMA_IRQ_FLAGS_ERROR_SHIFT)
+#define DPI_DMA_IRQ_FLAGS_ERROR_MASK		      BIT(DPI_DMA_IRQ_FLAGS_ERROR_SHIFT)
 #define DPI_DMA_IRQ_FLAGS_MATCH_SHIFT		      6
-#define DPI_DMA_IRQ_FLAGS_MATCH_MASK		      (1 << DPI_DMA_IRQ_FLAGS_MATCH_SHIFT)
+#define DPI_DMA_IRQ_FLAGS_MATCH_MASK		      BIT(DPI_DMA_IRQ_FLAGS_MATCH_SHIFT)
 
 // QOS
 #define DPI_DMA_QOS				      0xC
@@ -198,7 +200,6 @@
 
 #define BITS(field, val) (((val) << (field ## _SHIFT)) & (field ## _MASK))
 
-
 static unsigned int rp1dsi_dma_read(struct rp1dsi_priv *priv, unsigned int reg)
 {
 	void __iomem *addr = priv->hw_base[RP1DSI_HW_BLOCK_DMA] + reg;
@@ -268,52 +269,68 @@ static u32 get_omask_oshift(enum mipi_dsi_pixel_format fmt, u32 *oshift)
 {
 	switch (fmt) {
 	case MIPI_DSI_FMT_RGB565:
-		*oshift = BITS(DPI_DMA_SHIFT_OR, 15) | BITS(DPI_DMA_SHIFT_OG, 10) | BITS(DPI_DMA_SHIFT_OB, 4);
-		return BITS(DPI_DMA_OMASK_R, 0x3e0) | BITS(DPI_DMA_OMASK_G, 0x3f0) |  BITS(DPI_DMA_OMASK_B, 0x3e0);
+		*oshift = BITS(DPI_DMA_SHIFT_OR, 15) |
+			  BITS(DPI_DMA_SHIFT_OG, 10) |
+			  BITS(DPI_DMA_SHIFT_OB, 4);
+		return BITS(DPI_DMA_OMASK_R, 0x3e0) |
+		       BITS(DPI_DMA_OMASK_G, 0x3f0) |
+		       BITS(DPI_DMA_OMASK_B, 0x3e0);
 	case MIPI_DSI_FMT_RGB666_PACKED:
-		*oshift = BITS(DPI_DMA_SHIFT_OR, 17) | BITS(DPI_DMA_SHIFT_OG, 11) | BITS(DPI_DMA_SHIFT_OB, 5);
-		return BITS(DPI_DMA_OMASK_R, 0x3f0) | BITS(DPI_DMA_OMASK_G, 0x3f0) |  BITS(DPI_DMA_OMASK_B, 0x3f0);
+		*oshift = BITS(DPI_DMA_SHIFT_OR, 17) |
+			  BITS(DPI_DMA_SHIFT_OG, 11) |
+			  BITS(DPI_DMA_SHIFT_OB, 5);
+		return BITS(DPI_DMA_OMASK_R, 0x3f0) |
+		       BITS(DPI_DMA_OMASK_G, 0x3f0) |
+		       BITS(DPI_DMA_OMASK_B, 0x3f0);
 	case MIPI_DSI_FMT_RGB666:
-		*oshift = BITS(DPI_DMA_SHIFT_OR, 21) | BITS(DPI_DMA_SHIFT_OG, 13) | BITS(DPI_DMA_SHIFT_OB, 5);
-		return BITS(DPI_DMA_OMASK_R, 0x3f0) | BITS(DPI_DMA_OMASK_G, 0x3f0) |  BITS(DPI_DMA_OMASK_B, 0x3f0);
+		*oshift = BITS(DPI_DMA_SHIFT_OR, 21) |
+			  BITS(DPI_DMA_SHIFT_OG, 13) |
+			  BITS(DPI_DMA_SHIFT_OB, 5);
+		return BITS(DPI_DMA_OMASK_R, 0x3f0) |
+		       BITS(DPI_DMA_OMASK_G, 0x3f0) |
+		       BITS(DPI_DMA_OMASK_B, 0x3f0);
 	default:
-		*oshift = BITS(DPI_DMA_SHIFT_OR, 23) | BITS(DPI_DMA_SHIFT_OG, 15) | BITS(DPI_DMA_SHIFT_OB, 7);
-		return BITS(DPI_DMA_OMASK_R, 0x3fc) | BITS(DPI_DMA_OMASK_G, 0x3fc) |  BITS(DPI_DMA_OMASK_B, 0x3fc);
+		*oshift = BITS(DPI_DMA_SHIFT_OR, 23) |
+			  BITS(DPI_DMA_SHIFT_OG, 15) |
+			  BITS(DPI_DMA_SHIFT_OB, 7);
+		return BITS(DPI_DMA_OMASK_R, 0x3fc) |
+		       BITS(DPI_DMA_OMASK_G, 0x3fc) |
+		       BITS(DPI_DMA_OMASK_B, 0x3fc);
 	}
 }
 
 void rp1dsi_dma_setup(struct rp1dsi_priv *priv,
-		     u32 in_format, enum mipi_dsi_pixel_format out_format,
-		     struct drm_display_mode const * mode)
+		      u32 in_format, enum mipi_dsi_pixel_format out_format,
+		     struct drm_display_mode const *mode)
 {
 	u32 oshift;
 	int i;
 
 	/*
-	 * Configure  all DSI/DPI/DMA block registers, except base address.
+	 * Configure all DSI/DPI/DMA block registers, except base address.
 	 * DMA will not actually start until a FB base address is specified
 	 * using rp1dsi_dma_update().
 	 */
 
 	rp1dsi_dma_write(priv, DPI_DMA_VISIBLE_AREA,
-			BITS(DPI_DMA_VISIBLE_AREA_ROWSM1, mode->vdisplay - 1) |
-			BITS(DPI_DMA_VISIBLE_AREA_COLSM1, mode->hdisplay - 1));
+			 BITS(DPI_DMA_VISIBLE_AREA_ROWSM1, mode->vdisplay - 1) |
+			 BITS(DPI_DMA_VISIBLE_AREA_COLSM1, mode->hdisplay - 1));
 
 	rp1dsi_dma_write(priv, DPI_DMA_SYNC_WIDTH,
-			BITS(DPI_DMA_SYNC_WIDTH_ROWSM1, mode->vsync_end - mode->vsync_start - 1) |
-			BITS(DPI_DMA_SYNC_WIDTH_COLSM1, mode->hsync_end - mode->hsync_start - 1));
+			 BITS(DPI_DMA_SYNC_WIDTH_ROWSM1, mode->vsync_end - mode->vsync_start - 1) |
+			 BITS(DPI_DMA_SYNC_WIDTH_COLSM1, mode->hsync_end - mode->hsync_start - 1));
 
 	/* In the DPIDMA registers, "back porch" time includes sync width */
 	rp1dsi_dma_write(priv, DPI_DMA_BACK_PORCH,
-			BITS(DPI_DMA_BACK_PORCH_ROWSM1, mode->vtotal - mode->vsync_start - 1) |
-			BITS(DPI_DMA_BACK_PORCH_COLSM1, mode->htotal - mode->hsync_start - 1));
+			 BITS(DPI_DMA_BACK_PORCH_ROWSM1, mode->vtotal - mode->vsync_start - 1) |
+			 BITS(DPI_DMA_BACK_PORCH_COLSM1, mode->htotal - mode->hsync_start - 1));
 
 	rp1dsi_dma_write(priv, DPI_DMA_FRONT_PORCH,
-			BITS(DPI_DMA_FRONT_PORCH_ROWSM1, mode->vsync_start - mode->vdisplay - 1) |
-			BITS(DPI_DMA_FRONT_PORCH_COLSM1, mode->hsync_start - mode->hdisplay - 1));
+			 BITS(DPI_DMA_FRONT_PORCH_ROWSM1, mode->vsync_start - mode->vdisplay - 1) |
+			 BITS(DPI_DMA_FRONT_PORCH_COLSM1, mode->hsync_start - mode->hdisplay - 1));
 
 	/* Input to output pixel format conversion */
-	for(i = 0; i < ARRAY_SIZE(my_formats); ++i) {
+	for (i = 0; i < ARRAY_SIZE(my_formats); ++i) {
 		if (my_formats[i].format == in_format)
 			break;
 	}
@@ -330,11 +347,11 @@ void rp1dsi_dma_setup(struct rp1dsi_priv *priv,
 		rp1dsi_dma_write(priv, DPI_DMA_RGBSZ, my_formats[i].rgbsz & DPI_DMA_RGBSZ_BPP_MASK);
 
 	rp1dsi_dma_write(priv, DPI_DMA_QOS,
-			BITS(DPI_DMA_QOS_DQOS, 0x0) |
-			BITS(DPI_DMA_QOS_ULEV, 0x8) |
-			BITS(DPI_DMA_QOS_UQOS, 0x2) |
-			BITS(DPI_DMA_QOS_LLEV, 0x4) |
-			BITS(DPI_DMA_QOS_LQOS, 0x7));
+			 BITS(DPI_DMA_QOS_DQOS, 0x0) |
+			 BITS(DPI_DMA_QOS_ULEV, 0x8) |
+			 BITS(DPI_DMA_QOS_UQOS, 0x2) |
+			 BITS(DPI_DMA_QOS_LLEV, 0x4) |
+			 BITS(DPI_DMA_QOS_LQOS, 0x7));
 
 	rp1dsi_dma_write(priv, DPI_DMA_IRQ_FLAGS, -1);
 	rp1dsi_dma_vblank_ctrl(priv, 1);
@@ -344,20 +361,20 @@ void rp1dsi_dma_setup(struct rp1dsi_priv *priv,
 		printk(KERN_WARNING "RP1DSI: Unexpectedly busy at start!");
 
 	rp1dsi_dma_write(priv, DPI_DMA_CONTROL,
-			BITS(DPI_DMA_CONTROL_ARM,    (i==0)) |
-			BITS(DPI_DMA_CONTROL_AUTO_REPEAT, 1) |
-			BITS(DPI_DMA_CONTROL_HIGH_WATER,  384) |
-			BITS(DPI_DMA_CONTROL_DEN_POL,	  0) |
-			BITS(DPI_DMA_CONTROL_HSYNC_POL,	  0) |
-			BITS(DPI_DMA_CONTROL_VSYNC_POL,	  0) |
-			BITS(DPI_DMA_CONTROL_COLORM,	  0) |
-			BITS(DPI_DMA_CONTROL_SHUTDN,	  0) |
-			BITS(DPI_DMA_CONTROL_HBP_EN,	  1) |
-			BITS(DPI_DMA_CONTROL_HFP_EN,	  1) |
-			BITS(DPI_DMA_CONTROL_VBP_EN,	  1) |
-			BITS(DPI_DMA_CONTROL_VFP_EN,	  1) |
-			BITS(DPI_DMA_CONTROL_HSYNC_EN,	  1) |
-			BITS(DPI_DMA_CONTROL_VSYNC_EN,	  1));
+			 BITS(DPI_DMA_CONTROL_ARM, (i == 0)) |
+			 BITS(DPI_DMA_CONTROL_AUTO_REPEAT, 1) |
+			 BITS(DPI_DMA_CONTROL_HIGH_WATER, 384) |
+			 BITS(DPI_DMA_CONTROL_DEN_POL, 0) |
+			 BITS(DPI_DMA_CONTROL_HSYNC_POL, 0) |
+			 BITS(DPI_DMA_CONTROL_VSYNC_POL, 0) |
+			 BITS(DPI_DMA_CONTROL_COLORM, 0) |
+			 BITS(DPI_DMA_CONTROL_SHUTDN, 0) |
+			 BITS(DPI_DMA_CONTROL_HBP_EN, 1) |
+			 BITS(DPI_DMA_CONTROL_HFP_EN, 1) |
+			 BITS(DPI_DMA_CONTROL_VBP_EN, 1) |
+			 BITS(DPI_DMA_CONTROL_VFP_EN, 1) |
+			 BITS(DPI_DMA_CONTROL_HSYNC_EN, 1) |
+			 BITS(DPI_DMA_CONTROL_VSYNC_EN, 1));
 }
 
 void rp1dsi_dma_update(struct rp1dsi_priv *priv, dma_addr_t addr, u32 offset, u32 stride)
@@ -387,16 +404,16 @@ void rp1dsi_dma_stop(struct rp1dsi_priv *priv)
 	ctrl = rp1dsi_dma_read(priv, DPI_DMA_CONTROL);
 	ctrl &= ~(DPI_DMA_CONTROL_ARM_MASK | DPI_DMA_CONTROL_AUTO_REPEAT_MASK);
 	rp1dsi_dma_write(priv, DPI_DMA_CONTROL, ctrl);
-	i = down_timeout(&priv->finished, HZ/10);
+	i = down_timeout(&priv->finished, HZ / 10);
 	rp1dsi_dma_write(priv, DPI_DMA_IRQ_EN, 0);
 }
 
 void rp1dsi_dma_vblank_ctrl(struct rp1dsi_priv *priv, int enable)
 {
 	rp1dsi_dma_write(priv, DPI_DMA_IRQ_EN,
-			BITS(DPI_DMA_IRQ_EN_AFIFO_EMPTY, 1)      |
-			BITS(DPI_DMA_IRQ_EN_DMA_READY, !!enable) |
-			BITS(DPI_DMA_IRQ_EN_MATCH_LINE, 4095));
+			 BITS(DPI_DMA_IRQ_EN_AFIFO_EMPTY, 1) |
+			 BITS(DPI_DMA_IRQ_EN_DMA_READY, !!enable) |
+			 BITS(DPI_DMA_IRQ_EN_MATCH_LINE, 4095));
 }
 
 irqreturn_t rp1dsi_dma_isr(int irq, void *dev)

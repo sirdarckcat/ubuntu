@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /*
  * DRM Driver for DSI output on Raspberry Pi RP1
+ *
+ * Copyright (c) 2023 Raspberry Pi Limited.
  */
 
 #include <linux/kernel.h>
@@ -104,28 +106,28 @@
 /* And some bitfield definitions */
 
 #define DPHY_PWR_UP_SHUTDOWNZ_LSB 0
-#define DPHY_PWR_UP_SHUTDOWNZ_BITS (1 << DPHY_PWR_UP_SHUTDOWNZ_LSB)
+#define DPHY_PWR_UP_SHUTDOWNZ_BITS BIT(DPHY_PWR_UP_SHUTDOWNZ_LSB)
 
 #define DPHY_CTRL0_PHY_TESTCLK_LSB 1
-#define DPHY_CTRL0_PHY_TESTCLK_BITS (1 << DPHY_CTRL0_PHY_TESTCLK_LSB)
+#define DPHY_CTRL0_PHY_TESTCLK_BITS BIT(DPHY_CTRL0_PHY_TESTCLK_LSB)
 #define DPHY_CTRL0_PHY_TESTCLR_LSB 0
-#define DPHY_CTRL0_PHY_TESTCLR_BITS (1 << DPHY_CTRL0_PHY_TESTCLR_LSB)
+#define DPHY_CTRL0_PHY_TESTCLR_BITS BIT(DPHY_CTRL0_PHY_TESTCLR_LSB)
 
 #define DPHY_CTRL1_PHY_TESTDIN_LSB  0
 #define DPHY_CTRL1_PHY_TESTDIN_BITS  (0xff << DPHY_CTRL1_PHY_TESTDIN_LSB)
 #define DPHY_CTRL1_PHY_TESTDOUT_LSB 8
 #define DPHY_CTRL1_PHY_TESTDOUT_BITS (0xff << DPHY_CTRL1_PHY_TESTDOUT_LSB)
 #define DPHY_CTRL1_PHY_TESTEN_LSB 16
-#define DPHY_CTRL1_PHY_TESTEN_BITS (1 << DPHY_CTRL1_PHY_TESTEN_LSB)
+#define DPHY_CTRL1_PHY_TESTEN_BITS BIT(DPHY_CTRL1_PHY_TESTEN_LSB)
 
 #define DSI_PHYRSTZ_SHUTDOWNZ_LSB  0
-#define DSI_PHYRSTZ_SHUTDOWNZ_BITS (1 << DSI_PHYRSTZ_SHUTDOWNZ_LSB)
+#define DSI_PHYRSTZ_SHUTDOWNZ_BITS BIT(DSI_PHYRSTZ_SHUTDOWNZ_LSB)
 #define DSI_PHYRSTZ_RSTZ_LSB  1
-#define DSI_PHYRSTZ_RSTZ_BITS (1 << DSI_PHYRSTZ_RSTZ_LSB)
+#define DSI_PHYRSTZ_RSTZ_BITS BIT(DSI_PHYRSTZ_RSTZ_LSB)
 #define DSI_PHYRSTZ_ENABLECLK_LSB 2
-#define DSI_PHYRSTZ_ENABLECLK_BITS (1 << DSI_PHYRSTZ_ENABLECLK_LSB)
+#define DSI_PHYRSTZ_ENABLECLK_BITS BIT(DSI_PHYRSTZ_ENABLECLK_LSB)
 #define DSI_PHYRSTZ_FORCEPLL_LSB 3
-#define DSI_PHYRSTZ_FORCEPLL_BITS  (1 << DSI_PHYRSTZ_FORCEPLL_LSB)
+#define DSI_PHYRSTZ_FORCEPLL_BITS  BIT(DSI_PHYRSTZ_FORCEPLL_LSB)
 
 #define DPHY_HS_RX_CTRL_LANE0_OFFSET  0x44
 #define DPHY_PLL_INPUT_DIV_OFFSET 0x17
@@ -134,7 +136,7 @@
 
 #define DPHY_PLL_BIAS_OFFSET 0x10
 #define DPHY_PLL_BIAS_VCO_RANGE_LSB 3
-#define DPHY_PLL_BIAS_USE_PROGRAMMED_VCO_RANGE (1 << 7)
+#define DPHY_PLL_BIAS_USE_PROGRAMMED_VCO_RANGE BIT(7)
 
 #define DPHY_PLL_CHARGE_PUMP_OFFSET 0x11
 #define DPHY_PLL_LPF_OFFSET 0x12
@@ -1089,9 +1091,8 @@
 #define RPI_MIPICFG_DFTSS_BYPASS_RESETSYNCS_LSB    0
 #define RPI_MIPICFG_DFTSS_BYPASS_RESETSYNCS_ACCESS "RW"
 
-#define CFG_WRITE(reg, val)  writel((val),  priv->hw_base[RP1DSI_HW_BLOCK_CFG] + ( reg ## _OFFSET ))
-#define CFG_READ(reg)        readl(priv->hw_base[RP1DSI_HW_BLOCK_CFG] + ( reg ## _OFFSET ))
-
+#define CFG_WRITE(reg, val)  writel((val),  priv->hw_base[RP1DSI_HW_BLOCK_CFG] + (reg ## _OFFSET))
+#define CFG_READ(reg)        readl(priv->hw_base[RP1DSI_HW_BLOCK_CFG] + (reg ## _OFFSET))
 
 /* ------------------------------- DPHY setup stuff ------------------------ */
 
@@ -1104,6 +1105,7 @@ static void dphy_transaction(struct rp1dsi_priv *priv, uint8_t test_code, uint8_
 	 * so there is no need for extra delays between the transitions.
 	 */
 	u32 tmp;
+
 	DSI_WRITE(DSI_PHY_TST_CTRL1, test_code | DPHY_CTRL1_PHY_TESTEN_BITS);
 	DSI_WRITE(DSI_PHY_TST_CTRL0, 0);
 	tmp = (DSI_READ(DSI_PHY_TST_CTRL1) >> DPHY_CTRL1_PHY_TESTDOUT_LSB) & 0xFF;
@@ -1131,9 +1133,9 @@ static uint8_t dphy_get_div(u32 refclk_khz, u32 vco_freq_khz, u32 *ptr_m, u32 *p
 	static const u32 REF_DIVN_MAX = 40000u;
 	static const u32 REF_DIVN_MIN =  5000u;
 	u32 best_n, best_m, best_err = 0x7fffffff;
-	unsigned n;
+	unsigned int n;
 
-	for(n = 1 + refclk_khz / REF_DIVN_MAX; n * REF_DIVN_MIN <= refclk_khz && n < 100; ++n) {
+	for (n = 1 + refclk_khz / REF_DIVN_MAX; n * REF_DIVN_MIN <= refclk_khz && n < 100; ++n) {
 		u32 half_m = (n * vco_freq_khz + refclk_khz) / (2 * refclk_khz);
 
 		if (half_m < 150) {
@@ -1142,7 +1144,7 @@ static uint8_t dphy_get_div(u32 refclk_khz, u32 vco_freq_khz, u32 *ptr_m, u32 *p
 
 			if (err < best_err) {
 				best_n = n;
-				best_m = 2*half_m;
+				best_m = 2 * half_m;
 				best_err = err;
 				if (err == 0)
 					break;
@@ -1150,7 +1152,7 @@ static uint8_t dphy_get_div(u32 refclk_khz, u32 vco_freq_khz, u32 *ptr_m, u32 *p
 		}
 	}
 
-	if (64*best_err < vco_freq_khz) { /* tolerate small error */
+	if (64 * best_err < vco_freq_khz) { /* tolerate small error */
 		*ptr_n = best_n;
 		*ptr_m = best_m;
 		return 1;
@@ -1161,7 +1163,7 @@ static uint8_t dphy_get_div(u32 refclk_khz, u32 vco_freq_khz, u32 *ptr_m, u32 *p
 static uint8_t dphy_set_hsfreqrange(struct rp1dsi_priv *priv, u32 freq)
 {
 	/* See page 258 of dphy databook */
-	uint8_t hsfreqrange = 0;
+	u8 hsfreqrange = 0;
 
 	if (freq < 80 || freq > 1500) {
 		return 0;
@@ -1259,13 +1261,17 @@ static void dphy_configure_pll(struct rp1dsi_priv *priv, u32 refclk_khz, u32 vco
 	u32 n = 0;
 
 	if (dphy_get_div(refclk_khz, vco_freq_khz, &m, &n)) {
-		dphy_set_hsfreqrange(priv, vco_freq_khz/1000);
-		dphy_transaction(priv, DPHY_PLL_DIV_CTRL_OFFSET, 0x30); // Program m,n from registers
-		dphy_transaction(priv, DPHY_PLL_INPUT_DIV_OFFSET, n-1); // N (program N-1)
-		dphy_transaction(priv, DPHY_PLL_LOOP_DIV_OFFSET, 0x80 | ((m-1) >> 5));  // M[8:5] ??
-		dphy_transaction(priv, DPHY_PLL_LOOP_DIV_OFFSET, ((m-1) & 0x1F));  // M[4:0] (program M-1)
+		dphy_set_hsfreqrange(priv, vco_freq_khz / 1000);
+		/* Program m,n from registers */
+		dphy_transaction(priv, DPHY_PLL_DIV_CTRL_OFFSET, 0x30);
+		/* N (program N-1) */
+		dphy_transaction(priv, DPHY_PLL_INPUT_DIV_OFFSET, n - 1);
+		/* M[8:5] ?? */
+		dphy_transaction(priv, DPHY_PLL_LOOP_DIV_OFFSET, 0x80 | ((m - 1) >> 5));
+		/* M[4:0] (program M-1) */
+		dphy_transaction(priv, DPHY_PLL_LOOP_DIV_OFFSET, ((m - 1) & 0x1F));
 		pr_info("RP1DSI: MIPI DPHY: vco freq want %dkHz got %dkHz = %d * (%dkHz / %d), hsfreqrange = 0x%02x\r\n",
-			vco_freq_khz, refclk_khz*m/n, m, refclk_khz, n, priv->hsfreqrange);
+			vco_freq_khz, refclk_khz * m / n, m, refclk_khz, n, priv->hsfreqrange);
 	} else {
 		pr_info("RP1DSI: Error configuring DPHY PLL! %dkHz = %d * (%dkHz / %d)\r\n",
 			vco_freq_khz, m, refclk_khz, n);
@@ -1274,151 +1280,155 @@ static void dphy_configure_pll(struct rp1dsi_priv *priv, u32 refclk_khz, u32 vco
 
 static uint8_t dphy_get_clk_lp_to_hs(uint8_t hsfreqrange)
 {
-	// TXBYTECLKHS clocks of the clk lane LP => HS entry
+	/* TXBYTECLKHS clocks of the clk lane LP => HS entry */
 	switch (hsfreqrange) {
-        case 0b000000: return 32;
-        case 0b010000: return 35;
-        case 0b100000: return 32;
-        case 0b000001: return 31;
-        case 0b010001: return 33;
-        case 0b100001: return 33;
-        case 0b000010: return 32;
-        case 0b010010: return 36;
-        case 0b100010: return 40;
-        case 0b000011: return 40;
-        case 0b010011: return 44;
-        case 0b100011: return 48;
-        case 0b000100: return 48;
-        case 0b010100: return 50;
-        case 0b000101: return 56;
-        case 0b010101: return 59;
-        case 0b100101: return 61;
-        case 0b000110: return 67;
-        case 0b010110: return 73;
-        case 0b000111: return 79;
-        case 0b010111: return 83;
-        case 0b001000: return 90;
-        case 0b011000: return 95;
-        case 0b001001: return 102;
-        case 0b011001: return 106;
-        case 0b101001: return 113;
-        case 0b111001: return 118;
-        case 0b001010: return 124;
-        case 0b011010: return 130;
-        default:       return 130;
+	case 0b000000: return 32;
+	case 0b010000: return 35;
+	case 0b100000: return 32;
+	case 0b000001: return 31;
+	case 0b010001: return 33;
+	case 0b100001: return 33;
+	case 0b000010: return 32;
+	case 0b010010: return 36;
+	case 0b100010: return 40;
+	case 0b000011: return 40;
+	case 0b010011: return 44;
+	case 0b100011: return 48;
+	case 0b000100: return 48;
+	case 0b010100: return 50;
+	case 0b000101: return 56;
+	case 0b010101: return 59;
+	case 0b100101: return 61;
+	case 0b000110: return 67;
+	case 0b010110: return 73;
+	case 0b000111: return 79;
+	case 0b010111: return 83;
+	case 0b001000: return 90;
+	case 0b011000: return 95;
+	case 0b001001: return 102;
+	case 0b011001: return 106;
+	case 0b101001: return 113;
+	case 0b111001: return 118;
+	case 0b001010: return 124;
+	case 0b011010: return 130;
+	default:       return 130;
     }
 }
 
 static uint8_t dphy_get_clk_hs_to_lp(uint8_t hsfreqrange)
 {
-	// TXBYTECLKHS clocks of the clk lane HS => LP exit
+	/* TXBYTECLKHS clocks of the clk lane HS => LP exit */
 	switch (hsfreqrange) {
-        case 0b000000: return 20;
-        case 0b010000: return 23;
-        case 0b100000: return 22;
-        case 0b000001: return 20;
-        case 0b010001: return 22;
-        case 0b100001: return 21;
-        case 0b000010: return 20;
-        case 0b010010: return 23;
-        case 0b100010: return 22;
-        case 0b000011: return 22;
-        case 0b010011: return 24;
-        case 0b100011: return 24;
-        case 0b000100: return 24;
-        case 0b010100: return 27;
-        case 0b000101: return 28;
-        case 0b010101: return 28;
-        case 0b100101: return 30;
-        case 0b000110: return 31;
-        case 0b010110: return 31;
-        case 0b000111: return 36;
-        case 0b010111: return 37;
-        case 0b001000: return 38;
-        case 0b011000: return 40;
-        case 0b001001: return 40;
-        case 0b011001: return 42;
-        case 0b101001: return 44;
-        case 0b111001: return 47;
-        case 0b001010: return 47;
-        case 0b011010: return 49;
-        default:       return 49;
+	case 0b000000: return 20;
+	case 0b010000: return 23;
+	case 0b100000: return 22;
+	case 0b000001: return 20;
+	case 0b010001: return 22;
+	case 0b100001: return 21;
+	case 0b000010: return 20;
+	case 0b010010: return 23;
+	case 0b100010: return 22;
+	case 0b000011: return 22;
+	case 0b010011: return 24;
+	case 0b100011: return 24;
+	case 0b000100: return 24;
+	case 0b010100: return 27;
+	case 0b000101: return 28;
+	case 0b010101: return 28;
+	case 0b100101: return 30;
+	case 0b000110: return 31;
+	case 0b010110: return 31;
+	case 0b000111: return 36;
+	case 0b010111: return 37;
+	case 0b001000: return 38;
+	case 0b011000: return 40;
+	case 0b001001: return 40;
+	case 0b011001: return 42;
+	case 0b101001: return 44;
+	case 0b111001: return 47;
+	case 0b001010: return 47;
+	case 0b011010: return 49;
+	default:       return 49;
     }
 }
 
 static uint8_t dphy_get_data_lp_to_hs(uint8_t hsfreqrange)
 {
-	// TXBYTECLKHS clocks of the data lane LP => HS entry
-	// Excludes the CLK LANE entry time
+	/*
+	 * TXBYTECLKHS clocks of the data lane LP => HS entry
+	 * Excludes the CLK LANE entry time
+	 */
 	switch (hsfreqrange) {
-        case 0b000000: return 26;
-        case 0b010000: return 28;
-        case 0b100000: return 26;
-        case 0b000001: return 27;
-        case 0b010001: return 26;
-        case 0b100001: return 26;
-        case 0b000010: return 27;
-        case 0b010010: return 30;
-        case 0b100010: return 33;
-        case 0b000011: return 33;
-        case 0b010011: return 36;
-        case 0b100011: return 38;
-        case 0b000100: return 38;
-        case 0b010100: return 41;
-        case 0b000101: return 45;
-        case 0b010101: return 48;
-        case 0b100101: return 50;
-        case 0b000110: return 55;
-        case 0b010110: return 59;
-        case 0b000111: return 63;
-        case 0b010111: return 68;
-        case 0b001000: return 73;
-        case 0b011000: return 77;
-        case 0b001001: return 84;
-        case 0b011001: return 87;
-        case 0b101001: return 93;
-        case 0b111001: return 98;
-        case 0b001010: return 102;
-        case 0b011010: return 107;
-        default:       return 107;
+	case 0b000000: return 26;
+	case 0b010000: return 28;
+	case 0b100000: return 26;
+	case 0b000001: return 27;
+	case 0b010001: return 26;
+	case 0b100001: return 26;
+	case 0b000010: return 27;
+	case 0b010010: return 30;
+	case 0b100010: return 33;
+	case 0b000011: return 33;
+	case 0b010011: return 36;
+	case 0b100011: return 38;
+	case 0b000100: return 38;
+	case 0b010100: return 41;
+	case 0b000101: return 45;
+	case 0b010101: return 48;
+	case 0b100101: return 50;
+	case 0b000110: return 55;
+	case 0b010110: return 59;
+	case 0b000111: return 63;
+	case 0b010111: return 68;
+	case 0b001000: return 73;
+	case 0b011000: return 77;
+	case 0b001001: return 84;
+	case 0b011001: return 87;
+	case 0b101001: return 93;
+	case 0b111001: return 98;
+	case 0b001010: return 102;
+	case 0b011010: return 107;
+	default:       return 107;
 	}
 }
 
 static uint8_t dphy_get_data_hs_to_lp(uint8_t hsfreqrange)
 {
-	// TXBYTECLKHS clocks of the data lane HS => LP exit
-	// Excludes the CLK LANE entry time
+	/*
+	 * TXBYTECLKHS clocks of the data lane HS => LP exit
+	 * Excludes the CLK LANE entry time
+	 */
 	switch (hsfreqrange) {
-        case 0b000000: return 13;
-        case 0b010000: return 14;
-        case 0b100000: return 13;
-        case 0b000001: return 13;
-        case 0b010001: return 14;
-        case 0b100001: return 14;
-        case 0b000010: return 13;
-        case 0b010010: return 15;
-        case 0b100010: return 15;
-        case 0b000011: return 15;
-        case 0b010011: return 16;
-        case 0b100011: return 17;
-        case 0b000100: return 17;
-        case 0b010100: return 18;
-        case 0b000101: return 18;
-        case 0b010101: return 19;
-        case 0b100101: return 20;
-        case 0b000110: return 21;
-        case 0b010110: return 22;
-        case 0b000111: return 24;
-        case 0b010111: return 25;
-        case 0b001000: return 27;
-        case 0b011000: return 28;
-        case 0b001001: return 28;
-        case 0b011001: return 30;
-        case 0b101001: return 31;
-        case 0b111001: return 32;
-        case 0b001010: return 34;
-        case 0b011010: return 35;
-        default:       return 35;
+	case 0b000000: return 13;
+	case 0b010000: return 14;
+	case 0b100000: return 13;
+	case 0b000001: return 13;
+	case 0b010001: return 14;
+	case 0b100001: return 14;
+	case 0b000010: return 13;
+	case 0b010010: return 15;
+	case 0b100010: return 15;
+	case 0b000011: return 15;
+	case 0b010011: return 16;
+	case 0b100011: return 17;
+	case 0b000100: return 17;
+	case 0b010100: return 18;
+	case 0b000101: return 18;
+	case 0b010101: return 19;
+	case 0b100101: return 20;
+	case 0b000110: return 21;
+	case 0b010110: return 22;
+	case 0b000111: return 24;
+	case 0b010111: return 25;
+	case 0b001000: return 27;
+	case 0b011000: return 28;
+	case 0b001001: return 28;
+	case 0b011001: return 30;
+	case 0b101001: return 31;
+	case 0b111001: return 32;
+	case 0b001010: return 34;
+	case 0b011010: return 35;
+	default:       return 35;
     }
 }
 
@@ -1439,7 +1449,7 @@ static void dphy_init_khz(struct rp1dsi_priv *priv, u32 ref_freq, u32 vco_freq)
 	DSI_WRITE(DSI_PHYRSTZ, DSI_PHYRSTZ_SHUTDOWNZ_BITS);
 	udelay(1);
 	DSI_WRITE(DSI_PHYRSTZ, (DSI_PHYRSTZ_SHUTDOWNZ_BITS | DSI_PHYRSTZ_RSTZ_BITS));
-	udelay(1); // so we can see PLL coming up?
+	udelay(1); /* so we can see PLL coming up? */
 }
 
 /* DSI Config stuff */
@@ -1459,37 +1469,39 @@ int rp1dsi_check_platform(struct rp1dsi_priv *priv)
 
 void rp1dsi_mipicfg_setup(struct rp1dsi_priv *priv)
 {
-	CFG_WRITE(RPI_MIPICFG_CFG, 0);                             /* Select DSI rather than CSI-2 */
-	CFG_WRITE(RPI_MIPICFG_INTE,RPI_MIPICFG_INTE_DSI_DMA_BITS); /* Enable DSIDMA interrupt only */
+	/* Select DSI rather than CSI-2 */
+	CFG_WRITE(RPI_MIPICFG_CFG, 0);
+	/* Enable DSIDMA interrupt only */
+	CFG_WRITE(RPI_MIPICFG_INTE, RPI_MIPICFG_INTE_DSI_DMA_BITS);
 }
 
-static unsigned long rp1dsi_refclk_freq(struct rp1dsi_priv * priv)
+static unsigned long rp1dsi_refclk_freq(struct rp1dsi_priv *priv)
 {
 	unsigned long u;
 
 	u = (priv->clocks[RP1DSI_CLOCK_REF]) ? clk_get_rate(priv->clocks[RP1DSI_CLOCK_REF]) : 0;
-	if (u < 1 || u >= (1ul<<30))
+	if (u < 1 || u >= (1ul << 30))
 		u = 50000000ul; /* default XOSC frequency */
 	return u;
 }
 
-static void rp1dsi_dpiclk_start(struct rp1dsi_priv * priv, unsigned bpp, unsigned lanes)
+static void rp1dsi_dpiclk_start(struct rp1dsi_priv *priv, unsigned int bpp, unsigned int lanes)
 {
 	unsigned long u;
 
 	if (priv->clocks[RP1DSI_CLOCK_DPI]) {
 		u = (priv->clocks[RP1DSI_CLOCK_BYTE]) ? clk_get_rate(priv->clocks[RP1DSI_CLOCK_BYTE]) : 0;
-		pr_info("RP1DSI: Nominal byte clock %lu; scale by %u/%u", u, 4*lanes, (bpp>>1));
-		if (u < 1 || u >= (1ul<<28))
+		pr_info("RP1DSI: Nominal byte clock %lu; scale by %u/%u", u, 4 * lanes, (bpp >> 1));
+		if (u < 1 || u >= (1ul << 28))
 			u = 72000000ul; /* default DUMMY frequency for byteclock */
 
 		clk_set_parent(priv->clocks[RP1DSI_CLOCK_DPI], priv->clocks[RP1DSI_CLOCK_BYTE]);
-		clk_set_rate(priv->clocks[RP1DSI_CLOCK_DPI], (4*lanes*u)/(bpp>>1));
+		clk_set_rate(priv->clocks[RP1DSI_CLOCK_DPI], (4 * lanes * u) / (bpp >> 1));
 		clk_prepare_enable(priv->clocks[RP1DSI_CLOCK_DPI]);
 	}
 }
 
-static void rp1dsi_dpiclk_stop(struct rp1dsi_priv * priv)
+static void rp1dsi_dpiclk_stop(struct rp1dsi_priv *priv)
 {
 	if (priv->clocks[RP1DSI_CLOCK_DPI])
 		clk_disable_unprepare(priv->clocks[RP1DSI_CLOCK_DPI]);
@@ -1513,97 +1525,113 @@ static u32 get_colorcode(enum mipi_dsi_pixel_format fmt)
 void rp1dsi_dsi_setup(struct rp1dsi_priv *priv, struct drm_display_mode const *mode)
 {
 	u32 timeout, mask;
-	unsigned bpp = mipi_dsi_pixel_format_to_bpp(priv->display_format);
+	unsigned int bpp = mipi_dsi_pixel_format_to_bpp(priv->display_format);
 
 	if (priv->running_on_fpga)
 		bpp = 24 * priv->lanes; /* On FPGA, clock ratio is fixed at 1:3 */
 
-	pr_info("%s", __func__);
 	DSI_WRITE(DSI_PHY_IF_CFG, priv->lanes - 1);
 	DSI_WRITE(DSI_DPI_CFG_POL, 0);
 	DSI_WRITE(DSI_GEN_VCID, priv->vc);
 	DSI_WRITE(DSI_DPI_COLOR_CODING, get_colorcode(priv->display_format));
-	DSI_WRITE(DSI_DPI_LP_CMD_TIM, 0x00100000); /* a conservative guess (LP escape is slow!) */
-	DSI_WRITE(DSI_VID_MODE_CFG, 0xBF00);    /* Use non-burst mode, dropping to LP where possible */
-	DSI_WRITE(DSI_CMD_MODE_CFG, 0x10F7F00); /* Use LP Escape Data signalling for all commands */
-	DSI_WRITE(DSI_MODE_CFG, 1);             /* and select Command Mode */
-	DSI_WRITE(DSI_TO_CNT_CFG, 0x02000200);  /* XXX magic number */
-	DSI_WRITE(DSI_BTA_TO_CNT, 0x800);       /* XXX magic number */
+	/* a conservative guess (LP escape is slow!) */
+	DSI_WRITE(DSI_DPI_LP_CMD_TIM, 0x00100000);
+	/* Use non-burst mode, dropping to LP where possible */
+	DSI_WRITE(DSI_VID_MODE_CFG, 0xBF00);
+	/* Use LP Escape Data signalling for all commands */
+	DSI_WRITE(DSI_CMD_MODE_CFG, 0x10F7F00);
+	/* Select Command Mode */
+	DSI_WRITE(DSI_MODE_CFG, 1);
+	/* XXX magic number */
+	DSI_WRITE(DSI_TO_CNT_CFG, 0x02000200);
+	/* XXX magic number */
+	DSI_WRITE(DSI_BTA_TO_CNT, 0x800);
 
 	DSI_WRITE(DSI_VID_PKT_SIZE, mode->hdisplay);
 	DSI_WRITE(DSI_VID_NUM_CHUNKS, 1);
 	DSI_WRITE(DSI_VID_NULL_SIZE, 0);
 
 	/* Note, unlike Argon firmware, here we DON'T consider sync to be concurrent with porch */
-	DSI_WRITE(DSI_VID_HSA_TIME,   (bpp * (mode->hsync_end - mode->hsync_start)) / (8 * priv->lanes));
-	DSI_WRITE(DSI_VID_HBP_TIME,   (bpp * (mode->htotal - mode->hsync_end)) / (8 * priv->lanes));
+	DSI_WRITE(DSI_VID_HSA_TIME,
+		  (bpp * (mode->hsync_end - mode->hsync_start)) / (8 * priv->lanes));
+	DSI_WRITE(DSI_VID_HBP_TIME,
+		  (bpp * (mode->htotal - mode->hsync_end)) / (8 * priv->lanes));
 	DSI_WRITE(DSI_VID_HLINE_TIME, (bpp * mode->htotal) / (8 * priv->lanes));
-	DSI_WRITE(DSI_VID_VSA_LINES,  (mode->vsync_end - mode->vsync_start));
-	DSI_WRITE(DSI_VID_VBP_LINES,  (mode->vtotal - mode->vsync_end));
-	DSI_WRITE(DSI_VID_VFP_LINES,  (mode->vsync_start - mode->vdisplay));
+	DSI_WRITE(DSI_VID_VSA_LINES, (mode->vsync_end - mode->vsync_start));
+	DSI_WRITE(DSI_VID_VBP_LINES, (mode->vtotal - mode->vsync_end));
+	DSI_WRITE(DSI_VID_VFP_LINES, (mode->vsync_start - mode->vdisplay));
 	DSI_WRITE(DSI_VID_VACTIVE_LINES, mode->vdisplay);
 
 	if (priv->running_on_fpga) {
-		DSI_WRITE(DSI_PHY_TMR_LPCLK_CFG, 0x000c0018); /* Times to assume for clock LP<->HS transitions */
-		DSI_WRITE(DSI_PHY_TMR_CFG,       0x000c0018); /* Times to assume for data LP<->HS transitions  */
-		DSI_WRITE(DSI_CLKMGR_CFG,        0x00000505); /* Dividers for timeouts and byteclock->LPclock  */
+		/* Times to assume for clock LP<->HS transitions */
+		DSI_WRITE(DSI_PHY_TMR_LPCLK_CFG, 0x000c0018);
+		/* Times to assume for data LP<->HS transitions */
+		DSI_WRITE(DSI_PHY_TMR_CFG, 0x000c0018);
+		/* Dividers for timeouts and byteclock->LPclock */
+		DSI_WRITE(DSI_CLKMGR_CFG, 0x00000505);
 	} else {
-		u32 freq_khz = (bpp * (mode->crtc_clock ? mode->crtc_clock : mode->clock)) / priv->lanes;
+		u32 freq_khz = (bpp * (mode->crtc_clock ? mode->crtc_clock : mode->clock)) /
+							priv->lanes;
 
-		dphy_init_khz(priv, rp1dsi_refclk_freq(priv)/1000, freq_khz);
+		dphy_init_khz(priv, rp1dsi_refclk_freq(priv) / 1000, freq_khz);
 
 		DSI_WRITE(DSI_PHY_TMR_LPCLK_CFG,
-			(dphy_get_clk_lp_to_hs(priv->hsfreqrange) << DSI_PHY_TMR_LP2HS_LSB) |
-			(dphy_get_clk_hs_to_lp(priv->hsfreqrange) << DSI_PHY_TMR_HS2LP_LSB));
+			  (dphy_get_clk_lp_to_hs(priv->hsfreqrange) << DSI_PHY_TMR_LP2HS_LSB) |
+			  (dphy_get_clk_hs_to_lp(priv->hsfreqrange) << DSI_PHY_TMR_HS2LP_LSB));
 		DSI_WRITE(DSI_PHY_TMR_CFG,
-			(dphy_get_data_lp_to_hs(priv->hsfreqrange) << DSI_PHY_TMR_LP2HS_LSB) |
-			(dphy_get_data_hs_to_lp(priv->hsfreqrange) << DSI_PHY_TMR_HS2LP_LSB));
+			  (dphy_get_data_lp_to_hs(priv->hsfreqrange) << DSI_PHY_TMR_LP2HS_LSB) |
+			  (dphy_get_data_hs_to_lp(priv->hsfreqrange) << DSI_PHY_TMR_HS2LP_LSB));
 		DSI_WRITE(DSI_CLKMGR_CFG, 0x00000505);
 
 		/* Wait for PLL lock */
-		for(timeout = (1<<14); timeout != 0; --timeout) {
-			usleep_range(10,50);
-			if (DSI_READ(DSI_PHY_STATUS) & (1 << 0)) break;
+		for (timeout = (1 << 14); timeout != 0; --timeout) {
+			usleep_range(10, 50);
+			if (DSI_READ(DSI_PHY_STATUS) & (1 << 0))
+				break;
 		}
 		if (timeout == 0)
 			pr_err("RP1DSI: Time out waiting for PLL\n");
 	}
 
-	DSI_WRITE(DSI_LPCLK_CTRL,    0x1);   /* configure the requesthsclk */
+	DSI_WRITE(DSI_LPCLK_CTRL, 0x1);		/* configure the requesthsclk */
 	DSI_WRITE(DSI_PHY_TST_CTRL0, 0x2);
-	DSI_WRITE(DSI_PCKHDL_CFG,    1<<2);  /* allow bus turnaround */
-	DSI_WRITE(DSI_PWR_UP,        0x1);   /* power up */
+	DSI_WRITE(DSI_PCKHDL_CFG, 1 << 2);	/* allow bus turnaround */
+	DSI_WRITE(DSI_PWR_UP, 0x1);		/* power up */
 
 	/* Now it should be safe to start the external DPI clock divider */
 	rp1dsi_dpiclk_start(priv, bpp, priv->lanes);
 
 	/* Wait for all lane(s) to be in Stopstate */
-	mask = (1<<4);
-	if (priv->lanes >= 2) mask |= (1<<7);
-	if (priv->lanes >= 3) mask |= (1<<9);
-	if (priv->lanes >= 4) mask |= (1<<11);
-	for(timeout = (1<<10); timeout != 0; --timeout) {
-		usleep_range(10,50);
-		if ((DSI_READ(DSI_PHY_STATUS) & mask) == mask) break;
+	mask = (1 << 4);
+	if (priv->lanes >= 2)
+		mask |= (1 << 7);
+	if (priv->lanes >= 3)
+		mask |= (1 << 9);
+	if (priv->lanes >= 4)
+		mask |= (1 << 11);
+	for (timeout = (1 << 10); timeout != 0; --timeout) {
+		usleep_range(10, 50);
+		if ((DSI_READ(DSI_PHY_STATUS) & mask) == mask)
+			break;
 	}
 	if (timeout == 0)
 		pr_err("RP1DSI: Time out waiting for lanes (%x %x)\n", mask, DSI_READ(DSI_PHY_STATUS));
 }
 
-void rp1dsi_dsi_send(struct rp1dsi_priv *priv, u32 hdr, int len, const u8 * buf)
+void rp1dsi_dsi_send(struct rp1dsi_priv *priv, u32 hdr, int len, const u8 *buf)
 {
 	u32 val;
 
 	/* Wait for both FIFOs not full */
-	for(val = 256; val > 0; --val) {
+	for (val = 256; val > 0; --val) {
 		if ((DSI_READ(DSI_CMD_PKT_STATUS) & 0xA) == 0) {
 			break;
 		}
-		usleep_range(100,150);
+		usleep_range(100, 150);
 	}
 
 	/* Write payload (in 32-bit words) and header */
-	for(; len > 0; len -= 4) {
+	for (; len > 0; len -= 4) {
 		val = *buf++;
 		if (len > 1)
 			val |= (*buf++) << 8;
@@ -1616,33 +1644,32 @@ void rp1dsi_dsi_send(struct rp1dsi_priv *priv, u32 hdr, int len, const u8 * buf)
 	DSI_WRITE(DSI_GEN_HDR, hdr);
 
 	/* Wait for both FIFOs empty */
-	for(val = 256; val > 0; --val) {
+	for (val = 256; val > 0; --val) {
 		if ((DSI_READ(DSI_CMD_PKT_STATUS) & 0xF) == 0x5)
 			break;
-		usleep_range(100,150);
+		usleep_range(100, 150);
 	}
 }
 
-int rp1dsi_dsi_recv(struct rp1dsi_priv *priv, int len, u8 * buf)
+int rp1dsi_dsi_recv(struct rp1dsi_priv *priv, int len, u8 *buf)
 {
 	int i, j;
 	u32 val;
 
 	/* Wait until not busy and FIFO not empty */
-	for(i = 1024; i > 0; --i) {
+	for (i = 1024; i > 0; --i) {
 		val = DSI_READ(DSI_CMD_PKT_STATUS);
-		if ((val & ((1<<6)|(1<<4))) == 0)
+		if ((val & ((1 << 6) | (1 << 4))) == 0)
 			break;
-		usleep_range(100,150);
+		usleep_range(100, 150);
 	}
 	if (i == 0)
 		return -EIO;
 
 	for (i = 0; i < len; i += 4) {
 		/* Read fifo must not be empty before all bytes are read */
-		if (DSI_READ(DSI_CMD_PKT_STATUS) & (1<<4)) {
+		if (DSI_READ(DSI_CMD_PKT_STATUS) & (1 << 4))
 			break;
-		}
 
 		val = DSI_READ(DSI_GEN_PLD_DATA);
 		for (j = 0; j < 4 && j + i < len; j++)
@@ -1652,11 +1679,10 @@ int rp1dsi_dsi_recv(struct rp1dsi_priv *priv, int len, u8 * buf)
 	return (i >= len) ? len : (i > 0) ? i : -EIO;
 }
 
-
 void rp1dsi_dsi_stop(struct rp1dsi_priv *priv)
 {
-	DSI_WRITE(DSI_MODE_CFG, 1);    /* Return to Command Mode */
-	DSI_WRITE(DSI_LPCLK_CTRL, 2);  /* Stop the HS clock */
+	DSI_WRITE(DSI_MODE_CFG, 1);	/* Return to Command Mode */
+	DSI_WRITE(DSI_LPCLK_CTRL, 2);	/* Stop the HS clock */
 	rp1dsi_dpiclk_stop(priv);
 }
 
