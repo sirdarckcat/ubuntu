@@ -33,6 +33,7 @@
 					  <&rp1_clocks RP1_CLK_SLOW_SYS>,
 					  <&rp1_clocks RP1_CLK_SDIO_TIMER>,
 					  <&rp1_clocks RP1_CLK_SDIO_ALT_SRC>,
+					  <&rp1_clocks RP1_CLK_ETH>,
 					  <&rp1_clocks RP1_CLK_ETH_TSU>;
 
 			assigned-clock-rates = <1000000000>, // RP1_PLL_SYS_CORE
@@ -47,6 +48,7 @@
 					       <50000000>, // RP1_CLK_SLOW_SYS
 					       <1000000>, // RP1_CLK_SDIO_TIMER
 					       <200000000>, // RP1_CLK_SDIO_ALT_SRC
+					       <125000000>, // RP1_CLK_ETH
 					       <50000000>; // RP1_CLK_ETH_TSU
 		};
 
@@ -730,6 +732,7 @@
 			usb3-lpm-capable;
 			snps,axi-pipe-limit = /bits/ 8 <8>;
 			snps,dis-in-autoretry-quirk;
+			snps,dis_rxdet_inp3_quirk;
 			interrupts = <RP1_INT_USBHOST0_0 IRQ_TYPE_EDGE_RISING>;
 			status = "disabled";
 		};
@@ -741,6 +744,7 @@
 			usb3-lpm-capable;
 			snps,axi-pipe-limit = /bits/ 8 <8>;
 			snps,dis-in-autoretry-quirk;
+			snps,dis_rxdet_inp3_quirk;
 			interrupts = <RP1_INT_USBHOST1_0 IRQ_TYPE_EDGE_RISING>;
 			status = "disabled";
 		};
