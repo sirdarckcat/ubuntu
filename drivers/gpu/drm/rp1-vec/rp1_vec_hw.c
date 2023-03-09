@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /*
  * DRM Driver for VEC output on Raspberry Pi RP1
+ *
+ * Copyright (c) 2023 Raspberry Pi Limited.
  */
 
 #include <linux/kernel.h>
@@ -18,7 +20,7 @@
 
 #define BITS(field, val) (((val) << (field ## _LSB)) & (field ## _BITS))
 
-#define VEC_WRITE(reg, val) writel((val),  priv->hw_base[RP1VEC_HW_BLOCK_VEC] + (reg ## _OFFSET))
+#define VEC_WRITE(reg, val) writel((val), priv->hw_base[RP1VEC_HW_BLOCK_VEC] + (reg ## _OFFSET))
 #define VEC_READ(reg)	    readl(priv->hw_base[RP1VEC_HW_BLOCK_VEC] + (reg ## _OFFSET))
 
 int rp1vec_hw_busy(struct rp1vec_priv *priv)
@@ -26,7 +28,6 @@ int rp1vec_hw_busy(struct rp1vec_priv *priv)
 	/* Read the undocumented "pline_busy" flag */
 	return VEC_READ(VEC_STATUS) & 1;
 }
-
 
 /* Table of supported input (in-memory/DMA) pixel formats. */
 struct rp1vec_ipixfmt {
@@ -36,43 +37,46 @@ struct rp1vec_ipixfmt {
 	u32 rgbsz;  /* Shifts used for scaling; also (BPP/8-1)	 */
 };
 
-#define MASK_RGB(r, g, b)  (BITS(VEC_IMASK_MASK_R, r)  | BITS(VEC_IMASK_MASK_G, g)  | BITS(VEC_IMASK_MASK_B, b))
-#define SHIFT_RGB(r, g, b) (BITS(VEC_SHIFT_SHIFT_R, r) | BITS(VEC_SHIFT_SHIFT_G, g) | BITS(VEC_SHIFT_SHIFT_B, b))
+#define MASK_RGB(r, g, b) \
+	(BITS(VEC_IMASK_MASK_R, r) | BITS(VEC_IMASK_MASK_G, g) | BITS(VEC_IMASK_MASK_B, b))
+#define SHIFT_RGB(r, g, b) \
+	(BITS(VEC_SHIFT_SHIFT_R, r) | BITS(VEC_SHIFT_SHIFT_G, g) | BITS(VEC_SHIFT_SHIFT_B, b))
 
 static const struct rp1vec_ipixfmt my_formats[] = {
 	{
-	  .format = DRM_FORMAT_XRGB8888,
-	  .mask	  = MASK_RGB(0x3fc, 0x3fc, 0x3fc),
-	  .shift  = SHIFT_RGB(23, 15, 7),
-	  .rgbsz  = BITS(VEC_RGBSZ_BYTES_PER_PIXEL_MINUS1, 3),
+		.format = DRM_FORMAT_XRGB8888,
+		.mask	= MASK_RGB(0x3fc, 0x3fc, 0x3fc),
+		.shift  = SHIFT_RGB(23, 15, 7),
+		.rgbsz  = BITS(VEC_RGBSZ_BYTES_PER_PIXEL_MINUS1, 3),
 	},
 	{
-	  .format = DRM_FORMAT_XBGR8888,
-	  .mask	  = MASK_RGB(0x3fc, 0x3fc, 0x3fc),
-	  .shift  = SHIFT_RGB(7, 15, 23),
-	  .rgbsz  = BITS(VEC_RGBSZ_BYTES_PER_PIXEL_MINUS1, 3),
+		.format = DRM_FORMAT_XBGR8888,
+		.mask	= MASK_RGB(0x3fc, 0x3fc, 0x3fc),
+		.shift  = SHIFT_RGB(7, 15, 23),
+		.rgbsz  = BITS(VEC_RGBSZ_BYTES_PER_PIXEL_MINUS1, 3),
 	},
 	{
-	  .format = DRM_FORMAT_RGB888,
-	  .mask	  = MASK_RGB(0x3fc, 0x3fc, 0x3fc),
-	  .shift  = SHIFT_RGB(23, 15, 7),
-	  .rgbsz  = BITS(VEC_RGBSZ_BYTES_PER_PIXEL_MINUS1, 2),
+		.format = DRM_FORMAT_RGB888,
+		.mask	= MASK_RGB(0x3fc, 0x3fc, 0x3fc),
+		.shift  = SHIFT_RGB(23, 15, 7),
+		.rgbsz  = BITS(VEC_RGBSZ_BYTES_PER_PIXEL_MINUS1, 2),
 	},
 	{
-	  .format = DRM_FORMAT_BGR888,
-	  .mask	  = MASK_RGB(0x3fc, 0x3fc, 0x3fc),
-	  .shift  = SHIFT_RGB(7, 15, 23),
-	  .rgbsz  = BITS(VEC_RGBSZ_BYTES_PER_PIXEL_MINUS1, 2),
+		.format = DRM_FORMAT_BGR888,
+		.mask	= MASK_RGB(0x3fc, 0x3fc, 0x3fc),
+		.shift  = SHIFT_RGB(7, 15, 23),
+		.rgbsz  = BITS(VEC_RGBSZ_BYTES_PER_PIXEL_MINUS1, 2),
 	},
 	{
-	  .format = DRM_FORMAT_RGB565,
-	  .mask	  = MASK_RGB(0x3e0, 0x3f0, 0x3e0),
-	  .shift  = SHIFT_RGB(15, 10, 4),
-	  .rgbsz  = BITS(VEC_RGBSZ_SCALE_R, 5) | BITS(VEC_RGBSZ_SCALE_G, 6) |
-		    BITS(VEC_RGBSZ_SCALE_B, 5) | BITS(VEC_RGBSZ_BYTES_PER_PIXEL_MINUS1, 1),
+		.format = DRM_FORMAT_RGB565,
+		.mask	= MASK_RGB(0x3e0, 0x3f0, 0x3e0),
+		.shift  = SHIFT_RGB(15, 10, 4),
+		.rgbsz  = BITS(VEC_RGBSZ_SCALE_R, 5) |
+			  BITS(VEC_RGBSZ_SCALE_G, 6) |
+			  BITS(VEC_RGBSZ_SCALE_B, 5) |
+			  BITS(VEC_RGBSZ_BYTES_PER_PIXEL_MINUS1, 1),
 	}
 };
-
 
 /*
  * Hardware mode descriptions (@ 108 MHz clock rate).
@@ -93,12 +97,15 @@ struct rp1vec_hwmode {
 /* { NTSC, PAL, PAL-M } x { progressive, interlaced } x { 13.5 MHz, 15.428571 MHz } */
 static const struct rp1vec_hwmode rp1vec_hwmodes[3][2][2] = {
 	{
+		/* NTSC */
 		{
 			{
-				724, 240,
-				false, false,
-				0x1071d0cf,
-				{
+				.total_cols = 724,
+				.rows_per_field = 240,
+				.interlaced = false,
+				.first_field_odd = false,
+				.yuv_scaling = 0x1071d0cf,
+				.back_end_regs = {
 					0x039f1a3f, 0x03e10cc6, 0x0d6801fb, 0x023d034c,
 					0x00f80b6d, 0x00000005, 0x0006000b, 0x000c0011,
 					0x000a0106, 0x00000000, 0x00000000, 0x00000000,
@@ -107,12 +114,13 @@ static const struct rp1vec_hwmode rp1vec_hwmodes[3][2][2] = {
 					0x02000200, 0xc1f07c1f, 0x087c1f07, 0x00000000,
 					0x0be20200, 0x20f0f800, 0x265c7f00, 0x000801ec,
 				},
-			},
-			{
-				815, 240,
-				false, false,
-				0x1c131962,
-				{
+			}, {
+				.total_cols = 815,
+				.rows_per_field = 240,
+				.interlaced = false,
+				.first_field_odd = false,
+				.yuv_scaling = 0x1c131962,
+				.back_end_regs = {
 					0x03ce1a17, 0x03e10cc6, 0x0d6801fb, 0x023d034c,
 					0x00f80b6d, 0x00000005, 0x0006000b, 0x000c0011,
 					0x000a0106, 0x00000000, 0x00000000, 0x00000000,
@@ -122,13 +130,14 @@ static const struct rp1vec_hwmode rp1vec_hwmodes[3][2][2] = {
 					0x0be20200, 0x20f0f800, 0x265c7f00, 0x000801ac,
 				},
 			},
-		},
-		{
+		}, {
 			{
-				724, 243,
-				true, true,
-				0x1071d0cf,
-				{
+				.total_cols = 724,
+				.rows_per_field = 243,
+				.interlaced = true,
+				.first_field_odd = true,
+				.yuv_scaling = 0x1071d0cf,
+				.back_end_regs = {
 					0x039f1a3f, 0x03e10cc6, 0x0d6801fb, 0x023d034c,
 					0x00f80b6d, 0x00000005, 0x0006000b, 0x000c0011,
 					0x000a0107, 0x0111020d, 0x00000000, 0x00000000,
@@ -137,12 +146,13 @@ static const struct rp1vec_hwmode rp1vec_hwmodes[3][2][2] = {
 					0x02000200, 0xc1f07c1f, 0x087c1f07, 0x00000000,
 					0x0be20200, 0x20f0f800, 0x265c7f00, 0x00094dee,
 				},
-			},
-			{
-				815, 243,
-				true, true,
-				0x1c131962,
-				{
+			}, {
+				.total_cols = 815,
+				.rows_per_field = 243,
+				.interlaced = true,
+				.first_field_odd = true,
+				.yuv_scaling = 0x1c131962,
+				.back_end_regs = {
 					0x03ce1a17, 0x03e10cc6, 0x0d6801fb, 0x023d034c,
 					0x00f80b6d, 0x00000005, 0x0006000b, 0x000c0011,
 					0x000a0107, 0x0111020d, 0x00000000, 0x00000000,
@@ -153,14 +163,16 @@ static const struct rp1vec_hwmode rp1vec_hwmodes[3][2][2] = {
 				},
 			},
 		},
-	},
-	{
+	}, {
+		/* PAL */
 		{
 			{
-				724, 288,
-				false, false,
-				0x11c1f8e0,
-				{
+				.total_cols = 724,
+				.rows_per_field = 288,
+				.interlaced = false,
+				.first_field_odd = false,
+				.yuv_scaling = 0x11c1f8e0,
+				.back_end_regs = {
 					0x04061aa6, 0x046e0cee, 0x0d8001fb, 0x025c034f,
 					0x00fd0b84, 0x026c0270, 0x00000004, 0x00050009,
 					0x00070135, 0x00000000, 0x00000000, 0x00000000,
@@ -169,12 +181,13 @@ static const struct rp1vec_hwmode rp1vec_hwmodes[3][2][2] = {
 					0x02000200, 0xcc48c1d1, 0x0a8262b2, 0x00000000,
 					0x0be20200, 0x20f0f800, 0x265c7f00, 0x000801ed,
 				},
-			},
-			{
-				804, 288,
-				false, false,
-				0x1e635d7f,
-				{
+			}, {
+				.total_cols = 804,
+				.rows_per_field = 288,
+				.interlaced = false,
+				.first_field_odd = false,
+				.yuv_scaling = 0x1e635d7f,
+				.back_end_regs = {
 					0x045b1a57, 0x046e0cee, 0x0d8001fb, 0x025c034f,
 					0x00fd0b84, 0x026c0270, 0x00000004, 0x00050009,
 					0x00070135, 0x00000000, 0x00000000, 0x00000000,
@@ -184,13 +197,14 @@ static const struct rp1vec_hwmode rp1vec_hwmodes[3][2][2] = {
 					0x0be20200, 0x20f0f800, 0x265c7f00, 0x000801ad,
 				},
 			},
-		},
-		{
+		}, {
 			{
-				724, 288,
-				true, false,
-				0x11c1f8e0,
-				{
+				.total_cols = 724,
+				.rows_per_field = 288,
+				.interlaced = true,
+				.first_field_odd = false,
+				.yuv_scaling = 0x11c1f8e0,
+				.back_end_regs = {
 					0x04061aa6, 0x046e0cee, 0x0d8001fb, 0x025c034f,
 					0x00fd0b84, 0x026c0270, 0x00000004, 0x00050009,
 					0x00070135, 0x013f026d, 0x00060136, 0x0140026e,
@@ -199,12 +213,13 @@ static const struct rp1vec_hwmode rp1vec_hwmodes[3][2][2] = {
 					0x02000200, 0xcc48c1d1, 0x0a8262b2, 0x00000000,
 					0x0be20200, 0x20f0f800, 0x265c7f00, 0x0009ddef,
 				},
-			},
-			{
-				804, 288,
-				true, false,
-				0x1e635d7f,
-				{
+			}, {
+				.total_cols = 804,
+				.rows_per_field = 288,
+				.interlaced = true,
+				.first_field_odd = false,
+				.yuv_scaling = 0x1e635d7f,
+				.back_end_regs = {
 					0x045b1a57, 0x046e0cee, 0x0d8001fb, 0x025c034f,
 					0x00fd0b84, 0x026c0270, 0x00000004, 0x00050009,
 					0x00070135, 0x013f026d, 0x00060136, 0x0140026e,
@@ -215,14 +230,16 @@ static const struct rp1vec_hwmode rp1vec_hwmodes[3][2][2] = {
 				},
 			},
 		},
-	},
-	{
+	}, {
+		/* PAL-M */
 		{
 			{
-				724, 240,
-				false, false,
-				0x11c1f8e0,
-				{
+				.total_cols = 724,
+				.rows_per_field = 240,
+				.interlaced = false,
+				.first_field_odd = false,
+				.yuv_scaling = 0x11c1f8e0,
+				.back_end_regs = {
 					0x039f1a3f, 0x03e10cc6, 0x0d6801fb, 0x023c034c,
 					0x00f80b6e, 0x00000005, 0x0006000b, 0x000c0011,
 					0x000a0106, 0x00000000, 0x00000000, 0x00000000,
@@ -231,12 +248,13 @@ static const struct rp1vec_hwmode rp1vec_hwmodes[3][2][2] = {
 					0x02000200, 0xd6d33ea8, 0x0879bbf8, 0x00000000,
 					0x0be20200, 0x20f0f800, 0x265c7f00, 0x000801ed,
 				},
-			},
-			{
-				815, 240,
-				false, false,
-				0x1e635d7f,
-				{
+			}, {
+				.total_cols = 815,
+				.rows_per_field = 240,
+				.interlaced = false,
+				.first_field_odd = false,
+				.yuv_scaling = 0x1e635d7f,
+				.back_end_regs = {
 					0x03ce1a17, 0x03e10cc6, 0x0d6801fb, 0x023c034c,
 					0x00f80b6e, 0x00000005, 0x0006000b, 0x000c0011,
 					0x000a0106, 0x00000000, 0x00000000, 0x00000000,
@@ -246,13 +264,14 @@ static const struct rp1vec_hwmode rp1vec_hwmodes[3][2][2] = {
 					0x0be20200, 0x20f0f800, 0x265c7f00, 0x000801ad,
 				},
 			},
-		},
-		{
+		}, {
 			{
-				724, 243,
-				true, true,
-				0x11c1f8e0,
-				{
+				.total_cols = 724,
+				.rows_per_field = 243,
+				.interlaced = true,
+				.first_field_odd = true,
+				.yuv_scaling = 0x11c1f8e0,
+				.back_end_regs = {
 					0x039f1a3f, 0x03e10cc6, 0x0d6801fb, 0x023c034c,
 					0x00f80b6e, 0x00140019, 0x00000005, 0x0006000b,
 					0x00090103, 0x010f0209, 0x00080102, 0x010e020a,
@@ -261,12 +280,13 @@ static const struct rp1vec_hwmode rp1vec_hwmodes[3][2][2] = {
 					0x02000200, 0xd6d33ea8, 0x0879bbf8, 0x00000000,
 					0x0be20200, 0x20f0f800, 0x265c7f00, 0x0009ddef,
 				},
-			},
-			{
-				815, 243,
-				true, true,
-				0x1e635d7f,
-				{
+			}, {
+				.total_cols = 815,
+				.rows_per_field = 243,
+				.interlaced = true,
+				.first_field_odd = true,
+				.yuv_scaling = 0x1e635d7f,
+				.back_end_regs = {
 					0x03ce1a17, 0x03e10cc6, 0x0d6801fb, 0x023c034c,
 					0x00f80b6e, 0x00140019, 0x00000005, 0x0006000b,
 					0x00090103, 0x010f0209, 0x00080102, 0x010e020a,
@@ -279,7 +299,6 @@ static const struct rp1vec_hwmode rp1vec_hwmodes[3][2][2] = {
 		},
 	},
 };
-
 
 void rp1vec_hw_setup(struct rp1vec_priv *priv,
 		     u32 in_format,
@@ -299,9 +318,9 @@ void rp1vec_hw_setup(struct rp1vec_priv *priv,
 	mode_narrow = (mode->clock >= 14336);
 	hwm = &rp1vec_hwmodes[mode_family][mode_ilaced][mode_narrow];
 	dev_info(&priv->pdev->dev,
-		"%s: in_fmt=\'%c%c%c%c\' mode=%dx%d%s [%d%d%d] tvstd=%d (%s)",
-		__func__, in_format, in_format>>8, in_format>>16, in_format>>24,
-		mode->hdisplay, mode->vdisplay, (mode_ilaced)?"i":"",
+		 "%s: in_fmt=\'%c%c%c%c\' mode=%dx%d%s [%d%d%d] tvstd=%d (%s)",
+		__func__, in_format, in_format >> 8, in_format >> 16, in_format >> 24,
+		mode->hdisplay, mode->vdisplay, (mode_ilaced) ? "i" : "",
 		mode_family, mode_ilaced, mode_narrow,
 		tvstd, rp1vec_tvstd_names[tvstd]);
 
@@ -323,27 +342,27 @@ void rp1vec_hw_setup(struct rp1vec_priv *priv,
 		  BITS(VEC_QOS_LLEV, 0x4) |
 		  BITS(VEC_QOS_LQOS, 0x7));
 	VEC_WRITE(VEC_DMA_AREA,
-		  BITS(VEC_DMA_AREA_COLS_MINUS1, w-1) |
-		  BITS(VEC_DMA_AREA_ROWS_PER_FIELD_MINUS1, h-1));
+		  BITS(VEC_DMA_AREA_COLS_MINUS1, w - 1) |
+		  BITS(VEC_DMA_AREA_ROWS_PER_FIELD_MINUS1, h - 1));
 	VEC_WRITE(VEC_YUV_SCALING, hwm->yuv_scaling);
 	VEC_WRITE(VEC_BACK_PORCH,
-		  BITS(VEC_BACK_PORCH_HBP_MINUS1, (hwm->total_cols-w-1) >> 1) |
-		  BITS(VEC_BACK_PORCH_VBP_MINUS1, (hwm->rows_per_field-h-1) >> 1));
+		  BITS(VEC_BACK_PORCH_HBP_MINUS1, (hwm->total_cols - w - 1) >> 1) |
+		  BITS(VEC_BACK_PORCH_VBP_MINUS1, (hwm->rows_per_field - h - 1) >> 1));
 	VEC_WRITE(VEC_FRONT_PORCH,
-		  BITS(VEC_FRONT_PORCH_HFP_MINUS1, (hwm->total_cols-w-2) >> 1) |
-		  BITS(VEC_FRONT_PORCH_VFP_MINUS1, (hwm->rows_per_field-h-2) >> 1));
+		  BITS(VEC_FRONT_PORCH_HFP_MINUS1, (hwm->total_cols - w - 2) >> 1) |
+		  BITS(VEC_FRONT_PORCH_VFP_MINUS1, (hwm->rows_per_field - h - 2) >> 1));
 	VEC_WRITE(VEC_MODE,
 		  BITS(VEC_MODE_HIGH_WATER, 0xE0)			  |
 		  BITS(VEC_MODE_ALIGN16, !((w | mode->hdisplay) & 15))	  |
-		  BITS(VEC_MODE_VFP_EN, (hwm->rows_per_field > h+1))	  |
+		  BITS(VEC_MODE_VFP_EN, (hwm->rows_per_field > h + 1))	  |
 		  BITS(VEC_MODE_VBP_EN, (hwm->rows_per_field > h))	  |
-		  BITS(VEC_MODE_HFP_EN, (hwm->total_cols > w+1))          |
+		  BITS(VEC_MODE_HFP_EN, (hwm->total_cols > w + 1))          |
 		  BITS(VEC_MODE_HBP_EN, (hwm->total_cols > w))		  |
 		  BITS(VEC_MODE_FIELDS_PER_FRAME_MINUS1, hwm->interlaced) |
 		  BITS(VEC_MODE_FIRST_FIELD_ODD, hwm->first_field_odd));
 	for (i = 0; i < ARRAY_SIZE(hwm->back_end_regs); ++i) {
 		writel(hwm->back_end_regs[i],
-		       priv->hw_base[RP1VEC_HW_BLOCK_VEC] + 0x80 + 4*i);
+		       priv->hw_base[RP1VEC_HW_BLOCK_VEC] + 0x80 + 4 * i);
 	}
 
 	/* Apply modifications */
@@ -351,17 +370,18 @@ void rp1vec_hw_setup(struct rp1vec_priv *priv,
 		/* Reduce pedestal (not quite to zero, for FIR overshoot); increase gain */
 		VEC_WRITE(VEC_DAC_BC,
 			  BITS(VEC_DAC_BC_S11_PEDESTAL, 10) |
-			  (hwm->back_end_regs[(0xBC-0x80)/4] & ~VEC_DAC_BC_S11_PEDESTAL_BITS));
+			  (hwm->back_end_regs[(0xBC - 0x80) / 4] & ~VEC_DAC_BC_S11_PEDESTAL_BITS));
 		VEC_WRITE(VEC_DAC_C8,
 			  BITS(VEC_DAC_C8_U16_SCALE_LUMA, 0x9400) |
-			  (hwm->back_end_regs[(0xC8-0x80)/4] & ~VEC_DAC_C8_U16_SCALE_LUMA_BITS));
+			  (hwm->back_end_regs[(0xC8 - 0x80) / 4] &
+							~VEC_DAC_C8_U16_SCALE_LUMA_BITS));
 	} else if ((tvstd == RP1VEC_TVSTD_NTSC_443 || tvstd == RP1VEC_TVSTD_PAL60) &&
 		   mode_family != 1) {
 		/* Change colour carrier frequency to 4433618.75 Hz; disable hard sync */
 		VEC_WRITE(VEC_DAC_D4, 0xcc48c1d1);
 		VEC_WRITE(VEC_DAC_D8, 0x0a8262b2);
 		VEC_WRITE(VEC_DAC_EC,
-			  hwm->back_end_regs[(0xEC-0x80)/4] & ~VEC_DAC_EC_SEQ_EN_BITS);
+			  hwm->back_end_regs[(0xEC - 0x80) / 4] & ~VEC_DAC_EC_SEQ_EN_BITS);
 	} else if (tvstd == RP1VEC_TVSTD_PAL_N && mode_family == 1) {
 		/* Change colour carrier frequency to 3582056.25 Hz */
 		VEC_WRITE(VEC_DAC_D4, 0x9ce075f7);
@@ -387,7 +407,7 @@ void rp1vec_hw_setup(struct rp1vec_priv *priv,
 	i = rp1vec_hw_busy(priv);
 	if (i)
 		dev_warn(&priv->pdev->dev,
-			"%s: VEC unexpectedly busy at start (0x%08x)",
+			 "%s: VEC unexpectedly busy at start (0x%08x)",
 			__func__, VEC_READ(VEC_STATUS));
 
 	VEC_WRITE(VEC_CONTROL,
@@ -419,7 +439,7 @@ void rp1vec_hw_stop(struct rp1vec_priv *priv)
 	int i;
 
 	VEC_WRITE(VEC_CONTROL, 0);
-	i = down_timeout(&priv->finished, HZ/10);
+	i = down_timeout(&priv->finished, HZ / 10);
 	VEC_WRITE(VEC_IRQ_ENABLES, 0);
 	if (i)
 		dev_warn(&priv->pdev->dev, "%s: down_timeout %d\n", __func__, i);
@@ -428,9 +448,9 @@ void rp1vec_hw_stop(struct rp1vec_priv *priv)
 void rp1vec_hw_vblank_ctrl(struct rp1vec_priv *priv, int enable)
 {
 	VEC_WRITE(VEC_IRQ_ENABLES,
-		       BITS(VEC_IRQ_ENABLES_DONE, 1) |
-		       BITS(VEC_IRQ_ENABLES_DMA, (enable ? 1 : 0)) |
-		       BITS(VEC_IRQ_ENABLES_MATCH_ROW, 1023));
+		  BITS(VEC_IRQ_ENABLES_DONE, 1) |
+		  BITS(VEC_IRQ_ENABLES_DMA, (enable ? 1 : 0)) |
+		  BITS(VEC_IRQ_ENABLES_MATCH_ROW, 1023));
 }
 
 irqreturn_t rp1vec_hw_isr(int irq, void *dev)

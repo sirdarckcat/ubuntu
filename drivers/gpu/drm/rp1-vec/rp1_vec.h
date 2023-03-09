@@ -1,6 +1,8 @@
 /* SPDX-License-Identifier: GPL-2.0 */
 /*
  * DRM Driver for DSI output on Raspberry Pi RP1
+ *
+ * Copyright (c) 2023 Raspberry Pi Limited.
  */
 
 #include <linux/types.h>
@@ -30,13 +32,12 @@ enum {
 };
 
 /* Which standards support which modes? Those marked with + above */
-#define RP1VEC_TVSTD_SUPPORT_525(n) ((0xD7>>(n)) & 1)
-#define RP1VEC_TVSTD_SUPPORT_625(n) ((0xEC>>(n)) & 1)
+#define RP1VEC_TVSTD_SUPPORT_525(n) ((0xD7 >> (n)) & 1)
+#define RP1VEC_TVSTD_SUPPORT_625(n) ((0xEC >> (n)) & 1)
 
 /* ---------------------------------------------------------------------- */
 
 struct rp1vec_priv {
-
 	/* DRM and platform device pointers */
 	struct drm_device *drm;
 	struct platform_device *pdev;
@@ -63,7 +64,7 @@ extern const char * const rp1vec_tvstd_names[];
 /* Functions to control the VEC/DMA block				  */
 
 void rp1vec_hw_setup(struct rp1vec_priv *priv,
-		u32 in_format,
+		     u32 in_format,
 		struct drm_display_mode const *mode,
 		int tvstd);
 void rp1vec_hw_update(struct rp1vec_priv *priv, dma_addr_t addr, u32 offset, u32 stride);

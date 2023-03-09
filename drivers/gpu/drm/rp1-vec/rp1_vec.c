@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /*
  * DRM Driver for VEC output on Raspberry Pi RP1
+ *
+ * Copyright (c) 2023 Raspberry Pi Limited.
  */
 
 #include <linux/module.h>
@@ -94,7 +96,7 @@ static int rp1vec_parse_tv_norm(const char *str)
 }
 
 static void rp1vec_pipe_update(struct drm_simple_display_pipe *pipe,
-			      struct drm_plane_state *old_state)
+			       struct drm_plane_state *old_state)
 {
 	struct drm_pending_vblank_event *event;
 	unsigned long flags;
@@ -113,9 +115,9 @@ static void rp1vec_pipe_update(struct drm_simple_display_pipe *pipe,
 			}
 			if (!priv->vec_running) {
 				rp1vec_hw_setup(priv,
-					       fb->format->format,
-					       &pipe->crtc.state->mode,
-					       priv->connector.state->tv.mode);
+						fb->format->format,
+						&pipe->crtc.state->mode,
+						priv->connector.state->tv.mode);
 				priv->vec_running = true;
 			}
 			priv->cur_fmt  = fb->format->format;
@@ -141,7 +143,7 @@ static void rp1vec_pipe_update(struct drm_simple_display_pipe *pipe,
 }
 
 static void rp1vec_pipe_enable(struct drm_simple_display_pipe *pipe,
-			      struct drm_crtc_state *crtc_state,
+			       struct drm_crtc_state *crtc_state,
 			      struct drm_plane_state *plane_state)
 {
 	struct rp1vec_priv *priv = pipe->crtc.dev->dev_private;
@@ -253,7 +255,8 @@ static int rp1vec_connector_get_modes(struct drm_connector *connector)
 		if (crops[i][0] ? ok625 : ok525) {
 			for (prog = 0; prog < 2; prog++) {
 				struct drm_display_mode *mode =
-					drm_mode_duplicate(connector->dev, &rp1vec_base_modes[crops[i][1]]);
+					drm_mode_duplicate(connector->dev,
+							   &rp1vec_base_modes[crops[i][1]]);
 
 				margin = (mode->hdisplay - crops[i][2]) >> 1;
 				mode->hsync_start += margin;
@@ -294,7 +297,7 @@ static void rp1vec_connector_reset(struct drm_connector *connector)
 }
 
 static int rp1vec_connector_atomic_check(struct drm_connector *conn,
-					struct drm_atomic_state *state)
+					 struct drm_atomic_state *state)
 {	struct drm_connector_state *old_state =
 		drm_atomic_get_old_connector_state(state, conn);
 	struct drm_connector_state *new_state =
@@ -313,7 +316,7 @@ static int rp1vec_connector_atomic_check(struct drm_connector *conn,
 #define ABS_DIFF(a, b) ((a) > (b) ? (a) - (b) : (b) - (a))
 
 static enum drm_mode_status rp1vec_mode_valid(struct drm_device *dev,
-					     const struct drm_display_mode *mode)
+					      const struct drm_display_mode *mode)
 {
 	/*
 	 * Check the mode roughly matches one of our base modes,
@@ -408,7 +411,7 @@ static int rp1vec_platform_probe(struct platform_device *pdev)
 	}
 
 	priv = drmm_kzalloc(drm, sizeof(*priv), GFP_KERNEL);
-	if (priv == NULL) {
+	if (!priv) {
 		dev_err(dev, "%s drmm_kzalloc failed", __func__);
 		ret = -ENOMEM;
 		goto err_free_drm;
