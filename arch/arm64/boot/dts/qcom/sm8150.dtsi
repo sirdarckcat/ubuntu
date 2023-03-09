@@ -819,6 +819,11 @@
 		hwlocks = <&tcsr_mutex 3>;
 	};
 
+	qtee_shmbridge {
+		compatible = "qcom,tee-shared-memory-bridge";
+		qcom,disable-shmbridge-support;
+	};
+
 	qcom_seecom: qseecom@87900000 {
 		compatible = "qcom,qseecom";
 		reg = <0x87900000 0x2200000>;
