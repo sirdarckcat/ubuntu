@@ -1,6 +1,8 @@
 /* SPDX-License-Identifier: GPL-2.0 */
 /*
  * DRM Driver for DSI output on Raspberry Pi RP1
+ *
+ * Copyright (c) 2023 Raspberry Pi Limited.
  */
 
 #include <linux/types.h>
@@ -26,7 +28,6 @@
 /* ---------------------------------------------------------------------- */
 
 struct rp1dpi_priv {
-
 	/* DRM and platform device pointers */
 	struct drm_device *drm;
 	struct platform_device *pdev;

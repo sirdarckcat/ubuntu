@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /*
  * DRM Driver for DPI output on Raspberry Pi RP1
+ *
+ * Copyright (c) 2023 Raspberry Pi Limited.
  */
 
 #include <linux/module.h>
@@ -60,11 +62,10 @@
 static unsigned int default_bus_fmt = MEDIA_BUS_FMT_RGB666_1X18;
 module_param(default_bus_fmt, uint, 0644);
 
-
 /* -------------------------------------------------------------- */
 
 static void rp1dpi_pipe_update(struct drm_simple_display_pipe *pipe,
-			      struct drm_plane_state *old_state)
+			       struct drm_plane_state *old_state)
 {
 	struct drm_pending_vblank_event *event;
 	unsigned long flags;
@@ -83,7 +84,7 @@ static void rp1dpi_pipe_update(struct drm_simple_display_pipe *pipe,
 			}
 			if (!priv->dpi_running) {
 				rp1dpi_hw_setup(priv,
-					       fb->format->format,
+						fb->format->format,
 					       priv->bus_fmt,
 					       priv->de_inv,
 					       &pipe->crtc.state->mode);
@@ -109,7 +110,7 @@ static void rp1dpi_pipe_update(struct drm_simple_display_pipe *pipe,
 }
 
 static void rp1dpi_pipe_enable(struct drm_simple_display_pipe *pipe,
-			      struct drm_crtc_state *crtc_state,
+			       struct drm_crtc_state *crtc_state,
 			      struct drm_plane_state *plane_state)
 {
 	static const unsigned int M = 1000000;
@@ -145,12 +146,12 @@ static void rp1dpi_pipe_enable(struct drm_simple_display_pipe *pipe,
 	 * Magic numbers ensure the parent clock is within [100MHz, 200MHz]
 	 * with VCO in [1GHz, 1.33GHz]. The initial divide is by 6, 8 or 10.
 	 */
-	fpix = 1000*pipe->crtc.state->mode.clock;
-	fpix = clamp(fpix, 1*M, 200*M);
+	fpix = 1000 * pipe->crtc.state->mode.clock;
+	fpix = clamp(fpix, 1 * M, 200 * M);
 	fdiv = fpix;
-	while (fdiv < 100*M)
+	while (fdiv < 100 * M)
 		fdiv *= 2;
-	fvco = fdiv * 2 * DIV_ROUND_UP(500*M, fdiv);
+	fvco = fdiv * 2 * DIV_ROUND_UP(500 * M, fdiv);
 	ret = clk_set_rate(priv->clocks[RP1DPI_CLK_PLLCORE], fvco);
 	if (ret)
 		dev_err(&priv->pdev->dev, "Failed to set PLL VCO to %u (%d)", fvco, ret);
@@ -167,7 +168,7 @@ static void rp1dpi_pipe_enable(struct drm_simple_display_pipe *pipe,
 	pinctrl_pm_select_default_state(&priv->pdev->dev);
 	clk_prepare_enable(priv->clocks[RP1DPI_CLK_DPI]);
 	dev_info(&priv->pdev->dev, "Want %u /%u %u /%u %u; got VCO=%lu DIV=%lu DPI=%lu",
-		fvco, fvco/fdiv, fdiv, fdiv/fpix, fpix,
+		fvco, fvco / fdiv, fdiv, fdiv / fpix, fpix,
 		clk_get_rate(priv->clocks[RP1DPI_CLK_PLLCORE]),
 		clk_get_rate(priv->clocks[RP1DPI_CLK_PLLDIV]),
 		clk_get_rate(priv->clocks[RP1DPI_CLK_DPI]));
@@ -275,7 +276,7 @@ static int rp1dpi_platform_probe(struct platform_device *pdev)
 
 	dev_info(dev, __func__);
 	ret = drm_of_find_panel_or_bridge(pdev->dev.of_node,
-					0, 0,
+					  0, 0,
 					&panel, &bridge);
 	if (ret) {
 		dev_info(dev, "%s: bridge not found\n", __func__);
@@ -294,7 +295,7 @@ static int rp1dpi_platform_probe(struct platform_device *pdev)
 		return ret;
 	}
 	priv = drmm_kzalloc(drm, sizeof(*priv), GFP_KERNEL);
-	if (priv == NULL) {
+	if (!priv) {
 		dev_info(dev, "%s %d", __func__, (int)__LINE__);
 		drm_dev_put(drm);
 		return -ENOMEM;
