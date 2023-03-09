@@ -101,7 +101,7 @@ struct pisp_be_global_config {
 };
 
 struct pisp_be_input_buffer_config {
-	/* low 32 bits followed by high 32 bits (for each of up to three planes) */
+	/* low 32 bits followed by high 32 bits (for each of up to 3 planes) */
 	u32 addr[3][2];
 };
 
@@ -185,7 +185,7 @@ struct pisp_be_cdn_config {
 };
 
 #define PISP_BE_LSC_LOG_GRID_SIZE 5
-#define PISP_BE_LSC_GRID_SIZE BIT(PISP_BE_LSC_LOG_GRID_SIZE)
+#define PISP_BE_LSC_GRID_SIZE (1 << PISP_BE_LSC_LOG_GRID_SIZE)
 #define PISP_BE_LSC_STEP_PRECISION 18
 
 struct pisp_be_lsc_config {
@@ -204,7 +204,7 @@ struct pisp_be_lsc_extra {
 };
 
 #define PISP_BE_CAC_LOG_GRID_SIZE 3
-#define PISP_BE_CAC_GRID_SIZE BIT(PISP_BE_CAC_LOG_GRID_SIZE)
+#define PISP_BE_CAC_GRID_SIZE (1 << PISP_BE_CAC_LOG_GRID_SIZE)
 #define PISP_BE_CAC_STEP_PRECISION 20
 
 struct pisp_be_cac_config {
@@ -404,7 +404,8 @@ struct pisp_be_config {
 	struct pisp_be_stitch_input_buffer_config stitch_input_buffer;
 	struct pisp_be_tdn_output_buffer_config tdn_output_buffer;
 	struct pisp_be_stitch_output_buffer_config stitch_output_buffer;
-	struct pisp_be_output_buffer_config output_buffer[PISP_BACK_END_NUM_OUTPUTS];
+	struct pisp_be_output_buffer_config
+				output_buffer[PISP_BACK_END_NUM_OUTPUTS];
 	struct pisp_be_hog_buffer_config hog_buffer;
 	/* Processing configuration: */
 	struct pisp_be_global_config global;
