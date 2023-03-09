@@ -2338,10 +2338,12 @@ static int rp1_clk_probe(struct platform_device *pdev)
 	 * Disable clock "resus" as it might trigger and change the parent
 	 * without the clock manager knowing about it!
 	 */
+	#if 0
 	spin_lock(&clockman->regs_lock);
 	clockman_write(clockman, CLK_SYS_RESUS_CTRL, 0);
 	clockman_write(clockman, CLK_SLOW_SYS_RESUS_CTRL, 0);
 	spin_unlock(&clockman->regs_lock);
+	#endif
 
 	for (i = 0; i < asize; i++) {
 		desc = &clk_desc_array[i];
