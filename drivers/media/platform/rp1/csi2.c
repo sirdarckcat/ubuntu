@@ -211,76 +211,62 @@ static uint8_t dphy_transaction(struct csi2_device *csi2,
 	return get_tstdout(csi2);
 }
 
-static void dphy_set_hsfreqrange(struct csi2_device *csi2, uint32_t freq)
+static void dphy_set_hsfreqrange(struct csi2_device *csi2, uint32_t freq_mhz)
 {
-	/* See page 258 of MIPI DPHY databook. */
-	u8 hsfreqrange = 0;
+	/* See Table 5-1 on page 65 of dphy databook */
+	static const u16 hsfreqrange_table[][2] = {
+		{   89, 0b000000 },
+		{   99, 0b010000 },
+		{  109, 0b100000 },
+		{  129, 0b000001 },
+		{  139, 0b010001 },
+		{  149, 0b100001 },
+		{  169, 0b000010 },
+		{  179, 0b010010 },
+		{  199, 0b100010 },
+		{  219, 0b000011 },
+		{  239, 0b010011 },
+		{  249, 0b100011 },
+		{  269, 0b000100 },
+		{  299, 0b010100 },
+		{  329, 0b000101 },
+		{  359, 0b010101 },
+		{  399, 0b100101 },
+		{  449, 0b000110 },
+		{  499, 0b010110 },
+		{  549, 0b000111 },
+		{  599, 0b010111 },
+		{  649, 0b001000 },
+		{  699, 0b011000 },
+		{  749, 0b001001 },
+		{  799, 0b011001 },
+		{  849, 0b101001 },
+		{  899, 0b111001 },
+		{  949, 0b001010 },
+		{  999, 0b011010 },
+		{ 1049, 0b101010 },
+		{ 1099, 0b111010 },
+		{ 1149, 0b001011 },
+		{ 1199, 0b011011 },
+		{ 1249, 0b101011 },
+		{ 1299, 0b111011 },
+		{ 1349, 0b001100 },
+		{ 1399, 0b011100 },
+		{ 1449, 0b101100 },
+		{ 1500, 0b111100 },
+	};
+	unsigned int i;
 
-	if (freq < 80 || freq > 1000)
-		return;
+	if (freq_mhz < 80 || freq_mhz > 1500)
+		csi2_err("DPHY: Frequency %u MHz out of range\n", freq_mhz);
 
-	if (freq <= 89)
-		hsfreqrange = 0b000000;
-	else if (freq <= 99)
-		hsfreqrange = 0b010000;
-	else if (freq <= 109)
-		hsfreqrange = 0b100000;
-	else if (freq <= 129)
-		hsfreqrange = 0b000001;
-	else if (freq <= 139)
-		hsfreqrange = 0b010001;
-	else if (freq <= 149)
-		hsfreqrange = 0b100001;
-	else if (freq <= 169)
-		hsfreqrange = 0b000010;
-	else if (freq <= 169)
-		hsfreqrange = 0b000010;
-	else if (freq <= 179)
-		hsfreqrange = 0b010010;
-	else if (freq <= 199)
-		hsfreqrange = 0b100010;
-	else if (freq <= 219)
-		hsfreqrange = 0b000011;
-	else if (freq <= 239)
-		hsfreqrange = 0b010011;
-	else if (freq <= 249)
-		hsfreqrange = 0b100011;
-	else if (freq <= 269)
-		hsfreqrange = 0b000100;
-	else if (freq <= 299)
-		hsfreqrange = 0b010100;
-	else if (freq <= 329)
-		hsfreqrange = 0b000101;
-	else if (freq <= 359)
-		hsfreqrange = 0b010101;
-	else if (freq <= 399)
-		hsfreqrange = 0b100101;
-	else if (freq <= 449)
-		hsfreqrange = 0b000110;
-	else if (freq <= 499)
-		hsfreqrange = 0b010110;
-	else if (freq <= 549)
-		hsfreqrange = 0b000111;
-	else if (freq <= 599)
-		hsfreqrange = 0b010111;
-	else if (freq <= 649)
-		hsfreqrange = 0b001000;
-	else if (freq <= 699)
-		hsfreqrange = 0b011000;
-	else if (freq <= 749)
-		hsfreqrange = 0b001001;
-	else if (freq <= 799)
-		hsfreqrange = 0b011001;
-	else if (freq <= 849)
-		hsfreqrange = 0b101001;
-	else if (freq <= 899)
-		hsfreqrange = 0b111001;
-	else if (freq <= 949)
-		hsfreqrange = 0b001010;
-	else if (freq <= 1000)
-		hsfreqrange = 0b011010;
+	for (i = 0; i < ARRAY_SIZE(hsfreqrange_table) - 1; i++) {
+		if (freq_mhz <= hsfreqrange_table[i][0])
+			break;
+	}
 
-	dphy_transaction(csi2, DPHY_HS_RX_CTRL_LANE0_OFFSET, hsfreqrange << 1);
+	dphy_transaction(csi2, DPHY_HS_RX_CTRL_LANE0_OFFSET,
+			 hsfreqrange_table[i][1] << 1);
 }
 
 static void dphy_init(struct csi2_device *csi2)

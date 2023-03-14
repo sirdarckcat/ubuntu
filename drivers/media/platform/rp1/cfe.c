@@ -1906,7 +1906,7 @@ static int of_cfe_connect_subdevs(struct cfe_device *cfe)
 	}
 
 	/* TODO: Get the frequency from devicetree */
-	cfe->csi2.dphy_freq = 1000;
+	cfe->csi2.dphy_freq = 999;
 	cfe->csi2.num_lanes = ep.bus.mipi_csi2.num_data_lanes;
 	cfe->csi2.bus_flags = ep.bus.mipi_csi2.flags;
 
