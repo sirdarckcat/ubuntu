@@ -389,6 +389,9 @@ MODULE_FIRMWARE("qcom/a619_gmu.bin");
 MODULE_FIRMWARE("qcom/a630_sqe.fw");
 MODULE_FIRMWARE("qcom/a630_gmu.bin");
 MODULE_FIRMWARE("qcom/a630_zap.mbn");
+MODULE_FIRMWARE("qcom/a660_sqe.fw");
+MODULE_FIRMWARE("qcom/a690_gmu.bin");
+MODULE_FIRMWARE("qcom/a690_zap.mbn");
 
 static inline bool _rev_match(uint8_t entry, uint8_t id)
 {
