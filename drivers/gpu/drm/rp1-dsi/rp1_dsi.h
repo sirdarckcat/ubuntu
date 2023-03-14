@@ -56,7 +56,7 @@ struct rp1dsi_priv {
 	u8 lanes;
 
 	/* DPHY */
-	u8 hsfreqrange;
+	u8 hsfreq_index;
 };
 
 /* ---------------------------------------------------------------------- */
