@@ -1,47 +1,11 @@
 # SPDX-License-Identifier: GPL-2.0
 # Enables support for device-tree overlays
-DTC_FLAGS_bcm2835-rpi-b := -@
-DTC_FLAGS_bcm2835-rpi-a := -@
-DTC_FLAGS_bcm2835-rpi-b-rev2 := -@
-DTC_FLAGS_bcm2835-rpi-b-plus := -@
-DTC_FLAGS_bcm2835-rpi-a-plus := -@
-DTC_FLAGS_bcm2835-rpi-cm1-io1 := -@
-DTC_FLAGS_bcm2836-rpi-2-b := -@
-DTC_FLAGS_bcm2837-rpi-3-a-plus := -@
-DTC_FLAGS_bcm2837-rpi-3-b := -@
-DTC_FLAGS_bcm2837-rpi-3-b-plus := -@
-DTC_FLAGS_bcm2837-rpi-cm3-io3 := -@
-DTC_FLAGS_bcm2837-rpi-zero-2-w := -@
 DTC_FLAGS_bcm2711-rpi-400 := -@
 DTC_FLAGS_bcm2711-rpi-4-b := -@
-DTC_FLAGS_bcm2711-rpi-cm4-io := -@
-DTC_FLAGS_bcm2835-rpi-zero := -@
-DTC_FLAGS_bcm2835-rpi-zero-w := -@
 dtb-$(CONFIG_ARCH_BCM2835) += \
-	bcm2835-rpi-b.dtb \
-	bcm2835-rpi-a.dtb \
-	bcm2835-rpi-b-rev2.dtb \
-	bcm2835-rpi-b-plus.dtb \
-	bcm2835-rpi-a-plus.dtb \
-	bcm2835-rpi-cm1-io1.dtb \
-	bcm2836-rpi-2-b.dtb \
-	bcm2837-rpi-3-a-plus.dtb \
-	bcm2837-rpi-3-b.dtb \
-	bcm2837-rpi-3-b-plus.dtb \
-	bcm2837-rpi-cm3-io3.dtb \
-	bcm2837-rpi-zero-2-w.dtb \
 	bcm2711-rpi-400.dtb \
-	bcm2711-rpi-4-b.dtb \
-	bcm2711-rpi-cm4-io.dtb \
-	bcm2835-rpi-zero.dtb \
-	bcm2835-rpi-zero-w.dtb
+	bcm2711-rpi-4-b.dtb
 
-DTC_FLAGS_bcm2708-rpi-b := -@
-DTC_FLAGS_bcm2708-rpi-b-rev1 := -@
-DTC_FLAGS_bcm2708-rpi-b-plus := -@
-DTC_FLAGS_bcm2708-rpi-cm := -@
-DTC_FLAGS_bcm2708-rpi-zero := -@
-DTC_FLAGS_bcm2708-rpi-zero-w := -@
 DTC_FLAGS_bcm2710-rpi-zero-2 := -@
 DTC_FLAGS_bcm2710-rpi-zero-2-w := -@
 DTC_FLAGS_bcm2709-rpi-2-b := -@
@@ -53,12 +17,6 @@ DTC_FLAGS_bcm2710-rpi-cm3 := -@
 DTC_FLAGS_bcm2711-rpi-cm4 := -@
 DTC_FLAGS_bcm2711-rpi-cm4s := -@
 dtb-$(CONFIG_ARCH_BCM2835) += \
-        bcm2708-rpi-b.dtb \
-        bcm2708-rpi-b-rev1.dtb \
-        bcm2708-rpi-b-plus.dtb \
-        bcm2708-rpi-cm.dtb \
-        bcm2708-rpi-zero.dtb \
-        bcm2708-rpi-zero-w.dtb \
         bcm2710-rpi-zero-2.dtb \
         bcm2710-rpi-zero-2-w.dtb \
         bcm2709-rpi-2-b.dtb \
