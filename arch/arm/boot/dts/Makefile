@@ -105,7 +105,8 @@ dtb-$(CONFIG_SOC_SP7021) += \
 	sunplus-sp7021-demo-v3.dtb
 dtb-$(CONFIG_ARCH_AXXIA) += \
 	axm5516-amarillo.dtb
-dtb-$(CONFIG_ARCH_BCM2835) += \
+# Disable upstream rpi dtbs
+#dtb-$(CONFIG_ARCH_BCM2835) += \
 	bcm2835-rpi-b.dtb \
 	bcm2835-rpi-a.dtb \
 	bcm2835-rpi-b-rev2.dtb \
