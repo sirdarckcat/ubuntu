@@ -24,7 +24,7 @@
 #define PWM_GLOBAL_CTRL		0x000
 #define PWM_CHANNEL_CTRL(x)	(0x014 + ((x) * 16))
 #define PWM_RANGE(x)		(0x018 + ((x) * 16))
-#define PWM_DUTY(x)		(0x030 + ((x) * 16))
+#define PWM_DUTY(x)		(0x020 + ((x) * 16))
 
 /* 8:FIFO_POP_MASK + 0:Trailing edge M/S modulation */
 #define PWM_CHANNEL_DEFAULT	(BIT(8) + BIT(0))
@@ -52,7 +52,7 @@ static void rp1_pwm_apply_config(struct pwm_chip *chip, struct pwm_device *pwm)
 
 	value = readl(pc->base + PWM_GLOBAL_CTRL);
 	value |= SET_UPDATE;
-	writel(value, pc->base + PWM_CHANNEL_CTRL(pwm->hwpwm));
+	writel(value, pc->base + PWM_GLOBAL_CTRL);
 }
 static int rp1_pwm_request(struct pwm_chip *chip, struct pwm_device *pwm)
 {
