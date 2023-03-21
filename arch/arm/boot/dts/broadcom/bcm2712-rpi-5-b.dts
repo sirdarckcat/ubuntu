@@ -6,6 +6,7 @@
 #include <dt-bindings/interrupt-controller/irq.h>
 #include <dt-bindings/mfd/rp1.h>
 #include <dt-bindings/pinctrl/rp1.h>
+#include <dt-bindings/pwm/pwm.h>
 #include <dt-bindings/reset/raspberrypi,firmware-reset.h>
 #include <dt-bindings/gpio/gpio-fsm.h>
 
@@ -516,6 +517,15 @@ spi0_cs_pins: &rp1_spi0_cs_gpio7 {};
 		stdout-path = "serial0";
 	};
 
+	fan: cooling_fan {
+		compatible = "pwm-fan";
+		#cooling-cells = <2>;
+		cooling-min-state = <0>;
+		cooling-max-state = <3>;
+		cooling-levels = <0 75 150 250>;
+		pwms = <&rp1_pwm1 3 41566 PWM_POLARITY_INVERTED>;
+	};
+
 	suspend_button {
 		compatible = "gpio-keys";
 
@@ -564,6 +574,60 @@ spi0_cs_pins: &rp1_spi0_cs_gpio7 {};
 
 &usbphy {
 	vcc-supply = <&usb_vbus_reg>;
+};
+
+&rp1_pwm1 {
+	status = "okay";
+	pinctrl-0 = <&rp1_pwm1_gpio45>;
+	pinctrl-names = "default";
+};
+
+&cpu_thermal {
+	trips {
+		// Add more thresholds below the point at which
+		// firmware starts throttling (80C)
+		cpu_hot: cpu-hot {
+			temperature = <70000>;
+			hysteresis = <5000>;
+			type = "active";
+		};
+
+		cpu_active: cpu-active {
+			temperature = <60000>;
+			hysteresis = <10000>;
+			type = "active";
+		};
+
+		cpu_passive: cpu-passive {
+			temperature = <40000>;
+			hysteresis = <10000>;
+			type = "passive";
+		};
+	};
+
+	cooling-maps {
+		cpu-crit {
+			trip = <&cpu_crit>;
+			cooling-device = <&fan 3 3>;
+		};
+
+		cpu-hot {
+			// Max fan starts below crit temp
+			trip = <&cpu_hot>;
+			cooling-device = <&fan 3 3>;
+		};
+
+		cpu-active {
+			trip = <&cpu_active>;
+			cooling-device = <&fan 2 2>;
+		};
+
+		cpu-passive {
+			// Fan off
+			trip = <&cpu_passive>;
+			cooling-device = <&fan 0 0>;
+		};
+	};
 };
 
 &gio {
