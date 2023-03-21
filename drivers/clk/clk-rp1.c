@@ -1854,6 +1854,15 @@ static const struct rp1_clk_desc clk_desc_array[] = {
 				.fc0_src = FC_NUM(1, 2),
 				),
 
+	[RP1_PLL_AUDIO_PRI_PH] = REGISTER_PLL_PH(
+				.name = "pll_audio_pri_ph",
+				.source_pll = "pll_audio",
+				.ph_reg = PLL_AUDIO_PRIM,
+				.fixed_divider = 2,
+				.phase = RP1_PLL_PHASE_0,
+				.fc0_src = FC_NUM(5, 1),
+				),
+
 	[RP1_PLL_SYS_SEC] = REGISTER_PLL_DIV(
 				.name = "pll_sys_sec",
 				.source_pll = "pll_sys_core",
@@ -1936,9 +1945,12 @@ static const struct rp1_clk_desc clk_desc_array[] = {
 
 	[RP1_CLK_PWM0] = REGISTER_CLK(
 				.name = "clk_pwm0",
-				.parents = {"pll_sys"},
+				.parents = {AUX_PARENT_STR,
+					    "pll_audio_pri_ph",
+					    "pll_video_sec",
+					    "xosc"},
 				.num_std_parents = 1,
-				.num_aux_parents = 0,
+				.num_aux_parents = 3,
 				.ctrl_reg = CLK_PWM0_CTRL,
 				.div_int_reg = CLK_PWM0_DIV_INT,
 				.div_frac_reg = CLK_PWM0_DIV_FRAC,
@@ -1948,9 +1960,12 @@ static const struct rp1_clk_desc clk_desc_array[] = {
 
 	[RP1_CLK_PWM1] = REGISTER_CLK(
 				.name = "clk_pwm1",
-				.parents = {"pll_sys"},
+				.parents = {AUX_PARENT_STR,
+					    "pll_audio_pri_ph",
+					    "pll_video_sec",
+					    "xosc"},
 				.num_std_parents = 1,
-				.num_aux_parents = 0,
+				.num_aux_parents = 3,
 				.ctrl_reg = CLK_PWM1_CTRL,
 				.div_int_reg = CLK_PWM1_DIV_INT,
 				.div_frac_reg = CLK_PWM1_DIV_FRAC,
