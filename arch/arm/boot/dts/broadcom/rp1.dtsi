@@ -347,7 +347,7 @@
 			#pwm-cells = <3>;
 			clocks = <&rp1_clocks RP1_CLK_PWM0>;
 			assigned-clocks = <&rp1_clocks RP1_CLK_PWM0>;
-			assigned-clock-rates = <100000000>;
+			assigned-clock-rates = <6144000>;
 			status = "disabled";
 		};
 
@@ -357,7 +357,7 @@
 			#pwm-cells = <3>;
 			clocks = <&rp1_clocks RP1_CLK_PWM1>;
 			assigned-clocks = <&rp1_clocks RP1_CLK_PWM1>;
-			assigned-clock-rates = <100000000>;
+			assigned-clock-rates = <6144000>;
 			status = "disabled";
 		};
 
@@ -590,6 +590,12 @@
 					     20 21 22 23 24 25 26 27>;
 				brcm,function = <RP1_FSEL_ALT1>;
 				brcm,pull = <RP1_PUD_OFF>;
+			};
+
+			rp1_pwm1_gpio45: rp1_pwm1_gpio45 {
+				brcm,pins = <45>;
+				brcm,function = <RP1_FSEL_ALT0>;
+				brcm,pull = <RP1_PUD_DOWN>;
 			};
 
 			rp1_spi0_gpio9: rp1_spi0_gpio9 {
