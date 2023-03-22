@@ -19,8 +19,6 @@
 #include "mlxbf_gige.h"
 #include "mlxbf_gige_regs.h"
 
-#define DRV_VERSION 1.27
-
 /* This setting defines the version of the ACPI table
  * content that is compatible with this driver version.
  */
@@ -457,4 +455,3 @@ MODULE_DESCRIPTION("Mellanox BlueField SoC Gigabit Ethernet Driver");
 MODULE_AUTHOR("David Thompson <davthompson@nvidia.com>");
 MODULE_AUTHOR("Asmaa Mnebhi <asmaa@nvidia.com>");
 MODULE_LICENSE("Dual BSD/GPL");
-MODULE_VERSION(__stringify(DRV_VERSION));
