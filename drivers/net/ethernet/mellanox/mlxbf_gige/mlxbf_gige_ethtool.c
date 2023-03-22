@@ -158,7 +158,7 @@ static void mlxbf_gige_get_pauseparam(struct net_device *netdev,
 	pause->tx_pause = 1;
 }
 
-const struct ethtool_ops mlxbf_gige_bf2_ethtool_ops = {
+const struct ethtool_ops mlxbf_gige_ethtool_ops = {
 	.get_link		= ethtool_op_get_link,
 	.get_ringparam		= mlxbf_gige_get_ringparam,
 	.set_ringparam		= mlxbf_gige_set_ringparam,
@@ -170,19 +170,4 @@ const struct ethtool_ops mlxbf_gige_bf2_ethtool_ops = {
 	.nway_reset		= phy_ethtool_nway_reset,
 	.get_pauseparam		= mlxbf_gige_get_pauseparam,
 	.get_link_ksettings	= phy_ethtool_get_link_ksettings,
-};
-
-const struct ethtool_ops mlxbf_gige_bf3_ethtool_ops = {
-	.get_link		= ethtool_op_get_link,
-	.get_ringparam		= mlxbf_gige_get_ringparam,
-	.set_ringparam		= mlxbf_gige_set_ringparam,
-	.get_regs_len           = mlxbf_gige_get_regs_len,
-	.get_regs               = mlxbf_gige_get_regs,
-	.get_strings            = mlxbf_gige_get_strings,
-	.get_sset_count         = mlxbf_gige_get_sset_count,
-	.get_ethtool_stats      = mlxbf_gige_get_ethtool_stats,
-	.nway_reset		= phy_ethtool_nway_reset,
-	.get_pauseparam		= mlxbf_gige_get_pauseparam,
-	.get_link_ksettings	= phy_ethtool_get_link_ksettings,
-	.set_link_ksettings	= phy_ethtool_set_link_ksettings,
 };
