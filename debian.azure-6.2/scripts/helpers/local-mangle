@@ -1,0 +1,23 @@
+#!/bin/bash -eu
+
+if [ -f debian/debian.env ]; then
+	# shellcheck disable=SC1091
+	. debian/debian.env
+fi
+
+if [ ! -d "${DEBIAN}" ]; then
+	echo You must run this script from the top directory of this repository.
+	exit 1
+fi
+
+# Disable RUST support
+cat <<EOF >> ${DEBIAN}/config/annotations
+CONFIG_RUST                                     policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_RUST_BUILD_ASSERT_ALLOW                  policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_RUST_DEBUG_ASSERTIONS                    policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_RUST_IS_AVAILABLE                        policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_RUST_OVERFLOW_CHECKS                     policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_CONSTRUCTORS                             policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_PAHOLE_HAS_LANG_EXCLUDE                  policy<{'amd64': '-', 'arm64': '-'}>
+EOF
+
