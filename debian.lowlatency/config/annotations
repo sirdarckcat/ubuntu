@@ -2,69 +2,26 @@
 # FORMAT: 4
 # ARCH: amd64 arm64
 # FLAVOUR: amd64-lowlatency arm64-lowlatency arm64-lowlatency-64k
+# FLAVOUR_DEP: {'amd64-lowlatency': 'amd64-generic', 'arm64-lowlatency': 'arm64-generic', 'arm64-lowlatency-64k': 'arm64-generic-64k'}
 
 include "../../debian.master/config/annotations"
 
-CONFIG_KERNEL_ZSTD                              policy<{'amd64': 'y', 'arm64': 'n'}>
-CONFIG_KERNEL_ZSTD                              note<'LP: #1931725'>
+CONFIG_HZ_1000                                  policy<{'amd64': 'y', 'arm64': 'y'}>
+CONFIG_HZ_1000                                  note<'HZ for lowlatency must be set to 1000 to provide better system responsiveness'>
+
+CONFIG_HZ_250                                   policy<{'amd64': 'n', 'arm64': 'n'}>
+CONFIG_HZ_250                                   note<'Override default HZ used in generic'>
 
 CONFIG_LATENCYTOP                               policy<{'amd64': 'y', 'arm64': 'y'}>
 CONFIG_LATENCYTOP                               note<'https://lists.ubuntu.com/archives/kernel-team/2014-July/045006.html, LP#1655986'>
 
+CONFIG_PREEMPT                                  policy<{'amd64': 'y', 'arm64': 'y'}>
+CONFIG_PREEMPT                                  note<'Enable fully preemptible kernel'>
+
+CONFIG_PREEMPT_VOLUNTARY                        policy<{'amd64': 'n', 'arm64': 'n'}>
+CONFIG_PREEMPT_VOLUNTARY                        note<'Disable voluntary preemption model'>
+
 
 # ---- Annotations without notes ----
 
-CONFIG_ARCH_FORCE_MAX_ORDER                     policy<{'arm64-lowlatency': '13', 'arm64-lowlatency-64k': '14'}>
-CONFIG_ARCH_MMAP_RND_BITS_MAX                   policy<{'amd64': '32', 'arm64-lowlatency': '33', 'arm64-lowlatency-64k': '29'}>
-CONFIG_ARCH_MMAP_RND_BITS_MIN                   policy<{'amd64': '28', 'arm64-lowlatency': '18', 'arm64-lowlatency-64k': '14'}>
-CONFIG_ARCH_MMAP_RND_COMPAT_BITS_MIN            policy<{'amd64': '8', 'arm64-lowlatency': '11', 'arm64-lowlatency-64k': '7'}>
-CONFIG_ARCH_NR_GPIO                             policy<{'amd64': '-', 'arm64': '-'}>
-CONFIG_ARCH_WANTS_THP_SWAP                      policy<{'amd64': 'y', 'arm64-lowlatency': 'y'}>
-CONFIG_ARCH_WANT_HUGE_PMD_SHARE                 policy<{'amd64': 'y', 'arm64-lowlatency': 'y'}>
-CONFIG_ARM64_4K_PAGES                           policy<{'arm64-lowlatency': 'y', 'arm64-lowlatency-64k': 'n'}>
-CONFIG_ARM64_64K_PAGES                          policy<{'arm64-lowlatency': 'n', 'arm64-lowlatency-64k': 'y'}>
-CONFIG_ARM64_CONT_PMD_SHIFT                     policy<{'arm64-lowlatency': '4', 'arm64-lowlatency-64k': '5'}>
-CONFIG_ARM64_CONT_PTE_SHIFT                     policy<{'arm64-lowlatency': '4', 'arm64-lowlatency-64k': '5'}>
-CONFIG_ARM64_PAGE_SHIFT                         policy<{'arm64-lowlatency': '12', 'arm64-lowlatency-64k': '16'}>
-CONFIG_ARM64_PA_BITS_52                         policy<{'arm64-lowlatency-64k': 'n'}>
-CONFIG_ARM64_VA_BITS_39                         policy<{'arm64-lowlatency': 'n'}>
-CONFIG_ARM64_VA_BITS_42                         policy<{'arm64-lowlatency-64k': 'n'}>
-CONFIG_ARM64_VA_BITS_52                         policy<{'arm64-lowlatency-64k': 'n'}>
-CONFIG_ARM_SMMU_QCOM_DEBUG                      policy<{'arm64-lowlatency': 'y', 'arm64-lowlatency-64k': 'n'}>
-CONFIG_BUILD_BIN2C                              policy<{'amd64': '-', 'arm64': '-'}>
-CONFIG_CRYPTO_GF128MUL                          policy<{'amd64': '-', 'arm64': '-'}>
-CONFIG_CS_DSP                                   policy<{'amd64': '-', 'arm64': '-'}>
-CONFIG_DRM_NOMODESET                            policy<{'amd64': '-', 'arm64': '-'}>
-CONFIG_DRM_USE_DYNAMIC_DEBUG                    policy<{'amd64': '-', 'arm64': '-'}>
-CONFIG_EFI_ZBOOT                                policy<{'arm64': 'y'}>
-CONFIG_GCC_SUPPORTS_DYNAMIC_FTRACE_WITH_REGS    policy<{'arm64': '-'}>
-CONFIG_GENERIC_MSI_IRQ_DOMAIN                   policy<{'amd64': '-', 'arm64': '-'}>
-CONFIG_HAVE_KERNEL_GZIP                         policy<{'amd64': 'y', 'arm64': 'y'}>
-CONFIG_HAVE_KERNEL_LZ4                          policy<{'amd64': 'y', 'arm64': 'y'}>
-CONFIG_HAVE_KERNEL_LZMA                         policy<{'amd64': 'y', 'arm64': 'y'}>
-CONFIG_HAVE_KERNEL_LZO                          policy<{'amd64': 'y', 'arm64': 'y'}>
-CONFIG_HAVE_KERNEL_XZ                           policy<{'amd64': 'y', 'arm64': 'y'}>
-CONFIG_HAVE_KERNEL_ZSTD                         policy<{'amd64': 'y', 'arm64': 'y'}>
 CONFIG_HZ                                       policy<{'amd64': '1000', 'arm64': '1000'}>
-CONFIG_HZ_1000                                  policy<{'amd64': 'y', 'arm64': 'y'}>
-CONFIG_HZ_250                                   policy<{'amd64': 'n', 'arm64': 'n'}>
-CONFIG_INFINIBAND_VMWARE_PVRDMA                 policy<{'amd64': 'm', 'arm64-lowlatency': 'm'}>
-CONFIG_KERNEL_GZIP                              policy<{'amd64': 'n', 'arm64': 'y'}>
-CONFIG_KERNEL_LZ4                               policy<{'amd64': 'n', 'arm64': 'n'}>
-CONFIG_KERNEL_LZMA                              policy<{'amd64': 'n', 'arm64': 'n'}>
-CONFIG_KERNEL_LZO                               policy<{'amd64': 'n', 'arm64': 'n'}>
-CONFIG_KERNEL_XZ                                policy<{'amd64': 'n', 'arm64': 'n'}>
-CONFIG_MESON_SECURE_PM_DOMAINS                  policy<{'arm64-lowlatency': 'y'}>
-CONFIG_MESON_SM                                 policy<{'arm64-lowlatency': 'y'}>
-CONFIG_NFSD_V2_ACL                              policy<{'amd64': '-', 'arm64': '-'}>
-CONFIG_NTFS_RW                                  policy<{'amd64': 'n', 'arm64-lowlatency': 'n'}>
-CONFIG_NVMEM_MESON_EFUSE                        policy<{'arm64-lowlatency': 'm'}>
-CONFIG_PAGE_SIZE_LESS_THAN_64KB                 policy<{'amd64': 'y', 'arm64-lowlatency': 'y'}>
-CONFIG_PCI_MSI_IRQ_DOMAIN                       policy<{'amd64': '-', 'arm64': '-'}>
-CONFIG_PGTABLE_LEVELS                           policy<{'amd64': '5', 'arm64-lowlatency': '4', 'arm64-lowlatency-64k': '3'}>
-CONFIG_PREEMPT                                  policy<{'amd64': 'y', 'arm64': 'y'}>
-CONFIG_PREEMPT_VOLUNTARY                        policy<{'amd64': 'n', 'arm64': 'n'}>
-CONFIG_PTE_MARKER                               policy<{'amd64': '-'}>
-CONFIG_TEST_SIPHASH                             policy<{'amd64': '-', 'arm64': '-'}>
-CONFIG_THP_SWAP                                 policy<{'amd64': 'y', 'arm64-lowlatency': 'y'}>
-CONFIG_VMXNET3                                  policy<{'amd64': 'm', 'arm64-lowlatency': 'm'}>
