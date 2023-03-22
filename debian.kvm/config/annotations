@@ -2,6 +2,9 @@
 # FORMAT: 4
 # ARCH: amd64
 # FLAVOUR: amd64-kvm
+# FLAVOUR_DEP: {'amd64-kvm': 'amd64-generic'}
+
+include "../../debian.master/config/annotations"
 
 BRIDGE_VLAN_FILTERING                           policy<{'amd64': 'y', 'amd64-kvm': '-'}>
 BRIDGE_VLAN_FILTERING                           note<'LP: #1882955'>
