@@ -200,8 +200,7 @@ struct sk_buff *mlxbf_gige_alloc_skb(struct mlxbf_gige *priv,
 int mlxbf_gige_request_irqs(struct mlxbf_gige *priv);
 void mlxbf_gige_free_irqs(struct mlxbf_gige *priv);
 int mlxbf_gige_poll(struct napi_struct *napi, int budget);
-extern const struct ethtool_ops mlxbf_gige_bf2_ethtool_ops;
-extern const struct ethtool_ops mlxbf_gige_bf3_ethtool_ops;
+extern const struct ethtool_ops mlxbf_gige_ethtool_ops;
 void mlxbf_gige_update_tx_wqe_next(struct mlxbf_gige *priv);
 
 #endif /* !defined(__MLXBF_GIGE_H__) */
