@@ -100,7 +100,6 @@ struct mlxbf_gige {
 	struct platform_device *pdev;
 	void __iomem *mdio_io;
 	void __iomem *clk_io;
-	void __iomem *fuse_gw_io;
 	struct mii_bus *mdiobus;
 	spinlock_t lock;      /* for packet processing indices */
 	u16 rx_q_entries;
@@ -167,8 +166,7 @@ enum mlxbf_gige_res {
 	MLXBF_GIGE_RES_GPIO0,
 	MLXBF_GIGE_RES_LLU,
 	MLXBF_GIGE_RES_PLU,
-	MLXBF_GIGE_RES_CLK,
-	MLXBF_GIGE_RES_FUSE_GW
+	MLXBF_GIGE_RES_CLK
 };
 
 /* Version of register data returned by mlxbf_gige_get_regs() */
