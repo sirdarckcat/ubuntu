@@ -106,6 +106,13 @@ static inline void pisp_fe_reg_write(struct pisp_fe_device *fe, u32 offset,
 	pisp_fe_dbg(3, "fe: write 0x%04x -> 0x%03x\n", val, offset);
 }
 
+static inline void pisp_fe_reg_write_relaxed(struct pisp_fe_device *fe, u32 offset,
+					     u32 val)
+{
+	writel_relaxed(val, fe->base + offset);
+	pisp_fe_dbg(3, "fe: write 0x%04x -> 0x%03x\n", val, offset);
+}
+
 static int pisp_regs_show(struct seq_file *s, void *data)
 {
 	struct pisp_fe_device *fe = s->private;
@@ -165,7 +172,8 @@ static void pisp_config_write(struct pisp_fe_device *fe,
 		if (i == 0x248 || i == 0x24c)
 			continue;
 
-		pisp_fe_reg_write(fe, PISP_FE_CONFIG_BASE_OFFSET + i, *cfg);
+		pisp_fe_reg_write_relaxed(fe, PISP_FE_CONFIG_BASE_OFFSET + i,
+					  *cfg);
 	}
 }
 
@@ -253,6 +261,13 @@ void pisp_fe_submit_job(struct pisp_fe_device *fe, struct vb2_buffer **vb2_bufs,
 
 	/* The hardware should have queued the previous config by now. */
 	WARN_ON(status & QUEUED);
+
+	/*
+	 * Memory barrier before the calls to pisp_config_write as we do relaxed
+	 * writes to the registers. The pisp_fe_reg_write() call at the end
+	 * is a non-relaxed write, so will have an inherent wmb() call.
+	 */
+	wmb();
 
 	/*
 	 * Only selectively write the parameters that have been marked as
@@ -411,7 +426,15 @@ int pisp_fe_init(struct pisp_fe_device *fe, struct media_device *mdev,
 
 	pisp_fe_stop(fe);
 	pisp_fe_set_null_config(fe);
+
+	/*
+	 * Memory barrier before the call to pisp_config_write() as it does
+	 * relaxed writes.
+	 */
+	wmb();
 	pisp_config_write(fe, &null_cfg, 0, -1);
+	/* Memory barrier to complete the writes from pisp_config_write() */
+	wmb();
 
 	/* Must be in IDLE state (STATUS == 0) here. */
 	WARN_ON(pisp_fe_reg_read(fe, STATUS));
