@@ -1114,12 +1114,13 @@ static void cfe_start_channel(struct cfe_node *node)
 static void cfe_stop_channel(struct cfe_node *node)
 {
 	struct cfe_device *cfe = node->cfe;
-	bool fe_stopped = !test_any_node(cfe, NODE_STREAMING, true);
+	bool do_fe_stop = is_fe_node(node->id) &&
+			  test_all_nodes(cfe, NODE_STREAMING, true);
 
-	cfe_dbg(2, "%s: [%s] fe_stopped %d\n", __func__,
-		node_desc[node->id].name, fe_stopped);
+	cfe_dbg(2, "%s: [%s] do_fe_stop %d\n", __func__,
+		node_desc[node->id].name, do_fe_stop);
 
-	if (fe_stopped && is_fe_node(node->id)) {
+	if (do_fe_stop) {
 		csi2_stop_channel(&cfe->csi2, cfe->fe_csi2_channel);
 		pisp_fe_stop(&cfe->fe);
 	} else if (is_csi2_node(node->id)) {
