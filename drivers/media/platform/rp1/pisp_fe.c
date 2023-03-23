@@ -43,11 +43,6 @@
 
 #define PISP_FE_CONFIG_BASE_OFFSET	0x0040
 
-static struct pisp_fe_config null_cfg;
-#define SET_NULL_CFG_REG(offset, value)					\
-		(*(((uint32_t *)&null_cfg) + ((offset) >> 2) -		\
-			(PISP_FE_CONFIG_BASE_OFFSET >> 2)) = (value))
-
 static int pisp_fe_debug;
 module_param(pisp_fe_debug, int, 0644);
 MODULE_PARM_DESC(pisp_fe_debug, "Debug level 0-3");
@@ -135,24 +130,6 @@ static int pisp_regs_show(struct seq_file *s, void *data)
 
 DEFINE_SHOW_ATTRIBUTE(pisp_regs);
 
-static void pisp_fe_set_null_config(struct pisp_fe_device *fe)
-{
-	memset(&null_cfg, 0, sizeof(null_cfg));
-
-	SET_NULL_CFG_REG(0x064, 0x00080001);
-	SET_NULL_CFG_REG(0x068, 0x00000001);
-	SET_NULL_CFG_REG(0x06c, 0x00000001);
-	SET_NULL_CFG_REG(0x074, 0x00000003);
-	SET_NULL_CFG_REG(0x078, 0x00000200);
-	SET_NULL_CFG_REG(0x080, 0x00003387);
-	SET_NULL_CFG_REG(0x084, 0x00000000);
-	SET_NULL_CFG_REG(0x26c, 0x00000003);
-
-	/* AXI burst length 16 + panic + align bursts + QoS */
-	SET_NULL_CFG_REG(0x248, 0x841032af);
-	SET_NULL_CFG_REG(0x24c, 0x41000140);
-}
-
 static void pisp_config_write(struct pisp_fe_device *fe,
 			      struct pisp_fe_config *config,
 			      unsigned int start_offset,
@@ -167,14 +144,9 @@ static void pisp_config_write(struct pisp_fe_device *fe,
 	end_offset = min(start_offset + size, max_offset);
 
 	cfg += start_offset >> 2;
-	for (i = start_offset; i < end_offset; i += 4, cfg++) {
-		/* Don't let user override the OUTPUT_AXI or PANIC registers */
-		if (i == 0x248 || i == 0x24c)
-			continue;
-
+	for (i = start_offset; i < end_offset; i += 4, cfg++)
 		pisp_fe_reg_write_relaxed(fe, PISP_FE_CONFIG_BASE_OFFSET + i,
 					  *cfg);
-	}
 }
 
 inline void pisp_fe_isr(struct pisp_fe_device *fe, bool *sof, bool *eof)
@@ -205,13 +177,18 @@ inline void pisp_fe_isr(struct pisp_fe_device *fe, bool *sof, bool *eof)
 void pisp_fe_submit_job(struct pisp_fe_device *fe, struct vb2_buffer **vb2_bufs,
 			struct v4l2_format *f)
 {
-	struct pisp_fe_config *cfg = &null_cfg;
+	struct pisp_fe_config *cfg;
 	unsigned int i;
 	dma_addr_t addr;
 	u32 status;
 
-	if (vb2_bufs[FE_CONFIG_PAD])
-		cfg = vb2_plane_vaddr(vb2_bufs[FE_CONFIG_PAD], 0);
+	if (WARN_ON(!vb2_bufs[FE_CONFIG_PAD])) {
+		pisp_fe_err("%s: No config buffer provided, cannot run.",
+			    __func__);
+		return;
+	}
+
+	cfg = vb2_plane_vaddr(vb2_bufs[FE_CONFIG_PAD], 0);
 
 	/* Buffer config. */
 	if (vb2_bufs[FE_OUTPUT0_PAD]) {
@@ -425,16 +402,6 @@ int pisp_fe_init(struct pisp_fe_device *fe, struct media_device *mdev,
 	snprintf(fe->sd.name, sizeof(fe->sd.name), "pisp-fe");
 
 	pisp_fe_stop(fe);
-	pisp_fe_set_null_config(fe);
-
-	/*
-	 * Memory barrier before the call to pisp_config_write() as it does
-	 * relaxed writes.
-	 */
-	wmb();
-	pisp_config_write(fe, &null_cfg, 0, -1);
-	/* Memory barrier to complete the writes from pisp_config_write() */
-	wmb();
 
 	/* Must be in IDLE state (STATUS == 0) here. */
 	WARN_ON(pisp_fe_reg_read(fe, STATUS));
