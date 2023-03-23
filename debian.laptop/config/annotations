@@ -6,6 +6,7 @@
 
 include "../../debian.master/config/annotations"
 
+CONFIG_ARM64_PTR_AUTH                           policy<{'arm64': 'n'}> note<'X13s not functional yet?'>
 CONFIG_ARM_QCOM_CPUFREQ_HW                      policy<{'arm64': 'y'}> note<'X13s set to y'>
 CONFIG_ARM_SCMI_CPUFREQ                         policy<{'arm64': 'y'}> note<'X13s set to y'>
 CONFIG_ARM_SCMI_POWER_DOMAIN                    policy<{'arm64': 'y'}> note<'X13s set to y'>
@@ -64,6 +65,7 @@ CONFIG_USB_DWC3_QCOM                            policy<{'arm64': 'y'}> note<'X13
 
 # ---- Annotations without notes ----
 
+CONFIG_ARM64_PTR_AUTH_KERNEL                    policy<{'arm64': '-'}>
 CONFIG_DRM_DEBUG_MM                             policy<{'arm64': '-'}>
 CONFIG_PHY_QCOM_USB_HS                          policy<{'arm64': 'y'}>
 CONFIG_QCOM_BAM_DMA                             policy<{'arm64': 'y'}>
