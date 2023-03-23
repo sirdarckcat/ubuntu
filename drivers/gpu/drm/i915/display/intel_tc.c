@@ -456,7 +456,7 @@ static void icl_tc_phy_disconnect(struct intel_digital_port *dig_port)
  * ADLP TC PHY handlers
  * --------------------
  */
-static u32 adl_tc_port_live_status_mask(struct intel_digital_port *dig_port)
+static u32 adlp_tc_port_live_status_mask(struct intel_digital_port *dig_port)
 {
 	struct drm_i915_private *i915 = to_i915(dig_port->base.base.dev);
 	enum tc_port tc_port = intel_port_to_tc(i915, dig_port->base.port);
@@ -491,7 +491,7 @@ static u32 adl_tc_port_live_status_mask(struct intel_digital_port *dig_port)
  * DP-alt, legacy or nothing). For TBT-alt sinks the PHY is owned by the TBT
  * subsystem and so switching the ownership to display is not required.
  */
-static bool adl_tc_phy_status_complete(struct intel_digital_port *dig_port)
+static bool adlp_tc_phy_status_complete(struct intel_digital_port *dig_port)
 {
 	struct drm_i915_private *i915 = to_i915(dig_port->base.base.dev);
 	enum tc_port tc_port = intel_port_to_tc(i915, dig_port->base.port);
@@ -508,8 +508,8 @@ static bool adl_tc_phy_status_complete(struct intel_digital_port *dig_port)
 	return val & TCSS_DDI_STATUS_READY;
 }
 
-static bool adl_tc_phy_take_ownership(struct intel_digital_port *dig_port,
-				      bool take)
+static bool adlp_tc_phy_take_ownership(struct intel_digital_port *dig_port,
+				       bool take)
 {
 	struct drm_i915_private *i915 = to_i915(dig_port->base.base.dev);
 	enum port port = dig_port->base.port;
@@ -520,7 +520,7 @@ static bool adl_tc_phy_take_ownership(struct intel_digital_port *dig_port,
 	return true;
 }
 
-static bool adl_tc_phy_is_owned(struct intel_digital_port *dig_port)
+static bool adlp_tc_phy_is_owned(struct intel_digital_port *dig_port)
 {
 	struct drm_i915_private *i915 = to_i915(dig_port->base.base.dev);
 	enum port port = dig_port->base.port;
@@ -539,7 +539,7 @@ static u32 tc_port_live_status_mask(struct intel_digital_port *dig_port)
 	struct drm_i915_private *i915 = to_i915(dig_port->base.base.dev);
 
 	if (IS_ALDERLAKE_P(i915))
-		return adl_tc_port_live_status_mask(dig_port);
+		return adlp_tc_port_live_status_mask(dig_port);
 
 	return icl_tc_port_live_status_mask(dig_port);
 }
@@ -549,7 +549,7 @@ static bool tc_phy_status_complete(struct intel_digital_port *dig_port)
 	struct drm_i915_private *i915 = to_i915(dig_port->base.base.dev);
 
 	if (IS_ALDERLAKE_P(i915))
-		return adl_tc_phy_status_complete(dig_port);
+		return adlp_tc_phy_status_complete(dig_port);
 
 	return icl_tc_phy_status_complete(dig_port);
 }
@@ -559,7 +559,7 @@ static bool tc_phy_is_owned(struct intel_digital_port *dig_port)
 	struct drm_i915_private *i915 = to_i915(dig_port->base.base.dev);
 
 	if (IS_ALDERLAKE_P(i915))
-		return adl_tc_phy_is_owned(dig_port);
+		return adlp_tc_phy_is_owned(dig_port);
 
 	return icl_tc_phy_is_owned(dig_port);
 }
@@ -569,7 +569,7 @@ static bool tc_phy_take_ownership(struct intel_digital_port *dig_port, bool take
 	struct drm_i915_private *i915 = to_i915(dig_port->base.base.dev);
 
 	if (IS_ALDERLAKE_P(i915))
-		return adl_tc_phy_take_ownership(dig_port, take);
+		return adlp_tc_phy_take_ownership(dig_port, take);
 
 	return icl_tc_phy_take_ownership(dig_port, take);
 }
