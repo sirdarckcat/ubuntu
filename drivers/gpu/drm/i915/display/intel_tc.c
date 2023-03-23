@@ -24,6 +24,7 @@ enum tc_port_mode {
 struct intel_tc_port;
 
 struct intel_tc_phy_ops {
+	enum intel_display_power_domain (*cold_off_domain)(struct intel_tc_port *tc);
 	u32 (*hpd_live_status)(struct intel_tc_port *tc);
 	bool (*is_ready)(struct intel_tc_port *tc);
 	bool (*is_owned)(struct intel_tc_port *tc);
@@ -52,6 +53,8 @@ struct intel_tc_port {
 	u8 phy_fia_idx;
 };
 
+static enum intel_display_power_domain
+tc_phy_cold_off_domain(struct intel_tc_port *);
 static u32 tc_phy_hpd_live_status(struct intel_tc_port *tc);
 static bool tc_phy_is_ready(struct intel_tc_port *tc);
 static bool tc_phy_take_ownership(struct intel_tc_port *tc, bool take);
@@ -112,20 +115,8 @@ bool intel_tc_cold_requires_aux_pw(struct intel_digital_port *dig_port)
 	struct drm_i915_private *i915 = to_i915(dig_port->base.base.dev);
 	struct intel_tc_port *tc = to_tc_port(dig_port);
 
-	return (DISPLAY_VER(i915) == 11 && tc->legacy_port) ||
-		IS_ALDERLAKE_P(i915);
-}
-
-static enum intel_display_power_domain
-tc_phy_cold_off_domain(struct intel_tc_port *tc)
-{
-	struct drm_i915_private *i915 = tc_to_i915(tc);
-	struct intel_digital_port *dig_port = tc->dig_port;
-
-	if (tc->mode == TC_PORT_TBT_ALT || !intel_tc_cold_requires_aux_pw(dig_port))
-		return POWER_DOMAIN_TC_COLD_OFF;
-
-	return intel_display_power_legacy_aux_domain(i915, dig_port->aux_ch);
+	return tc_phy_cold_off_domain(tc) ==
+	       intel_display_power_legacy_aux_domain(i915, dig_port->aux_ch);
 }
 
 static intel_wakeref_t
@@ -333,6 +324,18 @@ static void tc_port_fixup_legacy_flag(struct intel_tc_port *tc,
  * ICL TC PHY handlers
  * -------------------
  */
+static enum intel_display_power_domain
+icl_tc_phy_cold_off_domain(struct intel_tc_port *tc)
+{
+	struct drm_i915_private *i915 = tc_to_i915(tc);
+	struct intel_digital_port *dig_port = tc->dig_port;
+
+	if (tc->legacy_port)
+		return intel_display_power_legacy_aux_domain(i915, dig_port->aux_ch);
+
+	return POWER_DOMAIN_TC_COLD_OFF;
+}
+
 static u32 icl_tc_phy_hpd_live_status(struct intel_tc_port *tc)
 {
 	struct drm_i915_private *i915 = tc_to_i915(tc);
@@ -539,6 +542,27 @@ static void icl_tc_phy_disconnect(struct intel_tc_port *tc)
 }
 
 static const struct intel_tc_phy_ops icl_tc_phy_ops = {
+	.cold_off_domain = icl_tc_phy_cold_off_domain,
+	.hpd_live_status = icl_tc_phy_hpd_live_status,
+	.is_ready = icl_tc_phy_is_ready,
+	.is_owned = icl_tc_phy_is_owned,
+	.get_hw_state = icl_tc_phy_get_hw_state,
+	.connect = icl_tc_phy_connect,
+	.disconnect = icl_tc_phy_disconnect,
+};
+
+/*
+ * TGL TC PHY handlers
+ * -------------------
+ */
+static enum intel_display_power_domain
+tgl_tc_phy_cold_off_domain(struct intel_tc_port *tc)
+{
+	return POWER_DOMAIN_TC_COLD_OFF;
+}
+
+static const struct intel_tc_phy_ops tgl_tc_phy_ops = {
+	.cold_off_domain = tgl_tc_phy_cold_off_domain,
 	.hpd_live_status = icl_tc_phy_hpd_live_status,
 	.is_ready = icl_tc_phy_is_ready,
 	.is_owned = icl_tc_phy_is_owned,
@@ -551,6 +575,18 @@ static const struct intel_tc_phy_ops icl_tc_phy_ops = {
  * ADLP TC PHY handlers
  * --------------------
  */
+static enum intel_display_power_domain
+adlp_tc_phy_cold_off_domain(struct intel_tc_port *tc)
+{
+	struct drm_i915_private *i915 = tc_to_i915(tc);
+	struct intel_digital_port *dig_port = tc->dig_port;
+
+	if (tc->mode != TC_PORT_TBT_ALT)
+		return intel_display_power_legacy_aux_domain(i915, dig_port->aux_ch);
+
+	return POWER_DOMAIN_TC_COLD_OFF;
+}
+
 static u32 adlp_tc_phy_hpd_live_status(struct intel_tc_port *tc)
 {
 	struct drm_i915_private *i915 = tc_to_i915(tc);
@@ -623,6 +659,7 @@ static bool adlp_tc_phy_is_owned(struct intel_tc_port *tc)
 }
 
 static const struct intel_tc_phy_ops adlp_tc_phy_ops = {
+	.cold_off_domain = adlp_tc_phy_cold_off_domain,
 	.hpd_live_status = adlp_tc_phy_hpd_live_status,
 	.is_ready = adlp_tc_phy_is_ready,
 	.is_owned = adlp_tc_phy_is_owned,
@@ -635,6 +672,12 @@ static const struct intel_tc_phy_ops adlp_tc_phy_ops = {
  * Generic TC PHY handlers
  * -----------------------
  */
+static enum intel_display_power_domain
+tc_phy_cold_off_domain(struct intel_tc_port *tc)
+{
+	return tc->phy_ops->cold_off_domain(tc);
+}
+
 static u32 tc_phy_hpd_live_status(struct intel_tc_port *tc)
 {
 	struct drm_i915_private *i915 = tc_to_i915(tc);
@@ -1245,6 +1288,8 @@ int intel_tc_port_init(struct intel_digital_port *dig_port, bool is_legacy)
 
 	if (DISPLAY_VER(i915) >= 13)
 		tc->phy_ops = &adlp_tc_phy_ops;
+	else if (DISPLAY_VER(i915) >= 12)
+		tc->phy_ops = &tgl_tc_phy_ops;
 	else
 		tc->phy_ops = &icl_tc_phy_ops;
 
