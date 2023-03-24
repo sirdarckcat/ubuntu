@@ -578,7 +578,8 @@ static void cfe_schedule_next_pisp_job(struct cfe_device *cfe)
 		list_del(&buf->list);
 	}
 
-	pisp_fe_submit_job(&cfe->fe, vb2_bufs, &cfe->node[FE_OUT0].fmt);
+	pisp_fe_submit_job(&cfe->fe, vb2_bufs,
+			   &cfe->node[FE_OUT0].fmt, &cfe->node[FE_OUT1].fmt);
 }
 
 static void cfe_prepare_next_job(struct cfe_device *cfe)

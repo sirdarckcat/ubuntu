@@ -11,7 +11,6 @@
 #include <media/videobuf2-dma-contig.h>
 
 #include "pisp_fe.h"
-#include "pisp_fe_config.h"
 
 #define VERSION		0x000
 #define CONTROL		0x004
@@ -42,6 +41,16 @@
 #define ACTIVE		BIT(2)
 
 #define PISP_FE_CONFIG_BASE_OFFSET	0x0040
+
+#define PISP_FE_ENABLE_STATS_CLUSTER \
+	(PISP_FE_ENABLE_STATS_CROP | PISP_FE_ENABLE_DECIMATE    | \
+	 PISP_FE_ENABLE_BLC        | PISP_FE_ENABLE_CDAF_STATS  | \
+	 PISP_FE_ENABLE_AWB_STATS  | PISP_FE_ENABLE_RGBY        | \
+	 PISP_FE_ENABLE_LSC        | PISP_FE_ENABLE_AGC_STATS)
+
+#define PISP_FE_ENABLE_OUTPUT_CLUSTER(i)				\
+	((PISP_FE_ENABLE_CROP0     | PISP_FE_ENABLE_DOWNSCALE0 |	\
+	  PISP_FE_ENABLE_COMPRESS0 | PISP_FE_ENABLE_OUTPUT0) << (4 * i))
 
 static int pisp_fe_debug;
 module_param(pisp_fe_debug, int, 0644);
@@ -174,82 +183,155 @@ inline void pisp_fe_isr(struct pisp_fe_device *fe, bool *sof, bool *eof)
 	}
 }
 
-void pisp_fe_submit_job(struct pisp_fe_device *fe, struct vb2_buffer **vb2_bufs,
-			struct v4l2_format *f)
+static bool validate_output(struct pisp_fe_config const *cfg,
+			    unsigned int c, struct v4l2_format const *f)
 {
-	struct pisp_fe_config *cfg;
+	unsigned int wbytes;
+
+	wbytes = cfg->ch[c].output.format.width;
+	if (cfg->ch[c].output.format.format & PISP_IMAGE_FORMAT_BPS_MASK)
+		wbytes *= 2;
+
+	/* Check output image dimensions are nonzero and not too big */
+	if (cfg->ch[c].output.format.width < 2 ||
+	    cfg->ch[c].output.format.height < 2 ||
+	    cfg->ch[c].output.format.height > f->fmt.pix.height ||
+	    cfg->ch[c].output.format.stride > f->fmt.pix.bytesperline ||
+	    wbytes > f->fmt.pix.bytesperline)
+		return false;
+
+	/* Check for zero-sized crops, which could cause lockup */
+	if ((cfg->global.enables & PISP_FE_ENABLE_CROP(c)) &&
+	    ((cfg->ch[c].crop.offset_x >= (cfg->input.format.width & ~1) ||
+	      cfg->ch[c].crop.offset_y >= cfg->input.format.height ||
+	      cfg->ch[c].crop.width < 2 ||
+	      cfg->ch[c].crop.height < 2)))
+		return false;
+
+	if ((cfg->global.enables & PISP_FE_ENABLE_DOWNSCALE(c)) &&
+	    (cfg->ch[c].downscale.output_width < 2 ||
+	     cfg->ch[c].downscale.output_height < 2))
+		return false;
+
+	return true;
+}
+
+static inline bool validate_stats(struct pisp_fe_config const *cfg)
+{
+	/* Check for zero-sized crop, which could cause lockup */
+	return (!(cfg->global.enables & PISP_FE_ENABLE_STATS_CROP) ||
+		(cfg->stats_crop.offset_x < (cfg->input.format.width & ~1) &&
+		 cfg->stats_crop.offset_y < cfg->input.format.height &&
+		 cfg->stats_crop.width >= 2 &&
+		 cfg->stats_crop.height >= 2));
+}
+
+void pisp_fe_submit_job(struct pisp_fe_device *fe, struct vb2_buffer **vb2_bufs,
+			struct v4l2_format const *f0, struct v4l2_format const *f1)
+{
+	struct pisp_fe_config *cfg = &fe->cfg_tmp;
 	unsigned int i;
 	dma_addr_t addr;
 	u32 status;
 
-	if (WARN_ON(!vb2_bufs[FE_CONFIG_PAD])) {
-		pisp_fe_err("%s: No config buffer provided, cannot run.",
-			    __func__);
+	/*
+	 * Take a copy of the config, so we can check and modify it
+	 * without the risk that the user is modifying it concurrently.
+	 */
+	if (WARN_ON(!vb2_bufs[FE_CONFIG_PAD]))
 		return;
+	memcpy(cfg, vb2_plane_vaddr(vb2_bufs[FE_CONFIG_PAD], 0), sizeof(*cfg));
+
+	/*
+	 * Check the input is enabled, streaming and has nonzero size;
+	 * to avoid cases where the hardware might lock up or try to
+	 * read inputs from memory (which this driver doesn't support).
+	 */
+	if (WARN_ON(!(cfg->global.enables & PISP_FE_ENABLE_INPUT) ||
+		    cfg->input.streaming != 1 ||
+		    cfg->input.format.width < 2 ||
+		    cfg->input.format.height < 2))
+		return;
+
+	/*
+	 * Check output buffers exist and outputs are correctly configured.
+	 * If valid, set the buffer's DMA address; otherwise disable.
+	 */
+	for (i = 0; i < PISP_FE_NUM_OUTPUTS; i++) {
+		struct vb2_buffer *buf = vb2_bufs[FE_OUTPUT0_PAD + i];
+
+		if (buf && validate_output(cfg, i, i ? f1 : f0)) {
+			addr = vb2_dma_contig_plane_dma_addr(buf, 0);
+			cfg->output_buffer[0].addr_lo = addr & 0xffffffff;
+			cfg->output_buffer[0].addr_hi = addr >> 32;
+		} else if (WARN_ON(cfg->global.enables &
+				   PISP_FE_ENABLE_OUTPUT_CLUSTER(i))) {
+			pisp_fe_err("%s: Output %u not valid, disabling",
+				    __func__, i);
+			pisp_fe_dbg(1, "GE %x Src %ux%u Buf[%u] %s %ux%u(%u)",
+				    cfg->global.enables,
+				    cfg->input.format.width,
+				    cfg->input.format.height,
+				    i, buf ? "queued" : "missing",
+				    f0->fmt.pix.width,
+				    f0->fmt.pix.height,
+				    f0->fmt.pix.bytesperline);
+			pisp_fe_dbg(1, "Output[%u] %ux%u(%u)", i,
+				    cfg->ch[0].output.format.width,
+				    cfg->ch[0].output.format.height,
+				    cfg->ch[0].output.format.stride);
+			pisp_fe_dbg(1, "Crop %u,%u %ux%u Downscale %ux%u",
+				    cfg->ch[0].crop.offset_x,
+				    cfg->ch[0].crop.offset_y,
+				    cfg->ch[0].crop.width,
+				    cfg->ch[0].crop.height,
+				    cfg->ch[0].downscale.output_width,
+				    cfg->ch[0].downscale.output_height);
+
+			cfg->global.enables &=
+				~PISP_FE_ENABLE_OUTPUT_CLUSTER(i);
+		}
 	}
 
-	cfg = vb2_plane_vaddr(vb2_bufs[FE_CONFIG_PAD], 0);
-
-	/* Buffer config. */
-	if (vb2_bufs[FE_OUTPUT0_PAD]) {
-		addr = vb2_dma_contig_plane_dma_addr(vb2_bufs[FE_OUTPUT0_PAD],
-						     0);
-		cfg->output_buffer[0].addr_lo = addr & 0xffffffff;
-		cfg->output_buffer[0].addr_hi = addr >> 32;
-	}
-	if (vb2_bufs[FE_OUTPUT1_PAD]) {
-		addr = vb2_dma_contig_plane_dma_addr(vb2_bufs[FE_OUTPUT1_PAD],
-						     0);
-		cfg->output_buffer[1].addr_lo = addr & 0xffffffff;
-		cfg->output_buffer[1].addr_hi = addr >> 32;
-	}
-	if (vb2_bufs[FE_STATS_PAD]) {
+	if (vb2_bufs[FE_STATS_PAD] && validate_stats(cfg)) {
 		addr = vb2_dma_contig_plane_dma_addr(vb2_bufs[FE_STATS_PAD], 0);
 		cfg->stats_buffer.addr_lo = addr & 0xffffffff;
 		cfg->stats_buffer.addr_hi = addr >> 32;
+	} else if (WARN_ON(cfg->global.enables & PISP_FE_ENABLE_STATS_CLUSTER)) {
+		pisp_fe_err("%s: Stats not valid, disabling", __func__);
+		cfg->global.enables &= ~PISP_FE_ENABLE_STATS_CLUSTER;
 	}
 
-	/* Neither dimension can be zero, or the HW will lockup! */
-	BUG_ON(!f->fmt.pix.width || !f->fmt.pix.height);
+	/* Set up ILINES interrupts 3/4 of the way down each output */
+	cfg->ch[0].output.ilines =
+		max(0x80u, (3u * cfg->ch[0].output.format.height) >> 2);
+	cfg->ch[1].output.ilines =
+		max(0x80u, (3u * cfg->ch[1].output.format.height) >> 2);
 
-	/* Input dimensions. */
-	cfg->input.format.width = f->fmt.pix.width;
-	cfg->input.format.height = f->fmt.pix.height;
-
-	/* Output dimensions. */
-	cfg->ch[0].output.format.width = f->fmt.pix.width;
-	cfg->ch[0].output.format.height = f->fmt.pix.height;
-	cfg->ch[0].output.format.stride = f->fmt.pix.bytesperline;
-	cfg->ch[0].output.ilines = min(max(0x80u, f->fmt.pix.height >> 2),
-				       f->fmt.pix.height);
-
-	/* Output setup. */
-	cfg->output_axi.maxlen_flags = 0x8f;
-
-	pisp_fe_dbg(3, "%s: in: %dx%d out: %dx%d (stride: %d)\n", __func__,
-		    cfg->input.format.width,
-		    cfg->input.format.height,
-		    cfg->ch[0].output.format.width,
-		    cfg->ch[0].output.format.height,
-		    cfg->ch[0].output.format.stride);
-
+	/*
+	 * The hardware must have consumed the previous config by now.
+	 * This read of status also serves as a memory barrier before the
+	 * sequence of relaxed writes which follow.
+	 */
 	status = pisp_fe_reg_read(fe, STATUS);
 	pisp_fe_dbg(2, "%s: status = 0x%x\n", __func__, status);
-
-	/* The hardware should have queued the previous config by now. */
-	WARN_ON(status & QUEUED);
-
-	/*
-	 * Memory barrier before the calls to pisp_config_write as we do relaxed
-	 * writes to the registers. The pisp_fe_reg_write() call at the end
-	 * is a non-relaxed write, so will have an inherent wmb() call.
-	 */
-	wmb();
+	if (WARN_ON(status & QUEUED))
+		return;
 
 	/*
-	 * Only selectively write the parameters that have been marked as
+	 * Unconditionally write buffers, global and input parameters.
+	 * Write cropping and output parameters whenever they are enabled.
+	 * Selectively write other parameters that have been marked as
 	 * changed through the dirty flags.
 	 */
+	pisp_config_write(fe, cfg, 0,
+			  offsetof(struct pisp_fe_config, decompress));
+	cfg->dirty_flags_extra &= ~PISP_FE_DIRTY_GLOBAL;
+	cfg->dirty_flags &= ~PISP_FE_ENABLE_INPUT;
+	cfg->dirty_flags |= (cfg->global.enables &
+			     (PISP_FE_ENABLE_STATS_CROP        |
+			      PISP_FE_ENABLE_OUTPUT_CLUSTER(0) |
+			      PISP_FE_ENABLE_OUTPUT_CLUSTER(1)));
 	for (i = 0; i < ARRAY_SIZE(pisp_fe_config_map); i++) {
 		const struct pisp_fe_config_param *p = &pisp_fe_config_map[i];
 
@@ -258,20 +340,7 @@ void pisp_fe_submit_job(struct pisp_fe_device *fe, struct vb2_buffer **vb2_bufs,
 			pisp_config_write(fe, cfg, p->offset, p->size);
 	}
 
-	/* Unconditionally write buffer, input, output parameters */
-	pisp_config_write(fe, cfg, 0,
-			  sizeof(cfg->stats_buffer) +
-				sizeof(cfg->output_buffer) +
-				sizeof(cfg->input_buffer));
-	pisp_config_write(fe, cfg,
-			  offsetof(struct pisp_fe_config, input) +
-				offsetof(struct pisp_fe_input_config, format),
-			  sizeof(cfg->input.format));
-	pisp_config_write(fe, cfg,
-			  offsetof(struct pisp_fe_config, ch[0]) +
-			  offsetof(struct pisp_fe_output_branch_config, output),
-			  sizeof(cfg->ch[0].output.format));
-
+	/* This final non-relaxed write serves as a memory barrier */
 	pisp_fe_reg_write(fe, CONTROL, QUEUE);
 }
 
@@ -288,6 +357,8 @@ void pisp_fe_stop(struct pisp_fe_device *fe)
 	pisp_fe_reg_write(fe, INT_EN, 0);
 	pisp_fe_reg_write(fe, CONTROL, ABORT);
 	usleep_range(1000, 2000);
+	WARN_ON(pisp_fe_reg_read(fe, STATUS));
+	pisp_fe_reg_write(fe, INT_STATUS, -1);
 }
 
 static struct pisp_fe_device *to_pisp_fe_device(struct v4l2_subdev *subdev)

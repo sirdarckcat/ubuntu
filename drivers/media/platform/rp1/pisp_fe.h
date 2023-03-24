@@ -16,6 +16,8 @@
 #include <media/v4l2-device.h>
 #include <media/v4l2-subdev.h>
 
+#include "pisp_fe_config.h"
+
 enum pisp_fe_pads {
 	FE_STREAM_PAD,
 	FE_CONFIG_PAD,
@@ -34,11 +36,12 @@ struct pisp_fe_device {
 	struct media_pad pad[FE_NUM_PADS];
 	struct v4l2_subdev sd;
 	struct v4l2_subdev_format format[FE_NUM_PADS];
+	struct pisp_fe_config cfg_tmp;
 };
 
 void pisp_fe_isr(struct pisp_fe_device *fe, bool *sof, bool *eof);
 void pisp_fe_submit_job(struct pisp_fe_device *fe, struct vb2_buffer **vb2_bufs,
-			struct v4l2_format *f);
+			struct v4l2_format const *f0, struct v4l2_format const *f1);
 void pisp_fe_start(struct pisp_fe_device *fe);
 void pisp_fe_stop(struct pisp_fe_device *fe);
 int pisp_fe_init(struct pisp_fe_device *fe, struct media_device *mdev,
