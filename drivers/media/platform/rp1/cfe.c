@@ -249,8 +249,8 @@ struct cfe_device {
 	struct media_device mdev;
 	struct media_pipeline pipe;
 
-	/* IRQ lock for DMA queues*/
-	spinlock_t dma_queue_lock;
+	/* IRQ lock for node state and DMA queues */
+	spinlock_t state_lock;
 
 	/* parent device */
 	struct platform_device *pdev;
@@ -693,10 +693,10 @@ static irqreturn_t cfe_isr(int irq, void *dev)
 		pisp_fe_isr(&cfe->fe, sof + CSI2_NUM_CHANNELS,
 			    eof + CSI2_NUM_CHANNELS);
 
-	spin_lock(&cfe->dma_queue_lock);
+	spin_lock(&cfe->state_lock);
 
 	if (!test_all_nodes(cfe, NODE_OPENED, NODE_STREAMING)) {
-		spin_unlock(&cfe->dma_queue_lock);
+		spin_unlock(&cfe->state_lock);
 		return IRQ_HANDLED;
 	}
 
@@ -732,7 +732,7 @@ static irqreturn_t cfe_isr(int irq, void *dev)
 			cfe_prepare_next_job(cfe);
 	}
 
-	spin_unlock(&cfe->dma_queue_lock);
+	spin_unlock(&cfe->state_lock);
 
 	return IRQ_HANDLED;
 }
@@ -1028,7 +1028,7 @@ static void cfe_buffer_queue(struct vb2_buffer *vb)
 	cfe_dbg(2, "%s: [%s] buffer %p\n", __func__, node_desc[node->id].name,
 		vb);
 
-	spin_lock_irqsave(&cfe->dma_queue_lock, flags);
+	spin_lock_irqsave(&cfe->state_lock, flags);
 
 	/*
 	 * If the list was empty before adding this buffer, and here is no
@@ -1048,7 +1048,7 @@ static void cfe_buffer_queue(struct vb2_buffer *vb)
 		cfe_prepare_next_job(cfe);
 	}
 
-	spin_unlock_irqrestore(&cfe->dma_queue_lock, flags);
+	spin_unlock_irqrestore(&cfe->state_lock, flags);
 }
 
 static void cfe_start_channel(struct cfe_node *node)
@@ -1121,10 +1121,10 @@ static void cfe_start_channel(struct cfe_node *node)
 				   width, height);
 	}
 
-	spin_lock_irqsave(&cfe->dma_queue_lock, flags);
+	spin_lock_irqsave(&cfe->state_lock, flags);
 	if (test_all_nodes(cfe, NODE_OPENED, NODE_STREAMING))
 		cfe_prepare_next_job(cfe);
-	spin_unlock_irqrestore(&cfe->dma_queue_lock, flags);
+	spin_unlock_irqrestore(&cfe->state_lock, flags);
 }
 
 static void cfe_stop_channel(struct cfe_node *node, bool fe_stop)
@@ -1152,7 +1152,7 @@ static void cfe_return_buffers(struct cfe_node *node,
 
 	cfe_dbg(2, "%s: [%s]\n", __func__, node_desc[node->id].name);
 
-	spin_lock_irqsave(&cfe->dma_queue_lock, flags);
+	spin_lock_irqsave(&cfe->state_lock, flags);
 	list_for_each_entry_safe(buf, tmp, &node->dma_queue, list) {
 		list_del(&buf->list);
 		vb2_buffer_done(&buf->vb.vb2_buf, state);
@@ -1165,7 +1165,7 @@ static void cfe_return_buffers(struct cfe_node *node,
 
 	node->cur_frm = NULL;
 	node->next_frm = NULL;
-	spin_unlock_irqrestore(&cfe->dma_queue_lock, flags);
+	spin_unlock_irqrestore(&cfe->state_lock, flags);
 }
 
 static int cfe_start_streaming(struct vb2_queue *vq, unsigned int count)
@@ -1253,12 +1253,12 @@ static void cfe_stop_streaming(struct vb2_queue *vq)
 
 	cfe_dbg(2, "%s: [%s] begin.\n", __func__, node_desc[node->id].name);
 
-	spin_lock_irqsave(&cfe->dma_queue_lock, flags);
+	spin_lock_irqsave(&cfe->state_lock, flags);
 	fe_stop = is_fe_enabled(cfe) &&
 		  test_all_nodes(cfe, NODE_OPENED, NODE_STREAMING);
 
 	clear_state(cfe, NODE_STREAMING, node->id);
-	spin_unlock_irqrestore(&cfe->dma_queue_lock, flags);
+	spin_unlock_irqrestore(&cfe->state_lock, flags);
 
 	cfe_stop_channel(node, fe_stop);
 
@@ -1975,7 +1975,7 @@ static int cfe_probe(struct platform_device *pdev)
 	cfe->pdev = pdev;
 	cfe->fe_csi2_channel = -1;
 	atomic_set(&cfe->open_count, 0);
-	spin_lock_init(&cfe->dma_queue_lock);
+	spin_lock_init(&cfe->state_lock);
 
 	cfe->csi2.base = devm_platform_ioremap_resource(pdev, 0);
 	if (IS_ERR(cfe->csi2.base)) {
