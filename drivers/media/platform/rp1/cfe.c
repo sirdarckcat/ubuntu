@@ -1047,18 +1047,20 @@ static void cfe_start_channel(struct cfe_node *node)
 	const struct cfe_fmt *fmt;
 	unsigned long flags;
 	unsigned int width = 0, height = 0;
+	bool start_fe = cfe->fe_csi2_channel != -1 &&
+			test_all_nodes(cfe, NODE_OPENED, NODE_STREAMING);
 
 	cfe_dbg(2, "%s: [%s]\n", __func__, node_desc[node->id].name);
 
-	if (is_image_output_node(node->id)) {
+	if (start_fe || is_image_output_node(node->id)) {
 		width = node->fmt.fmt.pix.width;
 		height = node->fmt.fmt.pix.height;
 	}
 
-	if (node->id == FE_OUT0) {
+	if (start_fe) {
 		WARN_ON(cfe->fe_csi2_channel == -1);
 		cfe_dbg(2, "%s: %s using csi2 channel %d\n",
-			__func__, node_desc[node->id].name,
+			__func__, node_desc[FE_OUT0].name,
 			cfe->fe_csi2_channel);
 
 		pad = &cfe->csi2.pad[cfe->fe_csi2_channel];
@@ -1076,7 +1078,9 @@ static void cfe_start_channel(struct cfe_node *node)
 				   true, false, width, height);
 		csi2_set_buffer(&cfe->csi2, cfe->fe_csi2_channel, 0, 0, -1);
 		pisp_fe_start(&cfe->fe);
-	} else if (is_csi2_node(node->id)) {
+	}
+
+	if (is_csi2_node(node->id)) {
 		u32 mode = CSI2_MODE_NORMAL;
 
 		pad = &cfe->csi2.pad[node_desc[node->id].link_pad -
@@ -1114,8 +1118,8 @@ static void cfe_start_channel(struct cfe_node *node)
 static void cfe_stop_channel(struct cfe_node *node)
 {
 	struct cfe_device *cfe = node->cfe;
-	bool do_fe_stop = is_fe_node(node->id) &&
-			  test_all_nodes(cfe, NODE_STREAMING, true);
+	bool do_fe_stop = cfe->fe_csi2_channel != -1 &&
+			  test_all_nodes(cfe, NODE_OPENED, NODE_STREAMING);
 
 	cfe_dbg(2, "%s: [%s] do_fe_stop %d\n", __func__,
 		node_desc[node->id].name, do_fe_stop);
@@ -1123,9 +1127,10 @@ static void cfe_stop_channel(struct cfe_node *node)
 	if (do_fe_stop) {
 		csi2_stop_channel(&cfe->csi2, cfe->fe_csi2_channel);
 		pisp_fe_stop(&cfe->fe);
-	} else if (is_csi2_node(node->id)) {
-		csi2_stop_channel(&cfe->csi2, node->id);
 	}
+
+	if (is_csi2_node(node->id))
+		csi2_stop_channel(&cfe->csi2, node->id);
 }
 
 static void cfe_return_buffers(struct cfe_node *node,
@@ -1162,15 +1167,13 @@ static int cfe_start_streaming(struct vb2_queue *vq, unsigned int count)
 
 	cfe_dbg(2, "%s: [%s] begin.\n", __func__, node_desc[node->id].name);
 
-	if (is_image_output_node(node->id)) {
+	if (!test_any_node(cfe, NODE_STREAMING, false)) {
 		ret = cfe_runtime_get(cfe);
 		if (ret < 0) {
 			cfe_err("cfe_runtime_get failed\n");
 			goto err_streaming;
 		}
-	}
 
-	if (!test_any_node(cfe, NODE_STREAMING, false)) {
 		ret = media_pipeline_start(node->video_dev.entity.pads,
 					   &cfe->pipe);
 		if (ret < 0) {
@@ -1225,7 +1228,7 @@ err_disable_cfe:
 err_pm_put:
 	cfe_runtime_put(cfe);
 err_streaming:
-	cfe_return_buffers(node, VB2_BUF_STATE_QUEUED);
+	cfe_return_buffers(node, VB2_BUF_STATE_ERROR);
 	clear_state(cfe, NODE_STREAMING, node->id);
 
 	return ret;
@@ -1238,6 +1241,8 @@ static void cfe_stop_streaming(struct vb2_queue *vq)
 
 	cfe_dbg(2, "%s: [%s] begin.\n", __func__, node_desc[node->id].name);
 
+	cfe_stop_channel(node);
+
 	clear_state(cfe, NODE_STREAMING, node->id);
 
 	if (!test_any_node(cfe, NODE_STREAMING, false)) {
@@ -1248,8 +1253,6 @@ static void cfe_stop_streaming(struct vb2_queue *vq)
 		cfe_runtime_put(cfe);
 		media_pipeline_stop(cfe->sensor->entity.pads);
 	}
-
-	cfe_stop_channel(node);
 
 	/* Clear all queued buffers for the node */
 	cfe_return_buffers(node, VB2_BUF_STATE_ERROR);
