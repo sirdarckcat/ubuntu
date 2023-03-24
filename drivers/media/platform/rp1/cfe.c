@@ -693,6 +693,13 @@ static irqreturn_t cfe_isr(int irq, void *dev)
 		pisp_fe_isr(&cfe->fe, sof + CSI2_NUM_CHANNELS,
 			    eof + CSI2_NUM_CHANNELS);
 
+	spin_lock(&cfe->dma_queue_lock);
+
+	if (!test_all_nodes(cfe, NODE_OPENED, NODE_STREAMING)) {
+		spin_unlock(&cfe->dma_queue_lock);
+		return IRQ_HANDLED;
+	}
+
 	for (i = 0; i < NUM_NODES; i++) {
 		struct cfe_node *node = &cfe->node[i];
 
@@ -721,11 +728,11 @@ static irqreturn_t cfe_isr(int irq, void *dev)
 		if (sof[i])
 			sof_isr_handler(node);
 
-		spin_lock(&cfe->dma_queue_lock);
 		if (!node->next_frm)
 			cfe_prepare_next_job(cfe);
-		spin_unlock(&cfe->dma_queue_lock);
 	}
+
+	spin_unlock(&cfe->dma_queue_lock);
 
 	return IRQ_HANDLED;
 }
@@ -1120,16 +1127,14 @@ static void cfe_start_channel(struct cfe_node *node)
 	spin_unlock_irqrestore(&cfe->dma_queue_lock, flags);
 }
 
-static void cfe_stop_channel(struct cfe_node *node)
+static void cfe_stop_channel(struct cfe_node *node, bool fe_stop)
 {
 	struct cfe_device *cfe = node->cfe;
-	bool do_fe_stop = is_fe_enabled(cfe) &&
-			  test_all_nodes(cfe, NODE_OPENED, NODE_STREAMING);
 
-	cfe_dbg(2, "%s: [%s] do_fe_stop %d\n", __func__,
-		node_desc[node->id].name, do_fe_stop);
+	cfe_dbg(2, "%s: [%s] fe_stop %d\n", __func__,
+		node_desc[node->id].name, fe_stop);
 
-	if (do_fe_stop) {
+	if (fe_stop) {
 		csi2_stop_channel(&cfe->csi2, cfe->fe_csi2_channel);
 		pisp_fe_stop(&cfe->fe);
 	}
@@ -1229,7 +1234,7 @@ static int cfe_start_streaming(struct vb2_queue *vq, unsigned int count)
 	return 0;
 
 err_disable_cfe:
-	cfe_stop_channel(node);
+	cfe_stop_channel(node, true);
 err_pm_put:
 	cfe_runtime_put(cfe);
 err_streaming:
@@ -1243,12 +1248,19 @@ static void cfe_stop_streaming(struct vb2_queue *vq)
 {
 	struct cfe_node *node = vb2_get_drv_priv(vq);
 	struct cfe_device *cfe = node->cfe;
+	unsigned long flags;
+	bool fe_stop;
 
 	cfe_dbg(2, "%s: [%s] begin.\n", __func__, node_desc[node->id].name);
 
-	cfe_stop_channel(node);
+	spin_lock_irqsave(&cfe->dma_queue_lock, flags);
+	fe_stop = is_fe_enabled(cfe) &&
+		  test_all_nodes(cfe, NODE_OPENED, NODE_STREAMING);
 
 	clear_state(cfe, NODE_STREAMING, node->id);
+	spin_unlock_irqrestore(&cfe->dma_queue_lock, flags);
+
+	cfe_stop_channel(node, fe_stop);
 
 	if (!test_any_node(cfe, NODE_STREAMING, false)) {
 		/* Stop streaming the sensor and disable the peripheral. */
