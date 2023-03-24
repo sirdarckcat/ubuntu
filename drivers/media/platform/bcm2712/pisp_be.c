@@ -335,7 +335,7 @@ static int get_addr_3(dma_addr_t addr[3], struct pispbe_buffer *buf,
 	unsigned int size;
 	unsigned int p;
 
-	if (!buf)
+	if (!buf || !node->pisp_format)
 		return 0;
 
 	WARN_ON(!NODE_IS_MPLANE(node));
@@ -1496,6 +1496,8 @@ static void node_set_default_format(struct pispbe_node *node)
 		try_format(&f, node);
 		node->format = f;
 	}
+
+	node->pisp_format = find_format(node->format.fmt.pix_mp.pixelformat);
 }
 
 /*
