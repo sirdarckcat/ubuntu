@@ -275,6 +275,11 @@ struct cfe_device {
 	u64 ts;
 };
 
+static inline bool is_fe_enabled(struct cfe_device *cfe)
+{
+	return cfe->fe_csi2_channel != -1;
+}
+
 static inline struct cfe_device *to_cfe_device(struct v4l2_device *v4l2_dev)
 {
 	return container_of(v4l2_dev, struct cfe_device, v4l2_dev);
@@ -594,7 +599,7 @@ static void cfe_prepare_next_job(struct cfe_device *cfe)
 	}
 
 	cfe_schedule_next_csi2_job(cfe);
-	if (cfe->fe_csi2_channel != -1)
+	if (is_fe_enabled(cfe))
 		cfe_schedule_next_pisp_job(cfe);
 
 	cfe_dbg(2, "%s: end with scheduled job\n", __func__);
@@ -684,7 +689,7 @@ static irqreturn_t cfe_isr(int irq, void *dev)
 	bool sof[NUM_NODES], eof[NUM_NODES], lci[NUM_NODES];
 
 	csi2_isr(&cfe->csi2, sof, eof, lci);
-	if (cfe->fe_csi2_channel != -1)
+	if (is_fe_enabled(cfe))
 		pisp_fe_isr(&cfe->fe, sof + CSI2_NUM_CHANNELS,
 			    eof + CSI2_NUM_CHANNELS);
 
@@ -1047,7 +1052,7 @@ static void cfe_start_channel(struct cfe_node *node)
 	const struct cfe_fmt *fmt;
 	unsigned long flags;
 	unsigned int width = 0, height = 0;
-	bool start_fe = cfe->fe_csi2_channel != -1 &&
+	bool start_fe = is_fe_enabled(cfe) &&
 			test_all_nodes(cfe, NODE_OPENED, NODE_STREAMING);
 
 	cfe_dbg(2, "%s: [%s]\n", __func__, node_desc[node->id].name);
@@ -1118,7 +1123,7 @@ static void cfe_start_channel(struct cfe_node *node)
 static void cfe_stop_channel(struct cfe_node *node)
 {
 	struct cfe_device *cfe = node->cfe;
-	bool do_fe_stop = cfe->fe_csi2_channel != -1 &&
+	bool do_fe_stop = is_fe_enabled(cfe) &&
 			  test_all_nodes(cfe, NODE_OPENED, NODE_STREAMING);
 
 	cfe_dbg(2, "%s: [%s] do_fe_stop %d\n", __func__,
@@ -1547,7 +1552,7 @@ int cfe_video_link_notify(struct media_link *link, u32 flags,
 			cfe->fe_csi2_channel = CSI2_CH3;
 	}
 
-	if (cfe->fe_csi2_channel != -1)
+	if (is_fe_enabled(cfe))
 		cfe_dbg(1, "%s: Found CSI2:%d -> FE:0 link\n", __func__,
 			cfe->fe_csi2_channel);
 	else
