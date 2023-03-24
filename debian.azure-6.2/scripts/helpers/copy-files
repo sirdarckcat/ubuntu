@@ -10,6 +10,7 @@ if [ ! -d "${DEBIAN}" ]; then
 	exit 1
 fi
 
+echo "DEBUG $0"
 CONF="${DEBIAN}"/etc/update.conf
 if [ -f "${CONF}" ]; then
 	# shellcheck disable=SC1090
@@ -29,11 +30,6 @@ SKIP_RULES_D=${SKIP_RULES_D:-}
 # Pick up any master branch changes to udeb modules or firmware.
 #
 rsync -avc --delete "${DEBIAN_MASTER}/d-i/" "${DEBIAN}/d-i"
-
-#
-# Update configs from master
-#
-rsync -avc --delete "${DEBIAN_MASTER}/config/" "${DEBIAN}/config"
 
 #
 # Update package and DTB settings from master
