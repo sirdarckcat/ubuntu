@@ -674,7 +674,6 @@ CONFIG_ARCH_WANT_DEFAULT_BPF_JIT                policy<{'arm64': 'y'}>
 CONFIG_ARCH_WANT_DEFAULT_TOPDOWN_MMAP_LAYOUT    policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_ARCH_WANT_FRAME_POINTERS                 policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_ARCH_WANT_GENERAL_HUGETLB                policy<{'armhf': 'y'}>
-CONFIG_ARCH_WANT_HUGETLB_PAGE_OPTIMIZE_VMEMMAP  policy<{'arm64': 'y'}>
 CONFIG_ARCH_WANT_HUGE_PMD_SHARE                 policy<{'arm64': 'y'}>
 CONFIG_ARCH_WANT_IPC_PARSE_VERSION              policy<{'armhf': 'y'}>
 CONFIG_ARCH_WANT_LD_ORPHAN_WARN                 policy<{'arm64': 'y', 'armhf': 'y'}>
@@ -2300,7 +2299,6 @@ CONFIG_DRM_I2C_NXP_TDA9950                      policy<{'arm64': 'm', 'armhf': '
 CONFIG_DRM_I2C_NXP_TDA998X                      policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_DRM_I2C_SIL164                           policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_DRM_IMX                                  policy<{'armhf': 'n'}>
-CONFIG_DRM_IMX_LCDIF                            policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_DRM_ITE_IT6505                           policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_DRM_ITE_IT66121                          policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_DRM_KMS_HELPER                           policy<{'arm64': 'm', 'armhf': 'm'}>
@@ -2320,8 +2318,6 @@ CONFIG_DRM_MEGACHIPS_STDPXXXX_GE_B850V3_FW      policy<{'arm64': 'm', 'armhf': '
 CONFIG_DRM_MGAG200                              policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_DRM_MIPI_DBI                             policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_DRM_MIPI_DSI                             policy<{'arm64': 'y', 'armhf': 'y'}>
-CONFIG_DRM_MXS                                  policy<{'arm64': 'y', 'armhf': 'y'}>
-CONFIG_DRM_MXSFB                                policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_DRM_NOUVEAU                              policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_DRM_NOUVEAU_BACKLIGHT                    policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_DRM_NWL_MIPI_DSI                         policy<{'arm64': 'm', 'armhf': 'm'}>
@@ -2902,6 +2898,7 @@ CONFIG_FB_VOODOO1                               policy<{'arm64': 'm', 'armhf': '
 CONFIG_FB_VT8623                                policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_FCOE                                     policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_FDDI                                     policy<{'arm64': 'n', 'armhf': 'n'}>
+CONFIG_FEALNX                                   policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_FHANDLE                                  policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_FIB_RULES                                policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_FIELDBUS_DEV                             policy<{'arm64': 'm', 'armhf': 'm'}>
@@ -3465,7 +3462,6 @@ CONFIG_HIP04_ETH                                policy<{'arm64': 'm', 'armhf': '
 CONFIG_HIPPI                                    policy<{'arm64': 'n', 'armhf': 'n'}>
 CONFIG_HISILICON_ERRATUM_161010101              policy<{'arm64': 'y'}>
 CONFIG_HISILICON_ERRATUM_161600802              policy<{'arm64': 'y'}>
-CONFIG_HISI_DMA                                 policy<{'arm64': 'n'}>
 CONFIG_HISI_FEMAC                               policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_HISI_HIKEY_USB                           policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_HISI_PCIE_PMU                            policy<{'arm64': 'm'}>
@@ -3514,8 +3510,6 @@ CONFIG_HTS221_I2C                               policy<{'arm64': 'm', 'armhf': '
 CONFIG_HTS221_SPI                               policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_HTU21                                    policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_HUGETLB_PAGE                             policy<{'arm64': 'y', 'armhf-raspi': 'y'}>
-CONFIG_HUGETLB_PAGE_OPTIMIZE_VMEMMAP            policy<{'arm64': 'y'}>
-CONFIG_HUGETLB_PAGE_OPTIMIZE_VMEMMAP_DEFAULT_ON policy<{'arm64': 'n'}>
 CONFIG_HVC_DCC                                  policy<{'arm64': 'n', 'armhf': 'n'}>
 CONFIG_HVC_DRIVER                               policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_HWLAT_TRACER                             policy<{'arm64': 'y', 'armhf': 'y'}>
@@ -5321,7 +5315,6 @@ CONFIG_NET_CLS_MATCHALL                         policy<{'arm64': 'm', 'armhf': '
 CONFIG_NET_CLS_ROUTE4                           policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_NET_CLS_RSVP                             policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_NET_CLS_RSVP6                            policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_NET_CLS_TCINDEX                          policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_NET_CLS_U32                              policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_NET_CORE                                 policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_NET_DEVLINK                              policy<{'arm64': 'y', 'armhf': 'y'}>
@@ -7155,7 +7148,7 @@ CONFIG_SENSORS_MP2975                           policy<{'arm64': 'm', 'armhf': '
 CONFIG_SENSORS_MP5023                           policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_SENSORS_MR75203                          policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_SENSORS_NCT6683                          policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_SENSORS_NCT6775                          policy<{'arm64': 'm', 'armhf': 'm'}>
+CONFIG_SENSORS_NCT6775                          policy<{'arm64': 'm', 'armhf': '-'}>
 CONFIG_SENSORS_NCT6775_CORE                     policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_SENSORS_NCT6775_I2C                      policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_SENSORS_NCT7802                          policy<{'arm64': 'm', 'armhf': 'm'}>
