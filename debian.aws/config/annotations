@@ -4,6 +4,11 @@
 
 include ../../debian.master/config/annotations
 
+CONFIG_SERIAL_8250_MID                             policy<{'amd64': 'm'}>
+CONFIG_SERIAL_8250_MID                             note<'LP: #2009283 - not needed for AWS cloud kernels'>
+CONFIG_HSU_DMA                                     policy<{'amd64': 'm'}>
+CONFIG_HSU_DMA                                     note<'LP: #2009283 - not needed for AWS cloud kernels'>
+
 CONFIG_CMA                                         policy<{'amd64': 'n', 'arm64': 'n'}> note<LP: #1990167>
 CONFIG_CMA_SIZE_SEL_MBYTES                         policy<{'arm64': '-'}>
 CONFIG_CMA_SIZE_SEL_PERCENTAGE                     policy<{'arm64': '-'}>
