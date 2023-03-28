@@ -97,25 +97,6 @@
 			clock-frequency = <1000000>;
 		};
 
-		dma32: dma@7c010000 {
-			compatible = "brcm,bcm2835-dma";
-			reg = <0x7c010000 0x600>;
-			interrupts = <GIC_SPI 80 IRQ_TYPE_LEVEL_HIGH>,
-				     <GIC_SPI 81 IRQ_TYPE_LEVEL_HIGH>,
-				     <GIC_SPI 82 IRQ_TYPE_LEVEL_HIGH>,
-				     <GIC_SPI 83 IRQ_TYPE_LEVEL_HIGH>,
-				     <GIC_SPI 84 IRQ_TYPE_LEVEL_HIGH>,
-				     <GIC_SPI 85 IRQ_TYPE_LEVEL_HIGH>;
-			interrupt-names = "dma0",
-					  "dma1",
-					  "dma2",
-					  "dma3",
-					  "dma4",
-					  "dma5";
-			#dma-cells = <1>;
-			brcm,dma-channel-mask = <0x0035>;
-		};
-
 		firmwarekms: firmwarekms@7d503000 {
 			compatible = "raspberrypi,rpi-firmware-kms";
 			/* SUN_L2 interrupt reg */
@@ -911,6 +892,25 @@
 			     <0x14 0x00000000  0x14 0x00000000  0x04 0x00000000>,
 			     <0x18 0x00000000  0x18 0x00000000  0x04 0x00000000>,
 			     <0x1c 0x00000000  0x1c 0x00000000  0x04 0x00000000>;
+
+		dma32: dma@10000 {
+			compatible = "brcm,bcm2835-dma";
+			reg = <0x10 0x00010000 0 0x600>;
+			interrupts = <GIC_SPI 80 IRQ_TYPE_LEVEL_HIGH>,
+				     <GIC_SPI 81 IRQ_TYPE_LEVEL_HIGH>,
+				     <GIC_SPI 82 IRQ_TYPE_LEVEL_HIGH>,
+				     <GIC_SPI 83 IRQ_TYPE_LEVEL_HIGH>,
+				     <GIC_SPI 84 IRQ_TYPE_LEVEL_HIGH>,
+				     <GIC_SPI 85 IRQ_TYPE_LEVEL_HIGH>;
+			interrupt-names = "dma0",
+					  "dma1",
+					  "dma2",
+					  "dma3",
+					  "dma4",
+					  "dma5";
+			#dma-cells = <1>;
+			brcm,dma-channel-mask = <0x0035>;
+		};
 
 		dma40: dma@10600 {
 			compatible = "brcm,bcm2711-dma";
