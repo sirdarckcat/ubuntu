@@ -4,6 +4,13 @@
 
 include "../../debian.master/config/annotations"
 
+CONFIG_SERIAL_8250_MID                             policy<{'amd64': 'm'}>
+CONFIG_SERIAL_8250_MID                             note<LP: #2009283 - not required for cloud kernels>
+CONFIG_HSU_DMA                                     policy<{'amd64': 'm'}>
+CONFIG_HSU_DMA                                     note<LP: #2009283 - not required for cloud kernels>
+CONFIG_EXTCON_USBC_TUSB320                         policy<{'arm64': 'm'}>
+CONFIG_EXTCON_USBC_TUSB320                         note<LP: #2009283 - not required for cloud kernels>
+
 CONFIG_BLK_DEV_FD                                policy<{'amd64': 'n'}>
 CONFIG_BLK_DEV_FD                               mark<ENFORCED> note<LP: #1972017>
 
