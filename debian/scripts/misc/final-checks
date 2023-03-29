@@ -2,7 +2,6 @@
 
 debian="$1"
 abi="$2"
-abi=${abi%~*}
 
 . "$debian/etc/kernelconfig"
 archs=$( awk '/^Architecture:/ { $1=""; for (i=1; i<=NF; i++) { if ($i != "all") { print $i }}}' debian/control | sort -u)
@@ -45,6 +44,16 @@ abi_check()
 	fi
 }
 
+abi_version="$debian/abi/version"
+if ! [ -f "$abi_version" ]; then
+    failure "$abi_version ABI version file missing"
+fi
+
+version=$(cat "$abi_version")
+if [ "$abi" != "$version" ]; then
+    failure "$abi_version ABI version mismatch ($abi != $version)"
+fi
+
 if [ -d debian/certs ]; then
     if ! grep -q '^CONFIG_SYSTEM_TRUSTED_KEYS="debian/canonical-certs.pem"$' $debian/config/config.common.ubuntu; then
         failure "'CONFIG_SYSTEM_TRUSTED_KEYS="debian/canonical-certs.pem"' is required"
@@ -74,7 +83,7 @@ do
 	for flavour in $flavours
 	do
 		flavour=$(echo "$flavour" | sed -e 's@.*/config.flavour.@@')
-		abi_check "$debian/abi/$abi" "$arch" "$flavour"
+		abi_check "$debian/abi" "$arch" "$flavour"
 	done
 done
 
