@@ -1,0 +1,23 @@
+#!/bin/sh
+
+PREREQ=""
+
+prereqs()
+{
+	echo "$PREREQ"
+}
+
+case $1 in
+prereqs)
+	prereqs
+	exit 0
+	;;
+esac
+
+. /usr/share/initramfs-tools/hook-functions
+
+# version is set to "ABI-FLAVOUR", ie "4.15.0-31-generic".
+if [ "$version" = '@abiname@@localversion@' ]; then
+	echo 'NETWORK_SKIP_ENSLAVED=1' >> "$DESTDIR/conf/conf.d/linux-oracle"
+fi
+exit 0
