@@ -125,7 +125,7 @@ ifneq ($(DEB_BUILD_GNU_TYPE),$(DEB_HOST_GNU_TYPE))
 	CROSS_COMPILE ?= $(DEB_HOST_GNU_TYPE)-
 endif
 
-abidir		:= $(CURDIR)/$(DEBIAN)/abi/$(release)-$(revision)/$(arch)
+abidir		:= $(CURDIR)/$(DEBIAN)/__abi.current/$(arch)
 commonconfdir	:= $(CURDIR)/$(DEBIAN)/config
 archconfdir	:= $(CURDIR)/$(DEBIAN)/config/$(arch)
 sharedconfdir	:= $(CURDIR)/debian.master/config
