@@ -172,7 +172,7 @@ static const struct pisp_be_format supported_formats[] = {
 		.colorspace_mask    = COLORSPACE_MASK_YUV,
 		.colorspace_default = V4L2_COLORSPACE_SMPTE170M,
 	},
-	/* RGB formats */
+	/* RGB formats supported by all versions */
 	{
 		.fourcc		    = V4L2_PIX_FMT_RGB24,
 		.align		    = 32,
@@ -195,24 +195,6 @@ static const struct pisp_be_format supported_formats[] = {
 		.fourcc		    = V4L2_PIX_FMT_BGR24,
 		.align		    = 32,
 		.bit_depth	    = 24,
-		.plane_factor	    = { P3(1.0) },
-		.num_planes	    = 1,
-		.colorspace_mask    = COLORSPACE_MASK_SRGB,
-		.colorspace_default = V4L2_COLORSPACE_SRGB,
-	},
-	{
-		.fourcc		    = V4L2_PIX_FMT_XBGR32,
-		.align		    = 64,
-		.bit_depth	    = 32,
-		.plane_factor	    = { P3(1.0) },
-		.num_planes	    = 1,
-		.colorspace_mask    = COLORSPACE_MASK_SRGB,
-		.colorspace_default = V4L2_COLORSPACE_SRGB,
-	},
-	{
-		.fourcc		    = V4L2_PIX_FMT_RGBX32,
-		.align		    = 64,
-		.bit_depth	    = 32,
 		.plane_factor	    = { P3(1.0) },
 		.num_planes	    = 1,
 		.colorspace_mask    = COLORSPACE_MASK_SRGB,
@@ -522,6 +504,25 @@ static const struct pisp_be_format supported_formats[] = {
 	/* Configuration buffer format. */
 	{
 		.fourcc		    = V4L2_META_FMT_RPI_BE_CFG,
+	},
+	/* RGB formats supported since minor version 1 (2712D0) */
+	{
+		.fourcc		    = V4L2_PIX_FMT_XBGR32,
+		.align		    = 64,
+		.bit_depth	    = 32,
+		.plane_factor	    = { P3(1.0) },
+		.num_planes	    = 1,
+		.colorspace_mask    = COLORSPACE_MASK_SRGB,
+		.colorspace_default = V4L2_COLORSPACE_SRGB,
+	},
+	{
+		.fourcc		    = V4L2_PIX_FMT_RGBX32,
+		.align		    = 64,
+		.bit_depth	    = 32,
+		.plane_factor	    = { P3(1.0) },
+		.num_planes	    = 1,
+		.colorspace_mask    = COLORSPACE_MASK_SRGB,
+		.colorspace_default = V4L2_COLORSPACE_SRGB,
 	},
 };
 

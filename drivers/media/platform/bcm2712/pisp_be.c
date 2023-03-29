@@ -57,6 +57,10 @@ MODULE_PARM_DESC(debug, "activates debug info");
 #define N_HW_ADDRESSES 14
 #define N_HW_ENABLES 2
 
+#define PISP_BE_VERSION_2712C0 0x02252700
+#define PISP_BE_VERSION_2712D0 0x02251301
+#define PISP_BE_VERSION_MINOR(v) ((v) & 0xF)
+
 /*
  * This maps our nodes onto the inputs/outputs of the actual PiSP Back End.
  * Be wary of the word "OUTPUT" which is used ambiguously here. In a V4L2
@@ -173,6 +177,7 @@ struct pispbe_node {
 #define NODE_NAME(node) \
 		(node_desc[(node)->id].ent_name + sizeof(PISPBE_NAME))
 #define NODE_GET_V4L2(node) ((node)->node_group->v4l2_dev)
+#define NODE_GET_PISPBE(node) ((node)->node_group->pispbe)
 
 /*
  * Node group structure, which comprises all the input and output nodes that a
@@ -212,6 +217,7 @@ struct pispbe_dev {
 	void __iomem *be_reg_base;
 	struct clk *clk;
 	int irq;
+	u32 hw_version;
 	u8 done, started;
 	spinlock_t hw_lock; /* protects "hw_busy" flag and streaming_map */
 };
@@ -230,9 +236,15 @@ static inline void write_reg(struct pispbe_dev *pispbe, unsigned int offset,
 /* Check and initialize hardware. */
 static int hw_init(struct pispbe_dev *pispbe)
 {
-	u32 u = read_reg(pispbe, PISP_BE_VERSION_OFFSET);
+	u32 u;
 
+	/* Check the HW is present and has a known version */
+	u = read_reg(pispbe, PISP_BE_VERSION_OFFSET);
 	dev_info(pispbe->dev, "pispbe_probe: HW version:  0x%08x", u);
+	pispbe->hw_version = u;
+	if (u != PISP_BE_VERSION_2712C0 && u != PISP_BE_VERSION_2712D0)
+		return -ENODEV;
+
 	/* Clear leftover interrupts */
 	write_reg(pispbe, PISP_BE_INTERRUPT_STATUS_OFFSET, 0xFFFFFFFFu);
 	u = read_reg(pispbe, PISP_BE_BATCH_STATUS_OFFSET);
@@ -1083,13 +1095,20 @@ static int verify_be_pix_format(const struct v4l2_format *f,
 	return 0;
 }
 
-static const struct pisp_be_format *find_format(unsigned int fourcc)
+static const struct pisp_be_format *find_format(const struct pispbe_node *node,
+						unsigned int fourcc)
 {
 	const struct pisp_be_format *fmt;
 	unsigned int i;
 
 	for (i = 0; i < ARRAY_SIZE(supported_formats); i++) {
 		fmt = &supported_formats[i];
+
+		/* 32-bit formats are supported only for minor version > 0 */
+		if (fmt->bit_depth >= 32 &&
+		    !PISP_BE_VERSION_MINOR(NODE_GET_PISPBE(node)->hw_version))
+			break;
+
 		if (fmt->fourcc == fourcc)
 			return fmt;
 	}
@@ -1140,7 +1159,7 @@ static int try_format(struct v4l2_format *f, struct pispbe_node *node)
 		 f->fmt.pix_mp.height, V4L2_FOURCC_CONV_ARGS(pixfmt),
 		 f->fmt.pix_mp.num_planes);
 
-	fmt = find_format(pixfmt);
+	fmt = find_format(node, pixfmt);
 	if (!fmt)
 		return -EINVAL;
 
@@ -1276,7 +1295,7 @@ static int pispbe_node_s_fmt_vid_cap(struct file *file, void *priv,
 		return ret;
 
 	node->format = *f;
-	node->pisp_format = find_format(f->fmt.pix_mp.pixelformat);
+	node->pisp_format = find_format(node, f->fmt.pix_mp.pixelformat);
 
 	v4l2_dbg(1, debug, &NODE_GET_V4L2(node),
 		 "Set capture format for node %s to " V4L2_FOURCC_CONV "\n",
@@ -1295,7 +1314,7 @@ static int pispbe_node_s_fmt_vid_out(struct file *file, void *priv,
 		return ret;
 
 	node->format = *f;
-	node->pisp_format = find_format(f->fmt.pix_mp.pixelformat);
+	node->pisp_format = find_format(node, f->fmt.pix_mp.pixelformat);
 
 	v4l2_dbg(1, debug, &NODE_GET_V4L2(node),
 		 "Set output format for node %s to " V4L2_FOURCC_CONV "\n",
@@ -1314,7 +1333,7 @@ static int pispbe_node_s_fmt_meta_out(struct file *file, void *priv,
 		return ret;
 
 	node->format = *f;
-	node->pisp_format = find_format(f->fmt.meta.dataformat);
+	node->pisp_format = find_format(node, f->fmt.meta.dataformat);
 
 	v4l2_dbg(1, debug, &NODE_GET_V4L2(node),
 		 "Set output format for meta node %s to " V4L2_FOURCC_CONV "\n",
@@ -1333,7 +1352,7 @@ static int pispbe_node_s_fmt_meta_cap(struct file *file, void *priv,
 		return ret;
 
 	node->format = *f;
-	node->pisp_format = find_format(f->fmt.meta.dataformat);
+	node->pisp_format = find_format(node, f->fmt.meta.dataformat);
 
 	v4l2_dbg(1, debug, &NODE_GET_V4L2(node),
 		 "Set capture format for meta node %s to " V4L2_FOURCC_CONV "\n",
@@ -1350,7 +1369,10 @@ static int pispbe_node_enum_fmt(struct file *file, void  *priv,
 	if (f->type != node->queue.type)
 		return -EINVAL;
 
-	if (f->index < ARRAY_SIZE(supported_formats)) {
+	/* 32-bit formats are supported only for minor version > 0 */
+	if (f->index < ARRAY_SIZE(supported_formats) &&
+	    (supported_formats[f->index].bit_depth < 32 ||
+	     PISP_BE_VERSION_MINOR(NODE_GET_PISPBE(node)->hw_version))) {
 		/* Format found */
 		f->pixelformat = supported_formats[f->index].fourcc;
 		f->flags = 0;
@@ -1368,7 +1390,7 @@ static int pispbe_enum_framesizes(struct file *file, void *priv,
 	if (NODE_IS_META(node) || fsize->index)
 		return -EINVAL;
 
-	if (!find_format(fsize->pixel_format)) {
+	if (!find_format(node, fsize->pixel_format)) {
 		v4l2_err(&NODE_GET_V4L2(node), "Invalid pixel code: %x\n",
 			 fsize->pixel_format);
 		return -EINVAL;
@@ -1497,7 +1519,8 @@ static void node_set_default_format(struct pispbe_node *node)
 		node->format = f;
 	}
 
-	node->pisp_format = find_format(node->format.fmt.pix_mp.pixelformat);
+	node->pisp_format =
+		find_format(node, node->format.fmt.pix_mp.pixelformat);
 }
 
 /*
