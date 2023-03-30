@@ -1,10 +1,13 @@
 # Recreate any symlinks created since the orig.
 # Remove any files deleted from the orig.
+rm -f 'drivers/clk/starfive/clk-starfive-jh7100.h'
+rm -f 'drivers/reset/reset-starfive-jh7100.c'
 rm -f 'net/sched/cls_tcindex.c'
 rm -f 'scripts/is_rust_module.sh'
 rm -f 'tools/testing/selftests/net/bpf/Makefile'
 rm -f 'tools/testing/selftests/net/bpf/nat6to4.c'
 rm -f 'tools/testing/selftests/tc-testing/tc-tests/filters/tcindex.json'
+chmod +x 'debian.riscv/scripts/helpers/copy-files'
 chmod +x 'debian/cloud-tools/hv_get_dhcp_info'
 chmod +x 'debian/cloud-tools/hv_get_dns_info'
 chmod +x 'debian/cloud-tools/hv_set_ifconfig'
