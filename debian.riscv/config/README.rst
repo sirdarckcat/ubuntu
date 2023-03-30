@@ -118,16 +118,39 @@ CONFIG_COMPAT=y
 $ annotations --arch amd64 --flavour generic --import build/.config
 ```
 
-Moreover, three additional kernelconfig commands are provided
+Moreover, an additional kernelconfig commands are provided
 (via debian/rules targets):
- - `listnewconfigs`: allow to generate a list of new config options (e.g.,
-   after a rebase) and store them in CONFIGS/new-<arch>-<flavour> for
-   review
- - `importconfigs`: after new .config's are generated and reviewed (in
-   CONFIGS/<arch>-<flavour>) we can use this command to automatically
-   import all of them into the local annotations
  - `migrateconfigs`: automatically merge all the previous configs into
    annotations (local changes still need to be committed)
+
+Annotations headers
+===================
+
+The main annotations file should contain a header to define the architectures
+and flavours that are supported.
+
+Here is the format of the header for the generic kernel:
+```
+# Menu: HEADER
+# FORMAT: 4
+# ARCH: amd64 arm64 armhf ppc64el riscv64 s390x
+# FLAVOUR: amd64-generic arm64-generic arm64-generic-64k armhf-generic armhf-generic-lpae ppc64el-generic riscv64-generic s390x-generic
+
+```
+
+Example header of a derivative (linux-aws):
+```
+# Menu: HEADER
+# FORMAT: 4
+# ARCH: amd64 arm64
+# FLAVOUR: amd64-aws arm64-aws
+# FLAVOUR_DEP: {'amd64-aws': 'amd64-generic', 'arm64-aws': 'arm64-generic'}
+
+include "../../debian.master/config/annotations"
+
+# Below you can define only the specific linux-aws configs that differ from linux generic
+
+```
 
 Pros and Cons
 =============
