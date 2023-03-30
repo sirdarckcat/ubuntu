@@ -4,6 +4,8 @@
  *
  * Copyright (c) 2023 Raspberry Pi Limited.
  */
+#ifndef _RP1_DSI_H_
+#define _RP1_DSI_H_
 
 #include <linux/types.h>
 #include <linux/io.h>
@@ -85,3 +87,6 @@ void rp1dsi_dsi_send(struct rp1dsi_priv *priv, u32 header, int len, const u8 *bu
 int  rp1dsi_dsi_recv(struct rp1dsi_priv *priv, int len, u8 *buf);
 void rp1dsi_dsi_set_cmdmode(struct rp1dsi_priv *priv, int cmd_mode);
 void rp1dsi_dsi_stop(struct rp1dsi_priv *priv);
+
+#endif
+
