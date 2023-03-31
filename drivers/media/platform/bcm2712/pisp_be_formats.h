@@ -25,21 +25,28 @@ struct pisp_be_format {
 	enum v4l2_colorspace colorspace_default;
 };
 
-#define COLORSPACE_MASK(c) BIT(c)
+#define V4L2_COLORSPACE_MASK(colorspace) BIT(colorspace)
 
-#define COLORSPACE_MASK_JPEG	COLORSPACE_MASK(V4L2_COLORSPACE_JPEG)
-#define COLORSPACE_MASK_REC709	COLORSPACE_MASK(V4L2_COLORSPACE_REC709)
-#define COLORSPACE_MASK_SRGB	COLORSPACE_MASK(V4L2_COLORSPACE_SRGB)
-#define COLORSPACE_MASK_RAW	COLORSPACE_MASK(V4L2_COLORSPACE_RAW)
-#define COLORSPACE_MASK_SMPTE170M COLORSPACE_MASK(V4L2_COLORSPACE_SMPTE170M)
+#define V4L2_COLORSPACE_MASK_JPEG V4L2_COLORSPACE_MASK(V4L2_COLORSPACE_JPEG)
+#define V4L2_COLORSPACE_MASK_SMPTE170M V4L2_COLORSPACE_MASK(V4L2_COLORSPACE_SMPTE170M)
+#define V4L2_COLORSPACE_MASK_REC709 V4L2_COLORSPACE_MASK(V4L2_COLORSPACE_REC709)
+#define V4L2_COLORSPACE_MASK_SRGB V4L2_COLORSPACE_MASK(V4L2_COLORSPACE_SRGB)
+#define V4L2_COLORSPACE_MASK_RAW V4L2_COLORSPACE_MASK(V4L2_COLORSPACE_RAW)
 
 /*
- * The colour spaces we support for YUV outputs. SRGB features here because,
- * once you assign the default transfer func and so on, it and JPEG effectively
- * mean the same.
+ * All three colour spaces JPEG, SMPTE170M and REC709 are fundamentally sRGB
+ * underneath (as near as makes no difference to us), just with different YCbCr
+ * encodings. Therefore the ISP can generate sRGB on its main output and any of
+ * the others on its low resolution output. Applications should, when using both
+ * outputs, program the colour spaces on them to be the same, matching whatever
+ * is requested for the low resolution output, even if the main output is
+ * producing an RGB format. In turn this requires us to allow all these colour
+ * spaces for every YUV/RGB output format.
  */
-#define COLORSPACE_MASK_YUV (COLORSPACE_MASK_JPEG | COLORSPACE_MASK_SRGB | \
-			     COLORSPACE_MASK_SMPTE170M | COLORSPACE_MASK_REC709)
+#define V4L2_COLORSPACE_MASK_ALL_SRGB (V4L2_COLORSPACE_MASK_JPEG |	\
+				       V4L2_COLORSPACE_MASK_SRGB |	\
+				       V4L2_COLORSPACE_MASK_SMPTE170M |	\
+				       V4L2_COLORSPACE_MASK_REC709)
 
 static const struct pisp_be_format supported_formats[] = {
 	/* Single plane YUV formats */
@@ -50,7 +57,7 @@ static const struct pisp_be_format supported_formats[] = {
 		.bit_depth	    = 8,
 		.plane_factor	    = { P3(1), P3(0.25), P3(0.25) },
 		.num_planes	    = 1,
-		.colorspace_mask    = COLORSPACE_MASK_YUV,
+		.colorspace_mask    = V4L2_COLORSPACE_MASK_ALL_SRGB,
 		.colorspace_default = V4L2_COLORSPACE_JPEG,
 	},
 	{
@@ -60,7 +67,7 @@ static const struct pisp_be_format supported_formats[] = {
 		.bit_depth	    = 8,
 		.plane_factor	    = { P3(1), P3(0.25), P3(0.25) },
 		.num_planes	    = 1,
-		.colorspace_mask    = COLORSPACE_MASK_YUV,
+		.colorspace_mask    = V4L2_COLORSPACE_MASK_ALL_SRGB,
 		.colorspace_default = V4L2_COLORSPACE_SMPTE170M,
 	},
 	{
@@ -69,7 +76,7 @@ static const struct pisp_be_format supported_formats[] = {
 		.bit_depth	    = 8,
 		.plane_factor	    = { P3(1), P3(0.5) },
 		.num_planes	    = 1,
-		.colorspace_mask    = COLORSPACE_MASK_YUV,
+		.colorspace_mask    = V4L2_COLORSPACE_MASK_ALL_SRGB,
 		.colorspace_default = V4L2_COLORSPACE_SMPTE170M,
 	},
 	{
@@ -78,7 +85,7 @@ static const struct pisp_be_format supported_formats[] = {
 		.bit_depth	    = 8,
 		.plane_factor	    = { P3(1), P3(0.5) },
 		.num_planes	    = 1,
-		.colorspace_mask    = COLORSPACE_MASK_YUV,
+		.colorspace_mask    = V4L2_COLORSPACE_MASK_ALL_SRGB,
 		.colorspace_default = V4L2_COLORSPACE_SMPTE170M,
 	},
 	{
@@ -87,7 +94,7 @@ static const struct pisp_be_format supported_formats[] = {
 		.bit_depth	    = 16,
 		.plane_factor	    = { P3(1) },
 		.num_planes	    = 1,
-		.colorspace_mask    = COLORSPACE_MASK_YUV,
+		.colorspace_mask    = V4L2_COLORSPACE_MASK_ALL_SRGB,
 		.colorspace_default = V4L2_COLORSPACE_SMPTE170M,
 	},
 	{
@@ -96,7 +103,7 @@ static const struct pisp_be_format supported_formats[] = {
 		.bit_depth	    = 16,
 		.plane_factor	    = { P3(1) },
 		.num_planes	    = 1,
-		.colorspace_mask    = COLORSPACE_MASK_YUV,
+		.colorspace_mask    = V4L2_COLORSPACE_MASK_ALL_SRGB,
 		.colorspace_default = V4L2_COLORSPACE_SMPTE170M,
 	},
 	{
@@ -105,7 +112,7 @@ static const struct pisp_be_format supported_formats[] = {
 		.bit_depth	    = 16,
 		.plane_factor	    = { P3(1) },
 		.num_planes	    = 1,
-		.colorspace_mask    = COLORSPACE_MASK_YUV,
+		.colorspace_mask    = V4L2_COLORSPACE_MASK_ALL_SRGB,
 		.colorspace_default = V4L2_COLORSPACE_SMPTE170M,
 	},
 	{
@@ -114,7 +121,7 @@ static const struct pisp_be_format supported_formats[] = {
 		.bit_depth	    = 16,
 		.plane_factor	    = { P3(1) },
 		.num_planes	    = 1,
-		.colorspace_mask    = COLORSPACE_MASK_YUV,
+		.colorspace_mask    = V4L2_COLORSPACE_MASK_ALL_SRGB,
 		.colorspace_default = V4L2_COLORSPACE_SMPTE170M,
 	},
 	/* Multiplane YUV formats */
@@ -124,7 +131,7 @@ static const struct pisp_be_format supported_formats[] = {
 		.bit_depth	    = 8,
 		.plane_factor	    = { P3(1), P3(0.25), P3(0.25) },
 		.num_planes	    = 3,
-		.colorspace_mask    = COLORSPACE_MASK_YUV,
+		.colorspace_mask    = V4L2_COLORSPACE_MASK_ALL_SRGB,
 		.colorspace_default = V4L2_COLORSPACE_JPEG,
 	},
 	{
@@ -133,7 +140,7 @@ static const struct pisp_be_format supported_formats[] = {
 		.bit_depth	    = 8,
 		.plane_factor	    = { P3(1), P3(0.25), P3(0.25) },
 		.num_planes	    = 3,
-		.colorspace_mask    = COLORSPACE_MASK_YUV,
+		.colorspace_mask    = V4L2_COLORSPACE_MASK_ALL_SRGB,
 		.colorspace_default = V4L2_COLORSPACE_SMPTE170M,
 	},
 	{
@@ -142,7 +149,7 @@ static const struct pisp_be_format supported_formats[] = {
 		.bit_depth	    = 8,
 		.plane_factor	    = { P3(1), P3(0.5), P3(0.5) },
 		.num_planes	    = 3,
-		.colorspace_mask    = COLORSPACE_MASK_YUV,
+		.colorspace_mask    = V4L2_COLORSPACE_MASK_ALL_SRGB,
 		.colorspace_default = V4L2_COLORSPACE_JPEG,
 	},
 	{
@@ -151,7 +158,7 @@ static const struct pisp_be_format supported_formats[] = {
 		.bit_depth	    = 8,
 		.plane_factor	    = { P3(1), P3(0.5), P3(0.5) },
 		.num_planes	    = 3,
-		.colorspace_mask    = COLORSPACE_MASK_YUV,
+		.colorspace_mask    = V4L2_COLORSPACE_MASK_ALL_SRGB,
 		.colorspace_default = V4L2_COLORSPACE_SMPTE170M,
 	},
 	{
@@ -160,7 +167,7 @@ static const struct pisp_be_format supported_formats[] = {
 		.bit_depth	    = 8,
 		.plane_factor	    = { P3(1), P3(1), P3(1) },
 		.num_planes	    = 3,
-		.colorspace_mask    = COLORSPACE_MASK_YUV,
+		.colorspace_mask    = V4L2_COLORSPACE_MASK_ALL_SRGB,
 		.colorspace_default = V4L2_COLORSPACE_JPEG,
 	},
 	{
@@ -169,7 +176,7 @@ static const struct pisp_be_format supported_formats[] = {
 		.bit_depth	    = 8,
 		.plane_factor	    = { P3(1), P3(1), P3(1) },
 		.num_planes	    = 3,
-		.colorspace_mask    = COLORSPACE_MASK_YUV,
+		.colorspace_mask    = V4L2_COLORSPACE_MASK_ALL_SRGB,
 		.colorspace_default = V4L2_COLORSPACE_SMPTE170M,
 	},
 	/* RGB formats supported by all versions */
@@ -179,7 +186,7 @@ static const struct pisp_be_format supported_formats[] = {
 		.bit_depth	    = 24,
 		.plane_factor	    = { P3(1.0) },
 		.num_planes	    = 1,
-		.colorspace_mask    = COLORSPACE_MASK_SRGB,
+		.colorspace_mask    = V4L2_COLORSPACE_MASK_ALL_SRGB,
 		.colorspace_default = V4L2_COLORSPACE_SRGB,
 	},
 	{
@@ -188,7 +195,7 @@ static const struct pisp_be_format supported_formats[] = {
 		.bit_depth	    = 16,
 		.plane_factor	    = { P3(1.0) },
 		.num_planes	    = 1,
-		.colorspace_mask    = COLORSPACE_MASK_SRGB,
+		.colorspace_mask    = V4L2_COLORSPACE_MASK_ALL_SRGB,
 		.colorspace_default = V4L2_COLORSPACE_SRGB,
 	},
 	{
@@ -197,7 +204,7 @@ static const struct pisp_be_format supported_formats[] = {
 		.bit_depth	    = 24,
 		.plane_factor	    = { P3(1.0) },
 		.num_planes	    = 1,
-		.colorspace_mask    = COLORSPACE_MASK_SRGB,
+		.colorspace_mask    = V4L2_COLORSPACE_MASK_ALL_SRGB,
 		.colorspace_default = V4L2_COLORSPACE_SRGB,
 	},
 	/* Bayer formats - 8-bit */
@@ -207,7 +214,7 @@ static const struct pisp_be_format supported_formats[] = {
 		.align		    = 32,
 		.plane_factor	    = { P3(1.0) },
 		.num_planes	    = 1,
-		.colorspace_mask    = COLORSPACE_MASK_RAW,
+		.colorspace_mask    = V4L2_COLORSPACE_MASK_RAW,
 		.colorspace_default = V4L2_COLORSPACE_RAW,
 	},
 	{
@@ -216,7 +223,7 @@ static const struct pisp_be_format supported_formats[] = {
 		.align		    = 32,
 		.plane_factor	    = { P3(1.0) },
 		.num_planes	    = 1,
-		.colorspace_mask    = COLORSPACE_MASK_RAW,
+		.colorspace_mask    = V4L2_COLORSPACE_MASK_RAW,
 		.colorspace_default = V4L2_COLORSPACE_RAW,
 	},
 	{
@@ -225,7 +232,7 @@ static const struct pisp_be_format supported_formats[] = {
 		.align		    = 32,
 		.plane_factor	    = { P3(1.0) },
 		.num_planes	    = 1,
-		.colorspace_mask    = COLORSPACE_MASK_RAW,
+		.colorspace_mask    = V4L2_COLORSPACE_MASK_RAW,
 		.colorspace_default = V4L2_COLORSPACE_RAW,
 	},
 	{
@@ -234,7 +241,7 @@ static const struct pisp_be_format supported_formats[] = {
 		.align		    = 32,
 		.plane_factor	    = { P3(1.0) },
 		.num_planes	    = 1,
-		.colorspace_mask    = COLORSPACE_MASK_RAW,
+		.colorspace_mask    = V4L2_COLORSPACE_MASK_RAW,
 		.colorspace_default = V4L2_COLORSPACE_RAW,
 	},
 	/* Bayer formats - 10-bit */
@@ -244,7 +251,7 @@ static const struct pisp_be_format supported_formats[] = {
 		.align		    = 32,
 		.plane_factor	    = { P3(1.0) },
 		.num_planes	    = 1,
-		.colorspace_mask    = COLORSPACE_MASK_RAW,
+		.colorspace_mask    = V4L2_COLORSPACE_MASK_RAW,
 		.colorspace_default = V4L2_COLORSPACE_RAW,
 	},
 	{
@@ -253,7 +260,7 @@ static const struct pisp_be_format supported_formats[] = {
 		.align		    = 32,
 		.plane_factor	    = { P3(1.0) },
 		.num_planes	    = 1,
-		.colorspace_mask    = COLORSPACE_MASK_RAW,
+		.colorspace_mask    = V4L2_COLORSPACE_MASK_RAW,
 		.colorspace_default = V4L2_COLORSPACE_RAW,
 	},
 	{
@@ -262,7 +269,7 @@ static const struct pisp_be_format supported_formats[] = {
 		.align		    = 32,
 		.plane_factor	    = { P3(1.0) },
 		.num_planes	    = 1,
-		.colorspace_mask    = COLORSPACE_MASK_RAW,
+		.colorspace_mask    = V4L2_COLORSPACE_MASK_RAW,
 		.colorspace_default = V4L2_COLORSPACE_RAW,
 	},
 	{
@@ -271,7 +278,7 @@ static const struct pisp_be_format supported_formats[] = {
 		.align		    = 32,
 		.plane_factor	    = { P3(1.0) },
 		.num_planes	    = 1,
-		.colorspace_mask    = COLORSPACE_MASK_RAW,
+		.colorspace_mask    = V4L2_COLORSPACE_MASK_RAW,
 		.colorspace_default = V4L2_COLORSPACE_RAW,
 	},
 	/* Bayer formats - 12-bit */
@@ -281,7 +288,7 @@ static const struct pisp_be_format supported_formats[] = {
 		.align		    = 32,
 		.plane_factor	    = { P3(1.0) },
 		.num_planes	    = 1,
-		.colorspace_mask    = COLORSPACE_MASK_RAW,
+		.colorspace_mask    = V4L2_COLORSPACE_MASK_RAW,
 		.colorspace_default = V4L2_COLORSPACE_RAW,
 	},
 	{
@@ -290,7 +297,7 @@ static const struct pisp_be_format supported_formats[] = {
 		.align		    = 32,
 		.plane_factor	    = { P3(1.0) },
 		.num_planes	    = 1,
-		.colorspace_mask    = COLORSPACE_MASK_RAW,
+		.colorspace_mask    = V4L2_COLORSPACE_MASK_RAW,
 		.colorspace_default = V4L2_COLORSPACE_RAW,
 	},
 	{
@@ -299,7 +306,7 @@ static const struct pisp_be_format supported_formats[] = {
 		.align		    = 32,
 		.plane_factor	    = { P3(1.0) },
 		.num_planes	    = 1,
-		.colorspace_mask    = COLORSPACE_MASK_RAW,
+		.colorspace_mask    = V4L2_COLORSPACE_MASK_RAW,
 		.colorspace_default = V4L2_COLORSPACE_RAW,
 	},
 	{
@@ -308,7 +315,7 @@ static const struct pisp_be_format supported_formats[] = {
 		.align		    = 32,
 		.plane_factor	    = { P3(1.0) },
 		.num_planes	    = 1,
-		.colorspace_mask    = COLORSPACE_MASK_RAW,
+		.colorspace_mask    = V4L2_COLORSPACE_MASK_RAW,
 		.colorspace_default = V4L2_COLORSPACE_RAW,
 	},
 	/* Bayer formats - 16-bit */
@@ -318,7 +325,7 @@ static const struct pisp_be_format supported_formats[] = {
 		.align		    = 32,
 		.plane_factor	    = { P3(1.0) },
 		.num_planes	    = 1,
-		.colorspace_mask    = COLORSPACE_MASK_RAW,
+		.colorspace_mask    = V4L2_COLORSPACE_MASK_RAW,
 		.colorspace_default = V4L2_COLORSPACE_RAW,
 	},
 	{
@@ -327,7 +334,7 @@ static const struct pisp_be_format supported_formats[] = {
 		.align		    = 32,
 		.plane_factor	    = { P3(1.0) },
 		.num_planes	    = 1,
-		.colorspace_mask    = COLORSPACE_MASK_RAW,
+		.colorspace_mask    = V4L2_COLORSPACE_MASK_RAW,
 		.colorspace_default = V4L2_COLORSPACE_RAW,
 	},
 	{
@@ -336,7 +343,7 @@ static const struct pisp_be_format supported_formats[] = {
 		.align		    = 32,
 		.plane_factor	    = { P3(1.0) },
 		.num_planes	    = 1,
-		.colorspace_mask    = COLORSPACE_MASK_RAW,
+		.colorspace_mask    = V4L2_COLORSPACE_MASK_RAW,
 		.colorspace_default = V4L2_COLORSPACE_RAW,
 	},
 	{
@@ -345,7 +352,7 @@ static const struct pisp_be_format supported_formats[] = {
 		.align		    = 32,
 		.plane_factor	    = { P3(1.0) },
 		.num_planes	    = 1,
-		.colorspace_mask    = COLORSPACE_MASK_RAW,
+		.colorspace_mask    = V4L2_COLORSPACE_MASK_RAW,
 		.colorspace_default = V4L2_COLORSPACE_RAW,
 	},
 	{
@@ -356,7 +363,7 @@ static const struct pisp_be_format supported_formats[] = {
 		.align		    = 32,
 		.plane_factor	    = { P3(1.0) },
 		.num_planes	    = 1,
-		.colorspace_mask    = COLORSPACE_MASK_RAW,
+		.colorspace_mask    = V4L2_COLORSPACE_MASK_RAW,
 		.colorspace_default = V4L2_COLORSPACE_RAW,
 	},
 	{
@@ -365,7 +372,7 @@ static const struct pisp_be_format supported_formats[] = {
 		.align		    = 32,
 		.plane_factor	    = { P3(1.0) },
 		.num_planes	    = 1,
-		.colorspace_mask    = COLORSPACE_MASK_RAW,
+		.colorspace_mask    = V4L2_COLORSPACE_MASK_RAW,
 		.colorspace_default = V4L2_COLORSPACE_RAW,
 	},
 	{
@@ -374,7 +381,7 @@ static const struct pisp_be_format supported_formats[] = {
 		.align		    = 32,
 		.plane_factor	    = { P3(1.0) },
 		.num_planes	    = 1,
-		.colorspace_mask    = COLORSPACE_MASK_RAW,
+		.colorspace_mask    = V4L2_COLORSPACE_MASK_RAW,
 		.colorspace_default = V4L2_COLORSPACE_RAW,
 	},
 	{
@@ -383,7 +390,7 @@ static const struct pisp_be_format supported_formats[] = {
 		.align		    = 32,
 		.plane_factor	    = { P3(1.0) },
 		.num_planes	    = 1,
-		.colorspace_mask    = COLORSPACE_MASK_RAW,
+		.colorspace_mask    = V4L2_COLORSPACE_MASK_RAW,
 		.colorspace_default = V4L2_COLORSPACE_RAW,
 	},
 	{
@@ -393,7 +400,7 @@ static const struct pisp_be_format supported_formats[] = {
 		.align		    = 32,
 		.plane_factor	    = { P3(1.0) },
 		.num_planes	    = 1,
-		.colorspace_mask    = COLORSPACE_MASK_RAW,
+		.colorspace_mask    = V4L2_COLORSPACE_MASK_RAW,
 		.colorspace_default = V4L2_COLORSPACE_RAW,
 	},
 	{
@@ -402,7 +409,7 @@ static const struct pisp_be_format supported_formats[] = {
 		.align		    = 32,
 		.plane_factor	    = { P3(1.0) },
 		.num_planes	    = 1,
-		.colorspace_mask    = COLORSPACE_MASK_RAW,
+		.colorspace_mask    = V4L2_COLORSPACE_MASK_RAW,
 		.colorspace_default = V4L2_COLORSPACE_RAW,
 	},
 	{
@@ -411,7 +418,7 @@ static const struct pisp_be_format supported_formats[] = {
 		.align		    = 32,
 		.plane_factor	    = { P3(1.0) },
 		.num_planes	    = 1,
-		.colorspace_mask    = COLORSPACE_MASK_RAW,
+		.colorspace_mask    = V4L2_COLORSPACE_MASK_RAW,
 		.colorspace_default = V4L2_COLORSPACE_RAW,
 	},
 	{
@@ -420,7 +427,7 @@ static const struct pisp_be_format supported_formats[] = {
 		.align		    = 32,
 		.plane_factor	    = { P3(1.0) },
 		.num_planes	    = 1,
-		.colorspace_mask    = COLORSPACE_MASK_RAW,
+		.colorspace_mask    = V4L2_COLORSPACE_MASK_RAW,
 		.colorspace_default = V4L2_COLORSPACE_RAW,
 	},
 	{
@@ -430,7 +437,7 @@ static const struct pisp_be_format supported_formats[] = {
 		.align		    = 32,
 		.plane_factor	    = { P3(1.0) },
 		.num_planes	    = 1,
-		.colorspace_mask    = COLORSPACE_MASK_RAW,
+		.colorspace_mask    = V4L2_COLORSPACE_MASK_RAW,
 		.colorspace_default = V4L2_COLORSPACE_RAW,
 	},
 	{
@@ -439,7 +446,7 @@ static const struct pisp_be_format supported_formats[] = {
 		.align		    = 32,
 		.plane_factor	    = { P3(1.0) },
 		.num_planes	    = 1,
-		.colorspace_mask    = COLORSPACE_MASK_RAW,
+		.colorspace_mask    = V4L2_COLORSPACE_MASK_RAW,
 		.colorspace_default = V4L2_COLORSPACE_RAW,
 	},
 	{
@@ -448,7 +455,7 @@ static const struct pisp_be_format supported_formats[] = {
 		.align		    = 32,
 		.plane_factor	    = { P3(1.0) },
 		.num_planes	    = 1,
-		.colorspace_mask    = COLORSPACE_MASK_RAW,
+		.colorspace_mask    = V4L2_COLORSPACE_MASK_RAW,
 		.colorspace_default = V4L2_COLORSPACE_RAW,
 	},
 	{
@@ -457,7 +464,7 @@ static const struct pisp_be_format supported_formats[] = {
 		.align		    = 32,
 		.plane_factor	    = { P3(1.0) },
 		.num_planes	    = 1,
-		.colorspace_mask    = COLORSPACE_MASK_RAW,
+		.colorspace_mask    = V4L2_COLORSPACE_MASK_RAW,
 		.colorspace_default = V4L2_COLORSPACE_RAW,
 	},
 	/* Bayer formats - 16-bit PiSP Compressed */
@@ -467,7 +474,7 @@ static const struct pisp_be_format supported_formats[] = {
 		.align		    = 32,
 		.plane_factor	    = { P3(1.0) },
 		.num_planes	    = 1,
-		.colorspace_mask    = COLORSPACE_MASK_RAW,
+		.colorspace_mask    = V4L2_COLORSPACE_MASK_RAW,
 		.colorspace_default = V4L2_COLORSPACE_RAW,
 	},
 	{
@@ -476,7 +483,7 @@ static const struct pisp_be_format supported_formats[] = {
 		.align		    = 32,
 		.plane_factor	    = { P3(1.0) },
 		.num_planes	    = 1,
-		.colorspace_mask    = COLORSPACE_MASK_RAW,
+		.colorspace_mask    = V4L2_COLORSPACE_MASK_RAW,
 		.colorspace_default = V4L2_COLORSPACE_RAW,
 	},
 	{
@@ -485,7 +492,7 @@ static const struct pisp_be_format supported_formats[] = {
 		.align		    = 32,
 		.plane_factor	    = { P3(1.0) },
 		.num_planes	    = 1,
-		.colorspace_mask    = COLORSPACE_MASK_RAW,
+		.colorspace_mask    = V4L2_COLORSPACE_MASK_RAW,
 		.colorspace_default = V4L2_COLORSPACE_RAW,
 	},
 	{
@@ -494,7 +501,7 @@ static const struct pisp_be_format supported_formats[] = {
 		.align		    = 32,
 		.plane_factor	    = { P3(1.0) },
 		.num_planes	    = 1,
-		.colorspace_mask    = COLORSPACE_MASK_RAW,
+		.colorspace_mask    = V4L2_COLORSPACE_MASK_RAW,
 		.colorspace_default = V4L2_COLORSPACE_RAW,
 	},
 	/* Special opaque format for userland verification suite. */
@@ -512,7 +519,7 @@ static const struct pisp_be_format supported_formats[] = {
 		.bit_depth	    = 32,
 		.plane_factor	    = { P3(1.0) },
 		.num_planes	    = 1,
-		.colorspace_mask    = COLORSPACE_MASK_SRGB,
+		.colorspace_mask    = V4L2_COLORSPACE_MASK_ALL_SRGB,
 		.colorspace_default = V4L2_COLORSPACE_SRGB,
 	},
 	{
@@ -521,7 +528,7 @@ static const struct pisp_be_format supported_formats[] = {
 		.bit_depth	    = 32,
 		.plane_factor	    = { P3(1.0) },
 		.num_planes	    = 1,
-		.colorspace_mask    = COLORSPACE_MASK_SRGB,
+		.colorspace_mask    = V4L2_COLORSPACE_MASK_ALL_SRGB,
 		.colorspace_default = V4L2_COLORSPACE_SRGB,
 	},
 };

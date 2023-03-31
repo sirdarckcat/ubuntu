@@ -1179,7 +1179,7 @@ static int try_format(struct v4l2_format *f, struct pispbe_node *node)
 	 * not supported. This also catches the case when the "default"
 	 * colour space was requested (as that's never in the mask).
 	 */
-	if (!(COLORSPACE_MASK(f->fmt.pix_mp.colorspace) & fmt->colorspace_mask))
+	if (!(V4L2_COLORSPACE_MASK(f->fmt.pix_mp.colorspace) & fmt->colorspace_mask))
 		f->fmt.pix_mp.colorspace = fmt->colorspace_default;
 
 	/* In all cases, we only support the defaults for these: */
