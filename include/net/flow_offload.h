@@ -166,6 +166,7 @@ typedef void (*action_destr)(void *priv);
 
 struct flow_action_entry {
 	enum flow_action_id		id;
+	void				*act;
 	action_destr			destructor;
 	void				*destructor_priv;
 	union {
