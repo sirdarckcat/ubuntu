@@ -419,14 +419,15 @@ dpi_16bit_gpio2:        &rp1_dpi_16bit_gpio2        { };
 /* uarta communicates with the BT module */
 &uarta {
 	uart-has-rtscts;
+	auto-flow-control;
 	status = "okay";
-	clock-frequency = <405000000>;
+	clock-frequency = <96000000>;
 	pinctrl-0 = <&uarta_24_pins &bt_shutdown_pins>;
 	pinctrl-names = "default";
 
 	bluetooth: bluetooth {
 		compatible = "brcm,bcm43438-bt";
-		max-speed = <921600>;
+		max-speed = <3000000>;
 		shutdown-gpios = <&gio 29 GPIO_ACTIVE_HIGH>;
 	};
 };
