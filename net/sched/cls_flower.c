@@ -1737,8 +1737,9 @@ static int fl_change(struct net *net, struct sk_buff *in_skb,
 		fnew->flags = nla_get_u32(tb[TCA_FLOWER_FLAGS]);
 
 		if (!tc_flags_valid(fnew->flags)) {
+			kfree(fnew);
 			err = -EINVAL;
-			goto errout;
+			goto errout_tb;
 		}
 	}
 
@@ -1763,8 +1764,10 @@ static int fl_change(struct net *net, struct sk_buff *in_skb,
 		}
 		spin_unlock(&tp->lock);
 
-		if (err)
-			goto errout;
+		if (err) {
+			kfree(fnew);
+			goto errout_tb;
+		}
 	}
 	fnew->handle = handle;
 
@@ -1873,7 +1876,6 @@ errout_mask:
 	fl_mask_put(head, fnew->mask);
 errout_idr:
 	idr_remove(&head->handle_idr, fnew->handle);
-errout:
 	__fl_put(fnew);
 errout_tb:
 	kfree(tb);
