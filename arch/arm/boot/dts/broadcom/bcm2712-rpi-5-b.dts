@@ -7,6 +7,12 @@
 #include <dt-bindings/mfd/rp1.h>
 #include <dt-bindings/pinctrl/rp1.h>
 #include <dt-bindings/reset/raspberrypi,firmware-reset.h>
+#include <dt-bindings/gpio/gpio-fsm.h>
+
+#define PWR   GF_SW(0)
+#define ACT   GF_SW(1)
+#define RED   GF_OP(0)
+#define GREEN GF_OP(1)
 
 #define i2c0 _i2c0
 #define i2c3 _i2c3
@@ -60,28 +66,68 @@
 		reg = <0 0 0x28000000>;
 	};
 
+	fsm_leds: fsm_leds {
+		compatible = "rpi,gpio-fsm";
+
+		debug = <0>;
+		gpio-controller;
+		#gpio-cells = <2>;
+		num-swgpios = <2>;
+		gpio-line-names = "pwr", "act";
+		output-gpios = <&rp1_gpio 44 GPIO_ACTIVE_LOW>,  // RED
+			       <&gio_aon   9 GPIO_ACTIVE_HIGH>; // GREEN
+		shutdown-timeout-ms = <200>;
+
+		p1a0 {
+			start_state;
+			shutdown_state;
+			set = <RED 1>, <GREEN 0>;
+			p1a1 = <ACT 1>;
+			p0a0 = <PWR 0>;
+		};
+
+		p1a1 {
+			set = <RED 0>, <GREEN 1>;
+			p1a1_dally = <ACT 0>;
+			p1a0 = <GF_SHUTDOWN 0>;
+			p0a1 = <PWR 0>;
+		};
+
+		p1a1_dally {
+			set = <GREEN 1>;
+			p1a0 = <GF_DELAY 50>, <GF_SHUTDOWN 0>;
+			p1a1 = <ACT 1>;
+			p0a0 = <PWR 0>;
+		};
+
+		p0a0 {
+			shutdown_state;
+			set = <RED 0>, <GREEN 0>;
+			p0a1 = <ACT 1>;
+			p1a0 = <PWR 1>;
+		};
+
+		p0a1 {
+			set = <RED 0>, <GREEN 1>;
+			p0a0 = <ACT 0>, <GF_SHUTDOWN 0>;
+			p1a1 = <PWR 1>;
+		};
+	};
+
 	leds: leds {
 		compatible = "gpio-leds";
 
-		// The PWR LED is driven by RP1, so no control (yet?)
-		#if 0
-		pwr_led: ledpwr {
+		pwr_led: led-pwr {
 			label = "PWR";
-			gpios = <&gio 8 GPIO_ACTIVE_LOW>;
-			default-state = "keep";
+			gpios = <&fsm_leds 0 GPIO_ACTIVE_HIGH>;
+			default-state = "off";
 			linux,default-trigger = "default-on";
 		};
-		#endif
-	};
-
-	leds-pwm {
-		compatible = "pwm-leds";
 
 		act_led: led-act {
 			label = "ACT";
-			pwms = <&pwm_aon 1 150000>; // aon_gpio 9
-			max-brightness = <255>;
-			default-state = "keep";
+			gpios = <&fsm_leds 1 GPIO_ACTIVE_HIGH>;
+			default-state = "off";
 			linux,default-trigger = "mmc0";
 		};
 	};
@@ -408,12 +454,6 @@ dpi_16bit_gpio2:        &rp1_dpi_16bit_gpio2        { };
 		brcm,pins = <51 52 53 54>;
 		brcm,pull = <2 2 2 2>;
 	};
-};
-
-&pwm_aon {
-	status = "okay";
-	pinctrl-0 = <&aon_pwm_1pin>;
-	pinctrl-names = "default";
 };
 
 /* uarta communicates with the BT module */
