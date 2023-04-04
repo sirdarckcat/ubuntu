@@ -472,7 +472,7 @@
 						 BCM2712_FSEL_ALT4
 						 BCM2712_FSEL_ALT4>;
 				brcm,pins = <24 25 26 27>;
-				brcm,pull = <2 0 0 2>;
+				brcm,pull = <0 2 0 2>;
 			};
 
 			sdio2_30_pins: sdio2_30_pins {
@@ -550,8 +550,9 @@
 		};
 
 		uarta: serial@7d50c000 {
-			compatible = "ns16550a";
+			compatible = "brcm,bcm7271-uart";
 			reg = <0x7d50c000 0x20>;
+			reg-names = "uart";
 			reg-shift = <2>;
 			reg-io-width = <4>;
 			interrupts = <GIC_SPI 276 IRQ_TYPE_LEVEL_HIGH>;
@@ -560,8 +561,9 @@
 		};
 
 		uartb: serial@7d50d000 {
-			compatible = "ns16550a";
+			compatible = "brcm,bcm7271-uart";
 			reg = <0x7d50d000 0x20>;
+			reg-names = "uart";
 			reg-shift = <2>;
 			reg-io-width = <4>;
 			interrupts = <GIC_SPI 277 IRQ_TYPE_LEVEL_HIGH>;
@@ -570,8 +572,9 @@
 		};
 
 		uartc: serial@7d50e000 {
-			compatible = "ns16550a";
+			compatible = "brcm,bcm7271-uart";
 			reg = <0x7d50e000 0x20>;
+			reg-names = "uart";
 			reg-shift = <2>;
 			reg-io-width = <4>;
 			interrupts = <GIC_SPI 278 IRQ_TYPE_LEVEL_HIGH>;
