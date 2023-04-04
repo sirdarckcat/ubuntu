@@ -199,6 +199,12 @@ int axienet_tsn_probe(struct platform_device *pdev,
 	if (ep_node)
 		lp->master = of_find_net_device_by_node(ep_node);
 
+	if (!lp->master) {
+		netdev_info(ndev, "Defer probe as ep is not probed\n");
+		ret = -EPROBE_DEFER;
+		goto err;
+	}
+
 	lp->abl_reg = axienet_ior(lp, XAE_TSN_ABL_OFFSET);
 
 	/* in ep only case tie the data path to eth1 */
@@ -252,6 +258,10 @@ int axienet_tsn_probe(struct platform_device *pdev,
 	return 0;
 err_1:
 	return -EINVAL;
+err:
+	if (lp->timer_priv)
+		axienet_ptp_timer_remove(lp->timer_priv);
+	return ret;
 }
 
 /**
