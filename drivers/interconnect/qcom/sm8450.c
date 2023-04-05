@@ -1876,9 +1876,8 @@ static int qnoc_probe(struct platform_device *pdev)
 	provider->pre_aggregate = qcom_icc_pre_aggregate;
 	provider->aggregate = qcom_icc_aggregate;
 	provider->xlate_extended = qcom_icc_xlate_extended;
+	INIT_LIST_HEAD(&provider->nodes);
 	provider->data = data;
-
-	icc_provider_init(provider);
 
 	qp->dev = &pdev->dev;
 	qp->bcms = desc->bcms;
@@ -1887,6 +1886,12 @@ static int qnoc_probe(struct platform_device *pdev)
 	qp->voter = of_bcm_voter_get(qp->dev, NULL);
 	if (IS_ERR(qp->voter))
 		return PTR_ERR(qp->voter);
+
+	ret = icc_provider_add(provider);
+	if (ret) {
+		dev_err(&pdev->dev, "error adding interconnect provider\n");
+		return ret;
+	}
 
 	for (i = 0; i < qp->num_bcms; i++)
 		qcom_icc_bcm_init(qp->bcms[i], &pdev->dev);
@@ -1900,7 +1905,7 @@ static int qnoc_probe(struct platform_device *pdev)
 		node = icc_node_create(qnodes[i]->id);
 		if (IS_ERR(node)) {
 			ret = PTR_ERR(node);
-			goto err_remove_nodes;
+			goto err;
 		}
 
 		node->name = qnodes[i]->name;
@@ -1914,17 +1919,12 @@ static int qnoc_probe(struct platform_device *pdev)
 	}
 	data->num_nodes = num_nodes;
 
-	ret = icc_provider_register(provider);
-	if (ret)
-		goto err_remove_nodes;
-
 	platform_set_drvdata(pdev, qp);
 
 	return 0;
-
-err_remove_nodes:
+err:
 	icc_nodes_remove(provider);
-
+	icc_provider_del(provider);
 	return ret;
 }
 
@@ -1932,8 +1932,8 @@ static int qnoc_remove(struct platform_device *pdev)
 {
 	struct qcom_icc_provider *qp = platform_get_drvdata(pdev);
 
-	icc_provider_deregister(&qp->provider);
 	icc_nodes_remove(&qp->provider);
+	icc_provider_del(&qp->provider);
 
 	return 0;
 }
