@@ -34,6 +34,9 @@
 #define PKA_DEVICE_ACPIHID_BF2      "MLNXBF20"
 #define PKA_RING_DEVICE_ACPIHID_BF2 "MLNXBF21"
 
+#define PKA_DEVICE_ACPIHID_BF3      "MLNXBF51"
+#define PKA_RING_DEVICE_ACPIHID_BF3 "MLNXBF52"
+
 #define PKA_DEVICE_ACCESS_MODE  0666
 
 #define PKA_DEVICE_RES_CNT      7
@@ -49,7 +52,8 @@ enum pka_mem_res_idx {
 
 enum pka_plat_type {
 	PKA_PLAT_TYPE_BF1 = 0, /* Platform type Bluefield-1 */
-	PKA_PLAT_TYPE_BF2      /* Platform type Bluefield-2 */
+	PKA_PLAT_TYPE_BF2,     /* Platform type Bluefield-2 */
+	PKA_PLAT_TYPE_BF3      /* Platform type Bluefield-3 */
 };
 
 static DEFINE_MUTEX(pka_drv_lock);
@@ -66,6 +70,9 @@ const char pka_ring_acpihid_bf1[] = PKA_RING_DEVICE_ACPIHID_BF1;
 const char pka_acpihid_bf2[]      = PKA_DEVICE_ACPIHID_BF2;
 const char pka_ring_acpihid_bf2[] = PKA_RING_DEVICE_ACPIHID_BF2;
 
+const char pka_acpihid_bf3[]      = PKA_DEVICE_ACPIHID_BF3;
+const char pka_ring_acpihid_bf3[] = PKA_RING_DEVICE_ACPIHID_BF3;
+
 struct pka_drv_plat_info {
 	enum pka_plat_type type;
 	uint8_t fw_id;
@@ -79,6 +86,10 @@ static struct pka_drv_plat_info pka_drv_plat[] = {
 	[PKA_PLAT_TYPE_BF2] = {
 		.type = PKA_PLAT_TYPE_BF2,
 		.fw_id = PKA_FIRMWARE_IMAGE_2_ID
+	},
+	[PKA_PLAT_TYPE_BF3] = {
+		.type = PKA_PLAT_TYPE_BF3,
+		.fw_id = PKA_FIRMWARE_IMAGE_2_ID
 	}
 };
 
@@ -87,6 +98,8 @@ static const struct acpi_device_id pka_drv_acpi_ids[] = {
 	{ PKA_RING_DEVICE_ACPIHID_BF1, 0 },
 	{ PKA_DEVICE_ACPIHID_BF2, (kernel_ulong_t)&pka_drv_plat[PKA_PLAT_TYPE_BF2] },
 	{ PKA_RING_DEVICE_ACPIHID_BF2, 0 },
+	{ PKA_DEVICE_ACPIHID_BF3, (kernel_ulong_t)&pka_drv_plat[PKA_PLAT_TYPE_BF3] },
+	{ PKA_RING_DEVICE_ACPIHID_BF3, 0 },
 	{},
 };
 
@@ -967,6 +980,8 @@ static int pka_drv_probe_device(struct pka_info *info)
 	plat_info = (struct pka_drv_plat_info *)aid->driver_data;
 	if (plat_info->type <= PKA_PLAT_TYPE_BF2) {
 		wndw_ram_off_mask = PKA_WINDOW_RAM_OFFSET_MASK1;
+	} else if (plat_info->type <= PKA_PLAT_TYPE_BF3) {
+		wndw_ram_off_mask = PKA_WINDOW_RAM_OFFSET_MASK2;
 	} else {
 		PKA_ERROR(PKA_DRIVER, "Invalid platform type: %d\n",
 				(int)plat_info->type);
@@ -1210,7 +1225,8 @@ static int pka_drv_acpi_probe(struct platform_device *pdev,
 		return -EINVAL;
 
 	if (!strcmp(info->acpihid, pka_ring_acpihid_bf1)
-	|| !strcmp(info->acpihid, pka_ring_acpihid_bf2)) {
+	|| !strcmp(info->acpihid, pka_ring_acpihid_bf2)
+	|| !strcmp(info->acpihid, pka_ring_acpihid_bf3)) {
 		error = pka_drv_probe_ring_device(info);
 		if (error) {
 			PKA_DEBUG(PKA_DRIVER,
@@ -1222,7 +1238,8 @@ static int pka_drv_acpi_probe(struct platform_device *pdev,
 			  pdev->name);
 
 	} else if (!strcmp(info->acpihid, pka_acpihid_bf1)
-		|| !strcmp(info->acpihid, pka_acpihid_bf2)) {
+		|| !strcmp(info->acpihid, pka_acpihid_bf2)
+		|| !strcmp(info->acpihid, pka_acpihid_bf3)) {
 		error = pka_drv_probe_device(info);
 		if (error) {
 			PKA_DEBUG(PKA_DRIVER,
