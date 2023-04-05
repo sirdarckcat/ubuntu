@@ -1,9 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-only
-/*
- * pm8xxx RTC driver
- *
- * Copyright (c) 2010-2011, Code Aurora Forum. All rights reserved.
- * Copyright (c) 2023, Linaro Limited
+/* Copyright (c) 2010-2011, Code Aurora Forum. All rights reserved.
  */
 #include <linux/of.h>
 #include <linux/module.h>
@@ -551,4 +547,3 @@ MODULE_ALIAS("platform:rtc-pm8xxx");
 MODULE_DESCRIPTION("PMIC8xxx RTC driver");
 MODULE_LICENSE("GPL v2");
 MODULE_AUTHOR("Anirudh Ghayal <aghayal@codeaurora.org>");
-MODULE_AUTHOR("Johan Hovold <johan@kernel.org>");
