@@ -65,13 +65,13 @@ static void mlxbf3_gpio_irq_enable(struct irq_data *irqd)
 
 	gpiochip_enable_irq(gc, offset);
 
-	spin_lock_irqsave(&gs->gc.bgpio_lock, flags);
+	raw_spin_lock_irqsave(&gs->gc.bgpio_lock, flags);
 	writel(BIT(offset), gs->gpio_cause_io + MLXBF_GPIO_CAUSE_OR_CLRCAUSE);
 
 	val = readl(gs->gpio_cause_io + MLXBF_GPIO_CAUSE_OR_EVTEN0);
 	val |= BIT(offset);
 	writel(val, gs->gpio_cause_io + MLXBF_GPIO_CAUSE_OR_EVTEN0);
-	spin_unlock_irqrestore(&gs->gc.bgpio_lock, flags);
+	raw_spin_unlock_irqrestore(&gs->gc.bgpio_lock, flags);
 }
 
 static void mlxbf3_gpio_irq_disable(struct irq_data *irqd)
@@ -82,11 +82,11 @@ static void mlxbf3_gpio_irq_disable(struct irq_data *irqd)
 	unsigned long flags;
 	u32 val;
 
-	spin_lock_irqsave(&gs->gc.bgpio_lock, flags);
+	raw_spin_lock_irqsave(&gs->gc.bgpio_lock, flags);
 	val = readl(gs->gpio_cause_io + MLXBF_GPIO_CAUSE_OR_EVTEN0);
 	val &= ~BIT(offset);
 	writel(val, gs->gpio_cause_io + MLXBF_GPIO_CAUSE_OR_EVTEN0);
-	spin_unlock_irqrestore(&gs->gc.bgpio_lock, flags);
+	raw_spin_unlock_irqrestore(&gs->gc.bgpio_lock, flags);
 
 	gpiochip_disable_irq(gc, offset);
 }
@@ -116,7 +116,7 @@ mlxbf3_gpio_irq_set_type(struct irq_data *irqd, unsigned int type)
 	unsigned long flags;
 	u32 val;
 
-	spin_lock_irqsave(&gs->gc.bgpio_lock, flags);
+	raw_spin_lock_irqsave(&gs->gc.bgpio_lock, flags);
 
 	switch (type & IRQ_TYPE_SENSE_MASK) {
 	case IRQ_TYPE_EDGE_BOTH:
@@ -138,11 +138,11 @@ mlxbf3_gpio_irq_set_type(struct irq_data *irqd, unsigned int type)
 		writel(val, gs->gpio_io + MLXBF_GPIO_CAUSE_FALL_EN);
 		break;
 	default:
-		spin_unlock_irqrestore(&gs->gc.bgpio_lock, flags);
+		raw_spin_unlock_irqrestore(&gs->gc.bgpio_lock, flags);
 		return -EINVAL;
 	}
 
-	spin_unlock_irqrestore(&gs->gc.bgpio_lock, flags);
+	raw_spin_unlock_irqrestore(&gs->gc.bgpio_lock, flags);
 
 	irq_set_handler_locked(irqd, handle_edge_irq);
 
