@@ -469,6 +469,7 @@ dpi_16bit_gpio2:        &rp1_dpi_16bit_gpio2        { };
 		compatible = "brcm,bcm43438-bt";
 		max-speed = <3000000>;
 		shutdown-gpios = <&gio 29 GPIO_ACTIVE_HIGH>;
+		local-bd-address = [ 00 00 00 00 00 00 ];
 	};
 };
 
@@ -715,6 +716,7 @@ spi0_cs_pins: &rp1_spi0_cs_gpio7 {};
 / {
 	aliases {
 		blconfig = &blconfig;
+		bluetooth = &bluetooth;
 		ethernet0 = &rp1_eth;
 		fb = &fb;
 		mailbox = &mailbox;
@@ -747,6 +749,7 @@ spi0_cs_pins: &rp1_spi0_cs_gpio7 {};
 	};
 
 	__overrides__ {
+		bdaddr = <&bluetooth>, "local-bd-address[";
 		bluetooth = <&bluetooth>, "status";
 		eth = <&rp1_eth>, "status";
 		i2c_rp1boot = <&i2c_rp1boot>, "status";
