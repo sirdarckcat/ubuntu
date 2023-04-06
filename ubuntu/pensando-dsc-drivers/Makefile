@@ -1,4 +1,4 @@
-subdir-ccflags-y					:= -I$(PWD)/ubuntu/pensando-dsc-drivers/drivers/common -Ddrv_ver=\"1.15.9.65\"
+subdir-ccflags-y					:= -I$(PWD)/ubuntu/pensando-dsc-drivers/drivers/common -Ddrv_ver=\"22.11.1-001\"
 obj-$(CONFIG_IONIC)			+= drivers/linux/eth/ionic/
 obj-$(CONFIG_IONIC_MNIC)		+= drivers/linux/eth/ionic/
 obj-$(CONFIG_MDEV)			+= drivers/linux/mdev/
