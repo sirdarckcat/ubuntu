@@ -332,7 +332,14 @@ int axienet_tsn_open(struct net_device *ndev)
 {
 	int ret;
 	struct axienet_local *lp = netdev_priv(ndev);
+	struct net_device *emac0_ndev = NULL;
+	struct net_device *emac1_ndev = NULL;
+	struct axienet_local *ep_node = NULL;
 	struct phy_device *phydev = NULL;
+	u8 emac0_addr[ETH_ALEN];
+	u8 emac1_addr[ETH_ALEN];
+	u8 ep_addr[ETH_ALEN];
+	int i;
 
 	axienet_device_reset(ndev);
 
@@ -367,6 +374,41 @@ int axienet_tsn_open(struct net_device *ndev)
 
 	if (lp->abl_reg & TSN_BRIDGEEP_EPONLY)
 		tsn_data_path_open(ndev);
+
+	if (lp->master) {
+		ep_node = netdev_priv(lp->master);
+		emac0_ndev = ep_node->slaves[0];
+		emac1_ndev = ep_node->slaves[1];
+
+		if(ep_node && emac0_ndev && emac1_ndev) {
+			/* copy mac address of all ports */
+			memcpy(emac0_addr, emac0_ndev->dev_addr, ETH_ALEN);
+			memcpy(emac1_addr, emac1_ndev->dev_addr, ETH_ALEN);
+			memcpy(ep_addr, ndev->dev_addr, ETH_ALEN);
+
+			emac0_addr[5] = emac0_addr[5] | 0xF; /* ignore last 4 bits for comparision */
+			emac1_addr[5] = emac1_addr[5] | 0xF;
+			ep_addr[5] = ep_addr[5] | 0xF;
+
+			for (i = 0; i < ETH_ALEN; i++) {
+				if (emac0_addr[i] != emac1_addr[i]) {
+					netdev_warn(ndev, "MSB 44 bits of tsn_emac_0 and "
+						    "tsn_emac_1 are different");
+					break;
+				}
+				if (emac0_addr[i] != ep_addr[i]) {
+					netdev_warn(ndev, "MSB 44 bits of tsn_emac_0 and "
+						    "tsn_ep are different");
+					break;
+				}
+				if (emac1_addr[i] != ep_addr[i]) {
+					netdev_warn(ndev, "MSB 44 bits of tsn_emac_1 and "
+						    "tsn ep are different");
+				break;
+				}
+			}
+		}
+	}
 
 	netif_tx_start_all_queues(ndev);
 
