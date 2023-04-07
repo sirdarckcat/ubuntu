@@ -95,3 +95,9 @@ Close/stop guidelines:
 
 2) The ndo_stop routine will be called by unregister_netdevice
    if device is still UP.
+
+Lockless queue stop / wake helper macros
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. kernel-doc:: include/net/netdev_queues.h
+   :doc: Lockless queue stopping / waking helpers.
