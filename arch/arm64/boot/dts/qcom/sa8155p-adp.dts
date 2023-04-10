@@ -587,6 +587,14 @@
 		ssVboot-gpio = <&tlmm 40 1>;
 	};
 
+	pps {
+		compatible = "pps-gpio";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_pps>;
+		gpios = <&tlmm 77 0>;
+		status = "okay";
+	};
+
 	qcom_dcvs: qcom,dcvs {
 		compatible = "qcom,dcvs";
 		#address-cells = <1>;
