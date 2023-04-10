@@ -2340,6 +2340,18 @@
 				};
 			};
 
+			pinctrl_pps: ppsgrp {
+				mux {
+					pins = "gpio77";
+					function = "gpio";
+				};
+
+				config {
+					pins = "gpio77";
+					bias-pull-down;
+				};
+			};
+
 			qup_spi0_default: qup-spi0-default {
 				pins = "gpio0", "gpio1", "gpio2", "gpio3";
 				function = "qup0";
