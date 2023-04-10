@@ -2310,6 +2310,36 @@
 				};
 			};
 
+			ss5_pwr_ctrl_pins: ss5_pwr_ctrl_pins {
+				ss5_pwr_ctrl_rst_on: ss5_pwr_ctrl_rst_on {
+					mux {
+						pins = "gpio11", "gpio39", "gpio40";
+						function = "gpio";
+					};
+
+					config {
+						pins = "gpio11", "gpio39", "gpio40";
+						drive-strength = <2>; /* 2 mA */
+						bias-pull-up;
+						output-high;
+					};
+				};
+
+				ss5_pwr_ctrl_rst_off: ss5_pwr_ctrl_off {
+					mux {
+						pins = "gpio11", "gpio39", "gpio40";
+						function = "gpio";
+					};
+
+					config {
+						pins = "gpio11", "gpio39", "gpio40";
+						drive-strength = <2>; /* 2 mA */
+						bias-pull-down;
+						output-low;
+					};
+				};
+			};
+
 			qup_spi0_default: qup-spi0-default {
 				pins = "gpio0", "gpio1", "gpio2", "gpio3";
 				function = "qup0";
