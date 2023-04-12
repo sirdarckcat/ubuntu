@@ -3517,7 +3517,7 @@ static int arm_smmu_device_probe(struct platform_device *pdev)
 	 * QCOM's nonupstream gdsc driver doesn't support pm_domains.
 	 * So check for presence of gdsc instead.
 	 */
-	if (smmu->pwr->num_gdscs) {
+	if (dev->pm_domain) {
 		pm_runtime_set_active(dev);
 		pm_runtime_enable(dev);
 	}
