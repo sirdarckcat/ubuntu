@@ -8,7 +8,6 @@
 
 #include "igc.h"
 #include "igc_diag.h"
-#include "igc_tsn.h"
 
 /* forward declaration */
 struct igc_stats {
@@ -1680,45 +1679,6 @@ static int igc_ethtool_set_eee(struct net_device *netdev,
 	return 0;
 }
 
-static int igc_ethtool_get_preempt(struct net_device *netdev,
-				   struct ethtool_fp *fpcmd)
-{
-	struct igc_adapter *adapter = netdev_priv(netdev);
-
-	fpcmd->enabled = adapter->frame_preemption_active;
-	fpcmd->add_frag_size = adapter->add_frag_size;
-	fpcmd->verified = adapter->fp_tx_state == FRAME_PREEMPTION_STATE_DONE;
-	fpcmd->disable_verify = adapter->fp_disable_verify;
- 
-	return 0;
-}
-
-static int igc_ethtool_set_preempt(struct net_device *netdev,
-				   struct ethtool_fp *fpcmd)
-{
-	struct igc_adapter *adapter = netdev_priv(netdev);
-
-	if (fpcmd->add_frag_size < 68 || fpcmd->add_frag_size > 260)
-		return -EINVAL;
-
-	if (!fpcmd->disable_verify && adapter->fp_disable_verify) {
-		adapter->fp_tx_state = FRAME_PREEMPTION_STATE_START;
-		schedule_delayed_work(&adapter->fp_verification_work, msecs_to_jiffies(10));
-	}
-
-	adapter->fp_disable_verify = fpcmd->disable_verify;
-
-	if (adapter->frame_preemption_active != fpcmd->enabled ||
-	    adapter->add_frag_size != fpcmd->add_frag_size) {
-		adapter->frame_preemption_active = fpcmd->enabled;
-		adapter->add_frag_size = fpcmd->add_frag_size;
- 
-		return igc_tsn_offload_apply(adapter);
-	}
-
-	return 0;
-}
-
 static int igc_ethtool_begin(struct net_device *netdev)
 {
 	struct igc_adapter *adapter = netdev_priv(netdev);
@@ -2014,8 +1974,6 @@ static const struct ethtool_ops igc_ethtool_ops = {
 	.get_ts_info		= igc_ethtool_get_ts_info,
 	.get_channels		= igc_ethtool_get_channels,
 	.set_channels		= igc_ethtool_set_channels,
-	.get_preempt		= igc_ethtool_get_preempt,
-	.set_preempt		= igc_ethtool_set_preempt,
 	.get_priv_flags		= igc_ethtool_get_priv_flags,
 	.set_priv_flags		= igc_ethtool_set_priv_flags,
 	.get_eee		= igc_ethtool_get_eee,
