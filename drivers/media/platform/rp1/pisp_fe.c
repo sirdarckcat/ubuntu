@@ -231,7 +231,7 @@ void pisp_fe_submit_job(struct pisp_fe_device *fe, struct vb2_buffer **vb2_bufs,
 {
 	struct pisp_fe_config *cfg = &fe->cfg_tmp;
 	unsigned int i;
-	dma_addr_t addr;
+	u64 addr;
 	u32 status;
 
 	/*

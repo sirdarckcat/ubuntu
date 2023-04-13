@@ -316,15 +316,16 @@ inline void csi2_isr(struct csi2_device *csi2, bool *sof, bool *eof, bool *lci)
 void csi2_set_buffer(struct csi2_device *csi2, unsigned int channel,
 		     dma_addr_t dmaaddr, unsigned int stride, unsigned int size)
 {
+	u64 addr = dmaaddr;
 	/*
 	 * ADDRESS0 must be written last as it triggers the double buffering
 	 * mechanism for all buffer registers within the hardware.
 	 */
-	dmaaddr >>= 4;
+	addr >>= 4;
 	csi2_reg_write(csi2, CSI2_CH_LENGTH(channel), size >> 4);
 	csi2_reg_write(csi2, CSI2_CH_STRIDE(channel), stride >> 4);
-	csi2_reg_write(csi2, CSI2_CH_ADDR1(channel), dmaaddr >> 32);
-	csi2_reg_write(csi2, CSI2_CH_ADDR0(channel), dmaaddr & 0xffffffff);
+	csi2_reg_write(csi2, CSI2_CH_ADDR1(channel), addr >> 32);
+	csi2_reg_write(csi2, CSI2_CH_ADDR0(channel), addr & 0xffffffff);
 }
 
 void csi2_set_compression(struct csi2_device *csi2, unsigned int channel,
