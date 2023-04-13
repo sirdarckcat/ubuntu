@@ -439,8 +439,7 @@ static const struct v4l2_subdev_ops pisp_fe_subdev_ops = {
 	.pad = &pisp_fe_subdev_pad_ops,
 };
 
-int pisp_fe_init(struct pisp_fe_device *fe, struct media_device *mdev,
-		 struct dentry *debugfs)
+int pisp_fe_init(struct pisp_fe_device *fe, struct dentry *debugfs)
 {
 	int ret;
 	u32 ver;
@@ -463,7 +462,7 @@ int pisp_fe_init(struct pisp_fe_device *fe, struct media_device *mdev,
 	if (ret)
 		return ret;
 
-	/* Initialize subdev, but register in the caller. */
+	/* Initialize subdev */
 	v4l2_subdev_init(&fe->sd, &pisp_fe_subdev_ops);
 	fe->sd.entity.function = MEDIA_ENT_F_PROC_VIDEO_SCALER;
 	fe->sd.entity.ops = &pisp_fe_entity_ops;
@@ -472,10 +471,27 @@ int pisp_fe_init(struct pisp_fe_device *fe, struct media_device *mdev,
 	fe->sd.owner = THIS_MODULE;
 	snprintf(fe->sd.name, sizeof(fe->sd.name), "pisp-fe");
 
+	ret = v4l2_device_register_subdev(fe->v4l2_dev, &fe->sd);
+	if (ret) {
+		pisp_fe_err("Failed register pisp fe subdev (%d)\n", ret);
+		goto err_entity_cleanup;
+	}
+
 	pisp_fe_stop(fe);
 
 	/* Must be in IDLE state (STATUS == 0) here. */
 	WARN_ON(pisp_fe_reg_read(fe, STATUS));
 
 	return 0;
+
+err_entity_cleanup:
+	media_entity_cleanup(&fe->sd.entity);
+
+	return ret;
+}
+
+void pisp_fe_uninit(struct pisp_fe_device *fe)
+{
+	v4l2_device_unregister_subdev(&fe->sd);
+	media_entity_cleanup(&fe->sd.entity);
 }

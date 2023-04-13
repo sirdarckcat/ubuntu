@@ -504,8 +504,7 @@ static const struct v4l2_subdev_ops csi2_subdev_ops = {
 	.pad = &csi2_subdev_pad_ops,
 };
 
-int csi2_init(struct csi2_device *csi2, struct media_device *mdev,
-	      struct dentry *debugfs)
+int csi2_init(struct csi2_device *csi2, struct dentry *debugfs)
 {
 	unsigned int i, ret;
 	u32 host_ver;
@@ -531,7 +530,7 @@ int csi2_init(struct csi2_device *csi2, struct media_device *mdev,
 	if (ret)
 		return ret;
 
-	/* Initialize subdev, but register in the caller. */
+	/* Initialize subdev */
 	v4l2_subdev_init(&csi2->sd, &csi2_subdev_ops);
 	csi2->sd.entity.function = MEDIA_ENT_F_VID_IF_BRIDGE;
 	csi2->sd.entity.ops = &csi2_entity_ops;
@@ -539,5 +538,22 @@ int csi2_init(struct csi2_device *csi2, struct media_device *mdev,
 	csi2->sd.owner = THIS_MODULE;
 	snprintf(csi2->sd.name, sizeof(csi2->sd.name), "csi2");
 
+	ret = v4l2_device_register_subdev(csi2->v4l2_dev, &csi2->sd);
+	if (ret) {
+		csi2_err("Failed register csi2 subdev (%d)\n", ret);
+		goto err_entity_cleanup;
+	}
+
 	return 0;
+
+err_entity_cleanup:
+	media_entity_cleanup(&csi2->sd.entity);
+
+	return ret;
+}
+
+void csi2_uninit(struct csi2_device *csi2)
+{
+	v4l2_device_unregister_subdev(&csi2->sd);
+	media_entity_cleanup(&csi2->sd.entity);
 }

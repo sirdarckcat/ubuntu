@@ -2086,36 +2086,23 @@ static int cfe_probe(struct platform_device *pdev)
 			    &mipi_cfg_regs_fops);
 
 	cfe->csi2.v4l2_dev = &cfe->v4l2_dev;
-	ret = csi2_init(&cfe->csi2, &cfe->mdev, cfe->debugfs);
+	ret = csi2_init(&cfe->csi2, cfe->debugfs);
 	if (ret) {
 		cfe_err("Failed to init csi2 (%d)\n", ret);
 		goto err_media_unregister;
 	}
 
-	ret = v4l2_device_register_subdev(&cfe->v4l2_dev, &cfe->csi2.sd);
-	if (ret) {
-		cfe_err("Failed register csi2 subdev (%d)\n", ret);
-		goto err_subdev_unregister;
-	}
-
 	cfe->fe.v4l2_dev = &cfe->v4l2_dev;
-	ret = pisp_fe_init(&cfe->fe, &cfe->mdev, cfe->debugfs);
+	ret = pisp_fe_init(&cfe->fe, cfe->debugfs);
 	if (ret) {
 		cfe_err("Failed to init pisp fe (%d)\n", ret);
-		goto err_subdev_unregister;
-	}
-
-	ret = v4l2_device_register_subdev(&cfe->v4l2_dev, &cfe->fe.sd);
-	if (ret) {
-		cfe_err("Failed register pisp fe subdev (%d)\n", ret);
-		goto err_subdev_unregister;
+		goto err_csi2_uninit;
 	}
 
 	return 0;
 
-err_subdev_unregister:
-	v4l2_device_unregister_subdev(&cfe->fe.sd);
-	v4l2_device_unregister_subdev(&cfe->csi2.sd);
+err_csi2_uninit:
+	csi2_uninit(&cfe->csi2);
 err_media_unregister:
 	media_device_unregister(&cfe->mdev);
 err_v4l2_unregister:
@@ -2132,8 +2119,8 @@ static int cfe_remove(struct platform_device *pdev)
 
 	v4l2_async_nf_unregister(&cfe->notifier);
 	v4l2_device_unregister(&cfe->v4l2_dev);
-	v4l2_device_unregister_subdev(&cfe->fe.sd);
-	v4l2_device_unregister_subdev(&cfe->csi2.sd);
+	pisp_fe_uninit(&cfe->fe);
+	csi2_uninit(&cfe->csi2);
 	media_device_unregister(&cfe->mdev);
 	unregister_nodes(cfe);
 

@@ -44,7 +44,7 @@ void pisp_fe_submit_job(struct pisp_fe_device *fe, struct vb2_buffer **vb2_bufs,
 			struct v4l2_format const *f0, struct v4l2_format const *f1);
 void pisp_fe_start(struct pisp_fe_device *fe);
 void pisp_fe_stop(struct pisp_fe_device *fe);
-int pisp_fe_init(struct pisp_fe_device *fe, struct media_device *mdev,
-		 struct dentry *debugfs);
+int pisp_fe_init(struct pisp_fe_device *fe, struct dentry *debugfs);
+void pisp_fe_uninit(struct pisp_fe_device *fe);
 
 #endif
