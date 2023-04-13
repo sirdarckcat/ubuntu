@@ -425,8 +425,9 @@ static struct csi2_device *to_csi2_device(struct v4l2_subdev *subdev)
 	return container_of(subdev, struct csi2_device, sd);
 }
 
-int csi2_pad_get_fmt(struct v4l2_subdev *sd, struct v4l2_subdev_state *state,
-		     struct v4l2_subdev_format *format)
+static int csi2_pad_get_fmt(struct v4l2_subdev *sd,
+			    struct v4l2_subdev_state *state,
+			    struct v4l2_subdev_format *format)
 {
 	struct csi2_device *csi2 = to_csi2_device(sd);
 
@@ -439,8 +440,9 @@ int csi2_pad_get_fmt(struct v4l2_subdev *sd, struct v4l2_subdev_state *state,
 	return 0;
 }
 
-int csi2_pad_set_fmt(struct v4l2_subdev *sd, struct v4l2_subdev_state *state,
-		     struct v4l2_subdev_format *format)
+static int csi2_pad_set_fmt(struct v4l2_subdev *sd,
+			    struct v4l2_subdev_state *state,
+			    struct v4l2_subdev_format *format)
 {
 	struct csi2_device *csi2 = to_csi2_device(sd);
 
@@ -453,9 +455,9 @@ int csi2_pad_set_fmt(struct v4l2_subdev *sd, struct v4l2_subdev_state *state,
 	return 0;
 }
 
-int csi2_link_validate(struct v4l2_subdev *sd, struct media_link *link,
-		       struct v4l2_subdev_format *source_fmt,
-		       struct v4l2_subdev_format *sink_fmt)
+static int csi2_link_validate(struct v4l2_subdev *sd, struct media_link *link,
+			      struct v4l2_subdev_format *source_fmt,
+			      struct v4l2_subdev_format *sink_fmt)
 {
 	struct csi2_device *csi2 = to_csi2_device(sd);
 

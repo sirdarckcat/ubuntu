@@ -110,7 +110,7 @@ struct node_description {
 };
 
 /* Must match the ordering of enum ids */
-struct node_description node_desc[NUM_NODES] = {
+static const struct node_description node_desc[NUM_NODES] = {
 	/* CSI2_CH0 */
 	{
 		.name = "csi2_ch0",
@@ -1540,8 +1540,8 @@ static int cfe_video_link_validate(struct media_link *link)
 	return 0;
 }
 
-int cfe_video_link_notify(struct media_link *link, u32 flags,
-			  unsigned int notification)
+static int cfe_video_link_notify(struct media_link *link, u32 flags,
+				 unsigned int notification)
 {
 	struct media_device *mdev = link->graph_obj.mdev;
 	struct cfe_device *cfe = container_of(mdev, struct cfe_device, mdev);
