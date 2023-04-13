@@ -50,7 +50,7 @@
 
 #define PISP_FE_ENABLE_OUTPUT_CLUSTER(i)				\
 	((PISP_FE_ENABLE_CROP0     | PISP_FE_ENABLE_DOWNSCALE0 |	\
-	  PISP_FE_ENABLE_COMPRESS0 | PISP_FE_ENABLE_OUTPUT0) << (4 * i))
+	  PISP_FE_ENABLE_COMPRESS0 | PISP_FE_ENABLE_OUTPUT0) << (4 * (i)))
 
 static int pisp_fe_debug;
 module_param(pisp_fe_debug, int, 0644);
