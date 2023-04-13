@@ -1621,11 +1621,15 @@ static int vc6_plane_mode_set(struct drm_plane *plane,
 	struct vc4_plane_state *vc4_state = to_vc4_plane_state(state);
 	struct drm_framebuffer *fb = state->fb;
 	const struct hvs_format *format = vc4_get_hvs_format(fb->format->format);
+	u64 base_format_mod = fourcc_mod_broadcom_mod(fb->modifier);
 	int num_planes = fb->format->num_planes;
+	u32 h_subsample = fb->format->hsub;
+	u32 v_subsample = fb->format->vsub;
 	bool mix_plane_alpha;
 	bool covers_screen;
-	u32 scl0, scl1;
-	u32 tiling;
+	u32 scl0, scl1, pitch0;
+	u32 tiling, src_x, src_y;
+	u32 width, height;
 	u32 hvs_format = format->hvs;
 	unsigned int rotation;
 	int ret, i;
@@ -1636,6 +1640,9 @@ static int vc6_plane_mode_set(struct drm_plane *plane,
 	ret = vc4_plane_setup_clipping_and_scaling(state);
 	if (ret)
 		return ret;
+
+	width = vc4_state->src_w[0] >> 16;
+	height = vc4_state->src_h[0] >> 16;
 
 	/* SCL1 is used for Cb/Cr scaling of planar formats.  For RGB
 	 * and 4:4:4, scl1 should be set to scl0 so both channels of
@@ -1650,6 +1657,171 @@ static int vc6_plane_mode_set(struct drm_plane *plane,
 		scl0 = vc4_get_scl_field(state, 1);
 		scl1 = vc4_get_scl_field(state, 0);
 	}
+
+	rotation = drm_rotation_simplify(state->rotation,
+					 DRM_MODE_ROTATE_0 |
+					 DRM_MODE_REFLECT_X |
+					 DRM_MODE_REFLECT_Y);
+
+	/* We must point to the last line when Y reflection is enabled. */
+	src_y = vc4_state->src_y >> 16;
+	if (rotation & DRM_MODE_REFLECT_Y)
+		src_y += height - 1;
+
+	src_x = vc4_state->src_x >> 16;
+
+	switch (base_format_mod) {
+	case DRM_FORMAT_MOD_LINEAR:
+		tiling = SCALER6_CTL0_ADDR_MODE_LINEAR;
+
+		/* Adjust the base pointer to the first pixel to be scanned
+		 * out.
+		 */
+		for (i = 0; i < num_planes; i++) {
+			vc4_state->offsets[i] += src_y /
+						 (i ? v_subsample : 1) *
+						 fb->pitches[i];
+
+			vc4_state->offsets[i] += src_x /
+						 (i ? h_subsample : 1) *
+						 fb->format->cpp[i];
+		}
+
+		break;
+
+	case DRM_FORMAT_MOD_BROADCOM_SAND128:
+	case DRM_FORMAT_MOD_BROADCOM_SAND256: {
+		uint32_t param = fourcc_mod_broadcom_param(fb->modifier);
+		u32 components_per_word;
+		u32 starting_offset;
+		u32 fetch_count;
+
+		if (param > SCALER_TILE_HEIGHT_MASK) {
+			DRM_DEBUG_KMS("SAND height too large (%d)\n",
+				      param);
+			return -EINVAL;
+		}
+
+		if (fb->format->format == DRM_FORMAT_P030) {
+			hvs_format = HVS_PIXEL_FORMAT_YCBCR_10BIT;
+			tiling = SCALER6_CTL0_ADDR_MODE_128B;
+		} else {
+			hvs_format = HVS_PIXEL_FORMAT_YCBCR_YUV420_2PLANE;
+
+			switch (base_format_mod) {
+			case DRM_FORMAT_MOD_BROADCOM_SAND128:
+				tiling = SCALER6_CTL0_ADDR_MODE_128B;
+				break;
+			case DRM_FORMAT_MOD_BROADCOM_SAND256:
+				tiling = SCALER6_CTL0_ADDR_MODE_256B;
+				break;
+			default:
+				return -EINVAL;
+			}
+		}
+
+		/* Adjust the base pointer to the first pixel to be scanned
+		 * out.
+		 *
+		 * For P030, y_ptr [31:4] is the 128bit word for the start pixel
+		 * y_ptr [3:0] is the pixel (0-11) contained within that 128bit
+		 * word that should be taken as the first pixel.
+		 * Ditto uv_ptr [31:4] vs [3:0], however [3:0] contains the
+		 * element within the 128bit word, eg for pixel 3 the value
+		 * should be 6.
+		 */
+		for (i = 0; i < num_planes; i++) {
+			u32 tile_w, tile, x_off, pix_per_tile;
+
+			if (fb->format->format == DRM_FORMAT_P030) {
+				/*
+				 * Spec says: bits [31:4] of the given address
+				 * should point to the 128-bit word containing
+				 * the desired starting pixel, and bits[3:0]
+				 * should be between 0 and 11, indicating which
+				 * of the 12-pixels in that 128-bit word is the
+				 * first pixel to be used
+				 */
+				u32 remaining_pixels = src_x % 96;
+				u32 aligned = remaining_pixels / 12;
+				u32 last_bits = remaining_pixels % 12;
+
+				x_off = aligned * 16 + last_bits;
+				tile_w = 128;
+				pix_per_tile = 96;
+			} else {
+				switch (base_format_mod) {
+				case DRM_FORMAT_MOD_BROADCOM_SAND128:
+					tile_w = 128;
+					break;
+				case DRM_FORMAT_MOD_BROADCOM_SAND256:
+					tile_w = 256;
+					break;
+				default:
+					return -EINVAL;
+				}
+				pix_per_tile = tile_w / fb->format->cpp[0];
+				x_off = (src_x % pix_per_tile) /
+					(i ? h_subsample : 1) *
+					fb->format->cpp[i];
+			}
+
+			tile = src_x / pix_per_tile;
+
+			vc4_state->offsets[i] += param * tile_w * tile;
+			vc4_state->offsets[i] += src_y /
+						 (i ? v_subsample : 1) *
+						 tile_w;
+			vc4_state->offsets[i] += x_off & ~(i ? 1 : 0);
+		}
+
+		components_per_word = fb->format->format == DRM_FORMAT_P030 ? 24 : 32;
+		starting_offset = src_x % components_per_word;
+		fetch_count = (width + starting_offset + components_per_word - 1) /
+			components_per_word;
+
+		pitch0 = VC4_SET_FIELD(param, SCALER6_PTR2_PITCH) |
+			 VC4_SET_FIELD(fetch_count - 1, SCALER6_PTR2_FETCH_COUNT);
+		break;
+	}
+
+	default:
+		DRM_DEBUG_KMS("Unsupported FB tiling flag 0x%16llx",
+			      (long long)fb->modifier);
+		return -EINVAL;
+	}
+
+	/* fetch an extra pixel if we don't actually line up with the left edge. */
+	if ((vc4_state->src_x & 0xffff) && vc4_state->src_x < (state->fb->width << 16))
+		width++;
+
+	/* same for the right side */
+	if (((vc4_state->src_x + vc4_state->src_w[0]) & 0xffff) &&
+	       vc4_state->src_x + vc4_state->src_w[0] < (state->fb->width << 16))
+		width++;
+
+	/* now for the top */
+	if ((vc4_state->src_y & 0xffff) && vc4_state->src_y < (state->fb->height << 16))
+		height++;
+
+	/* and the bottom */
+	if (((vc4_state->src_y + vc4_state->src_h[0]) & 0xffff) &&
+	       vc4_state->src_y + vc4_state->src_h[0] < (state->fb->height << 16))
+		height++;
+
+	/* for YUV444 hardware wants double the width, otherwise it doesn't
+	 * fetch full width of chroma
+	 */
+	if (format->drm == DRM_FORMAT_YUV444 || format->drm == DRM_FORMAT_YVU444)
+		width <<= 1;
+
+	/* Don't waste cycles mixing with plane alpha if the set alpha
+	 * is opaque or there is no per-pixel alpha information.
+	 * In any case we use the alpha property value as the fixed alpha.
+	 */
+	mix_plane_alpha = state->alpha != DRM_BLEND_ALPHA_OPAQUE &&
+			  fb->format->has_alpha;
+
 
 	/* Control Word 0: Scaling Configuration & Element Validity*/
 	vc4_dlist_write(vc4_state,
@@ -1687,9 +1859,9 @@ static int vc6_plane_mode_set(struct drm_plane *plane,
 	/* Position Word 2: Source Image Size */
 	vc4_state->pos2_offset = vc4_state->dlist_count;
 	vc4_dlist_write(vc4_state,
-			VC4_SET_FIELD((vc4_state->src_h[0] >> 16) - 1,
+			VC4_SET_FIELD(height - 1,
 				      SCALER6_POS2_SRC_LINES) |
-			VC4_SET_FIELD((vc4_state->src_w[0] >> 16) - 1,
+			VC4_SET_FIELD(width - 1,
 				      SCALER6_POS2_SRC_WIDTH));
 
 	/* Position Word 3: Context */
@@ -1716,9 +1888,14 @@ static int vc6_plane_mode_set(struct drm_plane *plane,
 		vc4_dlist_write(vc4_state, lower_32_bits(paddr));
 
 		/* Pointer Word 2 */
-		vc4_dlist_write(vc4_state,
-				VC4_SET_FIELD(fb->pitches[i],
-					      SCALER6_PTR2_PITCH));
+		if (base_format_mod != DRM_FORMAT_MOD_BROADCOM_SAND128 &&
+		    base_format_mod != DRM_FORMAT_MOD_BROADCOM_SAND256) {
+			vc4_dlist_write(vc4_state,
+					VC4_SET_FIELD(fb->pitches[i],
+						      SCALER6_PTR2_PITCH));
+		} else {
+			vc4_dlist_write(vc4_state, pitch0);
+		}
 	}
 
 	/*
