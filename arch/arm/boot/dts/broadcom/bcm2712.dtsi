@@ -77,6 +77,13 @@
 		clock-output-names = "108MHz-clock";
 	};
 
+	hvs: hvs@107c580000 {
+		compatible = "brcm,bcm2711-hvs";
+		reg = <0x10 0x7c580000 0x1a000>;
+		interrupts = <GIC_SPI 97 IRQ_TYPE_LEVEL_HIGH>;
+		status = "disabled";
+	};
+
 	soc: soc {
 		compatible = "simple-bus";
 		#address-cells = <1>;
@@ -152,13 +159,6 @@
 			compatible = "brcm,bcm2835-txp";
 			reg = <0x7c500000 0x20>;
 			interrupts = <GIC_SPI 75 IRQ_TYPE_LEVEL_HIGH>;
-			status = "disabled";
-		};
-
-		hvs: hvs@7c580000 {
-			compatible = "brcm,bcm2711-hvs";
-			reg = <0x7c580000 0x1a000>;
-			interrupts = <GIC_SPI 97 IRQ_TYPE_LEVEL_HIGH>;
 			status = "disabled";
 		};
 
