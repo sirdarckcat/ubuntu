@@ -426,32 +426,17 @@ static struct csi2_device *to_csi2_device(struct v4l2_subdev *subdev)
 	return container_of(subdev, struct csi2_device, sd);
 }
 
-static int csi2_pad_get_fmt(struct v4l2_subdev *sd,
-			    struct v4l2_subdev_state *state,
-			    struct v4l2_subdev_format *format)
-{
-	struct csi2_device *csi2 = to_csi2_device(sd);
-
-	if (format->pad >= ARRAY_SIZE(csi2->format))
-		return -1;
-
-	if (format->which == V4L2_SUBDEV_FORMAT_ACTIVE)
-		*format = csi2->format[format->pad];
-
-	return 0;
-}
-
 static int csi2_pad_set_fmt(struct v4l2_subdev *sd,
 			    struct v4l2_subdev_state *state,
 			    struct v4l2_subdev_format *format)
 {
-	struct csi2_device *csi2 = to_csi2_device(sd);
+	struct v4l2_mbus_framefmt *fmt;
 
-	if (format->pad >= ARRAY_SIZE(csi2->format))
-		return -1;
+	/* TODO: format propagation to source pads */
+	/* TODO: format validation */
 
-	if (format->which == V4L2_SUBDEV_FORMAT_ACTIVE)
-		csi2->format[format->pad] = *format;
+	fmt = v4l2_subdev_get_pad_format(sd, state, format->pad);
+	*fmt = format->format;
 
 	return 0;
 }
@@ -491,7 +476,7 @@ static int csi2_link_validate(struct v4l2_subdev *sd, struct media_link *link,
 }
 
 static const struct v4l2_subdev_pad_ops csi2_subdev_pad_ops = {
-	.get_fmt = csi2_pad_get_fmt,
+	.get_fmt = v4l2_subdev_get_fmt,
 	.set_fmt = csi2_pad_set_fmt,
 	.link_validate = csi2_link_validate,
 };
@@ -538,14 +523,20 @@ int csi2_init(struct csi2_device *csi2, struct dentry *debugfs)
 	csi2->sd.owner = THIS_MODULE;
 	snprintf(csi2->sd.name, sizeof(csi2->sd.name), "csi2");
 
+	ret = v4l2_subdev_init_finalize(&csi2->sd);
+	if (ret)
+		goto err_entity_cleanup;
+
 	ret = v4l2_device_register_subdev(csi2->v4l2_dev, &csi2->sd);
 	if (ret) {
 		csi2_err("Failed register csi2 subdev (%d)\n", ret);
-		goto err_entity_cleanup;
+		goto err_subdev_cleanup;
 	}
 
 	return 0;
 
+err_subdev_cleanup:
+	v4l2_subdev_cleanup(&csi2->sd);
 err_entity_cleanup:
 	media_entity_cleanup(&csi2->sd.entity);
 
@@ -555,5 +546,6 @@ err_entity_cleanup:
 void csi2_uninit(struct csi2_device *csi2)
 {
 	v4l2_device_unregister_subdev(&csi2->sd);
+	v4l2_subdev_cleanup(&csi2->sd);
 	media_entity_cleanup(&csi2->sd.entity);
 }

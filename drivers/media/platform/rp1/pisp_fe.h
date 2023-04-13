@@ -35,7 +35,6 @@ struct pisp_fe_device {
 	u16 inframe_count;
 	struct media_pad pad[FE_NUM_PADS];
 	struct v4l2_subdev sd;
-	struct v4l2_subdev_format format[FE_NUM_PADS];
 	struct pisp_fe_config cfg_tmp;
 };
 

@@ -366,32 +366,17 @@ static struct pisp_fe_device *to_pisp_fe_device(struct v4l2_subdev *subdev)
 	return container_of(subdev, struct pisp_fe_device, sd);
 }
 
-static int pisp_fe_pad_get_fmt(struct v4l2_subdev *sd,
-			       struct v4l2_subdev_state *state,
-			       struct v4l2_subdev_format *format)
-{
-	struct pisp_fe_device *fe = to_pisp_fe_device(sd);
-
-	if (format->pad >= ARRAY_SIZE(fe->format))
-		return -1;
-
-	if (format->which == V4L2_SUBDEV_FORMAT_ACTIVE)
-		*format = fe->format[format->pad];
-
-	return 0;
-}
-
 static int pisp_fe_pad_set_fmt(struct v4l2_subdev *sd,
 			       struct v4l2_subdev_state *state,
 			       struct v4l2_subdev_format *format)
 {
-	struct pisp_fe_device *fe = to_pisp_fe_device(sd);
+	struct v4l2_mbus_framefmt *fmt;
 
-	if (format->pad >= ARRAY_SIZE(fe->format))
-		return -1;
+	/* TODO: format propagation to source pads */
+	/* TODO: format validation */
 
-	if (format->which == V4L2_SUBDEV_FORMAT_ACTIVE)
-		fe->format[format->pad] = *format;
+	fmt = v4l2_subdev_get_pad_format(sd, state, format->pad);
+	*fmt = format->format;
 
 	return 0;
 }
@@ -426,7 +411,7 @@ static int pisp_fe_link_validate(struct v4l2_subdev *sd,
 }
 
 static const struct v4l2_subdev_pad_ops pisp_fe_subdev_pad_ops = {
-	.get_fmt = pisp_fe_pad_get_fmt,
+	.get_fmt = v4l2_subdev_get_fmt,
 	.set_fmt = pisp_fe_pad_set_fmt,
 	.link_validate = pisp_fe_link_validate,
 };
@@ -471,10 +456,14 @@ int pisp_fe_init(struct pisp_fe_device *fe, struct dentry *debugfs)
 	fe->sd.owner = THIS_MODULE;
 	snprintf(fe->sd.name, sizeof(fe->sd.name), "pisp-fe");
 
+	ret = v4l2_subdev_init_finalize(&fe->sd);
+	if (ret)
+		goto err_entity_cleanup;
+
 	ret = v4l2_device_register_subdev(fe->v4l2_dev, &fe->sd);
 	if (ret) {
 		pisp_fe_err("Failed register pisp fe subdev (%d)\n", ret);
-		goto err_entity_cleanup;
+		goto err_subdev_cleanup;
 	}
 
 	pisp_fe_stop(fe);
@@ -484,6 +473,8 @@ int pisp_fe_init(struct pisp_fe_device *fe, struct dentry *debugfs)
 
 	return 0;
 
+err_subdev_cleanup:
+	v4l2_subdev_cleanup(&fe->sd);
 err_entity_cleanup:
 	media_entity_cleanup(&fe->sd.entity);
 
@@ -493,5 +484,6 @@ err_entity_cleanup:
 void pisp_fe_uninit(struct pisp_fe_device *fe)
 {
 	v4l2_device_unregister_subdev(&fe->sd);
+	v4l2_subdev_cleanup(&fe->sd);
 	media_entity_cleanup(&fe->sd.entity);
 }

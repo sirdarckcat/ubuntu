@@ -46,7 +46,6 @@ struct csi2_device {
 
 	struct media_pad pad[CSI2_NUM_CHANNELS * 2];
 	struct v4l2_subdev sd;
-	struct v4l2_subdev_format format[CSI2_NUM_CHANNELS * 2];
 };
 
 void csi2_isr(struct csi2_device *csi2, bool *sof, bool *eof, bool *lci);
