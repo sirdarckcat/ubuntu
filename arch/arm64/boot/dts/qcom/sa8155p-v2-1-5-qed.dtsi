@@ -591,6 +591,22 @@
 				qcom,pre-scaling = <1 1>;
 				label = "die_temp";
 			};
+
+			xo_therm {
+				reg = <ADC5_XO_THERM_100K_PU>;
+				label = "ufs_therm";
+				qcom,ratiometric;
+				qcom,hw-settle-time = <200>;
+				qcom,pre-scaling = <1 1>;
+			};
+
+			amux_thm2_pu2 {
+				reg = <ADC5_AMUX_THM2_100K_PU>;
+				label = "power_therm";
+				qcom,ratiometric;
+				qcom,hw-settle-time = <200>;
+				qcom,pre-scaling = <1 1>;
+			};
 		};
 
 		pm8150_2_gpios: gpio@c000 {
@@ -793,5 +809,23 @@
 			 input-enable;
 			 power-source = <0>;
 		};
+	};
+};
+
+&pm8150_adc {
+	amux_thm1_pu2 {
+		reg = <ADC5_AMUX_THM1_100K_PU>;
+		label = "aux_therm";
+		qcom,ratiometric;
+		qcom,hw-settle-time = <200>;
+		qcom,pre-scaling = <1 1>;
+	};
+
+	amux_thm2_pu2 {
+		reg = <ADC5_AMUX_THM2_100K_PU>;
+		label = "fpga_therm";
+		qcom,ratiometric;
+		qcom,hw-settle-time = <200>;
+		qcom,pre-scaling = <1 1>;
 	};
 };
