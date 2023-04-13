@@ -555,7 +555,7 @@ static int tsn_ep_probe(struct platform_device *pdev)
 	ret = of_get_mac_address(pdev->dev.of_node, ndev->dev_addr);
 	if (ret) {
 		dev_err(&pdev->dev, "could not find MAC address\n");
-		goto free_netdev;
+		eth_hw_addr_random(ndev);
 	}
 	if (!is_valid_ether_addr(ndev->dev_addr))
 		eth_hw_addr_random(ndev);
