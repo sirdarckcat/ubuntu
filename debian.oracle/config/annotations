@@ -17,6 +17,9 @@ CONFIG_KERNEL_ZSTD                              note<'LP: #1931725'>
 CONFIG_PREEMPT_NONE                             policy<{'amd64': 'y', 'arm64': 'y'}>
 CONFIG_PREEMPT_NONE                             note<'LP: #1543165'>
 
+CONFIG_RUST                                     policy<{'amd64': 'n', 'arm64': '-'}>
+CONFIG_RUST                                     note<'required to enable Rust support, LP: #1993183'>
+
 
 # ---- Annotations without notes ----
 
@@ -91,6 +94,7 @@ CONFIG_BCM_SR_THERMAL                           policy<{'arm64': 'm'}>
 CONFIG_BCM_VIDEOCORE                            policy<{'arm64': 'm'}>
 CONFIG_BGMAC                                    policy<{'arm64': 'y'}>
 CONFIG_BGMAC_PLATFORM                           policy<{'arm64': 'y'}>
+CONFIG_BINDGEN_VERSION_TEXT                     policy<{'amd64': '-'}>
 CONFIG_BLK_DEV_UBLK                             policy<{'amd64': 'm', 'arm64': 'm'}>
 CONFIG_BRCMSTB_DPFE                             policy<{'arm64': 'y'}>
 CONFIG_BRCMSTB_L2_IRQ                           policy<{'arm64': 'y'}>
@@ -113,6 +117,7 @@ CONFIG_CLK_RASPBERRYPI                          policy<{'arm64': 'm'}>
 CONFIG_COMEDI_TESTS_EXAMPLE                     policy<{'amd64': 'n', 'arm64': 'm'}>
 CONFIG_COMEDI_TESTS_NI_ROUTES                   policy<{'amd64': 'n', 'arm64': 'm'}>
 CONFIG_COMMON_CLK_IPROC                         policy<{'arm64': 'y'}>
+CONFIG_CONSTRUCTORS                             policy<{'amd64': '-'}>
 CONFIG_CRYPTO_DEV_BCM_SPU                       policy<{'arm64': 'm'}>
 CONFIG_CRYPTO_GF128MUL                          policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_CS_DSP                                   policy<{'amd64': '-', 'arm64': '-'}>
@@ -241,7 +246,12 @@ CONFIG_RESET_BRCMSTB                            policy<{'arm64': 'm'}>
 CONFIG_RESET_BRCMSTB_RESCAL                     policy<{'arm64': 'y'}>
 CONFIG_RESET_RASPBERRYPI                        policy<{'arm64': 'm'}>
 CONFIG_RTC_DRV_BRCMSTB                          policy<{'arm64': 'm'}>
+CONFIG_RUSTC_VERSION_TEXT                       policy<{'amd64': '-'}>
+CONFIG_RUST_BUILD_ASSERT_ALLOW                  policy<{'amd64': '-'}>
+CONFIG_RUST_DEBUG_ASSERTIONS                    policy<{'amd64': '-'}>
+CONFIG_RUST_OVERFLOW_CHECKS                     policy<{'amd64': '-'}>
 CONFIG_RV_MON_WWNR                              policy<{'amd64': 'n', 'arm64': 'n'}>
+CONFIG_SAMPLES_RUST                             policy<{'amd64': '-'}>
 CONFIG_SCSI_UFS_HWMON                           policy<{'amd64': 'n', 'arm64': 'y'}>
 CONFIG_SENSORS_AAEON                            policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_SENSORS_IR38064_REGULATOR                policy<{'amd64': 'n', 'arm64': 'y'}>
