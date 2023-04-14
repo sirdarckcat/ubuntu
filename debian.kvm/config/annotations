@@ -243,6 +243,9 @@ CONFIG_REGULATOR_TWL4030                        note<'boot requisite for omap4'>
 CONFIG_RTC_DRV_CMOS                             policy<{'amd64': '-'}>
 CONFIG_RTC_DRV_CMOS                             note<'boot essential on i386/amd64'>
 
+CONFIG_RUST                                     policy<{'amd64': 'n'}>
+CONFIG_RUST                                     note<'required to enable Rust support, LP: #1993183'>
+
 CONFIG_SAMPLE_TRACE_PRINTK                      policy<{'amd64': '-'}>
 CONFIG_SAMPLE_TRACE_PRINTK                      note<'Required for ftrace selftests'>
 
@@ -990,6 +993,7 @@ CONFIG_BFQ_CGROUP_DEBUG                         policy<{'amd64': '-'}>
 CONFIG_BFQ_GROUP_IOSCHED                        policy<{'amd64': '-'}>
 CONFIG_BH1750                                   policy<{'amd64': '-'}>
 CONFIG_BH1780                                   policy<{'amd64': '-'}>
+CONFIG_BINDGEN_VERSION_TEXT                     policy<{'amd64': '-'}>
 CONFIG_BINFMT_MISC                              policy<{'amd64': 'n'}>
 CONFIG_BLK_CGROUP_FC_APPID                      policy<{'amd64': '-'}>
 CONFIG_BLK_DEBUG_FS_ZONED                       policy<{'amd64': '-'}>
@@ -1516,6 +1520,7 @@ CONFIG_COMPAL_LAPTOP                            policy<{'amd64': '-'}>
 CONFIG_CONFIGFS_FS                              policy<{'amd64': 'm'}>
 CONFIG_CONSOLE_POLL                             policy<{'amd64': '-'}>
 CONFIG_CONSOLE_TRANSLATIONS                     policy<{'amd64': '-'}>
+CONFIG_CONSTRUCTORS                             policy<{'amd64': '-'}>
 CONFIG_CONTIG_ALLOC                             policy<{'amd64': '-'}>
 CONFIG_CORDIC                                   policy<{'amd64': 'n'}>
 CONFIG_CORTINA_PHY                              policy<{'amd64': '-'}>
@@ -5475,6 +5480,10 @@ CONFIG_RTW89_DEBUG                              policy<{'amd64': '-'}>
 CONFIG_RTW89_DEBUGFS                            policy<{'amd64': '-'}>
 CONFIG_RTW89_DEBUGMSG                           policy<{'amd64': '-'}>
 CONFIG_RTW89_PCI                                policy<{'amd64': '-'}>
+CONFIG_RUSTC_VERSION_TEXT                       policy<{'amd64': '-'}>
+CONFIG_RUST_BUILD_ASSERT_ALLOW                  policy<{'amd64': '-'}>
+CONFIG_RUST_DEBUG_ASSERTIONS                    policy<{'amd64': '-'}>
+CONFIG_RUST_OVERFLOW_CHECKS                     policy<{'amd64': '-'}>
 CONFIG_RXKAD                                    policy<{'amd64': 'n'}>
 CONFIG_S2IO                                     policy<{'amd64': '-'}>
 CONFIG_SAMPLES                                  policy<{'amd64': 'n'}>
