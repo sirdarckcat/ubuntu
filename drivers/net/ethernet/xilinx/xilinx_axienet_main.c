@@ -3588,11 +3588,6 @@ static int axienet_probe(struct platform_device *pdev)
 	if (lp->phy_mode == PHY_INTERFACE_MODE_1000BASEX)
 		lp->phy_flags = XAE_PHY_TYPE_1000BASE_X;
 
-	ret = axienet_mdio_setup(lp);
-	if (ret)
-		dev_warn(&pdev->dev,
-			 "error registering MDIO bus: %d\n", ret);
-
 	lp->phy_node = of_parse_phandle(pdev->dev.of_node, "phy-handle", 0);
 	if (lp->phy_node) {
 		ret = axienet_mdio_setup(lp);
