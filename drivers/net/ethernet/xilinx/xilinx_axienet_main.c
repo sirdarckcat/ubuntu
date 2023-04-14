@@ -1646,14 +1646,6 @@ static int axienet_recv(struct net_device *ndev, int budget,
 			packets++;
 		}
 
-		netif_receive_skb(skb);
-
-		new_skb = netdev_alloc_skb(ndev, lp->max_frm_size);
-		if (!new_skb) {
-			dev_err(lp->dev, "No memory for new_skb\n\r");
-			break;
-		}
-
 		/* Ensure that the skb is completely updated
 		 * prio to mapping the DMA
 		 */
