@@ -188,6 +188,8 @@ struct igc_adapter {
 
 	ktime_t base_time;
 	ktime_t cycle_time;
+	bool frame_preemption_active;
+	u32 add_frag_size;
 	bool qbv_enable;
 
 	/* OS defined structs */
