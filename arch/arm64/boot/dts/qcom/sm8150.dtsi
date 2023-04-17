@@ -879,14 +879,6 @@
 		qcom,qsee-reentrancy-support = <2>;
 	};
 
-	qcom_tzlog: tz-log@146bf720 {
-		compatible = "qcom,tz-log";
-		reg = <0x146bf720 0x3000>;
-		qcom,hyplog-enabled;
-		hyplog-address-offset = <0x410>;
-		hyplog-size-offset = <0x414>;
-	};
-
 	smp2p-cdsp {
 		compatible = "qcom,smp2p";
 		qcom,smem = <94>, <432>;
@@ -3688,6 +3680,15 @@
 				qcom,dump-id = <0xe8>;
 			};
 		};
+
+		qcom_tzlog: tz-log@146bf720 {
+			compatible = "qcom,tz-log";
+			reg = <0x0 0x146bf720 0x0 0x3000>;
+			qcom,hyplog-enabled;
+			hyplog-address-offset = <0x410>;
+			hyplog-size-offset = <0x414>;
+		};
+
 	};
 
 	timer {
