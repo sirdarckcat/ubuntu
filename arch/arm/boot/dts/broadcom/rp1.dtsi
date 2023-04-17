@@ -445,22 +445,52 @@
 			rp1_uart0_14_15: rp1_uart0_14_15 {
 				brcm,pins = <14 15>;
 				brcm,function = <RP1_FSEL_ALT4>;
-				brcm,pull = <RP1_PUD_OFF
-					     RP1_PUD_UP>;
+				brcm,pull = <RP1_PUD_OFF RP1_PUD_UP>;
 			};
-
+			rp1_uart0_rtscts_16_17: rp1_uart0_rtscts_16_17 {
+				brcm,pins = <16 17>;
+				brcm,function = <RP1_FSEL_ALT4>;
+				brcm,pull = <RP1_PUD_UP RP1_PUD_OFF>;
+			};
+			rp1_uart1_0_1: rp1_uart1_0_1 {
+				brcm,pins = <0 1>;
+				brcm,function = <RP1_FSEL_ALT2>;
+				brcm,pull = <RP1_PUD_OFF RP1_PUD_UP>;
+			};
+			rp1_uart1_rtscts_2_3: rp1_uart1_rtscts_2_3 {
+				brcm,pins = <2 3>;
+				brcm,function = <RP1_FSEL_ALT2>;
+				brcm,pull = <RP1_PUD_UP RP1_PUD_OFF>;
+			};
 			rp1_uart2_4_5: rp1_uart2_4_5 {
 				brcm,pins = <4 5>;
 				brcm,function = <RP1_FSEL_ALT2>;
-				brcm,pull = <RP1_PUD_OFF
-					     RP1_PUD_UP>;
+				brcm,pull = <RP1_PUD_OFF RP1_PUD_UP>;
 			};
-
-			rp1_uart2_6_7: rp1_uart2_6_7 {
+			rp1_uart2_rtscts_6_7: rp1_uart2_rtscts_6_7 {
 				brcm,pins = <6 7>;
 				brcm,function = <RP1_FSEL_ALT2>;
-				brcm,pull = <RP1_PUD_UP
-					     RP1_PUD_OFF>;
+				brcm,pull = <RP1_PUD_UP RP1_PUD_OFF>;
+			};
+			rp1_uart3_8_9: rp1_uart3_8_9 {
+				brcm,pins = <8 9>;
+				brcm,function = <RP1_FSEL_ALT2>;
+				brcm,pull = <RP1_PUD_OFF RP1_PUD_UP>;
+			};
+			rp1_uart3_rtscts_10_11: rp1_uart3_rtscts_10_11 {
+				brcm,pins = <10 11>;
+				brcm,function = <RP1_FSEL_ALT2>;
+				brcm,pull = <RP1_PUD_UP RP1_PUD_OFF>;
+			};
+			rp1_uart4_12_13: rp1_uart4_12_13 {
+				brcm,pins = <12 13>;
+				brcm,function = <RP1_FSEL_ALT2>;
+				brcm,pull = <RP1_PUD_OFF RP1_PUD_UP>;
+			};
+			rp1_uart4_rtscts_14_15: rp1_uart4_rtscts_14_15 {
+				brcm,pins = <14 15>;
+				brcm,function = <RP1_FSEL_ALT2>;
+				brcm,pull = <RP1_PUD_UP RP1_PUD_OFF>;
 			};
 
 			rp1_sdio0_22_27: rp1_sdio0_22_27 {
