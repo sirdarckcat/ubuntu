@@ -150,10 +150,15 @@ dtbo-$(CONFIG_ARCH_BCM2835) += \
 	media-center.dtbo \
 	merus-amp.dtbo \
 	midi-uart0.dtbo \
+	midi-uart0-pi5.dtbo \
 	midi-uart1.dtbo \
+	midi-uart1-pi5.dtbo \
 	midi-uart2.dtbo \
+	midi-uart2-pi5.dtbo \
 	midi-uart3.dtbo \
+	midi-uart3-pi5.dtbo \
 	midi-uart4.dtbo \
+	midi-uart4-pi5.dtbo \
 	midi-uart5.dtbo \
 	minipitft13.dtbo \
 	miniuart-bt.dtbo \
