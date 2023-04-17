@@ -253,10 +253,15 @@ dtbo-$(CONFIG_ARCH_BCM2835) += \
 	tpm-slb9670.dtbo \
 	tpm-slb9673.dtbo \
 	uart0.dtbo \
+	uart0-pi5.dtbo \
 	uart1.dtbo \
+	uart1-pi5.dtbo \
 	uart2.dtbo \
+	uart2-pi5.dtbo \
 	uart3.dtbo \
+	uart3-pi5.dtbo \
 	uart4.dtbo \
+	uart4-pi5.dtbo \
 	uart5.dtbo \
 	udrc.dtbo \
 	ugreen-dabboard.dtbo \
