@@ -1070,6 +1070,9 @@ static int fastrpc_invoke_send(struct fastrpc_session_ctx *sctx,
 	msg->addr = ctx->buf ? ctx->buf->phys : 0;
 	msg->size = roundup(ctx->msg_sz, PAGE_SIZE);
 
+	if (!cctx->rpdev)
+		return -EPIPE;
+
 	ret = rpmsg_send(cctx->rpdev->ept, (void *)msg, sizeof(*msg));
 
 	return ret;
@@ -2150,6 +2153,7 @@ static void fastrpc_rpmsg_remove(struct rpmsg_device *rpdev)
 	unsigned long flags;
 
 	spin_lock_irqsave(&cctx->lock, flags);
+	cctx->rpdev = NULL;
 	list_for_each_entry(user, &cctx->users, user)
 		fastrpc_notify_users(user);
 	spin_unlock_irqrestore(&cctx->lock, flags);
@@ -2162,7 +2166,6 @@ static void fastrpc_rpmsg_remove(struct rpmsg_device *rpdev)
 
 	of_platform_depopulate(&rpdev->dev);
 
-	cctx->rpdev = NULL;
 	fastrpc_channel_ctx_put(cctx);
 }
 
