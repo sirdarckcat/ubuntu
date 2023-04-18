@@ -3,6 +3,7 @@
 [ ! -L 'tools/testing/selftests/drivers/net/team/lag_lib.sh' ] && ln -sf '../bonding/lag_lib.sh' 'tools/testing/selftests/drivers/net/team/lag_lib.sh'
 [ ! -L 'tools/testing/selftests/drivers/net/team/net_forwarding_lib.sh' ] && ln -sf '../../../net/forwarding/lib.sh' 'tools/testing/selftests/drivers/net/team/net_forwarding_lib.sh'
 # Remove any files deleted from the orig.
+rm -f 'net/sched/cls_tcindex.c'
 rm -f 'tools/perf/pmu-events/arch/s390/cf_z16/pai.json'
 rm -f 'tools/testing/selftests/cpu-hotplug/config'
 chmod +x 'debian/cloud-tools/hv_get_dhcp_info'
