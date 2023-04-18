@@ -43,7 +43,7 @@ struct fpga_pps_dbg {
         uint8_t freq_err_threshold;
         uint8_t sync_err_threshold;
         int8_t pps_phase_offset;
-        int8_t freq_monitor_delta;
+        int16_t freq_monitor_delta;
 };
 
 #define FPGA_CFG_MODE_RESET 0x00
@@ -217,5 +217,7 @@ struct fpga_pps_dbg {
 /* FPGA_*_ERROR_TRH */
 #define FPGA_PPS_PHASE_OFFSET 0x55
 #define FPGA_FREQ_MONITOR_DELTA 0x54
+#define FPGA_FREQ_MONITOR_LSB FPGA_FREQ_MONITOR_DELTA
+#define FPGA_FREQ_MONITOR_MSB 0x70
 
 #endif /* FPGA_H_ */
