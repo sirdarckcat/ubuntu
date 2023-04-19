@@ -1,0 +1,98 @@
+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+%YAML 1.2
+---
+$id: http://devicetree.org/schemas/media/i2c/onnn,ar1335.yaml#
+$schema: http://devicetree.org/meta-schemas/core.yaml#
+
+title: AR1335 1/3.2‐Inch 13 Mp CMOS Digital Image Sensor 
+
+maintainers:
+  - Anil Kumar M <anil.mamidala@amd.com>
+
+description: |-
+  The AR1335 from ON Semiconductor is a 1/3.2-inch BSI (Back Side Illuminated)
+  CMOS active-pixel digital image sensor with a pixel array of 4208 (H) × 3120 (V).
+  It is programmable through I2C interface. Image data is sent through MIPI CSI-2, 
+  serial data lanes.
+
+properties:
+  compatible:
+    const: ar1335 
+
+  reg:
+    description: I2C device address
+    maxItems: 1
+
+  clocks:
+    maxItems: 1
+
+  reset-gpios:
+    maxItems: 1
+    description: |-
+      Reference to the GPIO connected to the reset pin.
+
+  port:
+    $ref: /schemas/graph.yaml#/$defs/port-base
+    unevaluatedProperties: false
+    description: MIPI CSI-2 output interface to the host.
+
+    properties:
+      clock-lanes:
+        description: |-
+          lane for extrenal clock.
+
+      data-lanes:
+        description: |-
+          Two, three and four-lane supported, for four-lane operation the 
+          property must be set to <1 2 3 4>.
+        oneOf:
+          - items:
+              - const: 1
+              - const: 1
+          - items:
+              - const: 1
+              - const: 2
+              - const: 2
+          - items:
+              - const: 1
+              - const: 2
+              - const: 3
+              - const: 4
+
+        required:
+          - data-lanes
+          - clock-lanes
+
+      endpoint:
+        $ref: /schemas/graph.yaml#/$defs/endpoint-base
+        unevaluatedProperties: false
+
+required:
+  - compatible
+  - reg
+  - port
+
+additionalProperties: false
+
+examples:
+  - |
+    i2c0 {
+        #address-cells = <1>;
+        #size-cells = <0>;
+
+        ar1335: sensor@36 {
+            compatible = "ar1335";
+            reg = <0x36>;
+            reset-gpios = <&axi_gpio 2 0>;
+
+            port {
+                clock-lanes = <0>;
+                data-lanes = <1 2 3 4>;
+                ar1335_out: endpoint {
+                    remote-endpoint = <&csi_ep>;
+                };
+            };
+        };
+    };
+
+...
