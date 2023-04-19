@@ -21,6 +21,7 @@
 
 	aliases {
 		serial0 = &uart2;
+		i2c0 = &i2c4;
 	};
 
 	chosen {
@@ -345,6 +346,10 @@
 	status = "okay";
 };
 
+&qupv3_id_0 {
+	status = "okay";
+};
+
 &qupv3_id_1 {
 	status = "okay";
 };
@@ -398,6 +403,10 @@
 };
 
 &uart2 {
+	status = "okay";
+};
+
+&i2c4 {
 	status = "okay";
 };
 
