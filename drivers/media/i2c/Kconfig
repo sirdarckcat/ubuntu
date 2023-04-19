@@ -738,6 +738,18 @@ menu "Camera sensor devices"
 config VIDEO_APTINA_PLL
 	tristate
 
+config VIDEO_AR1335
+       tristate "AR1335 sensor support"
+       depends on I2C && VIDEO_V4L2 && VIDEO_V4L2_SUBDEV_API
+       depends on MEDIA_CAMERA_SUPPORT
+       select REGMAP_I2C
+       help
+         This is a driver for the AR1335 ON semiconductor camera
+         sensor.
+
+         To compile this driver as a module, choose M here: the
+         module will be called ar1335.
+
 config VIDEO_CCS_PLL
 	tristate
 
