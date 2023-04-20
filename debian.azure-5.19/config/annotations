@@ -4,6 +4,9 @@
 
 include "../../debian.master/config/annotations"
 
+CONFIG_TDX_GUEST_DRIVER                         policy<{'amd64': 'y'}>
+CONFIG_TDX_GUEST_DRIVER                         note<LP: #2016995>
+
 CONFIG_SERIAL_8250_MID                             policy<{'amd64': 'm'}>
 CONFIG_SERIAL_8250_MID                             note<LP: #2009283 - not required for cloud kernels>
 CONFIG_HSU_DMA                                     policy<{'amd64': 'm'}>
