@@ -283,16 +283,12 @@ struct nf_bridge_info {
  * and read by ovs to recirc_id.
  */
 struct tc_skb_ext {
-	union {
-		u64 act_miss_cookie;
-		__u32 chain;
-	};
+	__u32 chain;
 	__u16 mru;
 	__u16 zone;
 	u8 post_ct:1;
 	u8 post_ct_snat:1;
 	u8 post_ct_dnat:1;
-	u8 act_miss:1; /* Set if act_miss_cookie is used */
 };
 #endif
 
