@@ -1715,6 +1715,7 @@ static int pispbe_mc_register_node_group(struct pispbe_node_group *node_group)
 	media_device_init(&node_group->mdev);
 	node_group->v4l2_dev.mdev = &node_group->mdev;
 	node_group->mdev.ops = &pispbe_media_ops;
+	node_group->mdev.hw_revision = node_group->pispbe->hw_version;
 
 	v4l2_info(&node_group->v4l2_dev,
 		  "Register entity for node_group %d\n",
