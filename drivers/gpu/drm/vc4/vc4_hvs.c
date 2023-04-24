@@ -1615,11 +1615,7 @@ struct vc4_hvs *__vc4_hvs_alloc(struct vc4_dev *vc4,
 		 * If we are running a test, it means that we can't
 		 * access a register. Use a plausible size then.
 		 */
-		if (!kunit_get_current_test())
-			lbm_size = HVS_READ(SCALER6_LBM_SIZE);
-		else
-			lbm_size = 2048;
-
+		lbm_size = 1024;
 		break;
 
 	default:
@@ -1639,7 +1635,7 @@ struct vc4_hvs *__vc4_hvs_alloc(struct vc4_dev *vc4,
 		 * that also uses this function to create its mock
 		 * device.
 		 */
-		drm_mm_init(&hvs->upm_mm, 0, 2048 * HVS_UBM_WORD_SIZE);
+		drm_mm_init(&hvs->upm_mm, 0, 1024 * HVS_UBM_WORD_SIZE);
 	}
 
 
