@@ -5,14 +5,11 @@
  * Copyright (c) 2023 Raspberry Pi Limited.
  */
 
-#include <linux/kernel.h>
-#include <linux/errno.h>
-#include <linux/mm.h>
 #include <linux/delay.h>
-#include <linux/interrupt.h>
+#include <linux/errno.h>
 #include <linux/platform_device.h>
-#include <linux/printk.h>
 #include <linux/rp1_platform.h>
+#include "drm/drm_print.h"
 
 #include "rp1_dsi.h"
 
@@ -141,8 +138,8 @@
 #define DPHY_PLL_CHARGE_PUMP_OFFSET 0x11
 #define DPHY_PLL_LPF_OFFSET 0x12
 
-#define DSI_WRITE(reg, val)  writel((val),  priv->hw_base[RP1DSI_HW_BLOCK_DSI] + (reg))
-#define DSI_READ(reg)        readl(priv->hw_base[RP1DSI_HW_BLOCK_DSI] + (reg))
+#define DSI_WRITE(reg, val)  writel((val),  dsi->hw_base[RP1DSI_HW_BLOCK_DSI] + (reg))
+#define DSI_READ(reg)        readl(dsi->hw_base[RP1DSI_HW_BLOCK_DSI] + (reg))
 
 // ================================================================================
 // Register block : RPI_MIPICFG
@@ -1091,12 +1088,12 @@
 #define RPI_MIPICFG_DFTSS_BYPASS_RESETSYNCS_LSB    0
 #define RPI_MIPICFG_DFTSS_BYPASS_RESETSYNCS_ACCESS "RW"
 
-#define CFG_WRITE(reg, val)  writel((val),  priv->hw_base[RP1DSI_HW_BLOCK_CFG] + (reg ## _OFFSET))
-#define CFG_READ(reg)        readl(priv->hw_base[RP1DSI_HW_BLOCK_CFG] + (reg ## _OFFSET))
+#define CFG_WRITE(reg, val)  writel((val),  dsi->hw_base[RP1DSI_HW_BLOCK_CFG] + (reg ## _OFFSET))
+#define CFG_READ(reg)        readl(dsi->hw_base[RP1DSI_HW_BLOCK_CFG] + (reg ## _OFFSET))
 
 /* ------------------------------- DPHY setup stuff ------------------------ */
 
-static void dphy_transaction(struct rp1dsi_priv *priv, uint8_t test_code, uint8_t test_data)
+static void dphy_transaction(struct rp1_dsi *dsi, uint8_t test_code, uint8_t test_data)
 {
 	/*
 	 * See pg 101 of mipi dphy bidir databook
@@ -1111,9 +1108,6 @@ static void dphy_transaction(struct rp1dsi_priv *priv, uint8_t test_code, uint8_
 	tmp = (DSI_READ(DSI_PHY_TST_CTRL1) >> DPHY_CTRL1_PHY_TESTDOUT_LSB) & 0xFF;
 	DSI_WRITE(DSI_PHY_TST_CTRL1, test_data);
 	DSI_WRITE(DSI_PHY_TST_CTRL0, DPHY_CTRL0_PHY_TESTCLK_BITS);
-	pr_info("RP1DSI Transaction %02x %02x -> %02x %02x\n",
-		test_code, test_data, tmp,
-		DSI_READ(DSI_PHY_TST_CTRL1) >> DPHY_CTRL1_PHY_TESTDOUT_LSB);
 }
 
 static uint8_t dphy_get_div(u32 refclk_khz, u32 vco_freq_khz, u32 *ptr_m, u32 *ptr_n)
@@ -1213,47 +1207,51 @@ static const struct hsfreq_range hsfreq_table[] = {
 	{ 1500, 0b111100, 181, 66, 153, 50 },
 };
 
-static void dphy_set_hsfreqrange(struct rp1dsi_priv *priv, u32 freq_mhz)
+static void dphy_set_hsfreqrange(struct rp1_dsi *dsi, u32 freq_mhz)
 {
 	unsigned int i;
 
 	if (freq_mhz < 80 || freq_mhz > 1500)
-		pr_err("DPHY: Frequency %u MHz out of range\n", freq_mhz);
+		drm_err(dsi->drm, "DPHY: Frequency %u MHz out of range\n",
+			freq_mhz);
 
 	for (i = 0; i < ARRAY_SIZE(hsfreq_table) - 1; i++) {
 		if (freq_mhz <= hsfreq_table[i].mhz_max)
 			break;
 	}
 
-	priv->hsfreq_index = i;
-	dphy_transaction(priv, DPHY_HS_RX_CTRL_LANE0_OFFSET, hsfreq_table[i].hsfreqrange << 1);
+	dsi->hsfreq_index = i;
+	dphy_transaction(dsi, DPHY_HS_RX_CTRL_LANE0_OFFSET,
+			 hsfreq_table[i].hsfreqrange << 1);
 }
 
-static void dphy_configure_pll(struct rp1dsi_priv *priv, u32 refclk_khz, u32 vco_freq_khz)
+static void dphy_configure_pll(struct rp1_dsi *dsi, u32 refclk_khz, u32 vco_freq_khz)
 {
 	u32 m = 0;
 	u32 n = 0;
 
 	if (dphy_get_div(refclk_khz, vco_freq_khz, &m, &n)) {
-		dphy_set_hsfreqrange(priv, vco_freq_khz / 1000);
+		dphy_set_hsfreqrange(dsi, vco_freq_khz / 1000);
 		/* Program m,n from registers */
-		dphy_transaction(priv, DPHY_PLL_DIV_CTRL_OFFSET, 0x30);
+		dphy_transaction(dsi, DPHY_PLL_DIV_CTRL_OFFSET, 0x30);
 		/* N (program N-1) */
-		dphy_transaction(priv, DPHY_PLL_INPUT_DIV_OFFSET, n - 1);
+		dphy_transaction(dsi, DPHY_PLL_INPUT_DIV_OFFSET, n - 1);
 		/* M[8:5] ?? */
-		dphy_transaction(priv, DPHY_PLL_LOOP_DIV_OFFSET, 0x80 | ((m - 1) >> 5));
+		dphy_transaction(dsi, DPHY_PLL_LOOP_DIV_OFFSET, 0x80 | ((m - 1) >> 5));
 		/* M[4:0] (program M-1) */
-		dphy_transaction(priv, DPHY_PLL_LOOP_DIV_OFFSET, ((m - 1) & 0x1F));
-		pr_info("RP1DSI: MIPI DPHY: vco freq want %dkHz got %dkHz = %d * (%dkHz / %d), hsfreqrange = 0x%02x\r\n",
-			vco_freq_khz, refclk_khz * m / n, m, refclk_khz, n,
-			hsfreq_table[priv->hsfreq_index].hsfreqrange);
+		dphy_transaction(dsi, DPHY_PLL_LOOP_DIV_OFFSET, ((m - 1) & 0x1F));
+		drm_dbg_driver(dsi->drm,
+			       "DPHY: vco freq want %dkHz got %dkHz = %d * (%dkHz / %d), hsfreqrange = 0x%02x\r\n",
+			       vco_freq_khz, refclk_khz * m / n, m, refclk_khz,
+			       n, hsfreq_table[dsi->hsfreq_index].hsfreqrange);
 	} else {
-		pr_info("RP1DSI: Error configuring DPHY PLL! %dkHz = %d * (%dkHz / %d)\r\n",
-			vco_freq_khz, m, refclk_khz, n);
+		drm_info(dsi->drm,
+			 "rp1dsi: Error configuring DPHY PLL! %dkHz = %d * (%dkHz / %d)\r\n",
+			 vco_freq_khz, m, refclk_khz, n);
 	}
 }
 
-static void dphy_init_khz(struct rp1dsi_priv *priv, u32 ref_freq, u32 vco_freq)
+static void dphy_init_khz(struct rp1_dsi *dsi, u32 ref_freq, u32 vco_freq)
 {
 	/* Reset the PHY */
 	DSI_WRITE(DSI_PHYRSTZ, 0);
@@ -1264,7 +1262,7 @@ static void dphy_init_khz(struct rp1dsi_priv *priv, u32 ref_freq, u32 vco_freq)
 	DSI_WRITE(DSI_PHY_TST_CTRL0, DPHY_CTRL0_PHY_TESTCLK_BITS);
 	udelay(1);
 	/* Since we are in DSI (not CSI2) mode here, start the PLL */
-	dphy_configure_pll(priv, ref_freq, vco_freq);
+	dphy_configure_pll(dsi, ref_freq, vco_freq);
 	udelay(1);
 	/* Unreset */
 	DSI_WRITE(DSI_PHYRSTZ, DSI_PHYRSTZ_SHUTDOWNZ_BITS);
@@ -1273,22 +1271,7 @@ static void dphy_init_khz(struct rp1dsi_priv *priv, u32 ref_freq, u32 vco_freq)
 	udelay(1); /* so we can see PLL coming up? */
 }
 
-/* DSI Config stuff */
-
-int rp1dsi_check_platform(struct rp1dsi_priv *priv)
-{
-	u32 chip_id, platform;
-
-	rp1_get_platform(&chip_id, &platform);
-	priv->running_on_fpga = !!(platform & RP1_PLATFORM_FPGA);
-	if (chip_id != RP1_C0_CHIP_ID) {
-		pr_err("Unexpected RP1 chip_id 0x%08x", chip_id);
-		return -ENODEV;
-	}
-	return 0;
-}
-
-void rp1dsi_mipicfg_setup(struct rp1dsi_priv *priv)
+void rp1dsi_mipicfg_setup(struct rp1_dsi *dsi)
 {
 	/* Select DSI rather than CSI-2 */
 	CFG_WRITE(RPI_MIPICFG_CFG, 0);
@@ -1296,36 +1279,38 @@ void rp1dsi_mipicfg_setup(struct rp1dsi_priv *priv)
 	CFG_WRITE(RPI_MIPICFG_INTE, RPI_MIPICFG_INTE_DSI_DMA_BITS);
 }
 
-static unsigned long rp1dsi_refclk_freq(struct rp1dsi_priv *priv)
+static unsigned long rp1dsi_refclk_freq(struct rp1_dsi *dsi)
 {
 	unsigned long u;
 
-	u = (priv->clocks[RP1DSI_CLOCK_REF]) ? clk_get_rate(priv->clocks[RP1DSI_CLOCK_REF]) : 0;
+	u = (dsi->clocks[RP1DSI_CLOCK_REF]) ? clk_get_rate(dsi->clocks[RP1DSI_CLOCK_REF]) : 0;
 	if (u < 1 || u >= (1ul << 30))
 		u = 50000000ul; /* default XOSC frequency */
 	return u;
 }
 
-static void rp1dsi_dpiclk_start(struct rp1dsi_priv *priv, unsigned int bpp, unsigned int lanes)
+static void rp1dsi_dpiclk_start(struct rp1_dsi *dsi, unsigned int bpp, unsigned int lanes)
 {
 	unsigned long u;
 
-	if (priv->clocks[RP1DSI_CLOCK_DPI]) {
-		u = (priv->clocks[RP1DSI_CLOCK_BYTE]) ? clk_get_rate(priv->clocks[RP1DSI_CLOCK_BYTE]) : 0;
-		pr_info("RP1DSI: Nominal byte clock %lu; scale by %u/%u", u, 4 * lanes, (bpp >> 1));
+	if (dsi->clocks[RP1DSI_CLOCK_DPI]) {
+		u = (dsi->clocks[RP1DSI_CLOCK_BYTE]) ? clk_get_rate(dsi->clocks[RP1DSI_CLOCK_BYTE]) : 0;
+		drm_info(dsi->drm,
+			 "rp1dsi: Nominal byte clock %lu; scale by %u/%u",
+			 u, 4 * lanes, (bpp >> 1));
 		if (u < 1 || u >= (1ul << 28))
 			u = 72000000ul; /* default DUMMY frequency for byteclock */
 
-		clk_set_parent(priv->clocks[RP1DSI_CLOCK_DPI], priv->clocks[RP1DSI_CLOCK_BYTE]);
-		clk_set_rate(priv->clocks[RP1DSI_CLOCK_DPI], (4 * lanes * u) / (bpp >> 1));
-		clk_prepare_enable(priv->clocks[RP1DSI_CLOCK_DPI]);
+		clk_set_parent(dsi->clocks[RP1DSI_CLOCK_DPI], dsi->clocks[RP1DSI_CLOCK_BYTE]);
+		clk_set_rate(dsi->clocks[RP1DSI_CLOCK_DPI], (4 * lanes * u) / (bpp >> 1));
+		clk_prepare_enable(dsi->clocks[RP1DSI_CLOCK_DPI]);
 	}
 }
 
-static void rp1dsi_dpiclk_stop(struct rp1dsi_priv *priv)
+static void rp1dsi_dpiclk_stop(struct rp1_dsi *dsi)
 {
-	if (priv->clocks[RP1DSI_CLOCK_DPI])
-		clk_disable_unprepare(priv->clocks[RP1DSI_CLOCK_DPI]);
+	if (dsi->clocks[RP1DSI_CLOCK_DPI])
+		clk_disable_unprepare(dsi->clocks[RP1DSI_CLOCK_DPI]);
 }
 
 /* Choose the internal on-the-bus DPI format, and DSI packing flag. */
@@ -1338,27 +1323,38 @@ static u32 get_colorcode(enum mipi_dsi_pixel_format fmt)
 		return 0x003;
 	case MIPI_DSI_FMT_RGB565:
 		return 0x000;
-	default:
+	case MIPI_DSI_FMT_RGB888:
 		return 0x005;
 	}
+
+	/* This should be impossible as the format is validated in
+	 * rp1dsi_host_attach
+	 */
+	WARN_ONCE(1, "Invalid colour format configured for DSI");
+	return 0x005;
 }
 
-void rp1dsi_dsi_setup(struct rp1dsi_priv *priv, struct drm_display_mode const *mode)
+void rp1dsi_dsi_setup(struct rp1_dsi *dsi, struct drm_display_mode const *mode)
 {
-	u32 timeout, mask;
-	unsigned int bpp = mipi_dsi_pixel_format_to_bpp(priv->display_format);
+	u32 timeout, mask, vid_mode_cfg;
+	u32 freq_khz;
+	unsigned int bpp = mipi_dsi_pixel_format_to_bpp(dsi->display_format);
 
-	if (priv->running_on_fpga)
-		bpp = 24 * priv->lanes; /* On FPGA, clock ratio is fixed at 1:3 */
-
-	DSI_WRITE(DSI_PHY_IF_CFG, priv->lanes - 1);
+	DSI_WRITE(DSI_PHY_IF_CFG, dsi->lanes - 1);
 	DSI_WRITE(DSI_DPI_CFG_POL, 0);
-	DSI_WRITE(DSI_GEN_VCID, priv->vc);
-	DSI_WRITE(DSI_DPI_COLOR_CODING, get_colorcode(priv->display_format));
+	DSI_WRITE(DSI_GEN_VCID, dsi->vc);
+	DSI_WRITE(DSI_DPI_COLOR_CODING, get_colorcode(dsi->display_format));
 	/* a conservative guess (LP escape is slow!) */
 	DSI_WRITE(DSI_DPI_LP_CMD_TIM, 0x00100000);
-	/* Use non-burst mode, dropping to LP where possible */
-	DSI_WRITE(DSI_VID_MODE_CFG, 0xBF00);
+
+	/* Drop to LP where possible */
+	vid_mode_cfg = 0xbf00;
+	if (!(dsi->display_flags & MIPI_DSI_MODE_VIDEO_SYNC_PULSE))
+		vid_mode_cfg |= 0x01;
+	if (!(dsi->display_flags & MIPI_DSI_MODE_VIDEO_BURST))
+		vid_mode_cfg |= 0x02;
+	DSI_WRITE(DSI_VID_MODE_CFG, vid_mode_cfg);
+
 	/* Use LP Escape Data signalling for all commands */
 	DSI_WRITE(DSI_CMD_MODE_CFG, 0x10F7F00);
 	/* Select Command Mode */
@@ -1369,50 +1365,41 @@ void rp1dsi_dsi_setup(struct rp1dsi_priv *priv, struct drm_display_mode const *m
 	DSI_WRITE(DSI_BTA_TO_CNT, 0x800);
 
 	DSI_WRITE(DSI_VID_PKT_SIZE, mode->hdisplay);
-	DSI_WRITE(DSI_VID_NUM_CHUNKS, 1);
+	DSI_WRITE(DSI_VID_NUM_CHUNKS, 0);
 	DSI_WRITE(DSI_VID_NULL_SIZE, 0);
 
 	/* Note, unlike Argon firmware, here we DON'T consider sync to be concurrent with porch */
 	DSI_WRITE(DSI_VID_HSA_TIME,
-		  (bpp * (mode->hsync_end - mode->hsync_start)) / (8 * priv->lanes));
+		  (bpp * (mode->hsync_end - mode->hsync_start)) / (8 * dsi->lanes));
 	DSI_WRITE(DSI_VID_HBP_TIME,
-		  (bpp * (mode->htotal - mode->hsync_end)) / (8 * priv->lanes));
-	DSI_WRITE(DSI_VID_HLINE_TIME, (bpp * mode->htotal) / (8 * priv->lanes));
+		  (bpp * (mode->htotal - mode->hsync_end)) / (8 * dsi->lanes));
+	DSI_WRITE(DSI_VID_HLINE_TIME, (bpp * mode->htotal) / (8 * dsi->lanes));
 	DSI_WRITE(DSI_VID_VSA_LINES, (mode->vsync_end - mode->vsync_start));
 	DSI_WRITE(DSI_VID_VBP_LINES, (mode->vtotal - mode->vsync_end));
 	DSI_WRITE(DSI_VID_VFP_LINES, (mode->vsync_start - mode->vdisplay));
 	DSI_WRITE(DSI_VID_VACTIVE_LINES, mode->vdisplay);
 
-	if (priv->running_on_fpga) {
-		/* Times to assume for clock LP<->HS transitions */
-		DSI_WRITE(DSI_PHY_TMR_LPCLK_CFG, 0x000c0018);
-		/* Times to assume for data LP<->HS transitions */
-		DSI_WRITE(DSI_PHY_TMR_CFG, 0x000c0018);
-		/* Dividers for timeouts and byteclock->LPclock */
-		DSI_WRITE(DSI_CLKMGR_CFG, 0x00000505);
-	} else {
-		u32 freq_khz = (bpp * (mode->crtc_clock ? mode->crtc_clock : mode->clock)) /
-							priv->lanes;
+	freq_khz = (bpp *  mode->clock) / dsi->lanes;
 
-		dphy_init_khz(priv, rp1dsi_refclk_freq(priv) / 1000, freq_khz);
+	dphy_init_khz(dsi, rp1dsi_refclk_freq(dsi) / 1000, freq_khz);
 
-		DSI_WRITE(DSI_PHY_TMR_LPCLK_CFG,
-			  (hsfreq_table[priv->hsfreq_index].clk_lp2hs << DSI_PHY_TMR_LP2HS_LSB) |
-			  (hsfreq_table[priv->hsfreq_index].clk_hs2lp << DSI_PHY_TMR_HS2LP_LSB));
-		DSI_WRITE(DSI_PHY_TMR_CFG,
-			  (hsfreq_table[priv->hsfreq_index].data_lp2hs << DSI_PHY_TMR_LP2HS_LSB) |
-			  (hsfreq_table[priv->hsfreq_index].data_hs2lp << DSI_PHY_TMR_HS2LP_LSB));
-		DSI_WRITE(DSI_CLKMGR_CFG, 0x00000505);
+	DSI_WRITE(DSI_PHY_TMR_LPCLK_CFG,
+		  (hsfreq_table[dsi->hsfreq_index].clk_lp2hs << DSI_PHY_TMR_LP2HS_LSB) |
+		  (hsfreq_table[dsi->hsfreq_index].clk_hs2lp << DSI_PHY_TMR_HS2LP_LSB));
+	DSI_WRITE(DSI_PHY_TMR_CFG,
+		  (hsfreq_table[dsi->hsfreq_index].data_lp2hs << DSI_PHY_TMR_LP2HS_LSB) |
+		  (hsfreq_table[dsi->hsfreq_index].data_hs2lp << DSI_PHY_TMR_HS2LP_LSB));
 
-		/* Wait for PLL lock */
-		for (timeout = (1 << 14); timeout != 0; --timeout) {
-			usleep_range(10, 50);
-			if (DSI_READ(DSI_PHY_STATUS) & (1 << 0))
-				break;
-		}
-		if (timeout == 0)
-			pr_err("RP1DSI: Time out waiting for PLL\n");
+	DSI_WRITE(DSI_CLKMGR_CFG, 0x00000505);
+
+	/* Wait for PLL lock */
+	for (timeout = (1 << 14); timeout != 0; --timeout) {
+		usleep_range(10, 50);
+		if (DSI_READ(DSI_PHY_STATUS) & (1 << 0))
+			break;
 	}
+	if (timeout == 0)
+		drm_err(dsi->drm, "RP1DSI: Time out waiting for PLL\n");
 
 	DSI_WRITE(DSI_LPCLK_CTRL, 0x1);		/* configure the requesthsclk */
 	DSI_WRITE(DSI_PHY_TST_CTRL0, 0x2);
@@ -1420,15 +1407,15 @@ void rp1dsi_dsi_setup(struct rp1dsi_priv *priv, struct drm_display_mode const *m
 	DSI_WRITE(DSI_PWR_UP, 0x1);		/* power up */
 
 	/* Now it should be safe to start the external DPI clock divider */
-	rp1dsi_dpiclk_start(priv, bpp, priv->lanes);
+	rp1dsi_dpiclk_start(dsi, bpp, dsi->lanes);
 
 	/* Wait for all lane(s) to be in Stopstate */
 	mask = (1 << 4);
-	if (priv->lanes >= 2)
+	if (dsi->lanes >= 2)
 		mask |= (1 << 7);
-	if (priv->lanes >= 3)
+	if (dsi->lanes >= 3)
 		mask |= (1 << 9);
-	if (priv->lanes >= 4)
+	if (dsi->lanes >= 4)
 		mask |= (1 << 11);
 	for (timeout = (1 << 10); timeout != 0; --timeout) {
 		usleep_range(10, 50);
@@ -1436,11 +1423,11 @@ void rp1dsi_dsi_setup(struct rp1dsi_priv *priv, struct drm_display_mode const *m
 			break;
 	}
 	if (timeout == 0)
-		pr_err("RP1DSI: Time out waiting for lanes (%x %x)\n",
-		       mask, DSI_READ(DSI_PHY_STATUS));
+		drm_err(dsi->drm, "RP1DSI: Time out waiting for lanes (%x %x)\n",
+			mask, DSI_READ(DSI_PHY_STATUS));
 }
 
-void rp1dsi_dsi_send(struct rp1dsi_priv *priv, u32 hdr, int len, const u8 *buf)
+void rp1dsi_dsi_send(struct rp1_dsi *dsi, u32 hdr, int len, const u8 *buf)
 {
 	u32 val;
 
@@ -1472,7 +1459,7 @@ void rp1dsi_dsi_send(struct rp1dsi_priv *priv, u32 hdr, int len, const u8 *buf)
 	}
 }
 
-int rp1dsi_dsi_recv(struct rp1dsi_priv *priv, int len, u8 *buf)
+int rp1dsi_dsi_recv(struct rp1_dsi *dsi, int len, u8 *buf)
 {
 	int i, j;
 	u32 val;
@@ -1500,14 +1487,16 @@ int rp1dsi_dsi_recv(struct rp1dsi_priv *priv, int len, u8 *buf)
 	return (i >= len) ? len : (i > 0) ? i : -EIO;
 }
 
-void rp1dsi_dsi_stop(struct rp1dsi_priv *priv)
+void rp1dsi_dsi_stop(struct rp1_dsi *dsi)
 {
 	DSI_WRITE(DSI_MODE_CFG, 1);	/* Return to Command Mode */
 	DSI_WRITE(DSI_LPCLK_CTRL, 2);	/* Stop the HS clock */
-	rp1dsi_dpiclk_stop(priv);
+	DSI_WRITE(DSI_PWR_UP, 0x0);     /* Power down host controller */
+	DSI_WRITE(DSI_PHYRSTZ, 0);      /* PHY into reset. */
+	rp1dsi_dpiclk_stop(dsi);
 }
 
-void rp1dsi_dsi_set_cmdmode(struct rp1dsi_priv *priv, int mode)
+void rp1dsi_dsi_set_cmdmode(struct rp1_dsi *dsi, int mode)
 {
 	DSI_WRITE(DSI_MODE_CFG, mode);
 }

@@ -5,36 +5,26 @@
  * Copyright (c) 2023 Raspberry Pi Limited.
  */
 
-#include <linux/module.h>
-#include <linux/kernel.h>
-#include <linux/errno.h>
-#include <linux/string.h>
-#include <linux/slab.h>
-#include <linux/mm.h>
-#include <linux/fb.h>
-#include <linux/init.h>
-#include <linux/delay.h>
-#include <linux/interrupt.h>
-#include <linux/ioport.h>
-#include <linux/list.h>
-#include <linux/platform_device.h>
 #include <linux/clk.h>
 #include <linux/component.h>
-#include <linux/printk.h>
-#include <linux/console.h>
-#include <linux/debugfs.h>
-#include <linux/uaccess.h>
-#include <linux/io.h>
+#include <linux/delay.h>
 #include <linux/dma-mapping.h>
-#include <linux/cred.h>
-#include <drm/drm_drv.h>
-#include <drm/drm_mm.h>
-#include <drm/drm_fourcc.h>
+#include <linux/errno.h>
+#include <linux/init.h>
+#include <linux/interrupt.h>
+#include <linux/io.h>
+#include <linux/list.h>
+#include <linux/module.h>
+#include <linux/platform_device.h>
+#include <linux/phy/phy-mipi-dphy.h>
+#include <linux/string.h>
+
 #include <drm/drm_atomic_helper.h>
-#include <drm/drm_managed.h>
 #include <drm/drm_crtc.h>
 #include <drm/drm_crtc_helper.h>
+#include <drm/drm_drv.h>
 #include <drm/drm_encoder.h>
+#include <drm/drm_fourcc.h>
 #include <drm/drm_fb_helper.h>
 #include <drm/drm_fbdev_generic.h>
 #include <drm/drm_framebuffer.h>
@@ -42,13 +32,122 @@
 #include <drm/drm_gem_atomic_helper.h>
 #include <drm/drm_gem_dma_helper.h>
 #include <drm/drm_gem_framebuffer_helper.h>
-#include <drm/drm_simple_kms_helper.h>
-#include <drm/drm_probe_helper.h>
+#include <drm/drm_managed.h>
 #include <drm/drm_modeset_helper_vtables.h>
-#include <drm/drm_vblank.h>
 #include <drm/drm_of.h>
+#include <drm/drm_print.h>
+#include <drm/drm_probe_helper.h>
+#include <drm/drm_simple_kms_helper.h>
+#include <drm/drm_vblank.h>
 
 #include "rp1_dsi.h"
+
+static inline struct rp1_dsi *
+bridge_to_rp1_dsi(struct drm_bridge *bridge)
+{
+	return container_of(bridge, struct rp1_dsi, bridge);
+}
+
+static bool rp1_dsi_bridge_mode_fixup(struct drm_bridge *bridge,
+				      const struct drm_display_mode *mode,
+				      struct drm_display_mode *adjusted_mode)
+{
+	struct rp1_dsi *dsi = bridge_to_rp1_dsi(bridge);
+	struct phy_configure_opts_mipi_dphy cfg;
+	unsigned long line_time_ps, non_hfp_ps, min_hfp_ps, hfp_ps;
+	unsigned int non_hfp_pix, htotal_pix;
+
+	phy_mipi_dphy_get_default_config(mode->clock * 1000,
+					 mipi_dsi_pixel_format_to_bpp(dsi->display_format),
+					 dsi->lanes, &cfg);
+
+	min_hfp_ps = cfg.lpx + cfg.hs_prepare + cfg.hs_zero + cfg.hs_trail +
+		     cfg.hs_exit + 1300000;
+	hfp_ps = ((adjusted_mode->hsync_start - adjusted_mode->hdisplay) * 1000000000UL) /
+					adjusted_mode->clock;
+
+	if (hfp_ps < min_hfp_ps) {
+		/* HFP is too short to allow return to LP. Increase it, and
+		 * increase clock rate to keep frame rate the same.
+		 */
+		line_time_ps = (adjusted_mode->htotal * 1000000000UL) / adjusted_mode->clock;
+		non_hfp_ps = line_time_ps - min_hfp_ps;
+		non_hfp_pix = adjusted_mode->htotal -
+			(adjusted_mode->hsync_start - adjusted_mode->hdisplay);
+		adjusted_mode->clock = (non_hfp_pix * 1000000000UL) / non_hfp_ps;
+		adjusted_mode->crtc_clock = adjusted_mode->clock;
+		htotal_pix = (adjusted_mode->clock * line_time_ps) / 1000000000UL;
+		adjusted_mode->hsync_start += (htotal_pix - adjusted_mode->htotal);
+		adjusted_mode->hsync_end += (htotal_pix - adjusted_mode->htotal);
+		adjusted_mode->htotal = htotal_pix;
+		drm_dbg_driver(dsi->drm, "new timings are %u/%u/%u/%u clock %u\n",
+			       adjusted_mode->hdisplay,
+			       adjusted_mode->hsync_start,
+			       adjusted_mode->hsync_end,
+			       adjusted_mode->htotal,
+			       adjusted_mode->clock);
+	}
+
+	return true;
+}
+
+static void rp1_dsi_bridge_pre_enable(struct drm_bridge *bridge,
+				      struct drm_bridge_state *old_state)
+{
+	struct rp1_dsi *dsi = bridge_to_rp1_dsi(bridge);
+
+	rp1dsi_dsi_setup(dsi, &dsi->pipe.crtc.state->adjusted_mode);
+}
+
+static void rp1_dsi_bridge_enable(struct drm_bridge *bridge,
+				  struct drm_bridge_state *old_state)
+{
+	struct rp1_dsi *dsi = bridge_to_rp1_dsi(bridge);
+
+	rp1dsi_dsi_set_cmdmode(dsi, 0);
+}
+
+static void rp1_dsi_bridge_disable(struct drm_bridge *bridge,
+				   struct drm_bridge_state *state)
+{
+	struct rp1_dsi *dsi = bridge_to_rp1_dsi(bridge);
+
+	rp1dsi_dsi_set_cmdmode(dsi, 1); /* video stopped, so drop to command mode */
+}
+
+static void rp1_dsi_bridge_post_disable(struct drm_bridge *bridge,
+					struct drm_bridge_state *state)
+{
+	struct rp1_dsi *dsi = bridge_to_rp1_dsi(bridge);
+
+	if (dsi->dsi_running) {
+		rp1dsi_dsi_stop(dsi);
+		dsi->dsi_running = false;
+	}
+}
+
+static int rp1_dsi_bridge_attach(struct drm_bridge *bridge,
+				 enum drm_bridge_attach_flags flags)
+{
+	struct rp1_dsi *dsi = bridge_to_rp1_dsi(bridge);
+
+	/* Attach the panel or bridge to the dsi bridge */
+	return drm_bridge_attach(bridge->encoder, dsi->out_bridge,
+				 &dsi->bridge, flags);
+	return 0;
+}
+
+static const struct drm_bridge_funcs rp1_dsi_bridge_funcs = {
+	.atomic_duplicate_state = drm_atomic_helper_bridge_duplicate_state,
+	.atomic_destroy_state = drm_atomic_helper_bridge_destroy_state,
+	.atomic_reset = drm_atomic_helper_bridge_reset,
+	.atomic_pre_enable = rp1_dsi_bridge_pre_enable,
+	.atomic_enable = rp1_dsi_bridge_enable,
+	.atomic_disable = rp1_dsi_bridge_disable,
+	.atomic_post_disable = rp1_dsi_bridge_post_disable,
+	.attach = rp1_dsi_bridge_attach,
+	.mode_fixup = rp1_dsi_bridge_mode_fixup,
+};
 
 static void rp1dsi_pipe_update(struct drm_simple_display_pipe *pipe,
 			       struct drm_plane_state *old_state)
@@ -56,33 +155,28 @@ static void rp1dsi_pipe_update(struct drm_simple_display_pipe *pipe,
 	struct drm_pending_vblank_event *event;
 	unsigned long flags;
 	struct drm_framebuffer *fb = pipe->plane.state->fb;
-	struct rp1dsi_priv *priv = pipe->crtc.dev->dev_private;
+	struct rp1_dsi *dsi = pipe->crtc.dev->dev_private;
 	struct drm_gem_object *gem = fb ? drm_gem_fb_get_obj(fb, 0) : NULL;
 	struct drm_gem_dma_object *dma_obj = gem ? to_drm_gem_dma_obj(gem) : NULL;
-	bool can_update = fb && dma_obj && priv && priv->pipe_enabled;
+	bool can_update = fb && dma_obj && dsi && dsi->pipe_enabled;
 
 	/* (Re-)start DSI,DMA where required; and update FB address */
 	if (can_update) {
-		if (!priv->dma_running || fb->format->format != priv->cur_fmt) {
-			if (priv->dma_running && fb->format->format != priv->cur_fmt) {
-				rp1dsi_dma_stop(priv);
-				priv->dma_running = false;
+		if (!dsi->dma_running || fb->format->format != dsi->cur_fmt) {
+			if (dsi->dma_running && fb->format->format != dsi->cur_fmt) {
+				rp1dsi_dma_stop(dsi);
+				dsi->dma_running = false;
 			}
-			if (!priv->dsi_running) {
-				rp1dsi_dsi_setup(priv, &pipe->crtc.state->mode);
-				priv->dsi_running = true;
+			if (!dsi->dma_running) {
+				rp1dsi_dma_setup(dsi,
+						 fb->format->format, dsi->display_format,
+						&pipe->crtc.state->adjusted_mode);
+				dsi->dma_running = true;
 			}
-			if (!priv->dma_running) {
-				rp1dsi_dma_setup(priv,
-						 fb->format->format, priv->display_format,
-						&pipe->crtc.state->mode);
-				priv->dma_running = true;
-			}
-			priv->cur_fmt  = fb->format->format;
+			dsi->cur_fmt  = fb->format->format;
 			drm_crtc_vblank_on(&pipe->crtc);
 		}
-		rp1dsi_dsi_set_cmdmode(priv, 0);
-		rp1dsi_dma_update(priv, dma_obj->dma_addr, fb->offsets[0], fb->pitches[0]);
+		rp1dsi_dma_update(dsi, dma_obj->dma_addr, fb->offsets[0], fb->pitches[0]);
 	}
 
 	/* Arm VBLANK event (or call it immediately in some error cases) */
@@ -98,48 +192,66 @@ static void rp1dsi_pipe_update(struct drm_simple_display_pipe *pipe,
 	spin_unlock_irqrestore(&pipe->crtc.dev->event_lock, flags);
 }
 
+static inline struct rp1_dsi *
+encoder_to_rp1_dsi(struct drm_encoder *encoder)
+{
+	struct drm_simple_display_pipe *pipe =
+		container_of(encoder, struct drm_simple_display_pipe, encoder);
+	return container_of(pipe, struct rp1_dsi, pipe);
+}
+
+static void rp1dsi_encoder_enable(struct drm_encoder *encoder)
+{
+	struct rp1_dsi *dsi = encoder_to_rp1_dsi(encoder);
+
+	dsi->pipe_enabled = true;
+	dsi->cur_fmt = 0xdeadbeef;
+	rp1dsi_pipe_update(&dsi->pipe, 0);
+}
+
+static void rp1dsi_encoder_disable(struct drm_encoder *encoder)
+{
+	struct rp1_dsi *dsi = encoder_to_rp1_dsi(encoder);
+
+	drm_crtc_vblank_off(&dsi->pipe.crtc);
+	if (dsi->dma_running) {
+		rp1dsi_dma_stop(dsi);
+		dsi->dma_running = false;
+	}
+	dsi->pipe_enabled = false;
+}
+
+static const struct drm_encoder_helper_funcs rp1_dsi_encoder_funcs = {
+	.enable = rp1dsi_encoder_enable,
+	.disable = rp1dsi_encoder_disable,
+};
+
 static void rp1dsi_pipe_enable(struct drm_simple_display_pipe *pipe,
 			       struct drm_crtc_state *crtc_state,
 			       struct drm_plane_state *plane_state)
 {
-	struct rp1dsi_priv *priv = pipe->crtc.dev->dev_private;
-
-	dev_info(&priv->pdev->dev, __func__);
-	priv->pipe_enabled = true;
-	priv->cur_fmt = 0xdeadbeef;
-	rp1dsi_pipe_update(pipe, 0);
 }
 
 static void rp1dsi_pipe_disable(struct drm_simple_display_pipe *pipe)
 {
-	struct rp1dsi_priv *priv = pipe->crtc.dev->dev_private;
-
-	dev_info(&priv->pdev->dev, __func__);
-	drm_crtc_vblank_off(&pipe->crtc);
-	if (priv->dma_running) {
-		rp1dsi_dma_stop(priv);
-		priv->dma_running = false;
-		rp1dsi_dsi_set_cmdmode(priv, 1); /* video stopped, so drop to command mode */
-	}
-	priv->pipe_enabled = false;
 }
 
 static int rp1dsi_pipe_enable_vblank(struct drm_simple_display_pipe *pipe)
 {
-	struct rp1dsi_priv *priv = pipe->crtc.dev->dev_private;
+	struct rp1_dsi *dsi = pipe->crtc.dev->dev_private;
 
-	if (priv)
-		rp1dsi_dma_vblank_ctrl(priv, 1);
+	if (dsi)
+		rp1dsi_dma_vblank_ctrl(dsi, 1);
 
 	return 0;
 }
 
 static void rp1dsi_pipe_disable_vblank(struct drm_simple_display_pipe *pipe)
 {
-	struct rp1dsi_priv *priv = pipe->crtc.dev->dev_private;
+	struct rp1_dsi *dsi = pipe->crtc.dev->dev_private;
 
-	if (priv)
-		rp1dsi_dma_vblank_ctrl(priv, 0);
+	if (dsi)
+		rp1dsi_dma_vblank_ctrl(dsi, 0);
 }
 
 static const struct drm_simple_display_pipe_funcs rp1dsi_pipe_funcs = {
@@ -167,18 +279,18 @@ static const u32 rp1dsi_formats[] = {
 static void rp1dsi_stopall(struct drm_device *drm)
 {
 	if (drm->dev_private) {
-		struct rp1dsi_priv *priv = drm->dev_private;
+		struct rp1_dsi *dsi = drm->dev_private;
 
-		if (priv->dma_running || rp1dsi_dma_busy(priv)) {
-			rp1dsi_dma_stop(priv);
-			priv->dma_running = false;
+		if (dsi->dma_running || rp1dsi_dma_busy(dsi)) {
+			rp1dsi_dma_stop(dsi);
+			dsi->dma_running = false;
 		}
-		if (priv->dsi_running) {
-			rp1dsi_dsi_stop(priv);
-			priv->dsi_running = false;
+		if (dsi->dsi_running) {
+			rp1dsi_dsi_stop(dsi);
+			dsi->dsi_running = false;
 		}
-		if (!priv->running_on_fpga && priv->clocks[RP1DSI_CLOCK_CFG])
-			clk_disable_unprepare(priv->clocks[RP1DSI_CLOCK_CFG]);
+		if (dsi->clocks[RP1DSI_CLOCK_CFG])
+			clk_disable_unprepare(dsi->clocks[RP1DSI_CLOCK_CFG]);
 	}
 }
 
@@ -196,35 +308,22 @@ static struct drm_driver rp1dsi_driver = {
 	.release		= rp1dsi_stopall,
 };
 
-static int rp1dsi_bind(struct rp1dsi_priv *priv)
+static int rp1dsi_bind(struct rp1_dsi *dsi)
 {
-	struct platform_device *pdev = priv->pdev;
-	struct drm_device *drm = priv->drm;
-	struct drm_bridge *bridge = NULL;
-	struct drm_panel *panel;
+	struct platform_device *pdev = dsi->pdev;
+	struct drm_device *drm = dsi->drm;
 	int ret;
 
-	ret = drm_of_find_panel_or_bridge(pdev->dev.of_node,
-					  0, 0,
-					  &panel, &bridge);
-	if (ret) {
-		dev_info(&pdev->dev, "%s: bridge not found\n", __func__);
-		return -EPROBE_DEFER;
-	}
-	if (panel) {
-		bridge = devm_drm_panel_bridge_add(drm->dev, panel);
-		if (IS_ERR(bridge)) {
-			ret = PTR_ERR(bridge);
-			goto rtn;
-		}
-	}
+	dsi->out_bridge = drmm_of_get_bridge(drm, pdev->dev.of_node, 0, 0);
+	if (IS_ERR(dsi->out_bridge))
+		return PTR_ERR(dsi->out_bridge);
 
 	ret = drmm_mode_config_init(drm);
 	if (ret)
 		goto rtn;
 
-	drm->mode_config.max_width  = 1920;
-	drm->mode_config.max_height = 1280;
+	drm->mode_config.max_width  = 4096;
+	drm->mode_config.max_height = 4096;
 	drm->mode_config.preferred_depth = 32;
 	drm->mode_config.prefer_shadow	 = 0;
 	drm->mode_config.quirk_addfb_prefer_host_byte_order = true;
@@ -232,19 +331,29 @@ static int rp1dsi_bind(struct rp1dsi_priv *priv)
 	drm_vblank_init(drm, 1);
 
 	ret = drm_simple_display_pipe_init(drm,
-					   &priv->pipe,
+					   &dsi->pipe,
 					   &rp1dsi_pipe_funcs,
 					   rp1dsi_formats,
 					   ARRAY_SIZE(rp1dsi_formats),
 					   NULL, NULL);
-	ret = drm_simple_display_pipe_attach_bridge(&priv->pipe, bridge);
 	if (ret)
 		goto rtn;
 
+	/* We need slightly more complex encoder handling (enabling/disabling
+	 * video mode), so add encoder helper functions.
+	 */
+	drm_encoder_helper_add(&dsi->pipe.encoder, &rp1_dsi_encoder_funcs);
+
+	ret = drm_simple_display_pipe_attach_bridge(&dsi->pipe, &dsi->bridge);
+	if (ret)
+		goto rtn;
+
+	drm_bridge_add(&dsi->bridge);
+
 	drm_mode_config_reset(drm);
 
-	if (!priv->running_on_fpga && priv->clocks[RP1DSI_CLOCK_CFG])
-		clk_prepare_enable(priv->clocks[RP1DSI_CLOCK_CFG]);
+	if (dsi->clocks[RP1DSI_CLOCK_CFG])
+		clk_prepare_enable(dsi->clocks[RP1DSI_CLOCK_CFG]);
 
 	ret = drm_dev_register(drm, 0);
 
@@ -260,66 +369,78 @@ rtn:
 	return ret;
 }
 
-static void rp1dsi_unbind(struct rp1dsi_priv *priv)
+static void rp1dsi_unbind(struct rp1_dsi *dsi)
 {
-	struct drm_device *drm = priv->drm;
+	struct drm_device *drm = dsi->drm;
 
 	rp1dsi_stopall(drm);
 	drm_dev_unregister(drm);
 	drm_atomic_helper_shutdown(drm);
 }
 
-int rp1dsi_host_attach(struct mipi_dsi_host *host, struct mipi_dsi_device *dsi)
+int rp1dsi_host_attach(struct mipi_dsi_host *host, struct mipi_dsi_device *dsi_dev)
 {
-	struct rp1dsi_priv *priv = container_of(host, struct rp1dsi_priv, dsi_host);
+	struct rp1_dsi *dsi = container_of(host, struct rp1_dsi, dsi_host);
 
-	dev_info(&priv->pdev->dev, "%s: Attach DSI device name=%s channel=%d lanes=%d format=%d flags=0x%lx hs_rate=%lu lp_rate=%lu",
-		 __func__, dsi->name, dsi->channel, dsi->lanes, dsi->format,
-		 dsi->mode_flags, dsi->hs_rate, dsi->lp_rate);
-	priv->vc              = dsi->channel & 3;
-	priv->lanes           = dsi->lanes;
-	priv->display_format  = dsi->format;
-	priv->display_flags   = dsi->mode_flags;
-	priv->display_hs_rate = dsi->hs_rate;
-	priv->display_lp_rate = dsi->lp_rate;
+	dev_info(&dsi->pdev->dev, "%s: Attach DSI device name=%s channel=%d lanes=%d format=%d flags=0x%lx hs_rate=%lu lp_rate=%lu",
+		 __func__, dsi_dev->name, dsi_dev->channel, dsi_dev->lanes,
+		 dsi_dev->format, dsi_dev->mode_flags, dsi_dev->hs_rate,
+		 dsi_dev->lp_rate);
+	dsi->vc              = dsi_dev->channel & 3;
+	dsi->lanes           = dsi_dev->lanes;
+
+	switch (dsi_dev->format) {
+	case MIPI_DSI_FMT_RGB666:
+	case MIPI_DSI_FMT_RGB666_PACKED:
+	case MIPI_DSI_FMT_RGB565:
+	case MIPI_DSI_FMT_RGB888:
+		break;
+	default:
+		return -EINVAL;
+	}
+	dsi->display_format  = dsi_dev->format;
+	dsi->display_flags   = dsi_dev->mode_flags;
+	dsi->display_hs_rate = dsi_dev->hs_rate;
+	dsi->display_lp_rate = dsi_dev->lp_rate;
 
 	/*
 	 * Previously, we added a separate component to handle panel/bridge
 	 * discovery and DRM registration, but now it's just a function call.
 	 * The downstream/attaching device should deal with -EPROBE_DEFER
 	 */
-	return rp1dsi_bind(priv);
+	return rp1dsi_bind(dsi);
 }
 
-int rp1dsi_host_detach(struct mipi_dsi_host *host, struct mipi_dsi_device *dsi)
+int rp1dsi_host_detach(struct mipi_dsi_host *host, struct mipi_dsi_device *dsi_dev)
 {
-	struct rp1dsi_priv *priv = container_of(host, struct rp1dsi_priv, dsi_host);
+	struct rp1_dsi *dsi = container_of(host, struct rp1_dsi, dsi_host);
 
 	/*
 	 * Unregister the DRM driver.
 	 * TODO: Check we are cleaning up correctly and not doing things multiple times!
 	 */
-	rp1dsi_unbind(priv);
+	rp1dsi_unbind(dsi);
 	return 0;
 }
 
 ssize_t rp1dsi_host_transfer(struct mipi_dsi_host *host, const struct mipi_dsi_msg *msg)
 {
-	struct rp1dsi_priv *priv = container_of(host, struct rp1dsi_priv, dsi_host);
+	struct rp1_dsi *dsi = container_of(host, struct rp1_dsi, dsi_host);
 	struct mipi_dsi_packet packet;
 	int ret = 0;
 
 	/* Write */
 	ret = mipi_dsi_create_packet(&packet, msg);
 	if (ret) {
-		dev_err(priv->drm->dev, "RP1DSI: failed to create packet: %d\n", ret);
+		dev_err(dsi->drm->dev, "RP1DSI: failed to create packet: %d\n", ret);
 		return ret;
 	}
-	rp1dsi_dsi_send(priv, *(u32 *)(&packet.header), packet.payload_length, packet.payload);
+
+	rp1dsi_dsi_send(dsi, *(u32 *)(&packet.header), packet.payload_length, packet.payload);
 
 	/* Optional read back */
 	if (msg->rx_len && msg->rx_buf)
-		ret = rp1dsi_dsi_recv(priv, msg->rx_len, msg->rx_buf);
+		ret = rp1dsi_dsi_recv(dsi, msg->rx_len, msg->rx_buf);
 
 	return (ssize_t)ret;
 }
@@ -334,78 +455,75 @@ static int rp1dsi_platform_probe(struct platform_device *pdev)
 {
 	struct device *dev = &pdev->dev;
 	struct drm_device *drm;
-	struct rp1dsi_priv *priv;
+	struct rp1_dsi *dsi;
 	int i, ret;
 
-	dev_info(dev, __func__);
 	drm = drm_dev_alloc(&rp1dsi_driver, dev);
 	if (IS_ERR(drm)) {
 		ret = PTR_ERR(drm);
 		return ret;
 	}
-	priv = drmm_kzalloc(drm, sizeof(*priv), GFP_KERNEL);
-	if (!priv) {
+	dsi = drmm_kzalloc(drm, sizeof(*dsi), GFP_KERNEL);
+	if (!dsi) {
 		ret = -ENOMEM;
 		goto err_free_drm;
 	}
-	sema_init(&priv->finished, 0);
-	priv->drm = drm;
-	priv->pdev = pdev;
-	drm->dev_private = priv;
+	init_completion(&dsi->finished);
+	dsi->drm = drm;
+	dsi->pdev = pdev;
+	drm->dev_private = dsi;
 	platform_set_drvdata(pdev, drm);
-	ret = rp1dsi_check_platform(priv);
-	if (ret)
-		goto err_free_drm;
+
+	dsi->bridge.funcs = &rp1_dsi_bridge_funcs;
+	dsi->bridge.of_node = dev->of_node;
+	dsi->bridge.type = DRM_MODE_CONNECTOR_DSI;
 
 	/* Safe default values for DSI mode */
-	priv->lanes = 1;
-	priv->display_format = MIPI_DSI_FMT_RGB888;
-	priv->display_flags  = MIPI_DSI_MODE_VIDEO | MIPI_DSI_MODE_LPM;
+	dsi->lanes = 1;
+	dsi->display_format = MIPI_DSI_FMT_RGB888;
+	dsi->display_flags  = MIPI_DSI_MODE_VIDEO | MIPI_DSI_MODE_LPM;
 
 	/* Hardware resources */
-	if (!priv->running_on_fpga) {
-		for (i = 0; i < RP1DSI_NUM_CLOCKS; i++) {
-			static const char * const myclocknames[RP1DSI_NUM_CLOCKS] = {
-				"cfgclk", "dpiclk", "byteclk", "refclk"
-			};
-			priv->clocks[i] = devm_clk_get(dev, myclocknames[i]);
-			if (IS_ERR(priv->clocks[i])) {
-				ret = PTR_ERR(priv->clocks[i]);
-				dev_err(dev, "Error getting clocks[%d]\n", i);
-				goto err_free_drm;
-			}
+	for (i = 0; i < RP1DSI_NUM_CLOCKS; i++) {
+		static const char * const myclocknames[RP1DSI_NUM_CLOCKS] = {
+			"cfgclk", "dpiclk", "byteclk", "refclk"
+		};
+		dsi->clocks[i] = devm_clk_get(dev, myclocknames[i]);
+		if (IS_ERR(dsi->clocks[i])) {
+			ret = PTR_ERR(dsi->clocks[i]);
+			dev_err(dev, "Error getting clocks[%d]\n", i);
+			goto err_free_drm;
 		}
 	}
 
 	for (i = 0; i < RP1DSI_NUM_HW_BLOCKS; i++) {
-		priv->hw_base[i] =
+		dsi->hw_base[i] =
 			devm_ioremap_resource(dev,
-					      platform_get_resource(priv->pdev,
+					      platform_get_resource(dsi->pdev,
 								    IORESOURCE_MEM,
 								    i));
-		if (IS_ERR(priv->hw_base[i])) {
-			ret = PTR_ERR(priv->hw_base[i]);
+		if (IS_ERR(dsi->hw_base[i])) {
+			ret = PTR_ERR(dsi->hw_base[i]);
 			dev_err(dev, "Error memory mapping regs[%d]\n", i);
 			goto err_free_drm;
 		}
 	}
-	ret = platform_get_irq(priv->pdev, 0);
+	ret = platform_get_irq(dsi->pdev, 0);
 	if (ret > 0)
 		ret = devm_request_irq(dev, ret, rp1dsi_dma_isr,
-				       IRQF_SHARED, "rp1-dsi", priv);
+				       IRQF_SHARED, "rp1-dsi", dsi);
 	if (ret) {
 		dev_err(dev, "Unable to request interrupt\n");
 		ret = -EINVAL;
 		goto err_free_drm;
 	}
-	rp1dsi_mipicfg_setup(priv);
+	rp1dsi_mipicfg_setup(dsi);
 	dma_set_mask_and_coherent(dev, DMA_BIT_MASK(64));
 
 	/* Create the MIPI DSI Host and wait for the panel/bridge to attach to it */
-	priv->dsi_host.ops = &rp1dsi_mipi_dsi_host_ops;
-	priv->dsi_host.dev = dev;
-	dev_info(dev, "%s: Calling mipi_dsi_host_register", __func__);
-	ret = mipi_dsi_host_register(&priv->dsi_host);
+	dsi->dsi_host.ops = &rp1dsi_mipi_dsi_host_ops;
+	dsi->dsi_host.dev = dev;
+	ret = mipi_dsi_host_register(&dsi->dsi_host);
 	if (ret)
 		goto err_free_drm;
 
@@ -420,9 +538,9 @@ err_free_drm:
 static int rp1dsi_platform_remove(struct platform_device *pdev)
 {
 	struct drm_device *drm = platform_get_drvdata(pdev);
-	struct rp1dsi_priv *priv = drm->dev_private;
+	struct rp1_dsi *dsi = drm->dev_private;
 
-	mipi_dsi_host_unregister(&priv->dsi_host);
+	mipi_dsi_host_unregister(&dsi->dsi_host);
 	return 0;
 }
 
