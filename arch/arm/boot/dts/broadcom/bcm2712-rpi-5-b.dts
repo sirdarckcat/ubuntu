@@ -422,38 +422,38 @@ dpi_16bit_gpio2:        &rp1_dpi_16bit_gpio2        { };
 
 &pinctrl_aon {
 	emmc_aon_cd_pins: emmc_aon_cd_pins {
-		brcm,pins = <5>;
-		brcm,function = <BCM2712_FSEL_ALT6>;
-		brcm,pull = <2>;
+		function = "sd_card_g";
+		pins = "aon_gpio5";
+		bias-pull-up;
 	};
 
 	suspend_button_pins: suspend_button_pins {
-		brcm,pins = <12>;
-		brcm,function = <0>;
-		brcm,pull = <2>;
+		function = "gpio";
+		pins = "aon_gpio12";
+		bias-pull-up;
 	};
 
 	/* Slight hack - only one PWM pin (status LED) is usable */
 	aon_pwm_1pin: aon_pwm_1pin {
-		brcm,pins = <9>;
-		brcm,function = <BCM2712_FSEL_ALT4>;
+		function = "aon_pwm";
+		pins = "aon_gpio9";
 	};
 };
 
 &pinctrl {
 	wl_on_pins: wl_on_pins {
-		brcm,pins = <28>;
-		brcm,function = <BCM2712_FSEL_GPIO>;
+		function = "gpio";
+		pins = "gpio28";
 	};
 
 	bt_shutdown_pins: bt_shutdown_pins {
-		brcm,function = <BCM2712_FSEL_GPIO>;
-		brcm,pins = <29>;
+		function = "gpio";
+		pins = "gpio29";
 	};
 
 	emmc_sd_pulls: emmc_sd_pulls {
-		brcm,pins = <51 52 53 54>;
-		brcm,pull = <2 2 2 2>;
+		function = "emmc_dat0", "emmc_dat1", "emmc_dat2", "emmc_dat3";
+		bias-pull-up;
 	};
 };
 
@@ -773,7 +773,7 @@ spi0_cs_pins: &rp1_spi0_cs_gpio7 {};
 	
 	usb_vbus_pins: usb_vbus_pins {
 		brcm,pins = <42>;
-		brcm,function = <BCM2712_FSEL_GPIO>;
+		brcm,function = <RP1_FSEL_GPIO_OUT>;
 	};
 };
 
