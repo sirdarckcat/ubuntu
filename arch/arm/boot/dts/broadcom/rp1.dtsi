@@ -421,6 +421,14 @@
 			status = "disabled";
 		};
 
+		rp1_gpiomem: gpiomem@d0000 {
+			/* Export IO_BANK0 and RIO_BANK0 to userspace */
+			compatible = "raspberrypi,gpiomem";
+			chardev-name = "rp1-gpiomem";
+			reg = <0xc0 0x400d0000  0x0 0x4000>,
+			      <0xc0 0x400e0000  0x0 0x4000>;
+		};
+
 		rp1_gpio: gpio@d0000 {
 			reg = <0xc0 0x400d0000  0x0 0xc000>,
 			      <0xc0 0x400e0000  0x0 0xc000>,
