@@ -510,7 +510,7 @@ static int pispbe_schedule_internal(struct pispbe_node_group *node_group,
 	 * image.
 	 * (Note that streaming_map is protected by hw_lock, which is held.)
 	 */
-	if (!(((1u << CONFIG_NODE) | (1u << MAIN_INPUT_NODE)) &
+	if (!((BIT(CONFIG_NODE) | BIT(MAIN_INPUT_NODE)) &
 					~(node_group->streaming_map))) {
 		/* remember: srcimages, captures then metadata */
 		struct pispbe_buffer *buf[PISPBE_NUM_NODES];
@@ -523,7 +523,7 @@ static int pispbe_schedule_internal(struct pispbe_node_group *node_group,
 
 		for (i = 0; i < PISPBE_NUM_NODES; i++) {
 			buf[i] = NULL;
-			if (node_group->streaming_map & (1u << i)) {
+			if (node_group->streaming_map & BIT(i)) {
 				node = &node_group->node[i];
 
 				spin_lock_irqsave(&node->ready_lock, flags1);
@@ -871,7 +871,7 @@ static int pispbe_node_start_streaming(struct vb2_queue *q, unsigned int count)
 	struct pispbe_dev *pispbe = node_group->pispbe;
 
 	spin_lock_irqsave(&pispbe->hw_lock, flags);
-	node->node_group->streaming_map |=  (1u << node->id);
+	node->node_group->streaming_map |=  BIT(node->id);
 	spin_unlock_irqrestore(&pispbe->hw_lock, flags);
 
 	v4l2_dbg(1, debug, &node_group->v4l2_dev,
@@ -924,7 +924,7 @@ static void pispbe_node_stop_streaming(struct vb2_queue *q)
 	vb2_wait_for_all_buffers(&node->queue);
 
 	spin_lock_irqsave(&pispbe->hw_lock, flags);
-	node_group->streaming_map &= ~(1u << node->id);
+	node_group->streaming_map &= ~BIT(node->id);
 	spin_unlock_irqrestore(&pispbe->hw_lock, flags);
 
 	v4l2_dbg(1, debug, &node_group->v4l2_dev,
