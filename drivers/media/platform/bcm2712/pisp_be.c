@@ -550,7 +550,7 @@ static int pispbe_schedule_internal(struct pispbe_node_group *node_group,
 	/* Pull a buffer from each V4L2 queue to form the queued job */
 	for (i = 0; i < PISPBE_NUM_NODES; i++) {
 		if (buf[i]) {
-			struct pispbe_node *node = &node_group->node[i];
+			node = &node_group->node[i];
 
 			spin_lock_irqsave(&node->ready_lock, flags1);
 			list_del(&buf[i]->ready_list);
