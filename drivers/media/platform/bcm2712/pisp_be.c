@@ -669,12 +669,17 @@ static void pispbe_schedule_one(struct pispbe_node_group *node_group)
 {
 	struct pispbe_dev *pispbe = node_group->pispbe;
 	unsigned long flags;
-	int lock_released = 0;
+	int ret;
 
 	spin_lock_irqsave(&pispbe->hw_lock, flags);
-	if (pispbe->hw_busy == 0)
-		lock_released = pispbe_schedule_internal(node_group, flags);
-	if (!lock_released)
+	if (pispbe->hw_busy) {
+		spin_unlock_irqrestore(&pispbe->hw_lock, flags);
+		return;
+	}
+
+	/* A non-zero return means the lock was released. */
+	ret = pispbe_schedule_internal(node_group, flags);
+	if (!ret)
 		spin_unlock_irqrestore(&pispbe->hw_lock, flags);
 }
 
