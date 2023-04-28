@@ -529,20 +529,21 @@ static int pispbe_schedule_internal(struct pispbe_node_group *node_group,
 	/* remember: srcimages, captures then metadata */
 	for (i = 0; i < PISPBE_NUM_NODES; i++) {
 		buf[i] = NULL;
-		if (node_group->streaming_map & BIT(i)) {
-			node = &node_group->node[i];
+		if (!(node_group->streaming_map & BIT(i)))
+			continue;
 
-			spin_lock_irqsave(&node->ready_lock, flags1);
-			buf[i] = list_first_entry_or_null(&node->ready_queue,
-							  struct pispbe_buffer,
-							  ready_list);
-			spin_unlock_irqrestore(&node->ready_lock,
-					       flags1);
-			if (!buf[i]) {
-				v4l2_dbg(1, debug, &node_group->v4l2_dev,
-					 "Nothing to do\n");
-				return 0;
-			}
+		node = &node_group->node[i];
+
+		spin_lock_irqsave(&node->ready_lock, flags1);
+		buf[i] = list_first_entry_or_null(&node->ready_queue,
+						  struct pispbe_buffer,
+						  ready_list);
+		spin_unlock_irqrestore(&node->ready_lock,
+				       flags1);
+		if (!buf[i]) {
+			v4l2_dbg(1, debug, &node_group->v4l2_dev,
+				 "Nothing to do\n");
+			return 0;
 		}
 	}
 
