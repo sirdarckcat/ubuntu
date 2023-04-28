@@ -684,7 +684,7 @@ static void pispbe_schedule_one(struct pispbe_node_group *node_group)
 }
 
 /* Try and schedule a job for any of the node groups. */
-static void pispbe_schedule_all(struct pispbe_dev *pispbe, int clear_hw_busy)
+static void pispbe_schedule_any(struct pispbe_dev *pispbe, int clear_hw_busy)
 {
 	unsigned long flags;
 
@@ -789,7 +789,7 @@ static irqreturn_t pispbe_isr(int irq, void *dev)
 	}
 
 	/* check if there's more to do before going to sleep */
-	pispbe_schedule_all(pispbe, can_queue_another);
+	pispbe_schedule_any(pispbe, can_queue_another);
 
 	return IRQ_HANDLED;
 }
