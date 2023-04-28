@@ -501,8 +501,16 @@ static struct pispbe_buffer *get_last_buffer(struct pispbe_node *node)
 static int pispbe_schedule_internal(struct pispbe_node_group *node_group,
 				    unsigned long flags)
 {
+
+	struct pispbe_buffer *rbuf[PISPBE_NUM_RECURRENT_INPUTS];
+	struct pisp_be_tiles_config *config_tiles_buffer;
 	struct pispbe_dev *pispbe = node_group->pispbe;
+	struct pispbe_buffer *buf[PISPBE_NUM_NODES];
+	dma_addr_t hw_dma_addrs[N_HW_ADDRESSES];
+	u32 hw_enables[N_HW_ENABLES];
 	struct pispbe_node *node;
+	unsigned long flags1;
+	int i;
 
 	/*
 	 * To schedule a job, we need all streaming nodes to have a buffer
@@ -510,152 +518,149 @@ static int pispbe_schedule_internal(struct pispbe_node_group *node_group,
 	 * image.
 	 * (Note that streaming_map is protected by hw_lock, which is held.)
 	 */
-	if (!((BIT(CONFIG_NODE) | BIT(MAIN_INPUT_NODE)) &
-					~(node_group->streaming_map))) {
-		/* remember: srcimages, captures then metadata */
-		struct pispbe_buffer *buf[PISPBE_NUM_NODES];
-		struct pispbe_buffer *rbuf[PISPBE_NUM_RECURRENT_INPUTS];
-		struct pisp_be_tiles_config *config_tiles_buffer;
-		dma_addr_t hw_dma_addrs[N_HW_ADDRESSES];
-		u32 hw_enables[N_HW_ENABLES];
-		unsigned long flags1;
-		int i;
-
-		for (i = 0; i < PISPBE_NUM_NODES; i++) {
-			buf[i] = NULL;
-			if (node_group->streaming_map & BIT(i)) {
-				node = &node_group->node[i];
-
-				spin_lock_irqsave(&node->ready_lock, flags1);
-				buf[i] = list_first_entry_or_null(&node->ready_queue,
-								  struct pispbe_buffer,
-								  ready_list);
-				spin_unlock_irqrestore(&node->ready_lock,
-						       flags1);
-				if (!buf[i])
-					goto nothing_to_do;
-			}
-		}
-
-		/* Pull a buffer from each V4L2 queue to form the queued job */
-		for (i = 0; i < PISPBE_NUM_NODES; i++) {
-			if (buf[i]) {
-				struct pispbe_node *node = &node_group->node[i];
-
-				spin_lock_irqsave(&node->ready_lock, flags1);
-				list_del(&buf[i]->ready_list);
-				spin_unlock_irqrestore(&node->ready_lock,
-						       flags1);
-			}
-			pispbe->queued_job.buf[i] = buf[i];
-		}
-
-		pispbe->queued_job.node_group = node_group;
-		pispbe->hw_busy = 1;
-		spin_unlock_irqrestore(&pispbe->hw_lock, flags);
-
-		/*
-		 * We can kick the job off without the hw_lock, as this can
-		 * never run again until hw_busy is cleared, which will happen
-		 * only when the following job has been queued.
-		 */
+	if (((BIT(CONFIG_NODE) | BIT(MAIN_INPUT_NODE)) &
+		node_group->streaming_map) !=
+			(BIT(CONFIG_NODE) | BIT(MAIN_INPUT_NODE))) {
 		v4l2_dbg(1, debug, &node_group->v4l2_dev,
-			 "Have buffers - starting hardware\n");
-		v4l2_ctrl_request_setup(
-			pispbe->queued_job.buf[0]->vb.vb2_buf.req_obj.req,
-			&node_group->hdlr);
-		config_tiles_buffer =
-			vb2_plane_vaddr(&buf[CONFIG_NODE]->vb.vb2_buf, 0);
-
-		/*
-		 * Automation for TDN/Stitch inputs and outputs. Generally,
-		 * the output from job number N becomes an input to job N+1.
-		 * Because a buffer may be needed by adjacently-queued jobs,
-		 * and perhaps (not necessarily) be overwritten in situ, only
-		 * Capture buffers can be queued by V4L2; inputs are inferred.
-		 *
-		 * Furthermore, if a TDN/Stitch Capture node is not streaming,
-		 * the driver will automatically cycle through the buffers.
-		 * (User must still have called REQBUFS with 1 or 2 buffers
-		 * of suitable dimensions and type. The initial state will
-		 * always be read from the buffer with index 0.)
-		 *
-		 * Buffers which weren't queued by V4L2 are not registered
-		 * in pispbe->queued_job.
-		 */
-		node = &node_group->node[TDN_OUTPUT_NODE];
-		spin_lock_irqsave(&node->ready_lock,
-				  flags1);
-		rbuf[RECURRENT_TDN_INPUT] = get_last_buffer(node);
-		if (config_tiles_buffer->config.global.bayer_enables &
-		    PISP_BE_BAYER_ENABLE_TDN_OUTPUT) {
-			if (!buf[TDN_OUTPUT_NODE]) {
-				if (++node->last_index >=
-				      node->queue.num_buffers)
-					node->last_index = 0;
-				buf[TDN_OUTPUT_NODE] = get_last_buffer(node);
-			} else {
-				node->last_index =
-					buf[TDN_OUTPUT_NODE]->vb.vb2_buf.index;
-			}
-		}
-		spin_unlock_irqrestore(&node->ready_lock, flags1);
-
-		node = &node_group->node[STITCH_OUTPUT_NODE];
-		spin_lock_irqsave(&node->ready_lock, flags1);
-		rbuf[RECURRENT_STITCH_INPUT] = get_last_buffer(node);
-		if (config_tiles_buffer->config.global.bayer_enables &
-		    PISP_BE_BAYER_ENABLE_STITCH_OUTPUT) {
-			if (!buf[STITCH_OUTPUT_NODE]) {
-				if (++node->last_index >=
-						node->queue.num_buffers)
-					node->last_index = 0;
-				buf[STITCH_OUTPUT_NODE] =
-					get_last_buffer(node);
-			} else {
-				node->last_index =
-					buf[STITCH_OUTPUT_NODE]->vb.vb2_buf.index;
-			}
-		}
-		spin_unlock_irqrestore(&node->ready_lock, flags1);
-
-		/* Convert buffers to DMA addresses for the hardware */
-		fixup_addrs_enables(hw_dma_addrs, hw_enables,
-				    config_tiles_buffer, buf, rbuf, node_group);
-		/*
-		 * This could be a spot to fill in the
-		 * buf[i]->vb.vb2_buf.planes[j].bytesused fields?
-		 */
-		i = config_tiles_buffer->num_tiles;
-		if (i <= 0 || i > PISP_BACK_END_NUM_TILES ||
-		    !((hw_enables[0] | hw_enables[1]) &
-		      PISP_BE_BAYER_ENABLE_INPUT)) {
-			/*
-			 * Bad job. We can't let it proceed as it could lock up
-			 * the hardware, or worse!
-			 *
-			 * XXX How to deal with this most cleanly? For now, just
-			 * force num_tiles to 0, which causes the H/W to do
-			 * something bizarre but survivable. It increments
-			 * (started,done) counters by more than 1, but we seem
-			 * to survive...
-			 */
-			v4l2_err(&node_group->v4l2_dev, "PROBLEM: Bad job");
-			i = 0;
-		}
-		hw_queue_job(pispbe, hw_dma_addrs, hw_enables,
-			     &config_tiles_buffer->config,
-			     vb2_dma_contig_plane_dma_addr(
-				     &buf[CONFIG_NODE]->vb.vb2_buf, 0) +
-				     offsetof(struct pisp_be_tiles_config,
-					      tiles),
-			     i);
-
-		return 1;
+			 "Nothing to do\n");
+		return 0;
 	}
-nothing_to_do:
-	v4l2_dbg(1, debug, &node_group->v4l2_dev, "Nothing to do\n");
-	return 0;
+
+	/* remember: srcimages, captures then metadata */
+	for (i = 0; i < PISPBE_NUM_NODES; i++) {
+		buf[i] = NULL;
+		if (node_group->streaming_map & BIT(i)) {
+			node = &node_group->node[i];
+
+			spin_lock_irqsave(&node->ready_lock, flags1);
+			buf[i] = list_first_entry_or_null(&node->ready_queue,
+							  struct pispbe_buffer,
+							  ready_list);
+			spin_unlock_irqrestore(&node->ready_lock,
+					       flags1);
+			if (!buf[i]) {
+				v4l2_dbg(1, debug, &node_group->v4l2_dev,
+					 "Nothing to do\n");
+				return 0;
+			}
+		}
+	}
+
+	/* Pull a buffer from each V4L2 queue to form the queued job */
+	for (i = 0; i < PISPBE_NUM_NODES; i++) {
+		if (buf[i]) {
+			struct pispbe_node *node = &node_group->node[i];
+
+			spin_lock_irqsave(&node->ready_lock, flags1);
+			list_del(&buf[i]->ready_list);
+			spin_unlock_irqrestore(&node->ready_lock,
+					       flags1);
+		}
+		pispbe->queued_job.buf[i] = buf[i];
+	}
+
+	pispbe->queued_job.node_group = node_group;
+	pispbe->hw_busy = 1;
+	spin_unlock_irqrestore(&pispbe->hw_lock, flags);
+
+	/*
+	 * We can kick the job off without the hw_lock, as this can
+	 * never run again until hw_busy is cleared, which will happen
+	 * only when the following job has been queued.
+	 */
+	v4l2_dbg(1, debug, &node_group->v4l2_dev,
+		 "Have buffers - starting hardware\n");
+	v4l2_ctrl_request_setup(
+		pispbe->queued_job.buf[0]->vb.vb2_buf.req_obj.req,
+		&node_group->hdlr);
+	config_tiles_buffer =
+		vb2_plane_vaddr(&buf[CONFIG_NODE]->vb.vb2_buf, 0);
+
+	/*
+	 * Automation for TDN/Stitch inputs and outputs. Generally,
+	 * the output from job number N becomes an input to job N+1.
+	 * Because a buffer may be needed by adjacently-queued jobs,
+	 * and perhaps (not necessarily) be overwritten in situ, only
+	 * Capture buffers can be queued by V4L2; inputs are inferred.
+	 *
+	 * Furthermore, if a TDN/Stitch Capture node is not streaming,
+	 * the driver will automatically cycle through the buffers.
+	 * (User must still have called REQBUFS with 1 or 2 buffers
+	 * of suitable dimensions and type. The initial state will
+	 * always be read from the buffer with index 0.)
+	 *
+	 * Buffers which weren't queued by V4L2 are not registered
+	 * in pispbe->queued_job.
+	 */
+	node = &node_group->node[TDN_OUTPUT_NODE];
+	spin_lock_irqsave(&node->ready_lock,
+			  flags1);
+	rbuf[RECURRENT_TDN_INPUT] = get_last_buffer(node);
+	if (config_tiles_buffer->config.global.bayer_enables &
+	    PISP_BE_BAYER_ENABLE_TDN_OUTPUT) {
+		if (!buf[TDN_OUTPUT_NODE]) {
+			if (++node->last_index >=
+			      node->queue.num_buffers)
+				node->last_index = 0;
+			buf[TDN_OUTPUT_NODE] = get_last_buffer(node);
+		} else {
+			node->last_index =
+				buf[TDN_OUTPUT_NODE]->vb.vb2_buf.index;
+		}
+	}
+	spin_unlock_irqrestore(&node->ready_lock, flags1);
+
+	node = &node_group->node[STITCH_OUTPUT_NODE];
+	spin_lock_irqsave(&node->ready_lock, flags1);
+	rbuf[RECURRENT_STITCH_INPUT] = get_last_buffer(node);
+	if (config_tiles_buffer->config.global.bayer_enables &
+	    PISP_BE_BAYER_ENABLE_STITCH_OUTPUT) {
+		if (!buf[STITCH_OUTPUT_NODE]) {
+			if (++node->last_index >=
+					node->queue.num_buffers)
+				node->last_index = 0;
+			buf[STITCH_OUTPUT_NODE] =
+				get_last_buffer(node);
+		} else {
+			node->last_index =
+				buf[STITCH_OUTPUT_NODE]->vb.vb2_buf.index;
+		}
+	}
+	spin_unlock_irqrestore(&node->ready_lock, flags1);
+
+	/* Convert buffers to DMA addresses for the hardware */
+	fixup_addrs_enables(hw_dma_addrs, hw_enables,
+			    config_tiles_buffer, buf, rbuf, node_group);
+	/*
+	 * This could be a spot to fill in the
+	 * buf[i]->vb.vb2_buf.planes[j].bytesused fields?
+	 */
+	i = config_tiles_buffer->num_tiles;
+	if (i <= 0 || i > PISP_BACK_END_NUM_TILES ||
+	    !((hw_enables[0] | hw_enables[1]) &
+	      PISP_BE_BAYER_ENABLE_INPUT)) {
+		/*
+		 * Bad job. We can't let it proceed as it could lock up
+		 * the hardware, or worse!
+		 *
+		 * XXX How to deal with this most cleanly? For now, just
+		 * force num_tiles to 0, which causes the H/W to do
+		 * something bizarre but survivable. It increments
+		 * (started,done) counters by more than 1, but we seem
+		 * to survive...
+		 */
+		v4l2_err(&node_group->v4l2_dev, "PROBLEM: Bad job");
+		i = 0;
+	}
+	hw_queue_job(pispbe, hw_dma_addrs, hw_enables,
+		     &config_tiles_buffer->config,
+		     vb2_dma_contig_plane_dma_addr(
+			     &buf[CONFIG_NODE]->vb.vb2_buf, 0) +
+			     offsetof(struct pisp_be_tiles_config,
+				      tiles),
+		     i);
+
+	return 1;
 }
 
 /* Try and schedule a job for just a single node group. */
