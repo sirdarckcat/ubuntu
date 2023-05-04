@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /*
- * DRM Driver for DSI output on Raspberry Pi RP1
+ * DRM Driver for DPI output on Raspberry Pi RP1
  *
  * Copyright (c) 2023 Raspberry Pi Limited.
  */
@@ -14,6 +14,7 @@
 #include <linux/platform_device.h>
 #include <linux/printk.h>
 #include <drm/drm_fourcc.h>
+#include <drm/drm_print.h>
 #include <drm/drm_vblank.h>
 
 #include "rp1_dpi.h"
@@ -201,23 +202,23 @@
 
 #define BITS(field, val) (((val) << (field ## _SHIFT)) & (field ## _MASK))
 
-static unsigned int rp1dpi_hw_read(struct rp1dpi_priv *priv, unsigned int reg)
+static unsigned int rp1dpi_hw_read(struct rp1_dpi *dpi, unsigned int reg)
 {
-	void __iomem *addr = priv->hw_base[RP1DPI_HW_BLOCK_DPI] + reg;
+	void __iomem *addr = dpi->hw_base[RP1DPI_HW_BLOCK_DPI] + reg;
 
 	return readl(addr);
 }
 
-static void rp1dpi_hw_write(struct rp1dpi_priv *priv, unsigned int reg, unsigned int val)
+static void rp1dpi_hw_write(struct rp1_dpi *dpi, unsigned int reg, unsigned int val)
 {
-	void __iomem *addr = priv->hw_base[RP1DPI_HW_BLOCK_DPI] + reg;
+	void __iomem *addr = dpi->hw_base[RP1DPI_HW_BLOCK_DPI] + reg;
 
 	writel(val, addr);
 }
 
-int rp1dpi_hw_busy(struct rp1dpi_priv *priv)
+int rp1dpi_hw_busy(struct rp1_dpi *dpi)
 {
-	return (rp1dpi_hw_read(priv, DPI_DMA_STATUS) & 0xF8F) ? 1 : 0;
+	return (rp1dpi_hw_read(dpi, DPI_DMA_STATUS) & 0xF8F) ? 1 : 0;
 }
 
 /* Table of supported input (in-memory/DMA) pixel formats. */
@@ -321,7 +322,7 @@ static u32 set_output_format(u32 bus_format, u32 *shift, u32 *imask, u32 *rgbsz)
 		((fmt) == MEDIA_BUS_FMT_BGR666_1X24_CPADHI) || \
 		((fmt) == MEDIA_BUS_FMT_BGR888_1X24))
 
-void rp1dpi_hw_setup(struct rp1dpi_priv *priv,
+void rp1dpi_hw_setup(struct rp1_dpi *dpi,
 		     u32 in_format, u32 bus_format, bool de_inv,
 		    struct drm_display_mode const *mode)
 {
@@ -336,27 +337,27 @@ void rp1dpi_hw_setup(struct rp1dpi_priv *priv,
 		(mode->flags & DRM_MODE_FLAG_NHSYNC) ? '-' : '+',
 		(mode->flags & DRM_MODE_FLAG_NVSYNC) ? '-' : '+',
 		de_inv ? '-' : '+',
-		priv->clk_inv ? '-' : '+');
+		dpi->clk_inv ? '-' : '+');
 
 	/*
 	 * Configure all DPI/DMA block registers, except base address.
 	 * DMA will not actually start until a FB base address is specified
 	 * using rp1dpi_hw_update().
 	 */
-	rp1dpi_hw_write(priv, DPI_DMA_VISIBLE_AREA,
+	rp1dpi_hw_write(dpi, DPI_DMA_VISIBLE_AREA,
 			BITS(DPI_DMA_VISIBLE_AREA_ROWSM1, mode->vdisplay - 1) |
 			BITS(DPI_DMA_VISIBLE_AREA_COLSM1, mode->hdisplay - 1));
 
-	rp1dpi_hw_write(priv, DPI_DMA_SYNC_WIDTH,
+	rp1dpi_hw_write(dpi, DPI_DMA_SYNC_WIDTH,
 			BITS(DPI_DMA_SYNC_WIDTH_ROWSM1, mode->vsync_end - mode->vsync_start - 1) |
 			BITS(DPI_DMA_SYNC_WIDTH_COLSM1, mode->hsync_end - mode->hsync_start - 1));
 
 	/* In these registers, "back porch" time includes sync width */
-	rp1dpi_hw_write(priv, DPI_DMA_BACK_PORCH,
+	rp1dpi_hw_write(dpi, DPI_DMA_BACK_PORCH,
 			BITS(DPI_DMA_BACK_PORCH_ROWSM1, mode->vtotal - mode->vsync_start - 1) |
 			BITS(DPI_DMA_BACK_PORCH_COLSM1, mode->htotal - mode->hsync_start - 1));
 
-	rp1dpi_hw_write(priv, DPI_DMA_FRONT_PORCH,
+	rp1dpi_hw_write(dpi, DPI_DMA_FRONT_PORCH,
 			BITS(DPI_DMA_FRONT_PORCH_ROWSM1, mode->vsync_start - mode->vdisplay - 1) |
 			BITS(DPI_DMA_FRONT_PORCH_COLSM1, mode->hsync_start - mode->hdisplay - 1));
 
@@ -376,26 +377,26 @@ void rp1dpi_hw_setup(struct rp1dpi_priv *priv,
 	rgbsz = my_formats[i].rgbsz;
 	omask = set_output_format(bus_format, &shift, &imask, &rgbsz);
 
-	rp1dpi_hw_write(priv, DPI_DMA_IMASK, imask);
-	rp1dpi_hw_write(priv, DPI_DMA_OMASK, omask);
-	rp1dpi_hw_write(priv, DPI_DMA_SHIFT, shift);
-	rp1dpi_hw_write(priv, DPI_DMA_RGBSZ, rgbsz);
+	rp1dpi_hw_write(dpi, DPI_DMA_IMASK, imask);
+	rp1dpi_hw_write(dpi, DPI_DMA_OMASK, omask);
+	rp1dpi_hw_write(dpi, DPI_DMA_SHIFT, shift);
+	rp1dpi_hw_write(dpi, DPI_DMA_RGBSZ, rgbsz);
 
-	rp1dpi_hw_write(priv, DPI_DMA_QOS,
+	rp1dpi_hw_write(dpi, DPI_DMA_QOS,
 			BITS(DPI_DMA_QOS_DQOS, 0x0) |
 			BITS(DPI_DMA_QOS_ULEV, 0x8) |
 			BITS(DPI_DMA_QOS_UQOS, 0x2) |
 			BITS(DPI_DMA_QOS_LLEV, 0x4) |
 			BITS(DPI_DMA_QOS_LQOS, 0x7));
 
-	rp1dpi_hw_write(priv, DPI_DMA_IRQ_FLAGS, -1);
-	rp1dpi_hw_vblank_ctrl(priv, 1);
+	rp1dpi_hw_write(dpi, DPI_DMA_IRQ_FLAGS, -1);
+	rp1dpi_hw_vblank_ctrl(dpi, 1);
 
-	i = rp1dpi_hw_busy(priv);
+	i = rp1dpi_hw_busy(dpi);
 	if (i)
 		pr_warn("%s: Unexpectedly busy at start!", __func__);
 
-	rp1dpi_hw_write(priv, DPI_DMA_CONTROL,
+	rp1dpi_hw_write(dpi, DPI_DMA_CONTROL,
 			BITS(DPI_DMA_CONTROL_ARM,          !i) |
 		       BITS(DPI_DMA_CONTROL_AUTO_REPEAT,   1) |
 		       BITS(DPI_DMA_CONTROL_HIGH_WATER,  384) |
@@ -412,7 +413,7 @@ void rp1dpi_hw_setup(struct rp1dpi_priv *priv,
 		       BITS(DPI_DMA_CONTROL_VSYNC_EN,  (mode->vsync_end != mode->vsync_start)));
 }
 
-void rp1dpi_hw_update(struct rp1dpi_priv *priv, dma_addr_t addr, u32 offset, u32 stride)
+void rp1dpi_hw_update(struct rp1_dpi *dpi, dma_addr_t addr, u32 offset, u32 stride)
 {
 	u64 a = addr + offset;
 
@@ -421,31 +422,32 @@ void rp1dpi_hw_update(struct rp1dpi_priv *priv, dma_addr_t addr, u32 offset, u32
 	 * DMA starts immediately; if already running, the buffer will flip at
 	 * the next vertical sync event.
 	 */
-	rp1dpi_hw_write(priv, DPI_DMA_DMA_STRIDE, stride);
-	rp1dpi_hw_write(priv, DPI_DMA_DMA_ADDR_H, a >> 32);
-	rp1dpi_hw_write(priv, DPI_DMA_DMA_ADDR_L, a & 0xFFFFFFFFu);
+	rp1dpi_hw_write(dpi, DPI_DMA_DMA_STRIDE, stride);
+	rp1dpi_hw_write(dpi, DPI_DMA_DMA_ADDR_H, a >> 32);
+	rp1dpi_hw_write(dpi, DPI_DMA_DMA_ADDR_L, a & 0xFFFFFFFFu);
 }
 
-void rp1dpi_hw_stop(struct rp1dpi_priv *priv)
+void rp1dpi_hw_stop(struct rp1_dpi *dpi)
 {
 	u32 ctrl;
-	int i;
 
 	/*
 	 * Stop DMA by turning off the Auto-Repeat flag, and wait up to 100ms for
 	 * the current and any queued frame to end. "Force drain" flags are not used,
 	 * as they seem to prevent DMA from re-starting properly; it's safer to wait.
 	 */
-	ctrl = rp1dpi_hw_read(priv, DPI_DMA_CONTROL);
+	reinit_completion(&dpi->finished);
+	ctrl = rp1dpi_hw_read(dpi, DPI_DMA_CONTROL);
 	ctrl &= ~(DPI_DMA_CONTROL_ARM_MASK | DPI_DMA_CONTROL_AUTO_REPEAT_MASK);
-	rp1dpi_hw_write(priv, DPI_DMA_CONTROL, ctrl);
-	i = down_timeout(&priv->finished, HZ / 10);
-	rp1dpi_hw_write(priv, DPI_DMA_IRQ_EN, 0);
+	rp1dpi_hw_write(dpi, DPI_DMA_CONTROL, ctrl);
+	if (!wait_for_completion_timeout(&dpi->finished, HZ / 10))
+		drm_err(dpi->drm, "%s: timed out waiting for idle\n", __func__);
+	rp1dpi_hw_write(dpi, DPI_DMA_IRQ_EN, 0);
 }
 
-void rp1dpi_hw_vblank_ctrl(struct rp1dpi_priv *priv, int enable)
+void rp1dpi_hw_vblank_ctrl(struct rp1_dpi *dpi, int enable)
 {
-	rp1dpi_hw_write(priv, DPI_DMA_IRQ_EN,
+	rp1dpi_hw_write(dpi, DPI_DMA_IRQ_EN,
 			BITS(DPI_DMA_IRQ_EN_AFIFO_EMPTY, 1)      |
 		       BITS(DPI_DMA_IRQ_EN_DMA_READY, !!enable) |
 		       BITS(DPI_DMA_IRQ_EN_MATCH_LINE, 4095));
@@ -453,16 +455,16 @@ void rp1dpi_hw_vblank_ctrl(struct rp1dpi_priv *priv, int enable)
 
 irqreturn_t rp1dpi_hw_isr(int irq, void *dev)
 {
-	struct rp1dpi_priv *priv = dev;
-	u32 u = rp1dpi_hw_read(priv, DPI_DMA_IRQ_FLAGS);
+	struct rp1_dpi *dpi = dev;
+	u32 u = rp1dpi_hw_read(dpi, DPI_DMA_IRQ_FLAGS);
 
 	if (u) {
-		rp1dpi_hw_write(priv, DPI_DMA_IRQ_FLAGS, u);
-		if (priv) {
+		rp1dpi_hw_write(dpi, DPI_DMA_IRQ_FLAGS, u);
+		if (dpi) {
 			if (u & DPI_DMA_IRQ_FLAGS_DMA_READY_MASK)
-				drm_crtc_handle_vblank(&priv->pipe.crtc);
+				drm_crtc_handle_vblank(&dpi->pipe.crtc);
 			if (u & DPI_DMA_IRQ_FLAGS_AFIFO_EMPTY_MASK)
-				up(&priv->finished);
+				complete(&dpi->finished);
 		}
 	}
 	return u ? IRQ_HANDLED : IRQ_NONE;

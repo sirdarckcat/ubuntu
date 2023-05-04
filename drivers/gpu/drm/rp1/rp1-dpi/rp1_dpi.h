@@ -27,7 +27,7 @@
 
 /* ---------------------------------------------------------------------- */
 
-struct rp1dpi_priv {
+struct rp1_dpi {
 	/* DRM and platform device pointers */
 	struct drm_device *drm;
 	struct platform_device *pdev;
@@ -44,28 +44,26 @@ struct rp1dpi_priv {
 	u32 cur_fmt;
 	u32 bus_fmt;
 	bool de_inv, clk_inv;
-	bool running_on_fpga, use_vdac;
 	bool dpi_running, pipe_enabled;
-	struct semaphore finished;
+	struct completion finished;
 };
 
 /* ---------------------------------------------------------------------- */
 /* Functions to control the DPI/DMA block				  */
 
-void rp1dpi_hw_setup(struct rp1dpi_priv *priv,
+void rp1dpi_hw_setup(struct rp1_dpi *dpi,
 		     u32 in_format,
 		     u32 bus_format,
 		     bool de_inv,
 		     struct drm_display_mode const *mode);
-void rp1dpi_hw_update(struct rp1dpi_priv *priv, dma_addr_t addr, u32 offset, u32 stride);
-void rp1dpi_hw_stop(struct rp1dpi_priv *priv);
-int rp1dpi_hw_busy(struct rp1dpi_priv *priv);
+void rp1dpi_hw_update(struct rp1_dpi *dpi, dma_addr_t addr, u32 offset, u32 stride);
+void rp1dpi_hw_stop(struct rp1_dpi *dpi);
+int rp1dpi_hw_busy(struct rp1_dpi *dpi);
 irqreturn_t rp1dpi_hw_isr(int irq, void *dev);
-void rp1dpi_hw_vblank_ctrl(struct rp1dpi_priv *priv, int enable);
+void rp1dpi_hw_vblank_ctrl(struct rp1_dpi *dpi, int enable);
 
 /* ---------------------------------------------------------------------- */
 /* Functions to control the VIDEO OUT CFG block and check RP1 platform	  */
 
-int  rp1dpi_check_platform(struct rp1dpi_priv *priv);
-void rp1dpi_vidout_setup(struct rp1dpi_priv *priv, bool use_vdac, bool drive_negedge);
-void rp1dpi_vidout_poweroff(struct rp1dpi_priv *priv);
+void rp1dpi_vidout_setup(struct rp1_dpi *dpi, bool drive_negedge);
+void rp1dpi_vidout_poweroff(struct rp1_dpi *dpi);

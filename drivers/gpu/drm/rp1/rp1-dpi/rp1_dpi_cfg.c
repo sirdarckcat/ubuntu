@@ -474,23 +474,10 @@
 #define VIDEO_OUT_CFG_RSTSEQ_DONE_BUSADAPTER_ACCESS "RO"
 // =============================================================================
 
-#define CFG_WRITE(reg, val)  writel((val),  priv->hw_base[RP1DPI_HW_BLOCK_CFG] + (reg ## _OFFSET))
-#define CFG_READ(reg)	     readl(priv->hw_base[RP1DPI_HW_BLOCK_CFG] + (reg ## _OFFSET))
+#define CFG_WRITE(reg, val)  writel((val),  dpi->hw_base[RP1DPI_HW_BLOCK_CFG] + (reg ## _OFFSET))
+#define CFG_READ(reg)	     readl(dpi->hw_base[RP1DPI_HW_BLOCK_CFG] + (reg ## _OFFSET))
 
-int rp1dpi_check_platform(struct rp1dpi_priv *priv)
-{
-	u32 chip_id, platform;
-
-	rp1_get_platform(&chip_id, &platform);
-	priv->running_on_fpga = !!(platform & RP1_PLATFORM_FPGA);
-	if (chip_id != RP1_C0_CHIP_ID) {
-		pr_err("Unexpected RP1 chip_id 0x%08x", chip_id);
-		return -ENODEV;
-	}
-	return 0;
-}
-
-void rp1dpi_vidout_setup(struct rp1dpi_priv *priv, bool use_vdac, bool drive_negedge)
+void rp1dpi_vidout_setup(struct rp1_dpi *dpi, bool drive_negedge)
 {
 	/*
 	 * We assume DPI and VEC can't be used at the same time (due to
@@ -499,20 +486,20 @@ void rp1dpi_vidout_setup(struct rp1dpi_priv *priv, bool use_vdac, bool drive_neg
 	 */
 	CFG_WRITE(VIDEO_OUT_CFG_MEM_PD, VIDEO_OUT_CFG_MEM_PD_VEC_BITS);
 	CFG_WRITE(VIDEO_OUT_CFG_TEST_OVERRIDE,
-		  use_vdac ? 0 : VIDEO_OUT_CFG_TEST_OVERRIDE_VDAC_BITS);
+		  VIDEO_OUT_CFG_TEST_OVERRIDE_VDAC_BITS);
 
 	/* DPI->Pads; DPI->VDAC; optionally flip PCLK polarity */
 	CFG_WRITE(VIDEO_OUT_CFG_SEL,
 		  drive_negedge ? VIDEO_OUT_CFG_SEL_PCLK_INV_BITS : 0);
 
 	/* configure VDAC for 3 channels, bandgap on, 710mV swing */
-	CFG_WRITE(VIDEO_OUT_CFG_VDAC_CFG, use_vdac ? 0x0078D34D : 0);
+	CFG_WRITE(VIDEO_OUT_CFG_VDAC_CFG, 0);
 
 	/* enable DPI interrupt */
 	CFG_WRITE(VIDEO_OUT_CFG_INTE, VIDEO_OUT_CFG_INTE_DPI_BITS);
 }
 
-void rp1dpi_vidout_poweroff(struct rp1dpi_priv *priv)
+void rp1dpi_vidout_poweroff(struct rp1_dpi *dpi)
 {
 	/* disable DPI interrupt */
 	CFG_WRITE(VIDEO_OUT_CFG_INTE, 0);

@@ -53,8 +53,7 @@
 
 /*
  * Default bus format, where not specified by a connector/bridge
- * and not overridden by the OF property "default_bus_fmt" and
- * when VDAC output is not enabled (in descending order of priority).
+ * and not overridden by the OF property "default_bus_fmt".
  * This value is for compatibility with vc4 and VGA666-style boards,
  * even though RP1 hardware cannot achieve the full 18-bit depth
  * with that pinout (MEDIA_BUS_FMT_RGB666_1X24_CPADHI is preferred).
@@ -70,30 +69,31 @@ static void rp1dpi_pipe_update(struct drm_simple_display_pipe *pipe,
 	struct drm_pending_vblank_event *event;
 	unsigned long flags;
 	struct drm_framebuffer *fb = pipe->plane.state->fb;
-	struct rp1dpi_priv *priv = pipe->crtc.dev->dev_private;
+	struct rp1_dpi *dpi = pipe->crtc.dev->dev_private;
 	struct drm_gem_object *gem = fb ? drm_gem_fb_get_obj(fb, 0) : NULL;
 	struct drm_gem_dma_object *dma_obj = gem ? to_drm_gem_dma_obj(gem) : NULL;
-	bool can_update = fb && dma_obj && priv && priv->pipe_enabled;
+	bool can_update = fb && dma_obj && dpi && dpi->pipe_enabled;
 
 	/* (Re-)start DPI-DMA where required; and update FB address */
 	if (can_update) {
-		if (!priv->dpi_running || fb->format->format != priv->cur_fmt) {
-			if (priv->dpi_running && fb->format->format != priv->cur_fmt) {
-				rp1dpi_hw_stop(priv);
-				priv->dpi_running = false;
+		if (!dpi->dpi_running || fb->format->format != dpi->cur_fmt) {
+			if (dpi->dpi_running &&
+			    fb->format->format != dpi->cur_fmt) {
+				rp1dpi_hw_stop(dpi);
+				dpi->dpi_running = false;
 			}
-			if (!priv->dpi_running) {
-				rp1dpi_hw_setup(priv,
+			if (!dpi->dpi_running) {
+				rp1dpi_hw_setup(dpi,
 						fb->format->format,
-					       priv->bus_fmt,
-					       priv->de_inv,
-					       &pipe->crtc.state->mode);
-				priv->dpi_running = true;
+						dpi->bus_fmt,
+						dpi->de_inv,
+						&pipe->crtc.state->mode);
+				dpi->dpi_running = true;
 			}
-			priv->cur_fmt = fb->format->format;
+			dpi->cur_fmt = fb->format->format;
 			drm_crtc_vblank_on(&pipe->crtc);
 		}
-		rp1dpi_hw_update(priv, dma_obj->dma_addr, fb->offsets[0], fb->pitches[0]);
+		rp1dpi_hw_update(dpi, dma_obj->dma_addr, fb->offsets[0], fb->pitches[0]);
 	}
 
 	/* Arm VBLANK event (or call it immediately in some error cases) */
@@ -114,7 +114,7 @@ static void rp1dpi_pipe_enable(struct drm_simple_display_pipe *pipe,
 			      struct drm_plane_state *plane_state)
 {
 	static const unsigned int M = 1000000;
-	struct rp1dpi_priv *priv = pipe->crtc.dev->dev_private;
+	struct rp1_dpi *dpi = pipe->crtc.dev->dev_private;
 	struct drm_connector *conn;
 	struct drm_connector_list_iter conn_iter;
 	unsigned int fpix, fdiv, fvco;
@@ -125,16 +125,16 @@ static void rp1dpi_pipe_enable(struct drm_simple_display_pipe *pipe,
 	 * bus_format we want, but it doesn't yet, so assume that it's
 	 * uniform throughout the bridge chain.
 	 */
-	dev_info(&priv->pdev->dev, __func__);
+	dev_info(&dpi->pdev->dev, __func__);
 	drm_connector_list_iter_begin(pipe->encoder.dev, &conn_iter);
 	drm_for_each_connector_iter(conn, &conn_iter) {
 		if (conn->encoder == &pipe->encoder) {
-			priv->de_inv =
+			dpi->de_inv =
 				!!(conn->display_info.bus_flags & DRM_BUS_FLAG_DE_LOW);
-			priv->clk_inv =
+			dpi->clk_inv =
 				!!(conn->display_info.bus_flags & DRM_BUS_FLAG_PIXDATA_DRIVE_NEGEDGE);
 			if (conn->display_info.num_bus_formats)
-				priv->bus_fmt = conn->display_info.bus_formats[0];
+				dpi->bus_fmt = conn->display_info.bus_formats[0];
 			break;
 		}
 	}
@@ -152,66 +152,66 @@ static void rp1dpi_pipe_enable(struct drm_simple_display_pipe *pipe,
 	while (fdiv < 100 * M)
 		fdiv *= 2;
 	fvco = fdiv * 2 * DIV_ROUND_UP(500 * M, fdiv);
-	ret = clk_set_rate(priv->clocks[RP1DPI_CLK_PLLCORE], fvco);
+	ret = clk_set_rate(dpi->clocks[RP1DPI_CLK_PLLCORE], fvco);
 	if (ret)
-		dev_err(&priv->pdev->dev, "Failed to set PLL VCO to %u (%d)", fvco, ret);
-	ret = clk_set_rate(priv->clocks[RP1DPI_CLK_PLLDIV], fdiv);
+		dev_err(&dpi->pdev->dev, "Failed to set PLL VCO to %u (%d)", fvco, ret);
+	ret = clk_set_rate(dpi->clocks[RP1DPI_CLK_PLLDIV], fdiv);
 	if (ret)
-		dev_err(&priv->pdev->dev, "Failed to set PLL output to %u (%d)", fdiv, ret);
-	ret = clk_set_rate(priv->clocks[RP1DPI_CLK_DPI], fpix);
+		dev_err(&dpi->pdev->dev, "Failed to set PLL output to %u (%d)", fdiv, ret);
+	ret = clk_set_rate(dpi->clocks[RP1DPI_CLK_DPI], fpix);
 	if (ret)
-		dev_err(&priv->pdev->dev, "Failed to set DPI clock to %u (%d)", fpix, ret);
+		dev_err(&dpi->pdev->dev, "Failed to set DPI clock to %u (%d)", fpix, ret);
 
-	rp1dpi_vidout_setup(priv, priv->use_vdac, priv->clk_inv);
-	clk_prepare_enable(priv->clocks[RP1DPI_CLK_PLLCORE]);
-	clk_prepare_enable(priv->clocks[RP1DPI_CLK_PLLDIV]);
-	pinctrl_pm_select_default_state(&priv->pdev->dev);
-	clk_prepare_enable(priv->clocks[RP1DPI_CLK_DPI]);
-	dev_info(&priv->pdev->dev, "Want %u /%u %u /%u %u; got VCO=%lu DIV=%lu DPI=%lu",
+	rp1dpi_vidout_setup(dpi, dpi->clk_inv);
+	clk_prepare_enable(dpi->clocks[RP1DPI_CLK_PLLCORE]);
+	clk_prepare_enable(dpi->clocks[RP1DPI_CLK_PLLDIV]);
+	pinctrl_pm_select_default_state(&dpi->pdev->dev);
+	clk_prepare_enable(dpi->clocks[RP1DPI_CLK_DPI]);
+	dev_info(&dpi->pdev->dev, "Want %u /%u %u /%u %u; got VCO=%lu DIV=%lu DPI=%lu",
 		fvco, fvco / fdiv, fdiv, fdiv / fpix, fpix,
-		clk_get_rate(priv->clocks[RP1DPI_CLK_PLLCORE]),
-		clk_get_rate(priv->clocks[RP1DPI_CLK_PLLDIV]),
-		clk_get_rate(priv->clocks[RP1DPI_CLK_DPI]));
+		clk_get_rate(dpi->clocks[RP1DPI_CLK_PLLCORE]),
+		clk_get_rate(dpi->clocks[RP1DPI_CLK_PLLDIV]),
+		clk_get_rate(dpi->clocks[RP1DPI_CLK_DPI]));
 
 	/* Start DPI-DMA. pipe already has the new crtc and plane state. */
-	priv->pipe_enabled = true;
-	priv->cur_fmt = 0xdeadbeef;
+	dpi->pipe_enabled = true;
+	dpi->cur_fmt = 0xdeadbeef;
 	rp1dpi_pipe_update(pipe, 0);
 }
 
 static void rp1dpi_pipe_disable(struct drm_simple_display_pipe *pipe)
 {
-	struct rp1dpi_priv *priv = pipe->crtc.dev->dev_private;
+	struct rp1_dpi *dpi = pipe->crtc.dev->dev_private;
 
-	dev_info(&priv->pdev->dev, __func__);
+	dev_info(&dpi->pdev->dev, __func__);
 	drm_crtc_vblank_off(&pipe->crtc);
-	if (priv->dpi_running) {
-		rp1dpi_hw_stop(priv);
-		priv->dpi_running = false;
+	if (dpi->dpi_running) {
+		rp1dpi_hw_stop(dpi);
+		dpi->dpi_running = false;
 	}
-	clk_disable_unprepare(priv->clocks[RP1DPI_CLK_DPI]);
-	pinctrl_pm_select_sleep_state(&priv->pdev->dev);
-	clk_disable_unprepare(priv->clocks[RP1DPI_CLK_PLLDIV]);
-	clk_disable_unprepare(priv->clocks[RP1DPI_CLK_PLLCORE]);
-	priv->pipe_enabled = false;
+	clk_disable_unprepare(dpi->clocks[RP1DPI_CLK_DPI]);
+	pinctrl_pm_select_sleep_state(&dpi->pdev->dev);
+	clk_disable_unprepare(dpi->clocks[RP1DPI_CLK_PLLDIV]);
+	clk_disable_unprepare(dpi->clocks[RP1DPI_CLK_PLLCORE]);
+	dpi->pipe_enabled = false;
 }
 
 static int rp1dpi_pipe_enable_vblank(struct drm_simple_display_pipe *pipe)
 {
-	struct rp1dpi_priv *priv = pipe->crtc.dev->dev_private;
+	struct rp1_dpi *dpi = pipe->crtc.dev->dev_private;
 
-	if (priv)
-		rp1dpi_hw_vblank_ctrl(priv, 1);
+	if (dpi)
+		rp1dpi_hw_vblank_ctrl(dpi, 1);
 
 	return 0;
 }
 
 static void rp1dpi_pipe_disable_vblank(struct drm_simple_display_pipe *pipe)
 {
-	struct rp1dpi_priv *priv = pipe->crtc.dev->dev_private;
+	struct rp1_dpi *dpi = pipe->crtc.dev->dev_private;
 
-	if (priv)
-		rp1dpi_hw_vblank_ctrl(priv, 0);
+	if (dpi)
+		rp1dpi_hw_vblank_ctrl(dpi, 0);
 }
 
 static const struct drm_simple_display_pipe_funcs rp1dpi_pipe_funcs = {
@@ -231,15 +231,15 @@ static const struct drm_mode_config_funcs rp1dpi_mode_funcs = {
 static void rp1dpi_stopall(struct drm_device *drm)
 {
 	if (drm->dev_private) {
-		struct rp1dpi_priv *priv = drm->dev_private;
+		struct rp1_dpi *dpi = drm->dev_private;
 
-		if (priv->dpi_running || rp1dpi_hw_busy(priv)) {
-			rp1dpi_hw_stop(priv);
-			clk_disable_unprepare(priv->clocks[RP1DPI_CLK_DPI]);
-			priv->dpi_running = false;
+		if (dpi->dpi_running || rp1dpi_hw_busy(dpi)) {
+			rp1dpi_hw_stop(dpi);
+			clk_disable_unprepare(dpi->clocks[RP1DPI_CLK_DPI]);
+			dpi->dpi_running = false;
 		}
-		rp1dpi_vidout_poweroff(priv);
-		pinctrl_pm_select_sleep_state(&priv->pdev->dev);
+		rp1dpi_vidout_poweroff(dpi);
+		pinctrl_pm_select_sleep_state(&dpi->pdev->dev);
 	}
 }
 
@@ -269,15 +269,14 @@ static int rp1dpi_platform_probe(struct platform_device *pdev)
 {
 	struct device *dev = &pdev->dev;
 	struct drm_device *drm;
-	struct rp1dpi_priv *priv;
+	struct rp1_dpi *dpi;
 	struct drm_bridge *bridge = NULL;
 	struct drm_panel *panel;
 	int i, ret;
 
 	dev_info(dev, __func__);
-	ret = drm_of_find_panel_or_bridge(pdev->dev.of_node,
-					  0, 0,
-					&panel, &bridge);
+	ret = drm_of_find_panel_or_bridge(pdev->dev.of_node, 0, 0,
+					  &panel, &bridge);
 	if (ret) {
 		dev_info(dev, "%s: bridge not found\n", __func__);
 		return -EPROBE_DEFER;
@@ -294,40 +293,36 @@ static int rp1dpi_platform_probe(struct platform_device *pdev)
 		ret = PTR_ERR(drm);
 		return ret;
 	}
-	priv = drmm_kzalloc(drm, sizeof(*priv), GFP_KERNEL);
-	if (!priv) {
+	dpi = drmm_kzalloc(drm, sizeof(*dpi), GFP_KERNEL);
+	if (!dpi) {
 		dev_info(dev, "%s %d", __func__, (int)__LINE__);
 		drm_dev_put(drm);
 		return -ENOMEM;
 	}
 
-	sema_init(&priv->finished, 0);
-	priv->drm = drm;
-	priv->pdev = pdev;
-	drm->dev_private = priv;
+	init_completion(&dpi->finished);
+	dpi->drm = drm;
+	dpi->pdev = pdev;
+	drm->dev_private = dpi;
 	platform_set_drvdata(pdev, drm);
-	ret = rp1dpi_check_platform(priv);
-	if (ret)
-		goto err_free_drm;
 
-	priv->use_vdac = of_property_read_bool(dev->of_node, "vdac");
-	priv->bus_fmt = (priv->use_vdac) ? MEDIA_BUS_FMT_RGB101010_1X30 : default_bus_fmt;
-	ret = of_property_read_u32(dev->of_node, "default_bus_fmt", &priv->bus_fmt);
+	dpi->bus_fmt = default_bus_fmt;
+	ret = of_property_read_u32(dev->of_node, "default_bus_fmt", &dpi->bus_fmt);
 
 	for (i = 0; i < RP1DPI_NUM_HW_BLOCKS; i++) {
-		priv->hw_base[i] =
+		dpi->hw_base[i] =
 			devm_ioremap_resource(dev,
-					      platform_get_resource(priv->pdev, IORESOURCE_MEM, i));
-		if (IS_ERR(priv->hw_base[i])) {
-			ret = PTR_ERR(priv->hw_base[i]);
+					      platform_get_resource(dpi->pdev, IORESOURCE_MEM, i));
+		if (IS_ERR(dpi->hw_base[i])) {
+			ret = PTR_ERR(dpi->hw_base[i]);
 			dev_err(dev, "Error memory mapping regs[%d]\n", i);
 			goto err_free_drm;
 		}
 	}
-	ret = platform_get_irq(priv->pdev, 0);
+	ret = platform_get_irq(dpi->pdev, 0);
 	if (ret > 0)
 		ret = devm_request_irq(dev, ret, rp1dpi_hw_isr,
-				       IRQF_SHARED, "rp1-dpi", priv);
+				       IRQF_SHARED, "rp1-dpi", dpi);
 	if (ret) {
 		dev_err(dev, "Unable to request interrupt\n");
 		ret = -EINVAL;
@@ -339,9 +334,9 @@ static int rp1dpi_platform_probe(struct platform_device *pdev)
 		static const char * const myclocknames[RP1DPI_NUM_CLOCKS] = {
 			"dpiclk", "plldiv", "pllcore"
 		};
-		priv->clocks[i] = devm_clk_get(dev, myclocknames[i]);
-		if (IS_ERR(priv->clocks[i])) {
-			ret = PTR_ERR(priv->clocks[i]);
+		dpi->clocks[i] = devm_clk_get(dev, myclocknames[i]);
+		if (IS_ERR(dpi->clocks[i])) {
+			ret = PTR_ERR(dpi->clocks[i]);
 			goto err_free_drm;
 		}
 	}
@@ -350,8 +345,8 @@ static int rp1dpi_platform_probe(struct platform_device *pdev)
 	if (ret)
 		goto err_free_drm;
 
-	drm->mode_config.max_width  = 1920;
-	drm->mode_config.max_height = 1280;
+	drm->mode_config.max_width  = 4096;
+	drm->mode_config.max_height = 4096;
 	drm->mode_config.preferred_depth = 32;
 	drm->mode_config.prefer_shadow	 = 0;
 	drm->mode_config.quirk_addfb_prefer_host_byte_order = true;
@@ -359,13 +354,13 @@ static int rp1dpi_platform_probe(struct platform_device *pdev)
 	drm_vblank_init(drm, 1);
 
 	ret = drm_simple_display_pipe_init(drm,
-					   &priv->pipe,
+					   &dpi->pipe,
 					   &rp1dpi_pipe_funcs,
 					   rp1dpi_formats,
 					   ARRAY_SIZE(rp1dpi_formats),
 					   NULL, NULL);
 	if (!ret)
-		ret = drm_simple_display_pipe_attach_bridge(&priv->pipe, bridge);
+		ret = drm_simple_display_pipe_attach_bridge(&dpi->pipe, bridge);
 	if (ret)
 		goto err_free_drm;
 
