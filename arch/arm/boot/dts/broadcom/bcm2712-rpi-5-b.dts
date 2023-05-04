@@ -157,19 +157,6 @@
 		status = "okay";
 	};
 
-	// This should really use the dedicated VBUS function on the same pin
-	usb_vbus_reg: usb_vbus_reg {
-		compatible = "regulator-fixed";
-		regulator-name = "vbus";
-		regulator-min-microvolt = <5000000>;
-		regulator-max-microvolt = <5000000>;
-		enable-active-high;
-		regulator-always-on; // HACK
-		gpio = <&rp1_gpio 42 GPIO_ACTIVE_HIGH>;
-		pinctrl-0 = <&usb_vbus_pins>;
-		pinctrl-names = "default";
-	};
-
 	wl_on_reg: wl_on_reg {
 		compatible = "regulator-fixed";
 		regulator-name = "wl-on-regulator";
@@ -328,6 +315,8 @@ uart4_ctsrts_pins: &rp1_uart4_ctsrts_14_15 {};
 uart4: &rp1_uart4 { };
 
 &rp1_usb0 {
+	pinctrl-0 = <&usb_vbus_pins>;
+	pinctrl-names = "default";
 	status = "okay";
 };
 
@@ -594,10 +583,6 @@ spi0_cs_pins: &rp1_spi0_cs_gpio7 {};
 // =============================================
 // Board specific stuff here
 
-&usbphy {
-	vcc-supply = <&usb_vbus_reg>;
-};
-
 &rp1_pwm1 {
 	status = "disabled";
 	pinctrl-0 = <&rp1_pwm1_gpio45>;
@@ -792,7 +777,7 @@ spi0_cs_pins: &rp1_spi0_cs_gpio7 {};
 		"RP1_BOOT_SMOSI", // GPIO51
 		"RP1_BOOT_CS_N", // GPIO52
 		"-"; // GPIO53
-	
+
 	usb_vbus_pins: usb_vbus_pins {
 		function = "gpio";
 		pins = "gpio42";
