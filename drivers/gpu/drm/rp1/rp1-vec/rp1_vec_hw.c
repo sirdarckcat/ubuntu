@@ -13,6 +13,7 @@
 #include <linux/platform_device.h>
 #include <linux/printk.h>
 #include <drm/drm_fourcc.h>
+#include <drm/drm_print.h>
 #include <drm/drm_vblank.h>
 
 #include "rp1_vec.h"
@@ -20,10 +21,10 @@
 
 #define BITS(field, val) (((val) << (field ## _LSB)) & (field ## _BITS))
 
-#define VEC_WRITE(reg, val) writel((val), priv->hw_base[RP1VEC_HW_BLOCK_VEC] + (reg ## _OFFSET))
-#define VEC_READ(reg)	    readl(priv->hw_base[RP1VEC_HW_BLOCK_VEC] + (reg ## _OFFSET))
+#define VEC_WRITE(reg, val) writel((val), vec->hw_base[RP1VEC_HW_BLOCK_VEC] + (reg ## _OFFSET))
+#define VEC_READ(reg)	    readl(vec->hw_base[RP1VEC_HW_BLOCK_VEC] + (reg ## _OFFSET))
 
-int rp1vec_hw_busy(struct rp1vec_priv *priv)
+int rp1vec_hw_busy(struct rp1_vec *vec)
 {
 	/* Read the undocumented "pline_busy" flag */
 	return VEC_READ(VEC_STATUS) & 1;
@@ -300,7 +301,7 @@ static const struct rp1vec_hwmode rp1vec_hwmodes[3][2][2] = {
 	},
 };
 
-void rp1vec_hw_setup(struct rp1vec_priv *priv,
+void rp1vec_hw_setup(struct rp1_vec *vec,
 		     u32 in_format,
 		     struct drm_display_mode const *mode,
 		     int tvstd)
@@ -317,7 +318,7 @@ void rp1vec_hw_setup(struct rp1vec_priv *priv,
 		mode_family = (tvstd == RP1VEC_TVSTD_PAL_M || tvstd == RP1VEC_TVSTD_PAL60) ? 2 : 0;
 	mode_narrow = (mode->clock >= 14336);
 	hwm = &rp1vec_hwmodes[mode_family][mode_ilaced][mode_narrow];
-	dev_info(&priv->pdev->dev,
+	dev_info(&vec->pdev->dev,
 		 "%s: in_fmt=\'%c%c%c%c\' mode=%dx%d%s [%d%d%d] tvstd=%d (%s)",
 		__func__, in_format, in_format >> 8, in_format >> 16, in_format >> 24,
 		mode->hdisplay, mode->vdisplay, (mode_ilaced) ? "i" : "",
@@ -362,7 +363,7 @@ void rp1vec_hw_setup(struct rp1vec_priv *priv,
 		  BITS(VEC_MODE_FIRST_FIELD_ODD, hwm->first_field_odd));
 	for (i = 0; i < ARRAY_SIZE(hwm->back_end_regs); ++i) {
 		writel(hwm->back_end_regs[i],
-		       priv->hw_base[RP1VEC_HW_BLOCK_VEC] + 0x80 + 4 * i);
+		       vec->hw_base[RP1VEC_HW_BLOCK_VEC] + 0x80 + 4 * i);
 	}
 
 	/* Apply modifications */
@@ -394,7 +395,7 @@ void rp1vec_hw_setup(struct rp1vec_priv *priv,
 			break;
 	}
 	if (i >= ARRAY_SIZE(my_formats)) {
-		dev_err(&priv->pdev->dev, "%s: bad input format\n", __func__);
+		dev_err(&vec->pdev->dev, "%s: bad input format\n", __func__);
 		i = 0;
 	}
 	VEC_WRITE(VEC_IMASK, my_formats[i].mask);
@@ -402,11 +403,11 @@ void rp1vec_hw_setup(struct rp1vec_priv *priv,
 	VEC_WRITE(VEC_RGBSZ, my_formats[i].rgbsz);
 
 	VEC_WRITE(VEC_IRQ_FLAGS, 0xffffffff);
-	rp1vec_hw_vblank_ctrl(priv, 1);
+	rp1vec_hw_vblank_ctrl(vec, 1);
 
-	i = rp1vec_hw_busy(priv);
+	i = rp1vec_hw_busy(vec);
 	if (i)
-		dev_warn(&priv->pdev->dev,
+		dev_warn(&vec->pdev->dev,
 			 "%s: VEC unexpectedly busy at start (0x%08x)",
 			__func__, VEC_READ(VEC_STATUS));
 
@@ -415,7 +416,7 @@ void rp1vec_hw_setup(struct rp1vec_priv *priv,
 		  BITS(VEC_CONTROL_AUTO_REPEAT, 1));
 }
 
-void rp1vec_hw_update(struct rp1vec_priv *priv, dma_addr_t addr, u32 offset, u32 stride)
+void rp1vec_hw_update(struct rp1_vec *vec, dma_addr_t addr, u32 offset, u32 stride)
 {
 	/*
 	 * Update STRIDE, DMAH and DMAL only. When called after rp1vec_hw_setup(),
@@ -429,23 +430,22 @@ void rp1vec_hw_update(struct rp1vec_priv *priv, dma_addr_t addr, u32 offset, u32
 	VEC_WRITE(VEC_DMA_ADDR_L, a & 0xFFFFFFFFu);
 }
 
-void rp1vec_hw_stop(struct rp1vec_priv *priv)
+void rp1vec_hw_stop(struct rp1_vec *vec)
 {
 	/*
 	 * Stop DMA by turning off the Auto-Repeat flag, and wait up to 100ms for
 	 * the current and any queued frame to end. "Force drain" flags are not used,
 	 * as they seem to prevent DMA from re-starting properly; it's safer to wait.
 	 */
-	int i;
 
+	reinit_completion(&vec->finished);
 	VEC_WRITE(VEC_CONTROL, 0);
-	i = down_timeout(&priv->finished, HZ / 10);
+	if (!wait_for_completion_timeout(&vec->finished, HZ / 10))
+		drm_err(vec->drm, "%s: timed out waiting for idle\n", __func__);
 	VEC_WRITE(VEC_IRQ_ENABLES, 0);
-	if (i)
-		dev_warn(&priv->pdev->dev, "%s: down_timeout %d\n", __func__, i);
 }
 
-void rp1vec_hw_vblank_ctrl(struct rp1vec_priv *priv, int enable)
+void rp1vec_hw_vblank_ctrl(struct rp1_vec *vec, int enable)
 {
 	VEC_WRITE(VEC_IRQ_ENABLES,
 		  BITS(VEC_IRQ_ENABLES_DONE, 1) |
@@ -455,15 +455,15 @@ void rp1vec_hw_vblank_ctrl(struct rp1vec_priv *priv, int enable)
 
 irqreturn_t rp1vec_hw_isr(int irq, void *dev)
 {
-	struct rp1vec_priv *priv = dev;
+	struct rp1_vec *vec = dev;
 	u32 u = VEC_READ(VEC_IRQ_FLAGS);
 
 	if (u) {
 		VEC_WRITE(VEC_IRQ_FLAGS, u);
 		if (u & VEC_IRQ_FLAGS_DMA_BITS)
-			drm_crtc_handle_vblank(&priv->pipe.crtc);
+			drm_crtc_handle_vblank(&vec->pipe.crtc);
 		if (u & VEC_IRQ_FLAGS_DONE_BITS)
-			up(&priv->finished);
+			complete(&vec->finished);
 	}
 	return u ? IRQ_HANDLED : IRQ_NONE;
 }

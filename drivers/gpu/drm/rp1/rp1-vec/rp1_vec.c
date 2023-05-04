@@ -101,29 +101,29 @@ static void rp1vec_pipe_update(struct drm_simple_display_pipe *pipe,
 	struct drm_pending_vblank_event *event;
 	unsigned long flags;
 	struct drm_framebuffer *fb = pipe->plane.state->fb;
-	struct rp1vec_priv *priv = pipe->crtc.dev->dev_private;
+	struct rp1_vec *vec = pipe->crtc.dev->dev_private;
 	struct drm_gem_object *gem = fb ? drm_gem_fb_get_obj(fb, 0) : NULL;
 	struct drm_gem_dma_object *dma_obj = gem ? to_drm_gem_dma_obj(gem) : NULL;
-	bool can_update = fb && dma_obj && priv && priv->pipe_enabled;
+	bool can_update = fb && dma_obj && vec && vec->pipe_enabled;
 
 	/* (Re-)start VEC where required; and update FB address */
 	if (can_update) {
-		if (!priv->vec_running || fb->format->format != priv->cur_fmt) {
-			if (priv->vec_running && fb->format->format != priv->cur_fmt) {
-				rp1vec_hw_stop(priv);
-				priv->vec_running = false;
+		if (!vec->vec_running || fb->format->format != vec->cur_fmt) {
+			if (vec->vec_running && fb->format->format != vec->cur_fmt) {
+				rp1vec_hw_stop(vec);
+				vec->vec_running = false;
 			}
-			if (!priv->vec_running) {
-				rp1vec_hw_setup(priv,
+			if (!vec->vec_running) {
+				rp1vec_hw_setup(vec,
 						fb->format->format,
 						&pipe->crtc.state->mode,
-						priv->connector.state->tv.mode);
-				priv->vec_running = true;
+						vec->connector.state->tv.mode);
+				vec->vec_running = true;
 			}
-			priv->cur_fmt  = fb->format->format;
+			vec->cur_fmt  = fb->format->format;
 			drm_crtc_vblank_on(&pipe->crtc);
 		}
-		rp1vec_hw_update(priv, dma_obj->dma_addr, fb->offsets[0], fb->pitches[0]);
+		rp1vec_hw_update(vec, dma_obj->dma_addr, fb->offsets[0], fb->pitches[0]);
 	}
 
 	/* Check if VBLANK callback needs to be armed (or sent immediately in some error cases).
@@ -146,37 +146,37 @@ static void rp1vec_pipe_enable(struct drm_simple_display_pipe *pipe,
 			       struct drm_crtc_state *crtc_state,
 			      struct drm_plane_state *plane_state)
 {
-	struct rp1vec_priv *priv = pipe->crtc.dev->dev_private;
+	struct rp1_vec *vec = pipe->crtc.dev->dev_private;
 
-	dev_info(&priv->pdev->dev, __func__);
-	priv->pipe_enabled = true;
-	priv->cur_fmt = 0xdeadbeef;
-	rp1vec_vidout_setup(priv);
+	dev_info(&vec->pdev->dev, __func__);
+	vec->pipe_enabled = true;
+	vec->cur_fmt = 0xdeadbeef;
+	rp1vec_vidout_setup(vec);
 	rp1vec_pipe_update(pipe, 0);
 }
 
 static void rp1vec_pipe_disable(struct drm_simple_display_pipe *pipe)
 {
-	struct rp1vec_priv *priv = pipe->crtc.dev->dev_private;
+	struct rp1_vec *vec = pipe->crtc.dev->dev_private;
 
-	dev_info(&priv->pdev->dev, __func__);
+	dev_info(&vec->pdev->dev, __func__);
 	drm_crtc_vblank_off(&pipe->crtc);
-	if (priv) {
-		if (priv->vec_running) {
-			rp1vec_hw_stop(priv);
-			priv->vec_running = false;
+	if (vec) {
+		if (vec->vec_running) {
+			rp1vec_hw_stop(vec);
+			vec->vec_running = false;
 		}
-		priv->pipe_enabled = false;
+		vec->pipe_enabled = false;
 	}
 }
 
 static int rp1vec_pipe_enable_vblank(struct drm_simple_display_pipe *pipe)
 {
 	if (pipe && pipe->crtc.dev) {
-		struct rp1vec_priv *priv = pipe->crtc.dev->dev_private;
+		struct rp1_vec *vec = pipe->crtc.dev->dev_private;
 
-		if (priv)
-			rp1vec_hw_vblank_ctrl(priv, 1);
+		if (vec)
+			rp1vec_hw_vblank_ctrl(vec, 1);
 	}
 	return 0;
 }
@@ -184,10 +184,10 @@ static int rp1vec_pipe_enable_vblank(struct drm_simple_display_pipe *pipe)
 static void rp1vec_pipe_disable_vblank(struct drm_simple_display_pipe *pipe)
 {
 	if (pipe && pipe->crtc.dev) {
-		struct rp1vec_priv *priv = pipe->crtc.dev->dev_private;
+		struct rp1_vec *vec = pipe->crtc.dev->dev_private;
 
-		if (priv)
-			rp1vec_hw_vblank_ctrl(priv, 0);
+		if (vec)
+			rp1vec_hw_vblank_ctrl(vec, 0);
 	}
 }
 
@@ -245,9 +245,9 @@ static int rp1vec_connector_get_modes(struct drm_connector *connector)
 		{ 1, 3, 640, 512 }, /* BBC-style mode for retro applications          */
 	};
 	char const *pref;
-	struct rp1vec_priv *priv = container_of(connector, struct rp1vec_priv, connector);
-	bool ok525 = RP1VEC_TVSTD_SUPPORT_525(priv->tv_norm);
-	bool ok625 = RP1VEC_TVSTD_SUPPORT_625(priv->tv_norm);
+	struct rp1_vec *vec = container_of(connector, struct rp1_vec, connector);
+	bool ok525 = RP1VEC_TVSTD_SUPPORT_525(vec->tv_norm);
+	bool ok625 = RP1VEC_TVSTD_SUPPORT_625(vec->tv_norm);
 	int i, prog, margin, n = 0;
 
 	pref = ok525 ? "688x432i" : "688x512i";
@@ -289,11 +289,11 @@ static int rp1vec_connector_get_modes(struct drm_connector *connector)
 
 static void rp1vec_connector_reset(struct drm_connector *connector)
 {
-	struct rp1vec_priv *priv = container_of(connector, struct rp1vec_priv, connector);
+	struct rp1_vec *vec = container_of(connector, struct rp1_vec, connector);
 
 	drm_atomic_helper_connector_reset(connector);
 	if (connector->state)
-		connector->state->tv.mode = priv->tv_norm;
+		connector->state->tv.mode = vec->tv_norm;
 }
 
 static int rp1vec_connector_atomic_check(struct drm_connector *conn,
@@ -370,13 +370,13 @@ static const u32 rp1vec_formats[] = {
 static void rp1vec_stopall(struct drm_device *drm)
 {
 	if (drm->dev_private) {
-		struct rp1vec_priv *priv = drm->dev_private;
+		struct rp1_vec *vec = drm->dev_private;
 
-		if (priv->vec_running || rp1vec_hw_busy(priv)) {
-			rp1vec_hw_stop(priv);
-			priv->vec_running = false;
+		if (vec->vec_running || rp1vec_hw_busy(vec)) {
+			rp1vec_hw_stop(vec);
+			vec->vec_running = false;
 		}
-		rp1vec_vidout_poweroff(priv);
+		rp1vec_vidout_poweroff(vec);
 	}
 }
 
@@ -398,7 +398,7 @@ static int rp1vec_platform_probe(struct platform_device *pdev)
 {
 	struct device *dev = &pdev->dev;
 	struct drm_device *drm;
-	struct rp1vec_priv *priv;
+	struct rp1_vec *vec;
 	const char *str;
 	int i, ret;
 
@@ -410,39 +410,36 @@ static int rp1vec_platform_probe(struct platform_device *pdev)
 		return ret;
 	}
 
-	priv = drmm_kzalloc(drm, sizeof(*priv), GFP_KERNEL);
-	if (!priv) {
+	vec = drmm_kzalloc(drm, sizeof(*vec), GFP_KERNEL);
+	if (!vec) {
 		dev_err(dev, "%s drmm_kzalloc failed", __func__);
 		ret = -ENOMEM;
 		goto err_free_drm;
 	}
-	sema_init(&priv->finished, 0);
-	priv->drm = drm;
-	priv->pdev = pdev;
-	drm->dev_private = priv;
+	init_completion(&vec->finished);
+	vec->drm = drm;
+	vec->pdev = pdev;
+	drm->dev_private = vec;
 	platform_set_drvdata(pdev, drm);
-	ret = rp1vec_check_platform(priv);
-	if (ret)
-		goto err_free_drm;
 
 	str = rp1vec_tv_norm_str;
 	of_property_read_string(dev->of_node, "tv_norm", &str);
-	priv->tv_norm = rp1vec_parse_tv_norm(str);
+	vec->tv_norm = rp1vec_parse_tv_norm(str);
 
 	for (i = 0; i < RP1VEC_NUM_HW_BLOCKS; i++) {
-		priv->hw_base[i] =
+		vec->hw_base[i] =
 			devm_ioremap_resource(dev,
-					      platform_get_resource(priv->pdev, IORESOURCE_MEM, i));
-		if (IS_ERR(priv->hw_base[i])) {
-			ret = PTR_ERR(priv->hw_base[i]);
+					      platform_get_resource(vec->pdev, IORESOURCE_MEM, i));
+		if (IS_ERR(vec->hw_base[i])) {
+			ret = PTR_ERR(vec->hw_base[i]);
 			dev_err(dev, "Error memory mapping regs[%d]\n", i);
 			goto err_free_drm;
 		}
 	}
-	ret = platform_get_irq(priv->pdev, 0);
+	ret = platform_get_irq(vec->pdev, 0);
 	if (ret > 0)
 		ret = devm_request_irq(dev, ret, rp1vec_hw_isr,
-				       IRQF_SHARED, "rp1-vec", priv);
+				       IRQF_SHARED, "rp1-vec", vec);
 	if (ret) {
 		dev_err(dev, "Unable to request interrupt\n");
 		ret = -EINVAL;
@@ -450,12 +447,12 @@ static int rp1vec_platform_probe(struct platform_device *pdev)
 	}
 	dma_set_mask_and_coherent(dev, DMA_BIT_MASK(64));
 
-	priv->vec_clock = devm_clk_get(dev, NULL);
-	if (IS_ERR(priv->vec_clock)) {
-		ret = PTR_ERR(priv->vec_clock);
+	vec->vec_clock = devm_clk_get(dev, NULL);
+	if (IS_ERR(vec->vec_clock)) {
+		ret = PTR_ERR(vec->vec_clock);
 		goto err_free_drm;
 	}
-	ret = clk_prepare_enable(priv->vec_clock);
+	ret = clk_prepare_enable(vec->vec_clock);
 
 	ret = drmm_mode_config_init(drm);
 	if (ret)
@@ -475,25 +472,25 @@ static int rp1vec_platform_probe(struct platform_device *pdev)
 	if (ret)
 		goto err_free_drm;
 
-	drm_connector_init(drm, &priv->connector, &rp1vec_connector_funcs,
+	drm_connector_init(drm, &vec->connector, &rp1vec_connector_funcs,
 			   DRM_MODE_CONNECTOR_Composite);
 	if (ret)
 		goto err_free_drm;
 
-	priv->connector.interlace_allowed = true;
-	drm_connector_helper_add(&priv->connector, &rp1vec_connector_helper_funcs);
+	vec->connector.interlace_allowed = true;
+	drm_connector_helper_add(&vec->connector, &rp1vec_connector_helper_funcs);
 
-	drm_object_attach_property(&priv->connector.base,
+	drm_object_attach_property(&vec->connector.base,
 				   drm->mode_config.tv_mode_property,
-				   priv->tv_norm);
+				   vec->tv_norm);
 
 	ret = drm_simple_display_pipe_init(drm,
-					   &priv->pipe,
+					   &vec->pipe,
 					   &rp1vec_pipe_funcs,
 					   rp1vec_formats,
 					   ARRAY_SIZE(rp1vec_formats),
 					   NULL,
-					   &priv->connector);
+					   &vec->connector);
 	if (ret)
 		goto err_free_drm;
 

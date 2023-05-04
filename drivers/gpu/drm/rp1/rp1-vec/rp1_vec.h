@@ -37,7 +37,7 @@ enum {
 
 /* ---------------------------------------------------------------------- */
 
-struct rp1vec_priv {
+struct rp1_vec {
 	/* DRM and platform device pointers */
 	struct drm_device *drm;
 	struct platform_device *pdev;
@@ -53,9 +53,8 @@ struct rp1vec_priv {
 	void __iomem *hw_base[RP1VEC_NUM_HW_BLOCKS];
 	u32 cur_fmt;
 	int tv_norm;
-	bool running_on_fpga;
 	bool vec_running, pipe_enabled;
-	struct semaphore finished;
+	struct completion finished;
 };
 
 extern const char * const rp1vec_tvstd_names[];
@@ -63,19 +62,18 @@ extern const char * const rp1vec_tvstd_names[];
 /* ---------------------------------------------------------------------- */
 /* Functions to control the VEC/DMA block				  */
 
-void rp1vec_hw_setup(struct rp1vec_priv *priv,
+void rp1vec_hw_setup(struct rp1_vec *vec,
 		     u32 in_format,
 		struct drm_display_mode const *mode,
 		int tvstd);
-void rp1vec_hw_update(struct rp1vec_priv *priv, dma_addr_t addr, u32 offset, u32 stride);
-void rp1vec_hw_stop(struct rp1vec_priv *priv);
-int rp1vec_hw_busy(struct rp1vec_priv *priv);
+void rp1vec_hw_update(struct rp1_vec *vec, dma_addr_t addr, u32 offset, u32 stride);
+void rp1vec_hw_stop(struct rp1_vec *vec);
+int rp1vec_hw_busy(struct rp1_vec *vec);
 irqreturn_t rp1vec_hw_isr(int irq, void *dev);
-void rp1vec_hw_vblank_ctrl(struct rp1vec_priv *priv, int enable);
+void rp1vec_hw_vblank_ctrl(struct rp1_vec *vec, int enable);
 
 /* ---------------------------------------------------------------------- */
 /* Functions to control the VIDEO OUT CFG block and check RP1 platform	  */
 
-int  rp1vec_check_platform(struct rp1vec_priv *priv);
-void rp1vec_vidout_setup(struct rp1vec_priv *priv);
-void rp1vec_vidout_poweroff(struct rp1vec_priv *priv);
+void rp1vec_vidout_setup(struct rp1_vec *vec);
+void rp1vec_vidout_poweroff(struct rp1_vec *vec);

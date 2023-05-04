@@ -474,23 +474,10 @@
 #define VIDEO_OUT_CFG_RSTSEQ_DONE_BUSADAPTER_ACCESS "RO"
 // =============================================================================
 
-#define CFG_WRITE(reg, val)  writel((val),  priv->hw_base[RP1VEC_HW_BLOCK_CFG] + (reg ## _OFFSET))
-#define CFG_READ(reg)	     readl(priv->hw_base[RP1VEC_HW_BLOCK_CFG] + (reg ## _OFFSET))
+#define CFG_WRITE(reg, val)  writel((val),  vec->hw_base[RP1VEC_HW_BLOCK_CFG] + (reg ## _OFFSET))
+#define CFG_READ(reg)	     readl(vec->hw_base[RP1VEC_HW_BLOCK_CFG] + (reg ## _OFFSET))
 
-int rp1vec_check_platform(struct rp1vec_priv *priv)
-{
-	u32 chip_id, platform;
-
-	rp1_get_platform(&chip_id, &platform);
-	priv->running_on_fpga = !!(platform & RP1_PLATFORM_FPGA);
-	if (chip_id != RP1_C0_CHIP_ID) {
-		pr_err("Unexpected RP1 chip_id 0x%08x", chip_id);
-		return -ENODEV;
-	}
-	return 0;
-}
-
-void rp1vec_vidout_setup(struct rp1vec_priv *priv)
+void rp1vec_vidout_setup(struct rp1_vec *vec)
 {
 	/*
 	 * We assume DPI and VEC can't be used at the same time (due to
@@ -510,7 +497,7 @@ void rp1vec_vidout_setup(struct rp1vec_priv *priv)
 	CFG_WRITE(VIDEO_OUT_CFG_INTE, VIDEO_OUT_CFG_INTE_VEC_BITS);
 }
 
-void rp1vec_vidout_poweroff(struct rp1vec_priv *priv)
+void rp1vec_vidout_poweroff(struct rp1_vec *vec)
 {
 	/* disable VEC interrupt */
 	CFG_WRITE(VIDEO_OUT_CFG_INTE, 0);
