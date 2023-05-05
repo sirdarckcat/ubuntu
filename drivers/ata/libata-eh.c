@@ -15,6 +15,7 @@
 #include <linux/blkdev.h>
 #include <linux/export.h>
 #include <linux/pci.h>
+#include <linux/suspend.h>
 #include <scsi/scsi.h>
 #include <scsi/scsi_host.h>
 #include <scsi/scsi_eh.h>
@@ -2972,8 +2973,14 @@ static int ata_eh_revalidate_and_attach(struct ata_link *link,
 			 */
 			ehc->i.flags |= ATA_EHI_SETMODE;
 
-			/* schedule the scsi_rescan_device() here */
-			schedule_work(&(ap->scsi_rescan_task));
+			/* Schedule the scsi_rescan_device() here.
+			 * Defer the rescan if it's in process of
+			 * suspending or resuming.
+			 */
+			if (pm_suspend_target_state != PM_SUSPEND_ON)
+				ap->pflags |= ATA_PFLAG_DEFER_RESCAN;
+			else
+				schedule_work(&(ap->scsi_rescan_task));
 		} else if (dev->class == ATA_DEV_UNKNOWN &&
 			   ehc->tries[dev->devno] &&
 			   ata_class_enabled(ehc->classes[dev->devno])) {

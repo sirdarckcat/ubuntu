@@ -5058,6 +5058,16 @@ static int ata_port_pm_poweroff(struct device *dev)
 	return 0;
 }
 
+static void ata_port_pm_complete(struct device *dev)
+{
+	struct ata_port *ap = to_ata_port(dev);
+
+	if (ap->pflags & ATA_PFLAG_DEFER_RESCAN)
+		schedule_work(&(ap->scsi_rescan_task));
+
+	ap->pflags &= ~ATA_PFLAG_DEFER_RESCAN;
+}
+
 static const unsigned int ata_port_resume_ehi = ATA_EHI_NO_AUTOPSY
 						| ATA_EHI_QUIET;
 
@@ -5123,6 +5133,7 @@ static const struct dev_pm_ops ata_port_pm_ops = {
 	.thaw = ata_port_pm_resume,
 	.poweroff = ata_port_pm_poweroff,
 	.restore = ata_port_pm_resume,
+	.complete = ata_port_pm_complete,
 
 	.runtime_suspend = ata_port_runtime_suspend,
 	.runtime_resume = ata_port_runtime_resume,
