@@ -32,13 +32,10 @@
 #include <linux/seq_file.h>
 #include <linux/spinlock.h>
 #include <linux/types.h>
-#include <dt-bindings/pinctrl/rp1.h>
 
 #define MODULE_NAME "pinctrl-rp1"
 #define RP1_NUM_GPIOS	54
 #define RP1_NUM_BANKS	3
-
-#define RP1_FSEL_COUNT			0x1b
 
 #define RP1_RW_OFFSET			0x0000
 #define RP1_XOR_OFFSET			0x1000
@@ -91,11 +88,19 @@
 
 #define RP1_INT_EDGE_BOTH		(RP1_INT_EDGE_FALLING |	\
 					 RP1_INT_EDGE_RISING)
+#define RP1_PUD_OFF			0
+#define RP1_PUD_DOWN			1
+#define RP1_PUD_UP			2
 
-#define RP1_FUNCSEL_ALT0		0x00
-#define RP1_FUNCSEL_SYSRIO		0x05
-#define RP1_FUNCSEL_MAX			10
-#define RP1_FUNCSEL_NULL		0x1f
+#define RP1_FSEL_COUNT			9
+
+#define RP1_FSEL_ALT0			0x00
+#define RP1_FSEL_GPIO			0x05
+#define RP1_FSEL_NONE			0x09
+#define RP1_FSEL_NONE_HW		0x1f
+
+#define RP1_DIR_OUTPUT			0
+#define RP1_DIR_INPUT			1
 
 #define RP1_OUTOVER_PERI		0
 #define RP1_OUTOVER_INVPERI		1
@@ -129,10 +134,38 @@
 #define RP1_PAD_OUT_DISABLE_MASK	0x00000080
 #define RP1_PAD_OUT_DISABLE_LSB		7
 
-#define RP1_PINCONF_PARAM_PULL		(PIN_CONFIG_END + 1)
-
 #define FLD_GET(r, f) (((r) & (f ## _MASK)) >> (f ## _LSB))
 #define FLD_SET(r, f, v) r = (((r) & ~(f ## _MASK)) | ((v) << (f ## _LSB)))
+
+#define FUNC(f) \
+	[func_##f] = #f
+#define RP1_MAX_FSEL 8
+#define PIN(i, f0, f1, f2, f3, f4, f5, f6, f7, f8) \
+	[i] = { \
+		.funcs = { \
+			func_##f0, \
+			func_##f1, \
+			func_##f2, \
+			func_##f3, \
+			func_##f4, \
+			func_##f5, \
+			func_##f6, \
+			func_##f7, \
+			func_##f8, \
+		}, \
+	}
+
+#define LEGACY_MAP(n, f0, f1, f2, f3, f4, f5) \
+	[n] = { \
+		func_gpio, \
+		func_gpio, \
+		func_##f5, \
+		func_##f4, \
+		func_##f0, \
+		func_##f1, \
+		func_##f2, \
+		func_##f3, \
+	}
 
 struct rp1_iobank_desc {
 	int min_gpio;
@@ -156,6 +189,77 @@ struct rp1_pin_info {
 	void __iomem *inte;
 	void __iomem *ints;
 	void __iomem *pad;
+};
+enum funcs {
+	func_alt0,
+	func_alt1,
+	func_alt2,
+	func_alt3,
+	func_alt4,
+	func_gpio,
+	func_alt6,
+	func_alt7,
+	func_alt8,
+	func_none,
+	func_aaud,
+	func_dcd0,
+	func_dpi,
+	func_dsi0_te_ext,
+	func_dsi1_te_ext,
+	func_dsr0,
+	func_dtr0,
+	func_gpclk0,
+	func_gpclk1,
+	func_gpclk2,
+	func_gpclk3,
+	func_gpclk4,
+	func_gpclk5,
+	func_i2c0,
+	func_i2c1,
+	func_i2c2,
+	func_i2c3,
+	func_i2c4,
+	func_i2c5,
+	func_i2c6,
+	func_i2s0,
+	func_i2s1,
+	func_i2s2,
+	func_ir,
+	func_mic,
+	func_pcie_clkreq_n,
+	func_pio,
+	func_proc_rio,
+	func_pwm0,
+	func_pwm1,
+	func_ri0,
+	func_sd0,
+	func_sd1,
+	func_spi0,
+	func_spi1,
+	func_spi2,
+	func_spi3,
+	func_spi4,
+	func_spi5,
+	func_spi6,
+	func_spi7,
+	func_spi8,
+	func_uart0,
+	func_uart1,
+	func_uart2,
+	func_uart3,
+	func_uart4,
+	func_uart5,
+	func_vbus0,
+	func_vbus1,
+	func_vbus2,
+	func_vbus3,
+	func__,
+	func_count = func__,
+	func_invalid = func__,
+};
+
+struct rp1_pin_funcs {
+	uint8_t funcs[RP1_FSEL_COUNT];
 };
 
 struct rp1_pinctrl {
@@ -297,66 +401,158 @@ static const char * const rp1_gpio_groups[] = {
 	"gpio53",
 };
 
-static const int legacy_fsel_map[][6] = {
-	{  3, -1,  1, -1,  2, -1 },
-	{  3, -1,  1, -1,  2, -1 },
-	{  3, -1,  1, -1,  2, -1 },
-	{  3, -1,  1, -1,  2, -1 },
-	{  0, -1,  1, -1,  2,  3 },
-	{  0, -1,  1, -1,  2,  3 },
-	{  0, -1,  1, -1,  2,  3 },
-	{  0, -1,  1, -1,  2,  3 },
-	{  0, -1,  1, -1,  2, -1 },
-	{  0, -1,  1, -1,  2, -1 },
-	{  0, -1,  1, -1,  2, -1 },
-	{  0, -1,  1, -1,  2, -1 },
-	{  0, -1,  1, -1,  2, -1 },
-	{  0, -1,  1, -1,  2, -1 },
-	{  4, -1,  1, -1,  2, -1 },
-	{  4, -1,  1, -1,  2, -1 },
-
-	{ -1, -1,  1,  4,  0, -1 },
-	{ -1, -1,  1,  4,  0, -1 },
-	{  2, -1,  1, -1,  0, -1 },
-	{  2, -1,  1, -1,  0, -1 },
-	{  2, -1,  1, -1,  0, -1 },
-	{  2, -1,  1, -1,  0, -1 },
-	{  0, -1,  1, -1, -1, -1 },
-	{  0, -1,  1, -1, -1, -1 },
-	{  0, -1,  1, -1, -1, -1 },
-	{  0, -1,  1, -1, -1, -1 },
-	{  0, -1,  1, -1, -1, -1 },
-	{  0, -1,  1, -1, -1, -1 },
+static const char *rp1_func_names[] = {
+	FUNC(alt0),
+	FUNC(alt1),
+	FUNC(alt2),
+	FUNC(alt3),
+	FUNC(alt4),
+	FUNC(gpio),
+	FUNC(alt6),
+	FUNC(alt7),
+	FUNC(alt8),
+	FUNC(none),
+	FUNC(aaud),
+	FUNC(dcd0),
+	FUNC(dpi),
+	FUNC(dsi0_te_ext),
+	FUNC(dsi1_te_ext),
+	FUNC(dsr0),
+	FUNC(dtr0),
+	FUNC(gpclk0),
+	FUNC(gpclk1),
+	FUNC(gpclk2),
+	FUNC(gpclk3),
+	FUNC(gpclk4),
+	FUNC(gpclk5),
+	FUNC(i2c0),
+	FUNC(i2c1),
+	FUNC(i2c2),
+	FUNC(i2c3),
+	FUNC(i2c4),
+	FUNC(i2c5),
+	FUNC(i2c6),
+	FUNC(i2s0),
+	FUNC(i2s1),
+	FUNC(i2s2),
+	FUNC(ir),
+	FUNC(mic),
+	FUNC(pcie_clkreq_n),
+	FUNC(pio),
+	FUNC(proc_rio),
+	FUNC(pwm0),
+	FUNC(pwm1),
+	FUNC(ri0),
+	FUNC(sd0),
+	FUNC(sd1),
+	FUNC(spi0),
+	FUNC(spi1),
+	FUNC(spi2),
+	FUNC(spi3),
+	FUNC(spi4),
+	FUNC(spi5),
+	FUNC(spi6),
+	FUNC(spi7),
+	FUNC(spi8),
+	FUNC(uart0),
+	FUNC(uart1),
+	FUNC(uart2),
+	FUNC(uart3),
+	FUNC(uart4),
+	FUNC(uart5),
+	FUNC(vbus0),
+	FUNC(vbus1),
+	FUNC(vbus2),
+	FUNC(vbus3),
+	[func_invalid] = "?"
 };
 
-static const char * const rp1_functions[RP1_FSEL_COUNT] = {
-	[RP1_FSEL_GPIO_IN] = "gpio_in",
-	[RP1_FSEL_GPIO_OUT] = "gpio_out",
-	[RP1_FSEL_ALT0_LEGACY] = "alt0_legacy",
-	[RP1_FSEL_ALT1_LEGACY] = "alt1_legacy",
-	[RP1_FSEL_ALT2_LEGACY] = "alt2_legacy",
-	[RP1_FSEL_ALT3_LEGACY] = "alt3_legacy",
-	[RP1_FSEL_ALT4_LEGACY] = "alt4_legacy",
-	[RP1_FSEL_ALT5_LEGACY] = "alt5_legacy",
-	[RP1_FSEL_ALT0] = "alt0",
-	[RP1_FSEL_ALT1] = "alt1",
-	[RP1_FSEL_ALT2] = "alt2",
-	[RP1_FSEL_ALT3] = "alt3",
-	[RP1_FSEL_ALT4] = "alt4",
-	[RP1_FSEL_ALT5] = "alt5",
-	[RP1_FSEL_ALT6] = "alt6",
-	[RP1_FSEL_ALT7] = "alt7",
-	[RP1_FSEL_ALT8] = "alt8",
-	[RP1_FSEL_ALT0INV] = "alt0inv",
-	[RP1_FSEL_ALT1INV] = "alt1inv",
-	[RP1_FSEL_ALT2INV] = "alt2inv",
-	[RP1_FSEL_ALT3INV] = "alt3inv",
-	[RP1_FSEL_ALT4INV] = "alt4inv",
-	[RP1_FSEL_ALT5INV] = "alt5inv",
-	[RP1_FSEL_ALT6INV] = "alt6inv",
-	[RP1_FSEL_ALT7INV] = "alt7inv",
-	[RP1_FSEL_ALT8INV] = "alt8inv",
-	[RP1_FSEL_NONE] = "none",
+static const struct rp1_pin_funcs rp1_gpio_pin_funcs[] = {
+	PIN(0, spi0, dpi, uart1, i2c0, _, gpio, proc_rio, pio, spi2),
+	PIN(1, spi0, dpi, uart1, i2c0, _, gpio, proc_rio, pio, spi2),
+	PIN(2, spi0, dpi, uart1, i2c1, ir, gpio, proc_rio, pio, spi2),
+	PIN(3, spi0, dpi, uart1, i2c1, ir, gpio, proc_rio, pio, spi2),
+	PIN(4, gpclk0, dpi, uart2, i2c2, ri0, gpio, proc_rio, pio, spi3),
+	PIN(5, gpclk1, dpi, uart2, i2c2, dtr0, gpio, proc_rio, pio, spi3),
+	PIN(6, gpclk2, dpi, uart2, i2c3, dcd0, gpio, proc_rio, pio, spi3),
+	PIN(7, spi0, dpi, uart2, i2c3, dsr0, gpio, proc_rio, pio, spi3),
+	PIN(8, spi0, dpi, uart3, i2c0, _, gpio, proc_rio, pio, spi4),
+	PIN(9, spi0, dpi, uart3, i2c0, _, gpio, proc_rio, pio, spi4),
+	PIN(10, spi0, dpi, uart3, i2c1, _, gpio, proc_rio, pio, spi4),
+	PIN(11, spi0, dpi, uart3, i2c1, _, gpio, proc_rio, pio, spi4),
+	PIN(12, pwm0, dpi, uart4, i2c2, aaud, gpio, proc_rio, pio, spi5),
+	PIN(13, pwm0, dpi, uart4, i2c2, aaud, gpio, proc_rio, pio, spi5),
+	PIN(14, pwm0, dpi, uart4, i2c3, uart0, gpio, proc_rio, pio, spi5),
+	PIN(15, pwm0, dpi, uart4, i2c3, uart0, gpio, proc_rio, pio, spi5),
+	PIN(16, spi1, dpi, dsi0_te_ext, _, uart0, gpio, proc_rio, pio, _),
+	PIN(17, spi1, dpi, dsi1_te_ext, _, uart0, gpio, proc_rio, pio, _),
+	PIN(18, spi1, dpi, i2s0, pwm0, i2s1, gpio, proc_rio, pio, gpclk1),
+	PIN(19, spi1, dpi, i2s0, pwm0, i2s1, gpio, proc_rio, pio, _),
+	PIN(20, spi1, dpi, i2s0, gpclk0, i2s1, gpio, proc_rio, pio, _),
+	PIN(21, spi1, dpi, i2s0, gpclk1, i2s1, gpio, proc_rio, pio, _),
+	PIN(22, sd0, dpi, i2s0, i2c3, i2s1, gpio, proc_rio, pio, _),
+	PIN(23, sd0, dpi, i2s0, i2c3, i2s1, gpio, proc_rio, pio, _),
+	PIN(24, sd0, dpi, i2s0, _, i2s1, gpio, proc_rio, pio, spi2),
+	PIN(25, sd0, dpi, i2s0, mic, i2s1, gpio, proc_rio, pio, spi3),
+	PIN(26, sd0, dpi, i2s0, mic, i2s1, gpio, proc_rio, pio, spi5),
+	PIN(27, sd0, dpi, i2s0, mic, i2s1, gpio, proc_rio, pio, spi1),
+	PIN(28, sd1, i2c4, i2s2, spi6, vbus0, gpio, proc_rio, _, _),
+	PIN(29, sd1, i2c4, i2s2, spi6, vbus0, gpio, proc_rio, _, _),
+	PIN(30, sd1, i2c5, i2s2, spi6, uart5, gpio, proc_rio, _, _),
+	PIN(31, sd1, i2c5, i2s2, spi6, uart5, gpio, proc_rio, _, _),
+	PIN(32, sd1, gpclk3, i2s2, spi6, uart5, gpio, proc_rio, _, _),
+	PIN(33, sd1, gpclk4, i2s2, spi6, uart5, gpio, proc_rio, _, _),
+	PIN(34, pwm1, gpclk3, vbus0, i2c4, mic, gpio, proc_rio, _, _),
+	PIN(35, spi8, pwm1, vbus0, i2c4, mic, gpio, proc_rio, _, _),
+	PIN(36, spi8, uart5, pcie_clkreq_n, i2c5, mic, gpio, proc_rio, _, _),
+	PIN(37, spi8, uart5, mic, i2c5, pcie_clkreq_n, gpio, proc_rio, _, _),
+	PIN(38, spi8, uart5, mic, i2c6, aaud, gpio, proc_rio, dsi0_te_ext, _),
+	PIN(39, spi8, uart5, mic, i2c6, aaud, gpio, proc_rio, dsi1_te_ext, _),
+	PIN(40, pwm1, uart5, i2c4, spi6, aaud, gpio, proc_rio, _, _),
+	PIN(41, pwm1, uart5, i2c4, spi6, aaud, gpio, proc_rio, _, _),
+	PIN(42, gpclk5, uart5, vbus1, spi6, i2s2, gpio, proc_rio, _, _),
+	PIN(43, gpclk4, uart5, vbus1, spi6, i2s2, gpio, proc_rio, _, _),
+	PIN(44, gpclk5, i2c5, pwm1, spi6, i2s2, gpio, proc_rio, _, _),
+	PIN(45, pwm1, i2c5, spi7, spi6, i2s2, gpio, proc_rio, _, _),
+	PIN(46, gpclk3, i2c4, spi7, mic, i2s2, gpio, proc_rio, dsi0_te_ext, _),
+	PIN(47, gpclk5, i2c4, spi7, mic, i2s2, gpio, proc_rio, dsi1_te_ext, _),
+	PIN(48, pwm1, pcie_clkreq_n, spi7, mic, uart5, gpio, proc_rio, _, _),
+	PIN(49, spi8, spi7, i2c5, aaud, uart5, gpio, proc_rio, _, _),
+	PIN(50, spi8, spi7, i2c5, aaud, vbus2, gpio, proc_rio, _, _),
+	PIN(51, spi8, spi7, i2c6, aaud, vbus2, gpio, proc_rio, _, _),
+	PIN(52, spi8, _, i2c6, aaud, vbus3, gpio, proc_rio, _, _),
+	PIN(53, spi8, spi7, _, pcie_clkreq_n, vbus3, gpio, proc_rio, _, _),
+};
+
+static const u8 legacy_fsel_map[][8] = {
+	LEGACY_MAP(0, i2c0, _, dpi, spi2, uart1, _),
+	LEGACY_MAP(1, i2c0, _, dpi, spi2, uart1, _),
+	LEGACY_MAP(2, i2c1, _, dpi, spi2, uart1, _),
+	LEGACY_MAP(3, i2c1, _, dpi, spi2, uart1, _),
+	LEGACY_MAP(4, gpclk0, _, dpi, spi3, uart2, i2c2),
+	LEGACY_MAP(5, gpclk1, _, dpi, spi3, uart2, i2c2),
+	LEGACY_MAP(6, gpclk2, _, dpi, spi3, uart2, i2c3),
+	LEGACY_MAP(7, spi0, _, dpi, spi3, uart2, i2c3),
+	LEGACY_MAP(8, spi0, _, dpi, _, uart3, i2c0),
+	LEGACY_MAP(9, spi0, _, dpi, _, uart3, i2c0),
+	LEGACY_MAP(10, spi0, _, dpi, _, uart3, i2c1),
+	LEGACY_MAP(11, spi0, _, dpi, _, uart3, i2c1),
+	LEGACY_MAP(12, pwm0, _, dpi, spi5, uart4, i2c2),
+	LEGACY_MAP(13, pwm0, _, dpi, spi5, uart4, i2c2),
+	LEGACY_MAP(14, uart0, _, dpi, spi5, uart4, _),
+	LEGACY_MAP(15, uart0, _, dpi, spi5, uart4, _),
+	LEGACY_MAP(16, _, _, dpi, uart0, spi1, _),
+	LEGACY_MAP(17, _, _, dpi, uart0, spi1, _),
+	LEGACY_MAP(18, i2s0, _, dpi, _, spi1, pwm0),
+	LEGACY_MAP(19, i2s0, _, dpi, _, spi1, pwm0),
+	LEGACY_MAP(20, i2s0, _, dpi, _, spi1, gpclk0),
+	LEGACY_MAP(21, i2s0, _, dpi, _, spi1, gpclk1),
+	LEGACY_MAP(22, sd0, _, dpi, _, _, i2c3),
+	LEGACY_MAP(23, sd0, _, dpi, _, _, i2c3),
+	LEGACY_MAP(24, sd0, _, dpi, _, _, spi2),
+	LEGACY_MAP(25, sd0, _, dpi, _, _, spi3),
+	LEGACY_MAP(26, sd0, _, dpi, _, _, spi5),
+	LEGACY_MAP(27, sd0, _, dpi, _, _, _),
 };
 
 static const char * const irq_type_names[] = {
@@ -409,93 +605,53 @@ static void rp1_output_enable(struct rp1_pin_info *pin, int value)
 	writel(padctrl, pin->pad);
 }
 
-static inline u32 rp1_get_fsel(struct rp1_pin_info *pin)
+static u32 rp1_get_fsel(struct rp1_pin_info *pin)
 {
 	u32 ctrl = readl(pin->gpio + RP1_GPIO_CTRL);
-	u32 outover = FLD_GET(ctrl, RP1_GPIO_CTRL_OUTOVER);
-	u32 funcsel = FLD_GET(ctrl, RP1_GPIO_CTRL_FUNCSEL);
-	u32 fsel = -EINVAL;
+	u32 oeover = FLD_GET(ctrl, RP1_GPIO_CTRL_OEOVER);
+	u32 fsel = FLD_GET(ctrl, RP1_GPIO_CTRL_FUNCSEL);
 
-	if (funcsel == RP1_FUNCSEL_SYSRIO) {
-		/* An input or an output */
-		fsel = (readl(pin->rio + RP1_RIO_OE) & (1 << pin->offset)) ?
-			RP1_FSEL_GPIO_OUT : RP1_FSEL_GPIO_IN;
-	} else if (funcsel <= RP1_FUNCSEL_MAX) {
-		fsel = (outover == RP1_OUTOVER_INVPERI ? RP1_FSEL_ALT0INV :
-			RP1_FSEL_ALT0) +
-			funcsel * 2;
-	} else if (funcsel == RP1_FUNCSEL_NULL) {
+	if (oeover != RP1_OEOVER_PERI || fsel >= RP1_FSEL_COUNT)
 		fsel = RP1_FSEL_NONE;
-	}
 
-	pr_debug("get_fsel %d: %08x - %d (%s)\n", pin->num, ctrl, fsel,
-		 (fsel >= 0) ? rp1_functions[fsel] : "invalid");
+	pr_debug("get_fsel %d: %08x - %d\n", pin->num, ctrl, fsel);
 
 	return fsel;
 }
 
-static inline void rp1_set_fsel(struct rp1_pin_info *pin, u32 fsel)
+static void rp1_set_fsel(struct rp1_pin_info *pin, u32 fsel)
 {
 	u32 ctrl = readl(pin->gpio + RP1_GPIO_CTRL);
-	int remap_fsel_idx;
-	u32 cur;
 
-	pr_debug("set_fsel %d: %d (%s)\n", pin->num, fsel,
-		 rp1_functions[fsel]);
+	if (fsel >= RP1_FSEL_COUNT)
+		fsel = RP1_FSEL_NONE_HW;
+
+	pr_debug("set_fsel %d: %d\n", pin->num, fsel);
 
 	rp1_input_enable(pin, 1);
 	rp1_output_enable(pin, 1);
 
-	cur = rp1_get_fsel(pin);
-
-	switch (fsel) {
-	case RP1_FSEL_ALT0_LEGACY: remap_fsel_idx = 0; break;
-	case RP1_FSEL_ALT1_LEGACY: remap_fsel_idx = 1; break;
-	case RP1_FSEL_ALT2_LEGACY: remap_fsel_idx = 2; break;
-	case RP1_FSEL_ALT3_LEGACY: remap_fsel_idx = 3; break;
-	case RP1_FSEL_ALT4_LEGACY: remap_fsel_idx = 4; break;
-	case RP1_FSEL_ALT5_LEGACY: remap_fsel_idx = 5; break;
-	default: remap_fsel_idx = -1; break;
-	}
-
-	if (remap_fsel_idx >= 0) {
-		if (pin->num < ARRAY_SIZE(legacy_fsel_map))
-			fsel = legacy_fsel_map[pin->num][remap_fsel_idx];
-		else
-			fsel = remap_fsel_idx;
-		fsel += RP1_FSEL_ALT0;
-	}
-
-	if (cur == fsel)
-		return;
-
-	/* always transition through GPIO_IN */
-	if (cur != RP1_FSEL_GPIO_IN && fsel != RP1_FSEL_GPIO_IN) {
+	if (fsel == RP1_FSEL_NONE) {
 		FLD_SET(ctrl, RP1_GPIO_CTRL_OEOVER, RP1_OEOVER_DISABLE);
-		pr_debug("  trans %d: %08x\n", pin->num, ctrl);
-		writel(ctrl, pin->gpio + RP1_GPIO_CTRL);
-	}
-
-	FLD_SET(ctrl, RP1_GPIO_CTRL_OEOVER, RP1_OEOVER_PERI);
-
-	if (fsel == RP1_FSEL_GPIO_IN) {
-		writel(1 << pin->offset, pin->rio + RP1_RIO_OE + RP1_CLR_OFFSET);
+	} else {
 		FLD_SET(ctrl, RP1_GPIO_CTRL_OUTOVER, RP1_OUTOVER_PERI);
-		FLD_SET(ctrl, RP1_GPIO_CTRL_FUNCSEL, RP1_FUNCSEL_SYSRIO);
-	} else if (fsel == RP1_FSEL_GPIO_OUT) {
-		writel(1 << pin->offset, pin->rio + RP1_RIO_OE + RP1_SET_OFFSET);
-		FLD_SET(ctrl, RP1_GPIO_CTRL_OUTOVER, RP1_OUTOVER_PERI);
-		FLD_SET(ctrl, RP1_GPIO_CTRL_FUNCSEL, RP1_FUNCSEL_SYSRIO);
-	} else if (fsel >= RP1_FSEL_ALT0 && fsel <= RP1_FSEL_NONE) {
-		if (fsel & 0x1)
-			FLD_SET(ctrl, RP1_GPIO_CTRL_OUTOVER, RP1_OUTOVER_INVPERI);
-		FLD_SET(ctrl, RP1_GPIO_CTRL_FUNCSEL,
-			RP1_FUNCSEL_ALT0 + (fsel - RP1_FSEL_ALT0)/2);
-	} else if (fsel == RP1_FSEL_NONE) {
-		FLD_SET(ctrl, RP1_GPIO_CTRL_FUNCSEL, RP1_FUNCSEL_NULL);
+		FLD_SET(ctrl, RP1_GPIO_CTRL_OEOVER, RP1_OEOVER_PERI);
 	}
+	FLD_SET(ctrl, RP1_GPIO_CTRL_FUNCSEL, fsel);
 	writel(ctrl, pin->gpio + RP1_GPIO_CTRL);
 	pr_debug("  write %d: %08x\n", pin->num, ctrl);
+}
+
+static int rp1_get_dir(struct rp1_pin_info *pin)
+{
+	return !(readl(pin->rio + RP1_RIO_OE) & (1 << pin->offset)) ?
+		RP1_DIR_INPUT : RP1_DIR_OUTPUT;
+}
+
+static void rp1_set_dir(struct rp1_pin_info *pin, bool is_input)
+{
+	int offset = is_input ? RP1_CLR_OFFSET : RP1_SET_OFFSET;
+	writel(1 << pin->offset, pin->rio + RP1_RIO_OE + offset);
 }
 
 static int rp1_get_value(struct rp1_pin_info *pin)
@@ -510,16 +666,6 @@ static void rp1_set_value(struct rp1_pin_info *pin, int value)
 	       pin->rio + RP1_RIO_OUT + (value ? RP1_SET_OFFSET : RP1_CLR_OFFSET));
 }
 
-static int rp1_gpio_direction_input(struct gpio_chip *chip, unsigned offset)
-{
-	struct rp1_pin_info *pin = rp1_get_pin(chip, offset);
-
-	if (!pin)
-		return -EINVAL;
-	rp1_set_fsel(pin, RP1_FSEL_GPIO_IN);
-	return 0;
-}
-
 static int rp1_gpio_get(struct gpio_chip *chip, unsigned offset)
 {
 	struct rp1_pin_info *pin = rp1_get_pin(chip, offset);
@@ -532,6 +678,14 @@ static int rp1_gpio_get(struct gpio_chip *chip, unsigned offset)
 	return ret;
 }
 
+static void rp1_gpio_set(struct gpio_chip *chip, unsigned offset, int value)
+{
+	struct rp1_pin_info *pin = rp1_get_pin(chip, offset);
+
+	if (pin)
+		rp1_set_value(pin, value);
+}
+
 static int rp1_gpio_get_direction(struct gpio_chip *chip, unsigned int offset)
 {
 	struct rp1_pin_info *pin = rp1_get_pin(chip, offset);
@@ -540,16 +694,22 @@ static int rp1_gpio_get_direction(struct gpio_chip *chip, unsigned int offset)
 	if (!pin)
 		return -EINVAL;
 	fsel = rp1_get_fsel(pin);
-	return (fsel <= RP1_FSEL_GPIO_OUT) ? (fsel == RP1_FSEL_GPIO_IN) : -EINVAL;
+	if (fsel != RP1_FSEL_GPIO)
+		return -EINVAL;
+	return (rp1_get_dir(pin) == RP1_DIR_OUTPUT) ?
+		GPIO_LINE_DIRECTION_OUT :
+		GPIO_LINE_DIRECTION_IN;
 }
 
-static void rp1_gpio_set(struct gpio_chip *chip, unsigned offset, int value)
+static int rp1_gpio_direction_input(struct gpio_chip *chip, unsigned offset)
 {
 	struct rp1_pin_info *pin = rp1_get_pin(chip, offset);
 
-	pr_debug("rp1_gpio_set(%d, %d)\n", offset, value);
-	if (pin)
-		rp1_set_value(pin, value);
+	if (!pin)
+		return -EINVAL;
+	rp1_set_dir(pin, RP1_DIR_INPUT);
+	rp1_set_fsel(pin, RP1_FSEL_GPIO);
+	return 0;
 }
 
 static int rp1_gpio_direction_output(struct gpio_chip *chip,
@@ -561,7 +721,8 @@ static int rp1_gpio_direction_output(struct gpio_chip *chip,
 	if (!pin)
 		return -EINVAL;
 	rp1_set_value(pin, value);
-	rp1_set_fsel(pin, RP1_FSEL_GPIO_OUT);
+	rp1_set_dir(pin, RP1_DIR_OUTPUT);
+	rp1_set_fsel(pin, RP1_FSEL_GPIO);
 	return 0;
 }
 
@@ -747,6 +908,17 @@ static const char *rp1_pctl_get_group_name(struct pinctrl_dev *pctldev,
 	return rp1_gpio_groups[selector];
 }
 
+static enum funcs rp1_get_fsel_func(unsigned pin, unsigned fsel)
+{
+	if (pin < RP1_NUM_GPIOS) {
+		if (fsel < RP1_FSEL_COUNT)
+			return rp1_gpio_pin_funcs[pin].funcs[fsel];
+		else if (fsel == RP1_FSEL_NONE)
+			return func_none;
+	}
+	return func_invalid;
+}
+
 static int rp1_pctl_get_group_pins(struct pinctrl_dev *pctldev,
 		unsigned selector,
 		const unsigned **pins,
@@ -766,13 +938,14 @@ static void rp1_pctl_pin_dbg_show(struct pinctrl_dev *pctldev,
 	struct gpio_chip *chip = &pc->gpio_chip;
 	struct rp1_pin_info *pin = rp1_get_pin_pctl(pctldev, offset);
 	u32 fsel = rp1_get_fsel(pin);
-	const char *fname = rp1_functions[fsel];
+	enum funcs func = rp1_get_fsel_func(offset, fsel);
 	int value = rp1_get_value(pin);
 	int irq = irq_find_mapping(chip->irq.domain, offset);
 
-	seq_printf(s, "function %s in %s; irq %d (%s)",
-		fname, value ? "hi" : "lo",
-		irq, irq_type_names[pin->irq_type]);
+	seq_printf(s, "function %s (%s) in %s; irq %d (%s)",
+		   rp1_func_names[fsel], rp1_func_names[func],
+		   value ? "hi" : "lo",
+		   irq, irq_type_names[pin->irq_type]);
 }
 
 static void rp1_pctl_dt_free_map(struct pinctrl_dev *pctldev,
@@ -787,33 +960,52 @@ static void rp1_pctl_dt_free_map(struct pinctrl_dev *pctldev,
 	kfree(maps);
 }
 
-static int rp1_pctl_dt_node_to_map_func(struct rp1_pinctrl *pc,
+static int rp1_pctl_legacy_map_func(struct rp1_pinctrl *pc,
 		struct device_node *np, u32 pin, u32 fnum,
 		struct pinctrl_map **maps)
 {
 	struct pinctrl_map *map = *maps;
+	enum funcs func;
 
-	if (fnum >= ARRAY_SIZE(rp1_functions)) {
+	if (fnum >= ARRAY_SIZE(legacy_fsel_map[0])) {
 		dev_err(pc->dev, "%pOF: invalid brcm,function %d\n", np, fnum);
 		return -EINVAL;
 	}
 
+	func = legacy_fsel_map[pin][fnum];
+	pr_debug("map_func: %d, %d -> %d (%s)\n", pin, fnum, func, rp1_func_names[func]);
+	if (func == func_invalid) {
+		dev_err(pc->dev, "%pOF: brcm,function %d not supported on pin %d\n",
+			np, fnum, pin);
+	}
+
 	map->type = PIN_MAP_TYPE_MUX_GROUP;
 	map->data.mux.group = rp1_gpio_groups[pin];
-	map->data.mux.function = rp1_functions[fnum];
+	map->data.mux.function = rp1_func_names[func];
 	(*maps)++;
 
 	return 0;
 }
 
-static int rp1_pctl_dt_node_to_map_pull(struct rp1_pinctrl *pc,
+static int rp1_pctl_legacy_map_pull(struct rp1_pinctrl *pc,
 		struct device_node *np, u32 pin, u32 pull,
 		struct pinctrl_map **maps)
 {
 	struct pinctrl_map *map = *maps;
+	enum pin_config_param param;
 	unsigned long *configs;
 
-	if (pull > 2) {
+	switch (pull) {
+	case RP1_PUD_OFF:
+		param = PIN_CONFIG_BIAS_DISABLE;
+		break;
+	case RP1_PUD_DOWN:
+		param = PIN_CONFIG_BIAS_PULL_DOWN;
+		break;
+	case RP1_PUD_UP:
+		param = PIN_CONFIG_BIAS_PULL_UP;
+		break;
+	default:
 		dev_err(pc->dev, "%pOF: invalid brcm,pull %d\n", np, pull);
 		return -EINVAL;
 	}
@@ -821,8 +1013,8 @@ static int rp1_pctl_dt_node_to_map_pull(struct rp1_pinctrl *pc,
 	configs = kzalloc(sizeof(*configs), GFP_KERNEL);
 	if (!configs)
 		return -ENOMEM;
-	configs[0] = pinconf_to_config_packed(RP1_PINCONF_PARAM_PULL, pull);
 
+	configs[0] = pinconf_to_config_packed(param, 0);
 	map->type = PIN_MAP_TYPE_CONFIGS_PIN;
 	map->data.configs.group_or_pin = rp1_gpio_pins[pin].name;
 	map->data.configs.configs = configs;
@@ -897,7 +1089,7 @@ static int rp1_pctl_dt_node_to_map(struct pinctrl_dev *pctldev,
 		err = of_property_read_u32_index(np, "brcm,pins", i, &pin);
 		if (err)
 			goto out;
-		if (pin >= ARRAY_SIZE(rp1_gpio_pins)) {
+		if (pin >= ARRAY_SIZE(legacy_fsel_map)) {
 			dev_err(pc->dev, "%pOF: invalid brcm,pins value %d\n",
 				np, pin);
 			err = -EINVAL;
@@ -909,8 +1101,8 @@ static int rp1_pctl_dt_node_to_map(struct pinctrl_dev *pctldev,
 					(num_funcs > 1) ? i : 0, &func);
 			if (err)
 				goto out;
-			err = rp1_pctl_dt_node_to_map_func(pc, np, pin,
-							func, &cur_map);
+			err = rp1_pctl_legacy_map_func(pc, np, pin,
+						       func, &cur_map);
 			if (err)
 				goto out;
 		}
@@ -919,8 +1111,8 @@ static int rp1_pctl_dt_node_to_map(struct pinctrl_dev *pctldev,
 					(num_pulls > 1) ? i : 0, &pull);
 			if (err)
 				goto out;
-			err = rp1_pctl_dt_node_to_map_pull(pc, np, pin,
-							pull, &cur_map);
+			err = rp1_pctl_legacy_map_pull(pc, np, pin,
+						       pull, &cur_map);
 			if (err)
 				goto out;
 		}
@@ -952,21 +1144,23 @@ static int rp1_pmx_free(struct pinctrl_dev *pctldev,
 	u32 fsel = rp1_get_fsel(pin);
 
 	/* Return non-GPIOs to GPIO_IN */
-	if (fsel != RP1_FSEL_GPIO_IN && fsel != RP1_FSEL_GPIO_OUT)
-		rp1_set_fsel(pin, RP1_FSEL_GPIO_IN);
+	if (fsel != RP1_FSEL_GPIO) {
+		rp1_set_dir(pin, RP1_DIR_INPUT);
+		rp1_set_fsel(pin, RP1_FSEL_GPIO);
+	}
 
 	return 0;
 }
 
 static int rp1_pmx_get_functions_count(struct pinctrl_dev *pctldev)
 {
-	return RP1_FSEL_COUNT;
+	return func_count;
 }
 
 static const char *rp1_pmx_get_function_name(struct pinctrl_dev *pctldev,
 		unsigned selector)
 {
-	return rp1_functions[selector];
+	return (selector < func_count) ? rp1_func_names[selector] : NULL;
 }
 
 static int rp1_pmx_get_function_groups(struct pinctrl_dev *pctldev,
@@ -986,8 +1180,28 @@ static int rp1_pmx_set(struct pinctrl_dev *pctldev,
 		unsigned group_selector)
 {
 	struct rp1_pin_info *pin = rp1_get_pin_pctl(pctldev, group_selector);
+	const u8 *pin_funcs;
+	int fsel;
 
-	rp1_set_fsel(pin, func_selector);
+	/* func_selector is an enum funcs, so needs translation */
+
+	if (func_selector >= RP1_FSEL_COUNT) {
+		/* Convert to an fsel number */
+		pin_funcs = rp1_gpio_pin_funcs[pin->num].funcs;
+		for (fsel = 0; fsel < RP1_FSEL_COUNT; fsel++) {
+			if (pin_funcs[fsel] == func_selector)
+				break;
+		}
+	} else {
+		fsel = (int)func_selector;
+	}
+
+	if (fsel >= RP1_FSEL_COUNT && fsel != RP1_FSEL_NONE)
+		return -EINVAL;
+
+	pr_debug("pmx: %d, %d (%s) -> %d\n", pin->num, func_selector,
+		 rp1_func_names[func_selector], fsel);
+	rp1_set_fsel(pin, fsel);
 
 	return 0;
 }
@@ -996,10 +1210,7 @@ static void rp1_pmx_gpio_disable_free(struct pinctrl_dev *pctldev,
 		struct pinctrl_gpio_range *range,
 		unsigned offset)
 {
-	struct rp1_pin_info *pin = rp1_get_pin_pctl(pctldev, offset);
-
-	/* disable by setting to GPIO_IN */
-	rp1_set_fsel(pin, RP1_FSEL_GPIO_IN);
+	(void)rp1_pmx_free(pctldev, offset);
 }
 
 static int rp1_pmx_gpio_set_direction(struct pinctrl_dev *pctldev,
@@ -1008,9 +1219,9 @@ static int rp1_pmx_gpio_set_direction(struct pinctrl_dev *pctldev,
 		bool input)
 {
 	struct rp1_pin_info *pin = rp1_get_pin_pctl(pctldev, offset);
-	u32 fsel = input ? RP1_FSEL_GPIO_IN : RP1_FSEL_GPIO_OUT;
 
-	rp1_set_fsel(pin, fsel);
+	rp1_set_dir(pin, input);
+	rp1_set_fsel(pin, RP1_FSEL_GPIO);
 
 	return 0;
 }
@@ -1053,12 +1264,6 @@ static int rp1_pinconf_set(struct pinctrl_dev *pctldev,
 		arg = pinconf_to_config_argument(configs[i]);
 
 		switch (param) {
-		/* Set legacy brcm,pull */
-		case RP1_PINCONF_PARAM_PULL:
-			rp1_pull_config_set(pin, arg);
-			break;
-
-		/* Set pull generic bindings */
 		case PIN_CONFIG_BIAS_DISABLE:
 			rp1_pull_config_set(pin, RP1_PUD_OFF);
 			break;
@@ -1079,10 +1284,10 @@ static int rp1_pinconf_set(struct pinctrl_dev *pctldev,
 			rp1_output_enable(pin, arg);
 			break;
 
-		/* Set output-high or output-low */
 		case PIN_CONFIG_OUTPUT:
-			rp1_set_fsel(pin, RP1_FSEL_GPIO_OUT);
 			rp1_set_value(pin, arg);
+			rp1_set_dir(pin, RP1_DIR_OUTPUT);
+			rp1_set_fsel(pin, RP1_FSEL_GPIO);
 			break;
 
 		default:
@@ -1203,7 +1408,6 @@ static int rp1_pinctrl_probe(struct platform_device *pdev)
 
 	pc->gpio_chip = rp1_gpio_chip;
 	pc->gpio_chip.parent = dev;
-	pc->gpio_chip.of_node = np;
 
 	for (i = 0; i < RP1_NUM_BANKS; i++) {
 		const struct rp1_iobank_desc *bank = &rp1_iobanks[i];
