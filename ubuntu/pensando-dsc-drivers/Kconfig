@@ -29,4 +29,17 @@ config MNET_UIO_PDRV_GENIRQ
 	  interrupts in the interrupt controller using the write() syscall.
 
 	  If you don't know what to do here, say N.
+
+config PCIESVC
+	tristate "Pensando pciesvc driver"
+	depends on m	# avoid symbol conflicts with drivers/soc/pensando/
+	help
+	  This driver module is a companion to the kpcimgr driver.  This module
+	  provides support for servicing the pcie bus hardware "indirect" and
+	  "notify" transaction interrupts.  This driver runs on the Pensando ARM cpu.
+
+	  The core of the driver is built using sources from the pciesvc library
+	  with only a thin wrapper of code here to package the pciesvc core
+	  and register with the kpcimgr driver by calling "kpcimgr_module_register".
+
 endif
