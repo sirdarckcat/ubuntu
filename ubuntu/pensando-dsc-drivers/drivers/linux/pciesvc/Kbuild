@@ -1,0 +1,18 @@
+obj-$(CONFIG_PCIESVC) += pciesvc.o
+
+pciesvc-objs += \
+	     $(patsubst $(srctree)/$(src)/%.c,%.o,$(wildcard $(srctree)/$(src)/pciesvc/src/*.c)) \
+	     kpcimgr_module.o kpcinterface.o kpci_entry.o \
+	     kpci_kexec.o kpci_test.o pciesvc_end.o
+
+ccflags-y += \
+	  -DASIC_ELBA -DPCIESVC_SYSTEM_EXTERN \
+	  -I $(srctree)/$(src)/pciesvc/include \
+	  -I $(srctree)/$(src)/pciesvc/src
+
+filechk_version = echo '\#define PCIESVC_VERSION "$(PENSANDO_DRV_VER)"'
+
+$(obj)/version.h: FORCE
+	$(call filechk,version)
+
+$(obj)/kpcimgr_module.o $(obj)/kpcinterface.o: $(obj)/version.h
