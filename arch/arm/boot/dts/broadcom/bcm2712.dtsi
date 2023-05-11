@@ -82,15 +82,10 @@
 		#address-cells = <1>;
 		#size-cells = <1>;
 
-		/*
-		 * Defined ranges:
-		 *   Common BCM283x peripherals
-		 *   BCM2711-specific peripherals
-		 *   ARM-local peripherals
-		 */
-		ranges = <0x7c000000  0x10 0x7c000000  0x04000000>;
+		ranges     = <0x7c000000  0x10 0x7c000000  0x04000000>;
 		/* Emulate a contiguous 30-bit address range for DMA */
-		dma-ranges = <0xc0000000  0x0 0x00000000  0x40000000>;
+		dma-ranges = <0xc0000000  0x00 0x00000000  0x40000000>,
+			     <0x7c000000  0x10 0x7c000000  0x04000000>;
 
 		system_timer: timer@7c003000 {
 			compatible = "brcm,bcm2835-system-timer";
