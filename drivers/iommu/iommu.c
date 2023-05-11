@@ -3189,6 +3189,27 @@ static int iommu_setup_default_domain(struct iommu_group *group,
 		}
 	}
 
+	/*
+	 * Drivers are supposed to allow mappings to be installed in a domain
+	 * before device attachment, but some don't. Hack around this defect by
+	 * trying again after attaching. If this happens it means the device
+	 * will not continuously have the IOMMU_RESV_DIRECT map.
+	 */
+	if (direct_failed) {
+		for_each_group_device(group, gdev) {
+			ret = iommu_create_device_direct_mappings(dom, gdev->dev);
+			if (ret)
+				goto err_restore;
+		}
+	}
+
+err_restore:
+	if (old_dom) {
+		__iommu_group_set_domain_internal(
+			group, old_dom, IOMMU_SET_DOMAIN_MUST_SUCCEED);
+		iommu_domain_free(dom);
+		old_dom = NULL;
+	}
 out_free_old:
 	if (old_dom)
 		iommu_domain_free(old_dom);
