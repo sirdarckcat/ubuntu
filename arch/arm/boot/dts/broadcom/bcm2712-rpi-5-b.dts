@@ -291,7 +291,6 @@ spi2: &rp1_spi2 { };
 spi3: &rp1_spi3 { };
 spi4: &rp1_spi4 { };
 spi5: &rp1_spi5 { };
-vec: &rp1_vec { };
 
 uart0_pins: &rp1_uart0_14_15 {};
 uart0_ctsrts_pins: &rp1_uart0_ctsrts_16_17 {};
@@ -367,6 +366,7 @@ csi1: &rp1_csi1 { };
 dsi0: &rp1_dsi0 { };
 dsi1: &rp1_dsi1 { };
 dpi: &rp1_dpi { };
+vec: &rp1_vec { };
 dpi_18bit_cpadhi_gpio0: &rp1_dpi_18bit_cpadhi_gpio0 { };
 dpi_18bit_cpadhi_gpio2: &rp1_dpi_18bit_cpadhi_gpio2 { };
 dpi_18bit_gpio0:        &rp1_dpi_18bit_gpio0        { };
@@ -375,6 +375,32 @@ dpi_16bit_cpadhi_gpio0: &rp1_dpi_16bit_cpadhi_gpio0 { };
 dpi_16bit_cpadhi_gpio2: &rp1_dpi_16bit_cpadhi_gpio2 { };
 dpi_16bit_gpio0:        &rp1_dpi_16bit_gpio0        { };
 dpi_16bit_gpio2:        &rp1_dpi_16bit_gpio2        { };
+
+/* Add the IOMMUs for some RP1 bus masters */
+
+&csi0 {
+	iommus = <&iommu5>;
+};
+
+&csi1 {
+	iommus = <&iommu5>;
+};
+
+&dsi0 {
+	iommus = <&iommu5>;
+};
+
+&dsi1 {
+	iommus = <&iommu5>;
+};
+
+&dpi {
+	iommus = <&iommu5>;
+};
+
+&vec {
+	iommus = <&iommu5>;
+};
 
 &ddc0 {
 	status = "disabled";
