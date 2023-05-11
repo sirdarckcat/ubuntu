@@ -2,6 +2,12 @@
 # FORMAT: 3
 # ARCH: x86
 
+CONFIG_DM_VERITY                policy<{'amd64': 'm'}>
+CONFIG_DM_VERITY_FEC            policy<{'amd64': 'n'}>
+CONFIG_DM_VERITY_VERIFY_ROOTHASH_SIG policy<{'amd64': 'y'}>
+CONFIG_DM_VERITY_VERIFY_ROOTHASH_SIG_SECONDARY_KEYRING policy<{'amd64': 'y'}>
+CONFIG_DM_VERITY                note<LP: #2019040>
+
 CONFIG_DUMMY                    policy<{'amd64': 'm'}>
 CONFIG_DUMMY                    mark<ENFORCED> note<LP: #1998244>
 
