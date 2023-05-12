@@ -2016,6 +2016,8 @@ static int cfe_probe(struct platform_device *pdev)
 	if (!cfe)
 		return -ENOMEM;
 
+	platform_set_drvdata(pdev, cfe);
+
 	kref_init(&cfe->kref);
 	cfe->pdev = pdev;
 	cfe->fe_csi2_channel = -1;
@@ -2101,20 +2103,10 @@ static int cfe_probe(struct platform_device *pdev)
 		goto err_cfe_put;
 	}
 
-	ret = media_device_register(&cfe->mdev);
-	if (ret < 0) {
-		cfe_err("Unable to register media-controller device.\n");
-		goto err_v4l2_unregister;
-	}
-
-	/* set the driver data in platform device */
-	platform_set_drvdata(pdev, cfe);
-
-	ret = of_cfe_connect_subdevs(cfe);
-	if (ret) {
-		cfe_err("Failed to connect subdevs\n");
-		goto err_media_unregister;
-	}
+	cfe->debugfs = debugfs_create_dir(cfe->mdev.model, NULL);
+	debugfs_create_file("format", 0444, cfe->debugfs, cfe, &format_fops);
+	debugfs_create_file("regs", 0444, cfe->debugfs, cfe,
+			    &mipi_cfg_regs_fops);
 
 	/* Enable the block power domain */
 	pm_runtime_enable(&pdev->dev);
@@ -2124,16 +2116,11 @@ static int cfe_probe(struct platform_device *pdev)
 	cfg_reg_write(cfe, CFG, SEL_CSI);
 	cfg_reg_write(cfe, INTE, mipicfg_inte);
 
-	cfe->debugfs = debugfs_create_dir(cfe->mdev.model, NULL);
-	debugfs_create_file("format", 0444, cfe->debugfs, cfe, &format_fops);
-	debugfs_create_file("regs", 0444, cfe->debugfs, cfe,
-			    &mipi_cfg_regs_fops);
-
 	cfe->csi2.v4l2_dev = &cfe->v4l2_dev;
 	ret = csi2_init(&cfe->csi2, cfe->debugfs);
 	if (ret) {
 		cfe_err("Failed to init csi2 (%d)\n", ret);
-		goto err_media_unregister;
+		goto err_runtime_disable;
 	}
 
 	cfe->fe.v4l2_dev = &cfe->v4l2_dev;
@@ -2143,13 +2130,29 @@ static int cfe_probe(struct platform_device *pdev)
 		goto err_csi2_uninit;
 	}
 
+	ret = media_device_register(&cfe->mdev);
+	if (ret < 0) {
+		cfe_err("Unable to register media-controller device.\n");
+		goto err_pisp_fe_uninit;
+	}
+
+	ret = of_cfe_connect_subdevs(cfe);
+	if (ret) {
+		cfe_err("Failed to connect subdevs\n");
+		goto err_media_unregister;
+	}
+
 	return 0;
 
-err_csi2_uninit:
-	csi2_uninit(&cfe->csi2);
 err_media_unregister:
 	media_device_unregister(&cfe->mdev);
-err_v4l2_unregister:
+err_pisp_fe_uninit:
+	pisp_fe_uninit(&cfe->fe);
+err_csi2_uninit:
+	csi2_uninit(&cfe->csi2);
+err_runtime_disable:
+	pm_runtime_disable(&pdev->dev);
+	debugfs_lookup_and_remove(cfe->mdev.model, NULL);
 	v4l2_device_unregister(&cfe->v4l2_dev);
 err_cfe_put:
 	cfe_put(cfe);
@@ -2164,13 +2167,15 @@ static int cfe_remove(struct platform_device *pdev)
 	debugfs_lookup_and_remove(cfe->mdev.model, NULL);
 
 	v4l2_async_nf_unregister(&cfe->notifier);
-	v4l2_device_unregister(&cfe->v4l2_dev);
-	pisp_fe_uninit(&cfe->fe);
-	csi2_uninit(&cfe->csi2);
 	media_device_unregister(&cfe->mdev);
 	unregister_nodes(cfe);
 
+	pisp_fe_uninit(&cfe->fe);
+	csi2_uninit(&cfe->csi2);
+
 	pm_runtime_disable(&pdev->dev);
+
+	v4l2_device_unregister(&cfe->v4l2_dev);
 
 	return 0;
 }
