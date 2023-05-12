@@ -2161,6 +2161,8 @@ static int cfe_remove(struct platform_device *pdev)
 {
 	struct cfe_device *cfe = platform_get_drvdata(pdev);
 
+	debugfs_lookup_and_remove(cfe->mdev.model, NULL);
+
 	v4l2_async_nf_unregister(&cfe->notifier);
 	v4l2_device_unregister(&cfe->v4l2_dev);
 	pisp_fe_uninit(&cfe->fe);
