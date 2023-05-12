@@ -69,6 +69,8 @@ MODULE_PARM_DESC(debug, "activates debug info");
  */
 enum node_ids {
 	MAIN_INPUT_NODE,
+	TDN_INPUT_NODE,
+	STITCH_INPUT_NODE,
 	HOG_OUTPUT_NODE,
 	OUTPUT0_NODE,
 	OUTPUT1_NODE,
@@ -76,12 +78,6 @@ enum node_ids {
 	STITCH_OUTPUT_NODE,
 	CONFIG_NODE,
 	PISPBE_NUM_NODES
-};
-
-enum recurrent_inputs {
-	RECURRENT_TDN_INPUT,
-	RECURRENT_STITCH_INPUT,
-	PISPBE_NUM_RECURRENT_INPUTS
 };
 
 struct node_description {
@@ -94,6 +90,18 @@ static const struct node_description node_desc[PISPBE_NUM_NODES] = {
 	/* MAIN_INPUT_NODE */
 	{
 		.ent_name = PISPBE_NAME "-input",
+		.buf_type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE,
+		.caps = V4L2_CAP_VIDEO_OUTPUT_MPLANE,
+	},
+	/* TDN_INPUT_NODE */
+	{
+		.ent_name = PISPBE_NAME "-tdn_input",
+		.buf_type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE,
+		.caps = V4L2_CAP_VIDEO_OUTPUT_MPLANE,
+	},
+	/* STITCH_INPUT_NODE */
+	{
+		.ent_name = PISPBE_NAME "-stitch_input",
 		.buf_type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE,
 		.caps = V4L2_CAP_VIDEO_OUTPUT_MPLANE,
 	},
@@ -170,7 +178,6 @@ struct pispbe_node {
 	struct vb2_queue queue;
 	struct v4l2_format format;
 	const struct pisp_be_format *pisp_format;
-	unsigned int last_index; /* State for TDN/Stitch buffer auto-cycling */
 };
 
 /* For logging only, use the entity name with "pispbe" and separator removed */
@@ -390,7 +397,6 @@ fixup_addrs_enables(dma_addr_t addrs[N_HW_ADDRESSES],
 		    u32 hw_enables[N_HW_ENABLES],
 		    struct pisp_be_tiles_config *config,
 		    struct pispbe_buffer *buf[PISPBE_NUM_NODES],
-		    struct pispbe_buffer *rbuf[PISPBE_NUM_RECURRENT_INPUTS],
 		    struct pispbe_node_group *node_group)
 {
 	int ret, i;
@@ -419,14 +425,11 @@ fixup_addrs_enables(dma_addr_t addrs[N_HW_ADDRESSES],
 
 	/*
 	 * Now TDN/Stitch inputs and outputs. These are single-plane and only
-	 * used with Bayer input. Input buffers are inferred by the driver:
-	 * Generally the output from job number N becomes an input to job N+1.
-	 *
-	 * Input enables must match the expectations of the associated
-	 * processing stage, otherwise the hardware can lock up!
+	 * used with Bayer input. Input enables must match the requirements
+	 * of the processing stages, otherwise the hardware can lock up!
 	 */
 	if (hw_enables[0] & PISP_BE_BAYER_ENABLE_INPUT) {
-		addrs[3] = get_addr(rbuf[RECURRENT_TDN_INPUT]);
+		addrs[3] = get_addr(buf[TDN_INPUT_NODE]);
 		if (addrs[3] == 0 ||
 		    !(hw_enables[0] & PISP_BE_BAYER_ENABLE_TDN_INPUT) ||
 		    !(hw_enables[0] & PISP_BE_BAYER_ENABLE_TDN) ||
@@ -437,7 +440,7 @@ fixup_addrs_enables(dma_addr_t addrs[N_HW_ADDRESSES],
 				hw_enables[0] &= ~PISP_BE_BAYER_ENABLE_TDN;
 		}
 
-		addrs[4] = get_addr(rbuf[RECURRENT_STITCH_INPUT]);
+		addrs[4] = get_addr(buf[STITCH_INPUT_NODE]);
 		if (addrs[4] == 0 ||
 		    !(hw_enables[0] & PISP_BE_BAYER_ENABLE_STITCH_INPUT) ||
 		    !(hw_enables[0] & PISP_BE_BAYER_ENABLE_STITCH)) {
@@ -476,21 +479,6 @@ fixup_addrs_enables(dma_addr_t addrs[N_HW_ADDRESSES],
 		hw_enables[1] &= ~PISP_BE_RGB_ENABLE_HOG;
 }
 
-static struct pispbe_buffer *get_last_buffer(struct pispbe_node *node)
-{
-	if (node && node->last_index < node->queue.num_buffers) {
-		struct vb2_buffer *b = node->queue.bufs[node->last_index];
-
-		if (b) {
-			struct vb2_v4l2_buffer *vbuf =
-				container_of(b, struct vb2_v4l2_buffer,
-					     vb2_buf);
-			return container_of(vbuf, struct pispbe_buffer, vb);
-		}
-	}
-	return NULL;
-}
-
 /*
  * Internal function. Called from pispbe_schedule_one/all. Returns non-zero if
  * we started a job.
@@ -502,7 +490,6 @@ static int pispbe_schedule_internal(struct pispbe_node_group *node_group,
 				    unsigned long flags)
 {
 
-	struct pispbe_buffer *rbuf[PISPBE_NUM_RECURRENT_INPUTS];
 	struct pisp_be_tiles_config *config_tiles_buffer;
 	struct pispbe_dev *pispbe = node_group->pispbe;
 	struct pispbe_buffer *buf[PISPBE_NUM_NODES];
@@ -577,61 +564,9 @@ static int pispbe_schedule_internal(struct pispbe_node_group *node_group,
 	config_tiles_buffer =
 		vb2_plane_vaddr(&buf[CONFIG_NODE]->vb.vb2_buf, 0);
 
-	/*
-	 * Automation for TDN/Stitch inputs and outputs. Generally,
-	 * the output from job number N becomes an input to job N+1.
-	 * Because a buffer may be needed by adjacently-queued jobs,
-	 * and perhaps (not necessarily) be overwritten in situ, only
-	 * Capture buffers can be queued by V4L2; inputs are inferred.
-	 *
-	 * Furthermore, if a TDN/Stitch Capture node is not streaming,
-	 * the driver will automatically cycle through the buffers.
-	 * (User must still have called REQBUFS with 1 or 2 buffers
-	 * of suitable dimensions and type. The initial state will
-	 * always be read from the buffer with index 0.)
-	 *
-	 * Buffers which weren't queued by V4L2 are not registered
-	 * in pispbe->queued_job.
-	 */
-	node = &node_group->node[TDN_OUTPUT_NODE];
-	spin_lock_irqsave(&node->ready_lock,
-			  flags1);
-	rbuf[RECURRENT_TDN_INPUT] = get_last_buffer(node);
-	if (config_tiles_buffer->config.global.bayer_enables &
-	    PISP_BE_BAYER_ENABLE_TDN_OUTPUT) {
-		if (!buf[TDN_OUTPUT_NODE]) {
-			if (++node->last_index >=
-			      node->queue.num_buffers)
-				node->last_index = 0;
-			buf[TDN_OUTPUT_NODE] = get_last_buffer(node);
-		} else {
-			node->last_index =
-				buf[TDN_OUTPUT_NODE]->vb.vb2_buf.index;
-		}
-	}
-	spin_unlock_irqrestore(&node->ready_lock, flags1);
-
-	node = &node_group->node[STITCH_OUTPUT_NODE];
-	spin_lock_irqsave(&node->ready_lock, flags1);
-	rbuf[RECURRENT_STITCH_INPUT] = get_last_buffer(node);
-	if (config_tiles_buffer->config.global.bayer_enables &
-	    PISP_BE_BAYER_ENABLE_STITCH_OUTPUT) {
-		if (!buf[STITCH_OUTPUT_NODE]) {
-			if (++node->last_index >=
-					node->queue.num_buffers)
-				node->last_index = 0;
-			buf[STITCH_OUTPUT_NODE] =
-				get_last_buffer(node);
-		} else {
-			node->last_index =
-				buf[STITCH_OUTPUT_NODE]->vb.vb2_buf.index;
-		}
-	}
-	spin_unlock_irqrestore(&node->ready_lock, flags1);
-
 	/* Convert buffers to DMA addresses for the hardware */
 	fixup_addrs_enables(hw_dma_addrs, hw_enables,
-			    config_tiles_buffer, buf, rbuf, node_group);
+			    config_tiles_buffer, buf, node_group);
 	/*
 	 * This could be a spot to fill in the
 	 * buf[i]->vb.vb2_buf.planes[j].bytesused fields?
@@ -1144,7 +1079,6 @@ static void set_plane_params(struct v4l2_format *f,
 		 */
 		plane_size = max(p->sizeimage, plane_size >> 3);
 
-		pr_err("BPL in %u out %u\n", p->bytesperline, bpl);
 		p->bytesperline = bpl;
 		p->sizeimage = plane_size;
 	}
@@ -1409,30 +1343,6 @@ static int pispbe_enum_framesizes(struct file *file, void *priv,
 	return 0;
 }
 
-static int pispbe_node_reqbufs(struct file *file, void *priv,
-			       struct v4l2_requestbuffers *rb)
-{
-	unsigned long flags;
-	struct pispbe_node *node = video_drvdata(file);
-	int ret;
-
-	/* locking should be handled by the queue->lock? */
-	ret = vb2_ioctl_reqbufs(file, priv, rb);
-
-	/* For TDN/Stitch buffer-cycling, initialize last_index */
-	if (ret == 0 && rb->count > 0) {
-		spin_lock_irqsave(&node->ready_lock, flags);
-		node->last_index = 0;
-		spin_unlock_irqrestore(&node->ready_lock, flags);
-	}
-
-	v4l2_dbg(1, debug, &NODE_GET_V4L2(node),
-		 "Reqbufs for node %s returned %d\n",
-		NODE_NAME(node), ret);
-
-	return ret;
-}
-
 static int pispbe_node_streamon(struct file *file, void *priv,
 				enum v4l2_buf_type type)
 {
@@ -1479,7 +1389,7 @@ static const struct v4l2_ioctl_ops pispbe_node_ioctl_ops = {
 	.vidioc_qbuf = vb2_ioctl_qbuf,
 	.vidioc_dqbuf = vb2_ioctl_dqbuf,
 	.vidioc_expbuf = vb2_ioctl_expbuf,
-	.vidioc_reqbufs = pispbe_node_reqbufs,
+	.vidioc_reqbufs = vb2_ioctl_reqbufs,
 	.vidioc_streamon = pispbe_node_streamon,
 	.vidioc_streamoff = vb2_ioctl_streamoff,
 };
