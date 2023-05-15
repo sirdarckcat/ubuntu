@@ -5,21 +5,140 @@
 
 include "../../debian.master/config/annotations"
 
+CONFIG_REGULATOR_FIXED_VOLTAGE                  policy<{'riscv64': 'y'}>
+CONFIG_REGULATOR_FIXED_VOLTAGE                  note<'needed by Allwinner D1 pinctrl/gpio'>
+
+CONFIG_RTC_DRV_SUN6I                            policy<{'riscv64': 'y'}>
+CONFIG_RTC_DRV_SUN6I                            note<'needed by Allwinner D1 pinctrl/gpio'>
+
+CONFIG_SERIAL_8250_DW                           policy<{'riscv64': 'y'}>
+CONFIG_SERIAL_8250_DW                           note<'several RISC-V boards needs this for console output'>
+
+CONFIG_SUN6I_RTC_CCU                            policy<{'riscv64': 'y'}>
+CONFIG_SUN6I_RTC_CCU                            note<'needed by Allwinner D1 pinctrl/gpio'>
+
 
 # ---- Annotations without notes ----
 
+CONFIG_AHCI_SUNXI                               policy<{'riscv64': 'n'}>
+CONFIG_ARCH_CLOCKSOURCE_INIT                    policy<{'riscv64': '-'}>
 CONFIG_ARCH_MICROCHIP_POLARFIRE                 policy<{'riscv64': 'y'}>
 CONFIG_ARCH_SIFIVE                              policy<{'riscv64': 'y'}>
 CONFIG_ARCH_STARFIVE                            policy<{'riscv64': 'y'}>
+CONFIG_ARCH_SUNXI                               policy<{'riscv64': 'y'}>
 CONFIG_ARCH_VIRT                                policy<{'riscv64': 'y'}>
+CONFIG_ARM_SUN8I_A33_MBUS_DEVFREQ               policy<{'riscv64': 'n'}>
+CONFIG_ATH9K_WOW                                policy<{'riscv64': 'y'}>
 CONFIG_CLK_STARFIVE_JH7110_AON                  policy<{'riscv64': 'm'}>
 CONFIG_CLK_STARFIVE_JH7110_SYS                  policy<{'riscv64': 'y'}>
 CONFIG_CLK_STARFIVE_JH71X0                      policy<{'riscv64': 'y'}>
+CONFIG_CRYPTO_DEV_ALLWINNER                     policy<{'riscv64': 'y'}>
+CONFIG_CRYPTO_DEV_SUN4I_SS                      policy<{'riscv64': 'n'}>
+CONFIG_CRYPTO_DEV_SUN8I_CE                      policy<{'riscv64': 'm'}>
+CONFIG_CRYPTO_DEV_SUN8I_CE_DEBUG                policy<{'riscv64': 'n'}>
+CONFIG_CRYPTO_DEV_SUN8I_CE_HASH                 policy<{'riscv64': 'y'}>
+CONFIG_CRYPTO_DEV_SUN8I_CE_PRNG                 policy<{'riscv64': 'y'}>
+CONFIG_CRYPTO_DEV_SUN8I_CE_TRNG                 policy<{'riscv64': 'y'}>
+CONFIG_CRYPTO_DEV_SUN8I_SS                      policy<{'riscv64': 'n'}>
+CONFIG_DMA_SUN6I                                policy<{'riscv64': 'm'}>
+CONFIG_DRM_PANEL_SITRONIX_ST7701S               policy<{'riscv64': 'm'}>
+CONFIG_DRM_SUN4I                                policy<{'riscv64': 'm'}>
+CONFIG_DRM_SUN6I_DSI                            policy<{'riscv64': 'm'}>
+CONFIG_DRM_SUN8I_DW_HDMI                        policy<{'riscv64': 'm'}>
+CONFIG_DRM_SUN8I_MIXER                          policy<{'riscv64': 'm'}>
+CONFIG_DRM_SUN8I_TCON_TOP                       policy<{'riscv64': 'm'}>
 CONFIG_DWMAC_STARFIVE                           policy<{'riscv64': 'm'}>
+CONFIG_DWMAC_SUN8I                              policy<{'riscv64': 'm'}>
+CONFIG_DWMAC_SUNXI                              policy<{'riscv64': 'm'}>
+CONFIG_ERRATA_THEAD                             policy<{'riscv64': 'y'}>
+CONFIG_ERRATA_THEAD_CMO                         policy<{'riscv64': 'y'}>
+CONFIG_ERRATA_THEAD_PBMT                        policy<{'riscv64': 'y'}>
+CONFIG_ERRATA_THEAD_PMU                         policy<{'riscv64': 'y'}>
+CONFIG_HWSPINLOCK_SUN6I                         policy<{'riscv64': 'n'}>
+CONFIG_I2C_MV64XXX                              policy<{'riscv64': 'm'}>
+CONFIG_IOMMU_DMA                                policy<{'riscv64': 'y'}>
+CONFIG_IOMMU_IOVA                               policy<{'riscv64': 'y'}>
+CONFIG_IRQ_MSI_IOMMU                            policy<{'riscv64': 'y'}>
+CONFIG_IR_SUNXI                                 policy<{'riscv64': 'n'}>
+CONFIG_KEYBOARD_SUN4I_LRADC                     policy<{'riscv64': 'm'}>
+CONFIG_LEDS_SUN50I_A100                         policy<{'riscv64': 'm'}>
+CONFIG_MDIO_SUN4I                               policy<{'riscv64': 'm'}>
+CONFIG_MFD_SUN4I_GPADC                          policy<{'riscv64': 'n'}>
+CONFIG_MFD_SUN6I_PRCM                           policy<{'riscv64': 'n'}>
 CONFIG_MMC_DW_STARFIVE                          policy<{'riscv64': 'm'}>
+CONFIG_MMC_SUNXI                                policy<{'riscv64': 'm'}>
+CONFIG_MTD_NAND_SUNXI                           policy<{'riscv64': 'm'}>
+CONFIG_NEED_SG_DMA_LENGTH                       policy<{'riscv64': 'y'}>
+CONFIG_NET_VENDOR_ALLWINNER                     policy<{'riscv64': 'y'}>
+CONFIG_NVMEM_SUNXI_SID                          policy<{'riscv64': 'y'}>
+CONFIG_PHY_SUN4I_USB                            policy<{'riscv64': 'm'}>
+CONFIG_PHY_SUN50I_USB3                          policy<{'riscv64': 'n'}>
+CONFIG_PHY_SUN6I_MIPI_DPHY                      policy<{'riscv64': 'm'}>
+CONFIG_PHY_SUN9I_USB                            policy<{'riscv64': 'n'}>
 CONFIG_PINCTRL_STARFIVE_JH7110                  policy<{'riscv64': 'y'}>
 CONFIG_PINCTRL_STARFIVE_JH7110_AON              policy<{'riscv64': 'y'}>
 CONFIG_PINCTRL_STARFIVE_JH7110_SYS              policy<{'riscv64': 'y'}>
+CONFIG_PINCTRL_SUN20I_D1                        policy<{'riscv64': 'y'}>
+CONFIG_PINCTRL_SUN4I_A10                        policy<{'riscv64': 'n'}>
+CONFIG_PINCTRL_SUN50I_A100                      policy<{'riscv64': 'n'}>
+CONFIG_PINCTRL_SUN50I_A100_R                    policy<{'riscv64': 'n'}>
+CONFIG_PINCTRL_SUN50I_A64                       policy<{'riscv64': 'n'}>
+CONFIG_PINCTRL_SUN50I_A64_R                     policy<{'riscv64': 'n'}>
+CONFIG_PINCTRL_SUN50I_H5                        policy<{'riscv64': 'n'}>
+CONFIG_PINCTRL_SUN50I_H6                        policy<{'riscv64': 'n'}>
+CONFIG_PINCTRL_SUN50I_H616                      policy<{'riscv64': 'n'}>
+CONFIG_PINCTRL_SUN50I_H616_R                    policy<{'riscv64': 'n'}>
+CONFIG_PINCTRL_SUN50I_H6_R                      policy<{'riscv64': 'n'}>
+CONFIG_PINCTRL_SUN5I                            policy<{'riscv64': 'n'}>
+CONFIG_PINCTRL_SUN6I_A31                        policy<{'riscv64': 'n'}>
+CONFIG_PINCTRL_SUN6I_A31_R                      policy<{'riscv64': 'n'}>
+CONFIG_PINCTRL_SUN8I_A23                        policy<{'riscv64': 'n'}>
+CONFIG_PINCTRL_SUN8I_A23_R                      policy<{'riscv64': 'n'}>
+CONFIG_PINCTRL_SUN8I_A33                        policy<{'riscv64': 'n'}>
+CONFIG_PINCTRL_SUN8I_A83T                       policy<{'riscv64': 'n'}>
+CONFIG_PINCTRL_SUN8I_A83T_R                     policy<{'riscv64': 'n'}>
+CONFIG_PINCTRL_SUN8I_H3                         policy<{'riscv64': 'n'}>
+CONFIG_PINCTRL_SUN8I_H3_R                       policy<{'riscv64': 'n'}>
+CONFIG_PINCTRL_SUN8I_V3S                        policy<{'riscv64': 'n'}>
+CONFIG_PINCTRL_SUN9I_A80                        policy<{'riscv64': 'n'}>
+CONFIG_PINCTRL_SUN9I_A80_R                      policy<{'riscv64': 'n'}>
+CONFIG_PINCTRL_SUNXI                            policy<{'riscv64': 'y'}>
+CONFIG_PWM_SUN4I                                policy<{'riscv64': 'n'}>
+CONFIG_PWM_SUN8I_V536                           policy<{'riscv64': 'm'}>
+CONFIG_REGULATOR_SUN20I                         policy<{'riscv64': 'm'}>
 CONFIG_RESET_STARFIVE_JH7110                    policy<{'riscv64': 'y'}>
 CONFIG_RESET_STARFIVE_JH71X0                    policy<{'riscv64': 'y'}>
-CONFIG_SERIAL_8250_DW                           policy<{'riscv64': 'y'}>
+CONFIG_RESET_SUNXI                              policy<{'riscv64': 'y'}>
+CONFIG_RISCV_ALTERNATIVE_EARLY                  policy<{'riscv64': 'y'}>
+CONFIG_SERIO_SUN4I_PS2                          policy<{'riscv64': 'n'}>
+CONFIG_SND_SUN20I_CODEC                         policy<{'riscv64': 'm'}>
+CONFIG_SND_SUN4I_CODEC                          policy<{'riscv64': 'm'}>
+CONFIG_SND_SUN4I_I2S                            policy<{'riscv64': 'm'}>
+CONFIG_SND_SUN4I_SPDIF                          policy<{'riscv64': 'm'}>
+CONFIG_SND_SUN50I_DMIC                          policy<{'riscv64': 'm'}>
+CONFIG_SPI_SUN4I                                policy<{'riscv64': 'n'}>
+CONFIG_SPI_SUN6I                                policy<{'riscv64': 'm'}>
+CONFIG_SUN20I_D1_CCU                            policy<{'riscv64': 'y'}>
+CONFIG_SUN20I_D1_R_CCU                          policy<{'riscv64': 'y'}>
+CONFIG_SUN20I_PPU                               policy<{'riscv64': 'y'}>
+CONFIG_SUN4I_EMAC                               policy<{'riscv64': 'm'}>
+CONFIG_SUN4I_TIMER                              policy<{'riscv64': 'y'}>
+CONFIG_SUN50I_DE2_BUS                           policy<{'riscv64': 'n'}>
+CONFIG_SUN50I_IOMMU                             policy<{'riscv64': 'y'}>
+CONFIG_SUN6I_MSGBOX                             policy<{'riscv64': 'n'}>
+CONFIG_SUN8I_DE2_CCU                            policy<{'riscv64': 'y'}>
+CONFIG_SUN8I_THERMAL                            policy<{'riscv64': 'm'}>
+CONFIG_SUNXI_CCU                                policy<{'riscv64': 'y'}>
+CONFIG_SUNXI_RSB                                policy<{'riscv64': 'n'}>
+CONFIG_SUNXI_SRAM                               policy<{'riscv64': 'y'}>
+CONFIG_SUNXI_WATCHDOG                           policy<{'riscv64': 'y'}>
+CONFIG_TOUCHSCREEN_SUN4I                        policy<{'riscv64': 'n'}>
+CONFIG_USB_MUSB_SUNXI                           policy<{'riscv64': 'm'}>
+CONFIG_VIDEO_HANTRO                             policy<{'riscv64': 'n'}>
+CONFIG_VIDEO_SUN4I_CSI                          policy<{'riscv64': 'n'}>
+CONFIG_VIDEO_SUN6I_CSI                          policy<{'riscv64': 'n'}>
+CONFIG_VIDEO_SUN6I_MIPI_CSI2                    policy<{'riscv64': 'n'}>
+CONFIG_VIDEO_SUN8I_A83T_MIPI_CSI2               policy<{'riscv64': 'n'}>
+CONFIG_VIDEO_SUN8I_DEINTERLACE                  policy<{'riscv64': 'n'}>
+CONFIG_VIDEO_SUN8I_ROTATE                       policy<{'riscv64': 'n'}>
+CONFIG_VIDEO_SUNXI                              policy<{'riscv64': 'n'}>
