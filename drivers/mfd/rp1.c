@@ -172,8 +172,21 @@ static int rp1_irq_xlate(struct irq_domain *d, struct device_node *node,
 			    const u32 *intspec, unsigned int intsize,
 			    unsigned long *out_hwirq, unsigned int *out_type)
 {
-	return irq_domain_xlate_twocell(d, node, intspec, intsize,
-					out_hwirq, out_type);
+	struct rp1_dev *rp1 = d->host_data;
+	struct irq_data *pcie_irqd;
+	unsigned long hwirq;
+	int pcie_irq;
+	int ret;
+
+	ret = irq_domain_xlate_twocell(d, node, intspec, intsize,
+				       &hwirq, out_type);
+	if (!ret) {
+		pcie_irq = pci_irq_vector(rp1->pdev, hwirq);
+		pcie_irqd = irq_get_irq_data(pcie_irq);
+		rp1->pcie_irqds[hwirq] = pcie_irqd;
+		*out_hwirq = hwirq;
+	}
+	return ret;
 }
 
 static int rp1_irq_activate(struct irq_domain *d, struct irq_data *irqd,
@@ -181,28 +194,20 @@ static int rp1_irq_activate(struct irq_domain *d, struct irq_data *irqd,
 {
 	struct rp1_dev *rp1 = d->host_data;
 	struct irq_data *pcie_irqd;
-	int pcie_irq;
 
-	pcie_irq = pci_irq_vector(rp1->pdev, irqd->hwirq);
-	pr_debug("%s(%d, %ld) -> irq %d\n", __func__, irqd->irq, irqd->hwirq,
-		 pcie_irq);
-	pcie_irqd = irq_get_irq_data(pcie_irq);
-	rp1->pcie_irqds[irqd->hwirq] = pcie_irqd;
+	pcie_irqd = rp1->pcie_irqds[irqd->hwirq];
 	msix_cfg_set(rp1, (unsigned int)irqd->hwirq, MSIX_CFG_ENABLE);
-
 	return irq_domain_activate_irq(pcie_irqd, reserve);
 }
 
 static void rp1_irq_deactivate(struct irq_domain *d, struct irq_data *irqd)
 {
 	struct rp1_dev *rp1 = d->host_data;
-	int irq;
+	struct irq_data *pcie_irqd;
 
-	irq = pci_irq_vector(rp1->pdev, irqd->hwirq);
-	pr_debug("%s(%d, %ld) -> irq %d\n", __func__, irqd->irq, irqd->hwirq,
-		 irq);
+	pcie_irqd = rp1->pcie_irqds[irqd->hwirq];
 	msix_cfg_clr(rp1, (unsigned int)irqd->hwirq, MSIX_CFG_ENABLE);
-	return irq_domain_deactivate_irq(irq_get_irq_data(irq));
+	return irq_domain_deactivate_irq(pcie_irqd);
 }
 
 static const struct irq_domain_ops rp1_domain_ops = {
