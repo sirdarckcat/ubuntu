@@ -80,8 +80,8 @@ CONFIG_ANDROID_BINDER_IPC                       mark<ENFORCED> note<needed for A
 CONFIG_ACCESSIBILITY                            policy<{'amd64': 'n', 'arm64': 'n'}>
 
 
-CONFIG_SEV_GUEST				policy<{'amd64': 'm'}>
-CONFIG_SEV_GUEST				mark<ENFORCED> note<Needed for attestation. Ensure sev-guest is in default module list>
+CONFIG_SEV_GUEST				policy<{'amd64': 'y'}>
+CONFIG_SEV_GUEST				mark<ENFORCED> note<Normally set to =m but keep as =y for GCP>
 
 
 
