@@ -86,6 +86,17 @@ MODULE_PARM_DESC(cfe_debug, "Debug level 0-3");
 /* Default size of the embedded buffer */
 #define DEFAULT_EMBEDDED_SIZE 8192
 
+static const struct v4l2_mbus_framefmt cfe_default_format = {
+	.width = 640,
+	.height = 480,
+	.code = MEDIA_BUS_FMT_SRGGB10_1X10,
+	.field = V4L2_FIELD_NONE,
+	.colorspace = V4L2_COLORSPACE_RAW,
+	.ycbcr_enc = V4L2_YCBCR_ENC_601,
+	.quantization = V4L2_QUANTIZATION_FULL_RANGE,
+	.xfer_func = V4L2_XFER_FUNC_NONE,
+};
+
 enum node_ids {
 	/* CSI2 HW output nodes first. */
 	CSI2_CH0,
@@ -260,8 +271,6 @@ struct cfe_device {
 
 	/* ptr to sub device */
 	struct v4l2_subdev *sensor;
-	/* Pad config for the sensor */
-	struct v4l2_subdev_state *sensor_state;
 
 	struct cfe_node node[NUM_NODES];
 	DECLARE_BITMAP(node_flags, NUM_STATES * NUM_NODES);
@@ -456,26 +465,6 @@ static const struct cfe_fmt *find_format_by_pix(u32 pixelformat)
 	}
 
 	return NULL;
-}
-
-static int __subdev_get_format(struct cfe_device *cfe,
-			       struct v4l2_mbus_framefmt *fmt, int id)
-{
-	struct v4l2_subdev_format sd_fmt = { .which = V4L2_SUBDEV_FORMAT_ACTIVE,
-					     .pad = id };
-	int ret;
-
-	ret = v4l2_subdev_call(cfe->sensor, pad, get_fmt, cfe->sensor_state,
-			       &sd_fmt);
-	if (ret < 0)
-		return ret;
-
-	*fmt = sd_fmt.format;
-
-	cfe_dbg(1, "%s: %dx%d code:%04x\n", __func__, fmt->width, fmt->height,
-		fmt->code);
-
-	return 0;
 }
 
 static int cfe_subdev_link_get_format(struct media_pad *pad,
@@ -1650,9 +1639,6 @@ static void cfe_release(struct kref *kref)
 
 	media_device_cleanup(&cfe->mdev);
 
-	if (cfe->sensor_state)
-		__v4l2_subdev_state_free(cfe->sensor_state);
-
 	kfree(cfe);
 }
 
@@ -1685,22 +1671,14 @@ static int register_node(struct cfe_device *cfe, int id)
 	node->id = id;
 
 	if (is_image_output_node(id)) {
-		struct v4l2_mbus_framefmt mbus_fmt = { 0 };
-
-		ret = __subdev_get_format(cfe, &mbus_fmt, 0);
-		if (ret) {
-			cfe_err("Failed to get_format - ret %d\n", ret);
-			return ret;
-		}
-
-		fmt = find_format_by_code(mbus_fmt.code);
+		fmt = find_format_by_code(cfe_default_format.code);
 		if (!fmt) {
 			cfe_err("Failed to find format code\n");
 			return -EINVAL;
 		}
 
 		node->fmt.fmt.pix.pixelformat = fmt->fourcc;
-		v4l2_fill_pix_format(&node->fmt.fmt.pix, &mbus_fmt);
+		v4l2_fill_pix_format(&node->fmt.fmt.pix, &cfe_default_format);
 		cfe_calc_format_size_bpl(cfe, fmt, &node->fmt);
 	} else {
 		ret = try_fmt_meta(node, &node->fmt);
@@ -1864,17 +1842,10 @@ static int link_node_pads(struct cfe_device *cfe)
 
 static int cfe_probe_complete(struct cfe_device *cfe)
 {
-	static struct lock_class_key key;
 	unsigned int i;
 	int ret;
 
 	cfe->v4l2_dev.notify = cfe_notify;
-
-	cfe->sensor_state = __v4l2_subdev_state_alloc(cfe->sensor,
-						      "cfe:probe_complete->lock",
-						      &key);
-	if (!cfe->sensor_state)
-		return -ENOMEM;
 
 	cfe->sensor_embedded_data = (cfe->sensor->entity.num_pads >= 2);
 
