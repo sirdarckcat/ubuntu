@@ -1,0 +1,12 @@
+#
+# QED power driver
+#
+menu "QED driver for accessing QED serial number"
+config QED_FS
+       default n
+       bool "QED serial number in sysfs"
+       help
+               Enable this option to support misc QED info in sysfs.
+               Currently, there is only support for providing the board
+               serial number under /sys/kernel/qedfs/qed_serialno.
+endmenu
