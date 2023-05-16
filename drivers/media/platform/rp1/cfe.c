@@ -916,7 +916,10 @@ static int try_fmt_meta(struct cfe_node *node, struct v4l2_format *f)
 	switch (node->id) {
 	case CSI2_CH1_EMBEDDED:
 		f->fmt.meta.dataformat = V4L2_META_FMT_SENSOR_DATA;
-		f->fmt.meta.buffersize = DEFAULT_EMBEDDED_SIZE;
+		f->fmt.meta.buffersize =
+			ALIGN(f->fmt.meta.buffersize ? f->fmt.meta.buffersize
+						     : DEFAULT_EMBEDDED_SIZE,
+			      BPL_ALIGNMENT);
 		return 0;
 	case FE_STATS:
 		f->fmt.meta.dataformat = V4L2_META_FMT_RPI_FE_STATS;
