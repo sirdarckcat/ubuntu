@@ -1791,7 +1791,7 @@ static struct platform_driver pispbe_pdrv = {
 	.remove		= pispbe_remove,
 	.driver		= {
 		.name	= PISPBE_NAME,
-		.of_match_table = of_match_ptr(pispbe_of_match),
+		.of_match_table = pispbe_of_match,
 	},
 };
 
