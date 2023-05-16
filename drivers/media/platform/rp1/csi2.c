@@ -137,8 +137,11 @@ static inline void set_field(u32 *valp, u32 field, u32 mask)
 static int csi2_regs_show(struct seq_file *s, void *data)
 {
 	struct csi2_device *csi2 = s->private;
+	unsigned int i;
 
 #define DUMP(reg) seq_printf(s, #reg " \t0x%08x\n", csi2_reg_read(csi2, reg))
+#define DUMP_CH(idx, reg) seq_printf(s, #reg "(%u) \t0x%08x\n", idx, csi2_reg_read(csi2, reg(idx)))
+
 	DUMP(CSI2_STATUS);
 	DUMP(CSI2_DISCARDS_OVERFLOW);
 	DUMP(CSI2_DISCARDS_INACTIVE);
@@ -148,12 +151,21 @@ static int csi2_regs_show(struct seq_file *s, void *data)
 	DUMP(CSI2_ULEV_PANICS);
 	DUMP(CSI2_IRQ_MASK);
 	DUMP(CSI2_CTRL);
-	DUMP(CSI2_CH_CTRL(0));
-	DUMP(CSI2_CH_DEBUG(0));
-	DUMP(CSI2_CH_FRAME_SIZE(0));
-	DUMP(CSI2_CH_CTRL(1));
-	DUMP(CSI2_CH_DEBUG(1));
+
+	for (i = 0; i < CSI2_NUM_CHANNELS; ++i) {
+		DUMP_CH(i, CSI2_CH_CTRL);
+		DUMP_CH(i, CSI2_CH_ADDR0);
+		DUMP_CH(i, CSI2_CH_ADDR1);
+		DUMP_CH(i, CSI2_CH_STRIDE);
+		DUMP_CH(i, CSI2_CH_LENGTH);
+		DUMP_CH(i, CSI2_CH_DEBUG);
+		DUMP_CH(i, CSI2_CH_FRAME_SIZE);
+		DUMP_CH(i, CSI2_CH_COMP_CTRL);
+		DUMP_CH(i, CSI2_CH_FE_FRAME_ID);
+	}
+
 #undef DUMP
+#undef DUMP_CH
 
 	return 0;
 }
