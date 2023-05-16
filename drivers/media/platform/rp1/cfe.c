@@ -193,7 +193,7 @@ static const struct node_description node_desc[NUM_NODES] = {
 /* To track state across all nodes. */
 #define NUM_STATES		5
 #define NODE_REGISTERED		BIT(0)
-#define NODE_OPENED		BIT(1)
+#define NODE_ENABLED		BIT(1)
 #define NODE_STREAMING		BIT(2)
 #define FS_INT			BIT(3)
 #define FE_INT			BIT(4)
@@ -696,7 +696,7 @@ static irqreturn_t cfe_isr(int irq, void *dev)
 
 	spin_lock(&cfe->state_lock);
 
-	if (!test_all_nodes(cfe, NODE_OPENED, NODE_STREAMING)) {
+	if (!test_all_nodes(cfe, NODE_ENABLED, NODE_STREAMING)) {
 		spin_unlock(&cfe->state_lock);
 		return IRQ_HANDLED;
 	}
@@ -1041,7 +1041,7 @@ static void cfe_buffer_queue(struct vb2_buffer *vb)
 	 * it later.
 	 */
 	prepare = list_empty(&node->dma_queue) &&
-		  test_all_nodes(cfe, NODE_OPENED, NODE_STREAMING) &&
+		  test_all_nodes(cfe, NODE_ENABLED, NODE_STREAMING) &&
 		  !node->next_frm && !node->cur_frm;
 
 	list_add_tail(&buf->list, &node->dma_queue);
@@ -1064,7 +1064,7 @@ static void cfe_start_channel(struct cfe_node *node)
 	unsigned long flags;
 	unsigned int width = 0, height = 0;
 	bool start_fe = is_fe_enabled(cfe) &&
-			test_all_nodes(cfe, NODE_OPENED, NODE_STREAMING);
+			test_all_nodes(cfe, NODE_ENABLED, NODE_STREAMING);
 
 	cfe_dbg(2, "%s: [%s]\n", __func__, node_desc[node->id].name);
 
@@ -1126,7 +1126,7 @@ static void cfe_start_channel(struct cfe_node *node)
 	}
 
 	spin_lock_irqsave(&cfe->state_lock, flags);
-	if (test_all_nodes(cfe, NODE_OPENED, NODE_STREAMING))
+	if (test_all_nodes(cfe, NODE_ENABLED, NODE_STREAMING))
 		cfe_prepare_next_job(cfe);
 	spin_unlock_irqrestore(&cfe->state_lock, flags);
 }
@@ -1181,6 +1181,12 @@ static int cfe_start_streaming(struct vb2_queue *vq, unsigned int count)
 
 	cfe_dbg(2, "%s: [%s] begin.\n", __func__, node_desc[node->id].name);
 
+	if (!check_state(cfe, NODE_ENABLED, node->id)) {
+		cfe_err("%s node link is not enabled.\n",
+			node_desc[node->id].name);
+		return -EINVAL;
+	}
+
 	if (!test_any_node(cfe, NODE_STREAMING, false)) {
 		ret = cfe_runtime_get(cfe);
 		if (ret < 0) {
@@ -1199,7 +1205,7 @@ static int cfe_start_streaming(struct vb2_queue *vq, unsigned int count)
 	set_state(cfe, NODE_STREAMING, node->id);
 	cfe_start_channel(node);
 
-	if (!test_all_nodes(cfe, NODE_OPENED, NODE_STREAMING)) {
+	if (!test_all_nodes(cfe, NODE_ENABLED, NODE_STREAMING)) {
 		cfe_dbg(2, "Not all nodes are set to streaming yet!\n");
 		return 0;
 	}
@@ -1259,7 +1265,7 @@ static void cfe_stop_streaming(struct vb2_queue *vq)
 
 	spin_lock_irqsave(&cfe->state_lock, flags);
 	fe_stop = is_fe_enabled(cfe) &&
-		  test_all_nodes(cfe, NODE_OPENED, NODE_STREAMING);
+		  test_all_nodes(cfe, NODE_ENABLED, NODE_STREAMING);
 
 	clear_state(cfe, NODE_STREAMING, node->id);
 	spin_unlock_irqrestore(&cfe->state_lock, flags);
@@ -1408,7 +1414,6 @@ static int cfe_v4l2_open(struct file *file)
 		csi2_open_rx(&cfe->csi2);
 	}
 
-	set_state(cfe, NODE_OPENED, node->id);
 	ret = 0;
 unlock:
 	mutex_unlock(&node->lock);
@@ -1433,7 +1438,6 @@ static int cfe_v4l2_release(struct file *file)
 		csi2_close_rx(&cfe->csi2);
 	}
 
-	clear_state(cfe, NODE_OPENED, node->id);
 	mutex_unlock(&node->lock);
 	return ret;
 }
@@ -1551,12 +1555,38 @@ static int cfe_video_link_notify(struct media_link *link, u32 flags,
 	struct cfe_device *cfe = container_of(mdev, struct cfe_device, mdev);
 	struct media_entity *fe = &cfe->fe.sd.entity;
 	struct media_entity *csi2 = &cfe->csi2.sd.entity;
+	unsigned long lock_flags;
+	unsigned int i;
 
 	if (notification != MEDIA_DEV_NOTIFY_POST_LINK_CH)
 		return 0;
+
+	cfe_dbg(2, "%s: %s[%d] -> %s[%d] 0x%x", __func__,
+		link->source->entity->name, link->source->index,
+		link->sink->entity->name, link->sink->index, flags);
+
+	spin_lock_irqsave(&cfe->state_lock, lock_flags);
+
+	for (i = 0; i < NUM_NODES; i++) {
+		if (link->sink->entity != &cfe->node[i].video_dev.entity &&
+		    link->source->entity != &cfe->node[i].video_dev.entity)
+			continue;
+
+		if (link->flags & MEDIA_LNK_FL_ENABLED)
+			set_state(cfe, NODE_ENABLED, i);
+		else
+			clear_state(cfe, NODE_ENABLED, i);
+
+		break;
+	}
+
+	spin_unlock_irqrestore(&cfe->state_lock, lock_flags);
+
 	if (link->source->entity != csi2)
 		return 0;
 	if (link->sink->index != 0)
+		return 0;
+	if (link->source->index == node_desc[CSI2_CH1_EMBEDDED].link_pad)
 		return 0;
 
 	cfe->fe_csi2_channel = -1;
