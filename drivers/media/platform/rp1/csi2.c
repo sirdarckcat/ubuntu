@@ -299,7 +299,7 @@ void csi2_isr(struct csi2_device *csi2, bool *sof, bool *eof, bool *lci)
 	/* Write value back to clear the interrupts */
 	csi2_reg_write(csi2, CSI2_STATUS, status);
 
-	for (i = 0; i < csi2->num_lanes; i++) {
+	for (i = 0; i < CSI2_NUM_CHANNELS; i++) {
 		u32 dbg = csi2_reg_read(csi2, CSI2_CH_DEBUG(i));
 
 		csi2_dbg(3, "ISR: [%d], frame: %d line: %d\n",
