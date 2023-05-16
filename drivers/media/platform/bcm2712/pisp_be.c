@@ -22,10 +22,6 @@ MODULE_AUTHOR("David Plowman <david.plowman@raspberrypi.com>");
 MODULE_AUTHOR("Nick Hollinghurst <nick.hollinghurst@raspberrypi.com>");
 MODULE_LICENSE("GPL v2");
 
-static unsigned int debug;
-module_param(debug, uint, 0644);
-MODULE_PARM_DESC(debug, "activates debug info");
-
 /* Offset to use when registering the /dev/videoX node */
 #define PISPBE_VIDEO_NODE_OFFSET 20
 
@@ -507,8 +503,7 @@ static int pispbe_schedule_internal(struct pispbe_node_group *node_group,
 	if (((BIT(CONFIG_NODE) | BIT(MAIN_INPUT_NODE)) &
 		node_group->streaming_map) !=
 			(BIT(CONFIG_NODE) | BIT(MAIN_INPUT_NODE))) {
-		v4l2_dbg(1, debug, &node_group->v4l2_dev,
-			 "Nothing to do\n");
+		dev_dbg(pispbe->dev, "Nothing to do\n");
 		return 0;
 	}
 
@@ -527,8 +522,7 @@ static int pispbe_schedule_internal(struct pispbe_node_group *node_group,
 		spin_unlock_irqrestore(&node->ready_lock,
 				       flags1);
 		if (!buf[i]) {
-			v4l2_dbg(1, debug, &node_group->v4l2_dev,
-				 "Nothing to do\n");
+			dev_dbg(pispbe->dev, "Nothing to do\n");
 			return 0;
 		}
 	}
@@ -555,8 +549,7 @@ static int pispbe_schedule_internal(struct pispbe_node_group *node_group,
 	 * never run again until hw_busy is cleared, which will happen
 	 * only when the following job has been queued.
 	 */
-	v4l2_dbg(1, debug, &node_group->v4l2_dev,
-		 "Have buffers - starting hardware\n");
+	dev_dbg(pispbe->dev, "Have buffers - starting hardware\n");
 	config_tiles_buffer = buf[CONFIG_NODE]->vaddr;
 
 	/* Convert buffers to DMA addresses for the hardware */
@@ -580,7 +573,7 @@ static int pispbe_schedule_internal(struct pispbe_node_group *node_group,
 		 * (started,done) counters by more than 1, but we seem
 		 * to survive...
 		 */
-		v4l2_err(&node_group->v4l2_dev, "PROBLEM: Bad job");
+		dev_err(pispbe->dev, "PROBLEM: Bad job");
 		i = 0;
 	}
 	hw_queue_job(pispbe, hw_dma_addrs, hw_enables,
@@ -666,15 +659,14 @@ static irqreturn_t pispbe_isr(int irq, void *dev)
 		return IRQ_NONE;
 
 	write_reg(pispbe, PISP_BE_INTERRUPT_STATUS_OFFSET, u);
-	v4l2_dbg(1, debug, &pispbe->node_group[0].v4l2_dev,
-		 "Hardware interrupt\n");
+	dev_dbg(pispbe->dev, "Hardware interrupt\n");
 	u = read_reg(pispbe, PISP_BE_BATCH_STATUS_OFFSET);
 	done = (uint8_t)u;
 	started = (uint8_t)(u >> 8);
-	v4l2_dbg(1, debug, &pispbe->node_group[0].v4l2_dev,
-		 "H/W started %d done %d, previously started %d done %d\n",
-		 (int)started, (int)done, (int)pispbe->started,
-		 (int)pispbe->done);
+	dev_dbg(pispbe->dev,
+		"H/W started %d done %d, previously started %d done %d\n",
+		(int)started, (int)done, (int)pispbe->started,
+		(int)pispbe->done);
 
 	/*
 	 * Be aware that done can go up by 2 and started by 1 when: a job that
@@ -685,21 +677,18 @@ static irqreturn_t pispbe_isr(int irq, void *dev)
 		pispbe_isr_jobdone(pispbe, &pispbe->running_job);
 		memset(&pispbe->running_job, 0, sizeof(pispbe->running_job));
 		pispbe->done++;
-		v4l2_dbg(1, debug, &pispbe->node_group[0].v4l2_dev,
-			 "Job done (1)\n");
+		dev_dbg(pispbe->dev, "Job done (1)\n");
 	}
 
 	if (pispbe->started != started) {
 		pispbe->started++;
 		can_queue_another = 1;
-		v4l2_dbg(1, debug, &pispbe->node_group[0].v4l2_dev,
-			 "Job started\n");
+		dev_dbg(pispbe->dev, "Job started\n");
 
 		if (pispbe->done != done && pispbe->queued_job.node_group) {
 			pispbe_isr_jobdone(pispbe, &pispbe->queued_job);
 			pispbe->done++;
-			v4l2_dbg(1, debug, &pispbe->node_group[0].v4l2_dev,
-				 "Job done (2)\n");
+			dev_dbg(pispbe->dev, "Job done (2)\n");
 		} else {
 			pispbe->running_job = pispbe->queued_job;
 		}
@@ -708,8 +697,7 @@ static irqreturn_t pispbe_isr(int irq, void *dev)
 	}
 
 	if (pispbe->done != done || pispbe->started != started) {
-		v4l2_err(&pispbe->node_group[0].v4l2_dev,
-			 "PROBLEM: counters not matching!\n");
+		dev_err(pispbe->dev, "PROBLEM: counters not matching!\n");
 		pispbe->started = started;
 		pispbe->done = done;
 	}
@@ -725,6 +713,7 @@ static int pispbe_node_queue_setup(struct vb2_queue *q, unsigned int *nbuffers,
 				   struct device *alloc_devs[])
 {
 	struct pispbe_node *node = vb2_get_drv_priv(q);
+	struct pispbe_dev *pispbe = node->node_group->pispbe;
 
 	*nplanes = 1;
 	if (NODE_IS_MPLANE(node)) {
@@ -735,8 +724,8 @@ static int pispbe_node_queue_setup(struct vb2_queue *q, unsigned int *nbuffers,
 			unsigned int size =
 				node->format.fmt.pix_mp.plane_fmt[i].sizeimage;
 			if (sizes[i] && sizes[i] < size) {
-				v4l2_err(&NODE_GET_V4L2(node), "%s: size %u < %u\n",
-					 __func__, sizes[i], size);
+				dev_err(pispbe->dev, "%s: size %u < %u\n",
+					__func__, sizes[i], size);
 				return -EINVAL;
 			}
 			sizes[i] = size;
@@ -745,9 +734,9 @@ static int pispbe_node_queue_setup(struct vb2_queue *q, unsigned int *nbuffers,
 		sizes[0] = node->format.fmt.meta.buffersize;
 	}
 
-	v4l2_dbg(1, debug, &NODE_GET_V4L2(node),
-		 "Image (or metadata) size %u, nbuffers %u for node %s\n",
-		 sizes[0], *nbuffers, NODE_NAME(node));
+	dev_dbg(pispbe->dev,
+		"Image (or metadata) size %u, nbuffers %u for node %s\n",
+		sizes[0], *nbuffers, NODE_NAME(node));
 
 	return 0;
 }
@@ -755,6 +744,7 @@ static int pispbe_node_queue_setup(struct vb2_queue *q, unsigned int *nbuffers,
 static int pispbe_node_buffer_prepare(struct vb2_buffer *vb)
 {
 	struct pispbe_node *node = vb2_get_drv_priv(vb->vb2_queue);
+	struct pispbe_dev *pispbe = node->node_group->pispbe;
 	unsigned long size = 0;
 	unsigned int num_planes = NODE_IS_MPLANE(node) ?
 					node->format.fmt.pix_mp.num_planes : 1;
@@ -766,8 +756,9 @@ static int pispbe_node_buffer_prepare(struct vb2_buffer *vb)
 			: node->format.fmt.meta.buffersize;
 
 		if (vb2_plane_size(vb, i) < size) {
-			v4l2_err(&NODE_GET_V4L2(node), "data will not fit into plane %d (%lu < %lu)\n",
-				 i, vb2_plane_size(vb, i), size);
+			dev_err(pispbe->dev,
+				"data will not fit into plane %d (%lu < %lu)\n",
+				i, vb2_plane_size(vb, i), size);
 			return -EINVAL;
 		}
 
@@ -785,10 +776,10 @@ static void pispbe_node_buffer_queue(struct vb2_buffer *buf)
 		container_of(vbuf, struct pispbe_buffer, vb);
 	struct pispbe_node *node = vb2_get_drv_priv(buf->vb2_queue);
 	struct pispbe_node_group *node_group = node->node_group;
+	struct pispbe_dev *pispbe = node->node_group->pispbe;
 	unsigned long flags;
 
-	v4l2_dbg(1, debug, &NODE_GET_V4L2(node),
-		 "%s: for node %s\n", __func__, NODE_NAME(node));
+	dev_dbg(pispbe->dev, "%s: for node %s\n", __func__, NODE_NAME(node));
 	spin_lock_irqsave(&node->ready_lock, flags);
 	/*
 	 * We want to access at the config buffer when we program a new job.
@@ -818,12 +809,10 @@ static int pispbe_node_start_streaming(struct vb2_queue *q, unsigned int count)
 	node->node_group->streaming_map |=  BIT(node->id);
 	spin_unlock_irqrestore(&pispbe->hw_lock, flags);
 
-	v4l2_dbg(1, debug, &node_group->v4l2_dev,
-		 "%s: for node %s (count %u)\n",
-		 __func__, NODE_NAME(node), count);
-	v4l2_dbg(1, debug, &node_group->v4l2_dev,
-		 "Nodes streaming for this group now 0x%x\n",
-		 node->node_group->streaming_map);
+	dev_dbg(pispbe->dev, "%s: for node %s (count %u)\n",
+		__func__, NODE_NAME(node), count);
+	dev_dbg(pispbe->dev, "Nodes streaming for this group now 0x%x\n",
+		node->node_group->streaming_map);
 
 	/* Maybe we're ready to run. */
 	pispbe_schedule_one(node_group);
@@ -847,8 +836,7 @@ static void pispbe_node_stop_streaming(struct vb2_queue *q)
 	 * running job.
 	 * XXX This may return buffers out of order.
 	 */
-	v4l2_dbg(1, debug, &node_group->v4l2_dev,
-		 "%s: for node %s\n", __func__, NODE_NAME(node));
+	dev_dbg(pispbe->dev, "%s: for node %s\n", __func__, NODE_NAME(node));
 	spin_lock_irqsave(&pispbe->hw_lock, flags);
 	do {
 		unsigned long flags1;
@@ -871,9 +859,8 @@ static void pispbe_node_stop_streaming(struct vb2_queue *q)
 	node_group->streaming_map &= ~BIT(node->id);
 	spin_unlock_irqrestore(&pispbe->hw_lock, flags);
 
-	v4l2_dbg(1, debug, &node_group->v4l2_dev,
-		 "Nodes streaming for this group now 0x%x\n",
-		 node_group->streaming_map);
+	dev_dbg(pispbe->dev, "Nodes streaming for this group now 0x%x\n",
+		node_group->streaming_map);
 }
 
 static const struct vb2_ops pispbe_node_queue_ops = {
@@ -897,6 +884,7 @@ static int pispbe_node_querycap(struct file *file, void *priv,
 				struct v4l2_capability *cap)
 {
 	struct pispbe_node *node = video_drvdata(file);
+	struct pispbe_dev *pispbe = node->node_group->pispbe;
 
 	strscpy(cap->driver, PISPBE_NAME, sizeof(cap->driver));
 	strscpy(cap->card, PISPBE_NAME, sizeof(cap->card));
@@ -909,9 +897,9 @@ static int pispbe_node_querycap(struct file *file, void *priv,
 			    V4L2_CAP_META_OUTPUT | V4L2_CAP_META_CAPTURE;
 	cap->device_caps = node->vfd.device_caps;
 
-	v4l2_dbg(1, debug, &NODE_GET_V4L2(node),
-		 "Caps for node %s: %x and %x (dev %x)\n", NODE_NAME(node),
-		 cap->capabilities, cap->device_caps, node->vfd.device_caps);
+	dev_dbg(pispbe->dev, "Caps for node %s: %x and %x (dev %x)\n",
+		NODE_NAME(node), cap->capabilities, cap->device_caps,
+		node->vfd.device_caps);
 	return 0;
 }
 
@@ -919,16 +907,17 @@ static int pispbe_node_g_fmt_vid_cap(struct file *file, void *priv,
 				     struct v4l2_format *f)
 {
 	struct pispbe_node *node = video_drvdata(file);
+	struct pispbe_dev *pispbe = node->node_group->pispbe;
 
 	if (!NODE_IS_CAPTURE(node) || NODE_IS_META(node)) {
-		v4l2_err(&NODE_GET_V4L2(node),
-			 "Cannot get capture fmt for output node %s\n",
-			 NODE_NAME(node));
+		dev_err(pispbe->dev,
+			"Cannot get capture fmt for output node %s\n",
+			NODE_NAME(node));
 		return -EINVAL;
 	}
 	*f = node->format;
-	v4l2_dbg(1, debug, &NODE_GET_V4L2(node),
-		 "Get capture format for node %s\n", NODE_NAME(node));
+	dev_dbg(pispbe->dev, "Get capture format for node %s\n",
+		NODE_NAME(node));
 	return 0;
 }
 
@@ -936,16 +925,17 @@ static int pispbe_node_g_fmt_vid_out(struct file *file, void *priv,
 				     struct v4l2_format *f)
 {
 	struct pispbe_node *node = video_drvdata(file);
+	struct pispbe_dev *pispbe = node->node_group->pispbe;
 
 	if (NODE_IS_CAPTURE(node) || NODE_IS_META(node)) {
-		v4l2_err(&NODE_GET_V4L2(node),
-			 "Cannot get capture fmt for output node %s\n",
+		dev_err(pispbe->dev,
+			"Cannot get capture fmt for output node %s\n",
 			 NODE_NAME(node));
 		return -EINVAL;
 	}
 	*f = node->format;
-	v4l2_dbg(1, debug, &NODE_GET_V4L2(node),
-		 "Get output format for node %s\n", NODE_NAME(node));
+	dev_dbg(pispbe->dev, "Get output format for node %s\n",
+		NODE_NAME(node));
 	return 0;
 }
 
@@ -953,16 +943,17 @@ static int pispbe_node_g_fmt_meta_out(struct file *file, void *priv,
 				      struct v4l2_format *f)
 {
 	struct pispbe_node *node = video_drvdata(file);
+	struct pispbe_dev *pispbe = node->node_group->pispbe;
 
 	if (!NODE_IS_META(node) || NODE_IS_CAPTURE(node)) {
-		v4l2_err(&NODE_GET_V4L2(node),
-			 "Cannot get capture fmt for meta output node %s\n",
-			 NODE_NAME(node));
+		dev_err(pispbe->dev,
+			"Cannot get capture fmt for meta output node %s\n",
+			NODE_NAME(node));
 		return -EINVAL;
 	}
 	*f = node->format;
-	v4l2_dbg(1, debug, &NODE_GET_V4L2(node),
-		 "Get output format for meta node %s\n", NODE_NAME(node));
+	dev_dbg(pispbe->dev, "Get output format for meta node %s\n",
+		NODE_NAME(node));
 	return 0;
 }
 
@@ -970,36 +961,37 @@ static int pispbe_node_g_fmt_meta_cap(struct file *file, void *priv,
 				      struct v4l2_format *f)
 {
 	struct pispbe_node *node = video_drvdata(file);
+	struct pispbe_dev *pispbe = node->node_group->pispbe;
 
 	if (!NODE_IS_META(node) || NODE_IS_OUTPUT(node)) {
-		v4l2_err(&NODE_GET_V4L2(node),
-			 "Cannot get capture fmt for meta output node %s\n",
-			 NODE_NAME(node));
+		dev_err(pispbe->dev,
+			"Cannot get capture fmt for meta output node %s\n",
+			NODE_NAME(node));
 		return -EINVAL;
 	}
 	*f = node->format;
-	v4l2_dbg(1, debug, &NODE_GET_V4L2(node),
-		 "Get output format for meta node %s\n", NODE_NAME(node));
+	dev_dbg(pispbe->dev, "Get output format for meta node %s\n",
+		NODE_NAME(node));
 	return 0;
 }
 
 static int verify_be_pix_format(const struct v4l2_format *f,
 				struct pispbe_node *node)
 {
+	struct pispbe_dev *pispbe = node->node_group->pispbe;
 	unsigned int nplanes = f->fmt.pix_mp.num_planes;
 	unsigned int i;
 
 	if (f->fmt.pix_mp.width == 0 || f->fmt.pix_mp.height == 0) {
-		v4l2_err(&NODE_GET_V4L2(node),
-			 "Details incorrect for output node %s\n",
-			 NODE_NAME(node));
+		dev_err(pispbe->dev, "Details incorrect for output node %s\n",
+			NODE_NAME(node));
 		return -EINVAL;
 	}
 
 	if (nplanes == 0 || nplanes > MAX_PLANES) {
-		v4l2_err(&NODE_GET_V4L2(node),
-			 "Bad number of planes for output node %s, req =%d\n",
-			 NODE_NAME(node), nplanes);
+		dev_err(pispbe->dev,
+			"Bad number of planes for output node %s, req =%d\n",
+			NODE_NAME(node), nplanes);
 		return -EINVAL;
 	}
 
@@ -1008,9 +1000,9 @@ static int verify_be_pix_format(const struct v4l2_format *f,
 
 		p = &f->fmt.pix_mp.plane_fmt[i];
 		if (p->bytesperline == 0 || p->sizeimage == 0) {
-			v4l2_err(&NODE_GET_V4L2(node),
-				 "Invalid plane %d for output node %s\n",
-				 i, NODE_NAME(node));
+			dev_err(pispbe->dev,
+				"Invalid plane %d for output node %s\n",
+				i, NODE_NAME(node));
 			return -EINVAL;
 		}
 	}
@@ -1064,16 +1056,17 @@ static void set_plane_params(struct v4l2_format *f,
 
 static int try_format(struct v4l2_format *f, struct pispbe_node *node)
 {
+	struct pispbe_dev *pispbe = node->node_group->pispbe;
 	const struct pisp_be_format *fmt;
 	unsigned int i;
 	bool is_rgb;
 	u32 pixfmt = f->fmt.pix_mp.pixelformat;
 
-	v4l2_dbg(2, debug,  &NODE_GET_V4L2(node),
-		 "%s: [%s] req %ux%u " V4L2_FOURCC_CONV ", planes %d\n",
-		 __func__, NODE_NAME(node), f->fmt.pix_mp.width,
-		 f->fmt.pix_mp.height, V4L2_FOURCC_CONV_ARGS(pixfmt),
-		 f->fmt.pix_mp.num_planes);
+	dev_dbg(pispbe->dev,
+		"%s: [%s] req %ux%u " V4L2_FOURCC_CONV ", planes %d\n",
+		__func__, NODE_NAME(node), f->fmt.pix_mp.width,
+		f->fmt.pix_mp.height, V4L2_FOURCC_CONV_ARGS(pixfmt),
+		f->fmt.pix_mp.num_planes);
 
 	fmt = find_format(pixfmt);
 	if (!fmt)
@@ -1113,12 +1106,12 @@ static int try_format(struct v4l2_format *f, struct pispbe_node *node)
 	set_plane_params(f, fmt);
 
 	for (i = 0; i < f->fmt.pix_mp.num_planes; i++) {
-		v4l2_dbg(2, debug,  &NODE_GET_V4L2(node),
-			 "%s: [%s] calc plane %d, %ux%u, depth %u, bpl %u size %u\n",
-			 __func__, NODE_NAME(node), i, f->fmt.pix_mp.width,
-			 f->fmt.pix_mp.height, fmt->bit_depth,
-			 f->fmt.pix_mp.plane_fmt[i].bytesperline,
-			 f->fmt.pix_mp.plane_fmt[i].sizeimage);
+		dev_dbg(pispbe->dev,
+			"%s: [%s] calc plane %d, %ux%u, depth %u, bpl %u size %u\n",
+			__func__, NODE_NAME(node), i, f->fmt.pix_mp.width,
+			f->fmt.pix_mp.height, fmt->bit_depth,
+			f->fmt.pix_mp.plane_fmt[i].bytesperline,
+			f->fmt.pix_mp.plane_fmt[i].sizeimage);
 	}
 
 	return 0;
@@ -1128,12 +1121,13 @@ static int pispbe_node_try_fmt_vid_cap(struct file *file, void *priv,
 				       struct v4l2_format *f)
 {
 	struct pispbe_node *node = video_drvdata(file);
+	struct pispbe_dev *pispbe = node->node_group->pispbe;
 	int ret;
 
 	if (!NODE_IS_CAPTURE(node) || NODE_IS_META(node)) {
-		v4l2_err(&NODE_GET_V4L2(node),
-			 "Cannot set capture fmt for output node %s\n",
-			 NODE_NAME(node));
+		dev_err(pispbe->dev,
+			"Cannot set capture fmt for output node %s\n",
+			NODE_NAME(node));
 		return -EINVAL;
 	}
 
@@ -1148,12 +1142,13 @@ static int pispbe_node_try_fmt_vid_out(struct file *file, void *priv,
 				       struct v4l2_format *f)
 {
 	struct pispbe_node *node = video_drvdata(file);
+	struct pispbe_dev *pispbe = node->node_group->pispbe;
 	int ret;
 
 	if (!NODE_IS_OUTPUT(node) || NODE_IS_META(node)) {
-		v4l2_err(&NODE_GET_V4L2(node),
-			 "Cannot set capture fmt for output node %s\n",
-			 NODE_NAME(node));
+		dev_err(pispbe->dev,
+			"Cannot set capture fmt for output node %s\n",
+			NODE_NAME(node));
 		return -EINVAL;
 	}
 
@@ -1168,11 +1163,12 @@ static int pispbe_node_try_fmt_meta_out(struct file *file, void *priv,
 					struct v4l2_format *f)
 {
 	struct pispbe_node *node = video_drvdata(file);
+	struct pispbe_dev *pispbe = node->node_group->pispbe;
 
 	if (!NODE_IS_META(node) || NODE_IS_CAPTURE(node)) {
-		v4l2_err(&NODE_GET_V4L2(node),
-			 "Cannot set capture fmt for meta output node %s\n",
-			 NODE_NAME(node));
+		dev_err(pispbe->dev,
+			"Cannot set capture fmt for meta output node %s\n",
+			NODE_NAME(node));
 		return -EINVAL;
 	}
 
@@ -1186,11 +1182,12 @@ static int pispbe_node_try_fmt_meta_cap(struct file *file, void *priv,
 					struct v4l2_format *f)
 {
 	struct pispbe_node *node = video_drvdata(file);
+	struct pispbe_dev *pispbe = node->node_group->pispbe;
 
 	if (!NODE_IS_META(node) || NODE_IS_OUTPUT(node)) {
-		v4l2_err(&NODE_GET_V4L2(node),
-			 "Cannot set capture fmt for meta output node %s\n",
-			 NODE_NAME(node));
+		dev_err(pispbe->dev,
+			"Cannot set capture fmt for meta output node %s\n",
+			NODE_NAME(node));
 		return -EINVAL;
 	}
 
@@ -1205,6 +1202,7 @@ static int pispbe_node_s_fmt_vid_cap(struct file *file, void *priv,
 				     struct v4l2_format *f)
 {
 	struct pispbe_node *node = video_drvdata(file);
+	struct pispbe_dev *pispbe = node->node_group->pispbe;
 	int ret = pispbe_node_try_fmt_vid_cap(file, priv, f);
 
 	if (ret < 0)
@@ -1213,10 +1211,10 @@ static int pispbe_node_s_fmt_vid_cap(struct file *file, void *priv,
 	node->format = *f;
 	node->pisp_format = find_format(f->fmt.pix_mp.pixelformat);
 
-	v4l2_dbg(1, debug, &NODE_GET_V4L2(node),
-		 "Set capture format for node %s to " V4L2_FOURCC_CONV "\n",
-		 NODE_NAME(node),
-		 V4L2_FOURCC_CONV_ARGS(f->fmt.pix_mp.pixelformat));
+	dev_dbg(pispbe->dev,
+		"Set capture format for node %s to " V4L2_FOURCC_CONV "\n",
+		NODE_NAME(node),
+		V4L2_FOURCC_CONV_ARGS(f->fmt.pix_mp.pixelformat));
 	return 0;
 }
 
@@ -1224,6 +1222,7 @@ static int pispbe_node_s_fmt_vid_out(struct file *file, void *priv,
 				     struct v4l2_format *f)
 {
 	struct pispbe_node *node = video_drvdata(file);
+	struct pispbe_dev *pispbe = node->node_group->pispbe;
 	int ret = pispbe_node_try_fmt_vid_out(file, priv, f);
 
 	if (ret < 0)
@@ -1232,10 +1231,10 @@ static int pispbe_node_s_fmt_vid_out(struct file *file, void *priv,
 	node->format = *f;
 	node->pisp_format = find_format(f->fmt.pix_mp.pixelformat);
 
-	v4l2_dbg(1, debug, &NODE_GET_V4L2(node),
-		 "Set output format for node %s to " V4L2_FOURCC_CONV "\n",
-		 NODE_NAME(node),
-		 V4L2_FOURCC_CONV_ARGS(f->fmt.pix_mp.pixelformat));
+	dev_dbg(pispbe->dev,
+		"Set output format for node %s to " V4L2_FOURCC_CONV "\n",
+		NODE_NAME(node),
+		V4L2_FOURCC_CONV_ARGS(f->fmt.pix_mp.pixelformat));
 	return 0;
 }
 
@@ -1243,6 +1242,7 @@ static int pispbe_node_s_fmt_meta_out(struct file *file, void *priv,
 				      struct v4l2_format *f)
 {
 	struct pispbe_node *node = video_drvdata(file);
+	struct pispbe_dev *pispbe = node->node_group->pispbe;
 	int ret = pispbe_node_try_fmt_meta_out(file, priv, f);
 
 	if (ret < 0)
@@ -1251,10 +1251,10 @@ static int pispbe_node_s_fmt_meta_out(struct file *file, void *priv,
 	node->format = *f;
 	node->pisp_format = find_format(f->fmt.meta.dataformat);
 
-	v4l2_dbg(1, debug, &NODE_GET_V4L2(node),
-		 "Set output format for meta node %s to " V4L2_FOURCC_CONV "\n",
-		 NODE_NAME(node),
-		 V4L2_FOURCC_CONV_ARGS(f->fmt.meta.dataformat));
+	dev_dbg(pispbe->dev,
+		"Set output format for meta node %s to " V4L2_FOURCC_CONV "\n",
+		NODE_NAME(node),
+		V4L2_FOURCC_CONV_ARGS(f->fmt.meta.dataformat));
 	return 0;
 }
 
@@ -1262,6 +1262,7 @@ static int pispbe_node_s_fmt_meta_cap(struct file *file, void *priv,
 				      struct v4l2_format *f)
 {
 	struct pispbe_node *node = video_drvdata(file);
+	struct pispbe_dev *pispbe = node->node_group->pispbe;
 	int ret = pispbe_node_try_fmt_meta_cap(file, priv, f);
 
 	if (ret < 0)
@@ -1270,10 +1271,10 @@ static int pispbe_node_s_fmt_meta_cap(struct file *file, void *priv,
 	node->format = *f;
 	node->pisp_format = find_format(f->fmt.meta.dataformat);
 
-	v4l2_dbg(1, debug, &NODE_GET_V4L2(node),
-		 "Set capture format for meta node %s to " V4L2_FOURCC_CONV "\n",
-		 NODE_NAME(node),
-		 V4L2_FOURCC_CONV_ARGS(f->fmt.meta.dataformat));
+	dev_dbg(pispbe->dev,
+		"Set capture format for meta node %s to " V4L2_FOURCC_CONV "\n",
+		NODE_NAME(node),
+		V4L2_FOURCC_CONV_ARGS(f->fmt.meta.dataformat));
 	return 0;
 }
 
@@ -1299,13 +1300,14 @@ static int pispbe_enum_framesizes(struct file *file, void *priv,
 				  struct v4l2_frmsizeenum *fsize)
 {
 	struct pispbe_node *node = video_drvdata(file);
+	struct pispbe_dev *pispbe = node->node_group->pispbe;
 
 	if (NODE_IS_META(node) || fsize->index)
 		return -EINVAL;
 
 	if (!find_format(fsize->pixel_format)) {
-		v4l2_err(&NODE_GET_V4L2(node), "Invalid pixel code: %x\n",
-			 fsize->pixel_format);
+		dev_err(pispbe->dev, "Invalid pixel code: %x\n",
+			fsize->pixel_format);
 		return -EINVAL;
 	}
 
@@ -1325,12 +1327,12 @@ static int pispbe_node_streamon(struct file *file, void *priv,
 				enum v4l2_buf_type type)
 {
 	struct pispbe_node *node = video_drvdata(file);
+	struct pispbe_dev *pispbe = node->node_group->pispbe;
 	int ret;
 
 	/* Do we need a node->stream_lock mutex? */
 
-	v4l2_dbg(1, debug, &NODE_GET_V4L2(node),
-		 "Stream on for node %s\n", NODE_NAME(node));
+	dev_dbg(pispbe->dev, "Stream on for node %s\n", NODE_NAME(node));
 
 	/* Do we care about the type? Each node has only one queue. */
 
@@ -1419,6 +1421,7 @@ static int
 pispbe_init_node(struct pispbe_node_group *node_group, unsigned int id)
 {
 	struct pispbe_node *node = &node_group->node[id];
+	struct pispbe_dev *pispbe = node_group->pispbe;
 	int ret;
 
 	node->id = id;
@@ -1448,7 +1451,7 @@ pispbe_init_node(struct pispbe_node_group *node_group, unsigned int id)
 
 	ret = vb2_queue_init(&node->queue);
 	if (ret < 0) {
-		v4l2_err(&node_group->v4l2_dev, "vb2_queue_init failed\n");
+		dev_err(pispbe->dev, "vb2_queue_init failed\n");
 		return ret;
 	}
 
@@ -1463,16 +1466,16 @@ pispbe_init_node(struct pispbe_node_group *node_group, unsigned int id)
 	ret = video_register_device(&node->vfd, VFL_TYPE_VIDEO,
 				    PISPBE_VIDEO_NODE_OFFSET);
 	if (ret) {
-		v4l2_err(&node_group->v4l2_dev,
-			 "Failed to register video %s device node\n",
+		dev_err(pispbe->dev,
+			"Failed to register video %s device node\n",
 			NODE_NAME(node));
 		vb2_queue_release(&node->queue);
 		return ret;
 	}
 	video_set_drvdata(&node->vfd, node);
-	v4l2_info(&node_group->v4l2_dev,
-		  "%s device node registered as /dev/video%d\n",
-		  NODE_NAME(node), node->vfd.num);
+	dev_info(pispbe->dev,
+		 "%s device node registered as /dev/video%d\n",
+		 NODE_NAME(node), node->vfd.num);
 	return 0;
 }
 
@@ -1492,7 +1495,9 @@ static void pispbe_mc_unregister_nodes(struct pispbe_node_group *node_group,
 static void
 pispbe_mc_unregister_node_group(struct pispbe_node_group *node_group)
 {
-	v4l2_info(&node_group->v4l2_dev, "Unregister from media controller\n");
+	struct pispbe_dev *pispbe = node_group->pispbe;
+
+	dev_info(pispbe->dev, "Unregister from media controller\n");
 
 	media_device_unregister_entity(&node_group->entity);
 
@@ -1506,13 +1511,13 @@ pispbe_mc_unregister_node_group(struct pispbe_node_group *node_group)
 static int pispbe_mc_register_node(struct pispbe_node_group *node_group, int i)
 {
 	struct pispbe_node *node = &node_group->node[i];
+	struct pispbe_dev *pispbe = node->node_group->pispbe;
 	struct media_entity *entity = &node->vfd.entity;
 	int output = NODE_IS_OUTPUT(node);
 	int ret;
 
-	v4l2_info(&node_group->v4l2_dev,
-		  "Register %s node %d with media controller\n",
-		  NODE_NAME(node), i);
+	dev_info(pispbe->dev, "Register %s node %d with media controller\n",
+		 NODE_NAME(node), i);
 	entity->obj_type = MEDIA_ENTITY_TYPE_VIDEO_DEVICE;
 	entity->function = MEDIA_ENT_F_IO_V4L;
 	entity->info.dev.major = VIDEO_MAJOR;
@@ -1564,19 +1569,19 @@ error_devnode_create:
 error_register_entity:
 error_pads_init:
 	if (ret)
-		v4l2_err(&node_group->v4l2_dev,
-			 "Error registering node\n");
+		dev_err(pispbe->dev, "Error registering node\n");
 	return ret;
 }
 
 static int pispbe_mc_register_node_group(struct pispbe_node_group *node_group)
 {
+	struct pispbe_dev *pispbe = node_group->pispbe;
 	int num_registered = 0;
 	int entity_registered = 0;
 	int ret;
 	int i;
 
-	v4l2_info(&node_group->v4l2_dev, "Registering with media controller\n");
+	dev_info(pispbe->dev, "Registering with media controller\n");
 
 	node_group->mdev.dev = node_group->pispbe->dev;
 	strscpy(node_group->mdev.model, PISPBE_NAME,
@@ -1587,9 +1592,8 @@ static int pispbe_mc_register_node_group(struct pispbe_node_group *node_group)
 	node_group->v4l2_dev.mdev = &node_group->mdev;
 	node_group->mdev.hw_revision = node_group->pispbe->hw_version;
 
-	v4l2_info(&node_group->v4l2_dev,
-		  "Register entity for node_group %d\n",
-		node_group->id);
+	dev_info(pispbe->dev, "Register entity for node_group %d\n",
+		 node_group->id);
 
 	node_group->entity.name = PISPBE_NAME;
 	node_group->entity.obj_type = MEDIA_ENTITY_TYPE_BASE;
@@ -1643,7 +1647,7 @@ static int pispbe_init_node_group(struct pispbe_dev *pispbe, unsigned int id)
 	if (ret)
 		return ret;
 
-	v4l2_info(&node_group->v4l2_dev, "Register nodes for group %u\n", id);
+	dev_info(pispbe->dev, "Register nodes for group %u\n", id);
 
 	/* Create device nodes */
 	for (; num_registered < PISPBE_NUM_NODES; num_registered++) {
