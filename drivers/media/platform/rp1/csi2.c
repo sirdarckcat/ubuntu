@@ -379,8 +379,7 @@ void csi2_start_channel(struct csi2_device *csi2, unsigned int channel,
 	 */
 	csi2_reg_write(csi2, CSI2_CH_CTRL(channel), 0x100 << __ffs(LC_MASK));
 	csi2_reg_write(csi2, CSI2_CH_DEBUG(channel), 0);
-	csi2_reg_write(csi2, CSI2_STATUS, IRQ_FS(channel) +
-		       IRQ_FE_ACK(channel) + IRQ_LE_ACK(channel));
+	csi2_reg_write(csi2, CSI2_STATUS, IRQ_CH_MASK(channel));
 
 	/* Enable channel and FS/FE/LE interrupts. */
 	ctrl = DMA_EN + IRQ_EN_FS + IRQ_EN_FE_ACK + IRQ_EN_LE_ACK + PACK_LINE;
