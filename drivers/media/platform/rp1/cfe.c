@@ -1184,13 +1184,12 @@ static int cfe_start_streaming(struct vb2_queue *vq, unsigned int count)
 			cfe_err("cfe_runtime_get failed\n");
 			goto err_streaming;
 		}
+	}
 
-		ret = media_pipeline_start(node->video_dev.entity.pads,
-					   &cfe->pipe);
-		if (ret < 0) {
-			cfe_err("Failed to start media pipeline: %d\n", ret);
-			goto err_pm_put;
-		}
+	ret = media_pipeline_start(&node->pad, &cfe->pipe);
+	if (ret < 0) {
+		cfe_err("Failed to start media pipeline: %d\n", ret);
+		goto err_pm_put;
 	}
 
 	clear_state(cfe, FS_INT + FE_INT, node->id);
@@ -1240,6 +1239,7 @@ err_pm_put:
 	cfe_runtime_put(cfe);
 err_streaming:
 	cfe_return_buffers(node, VB2_BUF_STATE_ERROR);
+	media_pipeline_stop(&node->pad);
 	clear_state(cfe, NODE_STREAMING, node->id);
 
 	return ret;
@@ -1269,8 +1269,9 @@ static void cfe_stop_streaming(struct vb2_queue *vq)
 			cfe_err("stream off failed in subdev\n");
 
 		cfe_runtime_put(cfe);
-		media_pipeline_stop(cfe->sensor->entity.pads);
 	}
+
+	media_pipeline_stop(&node->pad);
 
 	/* Clear all queued buffers for the node */
 	cfe_return_buffers(node, VB2_BUF_STATE_ERROR);
