@@ -288,7 +288,7 @@ static void dphy_init(struct csi2_device *csi2)
 	dw_csi2_host_write(csi2, PHY_RSTZ, 1);
 }
 
-inline void csi2_isr(struct csi2_device *csi2, bool *sof, bool *eof, bool *lci)
+void csi2_isr(struct csi2_device *csi2, bool *sof, bool *eof, bool *lci)
 {
 	unsigned int i;
 	u32 status;

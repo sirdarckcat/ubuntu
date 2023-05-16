@@ -317,8 +317,8 @@ static inline void cfe_runtime_put(struct cfe_device *cfe)
 	pm_runtime_put_sync(&cfe->pdev->dev);
 }
 
-static inline bool check_state(struct cfe_device *cfe, unsigned long state,
-			       unsigned int node_id)
+static bool check_state(struct cfe_device *cfe, unsigned long state,
+			unsigned int node_id)
 {
 	unsigned long bit;
 
@@ -329,8 +329,8 @@ static inline bool check_state(struct cfe_device *cfe, unsigned long state,
 	return true;
 }
 
-static inline void set_state(struct cfe_device *cfe, unsigned long state,
-			     unsigned int node_id)
+static void set_state(struct cfe_device *cfe, unsigned long state,
+		      unsigned int node_id)
 {
 	unsigned long bit;
 
@@ -338,8 +338,8 @@ static inline void set_state(struct cfe_device *cfe, unsigned long state,
 		set_bit(bit + (node_id * NUM_STATES), cfe->node_flags);
 }
 
-static inline void clear_state(struct cfe_device *cfe, unsigned long state,
-			       unsigned int node_id)
+static void clear_state(struct cfe_device *cfe, unsigned long state,
+			unsigned int node_id)
 {
 	unsigned long bit;
 
@@ -347,8 +347,8 @@ static inline void clear_state(struct cfe_device *cfe, unsigned long state,
 		clear_bit(bit + (node_id * NUM_STATES), cfe->node_flags);
 }
 
-static inline bool test_any_node(struct cfe_device *cfe, unsigned long cond,
-				 bool fe_only)
+static bool test_any_node(struct cfe_device *cfe, unsigned long cond,
+			  bool fe_only)
 {
 	unsigned int i;
 
@@ -362,8 +362,8 @@ static inline bool test_any_node(struct cfe_device *cfe, unsigned long cond,
 	return false;
 }
 
-static inline bool test_all_nodes(struct cfe_device *cfe,
-				  unsigned long precond, unsigned long cond)
+static bool test_all_nodes(struct cfe_device *cfe, unsigned long precond,
+			   unsigned long cond)
 {
 	unsigned int i;
 
@@ -377,8 +377,8 @@ static inline bool test_all_nodes(struct cfe_device *cfe,
 	return true;
 }
 
-static inline void clear_all_nodes(struct cfe_device *cfe,
-				   unsigned long precond, unsigned long state)
+static void clear_all_nodes(struct cfe_device *cfe, unsigned long precond,
+			    unsigned long state)
 {
 	unsigned int i;
 
@@ -619,7 +619,7 @@ static void cfe_queue_event_sof(struct cfe_node *node)
 	v4l2_event_queue(&node->video_dev, &event);
 }
 
-static inline void sof_isr_handler(struct cfe_node *node)
+static void sof_isr_handler(struct cfe_node *node)
 {
 	struct cfe_device *cfe = node->cfe;
 
@@ -646,7 +646,7 @@ static inline void sof_isr_handler(struct cfe_node *node)
 		cfe_queue_event_sof(node);
 }
 
-static inline void eof_isr_handler(struct cfe_node *node)
+static void eof_isr_handler(struct cfe_node *node)
 {
 	struct cfe_device *cfe = node->cfe;
 
