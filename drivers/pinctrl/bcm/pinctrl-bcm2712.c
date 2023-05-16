@@ -48,9 +48,6 @@
 #define BCM2712_PULL_UP		2
 #define BCM2712_PULL_MASK	0x3
 
-/* argument: bcm2712_pinconf_pull */
-#define BCM2712_PINCONF_PARAM_PULL	(PIN_CONFIG_END + 1)
-
 #define BCM2712_FSEL_COUNT 9
 #define BCM2712_FSEL_MASK  0xf
 
@@ -1040,11 +1037,6 @@ static int bcm2712_pinconf_set(struct pinctrl_dev *pctldev,
 		arg = pinconf_to_config_argument(configs[i]);
 
 		switch (param) {
-		case BCM2712_PINCONF_PARAM_PULL:
-			bcm2712_pull_config_set(pc, pin, arg);
-			break;
-
-		/* Set pull generic bindings */
 		case PIN_CONFIG_BIAS_DISABLE:
 			bcm2712_pull_config_set(pc, pin, BCM2712_PULL_NONE);
 			break;
@@ -1054,7 +1046,6 @@ static int bcm2712_pinconf_set(struct pinctrl_dev *pctldev,
 		case PIN_CONFIG_BIAS_PULL_UP:
 			bcm2712_pull_config_set(pc, pin, BCM2712_PULL_UP);
 			break;
-
 		default:
 			return -ENOTSUPP;
 		}
