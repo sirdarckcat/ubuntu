@@ -1806,51 +1806,46 @@ static int pispbe_probe(struct platform_device *pdev)
 	pispbe->be_reg_base = devm_platform_ioremap_resource(pdev, 0);
 	if (IS_ERR(pispbe->be_reg_base)) {
 		dev_err(&pdev->dev, "Failed to get ISP-BE registers address\n");
-		ret = PTR_ERR(pispbe->be_reg_base);
-		goto done_err;
+		return PTR_ERR(pispbe->be_reg_base);
 	}
-
-	/* TODO: Enable clock only when running (and local RAMs too!) */
-	pispbe->clk = devm_clk_get(&pdev->dev, NULL);
-	if (IS_ERR(pispbe->clk)) {
-		dev_err(&pdev->dev, "Failed to get clock");
-		ret = PTR_ERR(pispbe->clk);
-		goto done_err;
-	}
-	ret = clk_prepare_enable(pispbe->clk);
-	if (ret) {
-		dev_err(&pdev->dev, "Unable to enable clock\n");
-		ret = -EINVAL;
-		goto done_err;
-	}
-	dev_info(&pdev->dev, "%s: Enabled clock, rate=%lu\n",
-		 __func__, clk_get_rate(pispbe->clk));
 
 	pispbe->irq = platform_get_irq(pdev, 0);
 	if (pispbe->irq <= 0) {
 		dev_err(&pdev->dev, "No IRQ resource\n");
-		ret = -EINVAL;
-		goto done_err;
+		return -EINVAL;
 	}
+
+	ret = devm_request_irq(&pdev->dev, pispbe->irq, pispbe_isr, 0,
+			       PISPBE_NAME, pispbe);
+	if (ret) {
+		dev_err(&pdev->dev, "Unable to request interrupt\n");
+		return ret;
+	}
+
+	ret = dma_set_mask_and_coherent(pispbe->dev, DMA_BIT_MASK(36));
+	if (ret)
+		return ret;
+
+	/* TODO: Enable clock only when running (and local RAMs too!) */
+	pispbe->clk = devm_clk_get(&pdev->dev, NULL);
+	if (IS_ERR(pispbe->clk))
+		return dev_err_probe(&pdev->dev, PTR_ERR(pispbe->clk),
+				     "Failed to get clock");
+
+	ret = clk_prepare_enable(pispbe->clk);
+	if (ret) {
+		dev_err(&pdev->dev, "Unable to enable clock\n");
+		return ret;
+	}
+	dev_info(&pdev->dev, "%s: Enabled clock, rate=%lu\n",
+		 __func__, clk_get_rate(pispbe->clk));
 
 	/* Hardware initialisation */
 	pispbe->hw_busy = 0;
 	spin_lock_init(&pispbe->hw_lock);
 	ret = hw_init(pispbe);
 	if (ret)
-		goto done_err;
-
-	ret = devm_request_irq(&pdev->dev, pispbe->irq, pispbe_isr, 0,
-			       PISPBE_NAME, pispbe);
-	if (ret) {
-		dev_err(&pdev->dev, "Unable to request interrupt\n");
-		ret = -EINVAL;
-		goto done_err;
-	}
-
-	ret = dma_set_mask_and_coherent(pispbe->dev, DMA_BIT_MASK(36));
-	if (ret)
-		goto done_err;
+		goto clk_disable_err;
 
 	/*
 	 * Initialise and register devices for each node_group, including media
@@ -1859,17 +1854,23 @@ static int pispbe_probe(struct platform_device *pdev)
 	for (num_groups = 0;
 	     num_groups < PISPBE_NUM_NODE_GROUPS;
 	     num_groups++) {
-		if (pispbe_init_node_group(pispbe, num_groups))
-			goto done_err;
+		ret = pispbe_init_node_group(pispbe, num_groups);
+		if (ret)
+			goto disable_nodes_err;
 	}
 
 	platform_set_drvdata(pdev, pispbe);
 
 	return 0;
-done_err:
-	dev_info(&pdev->dev, "%s: returning %d", __func__, ret);
+
+disable_nodes_err:
 	while (num_groups-- > 0)
 		pispbe_destroy_node_group(&pispbe->node_group[num_groups]);
+clk_disable_err:
+	clk_disable_unprepare(pispbe->clk);
+
+	dev_err(&pdev->dev, "%s: returning %d", __func__, ret);
+
 	return ret;
 }
 
@@ -1880,6 +1881,8 @@ static int pispbe_remove(struct platform_device *pdev)
 
 	for (i = PISPBE_NUM_NODE_GROUPS - 1; i >= 0; i--)
 		pispbe_destroy_node_group(&pispbe->node_group[i]);
+
+	clk_disable_unprepare(pispbe->clk);
 
 	return 0;
 }
