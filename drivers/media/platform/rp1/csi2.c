@@ -70,6 +70,7 @@ MODULE_PARM_DESC(csi2_debug, "Debug level 0-3");
 #define IRQ_FE_ACK(x)		(BIT(8) << (x))
 #define IRQ_LE(x)		(BIT(12) << (x))
 #define IRQ_LE_ACK(x)		(BIT(16) << (x))
+#define IRQ_CH_MASK(x)		(IRQ_FS(x) | IRQ_FE(x) | IRQ_FE_ACK(x) | IRQ_LE(x) | IRQ_LE_ACK(x))
 #define IRQ_OVERFLOW		BIT(20)
 #define IRQ_DISCARD_OVERFLOW	BIT(21)
 #define IRQ_DISCARD_LEN_LIMIT	BIT(22)
@@ -312,10 +313,21 @@ void csi2_isr(struct csi2_device *csi2, bool *sof, bool *eof, bool *lci)
 	csi2_reg_write(csi2, CSI2_STATUS, status);
 
 	for (i = 0; i < CSI2_NUM_CHANNELS; i++) {
-		u32 dbg = csi2_reg_read(csi2, CSI2_CH_DEBUG(i));
+		u32 dbg;
 
-		csi2_dbg(3, "ISR: [%d], frame: %d line: %d\n",
-			 i, dbg >> 16,
+		if ((status & IRQ_CH_MASK(i)) == 0)
+			continue;
+
+		dbg = csi2_reg_read(csi2, CSI2_CH_DEBUG(i));
+
+		csi2_dbg(3, "ISR: [%d], %s%s%s%s%s frame: %d line: %d\n",
+			 i,
+			 (status & IRQ_FS(i)) ? "FS " : "",
+			 (status & IRQ_FE(i)) ? "FE " : "",
+			 (status & IRQ_FE_ACK(i)) ? "FE_ACK " : "",
+			 (status & IRQ_LE(i)) ? "LE " : "",
+			 (status & IRQ_LE_ACK(i)) ? "LE_ACK " : "",
+			 dbg >> 16,
 			 csi2->num_lines[i] ?
 				((dbg & 0xffff) % csi2->num_lines[i]) : 0);
 
