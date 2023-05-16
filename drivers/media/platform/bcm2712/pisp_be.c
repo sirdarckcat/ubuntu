@@ -9,6 +9,7 @@
 #include <linux/io.h>
 #include <linux/module.h>
 #include <linux/platform_device.h>
+#include <linux/pm_runtime.h>
 #include <media/v4l2-device.h>
 #include <media/v4l2-ioctl.h>
 #include <media/videobuf2-dma-contig.h>
@@ -958,10 +959,44 @@ static const struct vb2_ops pispbe_node_queue_ops = {
 	.stop_streaming = pispbe_node_stop_streaming,
 };
 
+static int pispbe_open(struct file *file)
+{
+	struct pispbe_node *node = video_drvdata(file);
+	struct pispbe_dev *pispbe = node->node_group->pispbe;
+	int ret;
+
+	ret = pm_runtime_resume_and_get(pispbe->dev);
+	if (ret < 0)
+		return ret;
+
+	ret = v4l2_fh_open(file);
+	if (ret) {
+		pm_runtime_disable(pispbe->dev);
+		return ret;
+	}
+
+	return 0;
+}
+
+static int pispbe_release(struct file *file)
+{
+	struct pispbe_node *node = video_drvdata(file);
+	struct pispbe_dev *pispbe = node->node_group->pispbe;
+	int ret;
+
+	ret = vb2_fop_release(file);
+	if (ret)
+		return ret;
+
+	pm_runtime_put(pispbe->dev);
+
+	return 0;
+}
+
 static const struct v4l2_file_operations pispbe_fops = {
 	.owner          = THIS_MODULE,
-	.open           = v4l2_fh_open,
-	.release        = vb2_fop_release,
+	.open           = pispbe_open,
+	.release        = pispbe_release,
 	.poll           = vb2_fop_poll,
 	.unlocked_ioctl = video_ioctl2,
 	.mmap           = vb2_fop_mmap
@@ -1787,20 +1822,47 @@ static void pispbe_destroy_node_group(struct pispbe_node_group *node_group)
 	v4l2_device_unregister(&node_group->v4l2_dev);
 }
 
+static int pispbe_runtime_suspend(struct device *dev)
+{
+	struct pispbe_dev *pispbe = dev_get_drvdata(dev);
+
+	clk_disable_unprepare(pispbe->clk);
+
+	return 0;
+}
+
+static int pispbe_runtime_resume(struct device *dev)
+{
+	struct pispbe_dev *pispbe = dev_get_drvdata(dev);
+	int ret;
+
+	ret = clk_prepare_enable(pispbe->clk);
+	if (ret) {
+		dev_err(dev, "Unable to enable clock\n");
+		return ret;
+	}
+
+	dev_info(dev, "%s: Enabled clock, rate=%lu\n",
+		 __func__, clk_get_rate(pispbe->clk));
+
+	return 0;
+}
+
 /*
  * Probe the ISP-BE hardware block, as a single platform device.
  * This will instantiate multiple "node groups" each with many device nodes.
  */
 static int pispbe_probe(struct platform_device *pdev)
 {
+	unsigned int num_groups = 0;
 	struct pispbe_dev *pispbe;
-	int num_groups = 0;
 	int ret;
 
 	pispbe = devm_kzalloc(&pdev->dev, sizeof(*pispbe), GFP_KERNEL);
 	if (!pispbe)
 		return -ENOMEM;
 
+	dev_set_drvdata(&pdev->dev, pispbe);
 	pispbe->dev = &pdev->dev;
 
 	pispbe->be_reg_base = devm_platform_ioremap_resource(pdev, 0);
@@ -1826,26 +1888,23 @@ static int pispbe_probe(struct platform_device *pdev)
 	if (ret)
 		return ret;
 
-	/* TODO: Enable clock only when running (and local RAMs too!) */
 	pispbe->clk = devm_clk_get(&pdev->dev, NULL);
 	if (IS_ERR(pispbe->clk))
 		return dev_err_probe(&pdev->dev, PTR_ERR(pispbe->clk),
 				     "Failed to get clock");
 
-	ret = clk_prepare_enable(pispbe->clk);
-	if (ret) {
-		dev_err(&pdev->dev, "Unable to enable clock\n");
-		return ret;
-	}
-	dev_info(&pdev->dev, "%s: Enabled clock, rate=%lu\n",
-		 __func__, clk_get_rate(pispbe->clk));
-
 	/* Hardware initialisation */
+	pm_runtime_enable(pispbe->dev);
+
+	ret = pm_runtime_resume_and_get(pispbe->dev);
+	if (ret)
+		goto pm_runtime_disable_err;
+
 	pispbe->hw_busy = 0;
 	spin_lock_init(&pispbe->hw_lock);
 	ret = hw_init(pispbe);
 	if (ret)
-		goto clk_disable_err;
+		goto pm_runtime_put_err;
 
 	/*
 	 * Initialise and register devices for each node_group, including media
@@ -1859,6 +1918,7 @@ static int pispbe_probe(struct platform_device *pdev)
 			goto disable_nodes_err;
 	}
 
+	pm_runtime_put(pispbe->dev);
 	platform_set_drvdata(pdev, pispbe);
 
 	return 0;
@@ -1866,8 +1926,10 @@ static int pispbe_probe(struct platform_device *pdev)
 disable_nodes_err:
 	while (num_groups-- > 0)
 		pispbe_destroy_node_group(&pispbe->node_group[num_groups]);
-clk_disable_err:
-	clk_disable_unprepare(pispbe->clk);
+pm_runtime_put_err:
+	pm_runtime_put(pispbe->dev);
+pm_runtime_disable_err:
+	pm_runtime_disable(pispbe->dev);
 
 	dev_err(&pdev->dev, "%s: returning %d", __func__, ret);
 
@@ -1882,10 +1944,14 @@ static int pispbe_remove(struct platform_device *pdev)
 	for (i = PISPBE_NUM_NODE_GROUPS - 1; i >= 0; i--)
 		pispbe_destroy_node_group(&pispbe->node_group[i]);
 
-	clk_disable_unprepare(pispbe->clk);
+	pm_runtime_disable(pispbe->dev);
 
 	return 0;
 }
+
+static const struct dev_pm_ops pispbe_pm_ops = {
+	SET_RUNTIME_PM_OPS(pispbe_runtime_suspend, pispbe_runtime_resume, NULL)
+};
 
 static const struct of_device_id pispbe_of_match[] = {
 	{
@@ -1901,6 +1967,7 @@ static struct platform_driver pispbe_pdrv = {
 	.driver		= {
 		.name	= PISPBE_NAME,
 		.of_match_table = pispbe_of_match,
+		.pm = &pispbe_pm_ops,
 	},
 };
 
