@@ -69,7 +69,7 @@ MODULE_PARM_DESC(cfe_debug, "Debug level 0-3");
 #define INT_CSI_HOST	BIT(2)
 #define INT_PISP_FE	BIT(3)
 
-#define BPL_ALIGNMENT 32
+#define BPL_ALIGNMENT 16
 #define MAX_BYTESPERLINE 0xffffff00
 /*
  * Max width is therefore determined by the max stride divided by
