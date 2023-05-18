@@ -9,7 +9,6 @@
 #include <linux/io.h>
 #include <linux/module.h>
 #include <linux/platform_device.h>
-#include <media/v4l2-ctrls.h>
 #include <media/v4l2-device.h>
 #include <media/v4l2-ioctl.h>
 #include <media/videobuf2-dma-contig.h>
@@ -194,7 +193,6 @@ struct pispbe_node_group {
 	struct v4l2_device v4l2_dev;
 	struct pispbe_dev *pispbe;
 	struct media_device mdev;
-	struct v4l2_ctrl_handler hdlr;
 	struct pispbe_node node[PISPBE_NUM_NODES];
 	u32 streaming_map; /* bitmap of which nodes are streaming */
 	struct media_entity entity;
@@ -559,9 +557,6 @@ static int pispbe_schedule_internal(struct pispbe_node_group *node_group,
 	 */
 	v4l2_dbg(1, debug, &node_group->v4l2_dev,
 		 "Have buffers - starting hardware\n");
-	v4l2_ctrl_request_setup(
-		pispbe->queued_job.buf[0]->vb.vb2_buf.req_obj.req,
-		&node_group->hdlr);
 	config_tiles_buffer = buf[CONFIG_NODE]->vaddr;
 
 	/* Convert buffers to DMA addresses for the hardware */
@@ -646,13 +641,9 @@ static void pispbe_schedule_any(struct pispbe_dev *pispbe, int clear_hw_busy)
 static void pispbe_isr_jobdone(struct pispbe_dev *pispbe,
 			       struct pispbe_job *job)
 {
-	struct pispbe_node_group *node_group = job->node_group;
 	struct pispbe_buffer **buf = job->buf;
 	u64 ts = ktime_get_ns();
 	int i;
-
-	v4l2_ctrl_request_complete(buf[0]->vb.vb2_buf.req_obj.req,
-				   &node_group->hdlr);
 
 	for (i = 0; i < PISPBE_NUM_NODES; i++) {
 		if (buf[i]) {
@@ -885,32 +876,12 @@ static void pispbe_node_stop_streaming(struct vb2_queue *q)
 		 node_group->streaming_map);
 }
 
-static void pispbe_buf_request_complete(struct vb2_buffer *vb)
-{
-	struct pispbe_node *node = vb2_get_drv_priv(vb->vb2_queue);
-
-	v4l2_dbg(1, debug, &NODE_GET_V4L2(node),
-		 "%s\n", __func__);
-	v4l2_ctrl_request_complete(vb->req_obj.req, &node->node_group->hdlr);
-}
-
 static const struct vb2_ops pispbe_node_queue_ops = {
 	.queue_setup = pispbe_node_queue_setup,
 	.buf_prepare = pispbe_node_buffer_prepare,
 	.buf_queue = pispbe_node_buffer_queue,
 	.start_streaming = pispbe_node_start_streaming,
 	.stop_streaming = pispbe_node_stop_streaming,
-	.buf_request_complete = pispbe_buf_request_complete,
-};
-
-static int pispbe_s_ctrl(struct v4l2_ctrl *ctrl)
-{
-	/* We have no controls, currently */
-	return -EINVAL;
-}
-
-static const struct v4l2_ctrl_ops pispbe_ctrl_ops = {
-	.s_ctrl = pispbe_s_ctrl,
 };
 
 static const struct v4l2_file_operations pispbe_fops = {
@@ -1598,23 +1569,6 @@ error_pads_init:
 	return ret;
 }
 
-static int pispbe_request_validate(struct media_request *req)
-{
-	/* Is there any else we need to do here? */
-	return vb2_request_validate(req);
-}
-
-static void pispbe_request_queue(struct media_request *req)
-{
-	/* Is there any else we need to do here? */
-	vb2_request_queue(req);
-}
-
-static const struct media_device_ops pispbe_media_ops = {
-	.req_validate = pispbe_request_validate,
-	.req_queue = pispbe_request_queue,
-};
-
 static int pispbe_mc_register_node_group(struct pispbe_node_group *node_group)
 {
 	int num_registered = 0;
@@ -1631,7 +1585,6 @@ static int pispbe_mc_register_node_group(struct pispbe_node_group *node_group)
 		 "platform:%s", dev_name(node_group->pispbe->dev));
 	media_device_init(&node_group->mdev);
 	node_group->v4l2_dev.mdev = &node_group->mdev;
-	node_group->mdev.ops = &pispbe_media_ops;
 	node_group->mdev.hw_revision = node_group->pispbe->hw_version;
 
 	v4l2_info(&node_group->v4l2_dev,
@@ -1691,10 +1644,6 @@ static int pispbe_init_node_group(struct pispbe_dev *pispbe, unsigned int id)
 		return ret;
 
 	v4l2_info(&node_group->v4l2_dev, "Register nodes for group %u\n", id);
-
-	/* We have no controls currently. */
-	v4l2_ctrl_handler_init(&node_group->hdlr, 0);
-	v4l2_ctrl_handler_setup(&node_group->hdlr);
 
 	/* Create device nodes */
 	for (; num_registered < PISPBE_NUM_NODES; num_registered++) {
