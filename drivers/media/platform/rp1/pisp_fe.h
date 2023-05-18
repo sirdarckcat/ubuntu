@@ -35,13 +35,15 @@ struct pisp_fe_device {
 	u16 inframe_count;
 	struct media_pad pad[FE_NUM_PADS];
 	struct v4l2_subdev sd;
-	struct pisp_fe_config cfg_tmp;
 };
 
 void pisp_fe_isr(struct pisp_fe_device *fe, bool *sof, bool *eof);
+int pisp_fe_validate_config(struct pisp_fe_device *fe,
+			    struct pisp_fe_config *cfg,
+			    struct v4l2_format const *f0,
+			    struct v4l2_format const *f1);
 void pisp_fe_submit_job(struct pisp_fe_device *fe, struct vb2_buffer **vb2_bufs,
-			struct pisp_fe_config *cfg_vaddr,
-			struct v4l2_format const *f0, struct v4l2_format const *f1);
+			struct pisp_fe_config *cfg);
 void pisp_fe_start(struct pisp_fe_device *fe);
 void pisp_fe_stop(struct pisp_fe_device *fe);
 int pisp_fe_init(struct pisp_fe_device *fe, struct dentry *debugfs);

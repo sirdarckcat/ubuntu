@@ -211,13 +211,23 @@ static const struct node_description node_desc[NUM_NODES] = {
 
 struct cfe_buffer {
 	struct vb2_v4l2_buffer vb;
-	void *vaddr;
 	struct list_head list;
+};
+
+struct cfe_config_buffer {
+	struct cfe_buffer buf;
+	struct pisp_fe_config config;
 };
 
 static inline struct cfe_buffer *to_cfe_buffer(struct vb2_buffer *vb)
 {
 	return container_of(vb, struct cfe_buffer, vb.vb2_buf);
+}
+
+static inline
+struct cfe_config_buffer *to_cfe_config_buffer(struct cfe_buffer *buf)
+{
+	return container_of(buf, struct cfe_config_buffer, buf);
 }
 
 struct cfe_node {
@@ -548,6 +558,7 @@ static void cfe_schedule_next_csi2_job(struct cfe_device *cfe)
 static void cfe_schedule_next_pisp_job(struct cfe_device *cfe)
 {
 	struct vb2_buffer *vb2_bufs[FE_NUM_PADS] = { 0 };
+	struct cfe_config_buffer *config_buf;
 	struct cfe_buffer *buf;
 	unsigned int i;
 
@@ -568,9 +579,8 @@ static void cfe_schedule_next_pisp_job(struct cfe_device *cfe)
 		list_del(&buf->list);
 	}
 
-	pisp_fe_submit_job(&cfe->fe, vb2_bufs,
-			   cfe->node[FE_CONFIG].next_frm->vaddr,
-			   &cfe->node[FE_OUT0].fmt, &cfe->node[FE_OUT1].fmt);
+	config_buf = to_cfe_config_buffer(cfe->node[FE_CONFIG].next_frm);
+	pisp_fe_submit_job(&cfe->fe, vb2_bufs, &config_buf->config);
 }
 
 static void cfe_prepare_next_job(struct cfe_device *cfe)
@@ -1009,6 +1019,17 @@ static int cfe_buffer_prepare(struct vb2_buffer *vb)
 	}
 
 	vb2_set_plane_payload(&buf->vb.vb2_buf, 0, size);
+
+	if (node->id == FE_CONFIG) {
+		struct cfe_config_buffer *b = to_cfe_config_buffer(buf);
+		void *addr = vb2_plane_vaddr(vb, 0);
+
+		memcpy(&b->config, addr, sizeof(struct pisp_fe_config));
+		return pisp_fe_validate_config(&cfe->fe, &b->config,
+					       &cfe->node[FE_OUT0].fmt,
+					       &cfe->node[FE_OUT1].fmt);
+	}
+
 	return 0;
 }
 
@@ -1034,14 +1055,6 @@ static void cfe_buffer_queue(struct vb2_buffer *vb)
 	prepare = list_empty(&node->dma_queue) &&
 		  test_all_nodes(cfe, NODE_ENABLED, NODE_STREAMING) &&
 		  !node->next_frm && !node->cur_frm;
-
-	/*
-	 * We want to access at the FE config buffer when we program a new job.
-	 * This may possibly happen in the ISR context, so cache the virtual
-	 * address of the buffer here.
-	 */
-	buf->vaddr = (node->id == FE_CONFIG) ? vb2_plane_vaddr(vb, 0)
-					     : NULL;
 
 	list_add_tail(&buf->list, &node->dma_queue);
 
@@ -1695,7 +1708,8 @@ static int register_node(struct cfe_device *cfe, int id)
 	q->drv_priv = node;
 	q->ops = &cfe_video_qops;
 	q->mem_ops = &vb2_dma_contig_memops;
-	q->buf_struct_size = sizeof(struct cfe_buffer);
+	q->buf_struct_size = id == FE_CONFIG ? sizeof(struct cfe_config_buffer)
+					     : sizeof(struct cfe_buffer);
 	q->timestamp_flags = V4L2_BUF_FLAG_TIMESTAMP_MONOTONIC;
 	q->lock = &node->lock;
 	q->min_buffers_needed = 1;
