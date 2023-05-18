@@ -341,8 +341,8 @@ static void hw_queue_job(struct pispbe_dev *pispbe,
 
 struct pispbe_buffer {
 	struct vb2_v4l2_buffer vb;
-	void *vaddr;
 	struct list_head ready_list;
+	unsigned int config_index;
 };
 
 static int get_addr_3(dma_addr_t addr[3], struct pispbe_buffer *buf,
@@ -494,9 +494,11 @@ static int pispbe_schedule_internal(struct pispbe_node_group *node_group,
 	struct pispbe_dev *pispbe = node_group->pispbe;
 	struct pispbe_buffer *buf[PISPBE_NUM_NODES];
 	dma_addr_t hw_dma_addrs[N_HW_ADDRESSES];
+	dma_addr_t tiles;
 	u32 hw_enables[N_HW_ENABLES];
 	struct pispbe_node *node;
 	unsigned long flags1;
+	unsigned int config_index;
 	int i;
 
 	/*
@@ -555,7 +557,12 @@ static int pispbe_schedule_internal(struct pispbe_node_group *node_group,
 	 * only when the following job has been queued.
 	 */
 	dev_dbg(pispbe->dev, "Have buffers - starting hardware\n");
-	config_tiles_buffer = buf[CONFIG_NODE]->vaddr;
+
+	config_index = buf[CONFIG_NODE]->vb.vb2_buf.index;
+	config_tiles_buffer = &node_group->config[config_index];
+	tiles = (dma_addr_t)node_group->config_dma_addr +
+			config_index * sizeof(struct pisp_be_tiles_config) +
+			offsetof(struct pisp_be_tiles_config, tiles);
 
 	/* Convert buffers to DMA addresses for the hardware */
 	fixup_addrs_enables(hw_dma_addrs, hw_enables,
@@ -582,12 +589,7 @@ static int pispbe_schedule_internal(struct pispbe_node_group *node_group,
 		i = 0;
 	}
 	hw_queue_job(pispbe, hw_dma_addrs, hw_enables,
-		     &config_tiles_buffer->config,
-		     vb2_dma_contig_plane_dma_addr(
-			     &buf[CONFIG_NODE]->vb.vb2_buf, 0) +
-			     offsetof(struct pisp_be_tiles_config,
-				      tiles),
-		     i);
+		     &config_tiles_buffer->config, tiles, i);
 
 	return 1;
 }
@@ -737,6 +739,13 @@ static int pispbe_node_queue_setup(struct vb2_queue *q, unsigned int *nbuffers,
 		}
 	} else if (NODE_IS_META(node)) {
 		sizes[0] = node->format.fmt.meta.buffersize;
+		/*
+		 * Limit the config node buffer count to the number of internal
+		 * buffers allocated.
+		 */
+		if (node->id == CONFIG_NODE)
+			*nbuffers = min_t(unsigned int, *nbuffers,
+					  PISP_BE_NUM_CONFIG_BUFFERS);
 	}
 
 	dev_dbg(pispbe->dev,
@@ -768,6 +777,14 @@ static int pispbe_node_buffer_prepare(struct vb2_buffer *vb)
 		}
 
 		vb2_set_plane_payload(vb, i, size);
+
+		if (node->id == CONFIG_NODE) {
+			void *dst = &node->node_group->config[vb->index];
+			void *src = vb2_plane_vaddr(vb, 0);
+
+			memcpy(dst, src, sizeof(struct pisp_be_tiles_config));
+			/* TODO: Need config validation here. */
+		}
 	}
 
 	return 0;
@@ -786,13 +803,6 @@ static void pispbe_node_buffer_queue(struct vb2_buffer *buf)
 
 	dev_dbg(pispbe->dev, "%s: for node %s\n", __func__, NODE_NAME(node));
 	spin_lock_irqsave(&node->ready_lock, flags);
-	/*
-	 * We want to access at the config buffer when we program a new job.
-	 * This may possibly happen in the ISR context, so cache the virtual
-	 * address of the buffer here.
-	 */
-	buffer->vaddr = (node->id == CONFIG_NODE) ? vb2_plane_vaddr(buf, 0)
-						  : NULL;
 	list_add_tail(&buffer->ready_list, &node->ready_queue);
 	spin_unlock_irqrestore(&node->ready_lock, flags);
 
