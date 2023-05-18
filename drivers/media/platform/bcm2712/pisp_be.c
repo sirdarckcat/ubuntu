@@ -342,6 +342,7 @@ static void hw_queue_job(struct pispbe_dev *pispbe,
 
 struct pispbe_buffer {
 	struct vb2_v4l2_buffer vb;
+	void *vaddr;
 	struct list_head ready_list;
 };
 
@@ -561,8 +562,7 @@ static int pispbe_schedule_internal(struct pispbe_node_group *node_group,
 	v4l2_ctrl_request_setup(
 		pispbe->queued_job.buf[0]->vb.vb2_buf.req_obj.req,
 		&node_group->hdlr);
-	config_tiles_buffer =
-		vb2_plane_vaddr(&buf[CONFIG_NODE]->vb.vb2_buf, 0);
+	config_tiles_buffer = buf[CONFIG_NODE]->vaddr;
 
 	/* Convert buffers to DMA addresses for the hardware */
 	fixup_addrs_enables(hw_dma_addrs, hw_enables,
@@ -799,6 +799,13 @@ static void pispbe_node_buffer_queue(struct vb2_buffer *buf)
 	v4l2_dbg(1, debug, &NODE_GET_V4L2(node),
 		 "%s: for node %s\n", __func__, NODE_NAME(node));
 	spin_lock_irqsave(&node->ready_lock, flags);
+	/*
+	 * We want to access at the config buffer when we program a new job.
+	 * This may possibly happen in the ISR context, so cache the virtual
+	 * address of the buffer here.
+	 */
+	buffer->vaddr = (node->id == CONFIG_NODE) ? vb2_plane_vaddr(buf, 0)
+						  : NULL;
 	list_add_tail(&buffer->ready_list, &node->ready_queue);
 	spin_unlock_irqrestore(&node->ready_lock, flags);
 
