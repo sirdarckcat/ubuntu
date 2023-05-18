@@ -200,6 +200,7 @@ static const struct node_description node_desc[NUM_NODES] = {
 
 struct cfe_buffer {
 	struct vb2_v4l2_buffer vb;
+	void *vaddr;
 	struct list_head list;
 };
 
@@ -579,6 +580,7 @@ static void cfe_schedule_next_pisp_job(struct cfe_device *cfe)
 	}
 
 	pisp_fe_submit_job(&cfe->fe, vb2_bufs,
+			   cfe->node[FE_CONFIG].next_frm->vaddr,
 			   &cfe->node[FE_OUT0].fmt, &cfe->node[FE_OUT1].fmt);
 }
 
@@ -1043,6 +1045,14 @@ static void cfe_buffer_queue(struct vb2_buffer *vb)
 	prepare = list_empty(&node->dma_queue) &&
 		  test_all_nodes(cfe, NODE_ENABLED, NODE_STREAMING) &&
 		  !node->next_frm && !node->cur_frm;
+
+	/*
+	 * We want to access at the FE config buffer when we program a new job.
+	 * This may possibly happen in the ISR context, so cache the virtual
+	 * address of the buffer here.
+	 */
+	buf->vaddr = (node->id == FE_CONFIG) ? vb2_plane_vaddr(vb, 0)
+					     : NULL;
 
 	list_add_tail(&buf->list, &node->dma_queue);
 

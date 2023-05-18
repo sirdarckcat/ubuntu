@@ -40,6 +40,7 @@ struct pisp_fe_device {
 
 void pisp_fe_isr(struct pisp_fe_device *fe, bool *sof, bool *eof);
 void pisp_fe_submit_job(struct pisp_fe_device *fe, struct vb2_buffer **vb2_bufs,
+			struct pisp_fe_config *cfg_vaddr,
 			struct v4l2_format const *f0, struct v4l2_format const *f1);
 void pisp_fe_start(struct pisp_fe_device *fe);
 void pisp_fe_stop(struct pisp_fe_device *fe);

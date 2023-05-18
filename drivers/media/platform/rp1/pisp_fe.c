@@ -227,6 +227,7 @@ static inline bool validate_stats(struct pisp_fe_config const *cfg)
 }
 
 void pisp_fe_submit_job(struct pisp_fe_device *fe, struct vb2_buffer **vb2_bufs,
+			struct pisp_fe_config *cfg_vaddr,
 			struct v4l2_format const *f0, struct v4l2_format const *f1)
 {
 	struct pisp_fe_config *cfg = &fe->cfg_tmp;
@@ -238,9 +239,9 @@ void pisp_fe_submit_job(struct pisp_fe_device *fe, struct vb2_buffer **vb2_bufs,
 	 * Take a copy of the config, so we can check and modify it
 	 * without the risk that the user is modifying it concurrently.
 	 */
-	if (WARN_ON(!vb2_bufs[FE_CONFIG_PAD]))
+	if (WARN_ON(!vb2_bufs[FE_CONFIG_PAD] && !cfg_vaddr))
 		return;
-	memcpy(cfg, vb2_plane_vaddr(vb2_bufs[FE_CONFIG_PAD], 0), sizeof(*cfg));
+	memcpy(cfg, cfg_vaddr, sizeof(*cfg));
 
 	/*
 	 * Check the input is enabled, streaming and has nonzero size;
