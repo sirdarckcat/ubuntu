@@ -25,6 +25,9 @@ MODULE_LICENSE("GPL v2");
 /* Offset to use when registering the /dev/videoX node */
 #define PISPBE_VIDEO_NODE_OFFSET 20
 
+/* Maximum number of config buffers possible */
+#define PISP_BE_NUM_CONFIG_BUFFERS 8
+
 /*
  * We want to support 2 independent instances allowing 2 simultaneous users
  * of the ISP-BE (of course they share hardware, platform resources and mutex).
@@ -193,6 +196,8 @@ struct pispbe_node_group {
 	u32 streaming_map; /* bitmap of which nodes are streaming */
 	struct media_entity entity;
 	struct media_pad pad[PISPBE_NUM_NODES]; /* output pads first */
+	struct pisp_be_tiles_config *config;
+	dma_addr_t config_dma_addr;
 };
 
 /* Records details of the jobs currently running or queued on the h/w. */
@@ -1661,6 +1666,17 @@ static int pispbe_init_node_group(struct pispbe_dev *pispbe, unsigned int id)
 	if (ret)
 		goto done_err;
 
+	node_group->config =
+		dma_alloc_coherent(pispbe->dev,
+				   sizeof(struct pisp_be_tiles_config) *
+					PISP_BE_NUM_CONFIG_BUFFERS,
+				   &node_group->config_dma_addr, GFP_KERNEL);
+	if (!node_group->config) {
+		v4l2_err(&node_group->v4l2_dev, "Unable to allocate cached config buffers.\n");
+		ret = -ENOMEM;
+		goto done_err;
+	}
+
 	return 0;
 done_err:
 	while (num_registered-- > 0)
@@ -1672,6 +1688,14 @@ done_err:
 static void pispbe_destroy_node_group(struct pispbe_node_group *node_group)
 {
 	int i;
+
+	if (node_group->config) {
+		dma_free_coherent(node_group->pispbe->dev,
+				  sizeof(struct pisp_be_tiles_config) *
+					PISP_BE_NUM_CONFIG_BUFFERS,
+				  node_group->config,
+				  node_group->config_dma_addr);
+	}
 
 	pispbe_mc_unregister_node_group(node_group);
 
