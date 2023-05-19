@@ -1987,6 +1987,7 @@ cleanup_exit:
 static int cfe_probe(struct platform_device *pdev)
 {
 	struct cfe_device *cfe;
+	char debugfs_name[32];
 	int ret;
 	u32 mipicfg_inte;
 
@@ -2081,7 +2082,9 @@ static int cfe_probe(struct platform_device *pdev)
 		goto err_cfe_put;
 	}
 
-	cfe->debugfs = debugfs_create_dir(cfe->mdev.model, NULL);
+	snprintf(debugfs_name, sizeof(debugfs_name), "rp1-cfe:%s",
+		 dev_name(&pdev->dev));
+	cfe->debugfs = debugfs_create_dir(debugfs_name, NULL);
 	debugfs_create_file("format", 0444, cfe->debugfs, cfe, &format_fops);
 	debugfs_create_file("regs", 0444, cfe->debugfs, cfe,
 			    &mipi_cfg_regs_fops);
@@ -2169,13 +2172,13 @@ static struct platform_driver cfe_driver = {
 	.remove		= cfe_remove,
 	.driver = {
 		.name	= CFE_MODULE_NAME,
-		.of_match_table = of_match_ptr(cfe_of_match),
+		.of_match_table = cfe_of_match,
 	},
 };
 
 module_platform_driver(cfe_driver);
 
-MODULE_AUTHOR("Naushir Patuck <naush@raspberrypi.com");
+MODULE_AUTHOR("Naushir Patuck <naush@raspberrypi.com>");
 MODULE_DESCRIPTION("RP1 Camera Front End driver");
 MODULE_LICENSE("GPL");
 MODULE_VERSION(CFE_VERSION);
