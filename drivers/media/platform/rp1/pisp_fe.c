@@ -52,10 +52,6 @@
 	((PISP_FE_ENABLE_CROP0     | PISP_FE_ENABLE_DOWNSCALE0 |	\
 	  PISP_FE_ENABLE_COMPRESS0 | PISP_FE_ENABLE_OUTPUT0) << (4 * (i)))
 
-static int pisp_fe_debug;
-module_param(pisp_fe_debug, int, 0644);
-MODULE_PARM_DESC(pisp_fe_debug, "Debug level 0-3");
-
 struct pisp_fe_config_param {
 	u32 dirty_flags;
 	u32 dirty_flags_extra;
@@ -91,12 +87,9 @@ static const struct pisp_fe_config_param pisp_fe_config_map[] = {
 	{ PISP_FE_ENABLE_OUTPUT1,    0, offsetof(struct pisp_fe_config, ch[1].output),    sizeof(struct pisp_fe_output_config)         },
 };
 
-#define pisp_fe_dbg(level, fmt, arg...)	\
-		    v4l2_dbg(level, pisp_fe_debug, fe->v4l2_dev, fmt, ##arg)
-#define pisp_fe_info(fmt, arg...)	\
-		     v4l2_info(fe->v4l2_dev, fmt, ##arg)
-#define pisp_fe_err(fmt, arg...)	\
-		    v4l2_err(fe->v4l2_dev, fmt, ##arg)
+#define pisp_fe_dbg(fmt, arg...) dev_dbg(fe->v4l2_dev->dev, fmt, ##arg)
+#define pisp_fe_info(fmt, arg...) dev_info(fe->v4l2_dev->dev, fmt, ##arg)
+#define pisp_fe_err(fmt, arg...) dev_err(fe->v4l2_dev->dev, fmt, ##arg)
 
 static inline u32 pisp_fe_reg_read(struct pisp_fe_device *fe, u32 offset)
 {
@@ -107,14 +100,14 @@ static inline void pisp_fe_reg_write(struct pisp_fe_device *fe, u32 offset,
 				     u32 val)
 {
 	writel(val, fe->base + offset);
-	pisp_fe_dbg(3, "fe: write 0x%04x -> 0x%03x\n", val, offset);
+	pisp_fe_dbg("fe: write 0x%04x -> 0x%03x\n", val, offset);
 }
 
 static inline void pisp_fe_reg_write_relaxed(struct pisp_fe_device *fe, u32 offset,
 					     u32 val)
 {
 	writel_relaxed(val, fe->base + offset);
-	pisp_fe_dbg(3, "fe: write 0x%04x -> 0x%03x\n", val, offset);
+	pisp_fe_dbg("fe: write 0x%04x -> 0x%03x\n", val, offset);
 }
 
 static int pisp_regs_show(struct seq_file *s, void *data)
@@ -172,7 +165,7 @@ inline void pisp_fe_isr(struct pisp_fe_device *fe, bool *sof, bool *eof)
 	int_status = pisp_fe_reg_read(fe, INT_STATUS);
 	pisp_fe_reg_write(fe, INT_STATUS, int_status);
 
-	pisp_fe_dbg(3, "%s: status 0x%x out_status 0x%x frame_status 0x%x error_status 0x%x int_status 0x%x\n",
+	pisp_fe_dbg("%s: status 0x%x out_status 0x%x frame_status 0x%x error_status 0x%x int_status 0x%x\n",
 		    __func__, status, out_status, frame_status, error_status,
 		    int_status);
 
@@ -309,7 +302,7 @@ void pisp_fe_submit_job(struct pisp_fe_device *fe, struct vb2_buffer **vb2_bufs,
 	 * sequence of relaxed writes which follow.
 	 */
 	status = pisp_fe_reg_read(fe, STATUS);
-	pisp_fe_dbg(2, "%s: status = 0x%x\n", __func__, status);
+	pisp_fe_dbg("%s: status = 0x%x\n", __func__, status);
 	if (WARN_ON(status & QUEUED))
 		return;
 
@@ -383,9 +376,9 @@ static int pisp_fe_link_validate(struct v4l2_subdev *sd,
 {
 	struct pisp_fe_device *fe = to_pisp_fe_device(sd);
 
-	pisp_fe_dbg(1, "%s: link \"%s\":%u -> \"%s\":%u\n", __func__,
-		    link->source->entity->name, link->source->index,
-		    link->sink->entity->name, link->sink->index);
+	pisp_fe_info("%s: link \"%s\":%u -> \"%s\":%u\n", __func__,
+		     link->source->entity->name, link->source->index,
+		     link->sink->entity->name, link->sink->index);
 
 	/* The width, height and code must match. */
 	if (source_fmt->format.width != sink_fmt->format.width ||

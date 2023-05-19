@@ -13,16 +13,9 @@
 
 #include "csi2.h"
 
-static int csi2_debug;
-module_param(csi2_debug, int, 0644);
-MODULE_PARM_DESC(csi2_debug, "Debug level 0-3");
-
-#define csi2_dbg(level, fmt, arg...)	\
-		v4l2_dbg(level, csi2_debug, csi2->v4l2_dev, fmt, ##arg)
-#define csi2_info(fmt, arg...)	\
-		v4l2_info(csi2->v4l2_dev, fmt, ##arg)
-#define csi2_err(fmt, arg...)	\
-		v4l2_err(csi2->v4l2_dev, fmt, ##arg)
+#define csi2_dbg(fmt, arg...) dev_dbg(csi2->v4l2_dev->dev, fmt, ##arg)
+#define csi2_info(fmt, arg...) dev_info(csi2->v4l2_dev->dev, fmt, ##arg)
+#define csi2_err(fmt, arg...) dev_err(csi2->v4l2_dev->dev, fmt, ##arg)
 
 /* DW CSI2 Host registers */
 #define VERSION		0x000
@@ -123,7 +116,7 @@ static inline u32 csi2_reg_read(struct csi2_device *csi2, u32 offset)
 static inline void csi2_reg_write(struct csi2_device *csi2, u32 offset, u32 val)
 {
 	writel(val, csi2->base + offset);
-	csi2_dbg(3, "csi2: write 0x%04x -> 0x%03x\n", val, offset);
+	csi2_dbg("csi2: write 0x%04x -> 0x%03x\n", val, offset);
 }
 
 static inline void set_field(u32 *valp, u32 field, u32 mask)
@@ -307,7 +300,7 @@ void csi2_isr(struct csi2_device *csi2, bool *sof, bool *eof, bool *lci)
 	u32 status;
 
 	status = csi2_reg_read(csi2, CSI2_STATUS);
-	csi2_dbg(3, "ISR: STA: 0x%x\n", status);
+	csi2_dbg("ISR: STA: 0x%x\n", status);
 
 	/* Write value back to clear the interrupts */
 	csi2_reg_write(csi2, CSI2_STATUS, status);
@@ -320,7 +313,7 @@ void csi2_isr(struct csi2_device *csi2, bool *sof, bool *eof, bool *lci)
 
 		dbg = csi2_reg_read(csi2, CSI2_CH_DEBUG(i));
 
-		csi2_dbg(3, "ISR: [%d], %s%s%s%s%s frame: %d line: %d\n",
+		csi2_dbg("ISR: [%d], %s%s%s%s%s frame: %d line: %d\n",
 			 i,
 			 (status & IRQ_FS(i)) ? "FS " : "",
 			 (status & IRQ_FE(i)) ? "FE " : "",
@@ -371,7 +364,7 @@ void csi2_start_channel(struct csi2_device *csi2, unsigned int channel,
 {
 	u32 ctrl;
 
-	csi2_dbg(3, "%s [%d]\n", __func__, channel);
+	csi2_dbg("%s [%d]\n", __func__, channel);
 
 	/*
 	 * Disable the channel, but ensure N != 0!  Otherwise we end up with a
@@ -415,7 +408,7 @@ void csi2_start_channel(struct csi2_device *csi2, unsigned int channel,
 
 void csi2_stop_channel(struct csi2_device *csi2, unsigned int channel)
 {
-	csi2_dbg(3, "%s [%d]\n", __func__, channel);
+	csi2_dbg("%s [%d]\n", __func__, channel);
 
 	/* Channel disable.  Use FORCE to allow stopping mid-frame. */
 	csi2_reg_write(csi2, CSI2_CH_CTRL(channel),
@@ -470,15 +463,15 @@ static int csi2_link_validate(struct v4l2_subdev *sd, struct media_link *link,
 {
 	struct csi2_device *csi2 = to_csi2_device(sd);
 
-	csi2_dbg(1, "%s: link \"%s\":%u -> \"%s\":%u\n", __func__,
-		 link->source->entity->name, link->source->index,
-		 link->sink->entity->name, link->sink->index);
+	csi2_info("%s: link \"%s\":%u -> \"%s\":%u\n", __func__,
+		  link->source->entity->name, link->source->index,
+		  link->sink->entity->name, link->sink->index);
 
 	if ((link->source->entity == &csi2->sd.entity &&
 	     link->source->index == 1) ||
 	    (link->sink->entity == &csi2->sd.entity &&
 	     link->sink->index == 1)) {
-		csi2_dbg(1, "Ignore metadata pad for now\n");
+		csi2_info("Ignore metadata pad for now\n");
 		return 0;
 	}
 
