@@ -5,7 +5,6 @@
 #include <dt-bindings/clock/rp1.h>
 #include <dt-bindings/interrupt-controller/irq.h>
 #include <dt-bindings/mfd/rp1.h>
-#include <dt-bindings/pinctrl/rp1.h>
 #include <dt-bindings/pwm/pwm.h>
 #include <dt-bindings/reset/raspberrypi,firmware-reset.h>
 #include <dt-bindings/gpio/gpio-fsm.h>
@@ -777,8 +776,8 @@ spi0_cs_pins: &rp1_spi0_cs_gpio7 {};
 		"-"; // GPIO53
 	
 	usb_vbus_pins: usb_vbus_pins {
-		brcm,pins = <42>;
-		brcm,function = <RP1_FSEL_GPIO_OUT>;
+		function = "gpio";
+		pins = "gpio42";
 	};
 };
 
