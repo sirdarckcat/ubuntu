@@ -908,7 +908,7 @@ static int bcm2712_pmx_get_functions_count(struct pinctrl_dev *pctldev)
 static const char *bcm2712_pmx_get_function_name(struct pinctrl_dev *pctldev,
 		unsigned selector)
 {
-	return bcm2712_func_names[selector];
+	return (selector < func_count) ? bcm2712_func_names[selector] : NULL;
 }
 
 static int bcm2712_pmx_get_function_groups(struct pinctrl_dev *pctldev,
