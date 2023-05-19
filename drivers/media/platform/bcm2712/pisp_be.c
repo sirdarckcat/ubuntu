@@ -1842,8 +1842,8 @@ static int pispbe_runtime_resume(struct device *dev)
 		return ret;
 	}
 
-	dev_info(dev, "%s: Enabled clock, rate=%lu\n",
-		 __func__, clk_get_rate(pispbe->clk));
+	dev_dbg(dev, "%s: Enabled clock, rate=%lu\n",
+		__func__, clk_get_rate(pispbe->clk));
 
 	return 0;
 }
