@@ -715,6 +715,78 @@ static irqreturn_t pispbe_isr(int irq, void *dev)
 	return IRQ_HANDLED;
 }
 
+static int pisp_be_validate_config(struct pispbe_node_group *node_group,
+				   struct pisp_be_tiles_config *config)
+{
+	u32 bayer_enables = config->config.global.bayer_enables;
+	u32 rgb_enables = config->config.global.rgb_enables;
+	struct v4l2_format *fmt;
+	unsigned int bpl, size, i, j;
+
+	if (!(bayer_enables & PISP_BE_BAYER_ENABLE_INPUT))
+		return -EIO;
+
+	/* Ensure output config strides and buffer sizes match the V4L2 formats. */
+	fmt = &node_group->node[TDN_OUTPUT_NODE].format;
+	if (bayer_enables & PISP_BE_BAYER_ENABLE_TDN_OUTPUT) {
+		bpl = config->config.tdn_output_format.stride;
+		size = bpl * config->config.tdn_output_format.height;
+		if (fmt->fmt.pix_mp.plane_fmt[0].bytesperline < bpl) {
+			v4l2_err(&node_group->v4l2_dev, "%s: bpl mismatch on tdn_output\n",
+				 __func__);
+			return -EINVAL;
+		}
+		if (fmt->fmt.pix_mp.plane_fmt[0].sizeimage < size) {
+			v4l2_err(&node_group->v4l2_dev, "%s: size mismatch on tdn_output\n",
+				 __func__);
+			return -EINVAL;
+		}
+	}
+
+	fmt = &node_group->node[STITCH_OUTPUT_NODE].format;
+	if (bayer_enables & PISP_BE_BAYER_ENABLE_STITCH_OUTPUT) {
+		bpl = config->config.stitch_output_format.stride;
+		size = bpl * config->config.stitch_output_format.height;
+		if (fmt->fmt.pix_mp.plane_fmt[0].bytesperline < bpl) {
+			v4l2_err(&node_group->v4l2_dev, "%s: bpl mismatch on stitch_output\n",
+				 __func__);
+			return -EINVAL;
+		}
+		if (fmt->fmt.pix_mp.plane_fmt[0].sizeimage < size) {
+			v4l2_err(&node_group->v4l2_dev, "%s: size mismatch on stitch_output\n",
+				 __func__);
+			return -EINVAL;
+		}
+	}
+
+	for (j = 0; j < PISP_BACK_END_NUM_OUTPUTS; j++) {
+		if (!(rgb_enables & PISP_BE_RGB_ENABLE_OUTPUT(j)))
+			continue;
+		fmt = &node_group->node[OUTPUT0_NODE + j].format;
+		for (i = 0; i < fmt->fmt.pix_mp.num_planes; i++) {
+			bpl = !i ? config->config.output_format[j].image.stride
+			    : config->config.output_format[j].image.stride2;
+			size = bpl * config->config.output_format[j].image.height;
+
+			if (config->config.output_format[j].image.format &
+						PISP_IMAGE_FORMAT_SAMPLING_420)
+				size >>= 1;
+			if (fmt->fmt.pix_mp.plane_fmt[i].bytesperline < bpl) {
+				v4l2_err(&node_group->v4l2_dev, "%s: bpl mismatch on output %d\n",
+					 __func__, j);
+				return -EINVAL;
+			}
+			if (fmt->fmt.pix_mp.plane_fmt[i].sizeimage < size) {
+				v4l2_err(&node_group->v4l2_dev, "%s: size mismatch on input\n",
+					 __func__);
+				return -EINVAL;
+			}
+		}
+	}
+
+	return 0;
+}
+
 static int pispbe_node_queue_setup(struct vb2_queue *q, unsigned int *nbuffers,
 				   unsigned int *nplanes, unsigned int sizes[],
 				   struct device *alloc_devs[])
@@ -777,14 +849,14 @@ static int pispbe_node_buffer_prepare(struct vb2_buffer *vb)
 		}
 
 		vb2_set_plane_payload(vb, i, size);
+	}
 
-		if (node->id == CONFIG_NODE) {
-			void *dst = &node->node_group->config[vb->index];
-			void *src = vb2_plane_vaddr(vb, 0);
+	if (node->id == CONFIG_NODE) {
+		void *dst = &node->node_group->config[vb->index];
+		void *src = vb2_plane_vaddr(vb, 0);
 
-			memcpy(dst, src, sizeof(struct pisp_be_tiles_config));
-			/* TODO: Need config validation here. */
-		}
+		memcpy(dst, src, sizeof(struct pisp_be_tiles_config));
+		return pisp_be_validate_config(node->node_group, dst);
 	}
 
 	return 0;
