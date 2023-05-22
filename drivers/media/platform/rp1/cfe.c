@@ -268,6 +268,7 @@ struct cfe_device {
 
 	/* IRQ lock for node state and DMA queues */
 	spinlock_t state_lock;
+	bool job_ready;
 
 	/* parent device */
 	struct platform_device *pdev;
@@ -578,26 +579,34 @@ static void cfe_schedule_next_pisp_job(struct cfe_device *cfe)
 	pisp_fe_submit_job(&cfe->fe, vb2_bufs, &config_buf->config);
 }
 
-static void cfe_prepare_next_job(struct cfe_device *cfe)
+static bool cfe_check_job_ready(struct cfe_device *cfe)
 {
 	unsigned int i;
 
 	for (i = 0; i < NUM_NODES; i++) {
 		struct cfe_node *node = &cfe->node[i];
 
-		if (!check_state(cfe, NODE_STREAMING, i))
+		if (!check_state(cfe, NODE_ENABLED, i))
 			continue;
 
 		if (list_empty(&node->dma_queue)) {
 			cfe_dbg("%s: [%s] has no buffer, unable to schedule job\n",
 				__func__, node_desc[i].name);
-			return;
+			return false;
 		}
 	}
 
+	return true;
+}
+
+static void cfe_prepare_next_job(struct cfe_device *cfe)
+{
 	cfe_schedule_next_csi2_job(cfe);
 	if (is_fe_enabled(cfe))
 		cfe_schedule_next_pisp_job(cfe);
+
+	/* Flag if another job is ready after this. */
+	cfe->job_ready = cfe_check_job_ready(cfe);
 
 	cfe_dbg("%s: end with scheduled job\n", __func__);
 }
@@ -692,15 +701,10 @@ static irqreturn_t cfe_isr(int irq, void *dev)
 
 	spin_lock(&cfe->state_lock);
 
-	if (!test_all_nodes(cfe, NODE_ENABLED, NODE_STREAMING)) {
-		spin_unlock(&cfe->state_lock);
-		return IRQ_HANDLED;
-	}
-
 	for (i = 0; i < NUM_NODES; i++) {
 		struct cfe_node *node = &cfe->node[i];
 
-		if (!check_state(cfe, NODE_STREAMING, i))
+		if (!sof[i] && !eof[i] && !lci[i])
 			continue;
 
 		if (eof[i]) {
@@ -725,7 +729,7 @@ static irqreturn_t cfe_isr(int irq, void *dev)
 		if (sof[i])
 			sof_isr_handler(node);
 
-		if (!node->next_frm)
+		if (!node->next_frm && cfe->job_ready)
 			cfe_prepare_next_job(cfe);
 	}
 
@@ -1034,26 +1038,19 @@ static void cfe_buffer_queue(struct vb2_buffer *vb)
 	struct cfe_device *cfe = node->cfe;
 	struct cfe_buffer *buf = to_cfe_buffer(vb);
 	unsigned long flags;
-	bool prepare;
 
 	cfe_dbg("%s: [%s] buffer %p\n", __func__, node_desc[node->id].name,
 		vb);
 
 	spin_lock_irqsave(&cfe->state_lock, flags);
 
-	/*
-	 * If the list was empty before adding this buffer, and here is no
-	 * current or next buffer set, then we program the buffer into the
-	 * hardware now as there will be no interrupts from the device to do
-	 * it later.
-	 */
-	prepare = list_empty(&node->dma_queue) &&
-		  test_all_nodes(cfe, NODE_ENABLED, NODE_STREAMING) &&
-		  !node->next_frm && !node->cur_frm;
-
 	list_add_tail(&buf->list, &node->dma_queue);
 
-	if (prepare) {
+	if (!cfe->job_ready)
+		cfe->job_ready = cfe_check_job_ready(cfe);
+
+	if (!node->next_frm && cfe->job_ready &&
+	    test_all_nodes(cfe, NODE_ENABLED, NODE_STREAMING)) {
 		cfe_dbg("Preparing job immediately for channel %d\n",
 			node->id);
 		cfe_prepare_next_job(cfe);
@@ -1133,7 +1130,7 @@ static void cfe_start_channel(struct cfe_node *node)
 	}
 
 	spin_lock_irqsave(&cfe->state_lock, flags);
-	if (test_all_nodes(cfe, NODE_ENABLED, NODE_STREAMING))
+	if (cfe->job_ready && test_all_nodes(cfe, NODE_ENABLED, NODE_STREAMING))
 		cfe_prepare_next_job(cfe);
 	spin_unlock_irqrestore(&cfe->state_lock, flags);
 }
@@ -1218,7 +1215,7 @@ static int cfe_start_streaming(struct vb2_queue *vq, unsigned int count)
 	}
 
 	cfe->csi2.active_data_lanes = cfe->csi2.num_lanes;
-	cfe_info("Running with %u data lanes\n", cfe->csi2.active_data_lanes);
+	cfe_dbg("Running with %u data lanes\n", cfe->csi2.active_data_lanes);
 
 	ret = v4l2_subdev_call(cfe->sensor, pad, get_mbus_config, 0,
 			       &mbus_config);
@@ -1274,6 +1271,7 @@ static void cfe_stop_streaming(struct vb2_queue *vq)
 	fe_stop = is_fe_enabled(cfe) &&
 		  test_all_nodes(cfe, NODE_ENABLED, NODE_STREAMING);
 
+	cfe->job_ready = false;
 	clear_state(cfe, NODE_STREAMING, node->id);
 	spin_unlock_irqrestore(&cfe->state_lock, flags);
 

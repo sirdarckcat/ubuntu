@@ -376,9 +376,9 @@ static int pisp_fe_link_validate(struct v4l2_subdev *sd,
 {
 	struct pisp_fe_device *fe = to_pisp_fe_device(sd);
 
-	pisp_fe_info("%s: link \"%s\":%u -> \"%s\":%u\n", __func__,
-		     link->source->entity->name, link->source->index,
-		     link->sink->entity->name, link->sink->index);
+	pisp_fe_dbg("%s: link \"%s\":%u -> \"%s\":%u\n", __func__,
+		    link->source->entity->name, link->source->index,
+		    link->sink->entity->name, link->sink->index);
 
 	/* The width, height and code must match. */
 	if (source_fmt->format.width != sink_fmt->format.width ||

@@ -463,15 +463,15 @@ static int csi2_link_validate(struct v4l2_subdev *sd, struct media_link *link,
 {
 	struct csi2_device *csi2 = to_csi2_device(sd);
 
-	csi2_info("%s: link \"%s\":%u -> \"%s\":%u\n", __func__,
-		  link->source->entity->name, link->source->index,
-		  link->sink->entity->name, link->sink->index);
+	csi2_dbg("%s: link \"%s\":%u -> \"%s\":%u\n", __func__,
+		 link->source->entity->name, link->source->index,
+		 link->sink->entity->name, link->sink->index);
 
 	if ((link->source->entity == &csi2->sd.entity &&
 	     link->source->index == 1) ||
 	    (link->sink->entity == &csi2->sd.entity &&
 	     link->sink->index == 1)) {
-		csi2_info("Ignore metadata pad for now\n");
+		csi2_dbg("Ignore metadata pad for now\n");
 		return 0;
 	}
 
