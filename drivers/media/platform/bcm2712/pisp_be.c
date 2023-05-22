@@ -1330,9 +1330,9 @@ static int pispbe_node_try_fmt_meta_cap(struct file *file, void *priv,
 		return -EINVAL;
 	}
 
-	if (f->fmt.meta.dataformat != V4L2_PIX_FMT_RPI_BE ||
-	    !f->fmt.meta.buffersize)
-		return -EINVAL;
+	f->fmt.meta.dataformat = V4L2_PIX_FMT_RPI_BE;
+	if (!f->fmt.meta.buffersize)
+		f->fmt.meta.buffersize = BIT(20);
 
 	return 0;
 }
@@ -1554,7 +1554,7 @@ static void node_set_default_format(struct pispbe_node *node)
 		struct v4l2_format *f = &node->format;
 
 		f->fmt.meta.dataformat = V4L2_PIX_FMT_RPI_BE;
-		f->fmt.meta.buffersize = 1 << 20;
+		f->fmt.meta.buffersize = BIT(20);
 		f->type = node->buf_type;
 	} else {
 		struct v4l2_format f = {0};
