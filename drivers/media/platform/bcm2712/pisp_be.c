@@ -1209,7 +1209,7 @@ static int try_format(struct v4l2_format *f, struct pispbe_node *node)
 
 	fmt = find_format(pixfmt);
 	if (!fmt)
-		return -EINVAL;
+		fmt = find_format(V4L2_PIX_FMT_YUV420M);
 
 	if (pixfmt == V4L2_PIX_FMT_RPI_BE)
 		return verify_be_pix_format(f, node);
