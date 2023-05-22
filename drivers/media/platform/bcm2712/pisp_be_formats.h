@@ -461,6 +461,9 @@ static const struct pisp_be_format supported_formats[] = {
 	{
 		.fourcc		    = V4L2_PIX_FMT_RPI_BE,
 	},
+};
+
+static const struct pisp_be_format meta_out_supported_formats[] = {
 	/* Configuration buffer format. */
 	{
 		.fourcc		    = V4L2_META_FMT_RPI_BE_CFG,

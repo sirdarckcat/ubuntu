@@ -1388,7 +1388,7 @@ static int pispbe_node_s_fmt_meta_out(struct file *file, void *priv,
 		return ret;
 
 	node->format = *f;
-	node->pisp_format = find_format(f->fmt.meta.dataformat);
+	node->pisp_format = &meta_out_supported_formats[0];
 
 	dev_dbg(pispbe->dev,
 		"Set output format for meta node %s to " V4L2_FOURCC_CONV "\n",
@@ -1425,14 +1425,25 @@ static int pispbe_node_enum_fmt(struct file *file, void  *priv,
 	if (f->type != node->queue.type)
 		return -EINVAL;
 
-	if (f->index < ARRAY_SIZE(supported_formats)) {
-		/* Format found */
-		f->pixelformat = supported_formats[f->index].fourcc;
+	if (NODE_IS_META(node)) {
+		if (f->index)
+			return -EINVAL;
+
+		if (NODE_IS_OUTPUT(node))
+			f->pixelformat = V4L2_META_FMT_RPI_BE_CFG;
+		else
+			f->pixelformat = V4L2_PIX_FMT_RPI_BE;
 		f->flags = 0;
 		return 0;
 	}
 
-	return -EINVAL;
+	if (f->index >= ARRAY_SIZE(supported_formats))
+		return -EINVAL;
+
+	f->pixelformat = supported_formats[f->index].fourcc;
+	f->flags = 0;
+
+	return 0;
 }
 
 static int pispbe_enum_framesizes(struct file *file, void *priv,
