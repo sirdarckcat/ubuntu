@@ -1028,7 +1028,7 @@ static int pispbe_node_querycap(struct file *file, void *priv,
 	strscpy(cap->driver, PISPBE_NAME, sizeof(cap->driver));
 	strscpy(cap->card, PISPBE_NAME, sizeof(cap->card));
 	snprintf(cap->bus_info, sizeof(cap->bus_info), "platform:%s",
-		 PISPBE_NAME);
+		 dev_name(pispbe->dev));
 
 	cap->capabilities = V4L2_CAP_VIDEO_CAPTURE_MPLANE |
 			    V4L2_CAP_VIDEO_OUTPUT_MPLANE |
