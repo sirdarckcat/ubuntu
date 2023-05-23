@@ -1,53 +1,31 @@
 # Menu: HEADER
-# FORMAT: 3
-# ARCH: x86
+# FORMAT: 4
+# ARCH: amd64
+# FLAVOUR: amd64-ibm
 
 include "../../debian.master/config/annotations"
 
-# The following annotations may need to be re-visited for f/ibm
-# For the initial bring-up, these annotations were changed to avoid
-# changing the kernel config from which this kernel was originally 
-# derived - that is, from b/hwe-5.4 
+CONFIG_AHC1EC0_WDT                              policy<{'amd64': '-'}>
+CONFIG_AHC1EC0_WDT                              note<'maintaining original config'>
 
-CONFIG_PREEMPT_VOLUNTARY			policy<{'amd64': 'y'}>
-CONFIG_PREEMPT_VOLUNTARY			flag<ENFORCE> note<maintaining original config>
+CONFIG_IRQ_FORCED_THREADING_DEFAULT             policy<{'amd64': '-'}>
+CONFIG_IRQ_FORCED_THREADING_DEFAULT             note<'maintaining original config'>
 
-CONFIG_IRQ_FORCED_THREADING_DEFAULT		policy<{'amd64': '-'}>
-CONFIG_IRQ_FORCED_THREADING_DEFAULT		flag<ENFORCE> note<maintaining original config>
+CONFIG_MFD_AHC1EC0                              policy<{'amd64': '-'}>
+CONFIG_MFD_AHC1EC0                              note<'maintaining original config'>
 
-CONFIG_MFD_AHC1EC0				policy<{'amd64': '-'}>
-CONFIG_MFD_AHC1EC0				flag<ENFORCE> note<maintaining original config>
+CONFIG_PSTORE_BLK_BLKDEV                        policy<{'amd64': '"m"'}>
+CONFIG_PSTORE_BLK_BLKDEV                        note<'maintaining original config'>
 
-CONFIG_HZ_1000					policy<{'amd64': 'n'}>
-CONFIG_HZ_1000					flag<ENFORCE> note<maintaining original config>
+CONFIG_SENSORS_AHC1EC0_HWMON                    policy<{'amd64': '-'}>
+CONFIG_SENSORS_AHC1EC0_HWMON                    note<'maintaining original config'>
 
-CONFIG_AHC1EC0_WDT				policy<{'amd64': '-'}>
-CONFIG_AHC1EC0_WDT				flag<ENFORCE> note<maintaining original config>
 
-CONFIG_SENSORS_AHC1EC0_HWMON			policy<{'amd64': '-'}>
-CONFIG_SENSORS_AHC1EC0_HWMON			flag<ENFORCE> note<maintaining original config>
+# ---- Annotations without notes ----
 
-CONFIG_HZ_250					policy<{'amd64': 'y'}>
-CONFIG_HZ_250					flag<ENFORCE> note<maintaining original config>
-
-CONFIG_PREEMPT					policy<{'amd64': 'n'}>
-CONFIG_PREEMPT					flag<ENFORCE> note<maintaining original config>
-
-CONFIG_KERNEL_LZ4				policy<{'amd64': 'n'}>
-CONFIG_KERNEL_LZ4				flag<ENFORCE> note<maintaining original config>
-
-CONFIG_LATENCYTOP				policy<{'amd64': 'n'}>
-CONFIG_LATENCYTOP				flag<ENFORCE> note<maintaining original config>
-
-# No ODM/AAEON drivers
+CONFIG_AAEON_IWMI_WDT                           policy<{'amd64': '-'}>
 CONFIG_GPIO_AAEON                               policy<{'amd64': '-'}>
-CONFIG_SENSORS_AAEON                            policy<{'amd64': '-'}>
 CONFIG_LEDS_AAEON                               policy<{'amd64': '-'}>
 CONFIG_MFD_AAEON                                policy<{'amd64': '-'}>
-CONFIG_AAEON_IWMI_WDT                           policy<{'amd64': '-'}>
-
-# Fixups for master annotations
-CONFIG_TEST_DIV64                               policy<{'amd64': 'n'}>
-CONFIG_COMEDI_TESTS_EXAMPLE                     policy<{'amd64': 'm'}>
-CONFIG_COMEDI_TESTS_NI_ROUTES                   policy<{'amd64': 'm'}>
-CONFIG_SND_HDA_INTEL_HDMI_SILENT_STREAM         policy<{'amd64': 'y', 'arm64': 'n', 'armhf': 'n', 'ppc64el': 'n'}>
+CONFIG_SENSORS_AAEON                            policy<{'amd64': '-'}>
+CONFIG_UBUNTU_ODM_DRIVERS                       policy<{'amd64': '-'}>
