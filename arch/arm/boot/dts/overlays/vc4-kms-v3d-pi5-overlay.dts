@@ -92,4 +92,41 @@
 			status = "okay";
 		};
 	};
+
+	fragment@13 {
+		target = <&vec>;
+		frag13: __overlay__ {
+			status = "disabled";
+		};
+	};
+
+	fragment@14 {
+		target = <&hdmi0>;
+		__dormant__  {
+			dmas;
+		};
+	};
+
+	fragment@15 {
+		target = <&hdmi1>;
+		__dormant__  {
+			dmas;
+		};
+	};
+
+	__overrides__ {
+		audio   = <0>,"!14";
+		audio1   = <0>,"!15";
+		noaudio = <0>,"=14", <0>,"=15";
+		composite = <0>, "!3",
+			    <0>, "!4",
+			    <0>, "!5",
+			    <0>, "!6",
+			    <0>, "!10",
+			    <0>, "!11",
+			    <&frag13>, "status";
+		nohdmi0 =   <0>, "-3-5-10";
+		nohdmi1 =   <0>, "-4-6-11";
+		nohdmi =    <0>, "-3-4-5-6-10-11";
+	};
 };
