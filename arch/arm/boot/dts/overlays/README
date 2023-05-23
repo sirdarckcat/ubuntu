@@ -2869,11 +2869,19 @@ Load:   dtoverlay=midi-uart0
 Params: <None>
 
 
+Name:   midi-uart0-pi5
+Info:   See midi-uart0 (this is the Pi 5 version)
+
+
 Name:   midi-uart1
 Info:   Configures UART1 (ttyS0) so that a requested 38.4kbaud actually gets
         31.25kbaud, the frequency required for MIDI
 Load:   dtoverlay=midi-uart1
 Params: <None>
+
+
+Name:   midi-uart1-pi5
+Info:   See midi-uart1 (this is the Pi 5 version)
 
 
 Name:   midi-uart2
@@ -2883,6 +2891,10 @@ Load:   dtoverlay=midi-uart2
 Params: <None>
 
 
+Name:   midi-uart2-pi5
+Info:   See midi-uart2 (this is the Pi 5 version)
+
+
 Name:   midi-uart3
 Info:   Configures UART3 (ttyAMA3) so that a requested 38.4kbaud actually gets
         31.25kbaud, the frequency required for MIDI
@@ -2890,11 +2902,19 @@ Load:   dtoverlay=midi-uart3
 Params: <None>
 
 
+Name:   midi-uart3-pi5
+Info:   See midi-uart3 (this is the Pi 5 version)
+
+
 Name:   midi-uart4
 Info:   Configures UART4 (ttyAMA4) so that a requested 38.4kbaud actually gets
         31.25kbaud, the frequency required for MIDI
 Load:   dtoverlay=midi-uart4
 Params: <None>
+
+
+Name:   midi-uart4-pi5
+Info:   See midi-uart4 (this is the Pi 5 version)
 
 
 Name:   midi-uart5
@@ -4296,6 +4316,12 @@ Params: txd0_pin                GPIO pin for TXD0 (14, 32 or 36 - default 14)
                                 7(Alt3) for 32&33, 6(Alt2) for 36&37
 
 
+Name:   uart0-pi5
+Info:   Enable uart 0 on GPIOs 14-15. BCM2712 only.
+Load:   dtoverlay=uart0-pi5,<param>
+Params: ctsrts                  Enable CTS/RTS on GPIOs 16-17 (default off)
+
+
 Name:   uart1
 Info:   Change the pin usage of uart1
 Load:   dtoverlay=uart1,<param>=<val>
@@ -4304,10 +4330,22 @@ Params: txd1_pin                GPIO pin for TXD1 (14, 32 or 40 - default 14)
         rxd1_pin                GPIO pin for RXD1 (15, 33 or 41 - default 15)
 
 
+Name:   uart1-pi5
+Info:   Enable uart 1 on GPIOs 0-1. BCM2712 only.
+Load:   dtoverlay=uart1-pi5,<param>
+Params: ctsrts                  Enable CTS/RTS on GPIOs 2-3 (default off)
+
+
 Name:   uart2
 Info:   Enable uart 2 on GPIOs 0-3. BCM2711 only.
 Load:   dtoverlay=uart2,<param>
 Params: ctsrts                  Enable CTS/RTS on GPIOs 2-3 (default off)
+
+
+Name:   uart2-pi5
+Info:   Enable uart 2 on GPIOs 4-5. BCM2712 only.
+Load:   dtoverlay=uart2-pi5,<param>
+Params: ctsrts                  Enable CTS/RTS on GPIOs 6-7 (default off)
 
 
 Name:   uart3
@@ -4316,10 +4354,22 @@ Load:   dtoverlay=uart3,<param>
 Params: ctsrts                  Enable CTS/RTS on GPIOs 6-7 (default off)
 
 
+Name:   uart3-pi5
+Info:   Enable uart 3 on GPIOs 8-9. BCM2712 only.
+Load:   dtoverlay=uart3-pi5,<param>
+Params: ctsrts                  Enable CTS/RTS on GPIOs 10-11 (default off)
+
+
 Name:   uart4
 Info:   Enable uart 4 on GPIOs 8-11. BCM2711 only.
 Load:   dtoverlay=uart4,<param>
 Params: ctsrts                  Enable CTS/RTS on GPIOs 10-11 (default off)
+
+
+Name:   uart4-pi5
+Info:   Enable uart 4 on GPIOs 12-13. BCM2712 only.
+Load:   dtoverlay=uart4-pi5,<param>
+Params: ctsrts                  Enable CTS/RTS on GPIOs 14-15 (default off)
 
 
 Name:   uart5
@@ -4634,6 +4684,9 @@ Params: cma-512                 CMA is 512MB
         nohdmi0                 Disable HDMI 0 output
         nohdmi1                 Disable HDMI 1 output
 
+
+Name:   vc4-kms-v3d-pi5
+Info:   See vc4-kms-v3d-pi4 (this is the Pi 5 version)
 
 
 Name:   vc4-kms-vga666
