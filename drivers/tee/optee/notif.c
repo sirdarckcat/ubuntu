@@ -1,16 +1,20 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (c) 2015-2021, Linaro Limited
+ * Copyright (c) 2023, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  */
 
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
 #include <linux/arm-smccc.h>
 #include <linux/errno.h>
+#include <linux/jiffies.h>
 #include <linux/slab.h>
 #include <linux/spinlock.h>
 #include <linux/tee_drv.h>
 #include "optee_private.h"
+
+#define SLEEP_TIMEOUT (msecs_to_jiffies(100))
 
 struct notif_entry {
 	struct list_head link;
@@ -70,7 +74,7 @@ int optee_notif_wait(struct optee *optee, u_int key)
 	 * Unlock temporarily and wait for completion.
 	 */
 	spin_unlock_irqrestore(&optee->notif.lock, flags);
-	wait_for_completion(&entry->c);
+	(void)wait_for_completion_timeout(&entry->c, SLEEP_TIMEOUT);
 	spin_lock_irqsave(&optee->notif.lock, flags);
 
 	list_del(&entry->link);
