@@ -2804,6 +2804,7 @@ static int igc_clean_rx_irq_zc(struct igc_q_vector *q_vector, const int budget)
 		struct igc_rx_buffer *bi;
 		ktime_t timestamp = 0;
 		unsigned int size;
+		ktime_t *rxhwts;
 		int res;
 
 		desc = IGC_RX_DESC(ring, ntc);
@@ -2833,6 +2834,9 @@ static int igc_clean_rx_irq_zc(struct igc_q_vector *q_vector, const int budget)
 		}
 
 		bi->xdp->data_end = bi->xdp->data + size;
+		rxhwts = bi->xdp->data - sizeof(ktime_t);
+		*rxhwts = timestamp;
+		bi->xdp->data_meta = rxhwts;
 		xsk_buff_dma_sync_for_cpu(bi->xdp, ring->xsk_pool);
 
 		res = __igc_xdp_run_prog(adapter, prog, bi->xdp);
