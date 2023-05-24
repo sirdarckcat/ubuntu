@@ -1248,8 +1248,7 @@ static int tsens_register(struct tsens_priv *priv)
 
 static void tsens_reinit_worker_notify(struct work_struct *work)
 {
-	int i, ret, temp;
-	struct tsens_irq_data d;
+	int i;
 	struct tsens_priv *priv = container_of(work, struct tsens_priv,
 					       reinit_wa_notify);
 
@@ -1259,27 +1258,12 @@ static void tsens_reinit_worker_notify(struct work_struct *work)
 
 		if (!s->tzd)
 			continue;
-		if (!tsens_threshold_violated(priv, hw_id, &d))
-			continue;
-
-		ret = get_temp_tsens_valid(s, &temp);
-		if (ret) {
-			dev_err(priv->dev, "[%u] %s: error reading sensor\n",
-				hw_id, __func__);
-			continue;
-		}
-
-		tsens_read_irq_state(priv, hw_id, s, &d);
-
-		if ((d.up_thresh < temp) || (d.low_thresh > temp)) {
-			dev_dbg(priv->dev, "[%u] %s: TZ update trigger (%d mC)\n",
-				hw_id, __func__, temp);
-			thermal_zone_device_update(s->tzd,
-						   THERMAL_EVENT_UNSPECIFIED);
-		} else {
-			dev_dbg(priv->dev, "[%u] %s: no violation:  %d\n",
-				hw_id, __func__, temp);
-		}
+		dev_dbg(priv->dev, "[%u] %s: TZ update trigger\n",
+			hw_id, __func__);
+		s->tzd->prev_low_trip = -INT_MAX;
+		s->tzd->prev_high_trip = INT_MAX;
+		thermal_zone_device_update(s->tzd,
+					   THERMAL_EVENT_UNSPECIFIED);
 	}
 }
 
