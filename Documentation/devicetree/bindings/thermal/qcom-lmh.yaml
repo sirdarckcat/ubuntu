@@ -38,6 +38,10 @@ properties:
       phandle of the first cpu in the LMh cluster
     $ref: /schemas/types.yaml#/definitions/phandle
 
+  qcom,affinity:
+    description:
+      Should specify the cluster affinity this hardware corresponds to.
+
   qcom,lmh-temp-arm-millicelsius:
     description:
       An integer expressing temperature threshold at which the LMh thermal
@@ -60,6 +64,7 @@ required:
   - '#interrupt-cells'
   - interrupt-controller
   - cpus
+  - qcom,affinity
   - qcom,lmh-temp-arm-millicelsius
   - qcom,lmh-temp-low-millicelsius
   - qcom,lmh-temp-high-millicelsius
@@ -75,6 +80,7 @@ examples:
       reg = <0x17d70800 0x400>;
       interrupts = <GIC_SPI 33 IRQ_TYPE_LEVEL_HIGH>;
       cpus = <&CPU4>;
+      qcom,affinity = <1>;
       qcom,lmh-temp-arm-millicelsius = <65000>;
       qcom,lmh-temp-low-millicelsius = <94500>;
       qcom,lmh-temp-high-millicelsius = <95000>;
