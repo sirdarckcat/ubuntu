@@ -57,6 +57,7 @@ struct qcom_cpufreq_irq_data {
 	 */
 	struct mutex throttle_lock;
 	int throttle_irq;
+	char irq_name[15];
 	bool cancel_throttle;
 	struct delayed_work throttle_work;
 	struct list_head cpufreq_data_list;
@@ -300,7 +301,6 @@ static void qcom_lmh_dcvs_notify(struct qcom_cpufreq_irq_data *data)
 	struct device *dev;
 	struct dev_pm_opp *opp;
 	struct list_head *pos;
-	unsigned int freq;
 	int cpu;
 
 	mutex_lock(&data->throttle_lock);
@@ -314,8 +314,7 @@ static void qcom_lmh_dcvs_notify(struct qcom_cpufreq_irq_data *data)
 		 * Get the h/w throttled frequency, normalize it using the
 		 * registered opp table and use it to calculate thermal pressure.
 		 */
-		freq = qcom_lmh_get_throttle_freq(policy->driver_data);
-		freq_hz = freq * HZ_PER_KHZ;
+		freq_hz = qcom_lmh_get_throttle_freq(policy->driver_data);
 
 		opp = dev_pm_opp_find_freq_floor(dev, &freq_hz);
 		if (IS_ERR(opp) && PTR_ERR(opp) == -ERANGE)
@@ -334,6 +333,9 @@ static void qcom_lmh_dcvs_notify(struct qcom_cpufreq_irq_data *data)
 		arch_set_thermal_pressure(policy->cpus,	max_capacity - capacity);
 	}
 
+	pr_debug("cpu:%d throttled_freq:%lu sw_freq:%u max cap:%lu cap:%lu\n",
+			cpu, throttled_freq, qcom_cpufreq_hw_get(cpu),
+			max_capacity, capacity);
 	/*
 	 * In the unlikely case all policies are unregistered do not enable
 	 * polling or h/w interrupt
@@ -406,7 +408,6 @@ static int qcom_cpufreq_hw_lmh_init(struct cpufreq_policy *policy, int index)
 	struct qcom_cpufreq_irq_data *irq_data = NULL;
 	struct platform_device *pdev = cpufreq_get_driver_data();
 	struct list_head *pos;
-	char irq_name[15];
 	int irq, ret;
 
 	/*
@@ -452,11 +453,12 @@ static int qcom_cpufreq_hw_lmh_init(struct cpufreq_policy *policy, int index)
 	data->irq_data = irq_data;
 	data->policy = policy;
 
-	snprintf(irq_name, sizeof(irq_name), "dcvsh-irq-%u", policy->cpu);
+	snprintf(irq_data->irq_name, sizeof(irq_data->irq_name), "dcvsh-irq-%u", policy->cpu);
 	ret = request_threaded_irq(irq_data->throttle_irq, NULL, qcom_lmh_dcvs_handle_irq,
-				   IRQF_ONESHOT, irq_name, irq_data);
+				   IRQF_ONESHOT, irq_data->irq_name, irq_data);
 	if (ret) {
-		dev_err(&pdev->dev, "Error registering %s: %d\n", irq_name, ret);
+		dev_err(&pdev->dev, "Error registering %s: %d\n",
+				irq_data->irq_name, ret);
 		return 0;
 	}
 
