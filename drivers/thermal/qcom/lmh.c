@@ -93,7 +93,7 @@ static int lmh_probe(struct platform_device *pdev)
 	struct lmh_hw_data *lmh_data;
 	int temp_low, temp_high, temp_arm, cpu_id, ret;
 	unsigned int enable_alg;
-	u32 node_id;
+	u32 node_id, affinity;
 
 	lmh_data = devm_kzalloc(dev, sizeof(*lmh_data), GFP_KERNEL);
 	if (!lmh_data)
@@ -127,18 +127,22 @@ static int lmh_probe(struct platform_device *pdev)
 		return ret;
 	}
 
-	/*
-	 * Only sdm845 has lmh hardware currently enabled from hlos. If this is needed
-	 * for other platforms, revisit this to check if the <cpu-id, node-id> should be part
-	 * of a dt match table.
-	 */
-	if (cpu_id == 0) {
-		node_id = LMH_CLUSTER0_NODE_ID;
-	} else if (cpu_id == 4) {
-		node_id = LMH_CLUSTER1_NODE_ID;
-	} else {
-		dev_err(dev, "Wrong CPU id associated with LMh node\n");
-		return -EINVAL;
+	ret = of_property_read_u32(np, "qcom,affinity", &affinity);
+	if (ret) {
+		dev_err(dev, "No affinity associated with LMh node\n");
+		return -ENODEV;
+	}
+
+	switch (affinity) {
+		case 0:
+			node_id = LMH_CLUSTER0_NODE_ID;
+			break;
+		case 1:
+			node_id = LMH_CLUSTER1_NODE_ID;
+			break;
+		default:
+			dev_err(dev, "Wrong CPU affinity associated with LMh node\n");
+			return -EINVAL;
 	}
 
 	if (!qcom_scm_lmh_dcvsh_available())
