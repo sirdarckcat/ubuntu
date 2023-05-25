@@ -120,6 +120,7 @@ static int ad7768_read_register(struct fpga_data *, uint8_t);
 
 #define QED_SPI_FPGA_MAX_ITER 50
 #define QED_SPI_FPGA_MAX_ECP5_ITER 70
+#define QED_ECP5_FW_LOAD_ITER 6
 
 static ssize_t id_show(struct device *dev,
                        struct device_attribute *attr,
@@ -1035,7 +1036,7 @@ static ssize_t underflow_low_show(struct device *dev,
 
 static DEVICE_ATTR_RO(underflow_low);
 
-struct attribute *fpga_attrs[] = {
+static struct attribute *fpga_attrs[] = {
         &dev_attr_id.attr,
         &dev_attr_test_mode.attr,
         &dev_attr_cfg_cfg.attr,
@@ -1066,8 +1067,8 @@ struct attribute *fpga_attrs[] = {
         NULL,
 };
 
-const struct attribute_group fpga_attr_group = {
-	.attrs = fpga_attrs,
+static const struct attribute_group fpga_attr_group = {
+        .attrs = fpga_attrs,
 };
 
 static const struct attribute_group *fpga_attr_groups[] = {
@@ -2321,42 +2322,41 @@ int fpga_ecp5_get_id(struct fpga_data *pd)
 
 static int spi_init_fw (struct platform_device *pdev)
 {
-        int retries = 0;
+        int retries = QED_SPI_FPGA_MAX_ECP5_ITER;
         struct device *dev = &pdev->dev;
         struct fpga_data *pd = platform_get_drvdata(pdev);
         uint32_t sleep_step = 1;
 
+        gpiod_set_value(pd->programn, 0);
         gpiod_set_value(pd->power, 0);
         msleep(2);
         gpiod_set_value(pd->power, 1);
 
-        while (retries < QED_SPI_FPGA_MAX_ECP5_ITER) {
+        while (--retries) {
                 msleep(sleep_step);
                 if (!gpiod_get_value(pd->initn))
                         break;
-                ++retries;
         }
 
-        if (retries == QED_SPI_FPGA_MAX_ECP5_ITER) {
+        if (!retries) {
                 dev_err(dev, "Retries \"INITN pin to low level\" limit reached in %u ms\n",
-                        retries * sleep_step);
+                        QED_SPI_FPGA_MAX_ECP5_ITER * sleep_step);
                 return -1;
         }
 
         gpiod_set_value(pd->programn, 1);
 
-        retries = 0;
-        while (retries < QED_SPI_FPGA_MAX_ECP5_ITER) {
+        retries = QED_SPI_FPGA_MAX_ECP5_ITER;
+        while (--retries) {
                 msleep(sleep_step);
                 if (gpiod_get_value(pd->initn)) {
                         break;
                 }
-                ++retries;
         }
 
-        if (retries == QED_SPI_FPGA_MAX_ECP5_ITER) {
+        if (!retries) {
                 dev_err(dev, "Retries \"INITN pin to high\" limit reached in %u ms\n",
-                        retries * sleep_step);
+                        QED_SPI_FPGA_MAX_ECP5_ITER * sleep_step);
                 return -1;
         }
 
@@ -2633,6 +2633,7 @@ static int firmware_load (struct platform_device *pdev)
         struct  spi_master *fw_master;
         unsigned char cmd;
         unsigned int val;
+        u8 retries = QED_ECP5_FW_LOAD_ITER;
 
         struct fpga_data *state = platform_get_drvdata(pdev);
 
@@ -2641,13 +2642,6 @@ static int firmware_load (struct platform_device *pdev)
         if (rc) {
                 dev_err(dev, "Failed request firmware\n");
                 return -1;
-        }
-
-        rc = spi_init_fw(pdev);
-
-        if (rc) {
-                dev_err(dev, "spi init fw failed\n");
-                goto err_release_fw;
         }
 
         fw_master = spi_busnum_to_master(state->fw_info.bus_num);
@@ -2668,10 +2662,20 @@ static int firmware_load (struct platform_device *pdev)
                 goto err_release_fw;
         }
 
-        do {
-                rc = spi_setup(state->spi_fw);
+        rc = spi_setup(state->spi_fw);
+
+        if (rc) {
+                spi_deinit_fw(pdev);
+                dev_err(dev, "Failed to setup slave.\n");
+                goto err_release_fw;
+        }
+
+        while (--retries) {
+
+                rc = spi_init_fw(pdev);
+
                 if (rc) {
-                        dev_err(dev, "Failed to setup slave.\n");
+                        dev_err(dev, "spi init fw failed\n");
                         break;
                 }
 
@@ -2696,45 +2700,20 @@ static int firmware_load (struct platform_device *pdev)
                         break;
                 }
 
-                cmd = CMD_READ_STATUS;
-                rc = ecp5_spi_cmd_a(state->spi_fw, cmd, &val);
-
-                if (rc) {
-                        dev_err(dev, "Failed to send command %02x\n", cmd);
-                        break;
-                }
-
-                dev_dbg(dev, "ecp5 status: %08x", val);
-
-                rc = decode_status(dev, val);
-
-                if (rc || val) {
-                        dev_err(dev, "ecp5 status: %08x Error\n", val);
-                        rc = -1;
-                        break;
-                }
-
                 cmd = CMD_ISC_ENABLE;
                 rc = ecp5_spi_cmd_c(state->spi_fw, cmd);
 
                 if (rc) {
-                        dev_err(dev, "Failed to send command %02x\n", cmd);
+                        dev_err(dev, "Failed to send ISC_ENABLE\n");
                         break;
                 }
 
                 rc = ecp5_spi_write_fw_stream(state->spi_fw, fw->data, fw->size);
 
                 if (rc) {
-                        dev_err(dev, "Failed to write fw stream %p size %zu\n", fw->data, fw->size);
-                        break;
-                }
-
-                cmd = CMD_ISC_DISABLE;
-                rc = ecp5_spi_cmd_c(state->spi_fw, cmd);
-
-                if (rc) {
-                        dev_err(dev, "Failed to send command %02x\n", cmd);
-                        break;
+                        dev_warn(dev, "Failed to write %zu byte fw stream\n", fw->size);
+                        msleep(5);
+                        continue;
                 }
 
                 /* gpio done is 1 here */
@@ -2742,22 +2721,40 @@ static int firmware_load (struct platform_device *pdev)
                 rc = ecp5_spi_cmd_a(state->spi_fw, cmd, &val);
 
                 if (rc) {
-                        dev_err(dev, "Failed to send command %02x\n", cmd);
+                        dev_err(dev, "Failed to send READ_STATUS\n");
                         break;
                 }
 
                 rc = decode_status(dev, val);
 
                 if (rc) {
-                        dev_err(dev, "ecp5 status: %08x Error\n", val);
-                        break;
+                        dev_warn(dev, "Status error: %08x\n", val);
+                        continue;
                 }
+
                 rc = status_done(val);
+                if (rc) {
+                        dev_warn(dev, "ecp5 status not done\n");
+                        msleep(5);
+                        continue;
+                }
+
                 dev_dbg(dev, "ecp5 status: %08x done: %d\n", val, rc);
-                dev_dbg(dev, "ecp5 DONE: %d\n", gpiod_get_value(state->done));
-                dev_info(dev, "ecp5 status: %08x done: %d\n", val, rc);
-                dev_info(dev, "ecp5 DONE pin: %d\n", gpiod_get_value(state->done));
-        } while (0);
+                dev_dbg(dev, "ecp5 done gpio: %d\n", gpiod_get_value(state->done));
+
+                cmd = CMD_ISC_DISABLE;
+                rc = ecp5_spi_cmd_c(state->spi_fw, cmd);
+
+                if (rc) {
+                        dev_warn(dev, "Failed to finalize FPGA fw on retry %d\n",
+                                 QED_ECP5_FW_LOAD_ITER - retries);
+                        continue;
+                }
+
+                dev_info(dev, "Loaded FPGA firmware on retry %d\n",
+                                QED_ECP5_FW_LOAD_ITER - retries);
+                break;
+        }
 
         if (state->spi_fw) {
                 dev_info(dev, "spi_unregister_device\n");
