@@ -1252,11 +1252,11 @@ static int cfe_start_streaming(struct vb2_queue *vq, unsigned int count)
 
 err_disable_cfe:
 	cfe_stop_channel(node, true);
+	media_pipeline_stop(&node->pad);
 err_pm_put:
 	cfe_runtime_put(cfe);
 err_streaming:
-	cfe_return_buffers(node, VB2_BUF_STATE_ERROR);
-	media_pipeline_stop(&node->pad);
+	cfe_return_buffers(node, VB2_BUF_STATE_QUEUED);
 	clear_state(cfe, NODE_STREAMING, node->id);
 
 	return ret;
