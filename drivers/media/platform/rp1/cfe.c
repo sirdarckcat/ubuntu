@@ -616,7 +616,7 @@ static void cfe_process_buffer_complete(struct cfe_node *node,
 {
 	struct cfe_device *cfe = node->cfe;
 
-	cfe_dbg("%s: [%s] buffer %p\n", __func__, node_desc[node->id].name,
+	cfe_dbg("%s: [%s] buffer:%p\n", __func__, node_desc[node->id].name,
 		&node->cur_frm->vb.vb2_buf);
 
 	node->cur_frm->vb.sequence = sequence;
@@ -1020,7 +1020,7 @@ static int cfe_buffer_prepare(struct vb2_buffer *vb)
 	struct cfe_buffer *buf = to_cfe_buffer(vb);
 	unsigned long size;
 
-	cfe_dbg("%s: [%s] buf %p\n", __func__, node_desc[node->id].name, vb);
+	cfe_dbg("%s: [%s] buffer:%p\n", __func__, node_desc[node->id].name, vb);
 
 	size = is_image_output_node(node->id) ? node->fmt.fmt.pix.sizeimage :
 						node->fmt.fmt.meta.buffersize;
@@ -1052,7 +1052,7 @@ static void cfe_buffer_queue(struct vb2_buffer *vb)
 	struct cfe_buffer *buf = to_cfe_buffer(vb);
 	unsigned long flags;
 
-	cfe_dbg("%s: [%s] buffer %p\n", __func__, node_desc[node->id].name,
+	cfe_dbg("%s: [%s] buffer:%p\n", __func__, node_desc[node->id].name,
 		vb);
 
 	spin_lock_irqsave(&cfe->state_lock, flags);
