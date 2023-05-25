@@ -5307,27 +5307,14 @@ static int macb_remove(struct platform_device *pdev)
 static void macb_shutdown(struct platform_device *pdev)
 {
 	struct net_device *dev;
-	struct macb *bp;
-	unsigned long flags;
-	unsigned int q;
-	struct macb_queue *queue;
 
 	dev = platform_get_drvdata(pdev);
-	bp = netdev_priv(dev);
 
-	netif_device_detach(dev);
-	for (q = 0, queue = bp->queues; q < bp->num_queues; ++q, ++queue) {
-		napi_disable(&queue->napi_rx);
-		napi_disable(&queue->napi_tx);
-	}
-
-	/* Dont' care about WOL because we are shutting down */
 	rtnl_lock();
-	phylink_stop(bp->phylink);
+	netif_device_detach(dev);
+	if (netif_running(dev))
+		dev_close(dev);
 	rtnl_unlock();
-	spin_lock_irqsave(&bp->lock, flags);
-	macb_reset_hw(bp);
-	spin_unlock_irqrestore(&bp->lock, flags);
 }
 
 static int __maybe_unused macb_suspend(struct device *dev)
