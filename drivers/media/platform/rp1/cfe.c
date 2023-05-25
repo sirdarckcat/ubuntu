@@ -640,7 +640,12 @@ static void sof_isr_handler(struct cfe_node *node)
 	cfe_dbg("%s: [%s] seq %d\n", __func__, node_desc[node->id].name,
 		cfe->sequence);
 
-	//BUG_ON(!node->next_frm);
+	if (WARN_ON(check_state(cfe, FS_INT, node->id))) {
+		cfe_err("%s: [%s] possible missing previous FE interrupt?\n",
+			__func__, node_desc[node->id].name);
+		return;
+	}
+
 	node->cur_frm = node->next_frm;
 	node->next_frm = NULL;
 
@@ -667,7 +672,6 @@ static void eof_isr_handler(struct cfe_node *node)
 	cfe_dbg("%s: [%s] seq %d\n", __func__, node_desc[node->id].name,
 		cfe->sequence);
 
-	//BUG_ON(!node->cur_frm);
 	if (node->cur_frm)
 		cfe_process_buffer_complete(node, cfe->sequence);
 
@@ -692,7 +696,7 @@ static irqreturn_t cfe_isr(int irq, void *dev)
 {
 	struct cfe_device *cfe = dev;
 	unsigned int i;
-	bool sof[NUM_NODES], eof[NUM_NODES], lci[NUM_NODES];
+	bool sof[NUM_NODES] = {0}, eof[NUM_NODES] = {0}, lci[NUM_NODES] = {0};
 
 	csi2_isr(&cfe->csi2, sof, eof, lci);
 	if (is_fe_enabled(cfe))
