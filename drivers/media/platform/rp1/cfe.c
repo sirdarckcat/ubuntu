@@ -640,12 +640,6 @@ static void sof_isr_handler(struct cfe_node *node)
 	cfe_dbg("%s: [%s] seq %d\n", __func__, node_desc[node->id].name,
 		cfe->sequence);
 
-	if (WARN_ON(check_state(cfe, FS_INT, node->id))) {
-		cfe_err("%s: [%s] possible missing previous FE interrupt?\n",
-			__func__, node_desc[node->id].name);
-		return;
-	}
-
 	node->cur_frm = node->next_frm;
 	node->next_frm = NULL;
 
@@ -730,8 +724,23 @@ static irqreturn_t cfe_isr(int irq, void *dev)
 			eof_isr_handler(node);
 		}
 
-		if (sof[i])
+		if (sof[i]) {
+			/*
+			 * The HW seems to possibly miss FE events under certain
+			 * unknown conditions. In such cases, we come in here
+			 * with FS flag set in the node state from the previous
+			 * frame. The flag only gets cleared in eof_isr_handler().
+			 * When this happens, manually call eof_isr_handler()
+			 * before handling this frame's FS event.
+			 */
+			if (WARN_ON(check_state(cfe, FS_INT, node->id))) {
+				cfe_err("%s: [%s] Handling possible missing previous FE interrupt\n",
+					__func__, node_desc[node->id].name);
+				eof_isr_handler(node);
+			}
+
 			sof_isr_handler(node);
+		}
 
 		if (!node->next_frm && cfe->job_ready)
 			cfe_prepare_next_job(cfe);
