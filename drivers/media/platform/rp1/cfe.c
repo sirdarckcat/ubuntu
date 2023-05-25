@@ -2144,7 +2144,7 @@ err_csi2_uninit:
 	csi2_uninit(&cfe->csi2);
 err_runtime_disable:
 	pm_runtime_disable(&pdev->dev);
-	debugfs_lookup_and_remove(cfe->mdev.model, NULL);
+	debugfs_remove(cfe->debugfs);
 	v4l2_device_unregister(&cfe->v4l2_dev);
 err_cfe_put:
 	cfe_put(cfe);
@@ -2156,7 +2156,7 @@ static int cfe_remove(struct platform_device *pdev)
 {
 	struct cfe_device *cfe = platform_get_drvdata(pdev);
 
-	debugfs_lookup_and_remove(cfe->mdev.model, NULL);
+	debugfs_remove(cfe->debugfs);
 
 	v4l2_async_nf_unregister(&cfe->notifier);
 	media_device_unregister(&cfe->mdev);
