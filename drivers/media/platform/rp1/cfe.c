@@ -269,6 +269,7 @@ struct cfe_device {
 	/* IRQ lock for node state and DMA queues */
 	spinlock_t state_lock;
 	bool job_ready;
+	bool job_queued;
 
 	/* parent device */
 	struct platform_device *pdev;
@@ -601,6 +602,7 @@ static bool cfe_check_job_ready(struct cfe_device *cfe)
 
 static void cfe_prepare_next_job(struct cfe_device *cfe)
 {
+	cfe->job_queued = true;
 	cfe_schedule_next_csi2_job(cfe);
 	if (is_fe_enabled(cfe))
 		cfe_schedule_next_pisp_job(cfe);
@@ -652,6 +654,10 @@ static void sof_isr_handler(struct cfe_node *node)
 
 	set_state(cfe, FS_INT, node->id);
 
+	/* If all nodes have seen a frame start, we can queue another job. */
+	if (test_all_nodes(cfe, NODE_STREAMING, FS_INT))
+		cfe->job_queued = false;
+
 	if (node->cur_frm)
 		node->cur_frm->vb.vb2_buf.timestamp = cfe->ts;
 
@@ -702,7 +708,13 @@ static irqreturn_t cfe_isr(int irq, void *dev)
 	for (i = 0; i < NUM_NODES; i++) {
 		struct cfe_node *node = &cfe->node[i];
 
-		if (!sof[i] && !eof[i] && !lci[i])
+		/*
+		 * The check_state(NODE_STREAMING) is to ensure we do not loop
+		 * over the CSI2_CHx nodes when the FE is active since they
+		 * generate interrupts even though the node is not streaming.
+		 */
+		if (!check_state(cfe, NODE_STREAMING, i) ||
+		    !(sof[i] || eof[i] || lci[i]))
 			continue;
 
 		if (eof[i]) {
@@ -726,10 +738,10 @@ static irqreturn_t cfe_isr(int irq, void *dev)
 
 		if (sof[i]) {
 			/*
-			 * The HW seems to possibly miss FE events under certain
-			 * unknown conditions. In such cases, we come in here
-			 * with FS flag set in the node state from the previous
-			 * frame. The flag only gets cleared in eof_isr_handler().
+			 * The CSI2 HW seems to possibly miss FE events under
+			 * certain unknown conditions. In such cases, we come in
+			 * here with FS flag set in the node state from the
+			 * previous frame. The flag only gets cleared in eof_isr_handler().
 			 * When this happens, manually call eof_isr_handler()
 			 * before handling this frame's FS event.
 			 */
@@ -742,7 +754,7 @@ static irqreturn_t cfe_isr(int irq, void *dev)
 			sof_isr_handler(node);
 		}
 
-		if (!node->next_frm && cfe->job_ready)
+		if (!cfe->job_queued && cfe->job_ready)
 			cfe_prepare_next_job(cfe);
 	}
 
@@ -1062,7 +1074,7 @@ static void cfe_buffer_queue(struct vb2_buffer *vb)
 	if (!cfe->job_ready)
 		cfe->job_ready = cfe_check_job_ready(cfe);
 
-	if (!node->next_frm && cfe->job_ready &&
+	if (!cfe->job_queued && cfe->job_ready &&
 	    test_all_nodes(cfe, NODE_ENABLED, NODE_STREAMING)) {
 		cfe_dbg("Preparing job immediately for channel %d\n",
 			node->id);
@@ -1091,7 +1103,7 @@ static void cfe_start_channel(struct cfe_node *node)
 	}
 
 	if (start_fe) {
-		WARN_ON(cfe->fe_csi2_channel == -1);
+		WARN_ON(!is_fe_enabled(cfe));
 		cfe_dbg("%s: %s using csi2 channel %d\n",
 			__func__, node_desc[FE_OUT0].name,
 			cfe->fe_csi2_channel);
