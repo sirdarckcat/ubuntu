@@ -354,14 +354,11 @@ static void clear_state(struct cfe_device *cfe, unsigned long state,
 		clear_bit(bit + (node_id * NUM_STATES), cfe->node_flags);
 }
 
-static bool test_any_node(struct cfe_device *cfe, unsigned long cond,
-			  bool fe_only)
+static bool test_any_node(struct cfe_device *cfe, unsigned long cond)
 {
 	unsigned int i;
 
 	for (i = 0; i < NUM_NODES; i++) {
-		if (fe_only && is_csi2_node(i))
-			continue;
 		if (check_state(cfe, cond, i))
 			return true;
 	}
@@ -650,7 +647,7 @@ static void sof_isr_handler(struct cfe_node *node)
 	 * If this is the first node to see a frame start,  sample the
 	 * timestamp to use for all frames across all channels.
 	 */
-	if (!test_any_node(cfe, NODE_STREAMING + FS_INT, false))
+	if (!test_any_node(cfe, NODE_STREAMING + FS_INT))
 		cfe->ts = ktime_get_ns();
 
 	set_state(cfe, FS_INT, node->id);
@@ -1218,7 +1215,7 @@ static int cfe_start_streaming(struct vb2_queue *vq, unsigned int count)
 		return -EINVAL;
 	}
 
-	if (!test_any_node(cfe, NODE_STREAMING, false)) {
+	if (!test_any_node(cfe, NODE_STREAMING)) {
 		ret = cfe_runtime_get(cfe);
 		if (ret < 0) {
 			cfe_err("cfe_runtime_get failed\n");
@@ -1304,7 +1301,7 @@ static void cfe_stop_streaming(struct vb2_queue *vq)
 
 	cfe_stop_channel(node, fe_stop);
 
-	if (!test_any_node(cfe, NODE_STREAMING, false)) {
+	if (!test_any_node(cfe, NODE_STREAMING)) {
 		/* Stop streaming the sensor and disable the peripheral. */
 		if (v4l2_subdev_call(cfe->sensor, video, s_stream, 0) < 0)
 			cfe_err("stream off failed in subdev\n");
