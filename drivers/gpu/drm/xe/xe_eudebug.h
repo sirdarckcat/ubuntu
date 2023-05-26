@@ -11,6 +11,7 @@ struct xe_device;
 struct xe_file;
 struct xe_vm;
 struct xe_exec_queue;
+struct xe_hw_engine;
 
 #if IS_ENABLED(CONFIG_DRM_XE_EUDEBUG)
 
@@ -20,6 +21,7 @@ int xe_eudebug_connect_ioctl(struct drm_device *dev,
 
 void xe_eudebug_init(struct xe_device *xe);
 void xe_eudebug_fini(struct xe_device *xe);
+void xe_eudebug_init_hw_engine(struct xe_hw_engine *hwe);
 
 void xe_eudebug_file_open(struct xe_file *xef);
 void xe_eudebug_file_close(struct xe_file *xef);
@@ -38,6 +40,7 @@ static inline int xe_eudebug_connect_ioctl(struct drm_device *dev,
 
 static inline void xe_eudebug_init(struct xe_device *xe) { }
 static inline void xe_eudebug_fini(struct xe_device *xe) { }
+static inline void xe_eudebug_init_hw_engine(struct xe_hw_engine *hwe) { }
 
 static inline void xe_eudebug_file_open(struct xe_file *xef) { }
 static inline void xe_eudebug_file_close(struct xe_file *xef) { }

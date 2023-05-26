@@ -10,13 +10,21 @@
 
 #include <drm/drm_managed.h>
 
+#include <generated/xe_wa_oob.h>
+
+#include "regs/xe_gt_regs.h"
+#include "regs/xe_engine_regs.h"
+
 #include "xe_assert.h"
 #include "xe_device.h"
 #include "xe_eudebug.h"
 #include "xe_eudebug_types.h"
 #include "xe_exec_queue.h"
 #include "xe_macros.h"
+#include "xe_reg_sr.h"
+#include "xe_rtp.h"
 #include "xe_vm.h"
+#include "xe_wa.h"
 
 /*
  * If there is no detected event read by userspace, during this period, assume
@@ -945,6 +953,47 @@ int xe_eudebug_connect_ioctl(struct drm_device *dev,
 	ret = xe_eudebug_connect(xe, param);
 
 	return ret;
+}
+
+static void add_sr_entry(struct xe_hw_engine *hwe,
+			 struct xe_reg_mcr mcr_reg,
+			 u32 mask)
+{
+	const struct xe_reg_sr_entry sr_entry = {
+		.reg = mcr_reg.__reg,
+		.clr_bits = mask,
+		.set_bits = mask,
+		.read_mask = mask,
+	};
+
+	xe_reg_sr_add(&hwe->reg_sr, &sr_entry, hwe->gt);
+}
+
+void xe_eudebug_init_hw_engine(struct xe_hw_engine *hwe)
+{
+	struct xe_gt *gt = hwe->gt;
+	struct xe_device *xe = gt_to_xe(gt);
+
+	if (!xe->eudebug.available)
+		return;
+
+	if (!xe_rtp_match_first_render_or_compute(gt, hwe))
+		return;
+
+	if (XE_WA(gt, 18022722726))
+		add_sr_entry(hwe, ROW_CHICKEN, STALL_DOP_GATING_DISABLE);
+
+	if (XE_WA(gt, 14015474168))
+		add_sr_entry(hwe, ROW_CHICKEN2, XEHPC_DISABLE_BTB);
+
+	if (xe->info.graphics_verx100 >= 1200)
+		add_sr_entry(hwe, TD_CTL,
+			     TD_CTL_BREAKPOINT_ENABLE |
+			     TD_CTL_FORCE_THREAD_BREAKPOINT_ENABLE |
+			     TD_CTL_FEH_AND_FEE_ENABLE);
+
+	if (xe->info.graphics_verx100 >= 1250)
+		add_sr_entry(hwe, TD_CTL, TD_CTL_GLOBAL_DEBUG_ENABLE);
 }
 
 void xe_eudebug_init(struct xe_device *xe)
