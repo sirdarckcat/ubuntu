@@ -17,16 +17,49 @@
 		bcm2711;
 	};
 
+	i2c0 {
+		bcm2835;
+		bcm2711;
+		bcm2712 = "i2c0-pi5";
+	};
+
 	i2c0-bcm2708 {
 		deprecated = "use i2c0";
+	};
+
+	i2c0-pi5 {
+		bcm2712;
+	};
+
+	i2c1 {
+		bcm2835;
+		bcm2711;
+		bcm2712 = "i2c1-pi5";
 	};
 
 	i2c1-bcm2708 {
 		deprecated = "use i2c1";
 	};
 
+	i2c1-pi5 {
+		bcm2712;
+	};
+
+	i2c2 {
+		bcm2712 = "i2c2-pi5";
+	};
+
+	i2c2-pi5 {
+		bcm2712;
+	};
+
 	i2c3 {
 		bcm2711;
+		bcm2712 = "i2c3-pi5";
+	};
+
+	i2c3-pi5 {
+		bcm2712;
 	};
 
 	i2c4 {

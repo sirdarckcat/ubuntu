@@ -2233,6 +2233,15 @@ Info:   Deprecated, legacy version of i2c0.
 Load:   <Deprecated>
 
 
+Name:   i2c0-pi5
+Info:   Enable i2c0 (BCM2712 only)
+Load:   dtoverlay=i2c0-pi5,<param>=<val>
+Params: pins_0_1                Use GPIOs 0 and 1 (default)
+        pins_8_9                Use GPIOs 8 and 9
+        baudrate                Set the baudrate for the interface (default
+                                "100000")
+
+
 Name:   i2c1
 Info:   Change i2c1 pin usage. Not all pin combinations are usable on all
         platforms - platforms other then Compute Modules can only use this
@@ -2249,11 +2258,38 @@ Info:   Deprecated, legacy version of i2c1.
 Load:   <Deprecated>
 
 
+Name:   i2c1-pi5
+Info:   Enable i2c1 (BCM2712 only)
+Load:   dtoverlay=i2c1-pi5,<param>=<val>
+Params: pins_2_3                Use GPIOs 2 and 3 (default)
+        pins_10_11              Use GPIOs 10 and 11
+        baudrate                Set the baudrate for the interface (default
+                                "100000")
+
+
+Name:   i2c2-pi5
+Info:   Enable i2c2 (BCM2712 only)
+Load:   dtoverlay=i2c2-pi5,<param>=<val>
+Params: pins_4_5                Use GPIOs 4 and 5 (default)
+        pins_12_13              Use GPIOs 12 and 13
+        baudrate                Set the baudrate for the interface (default
+                                "100000")
+
+
 Name:   i2c3
 Info:   Enable the i2c3 bus. BCM2711 only.
 Load:   dtoverlay=i2c3,<param>
 Params: pins_2_3                Use GPIOs 2 and 3
         pins_4_5                Use GPIOs 4 and 5 (default)
+        baudrate                Set the baudrate for the interface (default
+                                "100000")
+
+
+Name:   i2c3-pi5
+Info:   Enable i2c3 (BCM2712 only)
+Load:   dtoverlay=i2c3-pi5,<param>=<val>
+Params: pins_6_7                Use GPIOs 6 and 7 (default)
+        pins_14_15              Use GPIOs 14 and 15
         baudrate                Set the baudrate for the interface (default
                                 "100000")
 
