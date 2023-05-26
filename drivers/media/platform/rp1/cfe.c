@@ -745,7 +745,8 @@ static irqreturn_t cfe_isr(int irq, void *dev)
 			 * When this happens, manually call eof_isr_handler()
 			 * before handling this frame's FS event.
 			 */
-			if (WARN_ON(check_state(cfe, FS_INT, node->id))) {
+			if (!is_fe_enabled(cfe) &&
+			    WARN_ON(check_state(cfe, FS_INT, node->id))) {
 				cfe_err("%s: [%s] Handling possible missing previous FE interrupt\n",
 					__func__, node_desc[node->id].name);
 				eof_isr_handler(node);
