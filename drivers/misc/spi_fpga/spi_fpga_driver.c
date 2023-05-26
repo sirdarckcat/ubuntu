@@ -96,9 +96,6 @@ static int get_stat(struct fpga_data *);
 static int clear_stat(struct fpga_data *);
 
 static int get_pps_data(struct fpga_data *, struct fpga_pps_dbg *);
-
-static int get_freq_err(struct fpga_data *, int16_t *);
-
 static int get_adc_reset(struct fpga_data *);
 static int adc_reset(struct fpga_data *, uint32_t);
 static int adc_reset_assert(struct fpga_data *);
@@ -373,7 +370,7 @@ static ssize_t pps_dbg_show(struct device *dev,
                        " freq_err_threshold: %03u"
                        " sync_err_threshold: %03u"
                        " pps_phase_offset: %+04d"
-                       " freq_err_delta: %+d\n",
+                       " freq_monitor_delta: %+04d\n",
                        data.slice_3_err,
                        data.slice_2_err,
                        data.slice_1_err,
@@ -1038,26 +1035,8 @@ static ssize_t underflow_low_show(struct device *dev,
 
 static DEVICE_ATTR_RO(underflow_low);
 
-static ssize_t freq_err_show(struct device *dev,
-                            struct device_attribute *attr,
-                            char *buf)
-{
-        int16_t freq_err;
-
-        int ret = get_freq_err(dev_get_drvdata(dev), &freq_err);
-
-        if (ret < 0) {
-                dev_err(dev, "Failed to get freq err\n");
-                return -ENODEV;
-        }
-        return sprintf(buf, "%+d",
-                       freq_err);
-}
-
-static DEVICE_ATTR_RO(freq_err);
-
 struct attribute *fpga_attrs[] = {
-	&dev_attr_id.attr,
+        &dev_attr_id.attr,
         &dev_attr_test_mode.attr,
         &dev_attr_cfg_cfg.attr,
         &dev_attr_pps.attr,
@@ -1084,8 +1063,7 @@ struct attribute *fpga_attrs[] = {
         &dev_attr_underflow_high.attr,
         &dev_attr_underflow_low.attr,
         &dev_attr_pps_dbg.attr,
-        &dev_attr_freq_err.attr,
-	NULL,
+        NULL,
 };
 
 const struct attribute_group fpga_attr_group = {
@@ -1845,7 +1823,6 @@ int adc_reset_deassert(struct fpga_data *pd)
 int get_pps_data(struct fpga_data *pd, struct fpga_pps_dbg *data)
 {
         unsigned char regval;
-        unsigned char freq_err[2];
         int ret;
 
         mutex_lock(&pd->lock);
@@ -1865,21 +1842,14 @@ int get_pps_data(struct fpga_data *pd, struct fpga_pps_dbg *data)
 
         data->pps_phase_offset = (int8_t)regval;
 
-        ret = fpga_spi_reg_read(pd, FPGA_FREQ_MONITOR_LSB, &freq_err[0]);
+        ret = fpga_spi_reg_read(pd, FPGA_FREQ_MONITOR_DELTA, &regval);
         if (ret < 0) {
-                pr_err( "Failed to read FPGA freq monitor delta lsb\n");
+                pr_err( "Failed to read FPGA freq monitor delta\n");
                 mutex_unlock(&pd->lock);
                 return ret;
         }
 
-        ret = fpga_spi_reg_read(pd, FPGA_FREQ_MONITOR_MSB, &freq_err[1]);
-        if (ret < 0) {
-                pr_err( "Failed to read FPGA freq monitor delta msb\n");
-                mutex_unlock(&pd->lock);
-                return ret;
-        }
-
-        data->freq_monitor_delta = *((uint16_t*)freq_err);
+        data->freq_monitor_delta = (int8_t)regval;
 
         ret = fpga_spi_reg_read(pd, FPGA_SYNC_ERROR_3, &regval);
         if (ret < 0) {
@@ -1935,36 +1905,6 @@ int get_pps_data(struct fpga_data *pd, struct fpga_pps_dbg *data)
 
         data->sync_err_threshold = regval;
 
-        mutex_unlock(&pd->lock);
-        return ret;
-}
-
-int get_freq_err(struct fpga_data *pd, int16_t *freq_err)
-{
-        unsigned char freq_err_ar[2];
-        int ret;
-
-        mutex_lock(&pd->lock);
-        if (pd->cfg_mode != FPGA_CFG_MODE_CFG_NORMAL) {
-                mutex_unlock(&pd->lock);
-                return -EAGAIN;
-        }
-
-        ret = fpga_spi_reg_read(pd, FPGA_FREQ_MONITOR_LSB, &freq_err_ar[0]);
-        if (ret < 0) {
-                pr_err( "Failed to read FPGA freq err lsb\n");
-                mutex_unlock(&pd->lock);
-                return ret;
-        }
-
-        ret = fpga_spi_reg_read(pd, FPGA_FREQ_MONITOR_MSB, &freq_err_ar[1]);
-        if (ret < 0) {
-                pr_err( "Failed to read FPGA freq err msb\n");
-                mutex_unlock(&pd->lock);
-                return ret;
-        }
-
-        *freq_err = *((uint16_t*)freq_err_ar);
         mutex_unlock(&pd->lock);
         return ret;
 }
