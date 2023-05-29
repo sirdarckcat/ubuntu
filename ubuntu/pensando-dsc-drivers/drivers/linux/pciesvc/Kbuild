@@ -6,6 +6,8 @@ pciesvc-objs += \
 	     kpci_kexec.o kpci_test.o pciesvc_end.o
 
 ccflags-y += \
+	  -fno-jump-tables -fno-stack-protector -fno-function-sections \
+	  -fno-data-sections -fno-store-merging -mstrict-align \
 	  -DASIC_ELBA -DPCIESVC_SYSTEM_EXTERN \
 	  -I $(srctree)/$(src)/pciesvc/include \
 	  -I $(srctree)/$(src)/pciesvc/src
