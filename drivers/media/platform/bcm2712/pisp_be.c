@@ -1444,7 +1444,8 @@ static int pispbe_node_streamoff(struct file *file, void *priv,
 	struct pispbe_node *node = video_drvdata(file);
 	struct pispbe_dev *pispbe = node->node_group->pispbe;
 
-	pm_runtime_put(pispbe->dev);
+	pm_runtime_mark_last_busy(pispbe->dev);
+	pm_runtime_put_autosuspend(pispbe->dev);
 
 	return vb2_streamoff(&node->queue, type);
 }
@@ -1877,6 +1878,8 @@ static int pispbe_probe(struct platform_device *pdev)
 				     "Failed to get clock");
 
 	/* Hardware initialisation */
+	pm_runtime_set_autosuspend_delay(pispbe->dev, 200);
+	pm_runtime_use_autosuspend(pispbe->dev);
 	pm_runtime_enable(pispbe->dev);
 
 	ret = pm_runtime_resume_and_get(pispbe->dev);
@@ -1901,7 +1904,8 @@ static int pispbe_probe(struct platform_device *pdev)
 			goto disable_nodes_err;
 	}
 
-	pm_runtime_put(pispbe->dev);
+	pm_runtime_mark_last_busy(pispbe->dev);
+	pm_runtime_put_autosuspend(pispbe->dev);
 	platform_set_drvdata(pdev, pispbe);
 
 	return 0;
@@ -1912,6 +1916,7 @@ disable_nodes_err:
 pm_runtime_put_err:
 	pm_runtime_put(pispbe->dev);
 pm_runtime_disable_err:
+	pm_runtime_dont_use_autosuspend(pispbe->dev);
 	pm_runtime_disable(pispbe->dev);
 
 	dev_err(&pdev->dev, "%s: returning %d", __func__, ret);
@@ -1927,6 +1932,7 @@ static int pispbe_remove(struct platform_device *pdev)
 	for (i = PISPBE_NUM_NODE_GROUPS - 1; i >= 0; i--)
 		pispbe_destroy_node_group(&pispbe->node_group[i]);
 
+	pm_runtime_dont_use_autosuspend(pispbe->dev);
 	pm_runtime_disable(pispbe->dev);
 
 	return 0;
