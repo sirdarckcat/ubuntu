@@ -204,6 +204,7 @@ static int cifs_xattr_set(const struct xattr_handler *handler,
 		break;
 	}
 
+#ifdef CONFIG_CIFS_ALLOW_INSECURE_LEGACY
 	case XATTR_ACL_ACCESS:
 #ifdef CONFIG_CIFS_POSIX
 		if (!value)
@@ -227,6 +228,7 @@ static int cifs_xattr_set(const struct xattr_handler *handler,
 				cifs_remap(cifs_sb));
 #endif  /* CONFIG_CIFS_POSIX */
 		break;
+#endif /* CONFIG_CIFS_ALLOW_INSECURE_LEGACY */
 	}
 
 out:
@@ -367,7 +369,7 @@ static int cifs_xattr_get(const struct xattr_handler *handler,
 		}
 		break;
 	}
-
+#ifdef CONFIG_CIFS_ALLOW_INSECURE_LEGACY
 	case XATTR_ACL_ACCESS:
 #ifdef CONFIG_CIFS_POSIX
 		if (sb->s_flags & SB_POSIXACL)
@@ -387,6 +389,7 @@ static int cifs_xattr_get(const struct xattr_handler *handler,
 				cifs_remap(cifs_sb));
 #endif  /* CONFIG_CIFS_POSIX */
 		break;
+#endif /* ifdef CONFIG_CIFS_ALLOW_INSECURE_LEGACY */
 	}
 
 	/* We could add an additional check for streams ie
