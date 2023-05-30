@@ -1561,8 +1561,7 @@ cifs_destroy_request_bufs(void)
 	kmem_cache_destroy(cifs_sm_req_cachep);
 }
 
-static int
-cifs_init_mids(void)
+static int init_mids(void)
 {
 	cifs_mid_cachep = kmem_cache_create("cifs_mpx_ids",
 					    sizeof(struct mid_q_entry), 0,
@@ -1580,8 +1579,7 @@ cifs_init_mids(void)
 	return 0;
 }
 
-static void
-cifs_destroy_mids(void)
+static void destroy_mids(void)
 {
 	mempool_destroy(cifs_mid_poolp);
 	kmem_cache_destroy(cifs_mid_cachep);
@@ -1682,7 +1680,7 @@ init_cifs(void)
 	if (rc)
 		goto out_unreg_fscache;
 
-	rc = cifs_init_mids();
+	rc = init_mids();
 	if (rc)
 		goto out_destroy_inodecache;
 
@@ -1739,7 +1737,7 @@ out_destroy_request_bufs:
 #endif
 	cifs_destroy_request_bufs();
 out_destroy_mids:
-	cifs_destroy_mids();
+	destroy_mids();
 out_destroy_inodecache:
 	cifs_destroy_inodecache();
 out_unreg_fscache:
@@ -1777,7 +1775,7 @@ exit_cifs(void)
 	dfs_cache_destroy();
 #endif
 	cifs_destroy_request_bufs();
-	cifs_destroy_mids();
+	destroy_mids();
 	cifs_destroy_inodecache();
 	cifs_fscache_unregister();
 	destroy_workqueue(deferredclose_wq);
