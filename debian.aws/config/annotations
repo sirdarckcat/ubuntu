@@ -47,6 +47,9 @@ CONFIG_PCI_MESON                                note<'LP: #2007745'>
 CONFIG_RUST                                     policy<{'amd64': 'n'}>
 CONFIG_RUST                                     note<'required to enable Rust support, LP: #1993183'>
 
+CONFIG_SCSI_VIRTIO                              policy<{'amd64': 'm', 'arm64': 'm'}>
+CONFIG_SCSI_VIRTIO                              note<'initrdless boot is not relevant for this kernel so revert to modules, LP: #1685291'>
+
 CONFIG_SND                                      policy<{'amd64': 'n', 'arm64': 'n'}>
 CONFIG_SND                                      note<'not autoloadable on omap'>
 
