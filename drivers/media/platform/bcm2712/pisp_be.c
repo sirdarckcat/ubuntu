@@ -1574,6 +1574,10 @@ pispbe_init_node(struct pispbe_node_group *node_group, unsigned int id)
 {
 	struct pispbe_node *node = &node_group->node[id];
 	struct pispbe_dev *pispbe = node_group->pispbe;
+	struct media_entity *entity = &node->vfd.entity;
+	struct video_device *vdev = &node->vfd;
+	struct vb2_queue *q = &node->queue;
+	int output = NODE_IS_OUTPUT(node);
 	int ret;
 
 	node->id = id;
@@ -1588,230 +1592,139 @@ pispbe_init_node(struct pispbe_node_group *node_group, unsigned int id)
 	node->format.type = node->buf_type;
 	node_set_default_format(node);
 
-	node->queue.type = node->buf_type;
-	node->queue.io_modes = VB2_MMAP | VB2_DMABUF;
-	node->queue.mem_ops = &vb2_dma_contig_memops;
-	node->queue.drv_priv = node;
-	node->queue.ops = &pispbe_node_queue_ops;
-	node->queue.buf_struct_size = sizeof(struct pispbe_buffer);
-	node->queue.timestamp_flags = V4L2_BUF_FLAG_TIMESTAMP_MONOTONIC;
-	node->queue.dev = node->node_group->pispbe->dev;
+	q->type = node->buf_type;
+	q->io_modes = VB2_MMAP | VB2_DMABUF;
+	q->mem_ops = &vb2_dma_contig_memops;
+	q->drv_priv = node;
+	q->ops = &pispbe_node_queue_ops;
+	q->buf_struct_size = sizeof(struct pispbe_buffer);
+	q->timestamp_flags = V4L2_BUF_FLAG_TIMESTAMP_MONOTONIC;
+	q->dev = node->node_group->pispbe->dev;
 	/* get V4L2 to handle node->queue locking */
-	node->queue.lock = &node->queue_lock;
-	if (NODE_IS_OUTPUT(node))
-		node->queue.supports_requests = true;
+	q->lock = &node->queue_lock;
 
-	ret = vb2_queue_init(&node->queue);
+	ret = vb2_queue_init(q);
 	if (ret < 0) {
 		dev_err(pispbe->dev, "vb2_queue_init failed\n");
 		return ret;
 	}
 
-	node->vfd = pispbe_videodev; /* default initialization */
-	node->vfd.v4l2_dev = &node_group->v4l2_dev;
-	node->vfd.vfl_dir = NODE_IS_OUTPUT(node) ? VFL_DIR_TX : VFL_DIR_RX;
+	*vdev = pispbe_videodev; /* default initialization */
+	strscpy(vdev->name, node_desc[id].ent_name, sizeof(vdev->name));
+	vdev->v4l2_dev = &node_group->v4l2_dev;
+	vdev->vfl_dir = NODE_IS_OUTPUT(node) ? VFL_DIR_TX : VFL_DIR_RX;
 	/* get V4L2 to serialise our ioctls */
-	node->vfd.lock = &node->node_lock;
-	node->vfd.queue = &node->queue;
-	node->vfd.device_caps = V4L2_CAP_STREAMING | node_desc[id].caps;
+	vdev->lock = &node->node_lock;
+	vdev->queue = &node->queue;
+	vdev->device_caps = V4L2_CAP_STREAMING | node_desc[id].caps;
 
-	ret = video_register_device(&node->vfd, VFL_TYPE_VIDEO,
+	node->pad.flags = output ? MEDIA_PAD_FL_SOURCE : MEDIA_PAD_FL_SINK;
+	ret = media_entity_pads_init(entity, 1, &node->pad);
+	if (ret) {
+		dev_err(pispbe->dev,
+			"Failed to register media pads for %s device node\n",
+			NODE_NAME(node));
+		goto err_unregister_queue;
+	}
+
+	ret = video_register_device(vdev, VFL_TYPE_VIDEO,
 				    PISPBE_VIDEO_NODE_OFFSET);
 	if (ret) {
 		dev_err(pispbe->dev,
 			"Failed to register video %s device node\n",
 			NODE_NAME(node));
-		vb2_queue_release(&node->queue);
-		return ret;
+		goto err_unregister_queue;
+
 	}
-	video_set_drvdata(&node->vfd, node);
+	video_set_drvdata(vdev, node);
+
+	if (output)
+		ret = media_create_pad_link(entity, 0, &node_group->entity, id,
+					    MEDIA_LNK_FL_IMMUTABLE |
+					    MEDIA_LNK_FL_ENABLED);
+	else
+		ret = media_create_pad_link(&node_group->entity, id, entity, 0,
+					    MEDIA_LNK_FL_IMMUTABLE |
+					    MEDIA_LNK_FL_ENABLED);
+	if (ret)
+		goto err_unregister_video_dev;
+
 	dev_info(pispbe->dev,
 		 "%s device node registered as /dev/video%d\n",
 		 NODE_NAME(node), node->vfd.num);
 	return 0;
-}
 
-static void pispbe_mc_unregister_nodes(struct pispbe_node_group *node_group,
-				       int num)
-{
-	while (num-- > 0) {
-		struct pispbe_node *node = &node_group->node[num];
-
-		media_remove_intf_links(node->intf_link->intf);
-		media_entity_remove_links(&node->vfd.entity);
-		media_devnode_remove(node->intf_devnode);
-		media_device_unregister_entity(&node->vfd.entity);
-	}
-}
-
-static void
-pispbe_mc_unregister_node_group(struct pispbe_node_group *node_group)
-{
-	struct pispbe_dev *pispbe = node_group->pispbe;
-
-	dev_info(pispbe->dev, "Unregister from media controller\n");
-
-	media_device_unregister_entity(&node_group->entity);
-
-	pispbe_mc_unregister_nodes(node_group, PISPBE_NUM_NODES);
-
-	media_device_unregister(&node_group->mdev);
-	media_device_cleanup(&node_group->mdev);
-	node_group->v4l2_dev.mdev = NULL;
-}
-
-static int pispbe_mc_register_node(struct pispbe_node_group *node_group, int i)
-{
-	struct pispbe_node *node = &node_group->node[i];
-	struct pispbe_dev *pispbe = node->node_group->pispbe;
-	struct media_entity *entity = &node->vfd.entity;
-	int output = NODE_IS_OUTPUT(node);
-	int ret;
-
-	dev_info(pispbe->dev, "Register %s node %d with media controller\n",
-		 NODE_NAME(node), i);
-	entity->obj_type = MEDIA_ENTITY_TYPE_VIDEO_DEVICE;
-	entity->function = MEDIA_ENT_F_IO_V4L;
-	entity->info.dev.major = VIDEO_MAJOR;
-	entity->info.dev.minor = node->vfd.minor;
-	entity->name = node_desc[i].ent_name;
-	node->pad.flags = output ? MEDIA_PAD_FL_SOURCE : MEDIA_PAD_FL_SINK;
-	ret = media_entity_pads_init(entity, 1, &node->pad);
-	if (ret)
-		goto error_pads_init;
-	ret = media_device_register_entity(&node_group->mdev, entity);
-	if (ret)
-		goto error_register_entity;
-
-	node->intf_devnode = media_devnode_create(&node_group->mdev,
-						  MEDIA_INTF_T_V4L_VIDEO, 0,
-						  VIDEO_MAJOR, node->vfd.minor);
-	if (!node->intf_devnode) {
-		ret = -ENOMEM;
-		goto error_devnode_create;
-	}
-
-	node->intf_link = media_create_intf_link(entity,
-						 &node->intf_devnode->intf,
-						 MEDIA_LNK_FL_IMMUTABLE |
-						 MEDIA_LNK_FL_ENABLED);
-	if (!node->intf_link) {
-		ret = -ENOMEM;
-		goto error_create_intf_link;
-	}
-
-	if (output)
-		ret = media_create_pad_link(entity, 0, &node_group->entity, i,
-					    MEDIA_LNK_FL_IMMUTABLE |
-					    MEDIA_LNK_FL_ENABLED);
-	else
-		ret = media_create_pad_link(&node_group->entity, i, entity, 0,
-					    MEDIA_LNK_FL_IMMUTABLE |
-					    MEDIA_LNK_FL_ENABLED);
-	if (ret)
-		goto error_create_pad_link;
-
-	return 0;
-
-error_create_pad_link:
-	media_remove_intf_links(&node->intf_devnode->intf);
-error_create_intf_link:
-	media_devnode_remove(node->intf_devnode);
-error_devnode_create:
-error_register_entity:
-error_pads_init:
-	if (ret)
-		dev_err(pispbe->dev, "Error registering node\n");
+err_unregister_video_dev:
+	video_unregister_device(&node->vfd);
+err_unregister_queue:
+	vb2_queue_release(&node->queue);
 	return ret;
 }
 
-static int pispbe_mc_register_node_group(struct pispbe_node_group *node_group)
-{
-	struct pispbe_dev *pispbe = node_group->pispbe;
-	int num_registered = 0;
-	int entity_registered = 0;
-	int ret;
-	int i;
-
-	dev_info(pispbe->dev, "Registering with media controller\n");
-
-	node_group->mdev.dev = node_group->pispbe->dev;
-	strscpy(node_group->mdev.model, PISPBE_NAME,
-		sizeof(node_group->mdev.model));
-	snprintf(node_group->mdev.bus_info, sizeof(node_group->mdev.bus_info),
-		 "platform:%s", dev_name(node_group->pispbe->dev));
-	media_device_init(&node_group->mdev);
-	node_group->v4l2_dev.mdev = &node_group->mdev;
-	node_group->mdev.hw_revision = node_group->pispbe->hw_version;
-
-	dev_info(pispbe->dev, "Register entity for node_group %d\n",
-		 node_group->id);
-
-	node_group->entity.name = PISPBE_NAME;
-	node_group->entity.obj_type = MEDIA_ENTITY_TYPE_BASE;
-	node_group->entity.function = MEDIA_ENT_F_PROC_VIDEO_SCALER;
-	for (i = 0; i < PISPBE_NUM_NODES; i++)
-		node_group->pad[i].flags =
-			NODE_IS_OUTPUT(&node_group->node[i]) ?
-			MEDIA_PAD_FL_SINK :
-			MEDIA_PAD_FL_SOURCE;
-	ret = media_entity_pads_init(&node_group->entity,
-				     PISPBE_NUM_NODES, node_group->pad);
-	if (ret)
-		goto done;
-	ret = media_device_register_entity(&node_group->mdev,
-					   &node_group->entity);
-	if (ret)
-		goto done;
-	entity_registered = 1;
-
-	for (; num_registered < PISPBE_NUM_NODES; num_registered++) {
-		ret = pispbe_mc_register_node(node_group, num_registered);
-		if (ret)
-			goto done;
-	}
-
-	ret = media_device_register(&node_group->mdev);
-
-done:
-	if (ret) {
-		if (num_registered)
-			pispbe_mc_unregister_nodes(node_group, num_registered);
-		if (entity_registered)
-			media_device_unregister_entity(&node_group->entity);
-	}
-
-	return ret;
-}
-
-static int pispbe_init_node_group(struct pispbe_dev *pispbe, unsigned int id)
+static int pispbe_init_group(struct pispbe_dev *pispbe, unsigned int id)
 {
 	struct pispbe_node_group *node_group = &pispbe->node_group[id];
-	int num_registered = 0;
-	int ret = 0;
+	struct v4l2_device *v4l2_dev;
+	struct media_entity *entity;
+	struct media_device *mdev;
+	unsigned int num_registered = 0;
+	unsigned int i;
+	int ret;
 
 	node_group->id = id;
 	node_group->pispbe = pispbe;
 	node_group->streaming_map = 0;
 
-	/* Create a v4l2 device */
-	ret = v4l2_device_register(pispbe->dev, &node_group->v4l2_dev);
-	if (ret)
-		return ret;
-
 	dev_info(pispbe->dev, "Register nodes for group %u\n", id);
 
-	/* Create device nodes */
+	/* Register v4l2_device and media_device */
+	mdev = &node_group->mdev;
+	mdev->hw_revision = node_group->pispbe->hw_version;
+	mdev->dev = node_group->pispbe->dev;
+	strscpy(mdev->model, PISPBE_NAME, sizeof(mdev->model));
+	snprintf(mdev->bus_info, sizeof(mdev->bus_info),
+		 "platform:%s", dev_name(node_group->pispbe->dev));
+	media_device_init(mdev);
+
+	v4l2_dev = &node_group->v4l2_dev;
+	v4l2_dev->mdev = &node_group->mdev;
+	strscpy(v4l2_dev->name, PISPBE_NAME, sizeof(v4l2_dev->name));
+
+	ret = v4l2_device_register(pispbe->dev, &node_group->v4l2_dev);
+	if (ret)
+		goto err_media_dev_cleanup;
+
+	/*
+	 * Register the PISPBE entity to the media device.
+	 * `
+	 * TODO: this should have a subdevice associated.
+	 */
+	entity = &node_group->entity;
+	entity->name = PISPBE_NAME;
+	entity->function = MEDIA_ENT_F_PROC_VIDEO_PIXEL_FORMATTER;
+	for (i = 0; i < PISPBE_NUM_NODES; i++)
+		node_group->pad[i].flags =
+			NODE_IS_OUTPUT(&node_group->node[i]) ?
+			MEDIA_PAD_FL_SINK :
+			MEDIA_PAD_FL_SOURCE;
+	ret = media_entity_pads_init(entity, PISPBE_NUM_NODES, node_group->pad);
+	if (ret)
+		goto err_unregister_v4l2;
+
+	ret = media_device_register_entity(mdev, entity);
+	if (ret)
+		goto err_unregister_v4l2;
+
+	/* Create device video nodes */
 	for (; num_registered < PISPBE_NUM_NODES; num_registered++) {
 		ret = pispbe_init_node(node_group, num_registered);
 		if (ret)
-			goto done_err;
+			goto err_unregister_nodes;
 	}
 
-	/* Now register everything with media controller */
-	ret = pispbe_mc_register_node_group(node_group);
+	ret = media_device_register(mdev);
 	if (ret)
-		goto done_err;
+		goto err_unregister_nodes;
 
 	node_group->config =
 		dma_alloc_coherent(pispbe->dev,
@@ -1821,19 +1734,29 @@ static int pispbe_init_node_group(struct pispbe_dev *pispbe, unsigned int id)
 	if (!node_group->config) {
 		v4l2_err(&node_group->v4l2_dev, "Unable to allocate cached config buffers.\n");
 		ret = -ENOMEM;
-		goto done_err;
+		goto err_unregister_mdev;
 	}
 
 	return 0;
-done_err:
-	while (num_registered-- > 0)
+
+err_unregister_mdev:
+	media_device_unregister(mdev);
+err_unregister_nodes:
+	while (num_registered-- > 0) {
 		video_unregister_device(&node_group->node[num_registered].vfd);
-	v4l2_device_unregister(&node_group->v4l2_dev);
+		vb2_queue_release(&node_group->node[num_registered].queue);
+	}
+	media_device_unregister_entity(entity);
+err_unregister_v4l2:
+	v4l2_device_unregister(v4l2_dev);
+err_media_dev_cleanup:
+	media_device_cleanup(mdev);
 	return ret;
 }
 
 static void pispbe_destroy_node_group(struct pispbe_node_group *node_group)
 {
+	struct pispbe_dev *pispbe = node_group->pispbe;
 	int i;
 
 	if (node_group->config) {
@@ -1844,11 +1767,17 @@ static void pispbe_destroy_node_group(struct pispbe_node_group *node_group)
 				  node_group->config_dma_addr);
 	}
 
-	pispbe_mc_unregister_node_group(node_group);
+	dev_info(pispbe->dev, "Unregister from media controller\n");
 
-	for (i = PISPBE_NUM_NODES - 1; i >= 0; i--)
+	media_device_unregister_entity(&node_group->entity);
+	media_device_unregister(&node_group->mdev);
+
+	for (i = PISPBE_NUM_NODES - 1; i >= 0; i--) {
 		video_unregister_device(&node_group->node[i].vfd);
+		vb2_queue_release(&node_group->node[i].queue);
+	}
 
+	media_device_cleanup(&node_group->mdev);
 	v4l2_device_unregister(&node_group->v4l2_dev);
 }
 
@@ -1894,6 +1823,7 @@ static int pispbe_probe(struct platform_device *pdev)
 
 	dev_set_drvdata(&pdev->dev, pispbe);
 	pispbe->dev = &pdev->dev;
+	platform_set_drvdata(pdev, pispbe);
 
 	pispbe->be_reg_base = devm_platform_ioremap_resource(pdev, 0);
 	if (IS_ERR(pispbe->be_reg_base)) {
@@ -1945,14 +1875,13 @@ static int pispbe_probe(struct platform_device *pdev)
 	for (num_groups = 0;
 	     num_groups < PISPBE_NUM_NODE_GROUPS;
 	     num_groups++) {
-		ret = pispbe_init_node_group(pispbe, num_groups);
+		ret = pispbe_init_group(pispbe, num_groups);
 		if (ret)
 			goto disable_nodes_err;
 	}
 
 	pm_runtime_mark_last_busy(pispbe->dev);
 	pm_runtime_put_autosuspend(pispbe->dev);
-	platform_set_drvdata(pdev, pispbe);
 
 	return 0;
 
