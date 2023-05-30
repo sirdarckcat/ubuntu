@@ -503,9 +503,13 @@ static int pispbe_schedule_internal(struct pispbe_node_group *node_group,
 	int i;
 
 	/*
-	 * To schedule a job, we need all streaming nodes to have a buffer
-	 * ready, which must include at least a config buffer and a main input
-	 * image.
+	 * To schedule a job, we need all streaming nodes (apart from Output0,
+	 * Output1, Tdn and Stitch) to have a buffer ready, which must
+	 * include at least a config buffer and a main input image.
+	 *
+	 * For Output0, Output1, Tdn and Stitch, a buffer only needs to be
+	 * available if the blocks are enabled in the config.
+	 *
 	 * (Note that streaming_map is protected by hw_lock, which is held.)
 	 */
 	if (((BIT(CONFIG_NODE) | BIT(MAIN_INPUT_NODE)) &
@@ -515,11 +519,60 @@ static int pispbe_schedule_internal(struct pispbe_node_group *node_group,
 		return 0;
 	}
 
+	node = &node_group->node[CONFIG_NODE];
+	spin_lock_irqsave(&node->ready_lock, flags1);
+	buf[CONFIG_NODE] =
+	   list_first_entry_or_null(&node->ready_queue, struct pispbe_buffer,
+				    ready_list);
+	spin_unlock_irqrestore(&node->ready_lock, flags1);
+
+	/* Exit early if no config buffer has been queued. */
+	if (!buf[CONFIG_NODE])
+		return 0;
+
+	config_index = buf[CONFIG_NODE]->vb.vb2_buf.index;
+	config_tiles_buffer = &node_group->config[config_index];
+	tiles = (dma_addr_t)node_group->config_dma_addr +
+			config_index * sizeof(struct pisp_be_tiles_config) +
+			offsetof(struct pisp_be_tiles_config, tiles);
+
 	/* remember: srcimages, captures then metadata */
 	for (i = 0; i < PISPBE_NUM_NODES; i++) {
+		unsigned int bayer_en =
+			config_tiles_buffer->config.global.bayer_enables;
+		unsigned int rgb_en =
+			config_tiles_buffer->config.global.rgb_enables;
+		bool ignore_buffers = false;
+
+		/* Config node is handled outside the loop above. */
+		if (i == CONFIG_NODE)
+			continue;
+
 		buf[i] = NULL;
 		if (!(node_group->streaming_map & BIT(i)))
 			continue;
+
+		if ((!(rgb_en & PISP_BE_RGB_ENABLE_OUTPUT0) &&
+		     i == OUTPUT0_NODE) ||
+		    (!(rgb_en & PISP_BE_RGB_ENABLE_OUTPUT1) &&
+		     i == OUTPUT1_NODE) ||
+		    (!(bayer_en & PISP_BE_BAYER_ENABLE_TDN_INPUT) &&
+		     i == TDN_INPUT_NODE) ||
+		    (!(bayer_en & PISP_BE_BAYER_ENABLE_TDN_OUTPUT) &&
+		     i == TDN_OUTPUT_NODE) ||
+		    (!(bayer_en & PISP_BE_BAYER_ENABLE_STITCH_INPUT) &&
+		     i == STITCH_INPUT_NODE) ||
+		    (!(bayer_en & PISP_BE_BAYER_ENABLE_STITCH_OUTPUT) &&
+		     i == STITCH_OUTPUT_NODE)) {
+			/*
+			 * Ignore Output0/Output1/Tdn/Stitch buffer check if the
+			 * global enables aren't set for these blocks. If a
+			 * buffer has been provided, we dequeue it back to the
+			 * user with the other in-use buffers.
+			 *
+			 */
+			ignore_buffers = true;
+		}
 
 		node = &node_group->node[i];
 
@@ -527,9 +580,8 @@ static int pispbe_schedule_internal(struct pispbe_node_group *node_group,
 		buf[i] = list_first_entry_or_null(&node->ready_queue,
 						  struct pispbe_buffer,
 						  ready_list);
-		spin_unlock_irqrestore(&node->ready_lock,
-				       flags1);
-		if (!buf[i]) {
+		spin_unlock_irqrestore(&node->ready_lock, flags1);
+		if (!buf[i] && !ignore_buffers) {
 			dev_dbg(pispbe->dev, "Nothing to do\n");
 			return 0;
 		}
@@ -558,12 +610,6 @@ static int pispbe_schedule_internal(struct pispbe_node_group *node_group,
 	 * only when the following job has been queued.
 	 */
 	dev_dbg(pispbe->dev, "Have buffers - starting hardware\n");
-
-	config_index = buf[CONFIG_NODE]->vb.vb2_buf.index;
-	config_tiles_buffer = &node_group->config[config_index];
-	tiles = (dma_addr_t)node_group->config_dma_addr +
-			config_index * sizeof(struct pisp_be_tiles_config) +
-			offsetof(struct pisp_be_tiles_config, tiles);
 
 	/* Convert buffers to DMA addresses for the hardware */
 	fixup_addrs_enables(hw_dma_addrs, hw_enables,
