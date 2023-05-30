@@ -959,44 +959,10 @@ static const struct vb2_ops pispbe_node_queue_ops = {
 	.stop_streaming = pispbe_node_stop_streaming,
 };
 
-static int pispbe_open(struct file *file)
-{
-	struct pispbe_node *node = video_drvdata(file);
-	struct pispbe_dev *pispbe = node->node_group->pispbe;
-	int ret;
-
-	ret = pm_runtime_resume_and_get(pispbe->dev);
-	if (ret < 0)
-		return ret;
-
-	ret = v4l2_fh_open(file);
-	if (ret) {
-		pm_runtime_disable(pispbe->dev);
-		return ret;
-	}
-
-	return 0;
-}
-
-static int pispbe_release(struct file *file)
-{
-	struct pispbe_node *node = video_drvdata(file);
-	struct pispbe_dev *pispbe = node->node_group->pispbe;
-	int ret;
-
-	ret = vb2_fop_release(file);
-	if (ret)
-		return ret;
-
-	pm_runtime_put(pispbe->dev);
-
-	return 0;
-}
-
 static const struct v4l2_file_operations pispbe_fops = {
 	.owner          = THIS_MODULE,
-	.open           = pispbe_open,
-	.release        = pispbe_release,
+	.open           = v4l2_fh_open,
+	.release        = vb2_fop_release,
 	.poll           = vb2_fop_poll,
 	.unlocked_ioctl = video_ioctl2,
 	.mmap           = vb2_fop_mmap
@@ -1460,10 +1426,27 @@ static int pispbe_node_streamon(struct file *file, void *priv,
 
 	INIT_LIST_HEAD(&node->ready_queue);
 
+	ret = pm_runtime_resume_and_get(pispbe->dev);
+	if (ret < 0)
+		return ret;
+
 	/* locking should be handled by the queue->lock? */
 	ret = vb2_streamon(&node->queue, type);
+	if (ret)
+		pm_runtime_put(pispbe->dev);
 
 	return ret;
+}
+
+static int pispbe_node_streamoff(struct file *file, void *priv,
+				 enum v4l2_buf_type type)
+{
+	struct pispbe_node *node = video_drvdata(file);
+	struct pispbe_dev *pispbe = node->node_group->pispbe;
+
+	pm_runtime_put(pispbe->dev);
+
+	return vb2_streamoff(&node->queue, type);
 }
 
 static const struct v4l2_ioctl_ops pispbe_node_ioctl_ops = {
@@ -1493,7 +1476,7 @@ static const struct v4l2_ioctl_ops pispbe_node_ioctl_ops = {
 	.vidioc_expbuf = vb2_ioctl_expbuf,
 	.vidioc_reqbufs = vb2_ioctl_reqbufs,
 	.vidioc_streamon = pispbe_node_streamon,
-	.vidioc_streamoff = vb2_ioctl_streamoff,
+	.vidioc_streamoff = pispbe_node_streamoff,
 };
 
 static const struct video_device pispbe_videodev = {
