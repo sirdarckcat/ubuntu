@@ -1070,6 +1070,123 @@ static const struct tegra234_cbb_fabric tegra241_bpmp_fabric = {
 	.firewall_wr_ctl = 0x8e8,
 };
 
+static const char * const tegra264_master_id[] = {
+	[0x0] = "TZ",
+	[0x1] = "CCPLEX",
+	[0x2] = "ISC",
+	[0x3] = "BPMP_FW",
+	[0x4] = "AON",
+	[0x5] = "MSS_SEQ",
+	[0x6] = "GPCDMA_P",
+	[0x7] = "TSECA_NONSECURE",
+	[0x8] = "TSECA_LIGHTSECURE",
+	[0x9] = "TSECA_HEAVYSECURE",
+	[0xa] = "CORESIGHT",
+	[0xb] = "APE_0",
+	[0xc] = "APE_1",
+	[0xd] = "PEATRANS",
+	[0xe] = "JTAGM_DFT",
+	[0xf] = "RCE",
+	[0x10] = "DCE",
+	[0x11] = "PSC_FW_USER",
+	[0x12] = "PSC_FW_SUPERVISOR",
+	[0x13] = "PSC_FW_MACHINE",
+	[0x14] = "PSC_BOOT",
+	[0x15] = "BPMP_BOOT",
+	[0x16] = "GPU_0",
+	[0x17] = "GPU_1",
+	[0x18] = "GPU_2",
+	[0x19] = "GPU_3",
+	[0x1a] = "GPU_4",
+	[0x1b] = "PSC_EXT_BOOT",
+	[0x1c] = "PSC_EXT_RUNTIME",
+	[0x1d] = "OESP_EXT",
+	[0x1e] = "SB_EXT",
+	[0x1f] = "FSI_SAFETY_0",
+	[0x20] = "FSI_SAFETY_1",
+	[0x21] = "FSI_SAFETY_2",
+	[0x22] = "FSI_SAFETY_3",
+	[0x23] = "FSI_CHSM",
+	[0x24] = "RCE_1",
+	[0x25] = "BPMP_OEM_FW",
+	[0x26 ... 0x3d] = "RSVD",
+	[0x3e] = "CBB_SMN",
+	[0x3f] = "CBB_RSVD"
+};
+
+/* To be filled later when address map is more stabilized */
+static const struct tegra234_slave_lookup tegra264_top0_cbb_slave_map[] = {
+	{ "DUMMY", 0x0 },
+};
+
+static const struct tegra234_cbb_fabric tegra264_top0_cbb_fabric = {
+	.name = "top0-cbb-fabric",
+	.master_id = tegra264_master_id,
+	.slave_map = tegra264_top0_cbb_slave_map,
+	.max_slaves = ARRAY_SIZE(tegra264_top0_cbb_slave_map),
+	.errors = tegra241_cbb_errors,
+	.max_errors = ARRAY_SIZE(tegra241_cbb_errors),
+	.notifier_offset = 0x60000,
+	.off_mask_erd    = 0x49004,
+	.firewall_base   = 0x350000,
+	.firewall_ctl    = 0x710,
+	.firewall_wr_ctl = 0x708,
+};
+
+/* To be filled later when address map is more stabilized */
+static const struct tegra234_slave_lookup tegra264_sys_cbb_slave_map[] = {
+	{ "DUMMY", 0x0 },
+};
+
+static const struct tegra234_cbb_fabric tegra264_sys_cbb_fabric = {
+	.name = "sys-cbb-fabric",
+	.master_id = tegra264_master_id,
+	.slave_map = tegra264_sys_cbb_slave_map,
+	.max_slaves = ARRAY_SIZE(tegra264_sys_cbb_slave_map),
+	.errors = tegra241_cbb_errors,
+	.max_errors = ARRAY_SIZE(tegra241_cbb_errors),
+	.notifier_offset = 0x40000,
+	.firewall_base   = 0x230000,
+	.firewall_ctl    = 0x8410,
+	.firewall_wr_ctl = 0x8408,
+};
+
+/* To be filled later when address map is more stabilized */
+static const struct tegra234_slave_lookup tegra264_uphy0_cbb_slave_map[] = {
+	{ "DUMMY", 0x0 },
+};
+
+static const struct tegra234_cbb_fabric tegra264_uphy0_cbb_fabric = {
+	.name = "uphy0-cbb-fabric",
+	.master_id = tegra264_master_id,
+	.slave_map = tegra264_uphy0_cbb_slave_map,
+	.max_slaves = ARRAY_SIZE(tegra264_uphy0_cbb_slave_map),
+	.errors = tegra241_cbb_errors,
+	.max_errors = ARRAY_SIZE(tegra241_cbb_errors),
+	.notifier_offset = 0x59000,
+	.firewall_base   = 0x360000,
+	.firewall_ctl    = 0x450,
+	.firewall_wr_ctl = 0x448,
+};
+
+/* To be filled later when address map is more stabilized */
+static const struct tegra234_slave_lookup tegra264_vision_cbb_slave_map[] = {
+	{ "DUMMY", 0x0 },
+};
+
+static const struct tegra234_cbb_fabric tegra264_vision_cbb_fabric = {
+	.name = "vision-cbb-fabric",
+	.master_id = tegra264_master_id,
+	.slave_map = tegra264_vision_cbb_slave_map,
+	.max_slaves = ARRAY_SIZE(tegra264_vision_cbb_slave_map),
+	.errors = tegra241_cbb_errors,
+	.max_errors = ARRAY_SIZE(tegra241_cbb_errors),
+	.notifier_offset = 0x60000,
+	.firewall_base   = 0x290000,
+	.firewall_ctl    = 0x5f0,
+	.firewall_wr_ctl = 0x5e8,
+};
+
 static const struct of_device_id tegra234_cbb_dt_ids[] = {
 	{ .compatible = "nvidia,tegra234-cbb-fabric", .data = &tegra234_cbb_fabric },
 	{ .compatible = "nvidia,tegra234-aon-fabric", .data = &tegra234_aon_fabric },
@@ -1077,6 +1194,10 @@ static const struct of_device_id tegra234_cbb_dt_ids[] = {
 	{ .compatible = "nvidia,tegra234-dce-fabric", .data = &tegra234_dce_fabric },
 	{ .compatible = "nvidia,tegra234-rce-fabric", .data = &tegra234_rce_fabric },
 	{ .compatible = "nvidia,tegra234-sce-fabric", .data = &tegra234_sce_fabric },
+	{ .compatible = "nvidia,tegra264-sys-cbb-fabric", .data = &tegra264_sys_cbb_fabric },
+	{ .compatible = "nvidia,tegra264-top0-cbb-fabric", .data = &tegra264_top0_cbb_fabric },
+	{ .compatible = "nvidia,tegra264-uphy0-cbb-fabric", .data = &tegra264_uphy0_cbb_fabric },
+	{ .compatible = "nvidia,tegra264-vision-cbb-fabric", .data = &tegra264_vision_cbb_fabric },
 	{ /* sentinel */ },
 };
 MODULE_DEVICE_TABLE(of, tegra234_cbb_dt_ids);
