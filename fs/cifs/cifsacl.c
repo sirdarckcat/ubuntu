@@ -1404,6 +1404,7 @@ chown_chgrp_exit:
 	return rc;
 }
 
+#ifdef CONFIG_CIFS_ALLOW_INSECURE_LEGACY
 struct cifs_ntsd *get_cifs_acl_by_fid(struct cifs_sb_info *cifs_sb,
 				      const struct cifs_fid *cifsfid, u32 *pacllen,
 				      u32 __maybe_unused unused)
@@ -1537,6 +1538,7 @@ out:
 	cifs_put_tlink(tlink);
 	return rc;
 }
+#endif /* CONFIG_CIFS_ALLOW_INSECURE_LEGACY */
 
 /* Translate the CIFS ACL (similar to NTFS ACL) for a file into mode bits */
 int
