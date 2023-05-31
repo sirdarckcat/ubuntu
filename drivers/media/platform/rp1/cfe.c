@@ -715,16 +715,22 @@ static irqreturn_t cfe_isr(int irq, void *dev)
 		    !(sof[i] || eof[i] || lci[i]))
 			continue;
 
+		/*
+		 * There are 3 cases where we could get FS + FE_ACK at
+		 * the same time:
+		 * 1) FE of the current frame, and FS of the next frame.
+		 * 2) FS + FE of the same frame.
+		 * 3) FE of the current frame, and FS + FE of the next
+		 *    frame. To handle this, see the sof handler below.
+		 *
+		 * (1) is handled implicitly by the ordering of the FE and FS
+		 * handlers below.
+		 */
 		if (eof[i]) {
 			/*
-			 * There are 2 cases where we could get FS + FE_ACK at
-			 * the same time:
-			 * - FS + FE of the same frame.
-			 * - FE of the current frame, and FS of the next frame.
-			 *
-			 * The condition below tests for the former, and in this
-			 * case, run the FS handler first.  Otherwise, run the
-			 * FE handler before the FS handler.
+			 * The condition below tests for (2). Run the FS handler
+			 * first before the FE handler, both for the current
+			 * frame.
 			 */
 			if (sof[i] && !check_state(cfe, FS_INT, i)) {
 				sof_isr_handler(node);
@@ -736,16 +742,15 @@ static irqreturn_t cfe_isr(int irq, void *dev)
 
 		if (sof[i]) {
 			/*
-			 * The CSI2 HW seems to possibly miss FE events under
-			 * certain unknown conditions. In such cases, we come in
-			 * here with FS flag set in the node state from the
-			 * previous frame. The flag only gets cleared in eof_isr_handler().
-			 * When this happens, manually call eof_isr_handler()
-			 * before handling this frame's FS event.
+			 * The condition below tests for (3). In such cases, we
+			 * come in here with FS flag set in the node state from
+			 * the previous frame since it only gets cleared in
+			 * eof_isr_handler(). Handle the FE for the previous
+			 * frame first before the FS handler for the current
+			 * frame.
 			 */
-			if (!is_fe_enabled(cfe) &&
-			    WARN_ON(check_state(cfe, FS_INT, node->id))) {
-				cfe_err("%s: [%s] Handling possible missing previous FE interrupt\n",
+			if (check_state(cfe, FS_INT, node->id)) {
+				cfe_dbg("%s: [%s] Handling missing previous FE interrupt\n",
 					__func__, node_desc[node->id].name);
 				eof_isr_handler(node);
 			}
