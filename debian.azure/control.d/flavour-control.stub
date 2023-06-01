@@ -21,6 +21,17 @@
 #
 # XXX: Leave the blank line before the first package!!
 
+Package: SRCPKGNAME-lib-rust-PKGVER-ABINUM-FLAVOUR
+Build-Profiles: <!stage1>
+Architecture: amd64
+Multi-Arch: foreign
+Section: devel
+Priority: optional
+Depends: ${misc:Depends}, coreutils
+Description: Rust library files related to Linux kernel version PKGVER
+ This package provides kernel library files for version PKGVER, that allow to
+ compile out-of-tree kernel modules written in Rust.
+
 Package: linux-image=SIGN-ME-PKG=-PKGVER-ABINUM-FLAVOUR
 Build-Profiles: <!stage1>
 Architecture: ARCH
