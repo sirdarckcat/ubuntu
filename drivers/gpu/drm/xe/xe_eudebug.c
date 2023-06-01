@@ -1282,7 +1282,7 @@ static int exec_queue_create_event(struct xe_eudebug *d,
 	u64 h_lrc[XE_HW_ENGINE_MAX_INSTANCE], seqno;
 	int i;
 
-	if (!xe_exec_queue_is_lr(q))
+	if (!xe_exec_queue_is_debuggable(q))
 		return 0;
 
 	h_c = find_handle(d->res, XE_EUDEBUG_RES_TYPE_CLIENT, xef);
@@ -1334,7 +1334,7 @@ static int exec_queue_destroy_event(struct xe_eudebug *d,
 	u64 h_lrc[XE_HW_ENGINE_MAX_INSTANCE], seqno;
 	int i;
 
-	if (!xe_exec_queue_is_lr(q))
+	if (!xe_exec_queue_is_debuggable(q))
 		return 0;
 
 	h_c = find_handle(d->res, XE_EUDEBUG_RES_TYPE_CLIENT, xef);
