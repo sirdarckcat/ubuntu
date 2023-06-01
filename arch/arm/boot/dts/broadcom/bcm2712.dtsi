@@ -930,7 +930,7 @@
 			resets = <&bcm_reset 5>, <&bcm_reset 42>, <&pcie_rescal>;
 			reset-names = "swinit", "bridge", "rescal";
 			msi-controller;
-			msi-parent = <&pcie0>;
+			msi-parent = <&mip1>;
 
 			ranges = <0x02000000 0x00 0x00000000
 				  0x17 0x00000000
@@ -1033,7 +1033,7 @@
 			resets = <&bcm_reset 32>, <&bcm_reset 44>, <&pcie_rescal>;
 			reset-names = "swinit", "bridge", "rescal";
 			msi-controller;
-			msi-parent = <&mip>;
+			msi-parent = <&mip0>;
 
 			// ~4GB, 32-bit, not-prefetchable at PCIe 00_00000000
 			ranges = <0x02000000 0x00 0x00000000
@@ -1057,7 +1057,7 @@
 			status = "disabled";
 		};
 
-		mip: msi-controller@130000 {
+		mip0: msi-controller@130000 {
 			compatible = "brcm,bcm2712-mip-intc";
 			reg = <0x10 0x00130000  0x0 0xc0>;
 			msi-controller;
@@ -1065,7 +1065,22 @@
 			#interrupt-cells = <2>;
 			brcm,msi-base-spi = <128>;
 			brcm,msi-num-spis = <64>;
+			brcm,msi-offset = <0>;
 			brcm,msi-pci-addr = <0xff 0xfffff000>;
+		};
+
+		mip1: msi-controller@131000 {
+			compatible = "brcm,bcm2712-mip-intc";
+			reg = <0x10 0x00131000  0x0 0xc0>;
+			msi-controller;
+			interrupt-controller;
+			#interrupt-cells = <2>;
+			brcm,msi-base-spi = <255>;
+			/* Actually 17 total, but the others are
+			 * both sparse and non-consecutive */
+			brcm,msi-num-spis = <8>;
+			brcm,msi-offset = <8>;
+			brcm,msi-pci-addr = <0xff 0xffffe000>;
 		};
 
 		genet: ethernet@1300000 {
