@@ -32,6 +32,7 @@ struct mip_priv {
 	phys_addr_t msg_addr;
 	u32 msi_base;		/* The SGI number that MSIs start */
 	u32 num_msis;		/* The number of SGIs for MSIs */
+	u32 msi_offset;		/* Shift the allocated msi up by N */
 	unsigned long *msi_map;
 };
 
@@ -105,6 +106,7 @@ static int mip_irq_domain_alloc(struct irq_domain *domain,
 	if (hwirq < 0)
 		return -ENOSPC;
 
+	hwirq += priv->msi_offset;
 	fwspec.fwnode = domain->parent->fwnode;
 	fwspec.param_count = 3;
 	fwspec.param[0] = 0;
@@ -136,6 +138,7 @@ static void mip_irq_domain_free(struct irq_domain *domain,
 	struct mip_priv *priv = irq_data_get_irq_chip_data(d);
 
 	irq_domain_free_irqs_parent(domain, virq, nr_irqs);
+	d->hwirq -= priv->msi_offset;
 
 	spin_lock(&priv->msi_map_lock);
 
@@ -259,6 +262,9 @@ static int __init mip_of_msi_init(struct device_node *node,
 		ret = -EINVAL;
 		goto err_priv;
 	}
+
+	if (of_property_read_u32(node, "brcm,msi-offset", &priv->msi_offset))
+		priv->msi_offset = 0;
 
 	if (of_property_read_u64(node, "brcm,msi-pci-addr", &priv->msg_addr)) {
 		pr_err("Unable to parse MSI address\n");
