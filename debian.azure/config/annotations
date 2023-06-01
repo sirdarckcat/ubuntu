@@ -5,9 +5,6 @@
 
 include "../../debian.master/config/annotations"
 
-CONFIG_TDX_GUEST_DRIVER                         policy<{'amd64': 'y'}>
-CONFIG_TDX_GUEST_DRIVER                         note<'LP: #2016995'>
-
 CONFIG_ACCESSIBILITY                            policy<{'amd64': 'n', 'arm64': 'y'}>
 CONFIG_ACCESSIBILITY                            note<'LP: #1967702'>
 
@@ -155,6 +152,9 @@ CONFIG_OVERLAY_FS_REDIRECT_DIR                  note<'LP:#1711230'>
 CONFIG_PCI_HYPERV                               policy<{'amd64': 'y', 'arm64': 'y'}>
 CONFIG_PCI_HYPERV                               note<'LP:#1908571'>
 
+CONFIG_PCI_MESON                                policy<{'amd64': 'y', 'arm64': 'n'}>
+CONFIG_PCI_MESON                                note<'LP: #2007745'>
+
 CONFIG_POWERCAP                                 policy<{'amd64': 'n', 'arm64': 'n'}>
 CONFIG_POWERCAP                                 note<'kernel reduction'>
 
@@ -298,6 +298,9 @@ CONFIG_TCG_TIS_I2C_INFINEON                     note<'LP: #1643652'>
 
 CONFIG_TCG_TIS_I2C_NUVOTON                      policy<{'amd64': 'n', 'arm64': 'm'}>
 CONFIG_TCG_TIS_I2C_NUVOTON                      note<'LP: #1643652'>
+
+CONFIG_TDX_GUEST_DRIVER                         policy<{'amd64': 'y'}>
+CONFIG_TDX_GUEST_DRIVER                         note<'LP: #2016995'>
 
 CONFIG_TEST_BLACKHOLE_DEV                       policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_TEST_BLACKHOLE_DEV                       note<'Used by net selftests'>
@@ -2751,7 +2754,6 @@ CONFIG_PCIE_IPROC_MSI                           policy<{'arm64': 'y'}>
 CONFIG_PCIE_IPROC_PLATFORM                      policy<{'arm64': 'm'}>
 CONFIG_PCI_ATMEL                                policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_PCI_HYPERV_INTERFACE                     policy<{'amd64': 'y', 'arm64': 'y'}>
-CONFIG_PCI_MESON                                policy<{'amd64': 'y', 'arm64': 'n'}>
 CONFIG_PCI_MSI_IRQ_DOMAIN                       policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_PCI_XEN                                  policy<{'amd64': '-'}>
 CONFIG_PCMCIA_3C574                             policy<{'amd64': '-'}>
@@ -4972,7 +4974,7 @@ CONFIG_VIDEO_ADV7511_CEC                        policy<{'amd64': 'y'}>
 CONFIG_VIDEO_AK7375                             policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_VIDEO_APTINA_PLL                         policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_VIDEO_AR0521                             policy<{'amd64': '-', 'arm64': 'm'}>
-CONFIG_VIDEO_ATOMISP_ISP2401                    policy<{'amd64': 'n'}>
+CONFIG_VIDEO_ATOMISP_ISP2401                    policy<{'amd64': '-'}>
 CONFIG_VIDEO_AU0828                             policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_VIDEO_AU0828_RC                          policy<{'amd64': '-', 'arm64': 'y'}>
 CONFIG_VIDEO_AU0828_V4L2                        policy<{'amd64': '-', 'arm64': 'y'}>
@@ -5119,6 +5121,7 @@ CONFIG_VIRT_CPU_ACCOUNTING_GEN                  policy<{'amd64': 'y', 'arm64': '
 CONFIG_VIRT_WIFI                                policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_VL53L0X_I2C                              policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_VL6180                                   policy<{'amd64': '-', 'arm64': 'm'}>
+CONFIG_VMAP_PFN                                 policy<{'amd64': 'y', 'arm64': '-'}>
 CONFIG_VME_USER                                 policy<{'amd64': 'n', 'arm64': 'm'}>
 CONFIG_VMXNET3                                  policy<{'amd64': 'n', 'arm64': 'm'}>
 CONFIG_VORTEX                                   policy<{'amd64': '-', 'arm64': 'm'}>
