@@ -1,0 +1,29 @@
+# Menu: HEADER
+# FORMAT: 4
+# ARCH: amd64 arm64
+# FLAVOUR: amd64-lowlatency arm64-lowlatency arm64-lowlatency-64k
+# FLAVOUR_DEP: {'amd64-lowlatency': 'amd64-generic', 'arm64-lowlatency': 'arm64-generic', 'arm64-lowlatency-64k': 'arm64-generic-64k'}
+
+include "../../debian.master/config/annotations"
+
+CONFIG_HZ_1000                                  policy<{'amd64': 'y', 'arm64': 'y'}>
+CONFIG_HZ_1000                                  note<'HZ for lowlatency must be set to 1000 to provide better system responsiveness'>
+
+CONFIG_HZ_250                                   policy<{'amd64': 'n', 'arm64': 'n'}>
+CONFIG_HZ_250                                   note<'Override default HZ used in generic'>
+
+CONFIG_LATENCYTOP                               policy<{'amd64': 'y', 'arm64': 'y'}>
+CONFIG_LATENCYTOP                               note<'https://lists.ubuntu.com/archives/kernel-team/2014-July/045006.html, LP#1655986'>
+
+CONFIG_PREEMPT                                  policy<{'amd64': 'y', 'arm64': 'y'}>
+CONFIG_PREEMPT                                  note<'Enable fully preemptible kernel'>
+
+CONFIG_PREEMPT_VOLUNTARY                        policy<{'amd64': 'n', 'arm64': 'n'}>
+CONFIG_PREEMPT_VOLUNTARY                        note<'Disable voluntary preemption model'>
+
+
+# ---- Annotations without notes ----
+
+CONFIG_CC_VERSION_TEXT                          policy<{'amd64': '"x86_64-linux-gnu-gcc-12 (Ubuntu 12.3.0-1ubuntu1) 12.3.0"', 'arm64': '"aarch64-linux-gnu-gcc-12 (Ubuntu 12.3.0-1ubuntu1) 12.3.0"'}>
+CONFIG_GCC_VERSION                              policy<{'amd64': '120300', 'arm64': '120300'}>
+CONFIG_HZ                                       policy<{'amd64': '1000', 'arm64': '1000'}>
