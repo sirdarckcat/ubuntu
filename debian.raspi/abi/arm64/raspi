@@ -3361,6 +3361,7 @@ EXPORT_SYMBOL	 drivers/net/wireless/intel/iwlegacy/iwlegacy 0x484dc535	il_free_t
 EXPORT_SYMBOL	 drivers/net/wireless/intel/iwlegacy/iwlegacy 0x48987b7f	il_check_rxon_cmd
 EXPORT_SYMBOL	 drivers/net/wireless/intel/iwlegacy/iwlegacy 0x49a2fbb7	il_set_tx_power
 EXPORT_SYMBOL	 drivers/net/wireless/intel/iwlegacy/iwlegacy 0x4ab3d77c	il_send_cmd_sync
+EXPORT_SYMBOL	 drivers/net/wireless/intel/iwlegacy/iwlegacy 0x5394e8c0	il_fill_probe_req
 EXPORT_SYMBOL	 drivers/net/wireless/intel/iwlegacy/iwlegacy 0x55deea49	il_wr_prph
 EXPORT_SYMBOL	 drivers/net/wireless/intel/iwlegacy/iwlegacy 0x5657ac44	il_hdl_pm_debug_stats
 EXPORT_SYMBOL	 drivers/net/wireless/intel/iwlegacy/iwlegacy 0x5c03d6e8	il_eeprom_init
@@ -3378,7 +3379,6 @@ EXPORT_SYMBOL	 drivers/net/wireless/intel/iwlegacy/iwlegacy 0x7bef9312	il_rx_que
 EXPORT_SYMBOL	 drivers/net/wireless/intel/iwlegacy/iwlegacy 0x7da795a7	il_set_rxon_hwcrypto
 EXPORT_SYMBOL	 drivers/net/wireless/intel/iwlegacy/iwlegacy 0x7dcf8fb7	il_txq_update_write_ptr
 EXPORT_SYMBOL	 drivers/net/wireless/intel/iwlegacy/iwlegacy 0x7ebd9250	il_dbgfs_register
-EXPORT_SYMBOL	 drivers/net/wireless/intel/iwlegacy/iwlegacy 0x7f2aa6c7	il_fill_probe_req
 EXPORT_SYMBOL	 drivers/net/wireless/intel/iwlegacy/iwlegacy 0x7f9bc5fc	il_chswitch_done
 EXPORT_SYMBOL	 drivers/net/wireless/intel/iwlegacy/iwlegacy 0x803fe466	il_scan_cancel
 EXPORT_SYMBOL	 drivers/net/wireless/intel/iwlegacy/iwlegacy 0x80a31def	il_force_reset
@@ -5576,6 +5576,7 @@ EXPORT_SYMBOL	 net/wireless/cfg80211 0xc07cc65a	wiphy_new_nm
 EXPORT_SYMBOL	 net/wireless/cfg80211 0xc110d3a6	cfg80211_reg_can_beacon_relax
 EXPORT_SYMBOL	 net/wireless/cfg80211 0xc469f86e	__cfg80211_alloc_event_skb
 EXPORT_SYMBOL	 net/wireless/cfg80211 0xc4b4fc27	cfg80211_chandef_valid
+EXPORT_SYMBOL	 net/wireless/cfg80211 0xc6681aef	cfg80211_inform_bss_frame_data
 EXPORT_SYMBOL	 net/wireless/cfg80211 0xcaec3296	cfg80211_rx_control_port
 EXPORT_SYMBOL	 net/wireless/cfg80211 0xcc1a7c48	cfg80211_is_element_inherited
 EXPORT_SYMBOL	 net/wireless/cfg80211 0xd1856a6d	regulatory_pre_cac_allowed
@@ -5595,7 +5596,6 @@ EXPORT_SYMBOL	 net/wireless/cfg80211 0xf3be7573	__cfg80211_radar_event
 EXPORT_SYMBOL	 net/wireless/cfg80211 0xf3ec1385	ieee80211_amsdu_to_8023s
 EXPORT_SYMBOL	 net/wireless/cfg80211 0xf40bc2f5	ieee80211_operating_class_to_band
 EXPORT_SYMBOL	 net/wireless/cfg80211 0xf5596d89	cfg80211_get_p2p_attr
-EXPORT_SYMBOL	 net/wireless/cfg80211 0xf5fad41c	cfg80211_inform_bss_frame_data
 EXPORT_SYMBOL	 net/wireless/cfg80211 0xf756d126	cfg80211_crit_proto_stopped
 EXPORT_SYMBOL	 net/wireless/cfg80211 0xf98f1273	cfg80211_pmksa_candidate_notify
 EXPORT_SYMBOL	 net/wireless/cfg80211 0xfdd45ceb	cfg80211_rx_mgmt_ext
@@ -14322,13 +14322,13 @@ EXPORT_SYMBOL_GPL	 drivers/net/wireless/mediatek/mt76/mt7921/mt7921-common 0xdf0
 EXPORT_SYMBOL_GPL	 drivers/net/wireless/mediatek/mt76/mt7921/mt7921-common 0xe29efafe	__mt7921_start
 EXPORT_SYMBOL_GPL	 drivers/net/wireless/mediatek/mt76/mt7921/mt7921-common 0xe3541edc	mt7921_run_firmware
 EXPORT_SYMBOL_GPL	 drivers/net/wireless/mediatek/mt76/mt7921/mt7921-common 0xf819cfa3	mt7921_sta_ps
-EXPORT_SYMBOL_GPL	 drivers/net/wireless/microchip/wilc1000/wilc1000 0x2a0518b4	wilc_netdev_cleanup
-EXPORT_SYMBOL_GPL	 drivers/net/wireless/microchip/wilc1000/wilc1000 0x64da9cd6	host_wakeup_notify
-EXPORT_SYMBOL_GPL	 drivers/net/wireless/microchip/wilc1000/wilc1000 0x8b52746b	wilc_cfg80211_init
-EXPORT_SYMBOL_GPL	 drivers/net/wireless/microchip/wilc1000/wilc1000 0x9df77d31	chip_wakeup
-EXPORT_SYMBOL_GPL	 drivers/net/wireless/microchip/wilc1000/wilc1000 0xa903199d	host_sleep_notify
-EXPORT_SYMBOL_GPL	 drivers/net/wireless/microchip/wilc1000/wilc1000 0xb86afb04	wilc_handle_isr
-EXPORT_SYMBOL_GPL	 drivers/net/wireless/microchip/wilc1000/wilc1000 0xcd830143	chip_allow_sleep
+EXPORT_SYMBOL_GPL	 drivers/net/wireless/microchip/wilc1000/wilc1000 0x2d4192f5	host_wakeup_notify
+EXPORT_SYMBOL_GPL	 drivers/net/wireless/microchip/wilc1000/wilc1000 0x403bd643	wilc_cfg80211_init
+EXPORT_SYMBOL_GPL	 drivers/net/wireless/microchip/wilc1000/wilc1000 0x5e089819	wilc_netdev_cleanup
+EXPORT_SYMBOL_GPL	 drivers/net/wireless/microchip/wilc1000/wilc1000 0x7a910486	chip_wakeup
+EXPORT_SYMBOL_GPL	 drivers/net/wireless/microchip/wilc1000/wilc1000 0x82c78398	chip_allow_sleep
+EXPORT_SYMBOL_GPL	 drivers/net/wireless/microchip/wilc1000/wilc1000 0xce1fc81a	host_sleep_notify
+EXPORT_SYMBOL_GPL	 drivers/net/wireless/microchip/wilc1000/wilc1000 0xf4880a96	wilc_handle_isr
 EXPORT_SYMBOL_GPL	 drivers/net/wireless/quantenna/qtnfmac/qtnfmac 0x0a7f4db2	qtnf_core_detach
 EXPORT_SYMBOL_GPL	 drivers/net/wireless/quantenna/qtnfmac/qtnfmac 0x31fab83c	qtnf_chipid_to_string
 EXPORT_SYMBOL_GPL	 drivers/net/wireless/quantenna/qtnfmac/qtnfmac 0x4a304503	qtnf_get_debugfs_dir
