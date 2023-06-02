@@ -2,7 +2,7 @@
 /*
  * tegra186_asrc.h - Definitions for Tegra186 ASRC driver
  *
- * Copyright (c) 2022, NVIDIA CORPORATION. All rights reserved.
+ * Copyright (c) 2022-2023, NVIDIA CORPORATION. All rights reserved.
  *
  */
 
@@ -94,6 +94,7 @@
 #define TEGRA186_ASRC_RATIO_SOURCE_SW				0x1
 
 #define TEGRA186_ASRC_ARAM_START_ADDR				0x3f800000
+#define TEGRA264_ASRC_ARAM_START_ADDR				0x8a080000
 
 struct tegra186_asrc_lane {
 	unsigned int int_part;
@@ -104,7 +105,12 @@ struct tegra186_asrc_lane {
 	unsigned int output_thresh;
 };
 
+struct tegra_asrc_soc_data {
+	unsigned int aram_start_addr;
+};
+
 struct tegra186_asrc {
+	const struct tegra_asrc_soc_data *soc_data;
 	struct tegra186_asrc_lane lane[TEGRA186_ASRC_STREAM_MAX];
 	struct regmap *regmap;
 };
