@@ -105,7 +105,10 @@ class Annotation(Config):
                     m = re.match(r'.* policy<(.*?)>', line)
                     if m:
                         match = True
-                        entry['policy'] |= literal_eval(m.group(1))
+                        try:
+                            entry['policy'] |= literal_eval(m.group(1))
+                        except TypeError:
+                            entry['policy'] = {**entry['policy'], **literal_eval(m.group(1))}
 
                     m = re.match(r'.* note<(.*?)>', line)
                     if m:
@@ -204,7 +207,10 @@ class Annotation(Config):
         # Determine if we need to import all configs or a single config
         if not configs:
             configs = c.config.keys()
-            configs |= self.search_config(arch=arch, flavour=flavour).keys()
+            try:
+                configs |= self.search_config(arch=arch, flavour=flavour).keys()
+            except TypeError:
+                configs = {**configs, **self.search_config(arch=arch, flavour=flavour).keys()}
 
         # Import configs from the Kconfig object into Annotations
         if flavour is not None:
@@ -332,11 +338,20 @@ class Annotation(Config):
                 if 'policy' not in new_val:
                     continue
 
-                # If new_val is a subset of old_val, skip it
+                # If new_val is a subset of old_val, skip it unless there are
+                # new notes that are different than the old ones.
                 old_val = tmp_a.config.get(conf)
                 if old_val and 'policy' in old_val:
-                    if old_val['policy'] == old_val['policy'] | new_val['policy']:
-                        continue
+                    try:
+                        combined = old_val['policy'] | new_val['policy']
+                    except TypeError:
+                        combined = {**old_val['policy'], **new_val['policy']}
+                    if old_val['policy'] == combined:
+                        if not 'note' in new_val:
+                            continue
+                        if 'note' in old_val and 'note' in new_val:
+                            if old_val['note'] == new_val['note']:
+                                continue
 
                 # Write out the policy (and note) line(s)
                 val = dict(sorted(new_val['policy'].items()))
