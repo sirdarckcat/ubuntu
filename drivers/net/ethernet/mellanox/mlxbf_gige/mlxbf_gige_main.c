@@ -445,10 +445,7 @@ static int mlxbf_gige_remove(struct platform_device *pdev)
 
 static void mlxbf_gige_shutdown(struct platform_device *pdev)
 {
-	struct mlxbf_gige *priv = platform_get_drvdata(pdev);
-
-	writeq(0, priv->base + MLXBF_GIGE_INT_EN);
-	mlxbf_gige_clean_port(priv);
+	mlxbf_gige_remove(pdev);
 }
 
 static const struct acpi_device_id __maybe_unused mlxbf_gige_acpi_match[] = {
