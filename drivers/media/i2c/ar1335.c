@@ -1433,16 +1433,22 @@ out_free:
 	return ret;
 }
 
-static const struct i2c_device_id ar1335_id[] = { { AR1335_NAME, 0 }, {} };
-MODULE_DEVICE_TABLE(i2c, ar1335_id);
+static const struct of_device_id ar1335_id[] = {
+	{
+		.compatible =  AR1335_NAME,
+	},
+	{}
+};
+
+MODULE_DEVICE_TABLE(of, ar1335_id);
 
 static struct i2c_driver ar1335_driver = {
 	.driver = {
 		.name = AR1335_NAME,
+		.of_match_table = ar1335_id,
 	},
 	.probe = ar1335_probe,
 	.remove = ar1335_remove,
-	.id_table = ar1335_id,
 };
 
 module_i2c_driver(ar1335_driver);
