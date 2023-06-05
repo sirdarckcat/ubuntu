@@ -1112,47 +1112,6 @@
 			reg = <0x10 0x00400018  0x0 0x18>;
 		};
 
-		xhci: xhci@4c0000 {
-			compatible = "generic-xhci";
-			reg = <0x10 0x004c0000  0x0 0x100000>;
-			interrupts = <GIC_SPI 252 IRQ_TYPE_LEVEL_HIGH>;
-			phys = <&usbphy>;
-			phy-names = "usb-phy";
-			status = "disabled";
-		};
-
-		bdc: bdc@4e0000 {
-			compatible = "brcm,bdc-udc-v2";
-			reg = <0x10 0x004e0000  0x0 0xfc4>;
-			interrupts = <GIC_SPI 253 IRQ_TYPE_LEVEL_HIGH>;
-			phys = <&bdcphy PHY_TYPE_USB2>;
-			phy-names = "usb2-phy";
-			status = "disabled";
-		};
-
-		bdcphy: usb-phy@4f0200 {
-			compatible = "brcm,bcm2712-usb-phy";
-			reg = <0x10 0x004f0200  0x0 0x200>,
-			      <0x10 0x004c0880  0x0 0x30>,
-			      <0x10 0x004cc100  0x0 0x534>,
-			      <0x10 0x00480080  0x0 0x8>;
-			reg-names = "ctrl",
-				    "xhci_ec",
-				    "xhci_gbl",
-				    "usb_mdio";
-			brcm,ioc = <0x0>;
-			brcm,ipp = <0x0>;
-			interrupts = <GIC_SPI 252 IRQ_TYPE_LEVEL_HIGH>;
-			interrupt-names = "wake";
-			#phy-cells = <0x1>;
-			brcm,has-eohci;
-			syscon-piarbctl = <&syscon_piarbctl>;
-			//clocks = <&scmi_clk 256>;
-			//clock-names = "sw_usb";
-			status = "disabled";
-			dr_mode = "peripheral";
-		};
-
 		rpivid: codec@800000 {
 			compatible = "raspberrypi,rpivid-vid-decoder";
 			reg = <0x10 0x00800000  0x0 0x10000>, /* HEVC */

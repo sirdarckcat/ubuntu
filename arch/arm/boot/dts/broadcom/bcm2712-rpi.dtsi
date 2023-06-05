@@ -87,10 +87,6 @@ pciex4: &pcie2 { };
 	power-domains = <&power RPI_POWER_DOMAIN_USB>;
 };
 
-&xhci {
-	power-domains = <&power RPI_POWER_DOMAIN_USB>;
-};
-
 &rmem {
 	/*
 	 * RPi4's co-processor will copy the board's bootloader configuration

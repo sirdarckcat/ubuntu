@@ -562,10 +562,6 @@ spi0_cs_pins: &rp1_spi0_cs_gpio7 {};
 	power-domains = <&power RPI_POWER_DOMAIN_USB>;
 };
 
-&xhci {
-	power-domains = <&power RPI_POWER_DOMAIN_USB>;
-};
-
 /* SDIO2 drives the WLAN interface */
 &sdio2 {
 	pinctrl-0 = <&sdio2_30_pins>;
