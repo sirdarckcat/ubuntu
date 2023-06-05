@@ -32,6 +32,9 @@
 #include <linux/seq_file.h>
 #include <linux/spinlock.h>
 #include <linux/types.h>
+#include "core.h"
+#include "pinconf.h"
+#include "pinctrl-utils.h"
 
 #define MODULE_NAME "pinctrl-rp1"
 #define RP1_NUM_GPIOS	54
@@ -962,9 +965,9 @@ static void rp1_pctl_dt_free_map(struct pinctrl_dev *pctldev,
 
 static int rp1_pctl_legacy_map_func(struct rp1_pinctrl *pc,
 		struct device_node *np, u32 pin, u32 fnum,
-		struct pinctrl_map **maps)
+		struct pinctrl_map *maps, unsigned int *num_maps)
 {
-	struct pinctrl_map *map = *maps;
+	struct pinctrl_map *map = &maps[*num_maps];
 	enum funcs func;
 
 	if (fnum >= ARRAY_SIZE(legacy_fsel_map[0])) {
@@ -982,16 +985,16 @@ static int rp1_pctl_legacy_map_func(struct rp1_pinctrl *pc,
 	map->type = PIN_MAP_TYPE_MUX_GROUP;
 	map->data.mux.group = rp1_gpio_groups[pin];
 	map->data.mux.function = rp1_func_names[func];
-	(*maps)++;
+	(*num_maps)++;
 
 	return 0;
 }
 
 static int rp1_pctl_legacy_map_pull(struct rp1_pinctrl *pc,
 		struct device_node *np, u32 pin, u32 pull,
-		struct pinctrl_map **maps)
+		struct pinctrl_map *maps, unsigned int *num_maps)
 {
-	struct pinctrl_map *map = *maps;
+	struct pinctrl_map *map = &maps[*num_maps];
 	enum pin_config_param param;
 	unsigned long *configs;
 
@@ -1019,7 +1022,7 @@ static int rp1_pctl_legacy_map_pull(struct rp1_pinctrl *pc,
 	map->data.configs.group_or_pin = rp1_gpio_pins[pin].name;
 	map->data.configs.configs = configs;
 	map->data.configs.num_configs = 1;
-	(*maps)++;
+	(*num_maps)++;
 
 	return 0;
 }
@@ -1031,28 +1034,31 @@ static int rp1_pctl_dt_node_to_map(struct pinctrl_dev *pctldev,
 	struct rp1_pinctrl *pc = pinctrl_dev_get_drvdata(pctldev);
 	struct property *pins, *funcs, *pulls;
 	int num_pins, num_funcs, num_pulls, maps_per_pin;
-	struct pinctrl_map *maps, *cur_map;
+	struct pinctrl_map *maps;
+	unsigned long *configs = NULL;
+	const char *function = NULL;
+	unsigned int reserved_maps;
+	int num_configs = 0;
 	int i, err;
 	u32 pin, func, pull;
 
-	/* Check for generic binding in this node */
-	err = pinconf_generic_dt_node_to_map_all(pctldev, np, map, num_maps);
-	if (err || *num_maps)
-		return err;
-
-	/* Generic binding did not find anything continue with legacy parse */
+	/* Check for legacy pin declaration */
 	pins = of_find_property(np, "brcm,pins", NULL);
-	if (!pins) {
-		dev_err(pc->dev, "%pOF: missing brcm,pins property\n", np);
-		return -EINVAL;
-	}
+
+	if (!pins) /* Assume generic bindings in this node */
+		return pinconf_generic_dt_node_to_map_all(pctldev, np, map, num_maps);
 
 	funcs = of_find_property(np, "brcm,function", NULL);
-	pulls = of_find_property(np, "brcm,pull", NULL);
+	if (!funcs)
+		of_property_read_string(np, "function", &function);
 
-	if (!funcs && !pulls) {
+	pulls = of_find_property(np, "brcm,pull", NULL);
+	if (!pulls)
+		pinconf_generic_parse_dt_config(np, pctldev, &configs, &num_configs);
+
+	if (!function && !funcs && !num_configs && !pulls) {
 		dev_err(pc->dev,
-			"%pOF: neither brcm,function nor brcm,pull specified\n",
+			"%pOF: no function, brcm,function, brcm,pull, etc.\n",
 			np);
 		return -EINVAL;
 	}
@@ -1076,14 +1082,16 @@ static int rp1_pctl_dt_node_to_map(struct pinctrl_dev *pctldev,
 	}
 
 	maps_per_pin = 0;
-	if (num_funcs)
+	if (function || num_funcs)
 		maps_per_pin++;
-	if (num_pulls)
+	if (num_configs || num_pulls)
 		maps_per_pin++;
-	cur_map = maps = kcalloc(num_pins * maps_per_pin, sizeof(*maps),
-				 GFP_KERNEL);
+	reserved_maps = num_pins * maps_per_pin;
+	maps = kcalloc(reserved_maps, sizeof(*maps), GFP_KERNEL);
 	if (!maps)
 		return -ENOMEM;
+
+	*num_maps = 0;
 
 	for (i = 0; i < num_pins; i++) {
 		err = of_property_read_u32_index(np, "brcm,pins", i, &pin);
@@ -1101,30 +1109,43 @@ static int rp1_pctl_dt_node_to_map(struct pinctrl_dev *pctldev,
 					(num_funcs > 1) ? i : 0, &func);
 			if (err)
 				goto out;
-			err = rp1_pctl_legacy_map_func(pc, np, pin,
-						       func, &cur_map);
-			if (err)
-				goto out;
+			err = rp1_pctl_legacy_map_func(pc, np, pin, func,
+						       maps, num_maps);
+		} else if (function) {
+			err = pinctrl_utils_add_map_mux(pctldev, &maps,
+					&reserved_maps, num_maps,
+					rp1_gpio_groups[pin],
+					function);
 		}
+
+		if (err)
+			goto out;
+
 		if (num_pulls) {
 			err = of_property_read_u32_index(np, "brcm,pull",
 					(num_pulls > 1) ? i : 0, &pull);
 			if (err)
 				goto out;
-			err = rp1_pctl_legacy_map_pull(pc, np, pin,
-						       pull, &cur_map);
-			if (err)
-				goto out;
+			err = rp1_pctl_legacy_map_pull(pc, np, pin, pull,
+						       maps, num_maps);
+		} else if (num_configs) {
+			err = pinctrl_utils_add_map_configs(pctldev, &maps,
+					&reserved_maps, num_maps,
+					rp1_gpio_groups[pin],
+					configs, num_configs,
+					PIN_MAP_TYPE_CONFIGS_PIN);
 		}
+
+		if (err)
+			goto out;
 	}
 
 	*map = maps;
-	*num_maps = num_pins * maps_per_pin;
 
 	return 0;
 
 out:
-	rp1_pctl_dt_free_map(pctldev, maps, num_pins * maps_per_pin);
+	rp1_pctl_dt_free_map(pctldev, maps, reserved_maps);
 	return err;
 }
 
