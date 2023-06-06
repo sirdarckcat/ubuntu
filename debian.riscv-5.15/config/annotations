@@ -302,6 +302,9 @@ CONFIG_NVMEM                                    note<'Q: is this appropriate for
 CONFIG_N_GSM                                    policy<{'riscv64': 'm'}>
 CONFIG_N_GSM                                    note<'LP#1404670'>
 
+CONFIG_OSNOISE_TRACER                           policy<{'riscv64': 'n'}>
+CONFIG_OSNOISE_TRACER                           note<'This enables the osnoise tracer for the kernel. LP: #2018591'>
+
 CONFIG_PAGE_POISONING                           policy<{'riscv64': 'y'}>
 CONFIG_PAGE_POISONING                           note<'LP:1783651'>
 
@@ -436,6 +439,9 @@ CONFIG_TCG_TPM                                  note<'needed for early validatio
 
 CONFIG_TEST_BLACKHOLE_DEV                       policy<{'riscv64': 'm'}>
 CONFIG_TEST_BLACKHOLE_DEV                       note<'Used by net selftests'>
+
+CONFIG_TIMERLAT_TRACER                          policy<{'riscv64': 'n'}>
+CONFIG_TIMERLAT_TRACER                          note<'This enables the osnoise tracer for the kernel. LP: #2018591'>
 
 CONFIG_TMPFS_POSIX_ACL                          policy<{'riscv64': 'y'}>
 CONFIG_TMPFS_POSIX_ACL                          note<'some /dev nodes require POSIX ACLs, like /dev/dsp'>
@@ -5427,7 +5433,6 @@ CONFIG_OPT3001                                  policy<{'riscv64': 'm'}>
 CONFIG_ORANGEFS_FS                              policy<{'riscv64': 'm'}>
 CONFIG_ORINOCO_USB                              policy<{'riscv64': 'm'}>
 CONFIG_OSF_PARTITION                            policy<{'riscv64': 'y'}>
-CONFIG_OSNOISE_TRACER                           policy<{'riscv64': 'n'}>
 CONFIG_OVERLAY_FS                               policy<{'riscv64': 'm'}>
 CONFIG_OVERLAY_FS_INDEX                         policy<{'riscv64': 'n'}>
 CONFIG_OVERLAY_FS_METACOPY                      policy<{'riscv64': 'n'}>
@@ -7601,7 +7606,6 @@ CONFIG_TIFM_CORE                                policy<{'riscv64': 'm'}>
 CONFIG_TIGON3                                   policy<{'riscv64': 'm'}>
 CONFIG_TIGON3_HWMON                             policy<{'riscv64': 'y'}>
 CONFIG_TIMERFD                                  policy<{'riscv64': 'y'}>
-CONFIG_TIMERLAT_TRACER                          policy<{'riscv64': 'n'}>
 CONFIG_TIMER_OF                                 policy<{'riscv64': 'y'}>
 CONFIG_TIMER_PROBE                              policy<{'riscv64': 'y'}>
 CONFIG_TINYDRM_HX8357D                          policy<{'riscv64': 'm'}>
