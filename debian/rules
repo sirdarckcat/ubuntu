@@ -149,7 +149,7 @@ insertchanges:
 
 startnewrelease:
 	dh_testdir
-	flavour=$$(echo "$(flavours)-5.19" | cut -f1 -d' ');				\
+	flavour=$$(echo "$(flavours)-6.2" | cut -f1 -d' ');				\
 	prev_ver=$$(dpkg-parsechangelog -l"$(DEBIAN)/changelog" -SVersion);		\
 	ver=$$(debian/scripts/misc/get-kernel-version source "$${flavour}");	\
 	if [ "$${prev_ver%.*}" = "$${ver}" ]; then					\
