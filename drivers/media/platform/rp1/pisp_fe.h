@@ -31,6 +31,7 @@ struct pisp_fe_device {
 	/* Parent V4l2 device */
 	struct v4l2_device *v4l2_dev;
 	void __iomem *base;
+	u32 hw_revision;
 
 	u16 inframe_count;
 	struct media_pad pad[FE_NUM_PADS];

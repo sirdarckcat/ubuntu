@@ -415,13 +415,13 @@ static const struct v4l2_subdev_ops pisp_fe_subdev_ops = {
 int pisp_fe_init(struct pisp_fe_device *fe, struct dentry *debugfs)
 {
 	int ret;
-	u32 ver;
 
 	debugfs_create_file("pisp_regs", 0444, debugfs, fe, &pisp_regs_fops);
 
-	ver = pisp_fe_reg_read(fe, VERSION);
+	fe->hw_revision = pisp_fe_reg_read(fe, VERSION);
 	pisp_fe_info("PiSP FE HW v%u.%u\n",
-		     (ver >> 24) & 0xff, (ver >> 20) & 0x0f);
+		     (fe->hw_revision >> 24) & 0xff,
+		     (fe->hw_revision >> 20) & 0x0f);
 
 	fe->pad[FE_STREAM_PAD].flags =
 		MEDIA_PAD_FL_SINK | MEDIA_PAD_FL_MUST_CONNECT;

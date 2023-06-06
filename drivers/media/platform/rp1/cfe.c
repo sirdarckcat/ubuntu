@@ -2097,7 +2097,6 @@ static int cfe_probe(struct platform_device *pdev)
 	strscpy(cfe->mdev.serial, "", sizeof(cfe->mdev.serial));
 	snprintf(cfe->mdev.bus_info, sizeof(cfe->mdev.bus_info), "platform:%s",
 		 dev_name(&pdev->dev));
-	cfe->mdev.hw_revision = 0;
 
 	media_device_init(&cfe->mdev);
 
@@ -2138,6 +2137,7 @@ static int cfe_probe(struct platform_device *pdev)
 		goto err_csi2_uninit;
 	}
 
+	cfe->mdev.hw_revision = cfe->fe.hw_revision;
 	ret = media_device_register(&cfe->mdev);
 	if (ret < 0) {
 		cfe_err("Unable to register media-controller device.\n");
