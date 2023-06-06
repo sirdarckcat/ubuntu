@@ -142,6 +142,11 @@ static const struct node_description node_desc[PISPBE_NUM_NODES] = {
 	}
 };
 
+#define NODE_DESC_IS_OUTPUT(desc) ( \
+	((desc)->buf_type == V4L2_BUF_TYPE_META_OUTPUT) || \
+	((desc)->buf_type == V4L2_BUF_TYPE_VIDEO_OUTPUT) || \
+	((desc)->buf_type == V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE))
+
 #define NODE_IS_META(node) ( \
 	((node)->buf_type == V4L2_BUF_TYPE_META_OUTPUT) || \
 	((node)->buf_type == V4L2_BUF_TYPE_META_CAPTURE))
@@ -191,11 +196,11 @@ struct pispbe_node {
 struct pispbe_node_group {
 	unsigned int id;
 	struct v4l2_device v4l2_dev;
+	struct v4l2_subdev sd;
 	struct pispbe_dev *pispbe;
 	struct media_device mdev;
 	struct pispbe_node node[PISPBE_NUM_NODES];
 	u32 streaming_map; /* bitmap of which nodes are streaming */
-	struct media_entity entity;
 	struct media_pad pad[PISPBE_NUM_NODES]; /* output pads first */
 	struct pisp_be_tiles_config *config;
 	dma_addr_t config_dma_addr;
@@ -1572,12 +1577,12 @@ static void node_set_default_format(struct pispbe_node *node)
 static int
 pispbe_init_node(struct pispbe_node_group *node_group, unsigned int id)
 {
+	bool output = NODE_DESC_IS_OUTPUT(&node_desc[id]);
 	struct pispbe_node *node = &node_group->node[id];
 	struct pispbe_dev *pispbe = node_group->pispbe;
 	struct media_entity *entity = &node->vfd.entity;
 	struct video_device *vdev = &node->vfd;
 	struct vb2_queue *q = &node->queue;
-	int output = NODE_IS_OUTPUT(node);
 	int ret;
 
 	node->id = id;
@@ -1612,7 +1617,7 @@ pispbe_init_node(struct pispbe_node_group *node_group, unsigned int id)
 	*vdev = pispbe_videodev; /* default initialization */
 	strscpy(vdev->name, node_desc[id].ent_name, sizeof(vdev->name));
 	vdev->v4l2_dev = &node_group->v4l2_dev;
-	vdev->vfl_dir = NODE_IS_OUTPUT(node) ? VFL_DIR_TX : VFL_DIR_RX;
+	vdev->vfl_dir = output ? VFL_DIR_TX : VFL_DIR_RX;
 	/* get V4L2 to serialise our ioctls */
 	vdev->lock = &node->node_lock;
 	vdev->queue = &node->queue;
@@ -1639,12 +1644,12 @@ pispbe_init_node(struct pispbe_node_group *node_group, unsigned int id)
 	video_set_drvdata(vdev, node);
 
 	if (output)
-		ret = media_create_pad_link(entity, 0, &node_group->entity, id,
-					    MEDIA_LNK_FL_IMMUTABLE |
+		ret = media_create_pad_link(entity, 0, &node_group->sd.entity,
+					    id, MEDIA_LNK_FL_IMMUTABLE |
 					    MEDIA_LNK_FL_ENABLED);
 	else
-		ret = media_create_pad_link(&node_group->entity, id, entity, 0,
-					    MEDIA_LNK_FL_IMMUTABLE |
+		ret = media_create_pad_link(&node_group->sd.entity, id, entity,
+					    0, MEDIA_LNK_FL_IMMUTABLE |
 					    MEDIA_LNK_FL_ENABLED);
 	if (ret)
 		goto err_unregister_video_dev;
@@ -1661,14 +1666,54 @@ err_unregister_queue:
 	return ret;
 }
 
+static const struct v4l2_subdev_pad_ops pispbe_pad_ops = {
+	.link_validate = v4l2_subdev_link_validate_default,
+};
+
+static const struct v4l2_subdev_ops pispbe_sd_ops = {
+	.pad = &pispbe_pad_ops,
+};
+
+static int pispbe_init_subdev(struct pispbe_node_group *node_group)
+{
+	struct pispbe_dev *pispbe = node_group->pispbe;
+	struct v4l2_subdev *sd = &node_group->sd;
+	unsigned int i;
+	int ret;
+
+	v4l2_subdev_init(sd, &pispbe_sd_ops);
+	sd->entity.function = MEDIA_ENT_F_PROC_VIDEO_PIXEL_FORMATTER;
+	sd->owner = THIS_MODULE;
+	sd->dev = pispbe->dev;
+	strscpy(sd->name, PISPBE_NAME, sizeof(sd->name));
+
+	for (i = 0; i < PISPBE_NUM_NODES; i++)
+		node_group->pad[i].flags =
+			NODE_DESC_IS_OUTPUT(&node_desc[i]) ?
+			MEDIA_PAD_FL_SINK : MEDIA_PAD_FL_SOURCE;
+
+	ret = media_entity_pads_init(&sd->entity, PISPBE_NUM_NODES,
+				     node_group->pad);
+	if (ret)
+		goto error;
+
+	ret = v4l2_device_register_subdev(&node_group->v4l2_dev, sd);
+	if (ret)
+		goto error;
+
+	return 0;
+
+error:
+	media_entity_cleanup(&sd->entity);
+	return ret;
+}
+
 static int pispbe_init_group(struct pispbe_dev *pispbe, unsigned int id)
 {
 	struct pispbe_node_group *node_group = &pispbe->node_group[id];
 	struct v4l2_device *v4l2_dev;
-	struct media_entity *entity;
 	struct media_device *mdev;
 	unsigned int num_registered = 0;
-	unsigned int i;
 	int ret;
 
 	node_group->id = id;
@@ -1694,24 +1739,8 @@ static int pispbe_init_group(struct pispbe_dev *pispbe, unsigned int id)
 	if (ret)
 		goto err_media_dev_cleanup;
 
-	/*
-	 * Register the PISPBE entity to the media device.
-	 * `
-	 * TODO: this should have a subdevice associated.
-	 */
-	entity = &node_group->entity;
-	entity->name = PISPBE_NAME;
-	entity->function = MEDIA_ENT_F_PROC_VIDEO_PIXEL_FORMATTER;
-	for (i = 0; i < PISPBE_NUM_NODES; i++)
-		node_group->pad[i].flags =
-			NODE_IS_OUTPUT(&node_group->node[i]) ?
-			MEDIA_PAD_FL_SINK :
-			MEDIA_PAD_FL_SOURCE;
-	ret = media_entity_pads_init(entity, PISPBE_NUM_NODES, node_group->pad);
-	if (ret)
-		goto err_unregister_v4l2;
-
-	ret = media_device_register_entity(mdev, entity);
+	/* Register the PISPBE subdevice. */
+	ret = pispbe_init_subdev(node_group);
 	if (ret)
 		goto err_unregister_v4l2;
 
@@ -1746,7 +1775,8 @@ err_unregister_nodes:
 		video_unregister_device(&node_group->node[num_registered].vfd);
 		vb2_queue_release(&node_group->node[num_registered].queue);
 	}
-	media_device_unregister_entity(entity);
+	v4l2_device_unregister_subdev(&node_group->sd);
+	media_entity_cleanup(&node_group->sd.entity);
 err_unregister_v4l2:
 	v4l2_device_unregister(v4l2_dev);
 err_media_dev_cleanup:
@@ -1769,7 +1799,8 @@ static void pispbe_destroy_node_group(struct pispbe_node_group *node_group)
 
 	dev_info(pispbe->dev, "Unregister from media controller\n");
 
-	media_device_unregister_entity(&node_group->entity);
+	v4l2_device_unregister_subdev(&node_group->sd);
+	media_entity_cleanup(&node_group->sd.entity);
 	media_device_unregister(&node_group->mdev);
 
 	for (i = PISPBE_NUM_NODES - 1; i >= 0; i--) {
