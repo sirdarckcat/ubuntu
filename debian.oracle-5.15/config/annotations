@@ -3,135 +3,84 @@
 # ARCH: amd64 arm64
 # FLAVOUR: amd64-oracle arm64-oracle
 
-include "../../debian.master/config/annotations"
+include "../../debian.oracle/config/annotations"
 
-CONFIG_AAEON_IWMI_WDT                           policy<{'amd64': '-', 'arm64': '-'}>
-CONFIG_AAEON_IWMI_WDT                           note<'feature is n/a on oracle so override master'>
+CONFIG_ARM64_BTI_KERNEL                         policy<{'arm64': '-'}>
+CONFIG_ARM64_BTI_KERNEL                         note<'Do not enforce CONFIG_ARM64_BTI_KERNEL in Focal, as it depends on a newer gcc version. Note that the config itself is already removed in an earlier stage when make is run, updating config GCC_VERSION and removing ARM64_BTI_KERNEL.'>
 
-CONFIG_ACCESSIBILITY                            policy<{'amd64': 'n', 'arm64': 'n'}>
-CONFIG_ACCESSIBILITY                            note<'feature is n/a on oracle so override master'>
+CONFIG_AUFS_BDEV_LOOP                           policy<{'amd64': 'y', 'arm64': 'y'}>
+CONFIG_AUFS_BDEV_LOOP                           note<'We are still supporting AUFS in focal, so make sure to re-enable it.'>
 
-CONFIG_ANDROID                                  policy<{'amd64': 'y', 'arm64': 'y'}>
-CONFIG_ANDROID                                  note<'oracle: needed for Anbox - LP #1928686'>
+CONFIG_AUFS_BRANCH_MAX_1023                     policy<{'amd64': 'n', 'arm64': 'n'}>
+CONFIG_AUFS_BRANCH_MAX_1023                     note<'We are still supporting AUFS in focal, so make sure to re-enable it.'>
 
-CONFIG_ANDROID_BINDERFS                         policy<{'amd64': 'm', 'arm64': 'm'}>
-CONFIG_ANDROID_BINDERFS                         note<'oracle: needed for Anbox - LP #1928686'>
+CONFIG_AUFS_BRANCH_MAX_127                      policy<{'amd64': 'y', 'arm64': 'y'}>
+CONFIG_AUFS_BRANCH_MAX_127                      note<'We are still supporting AUFS in focal, so make sure to re-enable it.'>
 
-CONFIG_ANDROID_BINDER_DEVICES                   policy<{'amd64': '""', 'arm64': '""'}>
-CONFIG_ANDROID_BINDER_DEVICES                   note<'oracle: needed for Anbox - LP #1928686'>
+CONFIG_AUFS_BRANCH_MAX_32767                    policy<{'amd64': 'n', 'arm64': 'n'}>
+CONFIG_AUFS_BRANCH_MAX_32767                    note<'We are still supporting AUFS in focal, so make sure to re-enable it.'>
 
-CONFIG_ANDROID_BINDER_IPC                       policy<{'amd64': 'm', 'arm64': 'm'}>
-CONFIG_ANDROID_BINDER_IPC                       note<'oracle: needed for Anbox - LP #1928686'>
+CONFIG_AUFS_BRANCH_MAX_511                      policy<{'amd64': 'n', 'arm64': 'n'}>
+CONFIG_AUFS_BRANCH_MAX_511                      note<'We are still supporting AUFS in focal, so make sure to re-enable it.'>
 
-CONFIG_ASHMEM                                   policy<{'amd64': 'm', 'arm64': 'm'}>
-CONFIG_ASHMEM                                   note<'oracle: needed for Anbox - LP #1928686'>
+CONFIG_AUFS_BR_FUSE                             policy<{'amd64': 'n', 'arm64': 'n'}>
+CONFIG_AUFS_BR_FUSE                             note<'We are still supporting AUFS in focal, so make sure to re-enable it.'>
 
-CONFIG_DRM_BOCHS                                policy<{'amd64': 'm', 'arm64': 'm'}>
-CONFIG_DRM_BOCHS                                note<'oracle: Ensure bochs-drm.ko is in inclusion list. needed for virtual display support in VMs - LP #1957744 '>
+CONFIG_AUFS_BR_HFSPLUS                          policy<{'amd64': 'y', 'arm64': 'y'}>
+CONFIG_AUFS_BR_HFSPLUS                          note<'We are still supporting AUFS in focal, so make sure to re-enable it.'>
 
-CONFIG_DRM_VIRTIO_GPU                           policy<{'amd64': 'm', 'arm64': 'm'}>
-CONFIG_DRM_VIRTIO_GPU                           note<'oracle: Ensure virtio-gpu.ko is in inclusion list, or set =y'>
+CONFIG_AUFS_BR_RAMFS                            policy<{'amd64': 'n', 'arm64': 'n'}>
+CONFIG_AUFS_BR_RAMFS                            note<'We are still supporting AUFS in focal, so make sure to re-enable it.'>
 
-CONFIG_FAILOVER                                 policy<{'amd64': 'm', 'arm64': 'm'}>
-CONFIG_FAILOVER                                 note<'OCI requirement'>
+CONFIG_AUFS_DEBUG                               policy<{'amd64': 'n', 'arm64': 'n'}>
+CONFIG_AUFS_DEBUG                               note<'We are still supporting AUFS in focal, so make sure to re-enable it.'>
 
-CONFIG_GPIO_AAEON                               policy<{'amd64': '-', 'arm64': '-'}>
-CONFIG_GPIO_AAEON                               note<'feature is n/a on oracle so override master'>
+CONFIG_AUFS_DIRREN                              policy<{'amd64': 'y', 'arm64': 'y'}>
+CONFIG_AUFS_DIRREN                              note<'We are still supporting AUFS in focal, so make sure to re-enable it.'>
 
-CONFIG_LEDS_AAEON                               policy<{'amd64': '-', 'arm64': '-'}>
-CONFIG_LEDS_AAEON                               note<'feature is n/a on oracle so override master'>
+CONFIG_AUFS_EXPORT                              policy<{'amd64': 'y', 'arm64': 'y'}>
+CONFIG_AUFS_EXPORT                              note<'We are still supporting AUFS in focal, so make sure to re-enable it.'>
 
-CONFIG_MFD_AAEON                                policy<{'amd64': '-', 'arm64': '-'}>
-CONFIG_MFD_AAEON                                note<'feature is n/a on oracle so override master'>
+CONFIG_AUFS_FHSM                                policy<{'amd64': 'n', 'arm64': 'n'}>
+CONFIG_AUFS_FHSM                                note<'We are still supporting AUFS in focal, so make sure to re-enable it.'>
 
-CONFIG_MODVERSIONS                              policy<{'amd64': 'y', 'arm64': 'y'}>
-CONFIG_MODVERSIONS                              note<'LP:1898716 -- required as we have a livepatch/drivers modules signing key - override master'>
+CONFIG_AUFS_FS                                  policy<{'amd64': 'm', 'arm64': 'm'}>
+CONFIG_AUFS_FS                                  note<'We are still supporting AUFS in focal, so make sure to re-enable it.'>
 
-CONFIG_NET_FAILOVER                             policy<{'amd64': 'm', 'arm64': 'm'}>
-CONFIG_NET_FAILOVER                             note<'OCI requirement'>
+CONFIG_AUFS_HNOTIFY                             policy<{'amd64': 'n', 'arm64': 'n'}>
+CONFIG_AUFS_HNOTIFY                             note<'We are still supporting AUFS in focal, so make sure to re-enable it.'>
 
-CONFIG_PAGE_POOL                                policy<{'amd64': 'y', 'arm64': 'y'}>
-CONFIG_PAGE_POOL                                note<'OCI requirement'>
+CONFIG_AUFS_INO_T_64                            policy<{'amd64': 'y', 'arm64': 'y'}>
+CONFIG_AUFS_INO_T_64                            note<'We are still supporting AUFS in focal, so make sure to re-enable it.'>
 
-CONFIG_PREEMPT_NONE                             policy<{'amd64': 'y', 'arm64': 'y'}>
-CONFIG_PREEMPT_NONE                             note<'LP:1543165'>
+CONFIG_AUFS_RDU                                 policy<{'amd64': 'n', 'arm64': 'n'}>
+CONFIG_AUFS_RDU                                 note<'We are still supporting AUFS in focal, so make sure to re-enable it.'>
 
-CONFIG_SENSORS_AAEON                            policy<{'amd64': '-', 'arm64': '-'}>
-CONFIG_SENSORS_AAEON                            note<'feature is n/a on oracle so override master'>
+CONFIG_AUFS_SBILIST                             policy<{'amd64': 'y', 'arm64': 'y'}>
+CONFIG_AUFS_SBILIST                             note<'We are still supporting AUFS in focal, so make sure to re-enable it.'>
 
-CONFIG_SERIAL_AMBA_PL011                        policy<{'arm64': 'y'}>
-CONFIG_SERIAL_AMBA_PL011                        note<'oracle: needed for serial support in VMs'>
+CONFIG_AUFS_SHWH                                policy<{'amd64': 'n', 'arm64': 'n'}>
+CONFIG_AUFS_SHWH                                note<'We are still supporting AUFS in focal, so make sure to re-enable it.'>
 
-CONFIG_SERIAL_AMBA_PL011_CONSOLE                policy<{'arm64': 'y'}>
-CONFIG_SERIAL_AMBA_PL011_CONSOLE                note<'oracle: needed for serial support in VMs'>
+CONFIG_AUFS_XATTR                               policy<{'amd64': 'y', 'arm64': 'y'}>
+CONFIG_AUFS_XATTR                               note<'We are still supporting AUFS in focal, so make sure to re-enable it.'>
 
-CONFIG_SND_HDA_INTEL_HDMI_SILENT_STREAM         policy<{'amd64': 'n', 'arm64': 'n'}>
-CONFIG_SND_HDA_INTEL_HDMI_SILENT_STREAM         note<'LP: #2009024 does not apply to this package'>
-
-CONFIG_SPEAKUP                                  policy<{'amd64': '-', 'arm64': '-'}>
-CONFIG_SPEAKUP                                  note<'LP: #1967702'>
-
-CONFIG_SPEAKUP_SYNTH_ACNTSA                     policy<{'amd64': '-', 'arm64': '-'}>
-CONFIG_SPEAKUP_SYNTH_ACNTSA                     note<'feature is n/a on oracle so override master'>
-
-CONFIG_SPEAKUP_SYNTH_APOLLO                     policy<{'amd64': '-', 'arm64': '-'}>
-CONFIG_SPEAKUP_SYNTH_APOLLO                     note<'feature is n/a on oracle so override master'>
-
-CONFIG_SPEAKUP_SYNTH_AUDPTR                     policy<{'amd64': '-', 'arm64': '-'}>
-CONFIG_SPEAKUP_SYNTH_AUDPTR                     note<'feature is n/a on oracle so override master'>
-
-CONFIG_SPEAKUP_SYNTH_BNS                        policy<{'amd64': '-', 'arm64': '-'}>
-CONFIG_SPEAKUP_SYNTH_BNS                        note<'feature is n/a on oracle so override master'>
-
-CONFIG_SPEAKUP_SYNTH_DECEXT                     policy<{'amd64': '-', 'arm64': '-'}>
-CONFIG_SPEAKUP_SYNTH_DECEXT                     note<'feature is n/a on oracle so override master'>
-
-CONFIG_SPEAKUP_SYNTH_DECTLK                     policy<{'amd64': '-', 'arm64': '-'}>
-CONFIG_SPEAKUP_SYNTH_DECTLK                     note<'feature is n/a on oracle so override master'>
-
-CONFIG_SPEAKUP_SYNTH_DUMMY                      policy<{'amd64': '-', 'arm64': '-'}>
-CONFIG_SPEAKUP_SYNTH_DUMMY                      note<'feature is n/a on oracle so override master'>
-
-CONFIG_SPEAKUP_SYNTH_LTLK                       policy<{'amd64': '-', 'arm64': '-'}>
-CONFIG_SPEAKUP_SYNTH_LTLK                       note<'feature is n/a on oracle so override master'>
-
-CONFIG_SPEAKUP_SYNTH_SOFT                       policy<{'amd64': '-', 'arm64': '-'}>
-CONFIG_SPEAKUP_SYNTH_SOFT                       note<'feature is n/a on oracle so override master'>
-
-CONFIG_SPEAKUP_SYNTH_SPKOUT                     policy<{'amd64': '-', 'arm64': '-'}>
-CONFIG_SPEAKUP_SYNTH_SPKOUT                     note<'feature is n/a on oracle so override master'>
-
-CONFIG_SPEAKUP_SYNTH_TXPRT                      policy<{'amd64': '-', 'arm64': '-'}>
-CONFIG_SPEAKUP_SYNTH_TXPRT                      note<'feature is n/a on oracle so override master'>
-
-CONFIG_SYSTEM_TRUSTED_KEYS                      policy<{'amd64': '"debian/canonical-certs.pem"', 'arm64': '"debian/canonical-certs.pem"'}>
-CONFIG_SYSTEM_TRUSTED_KEYS                      note<'Specifically set for linux-oracle'>
+CONFIG_KCSAN                                    policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_KCSAN                                    note<'KCSAN cannot be enabled in focal'>
 
 
 # ---- Annotations without notes ----
 
-CONFIG_A11Y_BRAILLE_CONSOLE                     policy<{'amd64': '-', 'arm64': '-'}>
-CONFIG_ARCH_MMAP_RND_BITS_MAX                   policy<{'amd64': '32', 'arm64': '33'}>
-CONFIG_ARCH_MMAP_RND_BITS_MIN                   policy<{'amd64': '28', 'arm64': '18'}>
-CONFIG_ARCH_MMAP_RND_COMPAT_BITS_MIN            policy<{'amd64': '8', 'arm64': '11'}>
-CONFIG_ARCH_WANT_HUGE_PMD_SHARE                 policy<{'amd64': 'y', 'arm64': 'y'}>
-CONFIG_ARM64_4K_PAGES                           policy<{'arm64': 'y'}>
-CONFIG_ARM64_64K_PAGES                          policy<{'arm64': 'n'}>
-CONFIG_ARM64_CONT_PMD_SHIFT                     policy<{'arm64': '4'}>
-CONFIG_ARM64_CONT_PTE_SHIFT                     policy<{'arm64': '4'}>
-CONFIG_ARM64_PAGE_SHIFT                         policy<{'arm64': '12'}>
-CONFIG_ARM64_VA_BITS_39                         policy<{'arm64': 'n'}>
-CONFIG_COMEDI_TESTS_EXAMPLE                     policy<{'amd64': 'n', 'arm64': 'm'}>
-CONFIG_COMEDI_TESTS_NI_ROUTES                   policy<{'amd64': 'n', 'arm64': 'm'}>
-CONFIG_FORCE_MAX_ZONEORDER                      policy<{'arm64': '13'}>
-CONFIG_HSU_DMA                                  policy<{'amd64': 'm'}>
-CONFIG_INFINIBAND_VMWARE_PVRDMA                 policy<{'amd64': 'm', 'arm64': 'm'}>
-CONFIG_MESON_SM                                 policy<{'arm64': 'n'}>
-CONFIG_PGTABLE_LEVELS                           policy<{'amd64': '5', 'arm64': '4'}>
-CONFIG_PREEMPT_VOLUNTARY                        policy<{'amd64': 'n', 'arm64': 'n'}>
-CONFIG_SERIAL_8250_MID                          policy<{'amd64': 'm'}>
-CONFIG_UBUNTU_ODM_DRIVERS                       policy<{'amd64': '-'}>
-CONFIG_VMXNET3                                  policy<{'amd64': 'm', 'arm64': 'm'}>
-CONFIG_KCSAN policy<{'amd64': '-', 'arm64': '-'}>
-CONFIG_ARM64_BTI_KERNEL                            policy<{'arm64': '-'}
-CONFIG_AUFS_FS policy<{'amd64': 'm', 'arm64': 'm'}>
+CONFIG_AS_VERSION                               policy<{'amd64': '23400', 'arm64': '23400'}>
+CONFIG_CC_HAS_ASM_GOTO_OUTPUT                   policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_CC_HAS_ASM_GOTO_TIED_OUTPUT              policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_CC_HAS_KASAN_SW_TAGS                     policy<{'arm64': '-'}>
+CONFIG_CC_HAS_SLS                               policy<{'amd64': '-'}>
+CONFIG_CC_HAS_ZERO_CALL_USED_REGS               policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_CC_VERSION_TEXT                          policy<{'amd64': '"x86_64-linux-gnu-gcc (Ubuntu 9.4.0-1ubuntu1~20.04.1) 9.4.0"', 'arm64': '"aarch64-linux-gnu-gcc (Ubuntu 9.4.0-1ubuntu1~20.04.1) 9.4.0"'}>
+CONFIG_GCC_VERSION                              policy<{'amd64': '90400', 'arm64': '90400'}>
+CONFIG_HAVE_KCSAN_COMPILER                      policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_LD_VERSION                               policy<{'amd64': '23400', 'arm64': '23400'}>
+CONFIG_PAHOLE_VERSION                           policy<{'amd64': '121', 'arm64': '121'}>
+CONFIG_SLS                                      policy<{'amd64': '-'}>
+CONFIG_ZERO_CALL_USED_REGS                      policy<{'amd64': '-', 'arm64': '-'}>
