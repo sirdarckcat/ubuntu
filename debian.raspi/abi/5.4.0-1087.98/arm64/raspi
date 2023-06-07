@@ -91,8 +91,8 @@ EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x0519ce99	drm_set_preferred_mode
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x06f81bad	drm_format_info_block_height
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x070b28aa	drm_ht_remove_item
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x0714625d	drm_calc_vbltimestamp_from_scanoutpos
-EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x0755db85	drm_atomic_bridge_disable
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x0798b0ab	drm_mode_duplicate
+EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x08798413	drm_bridge_chain_pre_enable
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x088bb8ba	drm_gem_create_mmap_offset_size
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x0958cfa2	drm_connector_set_link_status_property
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x0a6d6412	drm_writeback_queue_job
@@ -102,6 +102,7 @@ EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x0b8106cc	drm_dev_printk
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x0c9d882b	drm_ioctl_permit
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x0d178e1e	drm_master_put
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x0dcf25ff	drm_atomic_set_crtc_for_plane
+EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x0e58f263	drm_atomic_bridge_chain_enable
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x0ecf1e2f	drm_panel_disable
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x0f798eda	drm_plane_create_zpos_immutable_property
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x0fd60df2	drm_get_connector_status_name
@@ -165,8 +166,8 @@ EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x2e3d8562	drm_gem_dumb_destroy
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x2f06cf73	drm_connector_init_panel_orientation_property
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x2f15b9b5	drm_driver_legacy_fb_format
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x2f57f718	drm_encoder_init
-EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x2f70b889	drm_atomic_bridge_post_disable
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x2fce6675	drm_property_create_bitmask
+EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x2fd6b8a3	drm_atomic_bridge_chain_post_disable
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x3060c483	drm_plane_init
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x30abe255	drm_gem_object_release
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x30cbbb1f	drm_crtc_vblank_off
@@ -177,7 +178,6 @@ EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x31c6c3c5	drm_crtc_vblank_count_and_time
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x31da1bc3	drm_ioctl
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x322eadbd	drm_connector_attach_scaling_mode_property
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x34882754	drm_clflush_pages
-EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x349f3fd0	drm_bridge_disable
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x34a4640a	drm_dbg
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x3527fde9	drm_client_buffer_vmap
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x356963cc	drm_syncobj_create
@@ -202,13 +202,14 @@ EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x42828972	drm_crtc_init_with_planes
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x456477ff	drm_crtc_wait_one_vblank
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x45fade69	drm_writeback_connector_init
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x4716b4f8	drm_gem_put_pages
-EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x472f0c0f	drm_bridge_post_disable
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x478f7a10	drm_property_blob_get
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x49096e63	drm_panel_unprepare
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x4a443a25	drm_framebuffer_remove
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x4aa4639d	drm_property_lookup_blob
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x4b561dc8	drm_mode_create_aspect_ratio_property
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x4b898689	drm_bridge_remove
+EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x4bf45122	drm_bridge_chain_mode_fixup
+EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x4c5f6fc2	drm_bridge_chain_mode_valid
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x4d22b807	drm_mode_equal_no_clocks
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x4da73492	drm_atomic_private_obj_init
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x4e0280b6	drm_mode_hsync
@@ -266,6 +267,7 @@ EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x67e3f427	drm_atomic_commit
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x685f7567	drm_client_dev_hotplug
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x69821dbd	drm_panel_prepare
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x69c7306c	drm_dev_init
+EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x6a5a7612	drm_atomic_bridge_chain_pre_enable
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x6aa3c338	drm_get_format_info
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x6b6eed65	drm_client_register
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x6bdce8a0	drm_handle_vblank
@@ -288,7 +290,6 @@ EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x70f7abf0	drm_gem_get_pages
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x719952e2	drm_mode_object_put
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x722459c4	drm_of_component_probe
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x72d99bce	drm_connector_set_path_property
-EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x732f2fb2	drm_bridge_pre_enable
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x737907a0	drm_dev_unregister
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x7513f386	drm_calc_timestamping_constants
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x7547cee0	drm_atomic_get_crtc_state
@@ -322,7 +323,6 @@ EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x819d3ffa	drm_atomic_state_init
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x831caf6c	drm_atomic_set_mode_for_crtc
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x842dd90c	drm_flip_work_commit
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x843546a8	drm_debugfs_remove_files
-EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x84859174	drm_bridge_mode_fixup
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x848d35c6	drm_modeset_lock_init
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x852a0361	drm_gem_prime_import_dev
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x85328aeb	drm_open
@@ -346,8 +346,8 @@ EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x8ca4600f	drm_crtc_vblank_reset
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x8dbdc14e	drm_bridge_add
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x8ddf8717	drm_of_crtc_port_mask
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x8e2e4c0c	drm_crtc_accurate_vblank_count
+EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x91286a51	drm_bridge_chain_enable
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x91ae7c1a	drm_atomic_normalize_zpos
-EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x91dfab4f	drm_bridge_enable
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x91fec1cc	drm_rect_calc_vscale
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x928c61fc	drm_mode_find_dmt
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0x930364af	drm_crtc_handle_vblank
@@ -388,7 +388,6 @@ EXPORT_SYMBOL	 drivers/gpu/drm/drm 0xa98d40d4	drm_i2c_encoder_commit
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0xaa1ee106	drm_connector_unregister
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0xaa9aa7e5	drm_client_modeset_commit_force
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0xaac39ff3	__drm_printfn_info
-EXPORT_SYMBOL	 drivers/gpu/drm/drm 0xab1d980e	drm_bridge_mode_set
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0xac09592d	drm_mode_set_config_internal
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0xadf12a0a	drm_master_internal_release
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0xadf346bc	drm_gem_fence_array_add_implicit
@@ -397,9 +396,11 @@ EXPORT_SYMBOL	 drivers/gpu/drm/drm 0xaf3e1861	drm_gtf_mode
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0xaf6cea1d	drm_display_info_set_bus_formats
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0xb00b4cc2	drm_panel_get_modes
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0xb04fffd3	drm_atomic_get_connector_state
+EXPORT_SYMBOL	 drivers/gpu/drm/drm 0xb0530db7	drm_dev_has_vblank
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0xb053adda	drm_rect_rotate
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0xb0a53b8a	drm_dev_dbg
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0xb0b05ff5	drm_clflush_sg
+EXPORT_SYMBOL	 drivers/gpu/drm/drm 0xb1378091	drm_bridge_chain_post_disable
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0xb166192a	drm_legacy_ioremapfree
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0xb26bf25d	drm_mode_set_crtcinfo
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0xb2ac46ab	drm_mode_create_dvi_i_properties
@@ -407,7 +408,6 @@ EXPORT_SYMBOL	 drivers/gpu/drm/drm 0xb2dee681	drm_client_modeset_probe
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0xb35422b7	drm_is_current_master
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0xb3643638	drm_warn_on_modeset_not_all_locked
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0xb3a4029b	drm_cvt_mode
-EXPORT_SYMBOL	 drivers/gpu/drm/drm 0xb3d785db	drm_bridge_mode_valid
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0xb48ed3af	drm_gem_dmabuf_export
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0xb4da8492	drm_mode_create
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0xb50c1774	drm_gem_object_init
@@ -431,7 +431,6 @@ EXPORT_SYMBOL	 drivers/gpu/drm/drm 0xbf760f84	drm_gem_shmem_vmap
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0xbfb3bfb8	drm_mode_config_reset
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0xbfd26585	drm_atomic_get_old_connector_for_encoder
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0xc0769152	of_drm_find_bridge
-EXPORT_SYMBOL	 drivers/gpu/drm/drm 0xc095a655	drm_atomic_bridge_enable
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0xc0aeef9e	drm_prime_gem_destroy
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0xc18203e0	drm_atomic_set_fb_for_plane
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0xc2379106	drm_panel_enable
@@ -445,6 +444,7 @@ EXPORT_SYMBOL	 drivers/gpu/drm/drm 0xc5992401	__drm_puts_coredump
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0xc618c2bd	drm_atomic_add_affected_connectors
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0xc6323239	drm_flip_work_cleanup
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0xc73cda3c	drm_vma_offset_manager_init
+EXPORT_SYMBOL	 drivers/gpu/drm/drm 0xc8218348	drm_atomic_bridge_chain_disable
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0xc85121a4	drm_gem_cma_print_info
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0xc8bfb380	drm_framebuffer_init
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0xc93fcf8f	drm_av_sync_delay
@@ -457,6 +457,7 @@ EXPORT_SYMBOL	 drivers/gpu/drm/drm 0xcb5c8d1c	drm_object_property_set_value
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0xcc9cd001	drm_gem_dmabuf_vmap
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0xcd8b879a	drm_err
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0xce51ab94	drm_atomic_get_private_obj_state
+EXPORT_SYMBOL	 drivers/gpu/drm/drm 0xce90f572	drm_bridge_chain_disable
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0xceeb3510	drm_crtc_from_index
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0xcf11a549	drm_flip_work_allocate_task
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0xd13f9985	drm_edid_block_valid
@@ -467,7 +468,6 @@ EXPORT_SYMBOL	 drivers/gpu/drm/drm 0xd3ff6abb	drm_mode_object_get
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0xd461b4b9	drm_client_modeset_dpms
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0xd4e1e7ee	drm_prime_sg_to_page_addr_arrays
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0xd5dad17b	drm_i2c_encoder_detect
-EXPORT_SYMBOL	 drivers/gpu/drm/drm 0xd62711b7	drm_atomic_bridge_pre_enable
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0xd680a377	drm_gem_object_free
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0xd6b3dcc8	drm_plane_create_blend_mode_property
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0xd7576268	drm_ioctl_kernel
@@ -517,6 +517,7 @@ EXPORT_SYMBOL	 drivers/gpu/drm/drm 0xf4551a93	drm_bridge_attach
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0xf4ced256	drm_hdmi_avi_infoframe_colorspace
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0xf4d82566	drm_vblank_init
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0xf51d36e3	drm_connector_init_with_ddc
+EXPORT_SYMBOL	 drivers/gpu/drm/drm 0xf537e2e7	drm_bridge_chain_mode_set
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0xf5552b4d	of_drm_find_panel
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0xf8764cf8	drm_mode_create_scaling_mode_property
 EXPORT_SYMBOL	 drivers/gpu/drm/drm 0xf8fac9a0	drm_connector_list_iter_end
@@ -5244,6 +5245,7 @@ EXPORT_SYMBOL	 vmlinux 0x347e59c9	vchi_initialise
 EXPORT_SYMBOL	 vmlinux 0x348d48d7	kthread_create_worker_on_cpu
 EXPORT_SYMBOL	 vmlinux 0x349ac524	__tracepoint_dma_fence_emit
 EXPORT_SYMBOL	 vmlinux 0x349cba85	strchr
+EXPORT_SYMBOL	 vmlinux 0x34a3cd16	mipi_dsi_dcs_get_display_brightness_large
 EXPORT_SYMBOL	 vmlinux 0x34bcfdc8	DWC_SPINLOCK_ALLOC
 EXPORT_SYMBOL	 vmlinux 0x34cde8b3	pci_setup_cardbus
 EXPORT_SYMBOL	 vmlinux 0x34e421b8	set_posix_acl
@@ -5462,6 +5464,7 @@ EXPORT_SYMBOL	 vmlinux 0x3f0eabd2	xxh64_update
 EXPORT_SYMBOL	 vmlinux 0x3f108556	xfrm_policy_walk_done
 EXPORT_SYMBOL	 vmlinux 0x3f4547a7	put_unused_fd
 EXPORT_SYMBOL	 vmlinux 0x3f4bd846	gen_pool_first_fit_order_align
+EXPORT_SYMBOL	 vmlinux 0x3f5b26ef	sock_init_data_uid
 EXPORT_SYMBOL	 vmlinux 0x3f6c6c6b	of_graph_get_endpoint_count
 EXPORT_SYMBOL	 vmlinux 0x3f6cd2dd	jbd2_journal_restart
 EXPORT_SYMBOL	 vmlinux 0x3f76d599	ipv6_chk_addr_and_flags
@@ -7257,6 +7260,7 @@ EXPORT_SYMBOL	 vmlinux 0x9a69266b	scsi_is_host_device
 EXPORT_SYMBOL	 vmlinux 0x9a6d2203	__scsi_print_sense
 EXPORT_SYMBOL	 vmlinux 0x9a73b032	ZSTD_initDStream_usingDDict
 EXPORT_SYMBOL	 vmlinux 0x9a7b74d5	fbcon_update_vcs
+EXPORT_SYMBOL	 vmlinux 0x9a7c9fd5	mipi_dsi_dcs_set_display_brightness_large
 EXPORT_SYMBOL	 vmlinux 0x9a924572	inode_dio_wait
 EXPORT_SYMBOL	 vmlinux 0x9a9ba24d	jbd2_journal_force_commit_nested
 EXPORT_SYMBOL	 vmlinux 0x9aab18f1	vfs_symlink
@@ -8738,6 +8742,7 @@ EXPORT_SYMBOL	 vmlinux 0xe1eed1e4	sock_no_sendmsg
 EXPORT_SYMBOL	 vmlinux 0xe216fe06	genphy_suspend
 EXPORT_SYMBOL	 vmlinux 0xe21f18ac	__genradix_iter_peek
 EXPORT_SYMBOL	 vmlinux 0xe2429390	generic_error_remove_page
+EXPORT_SYMBOL	 vmlinux 0xe25bb230	sk_stop_timer_sync
 EXPORT_SYMBOL	 vmlinux 0xe25ee9d3	_raw_write_lock_irqsave
 EXPORT_SYMBOL	 vmlinux 0xe2828b30	i2c_del_driver
 EXPORT_SYMBOL	 vmlinux 0xe2851fdd	max8998_bulk_read
@@ -13969,10 +13974,10 @@ EXPORT_SYMBOL_GPL	 net/rds/rds 0xfd22dd56	rds_cong_map_updated
 EXPORT_SYMBOL_GPL	 net/rds/rds 0xfe7ccefa	rds_info_register_func
 EXPORT_SYMBOL_GPL	 net/sched/sch_taprio 0x21ee5d21	taprio_offload_free
 EXPORT_SYMBOL_GPL	 net/sched/sch_taprio 0xfd0a71cd	taprio_offload_get
-EXPORT_SYMBOL_GPL	 net/sctp/sctp 0x33ec9f79	sctp_get_sctp_info
-EXPORT_SYMBOL_GPL	 net/sctp/sctp 0x5efb5cba	sctp_transport_traverse_process
-EXPORT_SYMBOL_GPL	 net/sctp/sctp 0xaa2ad544	sctp_transport_lookup_process
-EXPORT_SYMBOL_GPL	 net/sctp/sctp 0xebaaf526	sctp_for_each_endpoint
+EXPORT_SYMBOL_GPL	 net/sctp/sctp 0x152e4693	sctp_transport_lookup_process
+EXPORT_SYMBOL_GPL	 net/sctp/sctp 0x2035146e	sctp_for_each_endpoint
+EXPORT_SYMBOL_GPL	 net/sctp/sctp 0x325717ca	sctp_get_sctp_info
+EXPORT_SYMBOL_GPL	 net/sctp/sctp 0x85a20402	sctp_transport_traverse_process
 EXPORT_SYMBOL_GPL	 net/smc/smc 0x11feac7f	smc_hash_sk
 EXPORT_SYMBOL_GPL	 net/smc/smc 0x14b60bed	smcd_register_dev
 EXPORT_SYMBOL_GPL	 net/smc/smc 0x22d06025	smc_proto6
