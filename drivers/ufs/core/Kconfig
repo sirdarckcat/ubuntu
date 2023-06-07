@@ -50,3 +50,11 @@ config SCSI_UFS_HWMON
 	  a hardware monitoring device will be created for the UFS device.
 
 	  If unsure, say N.
+
+config SCSI_UFSHCD_QUERY_EXPORT
+	bool "UFS HCD QUERY APIS exported"
+	def_bool y
+	depends on SCSI_UFSHCD
+	help
+	  Export the  UFS HCD query APIs for provisioning the UFS. This config will
+	  tell whether APIs are exported or not.
