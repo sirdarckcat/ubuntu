@@ -384,9 +384,9 @@ void rp1dpi_hw_setup(struct rp1_dpi *dpi,
 
 	rp1dpi_hw_write(dpi, DPI_DMA_QOS,
 			BITS(DPI_DMA_QOS_DQOS, 0x0) |
-			BITS(DPI_DMA_QOS_ULEV, 0x8) |
+			BITS(DPI_DMA_QOS_ULEV, 0xb) |
 			BITS(DPI_DMA_QOS_UQOS, 0x2) |
-			BITS(DPI_DMA_QOS_LLEV, 0x4) |
+			BITS(DPI_DMA_QOS_LLEV, 0x8) |
 			BITS(DPI_DMA_QOS_LQOS, 0x7));
 
 	rp1dpi_hw_write(dpi, DPI_DMA_IRQ_FLAGS, -1);
@@ -398,19 +398,19 @@ void rp1dpi_hw_setup(struct rp1_dpi *dpi,
 
 	rp1dpi_hw_write(dpi, DPI_DMA_CONTROL,
 			BITS(DPI_DMA_CONTROL_ARM,          !i) |
-		       BITS(DPI_DMA_CONTROL_AUTO_REPEAT,   1) |
-		       BITS(DPI_DMA_CONTROL_HIGH_WATER,  384) |
-		       BITS(DPI_DMA_CONTROL_DEN_POL,  de_inv) |
-		       BITS(DPI_DMA_CONTROL_HSYNC_POL, !!(mode->flags & DRM_MODE_FLAG_NHSYNC)) |
-		       BITS(DPI_DMA_CONTROL_VSYNC_POL, !!(mode->flags & DRM_MODE_FLAG_NVSYNC)) |
-		       BITS(DPI_DMA_CONTROL_COLORM,	   0) |
-		       BITS(DPI_DMA_CONTROL_SHUTDN,	   0) |
-		       BITS(DPI_DMA_CONTROL_HBP_EN,    (mode->htotal != mode->hsync_end))      |
-		       BITS(DPI_DMA_CONTROL_HFP_EN,    (mode->hsync_start != mode->hdisplay))  |
-		       BITS(DPI_DMA_CONTROL_VBP_EN,    (mode->vtotal != mode->vsync_end))      |
-		       BITS(DPI_DMA_CONTROL_VFP_EN,    (mode->vsync_start != mode->vdisplay))  |
-		       BITS(DPI_DMA_CONTROL_HSYNC_EN,  (mode->hsync_end != mode->hsync_start)) |
-		       BITS(DPI_DMA_CONTROL_VSYNC_EN,  (mode->vsync_end != mode->vsync_start)));
+			BITS(DPI_DMA_CONTROL_AUTO_REPEAT,   1) |
+			BITS(DPI_DMA_CONTROL_HIGH_WATER,  448) |
+			BITS(DPI_DMA_CONTROL_DEN_POL,  de_inv) |
+			BITS(DPI_DMA_CONTROL_HSYNC_POL, !!(mode->flags & DRM_MODE_FLAG_NHSYNC)) |
+			BITS(DPI_DMA_CONTROL_VSYNC_POL, !!(mode->flags & DRM_MODE_FLAG_NVSYNC)) |
+			BITS(DPI_DMA_CONTROL_COLORM,	   0) |
+			BITS(DPI_DMA_CONTROL_SHUTDN,	   0) |
+			BITS(DPI_DMA_CONTROL_HBP_EN,    (mode->htotal != mode->hsync_end))      |
+			BITS(DPI_DMA_CONTROL_HFP_EN,    (mode->hsync_start != mode->hdisplay))  |
+			BITS(DPI_DMA_CONTROL_VBP_EN,    (mode->vtotal != mode->vsync_end))      |
+			BITS(DPI_DMA_CONTROL_VFP_EN,    (mode->vsync_start != mode->vdisplay))  |
+			BITS(DPI_DMA_CONTROL_HSYNC_EN,  (mode->hsync_end != mode->hsync_start)) |
+			BITS(DPI_DMA_CONTROL_VSYNC_EN,  (mode->vsync_end != mode->vsync_start)));
 }
 
 void rp1dpi_hw_update(struct rp1_dpi *dpi, dma_addr_t addr, u32 offset, u32 stride)
@@ -449,8 +449,9 @@ void rp1dpi_hw_vblank_ctrl(struct rp1_dpi *dpi, int enable)
 {
 	rp1dpi_hw_write(dpi, DPI_DMA_IRQ_EN,
 			BITS(DPI_DMA_IRQ_EN_AFIFO_EMPTY, 1)      |
-		       BITS(DPI_DMA_IRQ_EN_DMA_READY, !!enable) |
-		       BITS(DPI_DMA_IRQ_EN_MATCH_LINE, 4095));
+			BITS(DPI_DMA_IRQ_EN_UNDERFLOW, 1)        |
+			BITS(DPI_DMA_IRQ_EN_DMA_READY, !!enable) |
+			BITS(DPI_DMA_IRQ_EN_MATCH_LINE, 4095));
 }
 
 irqreturn_t rp1dpi_hw_isr(int irq, void *dev)
@@ -461,6 +462,10 @@ irqreturn_t rp1dpi_hw_isr(int irq, void *dev)
 	if (u) {
 		rp1dpi_hw_write(dpi, DPI_DMA_IRQ_FLAGS, u);
 		if (dpi) {
+			if (u & DPI_DMA_IRQ_FLAGS_UNDERFLOW_MASK)
+				drm_err_ratelimited(dpi->drm,
+						    "Underflow! (panics=0x%08x)\n",
+						    rp1dpi_hw_read(dpi, DPI_DMA_PANICS));
 			if (u & DPI_DMA_IRQ_FLAGS_DMA_READY_MASK)
 				drm_crtc_handle_vblank(&dpi->pipe.crtc);
 			if (u & DPI_DMA_IRQ_FLAGS_AFIFO_EMPTY_MASK)

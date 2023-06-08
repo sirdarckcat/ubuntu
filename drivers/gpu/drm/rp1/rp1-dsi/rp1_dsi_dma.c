@@ -345,9 +345,9 @@ void rp1dsi_dma_setup(struct rp1_dsi *dsi,
 
 	rp1dsi_dma_write(dsi, DPI_DMA_QOS,
 			 BITS(DPI_DMA_QOS_DQOS, 0x0) |
-			 BITS(DPI_DMA_QOS_ULEV, 0x8) |
+			 BITS(DPI_DMA_QOS_ULEV, 0xb) |
 			 BITS(DPI_DMA_QOS_UQOS, 0x2) |
-			 BITS(DPI_DMA_QOS_LLEV, 0x4) |
+			 BITS(DPI_DMA_QOS_LLEV, 0x8) |
 			 BITS(DPI_DMA_QOS_LQOS, 0x7));
 
 	rp1dsi_dma_write(dsi, DPI_DMA_IRQ_FLAGS, -1);
@@ -360,7 +360,7 @@ void rp1dsi_dma_setup(struct rp1_dsi *dsi,
 	rp1dsi_dma_write(dsi, DPI_DMA_CONTROL,
 			 BITS(DPI_DMA_CONTROL_ARM, (i == 0)) |
 			 BITS(DPI_DMA_CONTROL_AUTO_REPEAT, 1) |
-			 BITS(DPI_DMA_CONTROL_HIGH_WATER, 384) |
+			 BITS(DPI_DMA_CONTROL_HIGH_WATER, 448) |
 			 BITS(DPI_DMA_CONTROL_DEN_POL, 0) |
 			 BITS(DPI_DMA_CONTROL_HSYNC_POL, 0) |
 			 BITS(DPI_DMA_CONTROL_VSYNC_POL, 0) |
@@ -409,7 +409,8 @@ void rp1dsi_dma_stop(struct rp1_dsi *dsi)
 void rp1dsi_dma_vblank_ctrl(struct rp1_dsi *dsi, int enable)
 {
 	rp1dsi_dma_write(dsi, DPI_DMA_IRQ_EN,
-			 BITS(DPI_DMA_IRQ_EN_AFIFO_EMPTY, 1) |
+			 BITS(DPI_DMA_IRQ_EN_AFIFO_EMPTY, 1)      |
+			 BITS(DPI_DMA_IRQ_EN_UNDERFLOW, 1)        |
 			 BITS(DPI_DMA_IRQ_EN_DMA_READY, !!enable) |
 			 BITS(DPI_DMA_IRQ_EN_MATCH_LINE, 4095));
 }
@@ -422,6 +423,10 @@ irqreturn_t rp1dsi_dma_isr(int irq, void *dev)
 	if (u) {
 		rp1dsi_dma_write(dsi, DPI_DMA_IRQ_FLAGS, u);
 		if (dsi) {
+			if (u & DPI_DMA_IRQ_FLAGS_UNDERFLOW_MASK)
+				drm_err_ratelimited(dsi->drm,
+						    "Underflow! (panics=0x%08x)\n",
+						    rp1dsi_dma_read(dsi, DPI_DMA_PANICS));
 			if (u & DPI_DMA_IRQ_FLAGS_DMA_READY_MASK)
 				drm_crtc_handle_vblank(&dsi->pipe.crtc);
 			if (u & DPI_DMA_IRQ_FLAGS_AFIFO_EMPTY_MASK)
