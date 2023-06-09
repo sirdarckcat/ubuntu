@@ -28,3 +28,4 @@ do_dkms_vbox    = false
 do_dkms_wireguard = true
 do_odm_drivers    = true
 disable_d_i	= true
+do_lib_rust	= false
