@@ -569,7 +569,7 @@ static void brcm_pcie_set_tc_qos(struct brcm_pcie *pcie)
 	writel(reg, pcie->base + PCIE_MISC_AXI_INTF_CTRL);
 
 	/* No forwarding means no point separating panic priorities from normal. */
-#define PCIE_PRIO_BASE 5
+#define PCIE_PRIO_BASE 8
 	pcie->vdm_to_qos_map[0] = PCIE_PRIO_BASE;
 	pcie->vdm_to_qos_map[1] = PCIE_PRIO_BASE;
 	pcie->vdm_to_qos_map[2] = PCIE_PRIO_BASE;
