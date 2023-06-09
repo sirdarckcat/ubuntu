@@ -189,11 +189,16 @@
 
 /* VDM messages indexing TCs to AXI priorities */
 /* Indexes 8-15 */
-#define PCIE_2_MISC_VDM_PRIORITY_TO_QOS_MAP_HI		0x4164
+#define PCIE_MISC_VDM_PRIORITY_TO_QOS_MAP_HI		0x4164
 /* Indexes 0-7 */
-#define PCIE_2_MISC_VDM_PRIORITY_TO_QOS_MAP_LO		0x4168
+#define PCIE_MISC_VDM_PRIORITY_TO_QOS_MAP_LO		0x4168
 #define  VDM_PRIORITY_TO_QOS_MAP_SHIFT(x)		(4 * (x))
 #define  VDM_PRIORITY_TO_QOS_MAP_MASK			0xf
+
+#define PCIE_MISC_AXI_INTF_CTRL 0x416C
+#define  AXI_REQFIFO_EN_QOS_PROPAGATION			BIT(7)
+#define  AXI_BRIDGE_LOW_LATENCY_MODE			BIT(6)
+#define  AXI_MASTER_MAX_OUTSTANDING_REQUESTS_MASK	0x3f
 
 #define PCIE_MISC_AXI_READ_ERROR_DATA	0x4170
 
@@ -557,21 +562,33 @@ static void brcm_pcie_set_tc_qos(struct brcm_pcie *pcie)
 
 	/* Bodge VDM forwarding mode */
 	pcie->qos_mode = VDM_INDEXED;
-	/* AXI QoS values for TC[0:7] normal and TC[0:7] panic */
-	/* XXX: needs putting in DT but it's a bit unwieldy */
-	for (i = 0; i < 16; i++)
-		pcie->vdm_to_qos_map[i] = i;
+
+	/* XXX: BCM2712C0 is broken, disable the forwarding search */
+	reg = readl(pcie->base + PCIE_MISC_AXI_INTF_CTRL);
+	reg &= ~AXI_REQFIFO_EN_QOS_PROPAGATION;
+	writel(reg, pcie->base + PCIE_MISC_AXI_INTF_CTRL);
+
+	/* No forwarding means no point separating panic priorities from normal. */
+#define PCIE_PRIO_BASE 5
+	pcie->vdm_to_qos_map[0] = PCIE_PRIO_BASE;
+	pcie->vdm_to_qos_map[1] = PCIE_PRIO_BASE;
+	pcie->vdm_to_qos_map[2] = PCIE_PRIO_BASE;
+	pcie->vdm_to_qos_map[3] = PCIE_PRIO_BASE + 1;
+	pcie->vdm_to_qos_map[4] = PCIE_PRIO_BASE + 2;
+	pcie->vdm_to_qos_map[5] = PCIE_PRIO_BASE + 2;
+	pcie->vdm_to_qos_map[6] = PCIE_PRIO_BASE + 3;
+	pcie->vdm_to_qos_map[7] = PCIE_PRIO_BASE + 3;
 
 	reg = 0;
 	for (i = 0; i < 8; i++)
 		reg |= (pcie->vdm_to_qos_map[i] << VDM_PRIORITY_TO_QOS_MAP_SHIFT(i));
 
-	writel(reg, pcie->base + PCIE_2_MISC_VDM_PRIORITY_TO_QOS_MAP_LO);
+	writel(reg, pcie->base + PCIE_MISC_VDM_PRIORITY_TO_QOS_MAP_LO);
 	reg = 0;
 	for (i = 0; i < 8; i++)
-		reg |= (pcie->vdm_to_qos_map[i + 8] << VDM_PRIORITY_TO_QOS_MAP_SHIFT(i));
+		reg |= (pcie->vdm_to_qos_map[i] << VDM_PRIORITY_TO_QOS_MAP_SHIFT(i));
 
-	writel(reg, pcie->base + PCIE_2_MISC_VDM_PRIORITY_TO_QOS_MAP_HI);
+	writel(reg, pcie->base + PCIE_MISC_VDM_PRIORITY_TO_QOS_MAP_HI);
 
 	reg = readl(pcie->base + PCIE_MISC_CTRL_1);
 	reg |= PCIE_MISC_CTRL_1_EN_VDM_QOS_CONTROL_MASK;
