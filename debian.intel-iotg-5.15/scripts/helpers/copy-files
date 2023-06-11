@@ -28,7 +28,8 @@ SKIP_RULES_D=${SKIP_RULES_D:-}
 #
 # Update configs from master
 #
-rsync -avc --delete "${DEBIAN_MASTER}/config/" "${DEBIAN}/config"
+# Since we are using annotations, don't need this anymore.
+# rsync -avc --delete "${DEBIAN_MASTER}/config/" "${DEBIAN}/config"
 
 #
 # Update package and DTB settings from master.
