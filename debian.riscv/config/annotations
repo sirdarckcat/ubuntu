@@ -8,6 +8,9 @@ include "../../debian.master/config/annotations"
 CONFIG_CPUFREQ_DT                               policy<{'riscv64': 'y'}>
 CONFIG_CPUFREQ_DT                               note<'not autoloadable'>
 
+CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE         policy<{'riscv64': 'y'}>
+CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE         note<'cpufreq-dt gets stuck switching from 408MHz to 1008MHz on the Allwinner D1 using Lunar u-boot'>
+
 CONFIG_REGULATOR_FIXED_VOLTAGE                  policy<{'riscv64': 'y'}>
 CONFIG_REGULATOR_FIXED_VOLTAGE                  note<'needed by Allwinner D1 pinctrl/gpio'>
 
@@ -35,6 +38,7 @@ CONFIG_ATH9K_WOW                                policy<{'riscv64': 'y'}>
 CONFIG_CLK_STARFIVE_JH7110_AON                  policy<{'riscv64': 'm'}>
 CONFIG_CLK_STARFIVE_JH7110_SYS                  policy<{'riscv64': 'y'}>
 CONFIG_CLK_STARFIVE_JH71X0                      policy<{'riscv64': 'y'}>
+CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND            policy<{'riscv64': 'n'}>
 CONFIG_CRYPTO_DEV_ALLWINNER                     policy<{'riscv64': 'y'}>
 CONFIG_CRYPTO_DEV_SUN4I_SS                      policy<{'riscv64': 'n'}>
 CONFIG_CRYPTO_DEV_SUN8I_CE                      policy<{'riscv64': 'm'}>
