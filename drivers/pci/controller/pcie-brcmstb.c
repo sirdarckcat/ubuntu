@@ -179,7 +179,7 @@
 #define PCIE_MISC_UBUS_BAR10_CONFIG_REMAP_HI		0x4140
 
 /* AXI priority forwarding - automatic level-based */
-#define PCIE_MISC_TC(x)_QUEUE_THRESHOLD_TO_QOS_MAP	(0x4160 - (x) * 4)
+#define PCIE_MISC_TC_QUEUE_TO_QOS_MAP(x)		(0x4160 - (x) * 4)
 /* Defined in quarter-fullness */
 #define  QUEUE_THRESHOLD_34_TO_QOS_MAP_SHIFT		12
 #define  QUEUE_THRESHOLD_23_TO_QOS_MAP_SHIFT		8
@@ -295,11 +295,6 @@ enum pcie_type {
 	BCM2712,
 };
 
-enum qos_mode {
-	VDM_INDEXED,
-	LEVEL_INDEXED,
-};
-
 struct pcie_cfg_data {
 	const int *offsets;
 	const enum pcie_type type;
@@ -350,9 +345,7 @@ struct brcm_pcie {
 	int			num_memc;
 	u64			memc_size[PCIE_BRCM_MAX_MEMC];
 	u32			hw_rev;
-	int			vdm_to_qos_map[16];
-	int			tc_queue_lvl_to_qos_map[8];
-	enum qos_mode		qos_mode;
+	u32			qos_map;
 	void			(*perst_set)(struct brcm_pcie *pcie, u32 val);
 	void			(*bridge_sw_init_set)(struct brcm_pcie *pcie, u32 val);
 	bool			(*rc_mode)(struct brcm_pcie *pcie);
@@ -560,47 +553,49 @@ static void brcm_pcie_set_tc_qos(struct brcm_pcie *pcie)
 	if (pcie->type != BCM2712)
 		return;
 
-	/* Bodge VDM forwarding mode */
-	pcie->qos_mode = VDM_INDEXED;
-
 	/* XXX: BCM2712C0 is broken, disable the forwarding search */
 	reg = readl(pcie->base + PCIE_MISC_AXI_INTF_CTRL);
 	reg &= ~AXI_REQFIFO_EN_QOS_PROPAGATION;
 	writel(reg, pcie->base + PCIE_MISC_AXI_INTF_CTRL);
 
-	/* No forwarding means no point separating panic priorities from normal. */
-#define PCIE_PRIO_BASE 8
-	pcie->vdm_to_qos_map[0] = PCIE_PRIO_BASE;
-	pcie->vdm_to_qos_map[1] = PCIE_PRIO_BASE;
-	pcie->vdm_to_qos_map[2] = PCIE_PRIO_BASE;
-	pcie->vdm_to_qos_map[3] = PCIE_PRIO_BASE + 1;
-	pcie->vdm_to_qos_map[4] = PCIE_PRIO_BASE + 2;
-	pcie->vdm_to_qos_map[5] = PCIE_PRIO_BASE + 2;
-	pcie->vdm_to_qos_map[6] = PCIE_PRIO_BASE + 3;
-	pcie->vdm_to_qos_map[7] = PCIE_PRIO_BASE + 3;
-
-	reg = 0;
-	for (i = 0; i < 8; i++)
-		reg |= (pcie->vdm_to_qos_map[i] << VDM_PRIORITY_TO_QOS_MAP_SHIFT(i));
-
-	writel(reg, pcie->base + PCIE_MISC_VDM_PRIORITY_TO_QOS_MAP_LO);
-	reg = 0;
-	for (i = 0; i < 8; i++)
-		reg |= (pcie->vdm_to_qos_map[i] << VDM_PRIORITY_TO_QOS_MAP_SHIFT(i));
-
-	writel(reg, pcie->base + PCIE_MISC_VDM_PRIORITY_TO_QOS_MAP_HI);
-
+	/* Disable VDM reception by default - QoS map defaults to 0 */
 	reg = readl(pcie->base + PCIE_MISC_CTRL_1);
-	reg |= PCIE_MISC_CTRL_1_EN_VDM_QOS_CONTROL_MASK;
+	reg &= ~PCIE_MISC_CTRL_1_EN_VDM_QOS_CONTROL_MASK;
 	writel(reg, pcie->base + PCIE_MISC_CTRL_1);
-	/* Match Vendor ID of 0 */
-	writel(0, pcie->base + PCIE_RC_TL_VDM_CTL1);
-	/* Forward VDMs to priority interface */
-	reg = readl(pcie->base + PCIE_RC_TL_VDM_CTL0);
-	reg |= PCIE_RC_TL_VDM_CTL0_VDM_ENABLED_MASK |
-		PCIE_RC_TL_VDM_CTL0_VDM_IGNORETAG_MASK |
-		PCIE_RC_TL_VDM_CTL0_VDM_IGNOREVNDRID_MASK ;
-	writel(reg, pcie->base + PCIE_RC_TL_VDM_CTL0);
+
+	if (!of_property_read_u32(pcie->np, "brcm,fifo-qos-map", &pcie->qos_map)) {
+		/*
+		 * Backpressure mode - bottom 4 nibbles are QoS for each
+		 * quartile of FIFO level. Each TC gets the same map, because
+		 * this mode is intended for nonrealtime EPs.
+		 */
+
+		pcie->qos_map &= 0x0000ffff;
+		for (i = 0; i < 8; i++)
+			writel(pcie->qos_map, pcie->base + PCIE_MISC_TC_QUEUE_TO_QOS_MAP(i));
+
+		return;
+	}
+
+	if (!of_property_read_u32(pcie->np, "brcm,vdm-qos-map", &pcie->qos_map)) {
+
+		reg = readl(pcie->base + PCIE_MISC_CTRL_1);
+		reg |= PCIE_MISC_CTRL_1_EN_VDM_QOS_CONTROL_MASK;
+		writel(reg, pcie->base + PCIE_MISC_CTRL_1);
+
+		/* No forwarding means no point separating panic priorities from normal */
+		writel(pcie->qos_map, pcie->base + PCIE_MISC_VDM_PRIORITY_TO_QOS_MAP_LO);
+		writel(pcie->qos_map, pcie->base + PCIE_MISC_VDM_PRIORITY_TO_QOS_MAP_HI);
+
+		/* Match Vendor ID of 0 */
+		writel(0, pcie->base + PCIE_RC_TL_VDM_CTL1);
+		/* Forward VDMs to priority interface - at least the rx counters work */
+		reg = readl(pcie->base + PCIE_RC_TL_VDM_CTL0);
+		reg |= PCIE_RC_TL_VDM_CTL0_VDM_ENABLED_MASK |
+			PCIE_RC_TL_VDM_CTL0_VDM_IGNORETAG_MASK |
+			PCIE_RC_TL_VDM_CTL0_VDM_IGNOREVNDRID_MASK;
+		writel(reg, pcie->base + PCIE_RC_TL_VDM_CTL0);
+	}
 }
 
 static void brcm_pcie_config_clkreq(struct brcm_pcie *pcie)
