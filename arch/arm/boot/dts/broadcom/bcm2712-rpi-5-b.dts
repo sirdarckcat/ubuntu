@@ -552,7 +552,7 @@ spi0_cs_pins: &rp1_spi0_cs_gpio7 {};
 / {
 	chosen {
 		bootargs = "coherent_pool=1M 8250.nr_uarts=1 snd_bcm2835.enable_compat_alsa=0 snd_bcm2835.enable_hdmi=1";
-		stdout-path = "serial0";
+		stdout-path = "serial10:115200n8";
 	};
 
 	fan: cooling_fan {
@@ -812,6 +812,7 @@ spi0_cs_pins: &rp1_spi0_cs_gpio7 {};
 	aliases {
 		blconfig = &blconfig;
 		bluetooth = &bluetooth;
+		console = &uart10;
 		ethernet0 = &rp1_eth;
 		fb = &fb;
 		mailbox = &mailbox;
@@ -824,6 +825,7 @@ spi0_cs_pins: &rp1_spi0_cs_gpio7 {};
 		uart10 = &uart10;
 		serial0 = &uart0;
 		serial1 = &uart1;
+		serial10 = &uart10;
 		i2c = &i2c_arm;
 		i2c0 = &i2c0;
 		i2c1 = &i2c1;
