@@ -5,6 +5,9 @@
 
 include "../../debian.master/config/annotations"
 
+CONFIG_CPUFREQ_DT                               policy<{'riscv64': 'y'}>
+CONFIG_CPUFREQ_DT                               note<'not autoloadable'>
+
 CONFIG_REGULATOR_FIXED_VOLTAGE                  policy<{'riscv64': 'y'}>
 CONFIG_REGULATOR_FIXED_VOLTAGE                  note<'needed by Allwinner D1 pinctrl/gpio'>
 
