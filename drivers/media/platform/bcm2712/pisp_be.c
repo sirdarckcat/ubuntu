@@ -56,9 +56,8 @@ MODULE_LICENSE("GPL v2");
 #define N_HW_ADDRESSES 14
 #define N_HW_ENABLES 2
 
-#define PISP_BE_VERSION_2712C0 0x02252700
-#define PISP_BE_VERSION_2712D0 0x02251301
-#define PISP_BE_VERSION_MINOR(v) ((v) & 0xF)
+#define PISP_BE_VERSION_2712C1 0x02252700
+#define PISP_BE_VERSION_MINOR_BITS 0xF
 
 /*
  * This maps our nodes onto the inputs/outputs of the actual PiSP Back End.
@@ -253,7 +252,7 @@ static int hw_init(struct pispbe_dev *pispbe)
 	u = read_reg(pispbe, PISP_BE_VERSION_OFFSET);
 	dev_info(pispbe->dev, "pispbe_probe: HW version:  0x%08x", u);
 	pispbe->hw_version = u;
-	if (u != PISP_BE_VERSION_2712C0 && u != PISP_BE_VERSION_2712D0)
+	if ((u & ~PISP_BE_VERSION_MINOR_BITS) != PISP_BE_VERSION_2712C1)
 		return -ENODEV;
 
 	/* Clear leftover interrupts */
@@ -268,8 +267,13 @@ static int hw_init(struct pispbe_dev *pispbe)
 		dev_err(pispbe->dev, "pispbe_probe: HW is stuck or busy\n");
 		return -EBUSY;
 	}
-	/* AXI QOS=0, CACHE=4'b0010, PROT=3'b011 */
-	write_reg(pispbe, PISP_BE_AXI_OFFSET, 0x32003200u);
+	/*
+	 * AXI QOS=0, CACHE=4'b0010, PROT=3'b011
+	 * Also set "chicken bits" 22:20 which enable sub-64-byte bursts
+	 * and AXI AWID/BID variability (on versions which support this).
+	 */
+	write_reg(pispbe, PISP_BE_AXI_OFFSET, 0x32703200u);
+
 	/* Enable both interrupt flags */
 	write_reg(pispbe, PISP_BE_INTERRUPT_EN_OFFSET, 0x00000003u);
 	return 0;
@@ -422,8 +426,8 @@ fixup_addrs_enables(dma_addr_t addrs[N_HW_ADDRESSES],
 		 * This shouldn't happen; pispbe_schedule_internal should insist
 		 * on an input.
 		 */
-		v4l2_warn(&node_group->v4l2_dev,
-			  "ISP-BE missing input\n");
+		dev_warn(node_group->pispbe->dev,
+			"ISP-BE missing input\n");
 		hw_enables[0] = 0;
 		hw_enables[1] = 0;
 		return;
@@ -495,7 +499,6 @@ fixup_addrs_enables(dma_addr_t addrs[N_HW_ADDRESSES],
 static int pispbe_schedule_internal(struct pispbe_node_group *node_group,
 				    unsigned long flags)
 {
-
 	struct pisp_be_tiles_config *config_tiles_buffer;
 	struct pispbe_dev *pispbe = node_group->pispbe;
 	struct pispbe_buffer *buf[PISPBE_NUM_NODES];
@@ -772,11 +775,15 @@ static int pisp_be_validate_config(struct pispbe_node_group *node_group,
 {
 	u32 bayer_enables = config->config.global.bayer_enables;
 	u32 rgb_enables = config->config.global.rgb_enables;
+	struct device *dev = node_group->pispbe->dev;
 	struct v4l2_format *fmt;
 	unsigned int bpl, size, i, j;
 
-	if (!(bayer_enables & PISP_BE_BAYER_ENABLE_INPUT))
+	if (!(bayer_enables & PISP_BE_BAYER_ENABLE_INPUT) ==
+	    !(rgb_enables & PISP_BE_RGB_ENABLE_INPUT)) {
+		dev_err(dev, "%s: Not one input enabled\n", __func__);
 		return -EIO;
+	}
 
 	/* Ensure output config strides and buffer sizes match the V4L2 formats. */
 	fmt = &node_group->node[TDN_OUTPUT_NODE].format;
@@ -784,13 +791,13 @@ static int pisp_be_validate_config(struct pispbe_node_group *node_group,
 		bpl = config->config.tdn_output_format.stride;
 		size = bpl * config->config.tdn_output_format.height;
 		if (fmt->fmt.pix_mp.plane_fmt[0].bytesperline < bpl) {
-			v4l2_err(&node_group->v4l2_dev, "%s: bpl mismatch on tdn_output\n",
-				 __func__);
+			dev_err(dev, "%s: bpl mismatch on tdn_output\n",
+				__func__);
 			return -EINVAL;
 		}
 		if (fmt->fmt.pix_mp.plane_fmt[0].sizeimage < size) {
-			v4l2_err(&node_group->v4l2_dev, "%s: size mismatch on tdn_output\n",
-				 __func__);
+			dev_err(dev, "%s: size mismatch on tdn_output\n",
+				__func__);
 			return -EINVAL;
 		}
 	}
@@ -800,13 +807,13 @@ static int pisp_be_validate_config(struct pispbe_node_group *node_group,
 		bpl = config->config.stitch_output_format.stride;
 		size = bpl * config->config.stitch_output_format.height;
 		if (fmt->fmt.pix_mp.plane_fmt[0].bytesperline < bpl) {
-			v4l2_err(&node_group->v4l2_dev, "%s: bpl mismatch on stitch_output\n",
-				 __func__);
+			dev_err(dev, "%s: bpl mismatch on stitch_output\n",
+				__func__);
 			return -EINVAL;
 		}
 		if (fmt->fmt.pix_mp.plane_fmt[0].sizeimage < size) {
-			v4l2_err(&node_group->v4l2_dev, "%s: size mismatch on stitch_output\n",
-				 __func__);
+			dev_err(dev, "%s: size mismatch on stitch_output\n",
+				__func__);
 			return -EINVAL;
 		}
 	}
@@ -814,6 +821,10 @@ static int pisp_be_validate_config(struct pispbe_node_group *node_group,
 	for (j = 0; j < PISP_BACK_END_NUM_OUTPUTS; j++) {
 		if (!(rgb_enables & PISP_BE_RGB_ENABLE_OUTPUT(j)))
 			continue;
+		if (config->config.output_format[j].image.format &
+		    PISP_IMAGE_FORMAT_WALLPAPER_ROLL)
+			continue; /* TODO: Size checks for wallpaper formats */
+
 		fmt = &node_group->node[OUTPUT0_NODE + j].format;
 		for (i = 0; i < fmt->fmt.pix_mp.num_planes; i++) {
 			bpl = !i ? config->config.output_format[j].image.stride
@@ -824,13 +835,13 @@ static int pisp_be_validate_config(struct pispbe_node_group *node_group,
 						PISP_IMAGE_FORMAT_SAMPLING_420)
 				size >>= 1;
 			if (fmt->fmt.pix_mp.plane_fmt[i].bytesperline < bpl) {
-				v4l2_err(&node_group->v4l2_dev, "%s: bpl mismatch on output %d\n",
-					 __func__, j);
+				dev_err(dev, "%s: bpl mismatch on output %d\n",
+					__func__, j);
 				return -EINVAL;
 			}
 			if (fmt->fmt.pix_mp.plane_fmt[i].sizeimage < size) {
-				v4l2_err(&node_group->v4l2_dev, "%s: size mismatch on input\n",
-					 __func__);
+				dev_err(dev, "%s: size mismatch on output\n",
+					__func__);
 				return -EINVAL;
 			}
 		}
@@ -1650,7 +1661,6 @@ pispbe_init_node(struct pispbe_node_group *node_group, unsigned int id)
 			"Failed to register video %s device node\n",
 			NODE_NAME(node));
 		goto err_unregister_queue;
-
 	}
 	video_set_drvdata(vdev, node);
 
@@ -1772,7 +1782,7 @@ static int pispbe_init_group(struct pispbe_dev *pispbe, unsigned int id)
 					PISP_BE_NUM_CONFIG_BUFFERS,
 				   &node_group->config_dma_addr, GFP_KERNEL);
 	if (!node_group->config) {
-		v4l2_err(&node_group->v4l2_dev, "Unable to allocate cached config buffers.\n");
+		dev_err(pispbe->dev, "Unable to allocate cached config buffers.\n");
 		ret = -ENOMEM;
 		goto err_unregister_mdev;
 	}
