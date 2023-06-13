@@ -14,8 +14,9 @@
 #include "sm8150-qed-qups.dtsi"
 
 &tlmm {
-    /delete-node/ bt_en_default;
-    /delete-node/ wlan_en_default;
+	/delete-node/ bt_en_default;
+	/delete-node/ wlan_en_default;
+	/delete-node/ qup_uart9_default;
 
 	sdc2_on: sdc2_on {
 		clk {
@@ -423,10 +424,52 @@
 			bias-pull-down;
 		};
 	};
+
+	ss5_pwr_ctrl_pins: ss5_pwr_ctrl_pins {
+		ss5_pwr_ctrl_rst_on: ss5_pwr_ctrl_rst_on {
+			mux {
+				pins = "gpio39", "gpio40";
+				function = "gpio";
+			};
+
+			config {
+				pins = "gpio39", "gpio40";
+				drive-strength = <2>; /* 2 mA */
+				bias-pull-up;
+				output-high;
+			};
+		};
+
+		ss5_pwr_ctrl_rst_off: ss5_pwr_ctrl_off {
+			mux {
+				pins = "gpio39", "gpio40";
+				function = "gpio";
+			};
+
+			config {
+				pins = "gpio39", "gpio40";
+				drive-strength = <2>; /* 2 mA */
+				bias-pull-down;
+				output-low;
+			};
+		};
+	};
+
+	pinctrl_pps: ppsgrp {
+		mux {
+			pins = "gpio87";
+			function = "gpio";
+		};
+
+		config {
+			pins = "gpio87";
+			bias-pull-down;
+		};
+	};
 }; /* tlmm */
 
 &sdhc_2 {
-    status = "okay";
+	status = "okay";
 	/* cd-gpios = <&tlmm 4 GPIO_ACTIVE_LOW>; */
 	pinctrl-names = "default", "sleep";
 	pinctrl-0 = <&sdc2_on>;
@@ -434,9 +477,9 @@
 	vqmmc-supply = <&vreg_l13c_2p96>; /* IO line power */
 	vmmc-supply = <&vreg_l17a_2p96>;  /* Card power line */
 	bus-width = <4>;
-    no-sd;
-    no-emmc;
-    non-removable;
+	no-sd;
+	no-emmc;
+	non-removable;
 };
 
 /* /delete-node/ &bluetooth; */
@@ -514,7 +557,7 @@
 		pinctl-0 = <&meter_board_default>;
 		reset-gpios = <&tlmm 82 GPIO_ACTIVE_LOW>;
 		status = "ok";
-    };
+	};
 
 	rotary_switch {
 		compatible = "gpio-keys";
@@ -544,13 +587,13 @@
 }; */
 
 &spmi_bus {
-        pm8150_4: pmic@4 {
+	pm8150_4: pmic@4 {
 		compatible = "qcom,pm8150", "qcom,spmi-pmic";
 		reg = <0x4 SPMI_USID>;
 		#address-cells = <1>;
 		#size-cells = <0>;
 
-        pon_2: power-on@800 {
+	pon_2: power-on@800 {
 			compatible = "qcom,pm8916-pon";
 			reg = <0x0800>;
 
@@ -692,6 +735,8 @@
 	};
 
 	/* GNSS UART Instance for CDP/MTP platform  2-wire */
+	/delete-node/ uart9;
+
 	serial_gnss: serial@a84000 {
 		status = "okay";
 		compatible = "qcom,geni-uart";
