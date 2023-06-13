@@ -170,6 +170,8 @@
 #define FC_COUNT			8
 #define FC_NUM(idx,off)			((idx) * 32 + (off))
 
+#define AUX_SEL				1
+
 #define VIDEO_CLOCKS_OFFSET		0x4000
 #define VIDEO_CLK_VEC_CTRL		(VIDEO_CLOCKS_OFFSET + 0x0000)
 #define VIDEO_CLK_VEC_DIV_INT		(VIDEO_CLOCKS_OFFSET + 0x0004)
@@ -235,7 +237,6 @@
 #define FC_TIMEOUT_NS			100000000
 
 #define MAX_CLK_PARENTS	8
-#define AUX_PARENT_STR	"rp1-clk-aux-src"
 
 #define MEASURE_CLOCK_RATE
 const char * const fc0_ref_clk_name = "clk_slow_sys";
@@ -421,29 +422,6 @@ static inline u32 clockman_read(struct rp1_clockman *clockman, u32 reg)
 	dev_dbg(clockman->dev,
 		"%s: read reg 0x%x: 0x%x\n", __func__, reg, val);
 	return val;
-}
-
-static inline bool is_aux_src(const struct clk_hw *hw, unsigned int index)
-{
-	struct rp1_clock *clock = container_of(hw, struct rp1_clock, hw);
-	const struct rp1_clock_data *data = clock->data;
-	const char *name = data->parents[index];
-
-	return !strncmp(name, AUX_PARENT_STR, strlen(AUX_PARENT_STR));
-}
-
-static inline unsigned int find_aux_src_index(const struct clk_hw *hw)
-{
-	struct rp1_clock *clock = container_of(hw, struct rp1_clock, hw);
-	const struct rp1_clock_data *data = clock->data;
-	unsigned int i;
-
-	for (i = 0; i < data->num_std_parents + data->num_aux_parents; i++)
-		if (is_aux_src(hw, i))
-			return i;
-
-	WARN(1, "%s: (%s) No aux source defined!", __func__, data->name);
-	return MAX_CLK_PARENTS;
 }
 
 #ifdef MEASURE_CLOCK_RATE
@@ -1266,7 +1244,10 @@ static u8 rp1_clock_get_parent(struct clk_hw *hw)
 		parent = (ctrl & data->clk_src_mask) >> CLK_CTRL_SRC_SHIFT;
 	}
 
-	if (is_aux_src(hw, parent)) {
+	if (parent >= data->num_std_parents)
+		parent = AUX_SEL;
+
+	if (parent == AUX_SEL) {
 		/*
 		 * Clock parent is an auxiliary source, so get the parent from
 		 * the AUXSRC register field.
@@ -1287,7 +1268,6 @@ static int rp1_clock_set_parent(struct clk_hw *hw, u8 index)
 	struct rp1_clock *clock = container_of(hw, struct rp1_clock, hw);
 	struct rp1_clockman *clockman = clock->clockman;
 	const struct rp1_clock_data *data = clock->data;
-	unsigned int aux_index;
 	u32 ctrl, sel;
 
 	dev_dbg(clockman->dev,
@@ -1298,12 +1278,7 @@ static int rp1_clock_set_parent(struct clk_hw *hw, u8 index)
 
 	if (index >= data->num_std_parents) {
 		/* This is an aux source request */
-		aux_index = find_aux_src_index(hw);
-
-		dev_dbg(clockman->dev,
-			"%s: (%s) aux_index %d\n", __func__, data->name, aux_index);
-
-		if (aux_index == MAX_CLK_PARENTS)
+		if (index >= data->num_std_parents + data->num_aux_parents)
 			return -EINVAL;
 
 		/* Select parent from aux list */
@@ -1311,7 +1286,7 @@ static int rp1_clock_set_parent(struct clk_hw *hw, u8 index)
 					  CLK_CTRL_AUXSRC_MASK,
 					  CLK_CTRL_AUXSRC_SHIFT);
 		/* Set src to aux list */
-		ctrl = set_register_field(ctrl, aux_index, data->clk_src_mask,
+		ctrl = set_register_field(ctrl, AUX_SEL, data->clk_src_mask,
 					  CLK_CTRL_SRC_SHIFT);
 	} else {
 		ctrl = set_register_field(ctrl, index, data->clk_src_mask,
@@ -1446,7 +1421,7 @@ static int rp1_clock_determine_rate(struct clk_hw *hw,
 	if ((clk_hw_get_flags(hw) & CLK_SET_RATE_NO_REPARENT)) {
 		i = rp1_clock_get_parent(hw);
 		parent = clk_hw_get_parent_by_index(hw, i);
-		if (parent != NULL && !is_aux_src(hw, i)) {
+		if (parent) {
 			rp1_clock_choose_div_and_prate(hw, i, req->rate, &prate,
 						      &calc_rate);
 			if (calc_rate > 0) {
@@ -1468,7 +1443,7 @@ static int rp1_clock_determine_rate(struct clk_hw *hw,
 	 */
 	for (i = 0; i < clk_hw_get_num_parents(hw); i++) {
 		parent = clk_hw_get_parent_by_index(hw, i);
-		if (!parent || is_aux_src(hw, i))
+		if (!parent)
 			continue;
 
 		rp1_clock_choose_div_and_prate(hw, i, req->rate, &prate,
@@ -1744,6 +1719,9 @@ static struct clk_hw *rp1_register_clock(struct rp1_clockman *clockman,
 	dev_dbg(clockman->dev, "%s: (%s)\n", __func__, clock_data->name);
 	BUG_ON(MAX_CLK_PARENTS <
 	       clock_data->num_std_parents + clock_data->num_aux_parents);
+	/* There must be a gap for the AUX selector */
+	BUG_ON((clock_data->num_std_parents > AUX_SEL) &&
+	       strcmp("-", clock_data->parents[AUX_SEL]));
 
 	memset(&init, 0, sizeof(init));
 	init.parent_names = clock_data->parents;
@@ -1923,9 +1901,11 @@ static const struct rp1_clk_desc clk_desc_array[] = {
 */
 	[RP1_CLK_UART] = REGISTER_CLK(
 				.name = "clk_uart",
-				.parents = {"pll_sys_pri_ph"},
-				.num_std_parents = 1,
-				.num_aux_parents = 0,
+				.parents = {"pll_sys_pri_ph",
+					    "pll_video",
+					    "xosc"},
+				.num_std_parents = 0,
+				.num_aux_parents = 3,
 				.ctrl_reg = CLK_UART_CTRL,
 				.div_int_reg = CLK_UART_DIV_INT,
 				.sel_reg = CLK_UART_SEL,
@@ -1945,11 +1925,10 @@ static const struct rp1_clk_desc clk_desc_array[] = {
 
 	[RP1_CLK_PWM0] = REGISTER_CLK(
 				.name = "clk_pwm0",
-				.parents = {AUX_PARENT_STR,
-					    "pll_audio_pri_ph",
+				.parents = {"pll_audio_pri_ph",
 					    "pll_video_sec",
 					    "xosc"},
-				.num_std_parents = 1,
+				.num_std_parents = 0,
 				.num_aux_parents = 3,
 				.ctrl_reg = CLK_PWM0_CTRL,
 				.div_int_reg = CLK_PWM0_DIV_INT,
@@ -1960,11 +1939,10 @@ static const struct rp1_clk_desc clk_desc_array[] = {
 
 	[RP1_CLK_PWM1] = REGISTER_CLK(
 				.name = "clk_pwm1",
-				.parents = {AUX_PARENT_STR,
-					    "pll_audio_pri_ph",
+				.parents = {"pll_audio_pri_ph",
 					    "pll_video_sec",
 					    "xosc"},
-				.num_std_parents = 1,
+				.num_std_parents = 0,
 				.num_aux_parents = 3,
 				.ctrl_reg = CLK_PWM1_CTRL,
 				.div_int_reg = CLK_PWM1_DIV_INT,
@@ -1997,11 +1975,10 @@ static const struct rp1_clk_desc clk_desc_array[] = {
 
 	[RP1_CLK_I2S] = REGISTER_CLK(
 				.name = "clk_i2s",
-				.parents = {AUX_PARENT_STR,
-					    "-",
+				.parents = {"xosc",
 					    "pll_audio",
 					    "pll_audio_sec"},
-				.num_std_parents = 1,
+				.num_std_parents = 0,
 				.num_aux_parents = 3,
 				.ctrl_reg = CLK_I2S_CTRL,
 				.div_int_reg = CLK_I2S_DIV_INT,
@@ -2011,9 +1988,9 @@ static const struct rp1_clk_desc clk_desc_array[] = {
 
 	[RP1_CLK_MIPI0_CFG] = REGISTER_CLK(
 				.name = "clk_mipi0_cfg",
-				.parents = {"xosc",},
-				.num_std_parents = 1,
-				.num_aux_parents = 0,
+				.parents = {"xosc"},
+				.num_std_parents = 0,
+				.num_aux_parents = 1,
 				.ctrl_reg = CLK_MIPI0_CFG_CTRL,
 				.div_int_reg = CLK_MIPI0_CFG_DIV_INT,
 				.sel_reg = CLK_MIPI0_CFG_SEL,
@@ -2022,12 +1999,9 @@ static const struct rp1_clk_desc clk_desc_array[] = {
 
 	[RP1_CLK_MIPI1_CFG] = REGISTER_CLK(
 				.name = "clk_mipi1_cfg",
-				.parents = {"xosc",
-					    AUX_PARENT_STR,
-					    "clksrc_testdbg6",
-					    "clksrc_testdbg4"},
-				.num_std_parents = 2,
-				.num_aux_parents = 2,
+				.parents = {"xosc"},
+				.num_std_parents = 0,
+				.num_aux_parents = 1,
 				.ctrl_reg = CLK_MIPI1_CFG_CTRL,
 				.div_int_reg = CLK_MIPI1_CFG_DIV_INT,
 				.sel_reg = CLK_MIPI1_CFG_SEL,
@@ -2092,11 +2066,8 @@ static const struct rp1_clk_desc clk_desc_array[] = {
 */
 	[RP1_CLK_ETH_TSU] = REGISTER_CLK(
 				.name = "clk_eth_tsu",
-				.parents = {AUX_PARENT_STR,
-					    "xosc",
-					    /* TODO: add GPCLK inputs */
-					    },
-				.num_std_parents = 1,
+				.parents = {"xosc"},
+				.num_std_parents = 0,
 				.num_aux_parents = 1,
 				.ctrl_reg = CLK_ETH_TSU_CTRL,
 				.div_int_reg = CLK_ETH_TSU_DIV_INT,
@@ -2107,8 +2078,8 @@ static const struct rp1_clk_desc clk_desc_array[] = {
 	[RP1_CLK_ADC] = REGISTER_CLK(
 				.name = "clk_adc",
 				.parents = {"xosc"},
-				.num_std_parents = 1,
-				.num_aux_parents = 0,
+				.num_std_parents = 0,
+				.num_aux_parents = 1,
 				.ctrl_reg = CLK_ADC_CTRL,
 				.div_int_reg = CLK_ADC_DIV_INT,
 				.sel_reg = CLK_ADC_SEL,
@@ -2117,9 +2088,8 @@ static const struct rp1_clk_desc clk_desc_array[] = {
 
 	[RP1_CLK_SDIO_TIMER] = REGISTER_CLK(
 				.name = "clk_sdio_timer",
-				.parents = {AUX_PARENT_STR,
-					    "xosc"},
-				.num_std_parents = 1,
+				.parents = {"xosc"},
+				.num_std_parents = 0,
 				.num_aux_parents = 1,
 				.ctrl_reg = CLK_SDIO_TIMER_CTRL,
 				.div_int_reg = CLK_SDIO_TIMER_DIV_INT,
@@ -2129,10 +2099,8 @@ static const struct rp1_clk_desc clk_desc_array[] = {
 
 	[RP1_CLK_SDIO_ALT_SRC] = REGISTER_CLK(
 				.name = "clk_sdio_alt_src",
-				.parents = {AUX_PARENT_STR,
-					    "pll_sys",
-					    },
-				.num_std_parents = 1,
+				.parents = {"pll_sys"},
+				.num_std_parents = 0,
 				.num_aux_parents = 1,
 				.ctrl_reg = CLK_SDIO_ALT_SRC_CTRL,
 				.div_int_reg = CLK_SDIO_ALT_SRC_DIV_INT,
@@ -2143,8 +2111,8 @@ static const struct rp1_clk_desc clk_desc_array[] = {
 	[RP1_CLK_GP0] = REGISTER_CLK(
 				.name = "clk_gp0",
 				.parents = {"xosc"},
-				.num_std_parents = 1,
-				.num_aux_parents = 0,
+				.num_std_parents = 0,
+				.num_aux_parents = 1,
 				.ctrl_reg = CLK_GP0_CTRL,
 				.div_int_reg = CLK_GP0_DIV_INT,
 				.div_frac_reg = CLK_GP0_DIV_FRAC,
@@ -2155,8 +2123,8 @@ static const struct rp1_clk_desc clk_desc_array[] = {
 	[RP1_CLK_GP1] = REGISTER_CLK(
 				.name = "clk_gp1",
 				.parents = {"xosc"},
-				.num_std_parents = 1,
-				.num_aux_parents = 0,
+				.num_std_parents = 0,
+				.num_aux_parents = 1,
 				.ctrl_reg = CLK_GP1_CTRL,
 				.div_int_reg = CLK_GP1_DIV_INT,
 				.div_frac_reg = CLK_GP1_DIV_FRAC,
@@ -2167,8 +2135,8 @@ static const struct rp1_clk_desc clk_desc_array[] = {
 	[RP1_CLK_GP2] = REGISTER_CLK(
 				.name = "clk_gp2",
 				.parents = {"xosc"},
-				.num_std_parents = 1,
-				.num_aux_parents = 0,
+				.num_std_parents = 0,
+				.num_aux_parents = 1,
 				.ctrl_reg = CLK_GP2_CTRL,
 				.div_int_reg = CLK_GP2_DIV_INT,
 				.div_frac_reg = CLK_GP2_DIV_FRAC,
@@ -2179,8 +2147,8 @@ static const struct rp1_clk_desc clk_desc_array[] = {
 	[RP1_CLK_GP3] = REGISTER_CLK(
 				.name = "clk_gp3",
 				.parents = {"xosc"},
-				.num_std_parents = 1,
-				.num_aux_parents = 0,
+				.num_std_parents = 0,
+				.num_aux_parents = 1,
 				.ctrl_reg = CLK_GP3_CTRL,
 				.div_int_reg = CLK_GP3_DIV_INT,
 				.div_frac_reg = CLK_GP3_DIV_FRAC,
@@ -2191,8 +2159,8 @@ static const struct rp1_clk_desc clk_desc_array[] = {
 	[RP1_CLK_GP4] = REGISTER_CLK(
 				.name = "clk_gp4",
 				.parents = {"xosc"},
-				.num_std_parents = 1,
-				.num_aux_parents = 0,
+				.num_std_parents = 0,
+				.num_aux_parents = 1,
 				.ctrl_reg = CLK_GP4_CTRL,
 				.div_int_reg = CLK_GP4_DIV_INT,
 				.div_frac_reg = CLK_GP4_DIV_FRAC,
@@ -2202,9 +2170,9 @@ static const struct rp1_clk_desc clk_desc_array[] = {
 
 	[RP1_CLK_GP5] = REGISTER_CLK(
 				.name = "clk_gp5",
-				.parents = {"xsoc"},
-				.num_std_parents = 1,
-				.num_aux_parents = 0,
+				.parents = {"xosc"},
+				.num_std_parents = 0,
+				.num_aux_parents = 1,
 				.ctrl_reg = CLK_GP5_CTRL,
 				.div_int_reg = CLK_GP5_DIV_INT,
 				.div_frac_reg = CLK_GP5_DIV_FRAC,
@@ -2214,16 +2182,16 @@ static const struct rp1_clk_desc clk_desc_array[] = {
 
 	[RP1_CLK_VEC] = REGISTER_CLK(
 				.name = "clk_vec",
-				.parents = {AUX_PARENT_STR,
-					    "pll_sys_pri_ph",
+				.parents = {"pll_sys_pri_ph",
 					    "pll_video_sec",
 					    "pll_video",
 					    "clk_gp0",
 					    "clk_gp1",
 					    "clk_gp2",
-					    "clk_gp3"},
-				.num_std_parents = 1, /* including the placeholder for AUX */
-				.num_aux_parents = 7, /* XXX in fact there are more than 8 */
+					    "clk_gp3",
+					    "clk_gp4"},
+				.num_std_parents = 0,
+				.num_aux_parents = 8, /* XXX in fact there are more than 8 */
 				.ctrl_reg = VIDEO_CLK_VEC_CTRL,
 				.div_int_reg = VIDEO_CLK_VEC_DIV_INT,
 				.sel_reg = VIDEO_CLK_VEC_SEL,
@@ -2232,16 +2200,16 @@ static const struct rp1_clk_desc clk_desc_array[] = {
 
 	[RP1_CLK_DPI] = REGISTER_CLK(
 				.name = "clk_dpi",
-				.parents = {AUX_PARENT_STR,
-					    "pll_sys",
+				.parents = {"pll_sys",
 					    "pll_video_sec",
 					    "pll_video",
 					    "clk_gp0",
 					    "clk_gp1",
 					    "clk_gp2",
-					    "clk_gp3"},
-				.num_std_parents = 1, /* including the placeholder for AUX */
-				.num_aux_parents = 7, /* XXX in fact there are more than 8 */
+					    "clk_gp3",
+					    "clk_gp4"},
+				.num_std_parents = 0,
+				.num_aux_parents = 8, /* XXX in fact there are more than 8 */
 				.ctrl_reg = VIDEO_CLK_DPI_CTRL,
 				.div_int_reg = VIDEO_CLK_DPI_DIV_INT,
 				.sel_reg = VIDEO_CLK_DPI_SEL,
@@ -2250,16 +2218,16 @@ static const struct rp1_clk_desc clk_desc_array[] = {
 
 	[RP1_CLK_MIPI0_DPI] = REGISTER_CLK(
 				.name = "clk_mipi0_dpi",
-				.parents = {AUX_PARENT_STR,
-					    "pll_sys",
+				.parents = {"pll_sys",
 					    "pll_video_sec",
 					    "pll_video",
 					    "clksrc_mipi0_dsi_byteclk",
 					    "clk_gp0",
 					    "clk_gp1",
-					    "clk_gp2"},
-				.num_std_parents = 1, /* including the placeholder for AUX */
-				.num_aux_parents = 7, /* XXX in fact there are more than 8 */
+					    "clk_gp2",
+					    "clk_gp3"},
+				.num_std_parents = 0,
+				.num_aux_parents = 8, /* XXX in fact there are more than 8 */
 				.ctrl_reg = VIDEO_CLK_MIPI0_DPI_CTRL,
 				.div_int_reg = VIDEO_CLK_MIPI0_DPI_DIV_INT,
 				.div_frac_reg = VIDEO_CLK_MIPI0_DPI_DIV_FRAC,
@@ -2270,16 +2238,16 @@ static const struct rp1_clk_desc clk_desc_array[] = {
 
 	[RP1_CLK_MIPI1_DPI] = REGISTER_CLK(
 				.name = "clk_mipi1_dpi",
-				.parents = {AUX_PARENT_STR,
-					    "pll_sys",
+				.parents = {"pll_sys",
 					    "pll_video_sec",
 					    "pll_video",
 					    "clksrc_mipi1_dsi_byteclk",
 					    "clk_gp0",
 					    "clk_gp1",
-					    "clk_gp2"},
-				.num_std_parents = 1, /* including the placeholder for AUX */
-				.num_aux_parents = 7, /* XXX in fact there are more than 8 */
+					    "clk_gp2",
+					    "clk_gp3"},
+				.num_std_parents = 0,
+				.num_aux_parents = 8, /* XXX in fact there are more than 8 */
 				.ctrl_reg = VIDEO_CLK_MIPI1_DPI_CTRL,
 				.div_int_reg = VIDEO_CLK_MIPI1_DPI_DIV_INT,
 				.div_frac_reg = VIDEO_CLK_MIPI1_DPI_DIV_FRAC,
