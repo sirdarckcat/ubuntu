@@ -364,7 +364,7 @@
 	phy-handle = <&rgmii_phy>;
 	phy-mode = "rgmii";
 	max-speed = <1000>;
- 
+
 	mac2mac;
 	mac2mac-rgmii-speed = <1000>;
 	no-autonegotiation;
@@ -557,82 +557,94 @@
 		};
 	};
 
-	vsc_reset_default: vsc_reset_default {                             
-                mux {                                                          
-                        pins = "gpio148";                             
-                        function = "gpio";                                     
-                };                                                             
-                config {                                                       
-                        pins = "gpio148";                             
-                        drive-strength =<8>;                                   
-                        bias-pull-up;                                        
-                };                                                             
-        };    
+	vsc_reset_default: vsc_reset_default {
+		mux {
+			pins = "gpio148";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio148";
+			drive-strength =<8>;
+			bias-pull-up;
+		};
+	};
 };
 
 &soc {
-       qcom,secure-buffer {
-               compatible = "qcom,secure-buffer";
-       };
+	qcom,secure-buffer {
+		compatible = "qcom,secure-buffer";
+	};
 
-       qmp_aop: qcom,qmp-aop@c300000 {
-               compatible = "qcom,qmp-mbox";
-               qcom,qmp = <&aoss_qmp>;
-               label = "aop";
-               #mbox-cells = <1>;
-       };
+	qmp_aop: qcom,qmp-aop@c300000 {
+		compatible = "qcom,qmp-mbox";
+		qcom,qmp = <&aoss_qmp>;
+		label = "aop";
+		#mbox-cells = <1>;
+	};
 
-       qcom_dcvs: qcom,dcvs {
-               compatible = "qcom,dcvs";
-               #address-cells = <1>;
-               #size-cells = <1>;
-               ranges;
+	ss5_pwr_ctrl0 {
+		compatible = "gnss_sirf";
+		pinctrl-0 = <&ss5_pwr_ctrl_rst_on>;
+		ssVreset-gpio = <&tlmm 39 1>;
+	};
 
-               qcom_ddr_dcvs_hw: ddr {
-                       compatible = "qcom,dcvs-hw";
-                       qcom,dcvs-hw-type = <0>;
-                       qcom,bus-width = <4>;
+	pps {
+		compatible = "pps-gpio";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_pps>;
+		gpios = <&tlmm 87 0>;
+		status = "okay";
+	};
 
-                       qcom,freq-tbl = <&ddr_freq_table>;
-                       ddr_dcvs_sp: sp {
-                               compatible = "qcom,dcvs-path";
-                               qcom,dcvs-path-type = <0>;
-                               interconnects = <&mc_virt MASTER_LLCC
-                                                &mc_virt SLAVE_EBI_CH0>;
-                       };
-               };
+	qcom_dcvs: qcom,dcvs {
+		compatible = "qcom,dcvs";
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges;
 
-               qcom_llcc_dcvs_hw: llcc {
-                       compatible = "qcom,dcvs-hw";
-                       qcom,dcvs-hw-type = <1>;
-                       qcom,bus-width = <16>;
+		qcom_ddr_dcvs_hw: ddr {
+			compatible = "qcom,dcvs-hw";
+			qcom,dcvs-hw-type = <0>;
+			qcom,bus-width = <4>;
+			qcom,freq-tbl = <&ddr_freq_table>;
+			ddr_dcvs_sp: sp {
+				compatible = "qcom,dcvs-path";
+				qcom,dcvs-path-type = <0>;
+				interconnects = <&mc_virt MASTER_LLCC
+					&mc_virt SLAVE_EBI_CH0>;
+			};
+		};
 
-                       qcom,freq-tbl = <&llcc_freq_table>;
-                       llcc_dcvs_sp: sp {
-                               compatible = "qcom,dcvs-path";
-                               qcom,dcvs-path-type = <0>;
-                               interconnects = <&gem_noc MASTER_AMPSS_M0
-                                                &dc_noc SLAVE_LLCC_CFG>;
-                       };
-             };
+		qcom_llcc_dcvs_hw: llcc {
+			compatible = "qcom,dcvs-hw";
+			qcom,dcvs-hw-type = <1>;
+			qcom,bus-width = <16>;
+			qcom,freq-tbl = <&llcc_freq_table>;
+			llcc_dcvs_sp: sp {
+				compatible = "qcom,dcvs-path";
+				qcom,dcvs-path-type = <0>;
+				interconnects = <&gem_noc MASTER_AMPSS_M0
+					&dc_noc SLAVE_LLCC_CFG>;
+			};
+		};
 
-               qcom_l3_dcvs_hw: l3 {
-                       compatible = "qcom,dcvs-hw";
-                       qcom,dcvs-hw-type = <2>;
-                       qcom,bus-width = <32>;
-                       qcom,ftbl-row-size = <0x20>;
-                       reg = <0x18321000 0x4000>, <0x18321110 0x500>;
-                       reg-names = "l3-base", "l3tbl-base";
+		qcom_l3_dcvs_hw: l3 {
+			compatible = "qcom,dcvs-hw";
+			qcom,dcvs-hw-type = <2>;
+			qcom,bus-width = <32>;
+			qcom,ftbl-row-size = <0x20>;
+			reg = <0x18321000 0x4000>, <0x18321110 0x500>;
+			reg-names = "l3-base", "l3tbl-base";
 
-                       l3_dcvs_sp: sp {
-                               compatible = "qcom,dcvs-path";
-                               qcom,dcvs-path-type = <0>;
-                               qcom,shared-offset = <0x0920>;
-                       };
-               };
-       };
+			l3_dcvs_sp: sp {
+				compatible = "qcom,dcvs-path";
+				qcom,dcvs-path-type = <0>;
+				qcom,shared-offset = <0x0920>;
+				};
+			};
+	};
 
-       qtee_shmbridge {
-               compatible = "qcom,tee-shared-memory-bridge";
-       };
+	qtee_shmbridge {
+		compatible = "qcom,tee-shared-memory-bridge";
+	};
 };
