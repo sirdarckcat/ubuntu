@@ -58,46 +58,6 @@
 		};
 	};
 
-	iommuc: iommuc@107c005b00 {
-		compatible = "brcm,bcm2712-iommuc";
-		reg = <0x10 0x7c005b00 0x80>;
-		status = "ok";
-	};
-
-	iommu2: iommu@107c005100 {
-		/* IOMMU2 for PISP-BE, HEVC; and (unused) H264 accelerators */
-	       compatible = "brcm,bcm2712-iommu";
-	       reg = <0x10 0x7c005100 0x80>;
-	       cache = <&iommuc>;
-	       #iommu-cells = <0>;
-	       status = "ok";
-	};
-
-	iommu4: iommu@107c005200 {
-		/* IOMMU4 for HVS, MPL/TXP; and (unused) Unicam, PISP-FE, MiniBVN */
-	       compatible = "brcm,bcm2712-iommu";
-	       reg = <0x10 0x7c005200 0x80>;
-	       cache = <&iommuc>;
-	       #iommu-cells = <0>;
-	       status = "ok";
-	};
-
-	iommu5: iommu@107c005280 {
-		/* IOMMU5 for PCIe2 (RP1); and (unused) BSTM */
-	       compatible = "brcm,bcm2712-iommu";
-	       reg = <0x10 0x7c005280 0x80>;
-	       cache = <&iommuc>;
-	       #iommu-cells = <0>;
-	       dma-iova-offset = <0x10 0x00000000>; // HACK for RP1 masters over PCIe
-	       status = "ok";
-	};
-
-	vc4: gpu {
-		compatible = "brcm,bcm2712-vc6";
-		/* IOMMU attaches here, as this is where we allocate DMA buffers */
-		iommus = <&iommu4>;
-	};
-
 	clk_27MHz: clk-27M {
 		#clock-cells = <0>;
 		compatible = "fixed-clock";
@@ -895,6 +855,43 @@
 			     <0x14 0x00000000  0x14 0x00000000  0x04 0x00000000>,
 			     <0x18 0x00000000  0x18 0x00000000  0x04 0x00000000>,
 			     <0x1c 0x00000000  0x1c 0x00000000  0x04 0x00000000>;
+
+		gpu {
+			compatible = "brcm,bcm2712-vc6";
+			/* IOMMU attaches here, where we allocate DMA buffers */
+			iommus = <&iommu4>;
+		};
+
+		iommu2: iommu@5100 {
+			/* IOMMU2 for PISP-BE, HEVC; and (unused) H264 accelerators */
+			compatible = "brcm,bcm2712-iommu";
+			reg = <0x10 0x5100  0x0 0x80>;
+			cache = <&iommuc>;
+			#iommu-cells = <0>;
+		};
+
+		iommu4: iommu@5200 {
+			/* IOMMU4 for HVS, MPL/TXP; and (unused) Unicam, PISP-FE, MiniBVN */
+			compatible = "brcm,bcm2712-iommu";
+			reg = <0x10 0x5200  0x0 0x80>;
+			cache = <&iommuc>;
+			#iommu-cells = <0>;
+			#interconnect-cells = <0>;
+		};
+
+		iommu5: iommu@5280 {
+			/* IOMMU5 for PCIe2 (RP1); and (unused) BSTM */
+			compatible = "brcm,bcm2712-iommu";
+			reg = <0x10 0x5280  0x0 0x80>;
+			cache = <&iommuc>;
+			#iommu-cells = <0>;
+			dma-iova-offset = <0x10 0x00000000>; // HACK for RP1 masters over PCIe
+		};
+
+		iommuc: iommuc@5b00 {
+			compatible = "brcm,bcm2712-iommuc";
+			reg = <0x10 0x5b00  0x0 0x80>;
+		};
 
 		dma32: dma@10000 {
 			compatible = "brcm,bcm2712-dma";
