@@ -598,6 +598,13 @@ spi0_cs_pins: &rp1_spi0_cs_gpio7 {};
 	sd-uhs-ddr50;
 	non-removable;
 	status = "okay";
+	#address-cells = <1>;
+	#size-cells = <0>;
+
+	wifi: wifi@1 {
+		reg = <1>;
+		compatible = "brcm,bcm4329-fmac";
+	};
 };
 
 &rpivid {
@@ -814,6 +821,7 @@ spi0_cs_pins: &rp1_spi0_cs_gpio7 {};
 		bluetooth = &bluetooth;
 		console = &uart10;
 		ethernet0 = &rp1_eth;
+		wifi0 = &wifi;
 		fb = &fb;
 		mailbox = &mailbox;
 		mmc0 = &sdio1;
@@ -877,6 +885,7 @@ spi0_cs_pins: &rp1_spi0_cs_gpio7 {};
 		random = <&random>, "status";
 		spi = <&spi0>, "status";
 		uart0 = <&uart0>, "status";
+		wifiaddr = <&wifi>, "local-mac-address[";
 
 		act_led_activelow = <&act_led>, "active-low?";
 		act_led_trigger = <&act_led>, "linux,default-trigger";
