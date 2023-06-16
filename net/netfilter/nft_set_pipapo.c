@@ -2044,9 +2044,11 @@ out_free:
 
 /**
  * nft_pipapo_destroy() - Free private data for set and all committed elements
+ * @ctx:	context
  * @set:	nftables API set representation
  */
-static void nft_pipapo_destroy(const struct nft_set *set)
+static void nft_pipapo_destroy(const struct nft_ctx *ctx,
+			       const struct nft_set *set)
 {
 	struct nft_pipapo *priv = nft_set_priv(set);
 	struct nft_pipapo_match *m;
@@ -2068,7 +2070,7 @@ static void nft_pipapo_destroy(const struct nft_set *set)
 
 			e = f->mt[r].e;
 
-			nft_set_elem_destroy(set, e, true);
+			nf_tables_set_elem_destroy(ctx, set, e);
 		}
 
 		for_each_possible_cpu(cpu)
