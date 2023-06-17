@@ -564,6 +564,9 @@ struct xe_device {
 
 		/** discovery_lock: used for discovery to block xe ioctls */
 		struct rw_semaphore discovery_lock;
+
+		/** @attention_scan: attention scan worker */
+		struct delayed_work attention_scan;
 	} eudebug;
 #endif
 

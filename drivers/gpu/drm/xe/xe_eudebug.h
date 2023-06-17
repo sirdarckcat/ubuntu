@@ -20,6 +20,7 @@ int xe_eudebug_connect_ioctl(struct drm_device *dev,
 			     struct drm_file *file);
 
 void xe_eudebug_init(struct xe_device *xe);
+void xe_eudebug_init_late(struct xe_device *xe);
 void xe_eudebug_fini(struct xe_device *xe);
 void xe_eudebug_init_hw_engine(struct xe_hw_engine *hwe);
 
@@ -39,6 +40,7 @@ static inline int xe_eudebug_connect_ioctl(struct drm_device *dev,
 					   struct drm_file *file) { return 0; }
 
 static inline void xe_eudebug_init(struct xe_device *xe) { }
+static inline void xe_eudebug_init_late(struct xe_device *xe) { }
 static inline void xe_eudebug_fini(struct xe_device *xe) { }
 static inline void xe_eudebug_init_hw_engine(struct xe_hw_engine *hwe) { }
 
