@@ -28,12 +28,14 @@ struct drm_xe_eudebug_event {
 #define DRM_XE_EUDEBUG_EVENT_VM			3
 #define DRM_XE_EUDEBUG_EVENT_EXEC_QUEUE		4
 #define DRM_XE_EUDEBUG_EVENT_EXEC_QUEUE_PLACEMENTS 5
+#define DRM_XE_EUDEBUG_EVENT_EU_ATTENTION	6
 
 	__u16 flags;
 #define DRM_XE_EUDEBUG_EVENT_CREATE		(1 << 0)
 #define DRM_XE_EUDEBUG_EVENT_DESTROY		(1 << 1)
 #define DRM_XE_EUDEBUG_EVENT_STATE_CHANGE	(1 << 2)
 #define DRM_XE_EUDEBUG_EVENT_NEED_ACK		(1 << 3)
+
 	__u64 seqno;
 	__u64 reserved;
 };
@@ -76,6 +78,17 @@ struct drm_xe_eudebug_event_exec_queue_placements {
 	 * drm_xe_engine_class_instance
 	 */
 	__u64 instances[];
+};
+
+struct drm_xe_eudebug_event_eu_attention {
+	struct drm_xe_eudebug_event base;
+
+	__u64 client_handle;
+	__u64 exec_queue_handle;
+	__u64 lrc_handle;
+	__u32 flags;
+	__u32 bitmask_size;
+	__u8 bitmask[];
 };
 
 #if defined(__cplusplus)
