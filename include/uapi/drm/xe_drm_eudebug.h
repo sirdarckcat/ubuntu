@@ -27,6 +27,7 @@ struct drm_xe_eudebug_event {
 #define DRM_XE_EUDEBUG_EVENT_OPEN		2
 #define DRM_XE_EUDEBUG_EVENT_VM			3
 #define DRM_XE_EUDEBUG_EVENT_EXEC_QUEUE		4
+#define DRM_XE_EUDEBUG_EVENT_EU_ATTENTION	5
 
 	__u16 flags;
 #define DRM_XE_EUDEBUG_EVENT_CREATE		(1 << 0)
@@ -60,6 +61,17 @@ struct drm_xe_eudebug_event_exec_queue {
 	__u32 engine_class;
 	__u32 width;
 	__u64 lrc_handle[];
+};
+
+struct drm_xe_eudebug_event_eu_attention {
+	struct drm_xe_eudebug_event base;
+
+	__u64 client_handle;
+	__u64 exec_queue_handle;
+	__u64 lrc_handle;
+	__u32 flags;
+	__u32 bitmask_size;
+	__u8 bitmask[];
 };
 
 #if defined(__cplusplus)
