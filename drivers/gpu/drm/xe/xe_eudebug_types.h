@@ -106,6 +106,9 @@ struct xe_eudebug {
 	/** @discovery_work: worker to discover resources for target_task */
 	struct work_struct discovery_work;
 
+	/** eu_lock: guards operations on eus (eu thread control and attention) */
+	struct mutex eu_lock;
+
 	/** @events: kfifo queue of to-be-delivered events */
 	struct {
 		/** @lock: guards access to fifo */
@@ -203,5 +206,33 @@ struct xe_eudebug_event_exec_queue {
 	u64 lrc_handle[] __counted_by(width);
 };
 
-#endif /* _XE_EUDEBUG_TYPES_H_ */
+/**
+ * struct xe_eudebug_event_eu_attention - Internal event for EU attention
+ */
+struct xe_eudebug_event_eu_attention {
+	/** @base: base event */
+	struct xe_eudebug_event base;
 
+	/** @client_handle: client for the attention */
+	u64 client_handle;
+
+	/** @exec_queue_handle: handle of exec_queue which raised attention */
+	u64 exec_queue_handle;
+
+	/** @lrc_handle: lrc handle of the workload which raised attention */
+	u64 lrc_handle;
+
+	/** @flags: eu attention event flags, currently MBZ */
+	u32 flags;
+
+	/** @bitmask_size: size of the bitmask, specific to device */
+	u32 bitmask_size;
+
+	/**
+	 * @bitmask: reflects threads currently signalling attention,
+	 * starting from natural hardware order of DSS=0, eu=0
+	 */
+	u8 bitmask[] __counted_by(bitmask_size);
+};
+
+#endif /* _XE_EUDEBUG_TYPES_H_ */
