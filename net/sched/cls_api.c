@@ -3573,6 +3573,7 @@ int tc_setup_flow_action(struct flow_action *flow_action,
 		struct flow_action_entry *entry;
 
 		entry = &flow_action->entries[j];
+		entry->act = act;
 		spin_lock_bh(&act->tcfa_lock);
 		err = tcf_act_get_cookie(entry, act);
 		if (err)
