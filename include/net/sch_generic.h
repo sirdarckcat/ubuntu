@@ -371,6 +371,9 @@ struct tcf_proto_ops {
 						   bool add,
 						   flow_setup_cb_t *cb,
 						   void *cb_priv);
+	struct tcf_exts *	(*get_exts)(const struct tcf_proto *tp,
+					    u32 handle);
+
 	/* rtnetlink specific */
 	int			(*dump)(struct net*, struct tcf_proto*, void *,
 					struct sk_buff *skb, struct tcmsg*,
