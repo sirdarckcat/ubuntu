@@ -198,6 +198,7 @@ void flow_action_cookie_destroy(struct flow_action_cookie *cookie);
 struct flow_action_entry {
 	enum flow_action_id		id;
 	enum flow_action_hw_stats	hw_stats;
+	void				*act;
 	action_destr			destructor;
 	void				*destructor_priv;
 	union {
