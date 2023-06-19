@@ -2196,7 +2196,9 @@ errout_hw:
 errout_mask:
 	fl_mask_put(head, fnew->mask);
 errout_idr:
-	idr_remove(&head->handle_idr, fnew->handle);
+	if (!fold)
+		idr_remove(&head->handle_idr, fnew->handle);
+errout:
 	__fl_put(fnew);
 errout_tb:
 	kfree(tb);
