@@ -199,6 +199,7 @@ struct flow_action_entry {
 	enum flow_action_id		id;
 	enum flow_action_hw_stats	hw_stats;
 	void				*act;
+	u64				miss_cookie;
 	action_destr			destructor;
 	void				*destructor_priv;
 	union {
