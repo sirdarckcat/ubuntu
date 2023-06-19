@@ -56,6 +56,7 @@ struct fpga_data {
 };
 
 static int get_id(struct fpga_data *);
+static int get_fw_version(struct fpga_data *);
 
 static int get_window_size(struct fpga_data *);
 static int set_window_size(struct fpga_data *, uint8_t);
@@ -135,6 +136,20 @@ static ssize_t id_show(struct device *dev,
 }
 
 static DEVICE_ATTR_RO(id);
+
+static ssize_t fw_version_show(struct device *dev,
+                               struct device_attribute *attr,
+                               char *buf)
+{
+        int ret = get_fw_version(dev_get_drvdata(dev));
+        if (ret < 0) {
+                dev_err(dev, "Failed to get fpga fw version\n");
+                return -ENODEV;
+        }
+        return sprintf(buf, "%02x\n", ret);
+}
+
+static DEVICE_ATTR_RO(fw_version);
 
 static ssize_t test_mode_show(struct device *dev,
                               struct device_attribute *attr,
@@ -1038,6 +1053,7 @@ static DEVICE_ATTR_RO(underflow_low);
 
 static struct attribute *fpga_attrs[] = {
         &dev_attr_id.attr,
+        &dev_attr_fw_version.attr,
         &dev_attr_test_mode.attr,
         &dev_attr_cfg_cfg.attr,
         &dev_attr_pps.attr,
@@ -1289,6 +1305,12 @@ int get_id(struct fpga_data *pd)
         int ret;
 
         mutex_lock(&pd->lock);
+
+        if (pd->cfg_mode != FPGA_CFG_MODE_CFG_NORMAL) {
+                mutex_unlock(&pd->lock);
+                return -EAGAIN;
+        }
+
         ret = fpga_spi_reg_read(pd, FPGA_ID, &regval);
         mutex_unlock(&pd->lock);
         if (ret < 0) {
@@ -1296,6 +1318,27 @@ int get_id(struct fpga_data *pd)
                 return ret;
         }
         pr_debug("FPGA ID = 0x%02x\n", regval);
+        return regval;
+}
+
+int get_fw_version(struct fpga_data *pd)
+{
+        unsigned char regval;
+        int ret;
+
+        mutex_lock(&pd->lock);
+
+        if (pd->cfg_mode != FPGA_CFG_MODE_CFG_NORMAL) {
+                mutex_unlock(&pd->lock);
+                return -EAGAIN;
+        }
+        ret = fpga_spi_reg_read(pd, FPGA_FW_VERSION, &regval);
+        mutex_unlock(&pd->lock);
+        if (ret < 0) {
+                pr_err( "Failed to read FPGA FW Version\n");
+                return ret;
+        }
+        pr_debug("FPGA FW Version = 0x%02x\n", regval);
         return regval;
 }
 
