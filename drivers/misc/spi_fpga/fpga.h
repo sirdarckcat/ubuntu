@@ -218,4 +218,6 @@ struct fpga_pps_dbg {
 #define FPGA_PPS_PHASE_OFFSET 0x55
 #define FPGA_FREQ_MONITOR_DELTA 0x54
 
+#define FPGA_FW_VERSION 0x71
+
 #endif /* FPGA_H_ */
