@@ -1814,7 +1814,8 @@ static int vc6_hvs_hw_init(struct vc4_hvs *hvs)
 	HVS_WRITE(SCALER6_CONTROL,
 		  SCALER6_CONTROL_HVS_EN |
 		  SCALER6_CONTROL_ABORT_ON_EMPTY |
-		  VC4_SET_FIELD(3, SCALER6_CONTROL_MAX_REQS));
+		  VC4_SET_FIELD(8, SCALER6_CONTROL_PF_LINES) |
+		  VC4_SET_FIELD(15, SCALER6_CONTROL_MAX_REQS));
 
 	for (i = 0; i < 6; i++) {
 		coeffs = &csc_coeffs[i / 3][i % 3];
