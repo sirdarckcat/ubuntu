@@ -35,13 +35,6 @@
 #define MODULE_NAME "pinctrl-bcm2712"
 
 /* Register offsets */
-#define GPIO_PINMUX_0		0x00
-#define GPIO_PADCTRL_0		0x1c
-
-#define AON_GPIO_PINMUX_0	0x00
-#define AON_GPIO_PINMUX_3	0x0c
-#define AON_GPIO_PADCTRL_0	0x18
-
 
 #define BCM2712_PULL_NONE	0
 #define BCM2712_PULL_DOWN	1
@@ -73,16 +66,16 @@
 #define BIT_TO_SHIFT(b) ((b) & 0x1f)
 
 #define GPIO_REGS(n, mr, mb, pr, pb) \
-	[n] = { (GPIO_PINMUX_0 + (mr)*4)*8 + (mb)*4, (GPIO_PADCTRL_0 + (pr)*4)*8 + (pb)*2 }
+	[n] = { ((mr)*4)*8 + (mb)*4, ((pr)*4)*8 + (pb)*2 }
 
 #define EMMC_REGS(n, r, b) \
-	[n] = { 0, (GPIO_PADCTRL_0 + (r)*4)*8 + (b)*2 }
+	[n] = { 0, ((r)*4)*8 + (b)*2 }
 
 #define AGPIO_REGS(n, mr, mb, pr, pb) \
-	[n] = { (AON_GPIO_PINMUX_0 + (mr)*4)*8 + (mb)*4, (AON_GPIO_PADCTRL_0 + (pr)*4)*8 + (pb)*2 }
+	[n] = { ((mr)*4)*8 + (mb)*4, ((pr)*4)*8 + (pb)*2 }
 
 #define SGPIO_REGS(n, mr, mb) \
-	[n+32] = { (AON_GPIO_PINMUX_0 + (mr)*4)*8 + (mb)*4, REG_BIT_INVALID }
+	[n+32] = { ((mr)*4)*8 + (mb)*4, REG_BIT_INVALID }
 
 #define GPIO_PIN(a) PINCTRL_PIN(a, "gpio" #a)
 #define AGPIO_PIN(a) PINCTRL_PIN(a, "aon_gpio" #a)
@@ -205,91 +198,91 @@ enum bcm2712_funcs {
 };
 
 static const struct pin_regs bcm2712_c0_gpio_pin_regs[] = {
-	GPIO_REGS(0, 0, 0, 0, 7),
-	GPIO_REGS(1, 0, 1, 0, 8),
-	GPIO_REGS(2, 0, 2, 0, 9),
-	GPIO_REGS(3, 0, 3, 0, 10),
-	GPIO_REGS(4, 0, 4, 0, 11),
-	GPIO_REGS(5, 0, 5, 0, 12),
-	GPIO_REGS(6, 0, 6, 0, 13),
-	GPIO_REGS(7, 0, 7, 0, 14),
-	GPIO_REGS(8, 1, 0, 1, 0),
-	GPIO_REGS(9, 1, 1, 1, 1),
-	GPIO_REGS(10, 1, 2, 1, 2),
-	GPIO_REGS(11, 1, 3, 1, 3),
-	GPIO_REGS(12, 1, 4, 1, 4),
-	GPIO_REGS(13, 1, 5, 1, 5),
-	GPIO_REGS(14, 1, 6, 1, 6),
-	GPIO_REGS(15, 1, 7, 1, 7),
-	GPIO_REGS(16, 2, 0, 1, 8),
-	GPIO_REGS(17, 2, 1, 1, 9),
-	GPIO_REGS(18, 2, 2, 1, 10),
-	GPIO_REGS(19, 2, 3, 1, 11),
-	GPIO_REGS(20, 2, 4, 1, 12),
-	GPIO_REGS(21, 2, 5, 1, 13),
-	GPIO_REGS(22, 2, 6, 1, 14),
-	GPIO_REGS(23, 2, 7, 2, 0),
-	GPIO_REGS(24, 3, 0, 2, 1),
-	GPIO_REGS(25, 3, 1, 2, 2),
-	GPIO_REGS(26, 3, 2, 2, 3),
-	GPIO_REGS(27, 3, 3, 2, 4),
-	GPIO_REGS(28, 3, 4, 2, 5),
-	GPIO_REGS(29, 3, 5, 2, 6),
-	GPIO_REGS(30, 3, 6, 2, 7),
-	GPIO_REGS(31, 3, 7, 2, 8),
-	GPIO_REGS(32, 4, 0, 2, 9),
-	GPIO_REGS(33, 4, 1, 2, 10),
-	GPIO_REGS(34, 4, 2, 2, 11),
-	GPIO_REGS(35, 4, 3, 2, 12),
-	GPIO_REGS(36, 4, 4, 2, 13),
-	GPIO_REGS(37, 4, 5, 2, 14),
-	GPIO_REGS(38, 4, 6, 3, 0),
-	GPIO_REGS(39, 4, 7, 3, 1),
-	GPIO_REGS(40, 5, 0, 3, 2),
-	GPIO_REGS(41, 5, 1, 3, 3),
-	GPIO_REGS(42, 5, 2, 3, 4),
-	GPIO_REGS(43, 5, 3, 3, 5),
-	GPIO_REGS(44, 5, 4, 3, 6),
-	GPIO_REGS(45, 5, 5, 3, 7),
-	GPIO_REGS(46, 5, 6, 3, 8),
-	GPIO_REGS(47, 5, 7, 3, 9),
-	GPIO_REGS(48, 6, 0, 3, 10),
-	GPIO_REGS(49, 6, 1, 3, 11),
-	GPIO_REGS(50, 6, 2, 3, 12),
-	GPIO_REGS(51, 6, 3, 3, 13),
-	GPIO_REGS(52, 6, 4, 3, 14),
-	GPIO_REGS(53, 6, 5, 4, 0),
-	EMMC_REGS(54, 4, 1), /* EMMC_CMD */
-	EMMC_REGS(55, 4, 2), /* EMMC_DS */
-	EMMC_REGS(56, 4, 3), /* EMMC_CLK */
-	EMMC_REGS(57, 4, 4), /* EMMC_DAT0 */
-	EMMC_REGS(58, 4, 5), /* EMMC_DAT1 */
-	EMMC_REGS(59, 4, 6), /* EMMC_DAT2 */
-	EMMC_REGS(60, 4, 7), /* EMMC_DAT3 */
-	EMMC_REGS(61, 4, 8), /* EMMC_DAT4 */
-	EMMC_REGS(62, 4, 9), /* EMMC_DAT5 */
-	EMMC_REGS(63, 4, 10), /* EMMC_DAT6 */
-	EMMC_REGS(64, 4, 11), /* EMMC_DAT7 */
+	GPIO_REGS(0, 0, 0, 7, 7),
+	GPIO_REGS(1, 0, 1, 7, 8),
+	GPIO_REGS(2, 0, 2, 7, 9),
+	GPIO_REGS(3, 0, 3, 7, 10),
+	GPIO_REGS(4, 0, 4, 7, 11),
+	GPIO_REGS(5, 0, 5, 7, 12),
+	GPIO_REGS(6, 0, 6, 7, 13),
+	GPIO_REGS(7, 0, 7, 7, 14),
+	GPIO_REGS(8, 1, 0, 8, 0),
+	GPIO_REGS(9, 1, 1, 8, 1),
+	GPIO_REGS(10, 1, 2, 8, 2),
+	GPIO_REGS(11, 1, 3, 8, 3),
+	GPIO_REGS(12, 1, 4, 8, 4),
+	GPIO_REGS(13, 1, 5, 8, 5),
+	GPIO_REGS(14, 1, 6, 8, 6),
+	GPIO_REGS(15, 1, 7, 8, 7),
+	GPIO_REGS(16, 2, 0, 8, 8),
+	GPIO_REGS(17, 2, 1, 8, 9),
+	GPIO_REGS(18, 2, 2, 8, 10),
+	GPIO_REGS(19, 2, 3, 8, 11),
+	GPIO_REGS(20, 2, 4, 8, 12),
+	GPIO_REGS(21, 2, 5, 8, 13),
+	GPIO_REGS(22, 2, 6, 8, 14),
+	GPIO_REGS(23, 2, 7, 9, 0),
+	GPIO_REGS(24, 3, 0, 9, 1),
+	GPIO_REGS(25, 3, 1, 9, 2),
+	GPIO_REGS(26, 3, 2, 9, 3),
+	GPIO_REGS(27, 3, 3, 9, 4),
+	GPIO_REGS(28, 3, 4, 9, 5),
+	GPIO_REGS(29, 3, 5, 9, 6),
+	GPIO_REGS(30, 3, 6, 9, 7),
+	GPIO_REGS(31, 3, 7, 9, 8),
+	GPIO_REGS(32, 4, 0, 9, 9),
+	GPIO_REGS(33, 4, 1, 9, 10),
+	GPIO_REGS(34, 4, 2, 9, 11),
+	GPIO_REGS(35, 4, 3, 9, 12),
+	GPIO_REGS(36, 4, 4, 9, 13),
+	GPIO_REGS(37, 4, 5, 9, 14),
+	GPIO_REGS(38, 4, 6, 10, 0),
+	GPIO_REGS(39, 4, 7, 10, 1),
+	GPIO_REGS(40, 5, 0, 10, 2),
+	GPIO_REGS(41, 5, 1, 10, 3),
+	GPIO_REGS(42, 5, 2, 10, 4),
+	GPIO_REGS(43, 5, 3, 10, 5),
+	GPIO_REGS(44, 5, 4, 10, 6),
+	GPIO_REGS(45, 5, 5, 10, 7),
+	GPIO_REGS(46, 5, 6, 10, 8),
+	GPIO_REGS(47, 5, 7, 10, 9),
+	GPIO_REGS(48, 6, 0, 10, 10),
+	GPIO_REGS(49, 6, 1, 10, 11),
+	GPIO_REGS(50, 6, 2, 10, 12),
+	GPIO_REGS(51, 6, 3, 10, 13),
+	GPIO_REGS(52, 6, 4, 10, 14),
+	GPIO_REGS(53, 6, 5, 11, 0),
+	EMMC_REGS(54, 11, 1), /* EMMC_CMD */
+	EMMC_REGS(55, 11, 2), /* EMMC_DS */
+	EMMC_REGS(56, 11, 3), /* EMMC_CLK */
+	EMMC_REGS(57, 11, 4), /* EMMC_DAT0 */
+	EMMC_REGS(58, 11, 5), /* EMMC_DAT1 */
+	EMMC_REGS(59, 11, 6), /* EMMC_DAT2 */
+	EMMC_REGS(60, 11, 7), /* EMMC_DAT3 */
+	EMMC_REGS(61, 11, 8), /* EMMC_DAT4 */
+	EMMC_REGS(62, 11, 9), /* EMMC_DAT5 */
+	EMMC_REGS(63, 11, 10), /* EMMC_DAT6 */
+	EMMC_REGS(64, 11, 11), /* EMMC_DAT7 */
 };
 
 static struct pin_regs bcm2712_c0_aon_gpio_pin_regs[] = {
-	AGPIO_REGS(0, 3, 0, 0, 10),
-	AGPIO_REGS(1, 3, 1, 0, 11),
-	AGPIO_REGS(2, 3, 2, 0, 12),
-	AGPIO_REGS(3, 3, 3, 0, 13),
-	AGPIO_REGS(4, 3, 4, 0, 14),
-	AGPIO_REGS(5, 3, 5, 1, 0),
-	AGPIO_REGS(6, 3, 6, 1, 1),
-	AGPIO_REGS(7, 3, 7, 1, 2),
-	AGPIO_REGS(8, 4, 0, 1, 3),
-	AGPIO_REGS(9, 4, 1, 1, 4),
-	AGPIO_REGS(10, 4, 2, 1, 5),
-	AGPIO_REGS(11, 4, 3, 1, 6),
-	AGPIO_REGS(12, 4, 4, 1, 7),
-	AGPIO_REGS(13, 4, 5, 1, 8),
-	AGPIO_REGS(14, 4, 6, 1, 9),
-	AGPIO_REGS(15, 4, 7, 1, 10),
-	AGPIO_REGS(16, 5, 0, 1, 11),
+	AGPIO_REGS(0, 3, 0, 6, 10),
+	AGPIO_REGS(1, 3, 1, 6, 11),
+	AGPIO_REGS(2, 3, 2, 6, 12),
+	AGPIO_REGS(3, 3, 3, 6, 13),
+	AGPIO_REGS(4, 3, 4, 6, 14),
+	AGPIO_REGS(5, 3, 5, 7, 0),
+	AGPIO_REGS(6, 3, 6, 7, 1),
+	AGPIO_REGS(7, 3, 7, 7, 2),
+	AGPIO_REGS(8, 4, 0, 7, 3),
+	AGPIO_REGS(9, 4, 1, 7, 4),
+	AGPIO_REGS(10, 4, 2, 7, 5),
+	AGPIO_REGS(11, 4, 3, 7, 6),
+	AGPIO_REGS(12, 4, 4, 7, 7),
+	AGPIO_REGS(13, 4, 5, 7, 8),
+	AGPIO_REGS(14, 4, 6, 7, 9),
+	AGPIO_REGS(15, 4, 7, 7, 10),
+	AGPIO_REGS(16, 5, 0, 7, 11),
 	SGPIO_REGS(0, 0, 0),
 	SGPIO_REGS(1, 0, 1),
 	SGPIO_REGS(2, 0, 2),
@@ -393,49 +386,49 @@ static struct pinctrl_pin_desc bcm2712_c0_aon_gpio_pins[] = {
 };
 
 static const struct pin_regs bcm2712_d0_gpio_pin_regs[] = {
-	GPIO_REGS(1, 0, 0, 0, 5),
-	GPIO_REGS(2, 0, 1, 0, 6),
-	GPIO_REGS(3, 0, 2, 0, 7),
-	GPIO_REGS(4, 0, 3, 0, 8),
-	GPIO_REGS(10, 0, 4, 0, 9),
-	GPIO_REGS(11, 0, 5, 0, 10),
-	GPIO_REGS(12, 0, 6, 0, 11),
-	GPIO_REGS(13, 0, 7, 0, 12),
-	GPIO_REGS(14, 1, 0, 0, 13),
-	GPIO_REGS(15, 1, 1, 0, 14),
-	GPIO_REGS(18, 1, 2, 1, 0),
-	GPIO_REGS(19, 1, 3, 1, 1),
-	GPIO_REGS(20, 1, 4, 1, 2),
-	GPIO_REGS(21, 1, 5, 1, 3),
-	GPIO_REGS(22, 1, 6, 1, 4),
-	GPIO_REGS(23, 1, 7, 1, 5),
-	GPIO_REGS(24, 2, 0, 1, 6),
-	GPIO_REGS(25, 2, 1, 1, 7),
-	GPIO_REGS(26, 2, 2, 1, 8),
-	GPIO_REGS(27, 2, 3, 1, 9),
-	GPIO_REGS(28, 2, 4, 1, 10),
-	GPIO_REGS(29, 2, 5, 1, 11),
-	GPIO_REGS(30, 2, 6, 1, 12),
-	GPIO_REGS(31, 2, 7, 1, 13),
-	GPIO_REGS(32, 3, 0, 1, 14),
-	GPIO_REGS(33, 3, 1, 2, 0),
-	GPIO_REGS(34, 3, 2, 2, 1),
-	GPIO_REGS(35, 3, 3, 2, 2),
+	GPIO_REGS(1, 0, 0, 4, 5),
+	GPIO_REGS(2, 0, 1, 4, 6),
+	GPIO_REGS(3, 0, 2, 4, 7),
+	GPIO_REGS(4, 0, 3, 4, 8),
+	GPIO_REGS(10, 0, 4, 4, 9),
+	GPIO_REGS(11, 0, 5, 4, 10),
+	GPIO_REGS(12, 0, 6, 4, 11),
+	GPIO_REGS(13, 0, 7, 4, 12),
+	GPIO_REGS(14, 1, 0, 4, 13),
+	GPIO_REGS(15, 1, 1, 4, 14),
+	GPIO_REGS(18, 1, 2, 5, 0),
+	GPIO_REGS(19, 1, 3, 5, 1),
+	GPIO_REGS(20, 1, 4, 5, 2),
+	GPIO_REGS(21, 1, 5, 5, 3),
+	GPIO_REGS(22, 1, 6, 5, 4),
+	GPIO_REGS(23, 1, 7, 5, 5),
+	GPIO_REGS(24, 2, 0, 5, 6),
+	GPIO_REGS(25, 2, 1, 5, 7),
+	GPIO_REGS(26, 2, 2, 5, 8),
+	GPIO_REGS(27, 2, 3, 5, 9),
+	GPIO_REGS(28, 2, 4, 5, 10),
+	GPIO_REGS(29, 2, 5, 5, 11),
+	GPIO_REGS(30, 2, 6, 5, 12),
+	GPIO_REGS(31, 2, 7, 5, 13),
+	GPIO_REGS(32, 3, 0, 5, 14),
+	GPIO_REGS(33, 3, 1, 6, 0),
+	GPIO_REGS(34, 3, 2, 6, 1),
+	GPIO_REGS(35, 3, 3, 6, 2),
 };
 
 static struct pin_regs bcm2712_d0_aon_gpio_pin_regs[] = {
-	AGPIO_REGS(0, 3, 0, 0, 9),
-	AGPIO_REGS(1, 3, 1, 0, 10),
-	AGPIO_REGS(2, 3, 2, 0, 11),
-	AGPIO_REGS(3, 3, 3, 0, 12),
-	AGPIO_REGS(4, 3, 4, 0, 13),
-	AGPIO_REGS(5, 3, 5, 0, 14),
-	AGPIO_REGS(6, 3, 6, 1, 0),
-	AGPIO_REGS(8, 3, 7, 1, 1),
-	AGPIO_REGS(9, 4, 0, 1, 2),
-	AGPIO_REGS(12, 4, 1, 1, 3),
-	AGPIO_REGS(13, 4, 2, 1, 4),
-	AGPIO_REGS(14, 4, 3, 1, 5),
+	AGPIO_REGS(0, 3, 0, 5, 9),
+	AGPIO_REGS(1, 3, 1, 5, 10),
+	AGPIO_REGS(2, 3, 2, 5, 11),
+	AGPIO_REGS(3, 3, 3, 5, 12),
+	AGPIO_REGS(4, 3, 4, 5, 13),
+	AGPIO_REGS(5, 3, 5, 5, 14),
+	AGPIO_REGS(6, 3, 6, 6, 0),
+	AGPIO_REGS(8, 3, 7, 6, 1),
+	AGPIO_REGS(9, 4, 0, 6, 2),
+	AGPIO_REGS(12, 4, 1, 6, 3),
+	AGPIO_REGS(13, 4, 2, 6, 4),
+	AGPIO_REGS(14, 4, 3, 6, 5),
 	SGPIO_REGS(0, 0, 0),
 	SGPIO_REGS(1, 0, 1),
 	SGPIO_REGS(2, 0, 2),
