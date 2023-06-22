@@ -1351,7 +1351,7 @@ void rp1dsi_dsi_setup(struct rp1_dsi *dsi, struct drm_display_mode const *mode)
 	vid_mode_cfg = 0xbf00;
 	if (!(dsi->display_flags & MIPI_DSI_MODE_VIDEO_SYNC_PULSE))
 		vid_mode_cfg |= 0x01;
-	if (!(dsi->display_flags & MIPI_DSI_MODE_VIDEO_BURST))
+	if (dsi->display_flags & MIPI_DSI_MODE_VIDEO_BURST)
 		vid_mode_cfg |= 0x02;
 	DSI_WRITE(DSI_VID_MODE_CFG, vid_mode_cfg);
 
@@ -1431,9 +1431,9 @@ void rp1dsi_dsi_send(struct rp1_dsi *dsi, u32 hdr, int len, const u8 *buf)
 {
 	u32 val;
 
-	/* Wait for both FIFOs not full */
+	/* Wait for both FIFOs empty */
 	for (val = 256; val > 0; --val) {
-		if ((DSI_READ(DSI_CMD_PKT_STATUS) & 0xA) == 0)
+		if ((DSI_READ(DSI_CMD_PKT_STATUS) & 0xF) == 0x5)
 			break;
 		usleep_range(100, 150);
 	}

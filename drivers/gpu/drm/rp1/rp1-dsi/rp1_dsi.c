@@ -102,17 +102,11 @@ static void rp1_dsi_bridge_pre_enable(struct drm_bridge *bridge,
 static void rp1_dsi_bridge_enable(struct drm_bridge *bridge,
 				  struct drm_bridge_state *old_state)
 {
-	struct rp1_dsi *dsi = bridge_to_rp1_dsi(bridge);
-
-	rp1dsi_dsi_set_cmdmode(dsi, 0);
 }
 
 static void rp1_dsi_bridge_disable(struct drm_bridge *bridge,
 				   struct drm_bridge_state *state)
 {
-	struct rp1_dsi *dsi = bridge_to_rp1_dsi(bridge);
-
-	rp1dsi_dsi_set_cmdmode(dsi, 1); /* video stopped, so drop to command mode */
 }
 
 static void rp1_dsi_bridge_post_disable(struct drm_bridge *bridge,
@@ -204,6 +198,10 @@ static void rp1dsi_encoder_enable(struct drm_encoder *encoder)
 {
 	struct rp1_dsi *dsi = encoder_to_rp1_dsi(encoder);
 
+	/* Put DSI into video mode before starting video */
+	rp1dsi_dsi_set_cmdmode(dsi, 0);
+
+	/* Start DMA -> DPI */
 	dsi->pipe_enabled = true;
 	dsi->cur_fmt = 0xdeadbeef;
 	rp1dsi_pipe_update(&dsi->pipe, 0);
@@ -219,6 +217,9 @@ static void rp1dsi_encoder_disable(struct drm_encoder *encoder)
 		dsi->dma_running = false;
 	}
 	dsi->pipe_enabled = false;
+
+	/* Return to command mode after stopping video */
+	rp1dsi_dsi_set_cmdmode(dsi, 1);
 }
 
 static const struct drm_encoder_helper_funcs rp1_dsi_encoder_funcs = {
