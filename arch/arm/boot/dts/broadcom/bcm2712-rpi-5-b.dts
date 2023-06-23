@@ -444,6 +444,10 @@ dpi_16bit_gpio2:        &rp1_dpi_16bit_gpio2        { };
 	status = "disabled";
 };
 
+&disp_intr {
+	status = "disabled";
+};
+
 /* SDIO1 is used to drive the SD card */
 &sdio1 {
 	pinctrl-0 = <&emmc_sd_pulls>, <&emmc_aon_cd_pins>;
