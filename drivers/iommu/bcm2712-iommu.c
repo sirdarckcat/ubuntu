@@ -272,8 +272,8 @@ static size_t bcm2712_iommu_unmap(struct iommu_domain *domain, unsigned long iov
 {
 	struct bcm2712_iommu *mmu = domain_to_mmu(domain);
 
-	iova -= mmu->dma_iova_offset;
-	if (iova >= APERTURE_BASE && iova + bytes <= APERTURE_TOP) {
+	if (iova >= mmu->dma_iova_offset + APERTURE_BASE &&
+	    iova + bytes <= mmu->dma_iova_offset + APERTURE_TOP) {
 		unsigned int p;
 
 		/* Record just the lower and upper bounds in "gather" */
@@ -293,7 +293,7 @@ static size_t bcm2712_iommu_unmap(struct iommu_domain *domain, unsigned long iov
 		}
 
 		/* Clear table entries, this marks the addresses as illegal */
-		iova -= APERTURE_BASE;
+		iova -= (mmu->dma_iova_offset + APERTURE_BASE);
 		for (p = iova >> PAGE_SHIFT;
 		     p < (iova + bytes) >> PAGE_SHIFT;
 		     p++) {
