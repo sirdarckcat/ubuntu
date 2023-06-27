@@ -6,6 +6,7 @@ flavours        = generic
 build_image	= Image
 kernel_file	= arch/$(build_arch)/boot/Image
 install_file	= vmlinuz
+gcc		= gcc-10
 
 vdso		= vdso_install
 no_dumpfile	= true
