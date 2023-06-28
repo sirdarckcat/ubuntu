@@ -43,7 +43,7 @@ mt7921_rx_poll_complete(struct mt76_dev *mdev, enum mt76_rxq_id q)
 
 static irqreturn_t mt7921_irq_handler(int irq, void *dev_instance)
 {
-	struct mt7921_dev *dev = dev_instance;
+	struct mt792x_dev *dev = dev_instance;
 
 	mt76_wr(dev, MT_WFDMA0_HOST_INT_ENA, 0);
 
@@ -57,7 +57,7 @@ static irqreturn_t mt7921_irq_handler(int irq, void *dev_instance)
 
 static void mt7921_irq_tasklet(unsigned long data)
 {
-	struct mt7921_dev *dev = (struct mt7921_dev *)data;
+	struct mt792x_dev *dev = (struct mt792x_dev *)data;
 	u32 intr, mask = 0;
 
 	mt76_wr(dev, MT_WFDMA0_HOST_INT_ENA, 0);
@@ -99,12 +99,12 @@ static void mt7921_irq_tasklet(unsigned long data)
 		napi_schedule(&dev->mt76.napi[MT_RXQ_MAIN]);
 }
 
-static int mt7921e_init_reset(struct mt7921_dev *dev)
+static int mt7921e_init_reset(struct mt792x_dev *dev)
 {
 	return mt7921_wpdma_reset(dev, true);
 }
 
-static void mt7921e_unregister_device(struct mt7921_dev *dev)
+static void mt7921e_unregister_device(struct mt792x_dev *dev)
 {
 	int i;
 	struct mt76_connac_pm *pm = &dev->pm;
@@ -126,7 +126,7 @@ static void mt7921e_unregister_device(struct mt7921_dev *dev)
 	tasklet_disable(&dev->mt76.irq_tasklet);
 }
 
-static u32 __mt7921_reg_addr(struct mt7921_dev *dev, u32 addr)
+static u32 __mt7921_reg_addr(struct mt792x_dev *dev, u32 addr)
 {
 	static const struct mt76_connac_reg_map fixed_map[] = {
 		{ 0x820d0000, 0x30000, 0x10000 }, /* WF_LMAC_TOP (WF_WTBLON) */
@@ -205,7 +205,7 @@ static u32 __mt7921_reg_addr(struct mt7921_dev *dev, u32 addr)
 
 static u32 mt7921_rr(struct mt76_dev *mdev, u32 offset)
 {
-	struct mt7921_dev *dev = container_of(mdev, struct mt7921_dev, mt76);
+	struct mt792x_dev *dev = container_of(mdev, struct mt792x_dev, mt76);
 	u32 addr = __mt7921_reg_addr(dev, offset);
 
 	return dev->bus_ops->rr(mdev, addr);
@@ -213,7 +213,7 @@ static u32 mt7921_rr(struct mt76_dev *mdev, u32 offset)
 
 static void mt7921_wr(struct mt76_dev *mdev, u32 offset, u32 val)
 {
-	struct mt7921_dev *dev = container_of(mdev, struct mt7921_dev, mt76);
+	struct mt792x_dev *dev = container_of(mdev, struct mt792x_dev, mt76);
 	u32 addr = __mt7921_reg_addr(dev, offset);
 
 	dev->bus_ops->wr(mdev, addr, val);
@@ -221,7 +221,7 @@ static void mt7921_wr(struct mt76_dev *mdev, u32 offset, u32 val)
 
 static u32 mt7921_rmw(struct mt76_dev *mdev, u32 offset, u32 mask, u32 val)
 {
-	struct mt7921_dev *dev = container_of(mdev, struct mt7921_dev, mt76);
+	struct mt792x_dev *dev = container_of(mdev, struct mt792x_dev, mt76);
 	u32 addr = __mt7921_reg_addr(dev, offset);
 
 	return dev->bus_ops->rmw(mdev, addr, mask, val);
@@ -258,7 +258,7 @@ static int mt7921_pci_probe(struct pci_dev *pdev,
 	};
 	struct ieee80211_ops *ops;
 	struct mt76_bus_ops *bus_ops;
-	struct mt7921_dev *dev;
+	struct mt792x_dev *dev;
 	struct mt76_dev *mdev;
 	u8 features;
 	int ret;
@@ -305,7 +305,7 @@ static int mt7921_pci_probe(struct pci_dev *pdev,
 
 	pci_set_drvdata(pdev, mdev);
 
-	dev = container_of(mdev, struct mt7921_dev, mt76);
+	dev = container_of(mdev, struct mt792x_dev, mt76);
 	dev->fw_features = features;
 	dev->hif_ops = &mt7921_pcie_ops;
 	mt76_mmio_init(&dev->mt76, pcim_iomap_table(pdev)[0]);
@@ -375,7 +375,7 @@ err_free_pci_vec:
 static void mt7921_pci_remove(struct pci_dev *pdev)
 {
 	struct mt76_dev *mdev = pci_get_drvdata(pdev);
-	struct mt7921_dev *dev = container_of(mdev, struct mt7921_dev, mt76);
+	struct mt792x_dev *dev = container_of(mdev, struct mt792x_dev, mt76);
 
 	mt7921e_unregister_device(dev);
 	devm_free_irq(&pdev->dev, pdev->irq, dev);
@@ -387,7 +387,7 @@ static int mt7921_pci_suspend(struct device *device)
 {
 	struct pci_dev *pdev = to_pci_dev(device);
 	struct mt76_dev *mdev = pci_get_drvdata(pdev);
-	struct mt7921_dev *dev = container_of(mdev, struct mt7921_dev, mt76);
+	struct mt792x_dev *dev = container_of(mdev, struct mt792x_dev, mt76);
 	struct mt76_connac_pm *pm = &dev->pm;
 	int i, err;
 
@@ -461,7 +461,7 @@ static int mt7921_pci_resume(struct device *device)
 {
 	struct pci_dev *pdev = to_pci_dev(device);
 	struct mt76_dev *mdev = pci_get_drvdata(pdev);
-	struct mt7921_dev *dev = container_of(mdev, struct mt7921_dev, mt76);
+	struct mt792x_dev *dev = container_of(mdev, struct mt792x_dev, mt76);
 	struct mt76_connac_pm *pm = &dev->pm;
 	int i, err;
 
