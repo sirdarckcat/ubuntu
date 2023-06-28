@@ -13,8 +13,6 @@ linux-lowlatency-hwe-6.2 (6.2.0-1005.5~22.04.4) jammy; urgency=medium
 
   * Packaging resync (LP: #1786013)
     - [Packaging] update annotations scripts
-
-  * Miscellaneous Ubuntu changes
     - [Packaging] introduce do_lib_rust and enable it only on generic amd64
 
  -- Andrea Righi <andrea.righi@canonical.com>  Thu, 15 Jun 2023 20:11:10 +0200
@@ -27,7 +25,8 @@ linux-lowlatency-hwe-6.2 (6.2.0-1005.5~22.04.3) jammy; urgency=medium
   * Packaging resync (LP: #1786013)
     - [Packaging] update Ubuntu.md
 
-  * Miscellaneous upstream changes
+  * Revert variable symbol length modversion in all the jammy kernels
+    (LP: #2025134)
     - Revert "UBUNTU: SAUCE: modpost: support arbitrary symbol length in
       modversion"
 
@@ -41,8 +40,6 @@ linux-lowlatency-hwe-6.2 (6.2.0-1005.5~22.04.2) jammy; urgency=medium
   * Packaging resync (LP: #1786013)
     - [Packaging] update variants
     - [Packaging] update update.conf
-
-  * Miscellaneous Ubuntu changes
     - [Packaging] initialize linux-lowlatency-hwe-6.2
 
  -- Andrea Righi <andrea.righi@canonical.com>  Wed, 14 Jun 2023 09:36:58 +0200
