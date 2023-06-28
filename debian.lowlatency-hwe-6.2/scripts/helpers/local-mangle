@@ -13,6 +13,8 @@ sed -i /getall/d ${DEBIAN}/etc/getabis
 echo "getall amd64 lowlatency" >> ${DEBIAN}/etc/getabis
 echo "getall arm64 lowlatency lowlatency-64k" >> ${DEBIAN}/etc/getabis
 
+GCC="gcc-11"
+
 # Override options in rules.d/hooks.mk (normally master does not have this
 # file but it got added for generic annotations enforcement.
 cat <<EOD >>${DEBIAN}/rules.d/hooks.mk
@@ -21,4 +23,6 @@ do_doc_package		= false
 do_tools_common		= false
 do_tools_host		= false
 do_source_package	= false
+do_lib_rust		= false
+gcc	= $GCC
 EOD
