@@ -373,17 +373,48 @@ static int ovl_fsync(struct file *file, loff_t start, loff_t end, int datasync)
 	return ret;
 }
 
-/* handle vma->vm_prfile */
+/*
+ * In map_files_get_link() (fs/proc/base.c)
+ * we need to determine correct path from overlayfs.
+ * But real_mount(realfile->f_path.mnt) may be not
+ * equal to real_mount(file->f_path.mnt). In such case
+ * fdinfo of the same file which was opened from
+ * /proc/<pid>/map_files/... and "usual" path
+ * will show different mnt_id.
+ *
+ * We solve issue like in aufs by using additional
+ * field on struct vm_area_struct called "vm_prfile"
+ * which is used only for fdinfo/"printing" needs.
+ *
+ * See also mm/prfile.c
+ */
+#ifdef CONFIG_MMU
 static void ovl_vm_prfile_set(struct vm_area_struct *vma,
 			      struct file *file)
 {
 	get_file(file);
-	vma->vm_prfile = file;
-#ifndef CONFIG_MMU
-	get_file(file);
-	vma->vm_region->vm_prfile = file;
-#endif
+	swap(vma->vm_prfile, file);
+	/* Drop reference count from previous file value */
+	if (file)
+		fput(file);
 }
+#else
+static void ovl_vm_prfile_set(struct vm_area_struct *vma,
+			      struct file *file)
+{
+	struct file *vm_region_file = file;
+
+	get_file(file);
+	get_file(vm_region_file);
+	swap(vma->vm_prfile, file);
+	swap(vma->vm_region->vm_prfile, vm_region_file);
+	/* Drop reference count from previous file values */
+	if (file)
+		fput(file);
+	if (vm_region_file)
+		fput(vm_region_file);
+}
+#endif
 
 static int ovl_mmap(struct file *file, struct vm_area_struct *vma)
 {
@@ -411,21 +442,6 @@ static int ovl_mmap(struct file *file, struct vm_area_struct *vma)
 		vma->vm_file = file;
 		fput(realfile);
 	} else {
-		/*
-		 * In map_files_get_link() (fs/proc/base.c)
-		 * we need to determine correct path from overlayfs.
-		 * But real_mount(realfile->f_path.mnt) may be not
-		 * equal to real_mount(file->f_path.mnt). In such case
-		 * fdinfo of the same file which was opened from
-		 * /proc/<pid>/map_files/... and "usual" path
-		 * will show different mnt_id.
-		 *
-		 * We solve issue like in aufs by using additional
-		 * field on struct vm_area_struct called "vm_prfile"
-		 * which is used only for fdinfo/"printing" needs.
-		 *
-		 * See also mm/prfile.c
-		 */
 		ovl_vm_prfile_set(vma, file);
 
 		/* Drop reference count from previous vm_file value */
