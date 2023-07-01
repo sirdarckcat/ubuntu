@@ -363,7 +363,8 @@
 		rp1_i2s0: i2s@a0000 {
 			reg = <0xc0 0x400a0000  0x0 0x1000>;
 			compatible = "snps,designware-i2s";
-			interrupts = <RP1_INT_I2S0 IRQ_TYPE_LEVEL_HIGH>;
+			// Providing an interrupt disables DMA
+			// interrupts = <RP1_INT_I2S0 IRQ_TYPE_LEVEL_HIGH>;
 			clocks = <&rp1_clocks RP1_CLK_I2S>;
 			clock-names = "i2sclk";
 			#sound-dai-cells = <0>;
@@ -375,7 +376,8 @@
 		rp1_i2s1: i2s@a4000 {
 			reg = <0xc0 0x400a4000  0x0 0x1000>;
 			compatible = "snps,designware-i2s";
-			interrupts = <RP1_INT_I2S1 IRQ_TYPE_LEVEL_HIGH>;
+			// Providing an interrupt disables DMA
+			// interrupts = <RP1_INT_I2S1 IRQ_TYPE_LEVEL_HIGH>;
 			clocks = <&rp1_clocks RP1_CLK_I2S>;
 			clock-names = "i2sclk";
 			#sound-dai-cells = <0>;
@@ -387,7 +389,8 @@
 		rp1_i2s2: i2s@a8000 {
 			reg = <0xc0 0x400a8000  0x0 0x1000>;
 			compatible = "snps,designware-i2s";
-			interrupts = <RP1_INT_I2S2 IRQ_TYPE_LEVEL_HIGH>;
+			// Providing an interrupt disables DMA
+			// interrupts = <RP1_INT_I2S2 IRQ_TYPE_LEVEL_HIGH>;
 			clocks = <&rp1_clocks RP1_CLK_I2S>;
 			status = "disabled";
 		};
