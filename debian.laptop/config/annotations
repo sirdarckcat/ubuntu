@@ -6,3 +6,15 @@
 
 include "../../debian.master/config/annotations"
 
+CONFIG_QCOM_QSEECOM_UEFISECAPP                  policy<{'arm64': 'y'}> note<'X13s patchset'>
+CONFIG_QCOM_SCM_QSEECOM                         policy<{'arm64': 'y'}> note<'X13s patchset'>
+CONFIG_REGULATOR_QCOM_PM8008                    policy<{'arm64': 'm'}> note<'X13s patchset'>
+CONFIG_SC_LPASSCC_8280XP                        policy<{'arm64': 'm'}> note<'X13s patchset'>
+CONFIG_SC_VIDEOCC_8280XP                        policy<{'arm64': 'm'}> note<'X13s patchset'>
+
+# ---- Annotations without notes ----
+
+CONFIG_AS_VERSION                               policy<{'arm64': '24100'}>
+CONFIG_CC_VERSION_TEXT                          policy<{'arm64': '"aarch64-linux-gnu-gcc-13 (Ubuntu 13.2.0-1ubuntu1) 13.2.0"'}>
+CONFIG_GCC_VERSION                              policy<{'arm64': '130200'}>
+CONFIG_LD_VERSION                               policy<{'arm64': '24100'}>
