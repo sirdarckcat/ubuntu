@@ -271,12 +271,6 @@ static void mhi_del_ring_element(struct mhi_controller *mhi_cntrl,
 	smp_wmb();
 }
 
-static bool is_valid_ring_ptr(struct mhi_ring *ring, dma_addr_t addr)
-{
-	return addr >= ring->iommu_base && addr < ring->iommu_base + ring->len &&
-			!(addr & (sizeof(struct mhi_ring_element) - 1));
-}
-
 int mhi_destroy_device(struct device *dev, void *data)
 {
 	struct mhi_chan *ul_chan, *dl_chan;
