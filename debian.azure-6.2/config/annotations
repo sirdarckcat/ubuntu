@@ -9,9 +9,19 @@ include "../../debian.azure-6.2/config/annotations-disable-rust"
 
 # ---- Annotations without notes ----
 
+CONFIG_ARCH_SUPPORTS_SHADOW_CALL_STACK          policy<{'arm64': '-'}>
 CONFIG_AS_VERSION                               policy<{'amd64': '23800', 'arm64': '23800'}>
-CONFIG_CC_VERSION_TEXT                          policy<{'amd64': '"x86_64-linux-gnu-gcc-12 (Ubuntu 12.1.0-2ubuntu1~22.04) 12.1.0"', 'arm64': '"aarch64-linux-gnu-gcc-12 (Ubuntu 12.1.0-2ubuntu1~22.04) 12.1.0"'}>
-CONFIG_GCC_VERSION                              policy<{'amd64': '120100', 'arm64': '120100'}>
+CONFIG_CC_HAS_AUTO_VAR_INIT_PATTERN             policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_CC_HAS_AUTO_VAR_INIT_ZERO                policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_CC_HAS_AUTO_VAR_INIT_ZERO_BARE           policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_CC_HAVE_SHADOW_CALL_STACK                policy<{'arm64': '-'}>
+CONFIG_CC_VERSION_TEXT                          policy<{'amd64': '"x86_64-linux-gnu-gcc-11 (Ubuntu 11.3.0-1ubuntu1~22.04.1) 11.3.0"', 'arm64': '"aarch64-linux-gnu-gcc-11 (Ubuntu 11.3.0-1ubuntu1~22.04.1) 11.3.0"'}>
+CONFIG_GCC_VERSION                              policy<{'amd64': '110300', 'arm64': '110300'}>
+CONFIG_INIT_STACK_ALL_PATTERN                   policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_INIT_STACK_ALL_ZERO                      policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_INIT_STACK_NONE                          policy<{'amd64': 'y', 'arm64': 'y'}>
+CONFIG_KCOV                                     policy<{'amd64': 'n', 'arm64': '-'}>
 CONFIG_LD_VERSION                               policy<{'amd64': '23800', 'arm64': '23800'}>
 CONFIG_PAHOLE_HAS_LANG_EXCLUDE                  policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_PAHOLE_VERSION                           policy<{'amd64': '122', 'arm64': '122'}>
+CONFIG_SHADOW_CALL_STACK                        policy<{'arm64': '-'}>
