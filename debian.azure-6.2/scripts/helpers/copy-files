@@ -58,3 +58,6 @@ cp -p "${DEBIAN_MASTER}/control.d/"*.inclusion-list "${DEBIAN}/control.d"
 
 cp -p "${DEBIAN_MASTER}/reconstruct" "${DEBIAN}/reconstruct"
 
+if [ -x "${DEBIAN}/scripts/helpers/local-mangle" ]; then
+	"./${DEBIAN}/scripts/helpers/local-mangle"
+fi
