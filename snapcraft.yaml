@@ -19,10 +19,8 @@ parts:
     after:
       - firmware
     plugin: kernel
-    source: https://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-xilinx-zynqmp/+git/jammy
-    source-type: git
-    source-depth: 1
-    source-branch: master-next
+    source: .
+    source-type: local
     kernel-kconfigflavour: "xilinx-zynqmp"
     kernel-with-firmware: false
     kernel-enable-zfs-support: true
@@ -31,12 +29,36 @@ parts:
     kernel-initrd-modules:
       - libarc4
       - tpm_tis
+      - sbp2
+      - usb-storage
+      - ehci-hcd
+      - uhci-hcd
+      - scsi_mod
+      - sr_mod
+      - sd_mod
+      - tls
+      - ina260_adc
+      - tpm_tis_spi
+      - scsi_dh_rdac
+      - scsi_dh_emc
+      - scsi_dh_alua
+      - autofs4
+      - rtc_zynqmp
+      - spi_zynqmp_gqspi
+      - i2c_cadence
+      - zynqmp_dpsub
+      - xhci_hcd
+      - xhci_pci
+      - efi_pstoreg
+      - ehci_hcdg
+      - tpmg
+      - tpm_crbg
+      - tpm_tisg
+      - tpm_tis_coreg
+      - xhci_pcig
     kernel-kconfigs:
-      - CONFIG_DEBUG_INFO=n
       - CONFIG_SYSTEM_TRUSTED_KEYS=""
       - CONFIG_SYSTEM_REVOCATION_KEYS=""
-      - CONFIG_AUTOFS_FS=y
-      - CONFIG_TCG_TIS_SPI=y
     override-build: |
       craftctl default
       kernel_version=$(dpkg-parsechangelog -l ${CRAFT_PART_SRC}/debian.zynqmp/changelog -S version)
@@ -60,6 +82,8 @@ parts:
     prime:
       - -initrd.img
       - -kernel.img
+    organize:
+      Image.gz-*: Image.gz-5.15
 
   firmware:
     plugin: dump
