@@ -109,18 +109,6 @@ pciex4: &pcie2 { };
 	};
 };
 
-&cpu_thermal {
-	// Add some labels
-	thermal_trips: trips {
-		cpu_crit: cpu-crit {
-			// Raise upstream limit of 90C
-			temperature = <110000>;
-		};
-	};
-	cooling_maps: cooling-maps {
-	};
-};
-
 &rp1_adc {
 	status = "okay";
 };

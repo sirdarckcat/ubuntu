@@ -45,15 +45,15 @@
 			coefficients = <(-550) 450000>;
 			thermal-sensors = <&thermal>;
 
-			trips {
-				cpu-crit {
-					temperature	= <90000>;
+			thermal_trips: trips {
+				cpu_crit: cpu-crit {
+					temperature	= <110000>;
 					hysteresis	= <0>;
 					type		= "critical";
 				};
 			};
 
-			cooling-maps {
+			cooling_maps: cooling-maps {
 			};
 		};
 	};
