@@ -565,8 +565,10 @@ spi0_cs_pins: &rp1_spi0_cs_gpio7 {};
 		#cooling-cells = <2>;
 		cooling-min-state = <0>;
 		cooling-max-state = <3>;
-		cooling-levels = <0 75 150 250>;
+		cooling-levels = <0 75 125 175 250>;
 		pwms = <&rp1_pwm1 3 41566 PWM_POLARITY_INVERTED>;
+		rpm-regmap = <&rp1_pwm1>;
+		rpm-offset = <0x3c>;
 	};
 
 	suspend_button {
@@ -625,51 +627,56 @@ spi0_cs_pins: &rp1_spi0_cs_gpio7 {};
 	pinctrl-names = "default";
 };
 
-&cpu_thermal {
-	trips {
-		// Add more thresholds below the point at which
-		// firmware starts throttling (80C)
-		cpu_hot: cpu-hot {
-			temperature = <70000>;
-			hysteresis = <5000>;
-			type = "active";
-		};
-
-		cpu_active: cpu-active {
-			temperature = <60000>;
-			hysteresis = <10000>;
-			type = "active";
-		};
-
-		cpu_passive: cpu-passive {
-			temperature = <40000>;
-			hysteresis = <10000>;
-			type = "passive";
-		};
+&thermal_trips {
+	cpu_tepid: cpu-tepid {
+		temperature = <50000>;
+		hysteresis = <5000>;
+		type = "active";
 	};
 
-	cooling-maps {
-		cpu-crit {
-			trip = <&cpu_crit>;
-			cooling-device = <&fan 3 3>;
-		};
+	cpu_warm: cpu-warm {
+		temperature = <60000>;
+		hysteresis = <5000>;
+		type = "active";
+	};
 
-		cpu-hot {
-			// Max fan starts below crit temp
-			trip = <&cpu_hot>;
-			cooling-device = <&fan 3 3>;
-		};
+	cpu_hot: cpu-hot {
+		temperature = <70000>;
+		hysteresis = <5000>;
+		type = "active";
+	};
 
-		cpu-active {
-			trip = <&cpu_active>;
-			cooling-device = <&fan 2 2>;
-		};
+	cpu_vhot: cpu-vhot {
+		temperature = <85000>;
+		hysteresis = <5000>;
+		type = "active";
+	};
+};
 
-		cpu-passive {
-			// Fan off
-			trip = <&cpu_passive>;
-			cooling-device = <&fan 0 0>;
-		};
+&cooling_maps {
+	tepid {
+		trip = <&cpu_tepid>;
+		cooling-device = <&fan 1 1>;
+	};
+
+	warm {
+		trip = <&cpu_warm>;
+		cooling-device = <&fan 2 2>;
+	};
+
+	hot {
+		trip = <&cpu_hot>;
+		cooling-device = <&fan 3 3>;
+	};
+
+	vhot {
+		trip = <&cpu_vhot>;
+		cooling-device = <&fan 4 4>;
+	};
+
+	melt {
+		trip = <&cpu_crit>;
+		cooling-device = <&fan 4 4>;
 	};
 };
 
