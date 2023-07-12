@@ -38,6 +38,12 @@
 		status = "okay";
 	};
 
+	rpi_rtc: rpi_rtc {
+		compatible = "raspberrypi,rpi-rtc";
+		firmware = <&firmware>;
+		status = "okay";
+	};
+
 	/* Define these notional regulators for use by overlays, etc. */
 	vdd_3v3_reg: fixedregulator_3v3 {
 		compatible = "regulator-fixed";
