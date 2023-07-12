@@ -41,6 +41,9 @@
 #include <linux/firmware/xlnx-zynqmp.h>
 #include "macb.h"
 
+static unsigned int txdelay = 25;
+module_param(txdelay, uint, 0644);
+
 /* This structure is only used for MACB on SiFive FU540 devices */
 struct sifive_fu540_macb_mgmt {
 	void __iomem *reg;
@@ -2326,6 +2329,7 @@ add_fcs:
 static netdev_tx_t macb_start_xmit(struct sk_buff *skb, struct net_device *dev)
 {
 	u16 queue_index = skb_get_queue_mapping(skb);
+	u32 tsr;
 	struct macb *bp = netdev_priv(dev);
 	struct macb_queue *queue = &bp->queues[queue_index];
 	unsigned int desc_cnt, nr_frags, frag_size, f;
@@ -2413,6 +2417,11 @@ static netdev_tx_t macb_start_xmit(struct sk_buff *skb, struct net_device *dev)
 	skb_tx_timestamp(skb);
 
 	spin_lock_irq(&bp->lock);
+
+	/* FIXME: Find out why this delay matters to the hardware */
+	readx_poll_timeout_atomic(MACB_READ_TSR, bp, tsr, !(tsr & MACB_BIT(TGO)),
+				  1, txdelay);
+
 	macb_writel(bp, NCR, macb_readl(bp, NCR) | MACB_BIT(TSTART));
 	spin_unlock_irq(&bp->lock);
 
