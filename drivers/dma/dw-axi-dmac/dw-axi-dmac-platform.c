@@ -86,6 +86,17 @@ axi_chan_iowrite64(struct axi_dma_chan *chan, u32 reg, u64 val)
 	iowrite32(upper_32_bits(val), chan->chan_regs + reg + 4);
 }
 
+static inline u64
+axi_chan_ioread64(struct axi_dma_chan *chan, u32 reg)
+{
+	/*
+	 * We split one 64 bit read into two 32 bit reads as some HW doesn't
+	 * support 64 bit access.
+	 */
+	return ((u64)ioread32(chan->chan_regs + reg + 4) << 32) +
+		ioread32(chan->chan_regs + reg);
+}
+
 static inline void axi_chan_config_write(struct axi_dma_chan *chan,
 					 struct axi_dma_chan_config *config)
 {
@@ -317,6 +328,48 @@ static void vchan_desc_put(struct virt_dma_desc *vdesc)
 	axi_desc_put(vd_to_axi_desc(vdesc));
 }
 
+static u32 axi_dma_desc_src_pos(struct axi_dma_desc *desc, dma_addr_t addr)
+{
+	unsigned int idx = 0;
+	u32 pos = 0;
+
+	while (pos < desc->length) {
+		struct axi_dma_hw_desc *hw_desc = &desc->hw_desc[idx++];
+		u32 len = hw_desc->len;
+		dma_addr_t start = le64_to_cpu(hw_desc->lli->sar);
+
+		if (addr >= start && addr <= (start + len)) {
+			pos += addr - start;
+			break;
+		}
+
+		pos += len;
+	}
+
+	return pos;
+}
+
+static u32 axi_dma_desc_dst_pos(struct axi_dma_desc *desc, dma_addr_t addr)
+{
+	unsigned int idx = 0;
+	u32 pos = 0;
+
+	while (pos < desc->length) {
+		struct axi_dma_hw_desc *hw_desc = &desc->hw_desc[idx++];
+		u32 len = hw_desc->len;
+		dma_addr_t start = le64_to_cpu(hw_desc->lli->dar);
+
+		if (addr >= start && addr <= (start + len)) {
+			pos += addr - start;
+			break;
+		}
+
+		pos += len;
+	}
+
+	return pos;
+}
+
 static enum dma_status
 dma_chan_tx_status(struct dma_chan *dchan, dma_cookie_t cookie,
 		  struct dma_tx_state *txstate)
@@ -338,19 +391,35 @@ dma_chan_tx_status(struct dma_chan *dchan, dma_cookie_t cookie,
 	spin_lock_irqsave(&chan->vc.lock, flags);
 
 	vdesc = vchan_find_desc(&chan->vc, cookie);
-	if (vdesc) {
-		length = vd_to_axi_desc(vdesc)->length;
-		completed_blocks = vd_to_axi_desc(vdesc)->completed_blocks;
-		len = vd_to_axi_desc(vdesc)->hw_desc[0].len;
+	if (vdesc && (vdesc == vchan_next_desc(&chan->vc))) {
+		/* This descriptor is in-progress */
+		struct axi_dma_desc *desc = vd_to_axi_desc(vdesc);
+		dma_addr_t addr;
+
+		length = desc->length;
+		completed_blocks = desc->completed_blocks;
+		len = desc->hw_desc[0].len;
 		completed_length = completed_blocks * len;
-		bytes = length - completed_length;
+		if (chan->direction == DMA_MEM_TO_DEV) {
+			addr = axi_chan_ioread64(chan, CH_SAR);
+			completed_length += axi_dma_desc_src_pos(desc, addr);
+		} else if (chan->direction == DMA_DEV_TO_MEM) {
+			addr = axi_chan_ioread64(chan, CH_DAR);
+			completed_length += axi_dma_desc_dst_pos(desc, addr);
+		} else {
+			completed_length = 0;
+		}
+		bytes = desc->length - completed_length;
+	} else if (vdesc) {
+		/* Still in the queue so not started */
+		bytes = vd_to_axi_desc(vdesc)->length;
 	}
 
 	if (chan->is_paused && status == DMA_IN_PROGRESS)
 		status = DMA_PAUSED;
 
-	spin_unlock_irqrestore(&chan->vc.lock, flags);
 	dma_set_residue(txstate, bytes);
+	spin_unlock_irqrestore(&chan->vc.lock, flags);
 
 	return status;
 }
@@ -653,6 +722,9 @@ static int dw_axi_dma_set_hw_desc(struct axi_dma_chan *chan,
 		break;
 	case DMA_DEV_TO_MEM:
 		reg_width = __ffs(chan->config.src_addr_width);
+		/* Prevent partial access units getting lost */
+		if (mem_width > reg_width)
+			mem_width = reg_width;
 		device_addr = phys_to_dma(chan->chip->dev, chan->config.src_addr);
 		ctllo = reg_width << CH_CTL_L_SRC_WIDTH_POS |
 			mem_width << CH_CTL_L_DST_WIDTH_POS |
