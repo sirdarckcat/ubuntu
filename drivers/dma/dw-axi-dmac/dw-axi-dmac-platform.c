@@ -346,6 +346,9 @@ dma_chan_tx_status(struct dma_chan *dchan, dma_cookie_t cookie,
 		bytes = length - completed_length;
 	}
 
+	if (chan->is_paused && status == DMA_IN_PROGRESS)
+		status = DMA_PAUSED;
+
 	spin_unlock_irqrestore(&chan->vc.lock, flags);
 	dma_set_residue(txstate, bytes);
 
