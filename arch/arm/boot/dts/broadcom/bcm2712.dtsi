@@ -963,7 +963,7 @@
 			resets = <&bcm_reset 5>, <&bcm_reset 42>, <&pcie_rescal>;
 			reset-names = "swinit", "bridge", "rescal";
 			msi-controller;
-			msi-parent = <&mip1>;
+			msi-parent = <&pcie0>;
 
 			ranges = <0x02000000 0x00 0x00000000
 				  0x17 0x00000000
@@ -1011,7 +1011,7 @@
 			resets = <&bcm_reset 7>, <&bcm_reset 43>, <&pcie_rescal>;
 			reset-names = "swinit", "bridge", "rescal";
 			msi-controller;
-			msi-parent = <&pcie1>;
+			msi-parent = <&mip1>;
 
 			ranges = <0x02000000 0x00 0x00000000
 				  0x1b 0x00000000
@@ -1108,8 +1108,8 @@
 			msi-controller;
 			interrupt-controller;
 			#interrupt-cells = <2>;
-			brcm,msi-base-spi = <255>;
-			/* Actually 17 total, but the others are
+			brcm,msi-base-spi = <247>;
+			/* Actually 20 total, but the others are
 			 * both sparse and non-consecutive */
 			brcm,msi-num-spis = <8>;
 			brcm,msi-offset = <8>;
