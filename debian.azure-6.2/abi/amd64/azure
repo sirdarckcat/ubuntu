@@ -2877,10 +2877,10 @@ EXPORT_SYMBOL	 drivers/thermal/intel/int340x_thermal/acpi_thermal_rel 0x86c998e6
 EXPORT_SYMBOL	 drivers/thermal/intel/int340x_thermal/acpi_thermal_rel 0x9103c585	acpi_parse_art
 EXPORT_SYMBOL	 drivers/thermal/intel/int340x_thermal/acpi_thermal_rel 0xf0f9fe0d	acpi_parse_trt
 EXPORT_SYMBOL	 drivers/vdpa/vdpa 0xf72638ad	vdpa_set_status
-EXPORT_SYMBOL	 drivers/vfio/mdev/mdev 0x3aff8fce	mdev_register_driver
-EXPORT_SYMBOL	 drivers/vfio/mdev/mdev 0x4eac108f	mdev_unregister_parent
-EXPORT_SYMBOL	 drivers/vfio/mdev/mdev 0x5268fde3	mdev_unregister_driver
-EXPORT_SYMBOL	 drivers/vfio/mdev/mdev 0x7b23c2bd	mdev_register_parent
+EXPORT_SYMBOL	 drivers/vfio/mdev/mdev 0x073f47af	mdev_register_driver
+EXPORT_SYMBOL	 drivers/vfio/mdev/mdev 0x6d15ef14	mdev_unregister_parent
+EXPORT_SYMBOL	 drivers/vfio/mdev/mdev 0x7c63d792	mdev_unregister_driver
+EXPORT_SYMBOL	 drivers/vfio/mdev/mdev 0xe5ed8bd1	mdev_register_parent
 EXPORT_SYMBOL	 drivers/vfio/vfio 0x19567d06	vfio_info_cap_shift
 EXPORT_SYMBOL	 drivers/vfio/vfio 0x2f44e54a	vfio_pin_pages
 EXPORT_SYMBOL	 drivers/vfio/vfio 0x6c28be5a	vfio_info_add_capability
@@ -8063,7 +8063,6 @@ EXPORT_SYMBOL	 vmlinux 0xc39ca6f1	__folio_put
 EXPORT_SYMBOL	 vmlinux 0xc39ffbef	jbd2_fc_wait_bufs
 EXPORT_SYMBOL	 vmlinux 0xc3aaf0a9	__put_user_1
 EXPORT_SYMBOL	 vmlinux 0xc3bc72ad	trace_print_array_seq
-EXPORT_SYMBOL	 vmlinux 0xc3c8a008	module_layout
 EXPORT_SYMBOL	 vmlinux 0xc3e32b8d	jbd2_journal_force_commit
 EXPORT_SYMBOL	 vmlinux 0xc3fccf9c	netdev_update_features
 EXPORT_SYMBOL	 vmlinux 0xc3ff38c2	down_read_trylock
@@ -8863,6 +8862,7 @@ EXPORT_SYMBOL	 vmlinux 0xe914e41e	strcpy
 EXPORT_SYMBOL	 vmlinux 0xe91bec63	tcp_sendpage
 EXPORT_SYMBOL	 vmlinux 0xe92ef22a	pci_alloc_host_bridge
 EXPORT_SYMBOL	 vmlinux 0xe953b21f	get_next_ino
+EXPORT_SYMBOL	 vmlinux 0xe9833227	module_layout
 EXPORT_SYMBOL	 vmlinux 0xe99a3fe7	inet_proto_csum_replace16
 EXPORT_SYMBOL	 vmlinux 0xe9a5e67f	intel_graphics_stolen_res
 EXPORT_SYMBOL	 vmlinux 0xe9af7397	__xa_set_mark
@@ -12199,6 +12199,7 @@ EXPORT_SYMBOL_GPL	 drivers/vdpa/vdpa 0xd1b6df8c	vdpa_unregister_device
 EXPORT_SYMBOL_GPL	 drivers/vdpa/vdpa 0xd5b69803	_vdpa_unregister_device
 EXPORT_SYMBOL_GPL	 drivers/vdpa/vdpa 0xd662022d	vdpa_mgmtdev_unregister
 EXPORT_SYMBOL_GPL	 drivers/vdpa/vdpa 0xd90ea951	_vdpa_register_device
+EXPORT_SYMBOL_GPL	 drivers/vfio/mdev/mdev 0xb74b38ff	mdev_bus_type
 EXPORT_SYMBOL_GPL	 drivers/vfio/pci/vfio-pci-core 0x0d24bc50	vfio_pci_core_register_dev_region
 EXPORT_SYMBOL_GPL	 drivers/vfio/pci/vfio-pci-core 0x10ca80d6	vfio_pci_core_request
 EXPORT_SYMBOL_GPL	 drivers/vfio/pci/vfio-pci-core 0x19169851	vfio_pci_core_err_handlers
@@ -20370,6 +20371,7 @@ I915_GVT EXPORT_SYMBOL_GPL 0x1e272645	i915_gem_object_pin_map	drivers/gpu/drm/i9
 I915_GVT EXPORT_SYMBOL_GPL 0x227082fa	i915_gem_gtt_insert	drivers/gpu/drm/i915/i915
 I915_GVT EXPORT_SYMBOL_GPL 0x3a5166cb	i915_gem_ww_ctx_init	drivers/gpu/drm/i915/i915
 I915_GVT EXPORT_SYMBOL_GPL 0x3af738fd	__intel_context_do_unpin	drivers/gpu/drm/i915/i915
+I915_GVT EXPORT_SYMBOL_GPL 0x3cc520c1	intel_gvt_iterate_mmio_table	drivers/gpu/drm/i915/i915
 I915_GVT EXPORT_SYMBOL_GPL 0x4260ed98	intel_uncore_forcewake_get	drivers/gpu/drm/i915/i915
 I915_GVT EXPORT_SYMBOL_GPL 0x45bb913b	intel_runtime_pm_put_unchecked	drivers/gpu/drm/i915/i915
 I915_GVT EXPORT_SYMBOL_GPL 0x474ff6eb	intel_gvt_clear_ops	drivers/gpu/drm/i915/i915
@@ -20389,7 +20391,6 @@ I915_GVT EXPORT_SYMBOL_GPL 0x8fb7b578	i915_gem_object_init	drivers/gpu/drm/i915/
 I915_GVT EXPORT_SYMBOL_GPL 0x95be97dd	intel_gvt_set_ops	drivers/gpu/drm/i915/i915
 I915_GVT EXPORT_SYMBOL_GPL 0x97a751a1	__intel_context_do_pin	drivers/gpu/drm/i915/i915
 I915_GVT EXPORT_SYMBOL_GPL 0xa16fc5ab	i915_request_add	drivers/gpu/drm/i915/i915
-I915_GVT EXPORT_SYMBOL_GPL 0xa2635598	intel_gvt_iterate_mmio_table	drivers/gpu/drm/i915/i915
 I915_GVT EXPORT_SYMBOL_GPL 0xa91804ef	intel_runtime_pm_get	drivers/gpu/drm/i915/i915
 I915_GVT EXPORT_SYMBOL_GPL 0xb750de37	__px_dma	drivers/gpu/drm/i915/i915
 I915_GVT EXPORT_SYMBOL_GPL 0xbf1c3c66	i915_gem_object_create_shmem	drivers/gpu/drm/i915/i915
