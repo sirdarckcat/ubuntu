@@ -470,12 +470,6 @@ dpi_16bit_gpio2:        &rp1_dpi_16bit_gpio2        { };
 		bias-pull-up;
 	};
 
-	suspend_button_pins: suspend_button_pins {
-		function = "gpio";
-		pins = "aon_gpio12";
-		bias-pull-up;
-	};
-
 	/* Slight hack - only one PWM pin (status LED) is usable */
 	aon_pwm_1pin: aon_pwm_1pin {
 		function = "aon_pwm";
@@ -484,7 +478,13 @@ dpi_16bit_gpio2:        &rp1_dpi_16bit_gpio2        { };
 };
 
 &pinctrl {
-	wl_on_pins: wl_on_pins {
+	suspend_button_pins: suspend_button_pins {
+		function = "gpio";
+		pins = "gpio20";
+		bias-pull-up;
+	};
+
+wl_on_pins: wl_on_pins {
 		function = "gpio";
 		pins = "gpio28";
 	};
@@ -585,7 +585,7 @@ spi0_cs_pins: &rp1_spi0_cs_gpio7 {};
 			label = "suspend";
 			linux,code = <205>; // KEY_SUSPEND
 			interrupt-parent = <&gio>;
-			interrupts = <14 IRQ_TYPE_EDGE_RISING>;
+			interrupts = <20 IRQ_TYPE_EDGE_FALLING>;
 			debounce-interval = <0>; // ms
 		};
 	};
@@ -700,13 +700,13 @@ spi0_cs_pins: &rp1_spi0_cs_gpio7 {};
 		"-", // GPIO_011
 		"-", // GPIO_012
 		"-", // GPIO_013
-		"PWR_BUTTON", // GPIO_014
-		"2712_G15_FS", // GPIO_015
+		"PCIE_SDA", // GPIO_014
+		"PCIE_SCL", // GPIO_015
 		"-", // GPIO_016
 		"-", // GPIO_017
 		"-", // GPIO_018
 		"-", // GPIO_019
-		"2712_G20_FS", // GPIO_020
+		"PWR_GPIO", // GPIO_020
 		"2712_G21_FS", // GPIO_021
 		"-", // GPIO_022
 		"-", // GPIO_023
@@ -793,11 +793,11 @@ spi0_cs_pins: &rp1_spi0_cs_gpio7 {};
 		"PIN37", // GPIO26
 		"PIN13", // GPIO27
 
-		"-", // GPIO28
+		"PCIE_RP1_WAKE", // GPIO28
 		"FAN_TACH", // GPIO29
 		"HOST_SDA", // GPIO30
 		"HOST_SCL", // GPIO31
-		"ETH_RST_B", // GPIO32
+		"ETH_RST_N", // GPIO32
 		"-", // GPIO33
 
 		"CD0_IO0_MICCLK", // GPIO34
@@ -815,10 +815,10 @@ spi0_cs_pins: &rp1_spi0_cs_gpio7 {};
 		"CD1_IO0_MICCLK", // GPIO46
 		"2712_WAKE", // GPIO47
 		"CD1_IO1_MICDAT1", // GPIO48
-		"RP1_BOOT_SCLK", // GPIO49
-		"RP1_BOOT_MISO", // GPIO50
-		"RP1_BOOT_SMOSI", // GPIO51
-		"RP1_BOOT_CS_N", // GPIO52
+		"EN_MAX_USB_CUR", // GPIO49
+		"-", // GPIO50
+		"-", // GPIO51
+		"-", // GPIO52
 		"-"; // GPIO53
 
 	usb_vbus_pins: usb_vbus_pins {
