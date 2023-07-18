@@ -859,6 +859,8 @@ dw_axi_dma_chan_prep_cyclic(struct dma_chan *dchan, dma_addr_t dma_addr,
 		src_addr += segment_len;
 	}
 
+	desc->hw_desc_count = total_segments;
+
 	llp = desc->hw_desc[0].llp;
 
 	/* Managed transfer list */
@@ -1046,6 +1048,8 @@ dma_chan_prep_dma_memcpy(struct dma_chan *dchan, dma_addr_t dst_adr,
 		src_adr += xfer_len;
 		num++;
 	}
+
+	desc->hw_desc_count = num;
 
 	/* Set end-of-link to the last link descriptor of list */
 	set_desc_last(&desc->hw_desc[num - 1]);
