@@ -1306,6 +1306,7 @@ struct macb {
 	u8			aw2w_max_pipe;
 	u8			ar2r_max_pipe;
 	bool			use_aw2b_fill;
+	ktime_t			last_tgo_time;
 
 	phy_interface_t		phy_interface;
 

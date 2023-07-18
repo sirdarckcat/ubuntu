@@ -41,7 +41,7 @@
 #include <linux/firmware/xlnx-zynqmp.h>
 #include "macb.h"
 
-static unsigned int txdelay = 25;
+static unsigned int txdelay = 35;
 module_param(txdelay, uint, 0644);
 
 /* This structure is only used for MACB on SiFive FU540 devices */
@@ -2329,13 +2329,13 @@ add_fcs:
 static netdev_tx_t macb_start_xmit(struct sk_buff *skb, struct net_device *dev)
 {
 	u16 queue_index = skb_get_queue_mapping(skb);
-	u32 tsr;
 	struct macb *bp = netdev_priv(dev);
 	struct macb_queue *queue = &bp->queues[queue_index];
 	unsigned int desc_cnt, nr_frags, frag_size, f;
 	unsigned int hdrlen;
 	bool is_lso;
 	netdev_tx_t ret = NETDEV_TX_OK;
+	ktime_t tgo_delta;
 
 	if (macb_clear_csum(skb)) {
 		dev_kfree_skb_any(skb);
@@ -2419,10 +2419,14 @@ static netdev_tx_t macb_start_xmit(struct sk_buff *skb, struct net_device *dev)
 	spin_lock_irq(&bp->lock);
 
 	/* FIXME: Find out why this delay matters to the hardware */
-	readx_poll_timeout_atomic(MACB_READ_TSR, bp, tsr, !(tsr & MACB_BIT(TGO)),
-				  1, txdelay);
+	if (macb_readl(bp, TSR) & MACB_BIT(TGO)) {
+		tgo_delta = ktime_add_us(bp->last_tgo_time, txdelay);
+		while (!ktime_after(ktime_get(), tgo_delta))
+			udelay(1);
+	}
 
 	macb_writel(bp, NCR, macb_readl(bp, NCR) | MACB_BIT(TSTART));
+	bp->last_tgo_time = ktime_get();
 	spin_unlock_irq(&bp->lock);
 
 	if (CIRC_SPACE(queue->tx_head, queue->tx_tail, bp->tx_ring_size) < 1)
