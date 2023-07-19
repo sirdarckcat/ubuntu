@@ -220,6 +220,9 @@ rp1_target: &pcie2 {
 // The system UART
 uart10: &_uart0 { status = "okay"; };
 
+// The system SPI for the bootloader EEPROM
+spi10: &_spi0 { status = "okay"; };
+
 i2c_rp1boot: &_i2c3 { };
 
 #include "rp1.dtsi"
@@ -616,6 +619,38 @@ spi0_cs_pins: &rp1_spi0_cs_gpio7 {};
 	status = "okay";
 };
 
+&pinctrl {
+	spi10_gpio2: spi10_gpio2 {
+		function = "vc_spi0";
+		pins = "gpio2", "gpio3", "gpio4";
+		bias-disable;
+	};
+
+	spi10_cs_gpio1: spi10_cs_gpio1 {
+		function = "gpio";
+		pins = "gpio1";
+		bias-pull-up;
+	};
+};
+
+spi10_pins: &spi10_gpio2 {};
+spi10_cs_pins: &spi10_cs_gpio1 {};
+
+&spi10 {
+	pinctrl-names = "default";
+	cs-gpios = <&gio 1 1>;
+	pinctrl-0 = <&spi10_pins &spi10_cs_pins>;
+
+	spidev10: spidev@0 {
+		compatible = "spidev";
+		reg = <0>;	/* CE0 */
+		#address-cells = <1>;
+		#size-cells = <0>;
+		spi-max-frequency = <20000000>;
+		status = "okay";
+	};
+};
+
 // =============================================
 // Board specific stuff here
 
@@ -863,6 +898,7 @@ spi0_cs_pins: &rp1_spi0_cs_gpio7 {};
 		spi3 = &spi3;
 		spi4 = &spi4;
 		spi5 = &spi5;
+		spi10 = &spi10;
 		gpio0 = &gpio;
 		gpio1 = &gio;
 		gpio2 = &gio_aon;
