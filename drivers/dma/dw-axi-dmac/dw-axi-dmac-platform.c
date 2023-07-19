@@ -379,10 +379,7 @@ dma_chan_tx_status(struct dma_chan *dchan, dma_cookie_t cookie,
 	enum dma_status status;
 	u32 completed_length;
 	unsigned long flags;
-	u32 completed_blocks;
 	size_t bytes = 0;
-	u32 length;
-	u32 len;
 
 	status = dma_cookie_status(dchan, cookie, txstate);
 	if (status == DMA_COMPLETE || !txstate)
@@ -396,16 +393,12 @@ dma_chan_tx_status(struct dma_chan *dchan, dma_cookie_t cookie,
 		struct axi_dma_desc *desc = vd_to_axi_desc(vdesc);
 		dma_addr_t addr;
 
-		length = desc->length;
-		completed_blocks = desc->completed_blocks;
-		len = desc->hw_desc[0].len;
-		completed_length = completed_blocks * len;
 		if (chan->direction == DMA_MEM_TO_DEV) {
 			addr = axi_chan_ioread64(chan, CH_SAR);
-			completed_length += axi_dma_desc_src_pos(desc, addr);
+			completed_length = axi_dma_desc_src_pos(desc, addr);
 		} else if (chan->direction == DMA_DEV_TO_MEM) {
 			addr = axi_chan_ioread64(chan, CH_DAR);
-			completed_length += axi_dma_desc_dst_pos(desc, addr);
+			completed_length = axi_dma_desc_dst_pos(desc, addr);
 		} else {
 			completed_length = 0;
 		}
