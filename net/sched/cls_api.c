@@ -3869,6 +3869,7 @@ int tc_setup_offload_action(struct flow_action *flow_action,
 				entry->hw_stats = tc_act_hw_stats(act->hw_stats);
 				entry->miss_cookie =
 					tcf_exts_miss_cookie_get(miss_cookie_base, i);
+				entry->act = act;
 
 				entry = &flow_action->entries[++j];
 			}
