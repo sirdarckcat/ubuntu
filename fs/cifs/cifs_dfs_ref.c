@@ -133,12 +133,12 @@ static void fs_context_set_ids(struct smb3_fs_context *ctx)
 		ctx->cred_uid = uid;
 }
 
-static int set_dest_addr(struct smb3_fs_context *ctx, const char *full_path)
+static int set_dest_addr(struct smb3_fs_context *ctx)
 {
 	struct sockaddr *addr = (struct sockaddr *)&ctx->dstaddr;
 	int rc;
 
-	rc = dns_resolve_server_name_to_ip(full_path, addr, NULL);
+	rc = dns_resolve_server_name_to_ip(ctx->source, addr, NULL);
 	if (!rc)
 		cifs_set_port(addr, ctx->port);
 	return rc;
@@ -186,10 +186,9 @@ static struct vfsmount *cifs_dfs_do_automount(struct path *path)
 		mnt = ERR_CAST(full_path);
 		goto out;
 	}
-	cifs_dbg(FYI, "%s: full_path: %s\n", __func__, full_path);
 
 	tmp = *cur_ctx;
-	tmp.source = full_path;
+	tmp.source = NULL;
 	tmp.leaf_fullpath = NULL;
 	tmp.UNC = tmp.prepath = NULL;
 	fs_context_set_ids(&tmp);
@@ -201,13 +200,22 @@ static struct vfsmount *cifs_dfs_do_automount(struct path *path)
 		goto out;
 	}
 
-	rc = set_dest_addr(ctx, full_path);
+	rc = smb3_parse_devname(full_path, ctx);
 	if (rc) {
 		mnt = ERR_PTR(rc);
 		goto out;
 	}
 
-	rc = smb3_parse_devname(full_path, ctx);
+	ctx->source = smb3_fs_context_fullpath(ctx, '/');
+	if (IS_ERR(ctx->source)) {
+		mnt = ERR_CAST(ctx->source);
+		ctx->source = NULL;
+		goto out;
+	}
+	cifs_dbg(FYI, "%s: ctx: source=%s UNC=%s prepath=%s dstaddr=%pISpc\n",
+		 __func__, ctx->source, ctx->UNC, ctx->prepath, &ctx->dstaddr);
+
+	rc = set_dest_addr(ctx);
 	if (!rc)
 		mnt = fc_mount(fc);
 	else
