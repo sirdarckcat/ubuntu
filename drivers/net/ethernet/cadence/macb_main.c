@@ -1962,8 +1962,9 @@ static irqreturn_t macb_interrupt(int irq, void *dev_id)
 				queue_writel(queue, ISR, MACB_BIT(TCOMP) |
 							 MACB_BIT(TXUBR));
 
-			if (status & MACB_BIT(TXUBR)) {
+			if (status & MACB_BIT(TXUBR) || queue->tx_pending) {
 				queue->txubr_pending = true;
+				queue->tx_pending = 0;
 				wmb(); // ensure softirq can see update
 			}
 
@@ -2335,7 +2336,6 @@ static netdev_tx_t macb_start_xmit(struct sk_buff *skb, struct net_device *dev)
 	unsigned int hdrlen;
 	bool is_lso;
 	netdev_tx_t ret = NETDEV_TX_OK;
-	ktime_t tgo_delta;
 
 	if (macb_clear_csum(skb)) {
 		dev_kfree_skb_any(skb);
@@ -2418,15 +2418,11 @@ static netdev_tx_t macb_start_xmit(struct sk_buff *skb, struct net_device *dev)
 
 	spin_lock_irq(&bp->lock);
 
-	/* FIXME: Find out why this delay matters to the hardware */
-	if (macb_readl(bp, TSR) & MACB_BIT(TGO)) {
-		tgo_delta = ktime_add_us(bp->last_tgo_time, txdelay);
-		while (!ktime_after(ktime_get(), tgo_delta))
-			udelay(1);
-	}
+	/* TSTART write might get dropped, so make the IRQ retrigger a buffer read */
+	if (macb_readl(bp, TSR) & MACB_BIT(TGO))
+		queue->tx_pending = 1;
 
 	macb_writel(bp, NCR, macb_readl(bp, NCR) | MACB_BIT(TSTART));
-	bp->last_tgo_time = ktime_get();
 	spin_unlock_irq(&bp->lock);
 
 	if (CIRC_SPACE(queue->tx_head, queue->tx_tail, bp->tx_ring_size) < 1)
