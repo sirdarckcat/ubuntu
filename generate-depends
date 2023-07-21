@@ -1,8 +1,12 @@
 #!/bin/bash
+set -e
+set -x
 
 from="$1"
 version="$2"
 to="$3"
+
+apt-cache show "$from=$version" | grep -q "^Package: $from"
 
 apt-cache show "$from=$version" | \
 	egrep '^(Depends|Suggests|Provides|Replaces):' | \
