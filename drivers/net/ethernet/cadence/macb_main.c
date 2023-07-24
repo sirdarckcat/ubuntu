@@ -2817,8 +2817,14 @@ static void gem_init_axi(struct macb *bp)
 
 static void gem_init_intmod(struct macb *bp)
 {
-	/* Clear interrupt moderation thresholds */
-	gem_writel(bp, INTMOD, 0);
+	unsigned int throttle;
+	u32 intmod = 0;
+
+	/* Use sensible interrupt moderation thresholds (50us rx and tx) */
+	throttle = (1000 * 50) / 800;
+	intmod = GEM_BFINS(TX_MODERATION, throttle, intmod);
+	intmod = GEM_BFINS(RX_MODERATION, throttle, intmod);
+	gem_writel(bp, INTMOD, intmod);
 }
 
 static void macb_init_hw(struct macb *bp)
