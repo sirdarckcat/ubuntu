@@ -27,7 +27,7 @@ MODULE_LICENSE("GPL v2");
 #define PISPBE_VIDEO_NODE_OFFSET 20
 
 /* Maximum number of config buffers possible */
-#define PISP_BE_NUM_CONFIG_BUFFERS 8
+#define PISP_BE_NUM_CONFIG_BUFFERS VB2_MAX_FRAME
 
 /*
  * We want to support 2 independent instances allowing 2 simultaneous users
