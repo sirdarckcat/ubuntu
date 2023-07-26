@@ -227,12 +227,16 @@ CONFIG_AT803X_PHY                               policy<{'arm64': 'y', 'amd64-cap
 CONFIG_ATALK                                    policy<{'arm64': 'n', 'amd64-capilano': 'm'}>
 CONFIG_ATARI_PARTITION                          policy<{'arm64': '-', 'amd64-capilano': 'y'}>
 CONFIG_ATA_OVER_ETH                             policy<{'arm64': 'n', 'amd64-capilano': 'm'}>
-CONFIG_ATH10K_AHB                               policy<{'arm64': 'n'}>
-CONFIG_ATH10K_DEBUGFS                           policy<{'arm64': 'n', 'amd64-capilano': 'y'}>
-CONFIG_ATH10K_SDIO                              policy<{'arm64': 'n', 'amd64-capilano': 'm'}>
+CONFIG_ATH10K                                   policy<{'arm64': 'n', 'amd64-capilano': 'm'}>
+CONFIG_ATH10K_AHB                               policy<{'arm64': '-'}>
+CONFIG_ATH10K_DEBUG                             policy<{'arm64': '-', 'amd64-capilano': 'n'}>
+CONFIG_ATH10K_DEBUGFS                           policy<{'arm64': '-', 'amd64-capilano': 'y'}>
+CONFIG_ATH10K_PCI                               policy<{'arm64': '-', 'amd64-capilano': 'm'}>
+CONFIG_ATH10K_SDIO                              policy<{'arm64': '-', 'amd64-capilano': 'm'}>
+CONFIG_ATH10K_SNOC                              policy<{'arm64': '-'}>
 CONFIG_ATH10K_SPECTRAL                          policy<{'arm64': '-', 'amd64-capilano': 'y'}>
-CONFIG_ATH10K_TRACING                           policy<{'arm64': 'n', 'amd64-capilano': 'y'}>
-CONFIG_ATH10K_USB                               policy<{'arm64': 'n', 'amd64-capilano': 'm'}>
+CONFIG_ATH10K_TRACING                           policy<{'arm64': '-', 'amd64-capilano': 'y'}>
+CONFIG_ATH10K_USB                               policy<{'arm64': '-', 'amd64-capilano': 'm'}>
 CONFIG_ATH11K_DEBUGFS                           policy<{'arm64': '-', 'amd64-capilano': 'y'}>
 CONFIG_ATH11K_SPECTRAL                          policy<{'arm64': '-', 'amd64-capilano': 'y'}>
 CONFIG_ATH11K_TRACING                           policy<{'arm64': 'n', 'amd64-capilano': 'y'}>
@@ -946,9 +950,14 @@ CONFIG_DAVICOM_PHY                              policy<{'arm64': 'n', 'amd64-cap
 CONFIG_DCB                                      policy<{'arm64': 'n', 'amd64-capilano': 'y'}>
 CONFIG_DE2104X                                  policy<{'arm64': '-', 'amd64-capilano': 'm'}>
 CONFIG_DE2104X_DSL                              policy<{'arm64': '-', 'amd64-capilano': '0'}>
-CONFIG_DEBUG_INFO_BTF                           policy<{'arm64': 'n', 'amd64-capilano': 'y'}>
-CONFIG_DEBUG_INFO_DWARF5                        policy<{'amd64': 'y', 'amd64-capilano': 'y', 'arm64': 'y'}>
-CONFIG_DEBUG_INFO_DWARF_TOOLCHAIN_DEFAULT       policy<{'amd64': 'n', 'amd64-capilano': 'n', 'arm64': 'n'}>
+CONFIG_DEBUG_EFI                                policy<{'arm64': '-', 'arm64-capilano-debug' : 'n'}>
+CONFIG_DEBUG_INFO                               policy<{'arm64': 'n', 'amd64-capilano': 'y', 'arm64-capilano-debug' : 'y'}>
+CONFIG_DEBUG_INFO_BTF                           policy<{'arm64': 'n', 'amd64-capilano': 'y', 'arm64': '-', 'arm64-capilano-debug' : 'n'}>
+CONFIG_DEBUG_INFO_COMPRESSED                    policy<{'amd64': 'n', 'amd64-capilano': 'n', 'arm64': '-', 'arm64-capilano-debug' : 'n'}>
+CONFIG_DEBUG_INFO_DWARF5                        policy<{'amd64': 'y', 'amd64-capilano': 'y', 'arm64': '-', 'arm64-capilano-debug' : 'y'}>
+CONFIG_DEBUG_INFO_DWARF_TOOLCHAIN_DEFAULT       policy<{'amd64': 'n', 'amd64-capilano': 'n', 'arm64': '-', 'arm64-capilano-debug' : 'n'}>
+CONFIG_DEBUG_INFO_REDUCED                       policy<{'amd64': 'n', 'amd64-capilano': 'n', 'arm64': '-', 'arm64-capilano-debug' : 'n'}>
+CONFIG_DEBUG_INFO_SPLIT                         policy<{'amd64': 'n', 'amd64-capilano': 'n', 'arm64': '-', 'arm64-capilano-debug' : 'n'}>
 CONFIG_DEBUG_KERNEL_DC                          policy<{'arm64': '-', 'amd64-capilano': 'n'}>
 CONFIG_DEBUG_LOCK_ALLOC                         policy<{'amd64': 'n', 'arm64': 'n'}>
 CONFIG_DEBUG_MEMORY_INIT                        policy<{'arm64': 'n', 'amd64-capilano': 'n', 'arm64-capilano-debug' : 'y'}>
@@ -1629,7 +1638,7 @@ CONFIG_GAMEPORT_EMU10K1                         policy<{'arm64': '-', 'amd64-cap
 CONFIG_GAMEPORT_FM801                           policy<{'arm64': '-', 'amd64-capilano': 'm'}>
 CONFIG_GAMEPORT_L4                              policy<{'arm64': '-', 'amd64-capilano': 'm'}>
 CONFIG_GAMEPORT_NS558                           policy<{'arm64': '-', 'amd64-capilano': 'm'}>
-CONFIG_GDB_SCRIPTS                              policy<{'arm64': 'n', 'amd64-capilano': 'y'}>
+CONFIG_GDB_SCRIPTS                              policy<{'arm64': '-', 'amd64-capilano': 'y', 'arm64-capilano-debug': 'n'}>
 CONFIG_GEMINI_ETHERNET                          policy<{'arm64': 'n'}>
 CONFIG_GENERIC_ADC_BATTERY                      policy<{'arm64': 'n', 'amd64-capilano': 'm'}>
 CONFIG_GENERIC_ADC_THERMAL                      policy<{'arm64': 'n', 'amd64-capilano': 'm'}>
@@ -1649,7 +1658,7 @@ CONFIG_GPIO_ADNP                                policy<{'arm64': 'n'}>
 CONFIG_GPIO_ADP5520                             policy<{'arm64': '-', 'amd64-capilano': 'm'}>
 CONFIG_GPIO_ADP5588                             policy<{'arm64': 'n', 'amd64-capilano': 'm'}>
 CONFIG_GPIO_AGGREGATOR                          policy<{'arm64': 'n', 'amd64-capilano': 'm'}>
-CONFIG_GPIO_ALTERA_A10SR                        policy<{'arm64': 'n'}>
+CONFIG_GPIO_ALTERA_A10SR                        policy<{'arm64': '-'}>
 CONFIG_GPIO_AMDPT                               policy<{'arm64': 'n', 'amd64-capilano': 'm'}>
 CONFIG_GPIO_AMD_FCH                             policy<{'arm64': 'n', 'amd64-capilano': 'm'}>
 CONFIG_GPIO_ARIZONA                             policy<{'arm64': '-', 'amd64-capilano': 'm'}>
@@ -2043,7 +2052,7 @@ CONFIG_IEEE802154_MCR20A                        policy<{'arm64': 'n', 'amd64-cap
 CONFIG_IEEE802154_NL802154_EXPERIMENTAL         policy<{'arm64': 'y', 'amd64-capilano': 'n'}>
 CONFIG_IFB                                      policy<{'arm64': 'n', 'amd64-capilano': 'm'}>
 CONFIG_IFCVF                                    policy<{'arm64': '-', 'amd64-capilano': 'm'}>
-CONFIG_IGC                                      policy<{'arm64': 'n', 'amd64-capilano': 'm'}>
+CONFIG_IGC                                      policy<{'arm64': 'y', 'amd64-capilano': 'm'}>
 CONFIG_IIO                                      policy<{'arm64': 'y', 'amd64-capilano': 'm'}>
 CONFIG_IIO_BUFFER_CB                            policy<{'arm64': 'n', 'amd64-capilano': 'm'}>
 CONFIG_IIO_BUFFER_DMA                           policy<{'arm64': 'n', 'amd64-capilano': 'm'}>
@@ -2062,7 +2071,7 @@ CONFIG_IIO_SIMPLE_DUMMY_BUFFER                  policy<{'arm64': '-', 'amd64-cap
 CONFIG_IIO_SIMPLE_DUMMY_EVENTS                  policy<{'arm64': '-', 'amd64-capilano': 'n'}>
 CONFIG_IIO_SSP_SENSORHUB                        policy<{'arm64': 'n', 'amd64-capilano': 'm'}>
 CONFIG_IIO_SSP_SENSORS_COMMONS                  policy<{'arm64': '-', 'amd64-capilano': 'm'}>
-CONFIG_IIO_ST_ACCEL_3AXIS                       policy<{'arm64': 'n', 'amd64-capilano': 'm'}>
+CONFIG_IIO_ST_ACCEL_3AXIS                       policy<{'arm64': 'm', 'amd64-capilano': 'm'}>
 CONFIG_IIO_ST_GYRO_3AXIS                        policy<{'arm64': 'n', 'amd64-capilano': 'm'}>
 CONFIG_IIO_ST_LSM9DS0                           policy<{'arm64': 'n', 'amd64-capilano': 'm'}>
 CONFIG_IIO_ST_PRESS                             policy<{'arm64': 'n', 'amd64-capilano': 'm'}>
@@ -2783,6 +2792,7 @@ CONFIG_MFD_88PM800                              policy<{'arm64': 'n', 'amd64-cap
 CONFIG_MFD_88PM805                              policy<{'arm64': 'n', 'amd64-capilano': 'm'}>
 CONFIG_MFD_88PM860X                             policy<{'arm64': 'n', 'amd64-capilano': 'y'}>
 CONFIG_MFD_AAT2870_CORE                         policy<{'arm64': 'n', 'amd64-capilano': 'y'}>
+CONFIG_MFD_ALTERA_A10SR                         policy<{'arm64': 'n'}>
 CONFIG_MFD_ARIZONA_I2C                          policy<{'arm64': 'n', 'amd64-capilano': 'm'}>
 CONFIG_MFD_ARIZONA_SPI                          policy<{'arm64': 'n', 'amd64-capilano': 'm'}>
 CONFIG_MFD_AS3711                               policy<{'arm64': 'n', 'amd64-capilano': 'y'}>
@@ -3398,6 +3408,7 @@ CONFIG_NF_LOG_IPV4                              policy<{'arm64': 'n', 'amd64-cap
 CONFIG_NILFS2_FS                                policy<{'arm64': 'n', 'amd64-capilano': 'm'}>
 CONFIG_NIU                                      policy<{'arm64': 'n', 'amd64-capilano': 'm'}>
 CONFIG_NI_XGE_MANAGEMENT_ENET                   policy<{'arm64': 'n', 'amd64-capilano': 'm'}>
+CONFIG_NL80211_TESTMODE                         policy<{'arm64': 'y', 'amd64-capilano': 'y'}>
 CONFIG_NLMON                                    policy<{'arm64': 'n', 'amd64-capilano': 'm'}>
 CONFIG_NLS_ASCII                                policy<{'arm64': 'n', 'amd64-capilano': 'm'}>
 CONFIG_NLS_CODEPAGE_1250                        policy<{'arm64': 'n', 'amd64-capilano': 'm'}>
@@ -3731,7 +3742,7 @@ CONFIG_PPDEV                                    policy<{'arm64': '-', 'amd64-cap
 CONFIG_PPP                                      policy<{'arm64': 'm', 'amd64-capilano': 'y'}>
 CONFIG_PPPOATM                                  policy<{'arm64': '-', 'amd64-capilano': 'm'}>
 CONFIG_PPPOL2TP                                 policy<{'arm64': '-', 'amd64-capilano': 'm'}>
-CONFIG_PPS_CLIENT_GPIO                          policy<{'arm64': 'n', 'amd64-capilano': 'm'}>
+CONFIG_PPS_CLIENT_GPIO                          policy<{'arm64': 'y', 'amd64-capilano': 'm'}>
 CONFIG_PPS_CLIENT_LDISC                         policy<{'arm64': 'n', 'amd64-capilano': 'm'}>
 CONFIG_PPS_CLIENT_PARPORT                       policy<{'arm64': '-', 'amd64-capilano': 'm'}>
 CONFIG_PPTP                                     policy<{'arm64': '-', 'amd64-capilano': 'm'}>
@@ -4042,6 +4053,7 @@ CONFIG_REISERFS_PROC_INFO                       policy<{'arm64': '-', 'amd64-cap
 CONFIG_RELAY                                    policy<{'arm64': 'n', 'amd64-capilano': 'y'}>
 CONFIG_REMOTEPROC_CDEV                          policy<{'arm64': 'n', 'amd64-capilano': 'y'}>
 CONFIG_RENESAS_PHY                              policy<{'arm64': 'n', 'amd64-capilano': 'm'}>
+CONFIG_RESET_A10SR                              policy<{'arm64': '-'}>
 CONFIG_RESET_ATTACK_MITIGATION                  policy<{'arm64': 'n', 'amd64-capilano': 'y'}>
 CONFIG_RESET_BRCMSTB                            policy<{'arm64': '-'}>
 CONFIG_RESET_BRCMSTB_RESCAL                     policy<{'arm64': '-'}>
@@ -5802,7 +5814,7 @@ CONFIG_USB_NET_GL620A                           policy<{'arm64': 'n', 'amd64-cap
 CONFIG_USB_NET_HUAWEI_CDC_NCM                   policy<{'arm64': 'n', 'amd64-capilano': 'm'}>
 CONFIG_USB_NET_INT51X1                          policy<{'arm64': 'n', 'amd64-capilano': 'm'}>
 CONFIG_USB_NET_KALMIA                           policy<{'arm64': 'n', 'amd64-capilano': 'm'}>
-CONFIG_USB_NET_QMI_WWAN                         policy<{'arm64': 'n', 'amd64-capilano': 'm'}>
+CONFIG_USB_NET_QMI_WWAN                         policy<{'arm64': 'm', 'amd64-capilano': 'm'}>
 CONFIG_USB_NET_RNDIS_HOST                       policy<{'arm64': 'n', 'amd64-capilano': 'm'}>
 CONFIG_USB_NET_RNDIS_WLAN                       policy<{'arm64': 'n', 'amd64-capilano': 'm'}>
 CONFIG_USB_OHCI_HCD_PLATFORM                    policy<{'arm64': 'y', 'amd64-capilano': 'y'}>
@@ -6349,9 +6361,9 @@ CONFIG_DEBUG_SG                                 policy<{'amd64': 'n', 'arm64': '
 CONFIG_DEBUG_SPINLOCK                           policy<{'amd64': 'n', 'arm64': 'n', 'arm64-capilano-debug': 'y'}>
 CONFIG_DEBUG_STACK_USAGE                        policy<{'amd64': 'n', 'arm64': 'n', 'arm64-capilano-debug': 'y'}>
 CONFIG_FAULT_INJECTION                          policy<{'amd64': 'n', 'arm64': 'n', 'arm64-capilano-debug': 'y'}>
-CONFIG_IGB                                      policy<{'amd64': 'm', 'arm64': 'm', 'arm64-capilano-debug': 'n'}>
-CONFIG_IGBVF                                    policy<{'amd64': 'm', 'arm64': 'm', 'arm64-capilano-debug': 'n'}>
-CONFIG_IGB_HWMON                                policy<{'amd64': 'y', 'arm64': 'y', 'arm64-capilano-debug': '-'}>
+CONFIG_IGB                                      policy<{'amd64': 'm', 'arm64': 'n', 'arm64-capilano-debug': 'n'}>
+CONFIG_IGBVF                                    policy<{'amd64': 'm', 'arm64': 'n', 'arm64-capilano-debug': 'n'}>
+CONFIG_IGB_HWMON                                policy<{'amd64': 'y', 'arm64': '-', 'arm64-capilano-debug': '-'}>
 CONFIG_LOCK_TORTURE_TEST                        policy<{'amd64': 'n', 'arm64': 'n', 'arm64-capilano-debug': 'm'}>
 CONFIG_PAGE_EXTENSION                           policy<{'amd64': 'n', 'arm64': 'n', 'arm64-capilano-debug': 'y'}>
 CONFIG_PAGE_OWNER                               policy<{'amd64': 'n', 'arm64': 'n', 'arm64-capilano-debug': 'y'}>
