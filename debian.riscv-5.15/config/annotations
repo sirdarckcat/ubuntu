@@ -92,6 +92,9 @@ CONFIG_DEVTMPFS_MOUNT                           note<'upstart requirement'>
 CONFIG_DMA_CMA                                  policy<{'riscv64': 'y'}>
 CONFIG_DMA_CMA                                  note<'LP:1803206'>
 
+CONFIG_DM_VERITY_VERIFY_ROOTHASH_SIG_SECONDARY_KEYRING policy<{'riscv64': 'y'}>
+CONFIG_DM_VERITY_VERIFY_ROOTHASH_SIG_SECONDARY_KEYRING note<'LP: #2019040'>
+
 CONFIG_DRM_AMDGPU_CIK                           policy<{'riscv64': 'y'}>
 CONFIG_DRM_AMDGPU_CIK                           note<'LP:1661887 for zesty'>
 
@@ -2001,7 +2004,6 @@ CONFIG_DM_UNSTRIPED                             policy<{'riscv64': 'm'}>
 CONFIG_DM_VERITY                                policy<{'riscv64': 'm'}>
 CONFIG_DM_VERITY_FEC                            policy<{'riscv64': 'n'}>
 CONFIG_DM_VERITY_VERIFY_ROOTHASH_SIG            policy<{'riscv64': 'y'}>
-CONFIG_DM_VERITY_VERIFY_ROOTHASH_SIG_SECONDARY_KEYRING policy<{'riscv64': 'n'}>
 CONFIG_DM_WRITECACHE                            policy<{'riscv64': 'm'}>
 CONFIG_DM_ZERO                                  policy<{'riscv64': 'm'}>
 CONFIG_DM_ZONED                                 policy<{'riscv64': 'm'}>
