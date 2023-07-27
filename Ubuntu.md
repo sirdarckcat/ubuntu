@@ -1,4 +1,4 @@
-Name:    linux-uc22-iot
+Name:    linux-uc22-capilano
 Version: 5.15.0
 Series:  22.04 (jammy)
 Description:
