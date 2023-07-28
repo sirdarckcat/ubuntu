@@ -943,6 +943,7 @@ static int imx296_identify_model(struct imx296 *sensor)
 			"failed to get sensor out of standby (%d)\n", ret);
 		return ret;
 	}
+	usleep_range(2000, 5000);
 
 	usleep_range(2000, 5000);
 
