@@ -137,6 +137,11 @@
 #define RP1_PAD_OUT_DISABLE_MASK	0x00000080
 #define RP1_PAD_OUT_DISABLE_LSB		7
 
+#define RP1_PAD_DRIVE_2MA		0x00000000
+#define RP1_PAD_DRIVE_4MA		0x00000010
+#define RP1_PAD_DRIVE_8MA		0x00000020
+#define RP1_PAD_DRIVE_12MA		0x00000030
+
 #define FLD_GET(r, f) (((r) & (f ## _MASK)) >> (f ## _LSB))
 #define FLD_SET(r, f, v) r = (((r) & ~(f ## _MASK)) | ((v) << (f ## _LSB)))
 
@@ -589,23 +594,26 @@ static struct rp1_pin_info *rp1_get_pin_pctl(struct pinctrl_dev *pctldev,
 	return NULL;
 }
 
-static void rp1_input_enable(struct rp1_pin_info *pin, int value)
+static void rp1_pad_update(struct rp1_pin_info *pin, u32 clr, u32 set)
 {
 	u32 padctrl = readl(pin->pad);
 
-	FLD_SET(padctrl, RP1_PAD_IN_ENABLE, !!value);
+	padctrl &= ~clr;
+	padctrl |= set;
 
 	writel(padctrl, pin->pad);
 }
 
+static void rp1_input_enable(struct rp1_pin_info *pin, int value)
+{
+	rp1_pad_update(pin, RP1_PAD_IN_ENABLE_MASK,
+		       value ? RP1_PAD_IN_ENABLE_MASK : 0);
+}
+
 static void rp1_output_enable(struct rp1_pin_info *pin, int value)
 {
-	u32 padctrl = readl(pin->pad);
-
-	FLD_SET(padctrl, RP1_PAD_OUT_DISABLE, !value);
-	padctrl |= RP1_PAD_DRIVE_MASK; // XXX maximum drive strength (12mA)
-
-	writel(padctrl, pin->pad);
+	rp1_pad_update(pin, RP1_PAD_OUT_DISABLE_MASK,
+		       value ? 0 : RP1_PAD_OUT_DISABLE_MASK);
 }
 
 static u32 rp1_get_fsel(struct rp1_pin_info *pin)
@@ -1311,8 +1319,38 @@ static int rp1_pinconf_set(struct pinctrl_dev *pctldev,
 			rp1_set_fsel(pin, RP1_FSEL_GPIO);
 			break;
 
+		case PIN_CONFIG_INPUT_SCHMITT_ENABLE:
+			rp1_pad_update(pin, RP1_PAD_SCHMITT_MASK,
+				       arg ? RP1_PAD_SCHMITT_MASK : 0);
+			break;
+
+		case PIN_CONFIG_SLEW_RATE:
+			rp1_pad_update(pin, RP1_PAD_SLEWFAST_MASK,
+				       arg ? RP1_PAD_SLEWFAST_MASK : 0);
+			break;
+
+		case PIN_CONFIG_DRIVE_STRENGTH:
+			switch (arg) {
+			case 2:
+				arg = RP1_PAD_DRIVE_2MA;
+				break;
+			case 4:
+				arg = RP1_PAD_DRIVE_4MA;
+				break;
+			case 8:
+				arg = RP1_PAD_DRIVE_8MA;
+				break;
+			case 12:
+				arg = RP1_PAD_DRIVE_12MA;
+				break;
+			default:
+				return -EOPNOTSUPP;
+			}
+			rp1_pad_update(pin, RP1_PAD_DRIVE_MASK, arg);
+			break;
+
 		default:
-			return -ENOTSUPP;
+			return -EOPNOTSUPP;
 
 		} /* switch param type */
 	} /* for each config */
@@ -1325,28 +1363,59 @@ static int rp1_pinconf_get(struct pinctrl_dev *pctldev,
 {
 	struct rp1_pin_info *pin = rp1_get_pin_pctl(pctldev, offset);
 	enum pin_config_param param = pinconf_to_config_param(*config);
-	u32 arg = pinconf_to_config_argument(*config);
+	u32 padctrl;
+	u32 arg;
 
 	pr_debug("rp1_pinconf_get(%d)\n", offset);
 	if (!pin)
 		return -EINVAL;
+
+	padctrl = readl(pin->pad);
+
 	switch (param) {
 	case PIN_CONFIG_INPUT_ENABLE:
+		arg = !!(padctrl & RP1_PAD_IN_ENABLE_MASK);
+		break;
 	case PIN_CONFIG_OUTPUT_ENABLE:
+		arg = !(padctrl & RP1_PAD_OUT_DISABLE_MASK);
+		break;
 	case PIN_CONFIG_INPUT_SCHMITT_ENABLE:
-	case PIN_CONFIG_BIAS_DISABLE:
-	case PIN_CONFIG_BIAS_PULL_UP:
-	case PIN_CONFIG_BIAS_PULL_DOWN:
-	case PIN_CONFIG_DRIVE_STRENGTH:
+		arg = !!(padctrl & RP1_PAD_SCHMITT_MASK);
+		break;
 	case PIN_CONFIG_SLEW_RATE:
-		// XXX Do something clever
-		// break;
-		(void)arg;
-		(void)pin;
-		return -ENOTSUPP;
+		arg = !!(padctrl & RP1_PAD_SLEWFAST_MASK);
+		break;
+	case PIN_CONFIG_DRIVE_STRENGTH:
+		switch (padctrl & RP1_PAD_DRIVE_MASK) {
+		case RP1_PAD_DRIVE_2MA:
+			arg = 2;
+			break;
+		case RP1_PAD_DRIVE_4MA:
+			arg = 4;
+			break;
+		case RP1_PAD_DRIVE_8MA:
+			arg = 8;
+			break;
+		case RP1_PAD_DRIVE_12MA:
+			arg = 12;
+			break;
+		}
+		break;
+	case PIN_CONFIG_BIAS_DISABLE:
+		arg = ((padctrl & RP1_PAD_PULL_MASK) == (RP1_PUD_OFF << RP1_PAD_PULL_LSB));
+		break;
+	case PIN_CONFIG_BIAS_PULL_DOWN:
+		arg = ((padctrl & RP1_PAD_PULL_MASK) == (RP1_PUD_DOWN << RP1_PAD_PULL_LSB));
+		break;
+
+	case PIN_CONFIG_BIAS_PULL_UP:
+		arg = ((padctrl & RP1_PAD_PULL_MASK) == (RP1_PUD_UP << RP1_PAD_PULL_LSB));
+		break;
 	default:
-		return -ENOTSUPP;
+		return -EOPNOTSUPP;
 	}
+
+	*config = pinconf_to_config_packed(param, arg);
 
 	return 0;
 }
