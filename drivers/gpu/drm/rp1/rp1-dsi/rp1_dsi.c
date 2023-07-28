@@ -48,49 +48,6 @@ bridge_to_rp1_dsi(struct drm_bridge *bridge)
 	return container_of(bridge, struct rp1_dsi, bridge);
 }
 
-static bool rp1_dsi_bridge_mode_fixup(struct drm_bridge *bridge,
-				      const struct drm_display_mode *mode,
-				      struct drm_display_mode *adjusted_mode)
-{
-	struct rp1_dsi *dsi = bridge_to_rp1_dsi(bridge);
-	struct phy_configure_opts_mipi_dphy cfg;
-	unsigned long line_time_ps, non_hfp_ps, min_hfp_ps, hfp_ps;
-	unsigned int non_hfp_pix, htotal_pix;
-
-	phy_mipi_dphy_get_default_config(mode->clock * 1000,
-					 mipi_dsi_pixel_format_to_bpp(dsi->display_format),
-					 dsi->lanes, &cfg);
-
-	min_hfp_ps = cfg.lpx + cfg.hs_prepare + cfg.hs_zero + cfg.hs_trail +
-		     cfg.hs_exit + 1300000;
-	hfp_ps = ((adjusted_mode->hsync_start - adjusted_mode->hdisplay) * 1000000000UL) /
-					adjusted_mode->clock;
-
-	if (hfp_ps < min_hfp_ps) {
-		/* HFP is too short to allow return to LP. Increase it, and
-		 * increase clock rate to keep frame rate the same.
-		 */
-		line_time_ps = (adjusted_mode->htotal * 1000000000UL) / adjusted_mode->clock;
-		non_hfp_ps = line_time_ps - min_hfp_ps;
-		non_hfp_pix = adjusted_mode->htotal -
-			(adjusted_mode->hsync_start - adjusted_mode->hdisplay);
-		adjusted_mode->clock = (non_hfp_pix * 1000000000UL) / non_hfp_ps;
-		adjusted_mode->crtc_clock = adjusted_mode->clock;
-		htotal_pix = (adjusted_mode->clock * line_time_ps) / 1000000000UL;
-		adjusted_mode->hsync_start += (htotal_pix - adjusted_mode->htotal);
-		adjusted_mode->hsync_end += (htotal_pix - adjusted_mode->htotal);
-		adjusted_mode->htotal = htotal_pix;
-		drm_dbg_driver(dsi->drm, "new timings are %u/%u/%u/%u clock %u\n",
-			       adjusted_mode->hdisplay,
-			       adjusted_mode->hsync_start,
-			       adjusted_mode->hsync_end,
-			       adjusted_mode->htotal,
-			       adjusted_mode->clock);
-	}
-
-	return true;
-}
-
 static void rp1_dsi_bridge_pre_enable(struct drm_bridge *bridge,
 				      struct drm_bridge_state *old_state)
 {
@@ -140,7 +97,6 @@ static const struct drm_bridge_funcs rp1_dsi_bridge_funcs = {
 	.atomic_disable = rp1_dsi_bridge_disable,
 	.atomic_post_disable = rp1_dsi_bridge_post_disable,
 	.attach = rp1_dsi_bridge_attach,
-	.mode_fixup = rp1_dsi_bridge_mode_fixup,
 };
 
 static void rp1dsi_pipe_update(struct drm_simple_display_pipe *pipe,
