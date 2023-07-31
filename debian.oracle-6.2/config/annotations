@@ -4,6 +4,7 @@
 # FLAVOUR: amd64-oracle arm64-oracle
 
 include "../../debian.master/config/annotations"
+include "../../debian.oracle-6.2/config/annotations-disable-rust"
 
 CONFIG_ACCESSIBILITY                            policy<{'amd64': 'n', 'arm64': 'n'}>
 CONFIG_ACCESSIBILITY                            note<'LP: #1967702'>
@@ -17,8 +18,11 @@ CONFIG_KERNEL_ZSTD                              note<'LP: #1931725'>
 CONFIG_PREEMPT_NONE                             policy<{'amd64': 'y', 'arm64': 'y'}>
 CONFIG_PREEMPT_NONE                             note<'LP: #1543165'>
 
-CONFIG_RUST                                     policy<{'amd64': 'n', 'arm64': '-'}>
+CONFIG_RUST                                     policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_RUST                                     note<'required to enable Rust support, LP: #1993183'>
+
+CONFIG_PAHOLE_HAS_LANG_EXCLUDE			policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_PAHOLE_HAS_LANG_EXCLUDE			note<{'Override master'}>
 
 
 # ---- Annotations without notes ----
@@ -252,9 +256,6 @@ CONFIG_RESET_BRCMSTB_RESCAL                     policy<{'arm64': 'y'}>
 CONFIG_RESET_RASPBERRYPI                        policy<{'arm64': 'm'}>
 CONFIG_RTC_DRV_BRCMSTB                          policy<{'arm64': 'm'}>
 CONFIG_RUSTC_VERSION_TEXT                       policy<{'amd64': '-'}>
-CONFIG_RUST_BUILD_ASSERT_ALLOW                  policy<{'amd64': '-'}>
-CONFIG_RUST_DEBUG_ASSERTIONS                    policy<{'amd64': '-'}>
-CONFIG_RUST_OVERFLOW_CHECKS                     policy<{'amd64': '-'}>
 CONFIG_RV_MON_WWNR                              policy<{'amd64': 'n', 'arm64': 'n'}>
 CONFIG_SAMPLES_RUST                             policy<{'amd64': '-'}>
 CONFIG_SCSI_UFS_HWMON                           policy<{'amd64': 'n', 'arm64': 'y'}>
