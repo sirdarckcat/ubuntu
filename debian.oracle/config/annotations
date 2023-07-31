@@ -28,6 +28,11 @@ CONFIG_DRM_VIRTIO_GPU				note<'oracle: Ensure virtio-gpu.ko is in inclusion list
 CONFIG_DRM_BOCHS				policy<{'amd64':'m', 'arm64': 'm'}>
 CONFIG_DRM_BOCHS				note<'oracle: Ensure bochs-drm.ko is in inclusion list. needed for virtual display support in VMs - LP #1957744 '>
 
+CONFIG_ARM_SMMU					policy<{'arm64':'y'}>
+CONFIG_ARM_SMMU					note<'Requested by Oracle after suspected related to some boot-issues, LP #2002381'>
+
+CONFIG_ARM_SMMU_V3				policy<{'arm64':'y'}>
+CONFIG_ARM_SMMU_V3				note<'Requested by Oracle after suspected related to some boot-issues, LP #2002381'>
 
 
 
