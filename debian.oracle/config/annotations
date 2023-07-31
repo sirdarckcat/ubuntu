@@ -5,20 +5,47 @@
 
 include "../../debian.master/config/annotations"
 
-CONFIG_ACCESSIBILITY                            policy<{'amd64': 'n', 'arm64': 'n'}>
-CONFIG_ACCESSIBILITY                            note<'LP: #1967702'>
 
-CONFIG_GPIO_CDEV_V1                             policy<{'amd64': 'n', 'arm64': 'n'}>
-CONFIG_GPIO_CDEV_V1                             note<'LP: #1953613'>
+# Oracle-requested settings
+CONFIG_FAILOVER					policy<{'amd64': 'm', 'arm64': 'm'}>
+CONFIG_FAILOVER					note<'OCI requirement'>
 
-CONFIG_KERNEL_ZSTD                              policy<{'amd64': 'y', 'arm64': 'y'}>
-CONFIG_KERNEL_ZSTD                              note<'LP: #1931725'>
+CONFIG_NET_FAILOVER				policy<{'amd64': 'm', 'arm64': 'm'}>
+CONFIG_NET_FAILOVER				note<'OCI requirement'>
 
-CONFIG_PREEMPT_NONE                             policy<{'amd64': 'y', 'arm64': 'y'}>
-CONFIG_PREEMPT_NONE                             note<'LP: #1543165'>
+CONFIG_PAGE_POOL				policy<{'amd64': 'y', 'arm64': 'y'}>
+CONFIG_PAGE_POOL				note<'OCI requirement'>
 
-CONFIG_RUST                                     policy<{'amd64': 'n', 'arm64': '-'}>
-CONFIG_RUST                                     note<'required to enable Rust support, LP: #1993183'>
+CONFIG_SERIAL_AMBA_PL011			policy<{'arm64': 'y'}>
+CONFIG_SERIAL_AMBA_PL011			note<'oracle: needed for serial support in VMs'>
+
+CONFIG_SERIAL_AMBA_PL011_CONSOLE		policy<{'arm64': 'y'}>
+CONFIG_SERIAL_AMBA_PL011_CONSOLE		note<'oracle: needed for serial support in VMs'>
+
+CONFIG_DRM_VIRTIO_GPU				policy<{'amd64': 'm', 'arm64': 'm'}>
+CONFIG_DRM_VIRTIO_GPU				note<'oracle: Ensure virtio-gpu.ko is in inclusion list, or set =y'>
+
+CONFIG_DRM_BOCHS				policy<{'amd64':'m', 'arm64': 'm'}>
+CONFIG_DRM_BOCHS				note<'oracle: Ensure bochs-drm.ko is in inclusion list. needed for virtual display support in VMs - LP #1957744 '>
+
+
+
+
+
+CONFIG_ACCESSIBILITY				policy<{'amd64': 'n', 'arm64': 'n'}>
+CONFIG_ACCESSIBILITY				note<'LP: #1967702'>
+
+CONFIG_GPIO_CDEV_V1				policy<{'amd64': 'n', 'arm64': 'n'}>
+CONFIG_GPIO_CDEV_V1				note<'LP: #1953613'>
+
+CONFIG_KERNEL_ZSTD				policy<{'amd64': 'y', 'arm64': 'y'}>
+CONFIG_KERNEL_ZSTD				note<'LP: #1931725'>
+
+CONFIG_PREEMPT_NONE				policy<{'amd64': 'y', 'arm64': 'y'}>
+CONFIG_PREEMPT_NONE				note<'LP: #1543165'>
+
+CONFIG_RUST					policy<{'amd64': 'n', 'arm64': '-'}>
+CONFIG_RUST					note<'required to enable Rust support, LP: #1993183'>
 
 
 # ---- Annotations without notes ----
