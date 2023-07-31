@@ -41,7 +41,6 @@ override_dh_auto_build: signingv = $(signing)/$(VERSION)
 override_dh_auto_build: signing_tar = $(SOURCE)_$(VERSION)_$(DEB_HOST_ARCH).tar.gz
 override_dh_auto_build: outdir = $(CURDIR)/debian/tmp
 override_dh_auto_build: initrd = $(outdir)/initramfs.img
-override_dh_auto_build: efi = $(outdir)/kernel.efi
 override_dh_auto_build:
 	install -d $(signingv)/control
 	mkdir -p $(outdir)
@@ -60,12 +59,6 @@ override_dh_auto_build:
 		ubuntu-core-initramfs create-initrd --output $(initrd)		\
 			--feature main server					\
 			--kernelver $(KERNEL_ABI_VERSION)-$$flavour;		\
-		ubuntu-core-initramfs create-efi --unsigned --output $(efi)	\
-			--kernel $(outdir)/$$flavour/boot/vmlinuz		\
-			--kernelver $(KERNEL_ABI_VERSION)-$$flavour		\
-			--initrd $(initrd);					\
-		cp -p $(efi)-$(KERNEL_ABI_VERSION)-$$flavour			\
-			$(signingv)/vmlinuz-$(KERNEL_ABI_VERSION)-$$flavour.efi;\
 		if [ "$(DEB_HOST_ARCH)" = "arm64" ]; then \
 			cp -av $(initrd)-$(KERNEL_ABI_VERSION)-$$flavour $(initrd);\
 			cp -fv $(outdir)/$$flavour/boot/vmlinuz-$(KERNEL_ABI_VERSION)-$$flavour $(outdir)/Image-dtb;\
