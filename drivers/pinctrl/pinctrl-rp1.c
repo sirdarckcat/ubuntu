@@ -1284,7 +1284,7 @@ static int rp1_pinconf_set(struct pinctrl_dev *pctldev,
 	u32 param, arg;
 	int i;
 
-	pr_debug("rp1_pinconf_set(%d)\n", offset);
+	pr_debug("%s(%d)\n", __func__, offset);
 	if (!pin)
 		return -EINVAL;
 
@@ -1344,13 +1344,13 @@ static int rp1_pinconf_set(struct pinctrl_dev *pctldev,
 				arg = RP1_PAD_DRIVE_12MA;
 				break;
 			default:
-				return -EOPNOTSUPP;
+				return -ENOTSUPP;
 			}
 			rp1_pad_update(pin, RP1_PAD_DRIVE_MASK, arg);
 			break;
 
 		default:
-			return -EOPNOTSUPP;
+			return -ENOTSUPP;
 
 		} /* switch param type */
 	} /* for each config */
@@ -1366,7 +1366,7 @@ static int rp1_pinconf_get(struct pinctrl_dev *pctldev,
 	u32 padctrl;
 	u32 arg;
 
-	pr_debug("rp1_pinconf_get(%d)\n", offset);
+	pr_debug("%s(%d)\n", __func__, offset);
 	if (!pin)
 		return -EINVAL;
 
@@ -1412,7 +1412,7 @@ static int rp1_pinconf_get(struct pinctrl_dev *pctldev,
 		arg = ((padctrl & RP1_PAD_PULL_MASK) == (RP1_PUD_UP << RP1_PAD_PULL_LSB));
 		break;
 	default:
-		return -EOPNOTSUPP;
+		return -ENOTSUPP;
 	}
 
 	*config = pinconf_to_config_packed(param, arg);
