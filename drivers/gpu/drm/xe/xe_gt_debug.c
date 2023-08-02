@@ -13,14 +13,16 @@
 #include "xe_pm.h"
 #include "xe_macros.h"
 
-static int xe_gt_foreach_dss_group_instance(struct xe_gt *gt,
-					    int (*fn)(struct xe_gt *gt,
-						      void *data,
-						      u16 group,
-						      u16 instance),
-					    void *data)
+int xe_gt_foreach_dss_group_instance(struct xe_gt *gt,
+				     int (*fn)(struct xe_gt *gt,
+					       void *data,
+					       u16 group,
+					       u16 instance,
+					       bool present),
+				     void *data)
 {
 	const enum xe_force_wake_domains fw_domains = XE_FW_GT;
+	xe_dss_mask_t dss_mask;
 	unsigned int dss, fw_ref;
 	u16 group, instance;
 	int ret = 0;
@@ -29,8 +31,22 @@ static int xe_gt_foreach_dss_group_instance(struct xe_gt *gt,
 	if (!fw_ref)
 		return -ETIMEDOUT;
 
-	for_each_dss_steering(dss, gt, group, instance) {
-		ret = fn(gt, data, group, instance);
+	bitmap_or(dss_mask, gt->fuse_topo.g_dss_mask, gt->fuse_topo.c_dss_mask,
+		  XE_MAX_DSS_FUSE_BITS);
+
+	/*
+	 * Note: This removes terminating zeros when last dss is fused out!
+	 * In order bitmask to be exactly the same as on with i915 we would
+	 * need to figure out max dss for given platform, most probably by
+	 * querying hwconfig
+	 */
+
+	for (dss = 0;
+	     dss <= find_last_bit(dss_mask, XE_MAX_DSS_FUSE_BITS);
+	     dss++) {
+		xe_gt_mcr_get_dss_steering(gt, dss, &group, &instance);
+
+		ret = fn(gt, data, group, instance, test_bit(dss, dss_mask));
 		if (ret)
 			break;
 	}
@@ -41,9 +57,12 @@ static int xe_gt_foreach_dss_group_instance(struct xe_gt *gt,
 }
 
 static int read_first_attention_mcr(struct xe_gt *gt, void *data,
-				    u16 group, u16 instance)
+				    u16 group, u16 instance, bool present)
 {
 	unsigned int row;
+
+	if (!present)
+		return 0;
 
 	for (row = 0; row < 2; row++) {
 		u32 val;
@@ -74,7 +93,7 @@ int xe_gt_eu_attention_bitmap_size(struct xe_gt *gt)
 	bitmap_or(dss_mask, gt->fuse_topo.c_dss_mask,
 		  gt->fuse_topo.g_dss_mask, XE_MAX_DSS_FUSE_BITS);
 
-	return  bitmap_weight(dss_mask, XE_MAX_DSS_FUSE_BITS) *
+	return (find_last_bit(dss_mask, XE_MAX_DSS_FUSE_BITS) + 1) *
 		XE_GT_EU_ATT_ROWS * MAX_THREADS *
 		MAX_EUS_PER_ROW / 8;
 }
@@ -87,7 +106,7 @@ struct attn_read_iter {
 };
 
 static int read_eu_attentions_mcr(struct xe_gt *gt, void *data,
-				  u16 group, u16 instance)
+				  u16 group, u16 instance, bool present)
 {
 	struct attn_read_iter * const iter = data;
 	unsigned int row;
@@ -100,7 +119,10 @@ static int read_eu_attentions_mcr(struct xe_gt *gt, void *data,
 
 		XE_WARN_ON(iter->i + sizeof(val) > xe_gt_eu_attention_bitmap_size(gt));
 
-		val = xe_gt_mcr_unicast_read(gt, EU_ATT(row), group, instance);
+		if (present)
+			val = xe_gt_mcr_unicast_read(gt, EU_ATT(row), group, instance);
+		else
+			val = 0;
 
 		memcpy(&iter->bits[iter->i], &val, sizeof(val));
 		iter->i += sizeof(val);
