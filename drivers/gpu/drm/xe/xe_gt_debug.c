@@ -13,12 +13,12 @@
 #include "xe_pm.h"
 #include "xe_macros.h"
 
-static int xe_gt_foreach_dss_group_instance(struct xe_gt *gt,
-					    int (*fn)(struct xe_gt *gt,
-						      void *data,
-						      u16 group,
-						      u16 instance),
-					    void *data)
+int xe_gt_foreach_dss_group_instance(struct xe_gt *gt,
+				     int (*fn)(struct xe_gt *gt,
+					       void *data,
+					       u16 group,
+					       u16 instance),
+				     void *data)
 {
 	const enum xe_force_wake_domains fw_domains = XE_FW_GT;
 	unsigned int dss, fw_ref;
