@@ -23,6 +23,7 @@
 #include "xe_force_wake.h"
 #include "xe_gt.h"
 #include "xe_gt_debug.h"
+#include "xe_gt_mcr.h"
 #include "xe_hw_engine.h"
 #include "xe_lrc.h"
 #include "xe_macros.h"
@@ -587,6 +588,64 @@ static int find_handle(struct xe_eudebug_resources *res,
 	return id;
 }
 
+static void *find_resource__unlocked(struct xe_eudebug_resources *res,
+				     const int type,
+				     const u32 id)
+{
+	struct xe_eudebug_resource *r;
+	struct xe_eudebug_handle *h;
+
+	r = resource_from_type(res, type);
+	h = xa_load(&r->xa, id);
+
+	return h ? (void *)(uintptr_t)h->key : NULL;
+}
+
+static void *find_resource(struct xe_eudebug_resources *res,
+			   const int type,
+			   const u32 id)
+{
+	void *p;
+
+	mutex_lock(&res->lock);
+	p =  find_resource__unlocked(res, type, id);
+	mutex_unlock(&res->lock);
+
+	return p;
+}
+
+static struct xe_file *find_client_get(struct xe_eudebug *d, const u32 id)
+{
+	struct xe_file *xef;
+
+	mutex_lock(&d->res->lock);
+	xef = find_resource__unlocked(d->res, XE_EUDEBUG_RES_TYPE_CLIENT, id);
+	if (xef)
+		xe_file_get(xef);
+	mutex_unlock(&d->res->lock);
+
+	return xef;
+}
+
+static struct xe_exec_queue *find_exec_queue_get(struct xe_eudebug *d,
+						 u32 id)
+{
+	struct xe_exec_queue *q;
+
+	mutex_lock(&d->res->lock);
+	q = find_resource__unlocked(d->res, XE_EUDEBUG_RES_TYPE_EXEC_QUEUE, id);
+	if (q)
+		xe_exec_queue_get(q);
+	mutex_unlock(&d->res->lock);
+
+	return q;
+}
+
+static struct xe_lrc *find_lrc(struct xe_eudebug *d, const u32 id)
+{
+	return find_resource(d->res, XE_EUDEBUG_RES_TYPE_LRC, id);
+}
+
 static int _xe_eudebug_add_handle(struct xe_eudebug *d,
 				  int type,
 				  void *p,
@@ -843,6 +902,177 @@ static long xe_eudebug_read_event(struct xe_eudebug *d,
 	return ret;
 }
 
+static int do_eu_control(struct xe_eudebug *d,
+			 const struct drm_xe_eudebug_eu_control * const arg,
+			 struct drm_xe_eudebug_eu_control __user * const user_ptr)
+{
+	void __user * const bitmask_ptr = u64_to_user_ptr(arg->bitmask_ptr);
+	struct xe_device *xe = d->xe;
+	u8 *bits = NULL;
+	unsigned int hw_attn_size, attn_size;
+	struct xe_exec_queue *q;
+	struct xe_file *xef;
+	struct xe_lrc *lrc;
+	u64 seqno;
+	int ret;
+
+	if (xe_eudebug_detached(d))
+		return -ENOTCONN;
+
+	/* Accept only hardware reg granularity mask */
+	if (XE_IOCTL_DBG(xe, !IS_ALIGNED(arg->bitmask_size, sizeof(u32))))
+		return -EINVAL;
+
+	xef = find_client_get(d, arg->client_handle);
+	if (XE_IOCTL_DBG(xe, !xef))
+		return -EINVAL;
+
+	q = find_exec_queue_get(d, arg->exec_queue_handle);
+	if (XE_IOCTL_DBG(xe, !q)) {
+		xe_file_put(xef);
+		return -EINVAL;
+	}
+
+	if (XE_IOCTL_DBG(xe, !xe_exec_queue_is_debuggable(q))) {
+		ret = -EINVAL;
+		goto queue_put;
+	}
+
+	if (XE_IOCTL_DBG(xe, xef != q->vm->xef)) {
+		ret = -EINVAL;
+		goto queue_put;
+	}
+
+	lrc = find_lrc(d, arg->lrc_handle);
+	if (XE_IOCTL_DBG(xe, !lrc)) {
+		ret = -EINVAL;
+		goto queue_put;
+	}
+
+	hw_attn_size = xe_gt_eu_attention_bitmap_size(q->gt);
+	attn_size = arg->bitmask_size;
+
+	if (attn_size > hw_attn_size)
+		attn_size = hw_attn_size;
+
+	if (attn_size > 0) {
+		bits = kmalloc(attn_size, GFP_KERNEL);
+		if (!bits) {
+			ret =  -ENOMEM;
+			goto queue_put;
+		}
+
+		if (copy_from_user(bits, bitmask_ptr, attn_size)) {
+			ret = -EFAULT;
+			goto out_free;
+		}
+	}
+
+	if (!pm_runtime_active(xe->drm.dev)) {
+		ret = -EIO;
+		goto out_free;
+	}
+
+	ret = -EINVAL;
+	mutex_lock(&d->eu_lock);
+
+	switch (arg->cmd) {
+	case DRM_XE_EUDEBUG_EU_CONTROL_CMD_INTERRUPT_ALL:
+		/* Make sure we dont promise anything but interrupting all */
+		if (!attn_size)
+			ret = d->ops->interrupt_all(d, q, lrc);
+		break;
+	case DRM_XE_EUDEBUG_EU_CONTROL_CMD_STOPPED:
+		ret = d->ops->stopped(d, q, lrc, bits, attn_size);
+		break;
+	case DRM_XE_EUDEBUG_EU_CONTROL_CMD_RESUME:
+		ret = d->ops->resume(d, q, lrc, bits, attn_size);
+		break;
+	default:
+		break;
+	}
+
+	if (ret == 0)
+		seqno = atomic_long_inc_return(&d->events.seqno);
+
+	mutex_unlock(&d->eu_lock);
+
+	if (ret)
+		goto out_free;
+
+	if (put_user(seqno, &user_ptr->seqno)) {
+		ret = -EFAULT;
+		goto out_free;
+	}
+
+	if (copy_to_user(bitmask_ptr, bits, attn_size)) {
+		ret = -EFAULT;
+		goto out_free;
+	}
+
+	if (hw_attn_size != arg->bitmask_size)
+		if (put_user(hw_attn_size, &user_ptr->bitmask_size))
+			ret = -EFAULT;
+
+out_free:
+	kfree(bits);
+queue_put:
+	xe_exec_queue_put(q);
+	xe_file_put(xef);
+
+	return ret;
+}
+
+static long xe_eudebug_eu_control(struct xe_eudebug *d, const u64 arg)
+{
+	struct drm_xe_eudebug_eu_control __user * const user_ptr =
+		u64_to_user_ptr(arg);
+	struct drm_xe_eudebug_eu_control user_arg;
+	struct xe_device *xe = d->xe;
+	struct xe_file *xef;
+	int ret;
+
+	if (XE_IOCTL_DBG(xe, !(_IOC_DIR(DRM_XE_EUDEBUG_IOCTL_EU_CONTROL) & _IOC_WRITE)))
+		return -EINVAL;
+
+	if (XE_IOCTL_DBG(xe, !(_IOC_DIR(DRM_XE_EUDEBUG_IOCTL_EU_CONTROL) & _IOC_READ)))
+		return -EINVAL;
+
+	if (XE_IOCTL_DBG(xe, _IOC_SIZE(DRM_XE_EUDEBUG_IOCTL_EU_CONTROL) != sizeof(user_arg)))
+		return -EINVAL;
+
+	if (copy_from_user(&user_arg,
+			   user_ptr,
+			   sizeof(user_arg)))
+		return -EFAULT;
+
+	if (XE_IOCTL_DBG(xe, user_arg.flags))
+		return -EINVAL;
+
+	if (!access_ok(u64_to_user_ptr(user_arg.bitmask_ptr), user_arg.bitmask_size))
+		return -EFAULT;
+
+	eu_dbg(d,
+	       "eu_control: client_handle=%llu, cmd=%u, flags=0x%x, exec_queue_handle=%llu, bitmask_size=%u\n",
+	       user_arg.client_handle, user_arg.cmd, user_arg.flags, user_arg.exec_queue_handle,
+	       user_arg.bitmask_size);
+
+	xef = find_client_get(d, user_arg.client_handle);
+	if (XE_IOCTL_DBG(xe, !xef))
+		return -EINVAL; /* As this is user input */
+
+	ret = do_eu_control(d, &user_arg, user_ptr);
+
+	xe_file_put(xef);
+
+	eu_dbg(d,
+	       "eu_control: client_handle=%llu, cmd=%u, flags=0x%x, exec_queue_handle=%llu, bitmask_size=%u ret=%d\n",
+	       user_arg.client_handle, user_arg.cmd, user_arg.flags, user_arg.exec_queue_handle,
+	       user_arg.bitmask_size, ret);
+
+	return ret;
+}
+
 static long xe_eudebug_ioctl(struct file *file,
 			     unsigned int cmd,
 			     unsigned long arg)
@@ -858,6 +1088,10 @@ static long xe_eudebug_ioctl(struct file *file,
 	case DRM_XE_EUDEBUG_IOCTL_READ_EVENT:
 		ret = xe_eudebug_read_event(d, arg,
 					    !(file->f_flags & O_NONBLOCK));
+		break;
+	case DRM_XE_EUDEBUG_IOCTL_EU_CONTROL:
+		ret = xe_eudebug_eu_control(d, arg);
+		eu_dbg(d, "ioctl cmd=EU_CONTROL ret=%ld\n", ret);
 		break;
 
 	default:
@@ -1043,23 +1277,17 @@ static struct xe_hw_engine *get_runalone_active_hw_engine(struct xe_gt *gt)
 	return first;
 }
 
-static struct xe_exec_queue *runalone_active_queue_get(struct xe_gt *gt, int *lrc_idx)
+static struct xe_exec_queue *active_hwe_to_exec_queue(struct xe_hw_engine *hwe, int *lrc_idx)
 {
-	struct xe_device *xe = gt_to_xe(gt);
+	struct xe_device *xe = gt_to_xe(hwe->gt);
+	struct xe_gt *gt = hwe->gt;
 	struct xe_exec_queue *q, *found = NULL;
-	struct xe_hw_engine *active;
 	struct xe_file *xef;
 	unsigned long i;
 	int idx, err;
 	u32 lrc_hw;
 
-	active = get_runalone_active_hw_engine(gt);
-	if (!active) {
-		drm_dbg(&gt_to_xe(gt)->drm, "Runalone engine not found!");
-		return ERR_PTR(-ENOENT);
-	}
-
-	err = current_lrca(active, &lrc_hw);
+	err = current_lrca(hwe, &lrc_hw);
 	if (err)
 		return ERR_PTR(err);
 
@@ -1070,7 +1298,7 @@ static struct xe_exec_queue *runalone_active_queue_get(struct xe_gt *gt, int *lr
 			if (q->gt != gt)
 				continue;
 
-			if (q->class != active->class)
+			if (q->class != hwe->class)
 				continue;
 
 			if (xe_exec_queue_is_idle(q))
@@ -1096,13 +1324,26 @@ static struct xe_exec_queue *runalone_active_queue_get(struct xe_gt *gt, int *lr
 	if (!found)
 		return ERR_PTR(-ENOENT);
 
-	if (XE_WARN_ON(current_lrca(active, &lrc_hw)) &&
+	if (XE_WARN_ON(current_lrca(hwe, &lrc_hw)) &&
 	    XE_WARN_ON(match_exec_queue_lrca(found, lrc_hw) < 0)) {
 		xe_exec_queue_put(found);
 		return ERR_PTR(-ENOENT);
 	}
 
 	return found;
+}
+
+static struct xe_exec_queue *runalone_active_queue_get(struct xe_gt *gt, int *lrc_idx)
+{
+	struct xe_hw_engine *active;
+
+	active = get_runalone_active_hw_engine(gt);
+	if (!active) {
+		drm_dbg(&gt_to_xe(gt)->drm, "Runalone engine not found!");
+		return ERR_PTR(-ENOENT);
+	}
+
+	return active_hwe_to_exec_queue(active, lrc_idx);
 }
 
 static int send_attention_event(struct xe_eudebug *d, struct xe_exec_queue *q, int lrc_idx)
@@ -1152,7 +1393,6 @@ static int send_attention_event(struct xe_eudebug *d, struct xe_exec_queue *q, i
 
 	return xe_eudebug_queue_event(d, event);
 }
-
 
 static int xe_send_gt_attention(struct xe_gt *gt)
 {
@@ -1261,6 +1501,254 @@ static void attention_scan_flush(struct xe_device *xe)
 	mod_delayed_work(system_wq, &xe->eudebug.attention_scan, 0);
 }
 
+static int xe_eu_control_interrupt_all(struct xe_eudebug *d,
+				       struct xe_exec_queue *q,
+				       struct xe_lrc *lrc)
+{
+	struct xe_gt *gt = q->hwe->gt;
+	struct xe_device *xe = d->xe;
+	struct xe_exec_queue *active;
+	struct xe_hw_engine *hwe;
+	unsigned int fw_ref;
+	int lrc_idx, ret;
+	u32 lrc_hw;
+	u32 td_ctl;
+
+	hwe = get_runalone_active_hw_engine(gt);
+	if (XE_IOCTL_DBG(xe, !hwe)) {
+		drm_dbg(&gt_to_xe(gt)->drm, "Runalone engine not found!");
+		return -EINVAL;
+	}
+
+	active = active_hwe_to_exec_queue(hwe, &lrc_idx);
+	if (XE_IOCTL_DBG(xe, IS_ERR(active)))
+		return PTR_ERR(active);
+
+	if (XE_IOCTL_DBG(xe, q != active)) {
+		xe_exec_queue_put(active);
+		return -EINVAL;
+	}
+	xe_exec_queue_put(active);
+
+	if (XE_IOCTL_DBG(xe, lrc_idx >= q->width || q->lrc[lrc_idx] != lrc))
+		return -EINVAL;
+
+	fw_ref = xe_force_wake_get(gt_to_fw(gt), hwe->domain);
+	if (!fw_ref)
+		return -ETIMEDOUT;
+
+	/* Additional check just before issuing MMIO writes */
+	ret = __current_lrca(hwe, &lrc_hw);
+	if (ret)
+		goto put_fw;
+
+	if (!lrca_equals(lower_32_bits(xe_lrc_descriptor(lrc)), lrc_hw)) {
+		ret = -EBUSY;
+		goto put_fw;
+	}
+
+	td_ctl = xe_gt_mcr_unicast_read_any(gt, TD_CTL);
+
+	/* Halt on next thread dispatch */
+	if (!(td_ctl & TD_CTL_FORCE_EXTERNAL_HALT))
+		xe_gt_mcr_multicast_write(gt, TD_CTL,
+					  td_ctl | TD_CTL_FORCE_EXTERNAL_HALT);
+	else
+		eu_warn(d, "TD_CTL force external halt bit already set!\n");
+
+	/*
+	 * The sleep is needed because some interrupts are ignored
+	 * by the HW, hence we allow the HW some time to acknowledge
+	 * that.
+	 */
+	usleep_range(100, 110);
+
+	/* Halt regardless of thread dependencies */
+	if (!(td_ctl & TD_CTL_FORCE_EXCEPTION))
+		xe_gt_mcr_multicast_write(gt, TD_CTL,
+					  td_ctl | TD_CTL_FORCE_EXCEPTION);
+	else
+		eu_warn(d, "TD_CTL force exception bit already set!\n");
+
+	usleep_range(100, 110);
+
+	xe_gt_mcr_multicast_write(gt, TD_CTL, td_ctl &
+				  ~(TD_CTL_FORCE_EXTERNAL_HALT | TD_CTL_FORCE_EXCEPTION));
+
+	/*
+	 * In case of stopping wrong ctx emit warning.
+	 * Nothing else we can do for now.
+	 */
+	ret = __current_lrca(hwe, &lrc_hw);
+	if (ret || !lrca_equals(lower_32_bits(xe_lrc_descriptor(lrc)), lrc_hw))
+		eu_warn(d, "xe_eudebug: interrupted wrong context.");
+
+put_fw:
+	xe_force_wake_put(gt_to_fw(gt), fw_ref);
+
+	return ret;
+}
+
+struct ss_iter {
+	struct xe_eudebug *debugger;
+	unsigned int i;
+
+	unsigned int size;
+	u8 *bits;
+};
+
+static int check_attn_mcr(struct xe_gt *gt, void *data,
+			  u16 group, u16 instance)
+{
+	struct ss_iter *iter = data;
+	struct xe_eudebug *d = iter->debugger;
+	unsigned int row;
+
+	for (row = 0; row < TD_EU_ATTENTION_MAX_ROWS; row++) {
+		u32 val, cur = 0;
+
+		if (iter->i >= iter->size)
+			return 0;
+
+		if (XE_WARN_ON((iter->i + sizeof(val)) >
+				(xe_gt_eu_attention_bitmap_size(gt))))
+			return -EIO;
+
+		memcpy(&val, &iter->bits[iter->i], sizeof(val));
+		iter->i += sizeof(val);
+
+		cur = xe_gt_mcr_unicast_read(gt, TD_ATT(row), group, instance);
+
+		if ((val | cur) != cur) {
+			eu_dbg(d,
+			       "WRONG CLEAR (%u:%u:%u) TD_CRL: 0x%08x; TD_ATT: 0x%08x\n",
+			       group, instance, row, val, cur);
+			return -EINVAL;
+		}
+	}
+
+	return 0;
+}
+
+static int clear_attn_mcr(struct xe_gt *gt, void *data,
+			  u16 group, u16 instance)
+{
+	struct ss_iter *iter = data;
+	struct xe_eudebug *d = iter->debugger;
+	unsigned int row;
+
+	for (row = 0; row < TD_EU_ATTENTION_MAX_ROWS; row++) {
+		u32 val;
+
+		if (iter->i >= iter->size)
+			return 0;
+
+		if (XE_WARN_ON((iter->i + sizeof(val)) >
+				(xe_gt_eu_attention_bitmap_size(gt))))
+			return -EIO;
+
+		memcpy(&val, &iter->bits[iter->i], sizeof(val));
+		iter->i += sizeof(val);
+
+		if (!val)
+			continue;
+
+		xe_gt_mcr_unicast_write(gt, TD_CLR(row), val,
+					group, instance);
+
+		eu_dbg(d,
+		       "TD_CLR: (%u:%u:%u): 0x%08x\n",
+		       group, instance, row, val);
+	}
+
+	return 0;
+}
+
+static int xe_eu_control_resume(struct xe_eudebug *d,
+				struct xe_exec_queue *q,
+				struct xe_lrc *lrc,
+				u8 *bits, unsigned int bitmask_size)
+{
+	struct xe_device *xe = d->xe;
+	struct ss_iter iter = {
+		.debugger = d,
+		.i = 0,
+		.size = bitmask_size,
+		.bits = bits
+	};
+	int ret = 0;
+	struct xe_exec_queue *active;
+	int lrc_idx;
+
+	active = runalone_active_queue_get(q->gt, &lrc_idx);
+	if (IS_ERR(active))
+		return PTR_ERR(active);
+
+	if (XE_IOCTL_DBG(xe, q != active)) {
+		xe_exec_queue_put(active);
+		return -EBUSY;
+	}
+	xe_exec_queue_put(active);
+
+	if (XE_IOCTL_DBG(xe, lrc_idx >= q->width || q->lrc[lrc_idx] != lrc))
+		return -EBUSY;
+
+	/*
+	 * hsdes: 18021122357
+	 * We need to avoid clearing attention bits that are not set
+	 * in order to avoid the EOT hang on PVC.
+	 */
+	if (GRAPHICS_VERx100(d->xe) == 1260) {
+		ret = xe_gt_foreach_dss_group_instance(q->gt, check_attn_mcr, &iter);
+		if (ret)
+			return ret;
+
+		iter.i = 0;
+	}
+
+	xe_gt_foreach_dss_group_instance(q->gt, clear_attn_mcr, &iter);
+	return 0;
+}
+
+static int xe_eu_control_stopped(struct xe_eudebug *d,
+				 struct xe_exec_queue *q,
+				 struct xe_lrc *lrc,
+				 u8 *bits, unsigned int bitmask_size)
+{
+	struct xe_device *xe = d->xe;
+	struct xe_exec_queue *active;
+	int lrc_idx;
+
+	if (XE_WARN_ON(!q) || XE_WARN_ON(!q->gt))
+		return -EINVAL;
+
+	active = runalone_active_queue_get(q->gt, &lrc_idx);
+	if (IS_ERR(active))
+		return PTR_ERR(active);
+
+	if (active) {
+		if (XE_IOCTL_DBG(xe, q != active)) {
+			xe_exec_queue_put(active);
+			return -EBUSY;
+		}
+
+		if (XE_IOCTL_DBG(xe, lrc_idx >= q->width || q->lrc[lrc_idx] != lrc)) {
+			xe_exec_queue_put(active);
+			return -EBUSY;
+		}
+	}
+
+	xe_exec_queue_put(active);
+
+	return xe_gt_eu_attention_bitmap(q->gt, bits, bitmask_size);
+}
+
+static struct xe_eudebug_eu_control_ops eu_control = {
+	.interrupt_all = xe_eu_control_interrupt_all,
+	.stopped = xe_eu_control_stopped,
+	.resume = xe_eu_control_resume,
+};
+
 static void discovery_work_fn(struct work_struct *work);
 
 static int
@@ -1320,6 +1808,7 @@ xe_eudebug_connect(struct xe_device *xe,
 		goto err_detach;
 	}
 
+	d->ops = &eu_control;
 	kref_get(&d->ref);
 	queue_work(xe->eudebug.ordered_wq, &d->discovery_work);
 	attention_scan_flush(xe);
