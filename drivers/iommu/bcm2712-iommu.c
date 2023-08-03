@@ -78,6 +78,9 @@
 #define MMMU_PTE_VALID                         BIT(28)
 
 /*
+ * BCM2712 IOMMU is organized around 4Kbyte pages (MMU_PAGE_SIZE).
+ * Linux PAGE_SIZE must not be smaller but may be larger (e.g. 4K, 16K).
+ *
  * Unlike many larger MMUs, this one uses a 4-byte word size, allowing
  * 1024 entries within each 4K table page, and two-level translation.
  *
@@ -87,21 +90,24 @@
  * plus one "default" page to catch illegal requests.
  *
  * The translated virtual address region is between 40GB and 42GB;
- * addresses outside this range pass straight through to the SDRAM.
+ * addresses below this range pass straight through to the SDRAM.
  *
  * Currently we assume a 1:1:1 correspondence of IOMMU, group and domain.
  */
 
-#define PAGEWORDS_SHIFT   (PAGE_SHIFT - 2)
-#define HUGEPAGE_SHIFT    (PAGE_SHIFT + PAGEWORDS_SHIFT)
-#define L1_CHUNK_SHIFT    (PAGE_SHIFT + 2 * PAGEWORDS_SHIFT)
+#define MMU_PAGE_SHIFT    12
+#define MMU_PAGE_SIZE     BIT(MMU_PAGE_SHIFT)
+
+#define PAGEWORDS_SHIFT   (MMU_PAGE_SHIFT - 2)
+#define HUGEPAGE_SHIFT    (MMU_PAGE_SHIFT + PAGEWORDS_SHIFT)
+#define L1_CHUNK_SHIFT    (MMU_PAGE_SHIFT + 2 * PAGEWORDS_SHIFT)
 
 #define APERTURE_BASE     (40ul << 30)
 #define APERTURE_SIZE     (2ul << 30)
 #define APERTURE_TOP      (APERTURE_BASE + APERTURE_SIZE)
-#define TRANSLATED_PAGES  (APERTURE_SIZE >> PAGE_SHIFT)
+#define TRANSLATED_PAGES  (APERTURE_SIZE >> MMU_PAGE_SHIFT)
 #define L2_PAGES          (TRANSLATED_PAGES >> PAGEWORDS_SHIFT)
-#define TABLES_ALLOC_SIZE (PAGE_SIZE * (L2_PAGES + 2))
+#define TABLES_ALLOC_SIZE (L2_PAGES * MMU_PAGE_SIZE + 2 * PAGE_SIZE)
 
 static void bcm2712_iommu_init(struct bcm2712_iommu *mmu)
 {
@@ -123,9 +129,9 @@ static void bcm2712_iommu_init(struct bcm2712_iommu *mmu)
 		!(u & MMMU_DEBUG_INFO_BYPASS));
 
 	mmu->bigpage_mask =
-		(PAGE_SIZE << FIELD_GET(MMMU_DEBUG_INFO_BIGPAGE_WIDTH_MASK, u)) - PAGE_SIZE;
+		((1u << FIELD_GET(MMMU_DEBUG_INFO_BIGPAGE_WIDTH_MASK, u)) - 1u) << MMU_PAGE_SHIFT;
 	mmu->superpage_mask =
-		(PAGE_SIZE << FIELD_GET(MMMU_DEBUG_INFO_SUPERPAGE_WIDTH_MASK, u)) - PAGE_SIZE;
+		((1u << FIELD_GET(MMMU_DEBUG_INFO_SUPERPAGE_WIDTH_MASK, u)) - 1u) << MMU_PAGE_SHIFT;
 	bypass_shift = (u & MMMU_DEBUG_INFO_BYPASS_4M) ?
 		HUGEPAGE_SHIFT : ADDR_CAP_SHIFT;
 
@@ -169,22 +175,26 @@ static void bcm2712_iommu_init(struct bcm2712_iommu *mmu)
 	/* Initialize the high-level table to point to the low-level pages */
 	__sg_page_iter_start(&it.base, mmu->sgt->sgl, mmu->sgt->nents, 0);
 	for (i = 0; i < L2_PAGES; i++) {
-		__sg_page_iter_dma_next(&it);
-		mmu->tables[TRANSLATED_PAGES + i] =
-			MMMU_PTE_VALID + (sg_page_iter_dma_address(&it) >> PAGE_SHIFT);
+		if (!(i % (PAGE_SIZE / MMU_PAGE_SIZE))) {
+			__sg_page_iter_dma_next(&it);
+			u = (sg_page_iter_dma_address(&it) >> MMU_PAGE_SHIFT);
+		} else {
+			u++;
+		}
+		mmu->tables[TRANSLATED_PAGES + i] = MMMU_PTE_VALID + u;
 	}
 
 	/*
 	 * Configure the addresses of the top-level table (offset because
 	 * the aperture does not start from zero), and of the default page.
+	 * For simplicity, both these regions are whole Linux pages.
 	 */
 	__sg_page_iter_dma_next(&it);
-	MMU_WR(MMMU_PT_PA_BASE_OFFSET,
-	       ((sg_page_iter_dma_address(&it) >> PAGE_SHIFT) -
-		(APERTURE_BASE >> L1_CHUNK_SHIFT)));
+	u = (sg_page_iter_dma_address(&it) >> MMU_PAGE_SHIFT);
+	MMU_WR(MMMU_PT_PA_BASE_OFFSET, u - (APERTURE_BASE >> L1_CHUNK_SHIFT));
 	__sg_page_iter_dma_next(&it);
-	MMU_WR(MMMU_ILLEGAL_ADR_OFFSET,
-	       MMMU_ILLEGAL_ADR_ENABLE + (sg_page_iter_dma_address(&it) >> PAGE_SHIFT));
+	u = (sg_page_iter_dma_address(&it) >> MMU_PAGE_SHIFT);
+	MMU_WR(MMMU_ILLEGAL_ADR_OFFSET, MMMU_ILLEGAL_ADR_ENABLE + u);
 	dma_sync_sgtable_for_device(mmu->dev, mmu->sgt, DMA_TO_DEVICE);
 	mmu->dirty = false;
 
@@ -233,7 +243,7 @@ static int bcm2712_iommu_map(struct iommu_domain *domain, unsigned long iova,
 	iova -= mmu->dma_iova_offset;
 	if (iova >= APERTURE_BASE && iova + bytes <= APERTURE_TOP) {
 		unsigned int p;
-		u32 entry = MMMU_PTE_VALID | (pa >> PAGE_SHIFT);
+		u32 entry = MMMU_PTE_VALID | (pa >> MMU_PAGE_SHIFT);
 		u32 align = (u32)(iova | pa | bytes);
 
 		/* large page and write enable flags */
@@ -253,7 +263,8 @@ static int bcm2712_iommu_map(struct iommu_domain *domain, unsigned long iova,
 		}
 
 		iova -= APERTURE_BASE;
-		for (p = iova >> PAGE_SHIFT; p < (iova + bytes) >> PAGE_SHIFT; p++) {
+		for (p = iova >> MMU_PAGE_SHIFT;
+		     p < (iova + bytes) >> MMU_PAGE_SHIFT; p++) {
 			mmu->nmapped_pages += !(mmu->tables[p]);
 			mmu->tables[p] = entry++;
 		}
@@ -294,8 +305,8 @@ static size_t bcm2712_iommu_unmap(struct iommu_domain *domain, unsigned long iov
 
 		/* Clear table entries, this marks the addresses as illegal */
 		iova -= (mmu->dma_iova_offset + APERTURE_BASE);
-		for (p = iova >> PAGE_SHIFT;
-		     p < (iova + bytes) >> PAGE_SHIFT;
+		for (p = iova >> MMU_PAGE_SHIFT;
+		     p < (iova + bytes) >> MMU_PAGE_SHIFT;
 		     p++) {
 			mmu->nmapped_pages -= !!(mmu->tables[p]);
 			mmu->tables[p] = 0;
@@ -324,7 +335,7 @@ static void bcm2712_iommu_sync_range(struct iommu_domain *domain,
 		bcm2712_iommu_cache_flush(mmu->cache);
 
 	/*
-	 * When flushing most of the range or when nothing needs to be kept,
+	 * When flushing a large range or when nothing needs to be kept,
 	 * it's quicker to use the"TLB_CLEAR" flag. Otherwise, invalidate
 	 * TLB entries in lines of 4 words each. Each flush/clear operation
 	 * should complete almost instantaneously.
@@ -332,7 +343,7 @@ static void bcm2712_iommu_sync_range(struct iommu_domain *domain,
 	iova -= mmu->dma_iova_offset;
 	iova_end = min(APERTURE_TOP, iova + size);
 	iova = max(APERTURE_BASE, iova);
-	if (mmu->nmapped_pages == 0 || iova_end - iova >= APERTURE_SIZE / 2) {
+	if (mmu->nmapped_pages == 0 || iova_end - iova >= APERTURE_SIZE / 8) {
 		MMU_WR(MMMU_CTRL_OFFSET,
 		       MMMU_CTRL_CAP_EXCEEDED_ABORT_EN    |
 		       MMMU_CTRL_PT_INVALID_ABORT_EN      |
@@ -346,8 +357,9 @@ static void bcm2712_iommu_sync_range(struct iommu_domain *domain,
 			cpu_relax();
 		}
 	} else {
-		for (p4 = iova >> (PAGE_SHIFT + 2);
-		     p4 < (iova_end + 3 * PAGE_SIZE) >> (PAGE_SHIFT + 2); p4++) {
+		for (p4 = iova >> (MMU_PAGE_SHIFT + 2);
+		     p4 < (iova_end + 3 * MMU_PAGE_SIZE) >> (MMU_PAGE_SHIFT + 2);
+		     p4++) {
 			MMU_WR(MMMU_SHOOT_DOWN_OFFSET,
 			       MMMU_SHOOT_DOWN_SHOOT + (p4 << 2));
 			for (i = 0; i < 1024; i++) {
@@ -378,9 +390,9 @@ static phys_addr_t bcm2712_iommu_iova_to_phys(struct iommu_domain *domain, dma_a
 
 	iova -= mmu->dma_iova_offset;
 	if (iova  >= APERTURE_BASE && iova < APERTURE_TOP) {
-		p = (iova - APERTURE_BASE) >> PAGE_SHIFT;
+		p = (iova - APERTURE_BASE) >> MMU_PAGE_SHIFT;
 		p = mmu->tables[p] & 0x0FFFFFFFu;
-		return (((phys_addr_t)p) << PAGE_SHIFT) + (iova & (PAGE_SIZE - 1));
+		return (((phys_addr_t)p) << MMU_PAGE_SHIFT) + (iova & (MMU_PAGE_SIZE - 1u));
 	} else if (iova < APERTURE_BASE) {
 		return (phys_addr_t)iova;
 	} else {
@@ -504,7 +516,8 @@ static const struct iommu_ops bcm2712_iommu_ops = {
 	.probe_device	= bcm2712_iommu_probe_device,
 	.release_device	= bcm2712_iommu_release_device,
 	.device_group	= bcm2712_iommu_device_group,
-	.pgsize_bitmap	= (SZ_4M | SZ_2M | SZ_1M | SZ_64K | SZ_4K),
+	/* Advertise native page sizes as well as 2M, 16K which Linux may prefer */
+	.pgsize_bitmap	= (SZ_4M | SZ_2M | SZ_1M | SZ_64K | SZ_16K | SZ_4K),
 	.default_domain_ops = &bcm2712_iommu_domain_ops,
 	.of_xlate = bcm2712_iommu_of_xlate,
 };

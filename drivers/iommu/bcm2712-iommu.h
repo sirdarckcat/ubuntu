@@ -29,8 +29,8 @@ struct bcm2712_iommu {
 	spinlock_t hw_lock;   /* to protect HW registers */
 	void __iomem *reg_base;
 	u64 dma_iova_offset; /* Hack for IOMMU attached to PCIe RC */
-	u8 bigpage_mask;
-	u8 superpage_mask;
+	u32 bigpage_mask;
+	u32 superpage_mask;
 	unsigned int nmapped_pages;
 	bool dirty; /* true when tables are oriented towards CPU */
 };
