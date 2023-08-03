@@ -26,6 +26,8 @@
 #define MLNX_PTM_GET_POWER_ENVELOPE     0x8200010B
 #define MLNX_PTM_GET_ATX_PWR_STATE      0x8200010C
 #define MLNX_PTM_GET_CUR_PPROFILE       0x8200010D
+#define MLNX_PTM_GET_DDR_TTHROTTLE      0x8200010E
+#define MLNX_PTM_GET_DDR_TEMP_EVT_CTR   0x8200010F
 
 #define MLNX_POWER_ERROR		300
 
@@ -172,6 +174,23 @@ static int current_pprofile_show(void *data, u64 *val)
 DEFINE_SIMPLE_ATTRIBUTE(current_pprofile_fops,
 			current_pprofile_show, NULL, "%llu\n");
 
+static int ddr_thermal_throttling_state_show(void *data, u64 *val)
+{
+	*val = smc_call0(MLNX_PTM_GET_DDR_TTHROTTLE);
+
+	return 0;
+}
+DEFINE_SIMPLE_ATTRIBUTE(ddr_thermal_throttling_state_fops,
+			ddr_thermal_throttling_state_show, NULL, "%llu\n");
+
+static int ddr_thermal_evt_counter_show(void *data, u64 *val)
+{
+	*val = smc_call0(MLNX_PTM_GET_DDR_TEMP_EVT_CTR);
+
+	return 0;
+}
+DEFINE_SIMPLE_ATTRIBUTE(ddr_thermal_evt_counter_fops,
+			ddr_thermal_evt_counter_show, NULL, "%llu\n");
 
 static int __init mlxbf_ptm_init(void)
 {
@@ -212,6 +231,10 @@ static int __init mlxbf_ptm_init(void)
 			    NULL, &atx_status_fops);
 	debugfs_create_file("active_power_profile", 0444, status,
 			    NULL, &current_pprofile_fops);
+	debugfs_create_file("ddr_thermal_throttling_event_count", 0444, status,
+			    NULL, &ddr_thermal_evt_counter_fops);
+	debugfs_create_file("ddr_thermal_throttling_state", 0444, status,
+			    NULL, &ddr_thermal_throttling_state_fops);
 
 	return 0;
 }
