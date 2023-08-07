@@ -119,4 +119,8 @@ static inline u32 intel_gt_next_invalidate_tlb_full(const struct intel_gt *gt)
 
 void intel_gt_invalidate_tlb(struct intel_gt *gt, u32 seqno);
 
+enum i915_map_type intel_gt_coherent_map_type(struct intel_gt *gt,
+					      struct drm_i915_gem_object *obj,
+					      bool always_coherent);
+
 #endif /* __INTEL_GT_H__ */
