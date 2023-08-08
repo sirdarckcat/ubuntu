@@ -1,0 +1,16 @@
+on:
+  workflow_dispatch:
+  schedule:
+  - cron: "0 2 * * *"
+
+jobs:
+  refresh_ubuntu:
+    name: refresh ubuntu tags
+    runs-on: ubuntu-18.04
+    steps:
+    - uses: actions/checkout@v1
+    - name: 'Re-configure remotes'
+      run: |
+        cat git_config >> /.git/config
+        git pull --all --tags
+        git push --tags
