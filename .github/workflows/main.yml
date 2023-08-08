@@ -10,7 +10,9 @@ jobs:
     name: refresh ubuntu tags
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
+    - name: 'Clone repository'
+      run: |
+        git clone --filter=blob:none --no-checkout ${{ github.repositoryUrl }}
     - name: 'Re-configure remotes'
       run: |
         cat git_config >> .git/config
