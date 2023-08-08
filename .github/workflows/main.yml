@@ -12,8 +12,7 @@ jobs:
     steps:
     - name: 'Clone repository'
       run: |
-        git clone --filter=blob:none --no-checkout https://github.com/sirdarckcat/ubuntu
-        cd ubuntu
+        git clone --filter=blob:none --no-checkout https://github.com/sirdarckcat/ubuntu .
     - name: 'Re-configure remotes'
       run: |
         cat git_config >> .git/config
