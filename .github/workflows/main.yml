@@ -11,6 +11,6 @@ jobs:
     - uses: actions/checkout@v1
     - name: 'Re-configure remotes'
       run: |
-        cat git_config >> /.git/config
+        cat git_config >> .git/config
         git pull --all --tags
         git push --tags
