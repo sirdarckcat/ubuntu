@@ -205,16 +205,16 @@ static void rp1vec_connector_destroy(struct drm_connector *connector)
 	drm_connector_cleanup(connector);
 }
 
-static const struct drm_display_mode rp1vec_base_modes[4] = {
+static const struct drm_display_mode rp1vec_modes[4] = {
 	{ /* Full size 525/60i with Rec.601 pixel rate */
 		DRM_MODE("720x480i", DRM_MODE_TYPE_DRIVER, 13500,
 			 720, 720 + 14, 720 + 14 + 64, 858, 0,
 			 480, 480 + 7, 480 + 7 + 6, 525, 0,
 			 DRM_MODE_FLAG_INTERLACE)
 	},
-	{ /* Since 640/13.5MHz isn't certain to fit on all TVs... */
-		DRM_MODE("688x432i", DRM_MODE_TYPE_DRIVER, 15429,
-			 688, 688 + 76, 688 + 76 + 72, 980, 0,
+	{ /* Cropped and horizontally squashed to be TV-safe */
+		DRM_MODE("704x432i", DRM_MODE_TYPE_DRIVER, 15429,
+			 704, 704 + 72, 704 + 72 + 72, 980, 0,
 			 432, 432 + 31, 432 + 31 + 6, 525, 0,
 			 DRM_MODE_FLAG_INTERLACE)
 	},
@@ -224,48 +224,27 @@ static const struct drm_display_mode rp1vec_base_modes[4] = {
 			 576, 576 + 4, 576 + 4 + 6, 625, 0,
 			 DRM_MODE_FLAG_INTERLACE)
 	},
-	{ /* Square(ish) pixel mode */
-		DRM_MODE("768x576i", DRM_MODE_TYPE_DRIVER, 15429,
-			 768, 768 + 36, 768 + 36 + 72, 987, 0,
-			 576, 576 + 4, 576 + 4 + 6, 625, 0,
+	{ /* Cropped and squashed, for square(ish) pixels */
+		DRM_MODE("704x512i", DRM_MODE_TYPE_DRIVER, 15429,
+			 704, 704 + 80, 704 + 80 + 72, 987, 0,
+			 512, 512 + 36, 512 + 36 + 6, 625, 0,
 			 DRM_MODE_FLAG_INTERLACE)
 	}
 };
 
 static int rp1vec_connector_get_modes(struct drm_connector *connector)
 {
-	/* Derive some cropped modes from the base modes above */
-	static const u16 crops[][4] = {
-		{ 0, 0, 720, 480 }, /* Full size 525/60i with Rec.601 pixel rate      */
-		{ 0, 1, 688, 432 }, /* Squashed and cropped version, safe for console */
-		{ 0, 1, 640, 400 }, /* CGA-style mode for retro applications          */
-		{ 1, 2, 720, 576 }, /* Full size 625/50i with Rec.601 pixel rate      */
-		{ 1, 3, 768, 576 }, /* Square(ish) pixel mode                         */
-		{ 1, 3, 688, 512 }, /* Cropped version, safe for console              */
-		{ 1, 3, 640, 512 }, /* BBC-style mode for retro applications          */
-	};
-	char const *pref;
 	struct rp1_vec *vec = container_of(connector, struct rp1_vec, connector);
 	bool ok525 = RP1VEC_TVSTD_SUPPORT_525(vec->tv_norm);
 	bool ok625 = RP1VEC_TVSTD_SUPPORT_625(vec->tv_norm);
-	int i, prog, margin, n = 0;
+	int i, prog, n = 0;
 
-	pref = ok525 ? "688x432i" : "688x512i";
-	for (i = 0; i < ARRAY_SIZE(crops); i++) {
-		if (crops[i][0] ? ok625 : ok525) {
+	for (i = 0; i < ARRAY_SIZE(rp1vec_modes); i++) {
+		if ((rp1vec_modes[i].vtotal == 625) ? ok625 : ok525) {
 			for (prog = 0; prog < 2; prog++) {
 				struct drm_display_mode *mode =
 					drm_mode_duplicate(connector->dev,
-							   &rp1vec_base_modes[crops[i][1]]);
-
-				margin = (mode->hdisplay - crops[i][2]) >> 1;
-				mode->hsync_start += margin;
-				mode->hsync_end   += margin;
-				mode->hdisplay = crops[i][2];
-				margin = (mode->vdisplay - crops[i][3]) >> 1;
-				mode->vsync_start += margin;
-				mode->vsync_end   += margin;
-				mode->vdisplay = crops[i][3];
+							   &rp1vec_modes[i]);
 
 				if (prog) {
 					mode->flags &= ~DRM_MODE_FLAG_INTERLACE;
@@ -275,9 +254,11 @@ static int rp1vec_connector_get_modes(struct drm_connector *connector)
 					mode->vtotal	  >>= 1;
 				}
 
-				drm_mode_set_name(mode);
-				if (!strncmp(mode->name, pref, 7))
+				if (mode->hdisplay == 704 &&
+				    mode->vtotal == ((ok525) ? 525 : 625))
 					mode->type |= DRM_MODE_TYPE_PREFERRED;
+
+				drm_mode_set_name(mode);
 				drm_mode_probed_add(connector, mode);
 				n++;
 			}
@@ -313,27 +294,29 @@ static int rp1vec_connector_atomic_check(struct drm_connector *conn,
 	return 0;
 }
 
-#define ABS_DIFF(a, b) ((a) > (b) ? (a) - (b) : (b) - (a))
-
 static enum drm_mode_status rp1vec_mode_valid(struct drm_device *dev,
 					      const struct drm_display_mode *mode)
 {
 	/*
-	 * Check the mode roughly matches one of our base modes,
-	 * optionally cropped or progressivized. Ignore H/V sync
+	 * Check the mode roughly matches one of our standard modes
+	 * (optionally half-height and progressive). Ignore H/V sync
 	 * timings which for interlaced TV are approximate at best.
 	 */
-	int i;
+	int i, prog;
 
-	for (i = 0; i < ARRAY_SIZE(rp1vec_base_modes); i++) {
-		const struct drm_display_mode *b = rp1vec_base_modes + i;
-		int prog = !(mode->flags & DRM_MODE_FLAG_INTERLACE);
+	prog = !(mode->flags & DRM_MODE_FLAG_INTERLACE);
 
-		if (ABS_DIFF(mode->clock, b->clock) < 2   &&
-		    ABS_DIFF(mode->htotal, b->htotal) < 2 &&
-		    mode->vtotal == (b->vtotal >> prog)   &&
-		    mode->hdisplay <= b->hdisplay         &&
-		    mode->vdisplay <= (b->vdisplay >> prog))
+	for (i = 0; i < ARRAY_SIZE(rp1vec_modes); i++) {
+		const struct drm_display_mode *ref = rp1vec_modes + i;
+
+		if (mode->hdisplay == ref->hdisplay           &&
+		    mode->vdisplay == (ref->vdisplay >> prog) &&
+		    mode->clock + 2 >= ref->clock             &&
+		    mode->clock <= ref->clock + 2             &&
+		    mode->htotal + 2 >= ref->htotal           &&
+		    mode->htotal <= ref->htotal + 2           &&
+		    mode->vtotal + 2 >= (ref->vtotal >> prog) &&
+		    mode->vtotal <= (ref->vtotal >> prog) + 2)
 			return MODE_OK;
 	}
 	return MODE_BAD;
