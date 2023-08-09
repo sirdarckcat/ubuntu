@@ -16,5 +16,5 @@ jobs:
     - name: 'Re-configure remotes'
       run: |
         curl https://raw.githubusercontent.com/sirdarckcat/ubuntu/automation/git_config >> .git/config
-        git pull --all --tags
+        git remote | grep -v origin | xargs -i git fetch {} --tags --filter=blob:none --verbose --progress
         git push --tags
