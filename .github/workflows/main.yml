@@ -32,6 +32,9 @@ jobs:
 
     # needs: refresh_ubuntu
 
+    env:
+      BUCKET_NAME: linux-mirror-db
+
     steps:
     - name: 'Clone repository'
       run: 'git clone --filter=blob:none --no-checkout https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/sirdarckcat/ubuntu .'
