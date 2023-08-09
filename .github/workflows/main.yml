@@ -11,10 +11,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: 'Clone repository'
-      run: |
-        git clone --filter=blob:none --no-checkout https://github.com/sirdarckcat/ubuntu .
+      run: 'git clone --filter=blob:none --no-checkout https://github.com/sirdarckcat/ubuntu .'
     - name: 'Re-configure remotes'
-      run: |
-        curl https://raw.githubusercontent.com/sirdarckcat/ubuntu/automation/git_config >> .git/config
-        git remote | grep -v origin | xargs -i git fetch {} --tags --filter=blob:none --verbose --progress
-        git push --tags
+      run: 'curl https://raw.githubusercontent.com/sirdarckcat/ubuntu/automation/git_config >> .git/config'
+    - name: 'Re-fetch remotes'
+      run: 'git remote | grep -v origin | xargs -i git fetch {} --tags --filter=blob:none --verbose --progress'
+    - name: 'Push update'
+      run: 'git push --tags'
