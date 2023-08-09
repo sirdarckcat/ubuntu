@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: 'Clone repository'
-      run: 'git clone --filter=blob:none --no-checkout https://$GIT_TOKEN@github.com:sirdarckcat/ubuntu .'
+      run: 'git clone --filter=blob:none --no-checkout https://${{ secrets.GITHUB_TOKEN }}@github.com:sirdarckcat/ubuntu .'
     - name: 'Re-configure remotes'
       run: 'curl https://raw.githubusercontent.com/sirdarckcat/ubuntu/automation/git_config >> .git/config'
     - name: 'Re-fetch remotes'
