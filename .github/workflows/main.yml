@@ -6,17 +6,52 @@ on:
   - cron: "0 2 * * *"
 
 jobs:
-  refresh_ubuntu:
-    name: refresh ubuntu tags
+  # refresh_ubuntu:
+  #   name: refresh ubuntu tags
+  #   runs-on: ubuntu-latest
+  #   permissions:
+  #     contents: 'write'
+  #   steps:
+  #   - name: 'Clone repository'
+  #     run: 'git clone --filter=blob:none --no-checkout https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/sirdarckcat/ubuntu .'
+  #   - name: 'Re-configure remotes'
+  #     run: 'curl https://raw.githubusercontent.com/sirdarckcat/ubuntu/automation/git_config >> .git/config'
+  #   - name: 'Re-fetch remotes'
+  #     run: 'git remote | grep -v origin | xargs -i sh -c "git fetch {} --tags --filter=blob:none --verbose --progress || echo ERROR {}"'
+  #   - name: 'Push update'
+  #     run: 'git push --tags'
+
+  update_files:
+    name: update csv/tsv files
+
     runs-on: ubuntu-latest
+
     permissions:
-      contents: 'write'
+      id-token: 'write'
+      contents: 'read'
+
+    # needs: refresh_ubuntu
+
     steps:
     - name: 'Clone repository'
       run: 'git clone --filter=blob:none --no-checkout https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/sirdarckcat/ubuntu .'
-    - name: 'Re-configure remotes'
-      run: 'curl https://raw.githubusercontent.com/sirdarckcat/ubuntu/automation/git_config >> .git/config'
-    - name: 'Re-fetch remotes'
-      run: 'git remote | grep -v origin | xargs -i sh -c "git fetch {} --tags --filter=blob:none --verbose --progress || echo ERROR {}"'
-    - name: 'Push update'
-      run: 'git push --tags'
+
+    - name: 'Generate TSVs and CSVs'
+      run: |
+        git log --all --all-match -E --grep='\b[0-9a-f]{40}\b' --grep=commit | grep '[0-9a-f]\{40\}' | grep -i ' from commit \|^commit \|Upstream commit\|commit.*upstream' | sed 's/\(\s*\).*\([0-9a-f]\{40\}\).*/\1\2/' | sed ':a;N;$!ba;s/\n \+/\t/g' > ./ubuntu_upstream_raw.tsv
+        git name-rev --tags --all | sed s/\ /$'\t'/g > ./ubuntu_tags_raw.tsv
+        jq --raw-output --raw-input --slurp '["commit","tags"],(.|split("\n")|.[]|split("\t")|.[0] as $commit|.[1:][]|[$commit,.])|@csv' ./ubuntu_tags_raw.tsv > ./ubuntu_tags.csv
+        jq --raw-output --raw-input --slurp '["commit","upstream"],(.|split("\n")|.[]|split("\t")|.[0] as $commit|.[1:][]|[$commit,.])|@csv' ./ubuntu_upstream_raw.tsv > ./ubuntu_upstream.csv
+
+    - uses: 'google-github-actions/auth@v0'
+      with:
+        workload_identity_provider: 'projects/799795028847/locations/global/workloadIdentityPools/github-pool/providers/github-provider-new'
+        service_account: 'github@sdcpocs.iam.gserviceaccount.com'
+
+    - uses: 'google-github-actions/upload-cloud-storage@v0'
+      with:
+        destination: '${{ env.BUCKET_NAME }}/'
+        path: ./
+        glob: '*.csv'
+        headers: |-
+          cache-control: no-cache
