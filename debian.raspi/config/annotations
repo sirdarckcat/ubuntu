@@ -105,7 +105,7 @@ CONFIG_IMA_ARCH_POLICY                          policy<{'arm64': 'n', 'armhf': '
 CONFIG_INPUT_UINPUT                             policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
 CONFIG_IOMMU_SUPPORT                            policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not supported on Pi'>
 CONFIG_IPMI_HANDLER                             policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not supported on Pi'>
-CONFIG_IPV6                                     policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
+CONFIG_IPV6                                     policy<{'arm64': 'y', 'armhf': 'y'}> note<'LP: #2027983'>
 CONFIG_JOYSTICK_FSIA6B                          policy<{'arm64': 'm', 'armhf': 'm'}> note<'LP: #1995968'>
 CONFIG_JOYSTICK_RPISENSE                        policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
 CONFIG_KARMA_PARTITION                          policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not desired on Pi'>
@@ -157,6 +157,7 @@ CONFIG_MMC_BCM2835_DMA                          policy<{'arm64': 'y', 'armhf': '
 CONFIG_MMC_BCM2835_MMC                          policy<{'arm64': 'y', 'armhf': 'y'}> note<'Introduced by rpi-6.2.y'>
 CONFIG_MMC_BCM2835_PIO_DMA_BARRIER              policy<{'arm64': '2', 'armhf': '2'}> note<'Introduced by rpi-6.2.y'>
 CONFIG_MMC_BCM2835_SDHOST                       policy<{'arm64': 'y', 'armhf': 'y'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_MPTCP_IPV6                               policy<{'arm64': 'y', 'armhf': 'y'}> note<'LP: #2027983'>
 CONFIG_NET_DROP_MONITOR                         policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
 CONFIG_NET_NCSI                                 policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not desired on Pi'>
 CONFIG_OF_CONFIGFS                              policy<{'arm64': 'y', 'armhf': 'y'}> note<'Introduced by rpi-6.2.y'>
@@ -3944,6 +3945,7 @@ CONFIG_IPV6_PIMSM_V2                            policy<{'arm64': 'y', 'armhf': '
 CONFIG_IPV6_ROUTER_PREF                         policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_IPV6_ROUTE_INFO                          policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_IPV6_RPL_LWTUNNEL                        policy<{'arm64': 'n', 'armhf': 'n'}>
+CONFIG_IPV6_SEG6_BPF                            policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_IPV6_SEG6_HMAC                           policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_IPV6_SEG6_LWTUNNEL                       policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_IPV6_SIT                                 policy<{'arm64': 'm', 'armhf': 'm'}>
