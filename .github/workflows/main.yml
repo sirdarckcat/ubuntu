@@ -6,35 +6,32 @@ on:
   - cron: "0 2 * * *"
 
 jobs:
-  # refresh_ubuntu:
-  #   name: refresh ubuntu tags
-  #   runs-on: ubuntu-latest
-  #   permissions:
-  #     contents: 'write'
-  #   steps:
-  #   - name: 'Clone repository'
-  #     run: 'git clone --filter=blob:none --no-checkout https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/sirdarckcat/ubuntu .'
-  #   - name: 'Re-configure remotes'
-  #     run: 'curl https://raw.githubusercontent.com/sirdarckcat/ubuntu/automation/git_config >> .git/config'
-  #   - name: 'Re-fetch remotes'
-  #     run: 'git remote | grep -v origin | xargs -i sh -c "git fetch {} --tags --filter=blob:none --verbose --progress || echo ERROR {}"'
-  #   - name: 'Push update'
-  #     run: 'git push --tags'
+  refresh_ubuntu:
+    if: false
+    name: refresh ubuntu tags
+    runs-on: ubuntu-latest
+    permissions:
+      contents: 'write'
+    steps:
+    - name: 'Clone repository'
+      run: 'git clone --filter=blob:none --no-checkout https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/sirdarckcat/ubuntu .'
+    - name: 'Re-configure remotes'
+      run: 'curl https://raw.githubusercontent.com/sirdarckcat/ubuntu/automation/git_config >> .git/config'
+    - name: 'Re-fetch remotes'
+      run: 'git remote | grep -v origin | xargs -i sh -c "git fetch {} --tags --filter=blob:none --verbose --progress || echo ERROR {}"'
+    - name: 'Push update'
+      run: 'git push --tags'
 
   update_files:
+    if: false
     name: update csv/tsv files
-
     runs-on: ubuntu-latest
-
     permissions:
       id-token: 'write'
       contents: 'read'
-
-    # needs: refresh_ubuntu
-
+    needs: refresh_ubuntu
     env:
       BUCKET_NAME: linux-mirror-db
-
     steps:
     - name: 'Clone repository'
       run: 'git clone --filter=blob:none --no-checkout https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/sirdarckcat/ubuntu .'
