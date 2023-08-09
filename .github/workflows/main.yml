@@ -15,6 +15,6 @@ jobs:
     - name: 'Re-configure remotes'
       run: 'curl https://raw.githubusercontent.com/sirdarckcat/ubuntu/automation/git_config >> .git/config'
     - name: 'Re-fetch remotes'
-      run: 'git remote | grep -v origin | xargs -i git fetch {} --tags --filter=blob:none --verbose --progress'
+      run: 'git remote | grep -v origin | xargs -i "git fetch {} --tags --filter=blob:none --verbose --progress || echo ERROR {}"'
     - name: 'Push update'
       run: 'git push --tags'
