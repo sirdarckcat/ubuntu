@@ -16,6 +16,8 @@ jobs:
     - name: 'Clone repository'
       run: 'git clone --filter=blob:none --no-checkout https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/sirdarckcat/ubuntu .'
     - name: 'Re-configure remotes'
+      # https://git.launchpad.net/~canonical-kernel/+git/kteam-tools/plain/info/kernel-series.yaml
+      # yq -c '[(.[] | select(.development!=true and .supported and .esm!=true) | .sources?[]? | select(.supported and .development!=true and .private!=true) | .packages[] | select(.type==null) | .repo[0])] | unique | .[]'
       run: 'curl https://raw.githubusercontent.com/sirdarckcat/ubuntu/automation/git_config >> .git/config'
     - name: 'Re-fetch remotes'
       run: 'git remote | grep -v origin | xargs -i sh -c "git fetch {} --tags --filter=blob:none --verbose --progress || echo ERROR {}"'
