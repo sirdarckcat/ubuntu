@@ -105,6 +105,8 @@
 #define  PCIE_MISC_MSI_DATA_CONFIG_VAL_32		0xffe06540
 #define  PCIE_MISC_MSI_DATA_CONFIG_VAL_8		0xfff86540
 
+#define PCIE_MISC_RC_CONFIG_RETRY_TIMEOUT		0x405c
+
 #define PCIE_MISC_PCIE_CTRL				0x4064
 #define  PCIE_MISC_PCIE_CTRL_PCIE_L23_REQUEST_MASK	0x1
 #define PCIE_MISC_PCIE_CTRL_PCIE_PERSTB_MASK		0x4
@@ -1240,12 +1242,19 @@ static int brcm_pcie_setup(struct brcm_pcie *pcie)
 		writel(tmp, base + PCIE_MISC_UBUS_CTRL);
 		writel(0xffffffff, base + PCIE_MISC_AXI_READ_ERROR_DATA);
 
-		/* Adjust completion timeout - defaults to a very tight value.
-		 * If a link retrain happens, don't prematurely terminate the transaction.
-		 * The value is specified in core clocks, so for the upper clockspeed of 750MHz
-		 * and a maximum link retrain time of 24ms, timeout = 14.4e6.
+		/*
+		 * Adjust timeouts. The UBUS timeout also affects CRS
+		 * completion retries, as the request will get terminated if
+		 * either timeout expires, so both have to be a large value
+		 * (in clocks of 750MHz).
+		 * Set UBUS timeout to 250ms, then set RC config retry timeout
+		 * to be ~240ms.
+		 *
+		 * Setting CRSVis=1 will stop the core from blocking on a CRS
+		 * response, but does require the device to be well-behaved...
 		 */
-		writel(0xdbba00, base + PCIE_MISC_UBUS_TIMEOUT);
+		writel(0xB2D0000, base + PCIE_MISC_UBUS_TIMEOUT);
+		writel(0xABA0000, base + PCIE_MISC_RC_CONFIG_RETRY_TIMEOUT);
 	}
 
 	/*
