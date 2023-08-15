@@ -1,11 +1,16 @@
 #!/bin/bash
 
 remote_repo=''
+remote_branch='main'
 sru_cycle=
 while :
 do
 	if [ "$1" = "--remote-repo" ]; then
 		remote_repo="$2"
+		shift 2
+
+	elif [ "$1" = "--remote-branch" ]; then
+		remote_branch="$2"
 		shift 2
 
 	elif [ "$1" = "--sru-cycle" ]; then
@@ -102,15 +107,14 @@ cat_file()
 # Determine if this is merge format (main branch exists).
 present=$(cat_file -t "$remote_name/main" 2>/dev/null)
 if [ "$present" ]; then
-	git_base="$remote_name/main:$sru_cycle/"
-	git_base_devel="$remote_name/main:tip/"
+	git_base="$remote_name/$remote_branch:$sru_cycle/"
+	git_base_devel="$remote_name/$remote_branch:tip/"
 else
 	git_base="$remote_name/$sru_cycle:"
 	git_base_devel="$remote_name/master:"
 fi
 git_human="$remote_name/$sru_cycle"
 
-echo "Test1"
 # Determine if we have this cycle.
 present=$(cat_file -t "$git_base" 2>/dev/null)
 if [ "$present" = "" ]; then
@@ -118,7 +122,7 @@ if [ "$present" = "" ]; then
 	# fall back to master.
 	case "$sru_cycle" in
 	d*)	git_base="$git_base_devel" ;;
-	*)	echo "$sru_cycle: cycle not found in $remote_repo $git_base $git_base_devel" 2>&1
+	*)	echo "$sru_cycle: cycle not found in $remote_repo" 2>&1
 		exit 1
 		;;
 	esac
