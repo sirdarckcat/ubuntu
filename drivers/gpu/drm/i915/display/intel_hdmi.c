@@ -2889,9 +2889,6 @@ void intel_hdmi_init_connector(struct intel_digital_port *dig_port,
 				    ddc);
 	drm_connector_helper_add(connector, &intel_hdmi_connector_helper_funcs);
 
-	if (DISPLAY_VER(dev_priv) < 12)
-		connector->interlace_allowed = true;
-
 	connector->doublescan_allowed = 0;
 
 	connector->stereo_allowed = true;
