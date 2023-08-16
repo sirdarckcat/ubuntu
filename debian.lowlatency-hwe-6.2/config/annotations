@@ -6,7 +6,7 @@
 
 include "../../debian.lowlatency/config/annotations"
 
-CONFIG_RUST                                     policy<{'amd64': '-'}>
+CONFIG_RUST                                     policy<{'amd64': 'n'}>
 CONFIG_RUST                                     note<'Rust must be disabled in hwe kernels for now, LP: #1993183'>
 
 
@@ -27,7 +27,6 @@ CONFIG_INIT_STACK_ALL_ZERO                      policy<{'amd64': '-', 'arm64': '
 CONFIG_INIT_STACK_NONE                          policy<{'amd64': 'y', 'arm64': 'y'}>
 CONFIG_KCOV                                     policy<{'amd64': 'n', 'arm64': '-'}>
 CONFIG_LD_VERSION                               policy<{'amd64': '23800', 'arm64': '23800'}>
-CONFIG_PAHOLE_HAS_LANG_EXCLUDE                  policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_PAHOLE_VERSION                           policy<{'amd64': '122', 'arm64': '122'}>
 CONFIG_RUSTC_VERSION_TEXT                       policy<{'amd64': '-'}>
 CONFIG_RUST_BUILD_ASSERT_ALLOW                  policy<{'amd64': '-'}>
