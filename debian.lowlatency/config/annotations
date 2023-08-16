@@ -24,4 +24,7 @@ CONFIG_PREEMPT_VOLUNTARY                        note<'Disable voluntary preempti
 
 # ---- Annotations without notes ----
 
+CONFIG_CC_VERSION_TEXT                          policy<{'amd64': '"x86_64-linux-gnu-gcc-12 (Ubuntu 12.3.0-1ubuntu1~23.04) 12.3.0"', 'arm64': '"aarch64-linux-gnu-gcc-12 (Ubuntu 12.3.0-1ubuntu1~23.04) 12.3.0"'}>
+CONFIG_GCC_VERSION                              policy<{'amd64': '120300', 'arm64': '120300'}>
 CONFIG_HZ                                       policy<{'amd64': '1000', 'arm64': '1000'}>
+CONFIG_PAHOLE_VERSION                           policy<{'amd64': '125', 'arm64': '125'}>
