@@ -5198,18 +5198,19 @@ oplock_break_ack:
 	/*
 	 * MS-SMB2 3.2.5.19.1 and 3.2.5.19.2 (and MS-CIFS 3.2.5.42) do not require
 	 * an acknowledgment to be sent when the file has already been closed.
-	 * check for server null, since can race with kill_sb calling tree disconnect.
 	 */
 	spin_lock(&cinode->open_file_lock);
-	if (tcon->ses && tcon->ses->server && !oplock_break_cancelled &&
-					!list_empty(&cinode->openFileList)) {
+	/* check list empty since can race with kill_sb calling tree disconnect */
+	if (!oplock_break_cancelled && !list_empty(&cinode->openFileList)) {
 		spin_unlock(&cinode->open_file_lock);
-		rc = tcon->ses->server->ops->oplock_response(tcon, persistent_fid,
-						volatile_fid, net_fid, cinode);
+		rc = server->ops->oplock_response(tcon, persistent_fid,
+						  volatile_fid, net_fid, cinode);
 		cifs_dbg(FYI, "Oplock release rc = %d\n", rc);
 	} else
 		spin_unlock(&cinode->open_file_lock);
 
+	cifs_put_tlink(tlink);
+out:
 	cifs_done_oplock_break(cinode);
 }
 
