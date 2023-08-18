@@ -4,6 +4,8 @@
 # FLAVOUR: amd64-kvm
 # FLAVOUR_DEP: {'amd64-kvm': 'amd64-generic'}
 
+include "../../debian.master/config/annotations"
+
 CONFIG_DM_VERITY                policy<{'amd64': 'm'}>
 CONFIG_DM_VERITY_FEC            policy<{'amd64': 'n'}>
 CONFIG_DM_VERITY_VERIFY_ROOTHASH_SIG policy<{'amd64': 'y'}>
