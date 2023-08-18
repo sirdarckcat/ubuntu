@@ -1,4 +1,4 @@
-getabis_ppa="${HOME}/.getabis.jammy-linux-iot"
+getabis_ppa="${HOME}/.getabis.jammy-linux-capilano"
 
 if ! [ -e "${getabis_ppa}" ] ; then
         cat <<EOF >&2
@@ -16,7 +16,7 @@ EOF
         exit 1
 fi
 
-readarray -t repo_list < <(sed "s,\s*$,/pool/main/l/linux-iot," \
+readarray -t repo_list < <(sed "s,\s*$,/pool/main/l/linux-capilano," \
                 "${getabis_ppa}")
 
 package_prefixes linux-buildinfo
