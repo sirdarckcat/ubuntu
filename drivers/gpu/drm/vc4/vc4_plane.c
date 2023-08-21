@@ -715,7 +715,14 @@ static unsigned int vc4_lbm_channel_size(const struct drm_plane_state *state,
 	unsigned int width, lines;
 	unsigned int i;
 
-	width = min(state->src_w >> 16, state->crtc_w);
+	/* LBM is meant to use the smaller of source or dest width, but there
+	 * is a issue with UV scaling that the size required for the second
+	 * channel is based on the source width only.
+	 */
+	if (info->hsub > 1 && channel == 1)
+		width = state->src_w >> 16;
+	else
+		width = min(state->src_w >> 16, state->crtc_w);
 	width = round_up(width / info->hsub, 4);
 
 	wpc = vc4_lbm_words_per_component(state, channel);
