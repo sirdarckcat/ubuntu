@@ -6,22 +6,17 @@
 include "../../debian.master/config/annotations"
 include "oracle-annotations"
 
+CONFIG_ACCESSIBILITY                            policy<{'amd64': 'n', 'arm64': 'n'}>
+CONFIG_ACCESSIBILITY                            note<'LP: #1967702'>
 
+CONFIG_GPIO_CDEV_V1                             policy<{'amd64': 'n', 'arm64': 'n'}>
+CONFIG_GPIO_CDEV_V1                             note<'LP: #1953613'>
 
-CONFIG_ACCESSIBILITY				policy<{'amd64': 'n', 'arm64': 'n'}>
-CONFIG_ACCESSIBILITY				note<'LP: #1967702'>
+CONFIG_PREEMPT_NONE                             policy<{'amd64': 'y', 'arm64': 'y'}>
+CONFIG_PREEMPT_NONE                             note<'LP: #1543165'>
 
-CONFIG_GPIO_CDEV_V1				policy<{'amd64': 'n', 'arm64': 'n'}>
-CONFIG_GPIO_CDEV_V1				note<'LP: #1953613'>
-
-CONFIG_KERNEL_ZSTD				policy<{'amd64': 'y', 'arm64': 'y'}>
-CONFIG_KERNEL_ZSTD				note<'LP: #1931725'>
-
-CONFIG_PREEMPT_NONE				policy<{'amd64': 'y', 'arm64': 'y'}>
-CONFIG_PREEMPT_NONE				note<'LP: #1543165'>
-
-CONFIG_RUST					policy<{'amd64': 'n', 'arm64': '-'}>
-CONFIG_RUST					note<'required to enable Rust support, LP: #1993183'>
+CONFIG_RUST                                     policy<{'amd64': 'n', 'arm64': '-'}>
+CONFIG_RUST                                     note<'required to enable Rust support, LP: #1993183'>
 
 
 # ---- Annotations without notes ----
@@ -107,6 +102,7 @@ CONFIG_BRCMSTB_THERMAL                          policy<{'arm64': 'm'}>
 CONFIG_BRCM_USB_PINMAP                          policy<{'arm64': 'm'}>
 CONFIG_BUILD_BIN2C                              policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_CACHEFILES_ERROR_INJECTION               policy<{'amd64': 'n', 'arm64': 'n'}>
+CONFIG_CC_VERSION_TEXT                          policy<{'amd64': '"x86_64-linux-gnu-gcc-12 (Ubuntu 12.3.0-1ubuntu1~23.04) 12.3.0"', 'arm64': '"aarch64-linux-gnu-gcc-12 (Ubuntu 12.3.0-1ubuntu1~23.04) 12.3.0"'}>
 CONFIG_CEC_GPIO                                 policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_CEC_PIN                                  policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_CEC_PIN_ERROR_INJ                        policy<{'amd64': '-', 'arm64': '-'}>
@@ -140,6 +136,7 @@ CONFIG_FORCE_MAX_ZONEORDER                      policy<{'arm64': '-'}>
 CONFIG_FPGA_M10_BMC_SEC_UPDATE                  policy<{'amd64': 'm', 'arm64': 'm'}>
 CONFIG_FW_UPLOAD                                policy<{'amd64': 'y', 'arm64': 'y'}>
 CONFIG_GCC_SUPPORTS_DYNAMIC_FTRACE_WITH_REGS    policy<{'arm64': '-'}>
+CONFIG_GCC_VERSION                              policy<{'amd64': '120300', 'arm64': '120300'}>
 CONFIG_GENERIC_MSI_IRQ_DOMAIN                   policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_GPIO_AAEON                               policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_GPIO_BCM_XGS_IPROC                       policy<{'arm64': 'm'}>
@@ -209,6 +206,7 @@ CONFIG_NTFS_RW                                  policy<{'amd64': 'n', 'arm64': '
 CONFIG_NVMEM_BCM_OCOTP                          policy<{'arm64': 'm'}>
 CONFIG_OMAP_GPMC                                policy<{'arm64': 'm'}>
 CONFIG_PAGE_SIZE_LESS_THAN_64KB                 policy<{'amd64': 'y', 'arm64': 'y'}>
+CONFIG_PAHOLE_VERSION                           policy<{'amd64': '125', 'arm64': '125'}>
 CONFIG_PCIE_BRCMSTB                             policy<{'arm64': 'm'}>
 CONFIG_PCIE_IPROC                               policy<{'arm64': 'm'}>
 CONFIG_PCIE_IPROC_MSI                           policy<{'arm64': 'y'}>
