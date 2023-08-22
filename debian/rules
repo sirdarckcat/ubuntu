@@ -67,7 +67,7 @@ override_dh_auto_build:
 				$(outdir)/$$flavour/lib/firmware/$(KERNEL_ABI_VERSION)-$$flavour/device-tree/qcom/sa8155p-adp.dtb 		\
 				$(outdir)/$$flavour/lib/firmware/$(KERNEL_ABI_VERSION)-$$flavour/device-tree/qcom/sa8155p-iot-v2-adp.dtb 	\
 				$(outdir)/$$flavour/lib/firmware/$(KERNEL_ABI_VERSION)-$$flavour/device-tree/qcom/sa8155p-v2-1-5-qed.dtb 	\
-				> Image-dtb; 	\
+				> $(outdir)/Image-dtb; 	\
 			mkbootimg --kernel $(outdir)/Image-dtb --ramdisk $(initrd) --pagesize 4096 \
 				--base 0x80000000 --kernel_offset 0x8000 --ramdisk_offset 0x1000000 \
 				--tags_offset 0x100 --cmdline $(CMDLINE) \
