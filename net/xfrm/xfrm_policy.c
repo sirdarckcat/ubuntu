@@ -3528,7 +3528,7 @@ static inline int secpath_has_nontransport(const struct sec_path *sp, int k, int
 }
 
 /* 1 okay. 0 not okay */
-static int check_offload_state_ok(struct net *net, const struct xfrm_tmpl *tmpl, unsigned short family)
+static int check_offload_state_ok(struct net *net, const struct xfrm_tmpl *tmpl, unsigned short family, u32 if_id)
 {
 	struct xfrm_state_offload *xso;
 	struct xfrm_state *x;
@@ -3546,7 +3546,7 @@ static int check_offload_state_ok(struct net *net, const struct xfrm_tmpl *tmpl,
 			if (!(x->xso.flags & XFRM_OFFLOAD_FULL))
 				continue;
 
-			if (xfrm_state_ok(tmpl, x, family)) {
+			if (xfrm_state_ok(tmpl, x, family, if_id)) {
 				found = 1;
 				goto out;
 			}
@@ -3701,7 +3701,7 @@ int __xfrm_policy_check(struct sock *sk, int dir, struct sk_buff *skb,
 			k = xfrm_policy_ok(tpp[i], sp, k, family, if_id);
 			if (k < 0) {
 				if (k == -1) {
-					if (check_offload_state_ok(net, tpp[i], family) == 1)
+					if (check_offload_state_ok(net, tpp[i], family, if_id) == 1)
 						return 1;
 				}
 				if (k < -1)
