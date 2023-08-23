@@ -2,89 +2,12 @@
 
 . debian/debian.env
 
-check_config() {
-        local config=$1
-        local policy=$2
-        local line=$(grep -w -m 1 "$config" "${DEBIAN}/config/annotations")
-        local new_line="$config $policy"
-
-	# The config does not exist in annotation file
-	# so append it
-        if [ "$line" = "" ]
-        then
-                echo "$new_line" >> ${DEBIAN}/config/annotations
-                return
-        fi
-	
-	# The config exists in the annotation file so override it 
-	# for good measure
-        sed -i "s/$line/$new_line/" ${DEBIAN}/config/annotations
-}
-
 # Remove snapdragon from getabis
 sed -i /snapdragon/d ${DEBIAN}/etc/getabis
 
 # We don't build snapdragon
 sed -i '/_snapdragon/d' ${DEBIAN}/rules.d/arm64.mk
 sed -i 's/^\(flavo.*\)\ssnapdragon\(.*\)$/\1\2/' ${DEBIAN}/rules.d/arm64.mk
-
-# Do not enforce DMESG_RESTRICT in focal
-check_config CONFIG_SECURITY_DMESG_RESTRICT "policy<{'amd64': 'n', 'arm64': 'n'}>"
-
-# KCSAN cannot be enabled in focal, so make sure it's disabled in the
-# annotations file as well for all arches.
-check_config CONFIG_KCSAN "policy<{'amd64': '-', 'arm64': '-'}>"
-
-# Drop CONFIG_DEBUG_INFO_DWARF5 because we have a toolchain too old to support
-# this in focal.
-check_config CONFIG_DEBUG_INFO_DWARF5 "policy<{'amd64': 'n', 'arm64': 'n'}>"
-
-# Set CONFIG_DEBUG_INFO_DWARF_TOOLCHAIN_DEFAULT to y across all arches
-check_config CONFIG_DEBUG_INFO_DWARF_TOOLCHAIN_DEFAULT "policy<{'amd64': 'y', 'arm64': 'y'}>"
-
-# Focal does not build for i386 and thus not care. This option was made only available for
-# 64bit/amd64 builds.
-check_config CONFIG_INTEL_IOMMU_SVM "policy<{'amd64': 'y'}>"
-
-# Do not enforce CONFIG_ARM64_BTI_KERNEL in Focal, as it depends on a newer
-# gcc version. Note that the config itself is already removed in an earlier
-# stage when 'make' is run, updating config 'GCC_VERSION' and removing
-# 'ARM64_BTI_KERNEL'.
-check_config CONFIG_ARM64_BTI_KERNEL	"policy<{'arm64': '-'}>"
-
-# Re-enable AUFS
-#
-# We are still supporting AUFS in focal, so make sure to re-enable it.
-# CONFIG_AUFS_EXPORT                              note<LP:1121699>
-check_config CONFIG_AUFS_FS		"policy<{'amd64': 'm', 'arm64': 'm'}>"
-check_config CONFIG_AUFS_HNOTIFY	"policy<{'amd64': 'm', 'arm64': 'm'}>"
-check_config CONFIG_AUFS_EXPORT		"policy<{'amd64': 'y', 'arm64': 'y'}>"
-check_config CONFIG_AUFS_XATTR		"policy<{'amd64': 'y', 'arm64': 'y'}>"
-check_config CONFIG_AUFS_FHSM		"policy<{'amd64': 'n', 'arm64': 'n'}>"
-check_config CONFIG_AUFS_RDU		"policy<{'amd64': 'n', 'arm64': 'n'}>"
-check_config CONFIG_AUFS_DIRREN		"policy<{'amd64': 'y', 'arm64': 'y'}>"
-check_config CONFIG_AUFS_SHWH		"policy<{'amd64': 'n', 'arm64': 'n'}>"
-check_config CONFIG_AUFS_BR_RAMFS	"policy<{'amd64': 'n', 'arm64': 'n'}>"
-check_config CONFIG_AUFS_BR_FUSE	"policy<{'amd64': 'n', 'arm64': 'n'}>"
-check_config CONFIG_AUFS_BR_HFSPLUS	"policy<{'amd64': 'y', 'arm64': 'y'}>"
-check_config CONFIG_AUFS_DEBUG		"policy<{'amd64': 'n', 'arm64': 'n'}>"
-check_config CONFIG_AUFS_BRANCH_MAX_127	"policy<{'amd64': 'y', 'arm64': 'y'}>"
-check_config CONFIG_AUFS_BRANCH_MAX_511	"policy<{'amd64': 'n', 'arm64': 'n'}>"
-check_config CONFIG_AUFS_BRANCH_MAX_1023	"policy<{'amd64': 'n', 'arm64': 'n'}>"
-check_config CONFIG_AUFS_BRANCH_MAX_32767	"policy<{'amd64': 'n', 'arm64': 'n'}>"
-check_config CONFIG_AUFS_HNOTIFY	"policy<{'amd64': 'n', 'arm64': 'n'}>"
-check_config CONFIG_AUFS_BDEV_LOOP      "policy<{'amd64': 'y', 'arm64': 'y'}>"
-check_config CONFIG_AUFS_INO_T_64       "policy<{'amd64': 'y', 'arm64': 'y'}>"
-check_config CONFIG_AUFS_SBILIST        "policy<{'amd64': 'y', 'arm64': 'y'}>"
-
-check_config CONFIG_CC_HAS_ASM_GOTO_OUTPUT	"policy<{'amd64': '-', 'arm64': '-'}>"
-check_config CONFIG_CC_HAS_ASM_GOTO_TIED_OUTPUT "policy<{'amd64': '-', 'arm64': '-'}>"
-check_config CONFIG_CC_HAS_SLS		"policy<{'amd64': '-'}>"
-check_config CONFIG_CC_HAS_ZERO_CALL_USED_REGS	"policy<{'amd64': '-', 'arm64': '-'}>"
-check_config CONFIG_CC_HAS_KASAN_SW_TAGS	"policy<{'arm64': '-'}>"
-check_config CONFIG_HAVE_KCSAN_COMPILER		"policy<{'amd64': '-', 'arm64': '-'}>"
-check_config CONFIG_ZERO_CALL_USED_REGS "policy<{'amd64': '-', 'arm64': '-'}>"
-check_config CONFIG_SLS			"policy<{'amd64': '-'}>"
 
 # We only build the lowlatency/lowlatency-64k flavours
 sed -i '/^flavours.*$/d' ${DEBIAN}/rules.d/amd64.mk
