@@ -4,52 +4,11 @@
 # FLAVOUR: amd64-lowlatency arm64-lowlatency arm64-lowlatency-64k
 # FLAVOUR_DEP: {'amd64-lowlatency': 'amd64-generic', 'arm64-lowlatency': 'arm64-generic', 'arm64-lowlatency-64k': 'arm64-generic-64k'}
 
-include "../../debian.master/config/annotations"
-
-CONFIG_HZ_1000                                  policy<{'amd64': 'y', 'arm64': 'y'}>
-CONFIG_HZ_1000                                  note<'HZ for lowlatency must be set to 1000 to provide better system responsiveness'>
-
-CONFIG_HZ_250                                   policy<{'amd64': 'n', 'arm64': 'n'}>
-CONFIG_HZ_250                                   note<'Override default HZ used in generic'>
-
-CONFIG_LATENCYTOP                               policy<{'amd64': 'y', 'arm64': 'y'}>
-CONFIG_LATENCYTOP                               note<'https://lists.ubuntu.com/archives/kernel-team/2014-July/045006.html, LP#1655986'>
-
-CONFIG_PREEMPT                                  policy<{'amd64': 'y', 'arm64': 'y'}>
-CONFIG_PREEMPT                                  note<'Enable fully preemptible kernel'>
-
-CONFIG_PREEMPT_VOLUNTARY                        policy<{'amd64': 'n', 'arm64': 'n'}>
-CONFIG_PREEMPT_VOLUNTARY                        note<'Disable voluntary preemption model'>
+include "../../debian.lowlatency/config/annotations"
 
 
 # ---- Annotations without notes ----
 
-CONFIG_ARCH_INLINE_READ_LOCK                    policy<{'arm64': '-'}>
-CONFIG_ARCH_INLINE_READ_LOCK_BH                 policy<{'arm64': '-'}>
-CONFIG_ARCH_INLINE_READ_LOCK_IRQ                policy<{'arm64': '-'}>
-CONFIG_ARCH_INLINE_READ_LOCK_IRQSAVE            policy<{'arm64': '-'}>
-CONFIG_ARCH_INLINE_READ_UNLOCK                  policy<{'arm64': '-'}>
-CONFIG_ARCH_INLINE_READ_UNLOCK_BH               policy<{'arm64': '-'}>
-CONFIG_ARCH_INLINE_READ_UNLOCK_IRQ              policy<{'arm64': '-'}>
-CONFIG_ARCH_INLINE_READ_UNLOCK_IRQRESTORE       policy<{'arm64': '-'}>
-CONFIG_ARCH_INLINE_SPIN_LOCK                    policy<{'arm64': '-'}>
-CONFIG_ARCH_INLINE_SPIN_LOCK_BH                 policy<{'arm64': '-'}>
-CONFIG_ARCH_INLINE_SPIN_LOCK_IRQ                policy<{'arm64': '-'}>
-CONFIG_ARCH_INLINE_SPIN_LOCK_IRQSAVE            policy<{'arm64': '-'}>
-CONFIG_ARCH_INLINE_SPIN_TRYLOCK                 policy<{'arm64': '-'}>
-CONFIG_ARCH_INLINE_SPIN_TRYLOCK_BH              policy<{'arm64': '-'}>
-CONFIG_ARCH_INLINE_SPIN_UNLOCK                  policy<{'arm64': '-'}>
-CONFIG_ARCH_INLINE_SPIN_UNLOCK_BH               policy<{'arm64': '-'}>
-CONFIG_ARCH_INLINE_SPIN_UNLOCK_IRQ              policy<{'arm64': '-'}>
-CONFIG_ARCH_INLINE_SPIN_UNLOCK_IRQRESTORE       policy<{'arm64': '-'}>
-CONFIG_ARCH_INLINE_WRITE_LOCK                   policy<{'arm64': '-'}>
-CONFIG_ARCH_INLINE_WRITE_LOCK_BH                policy<{'arm64': '-'}>
-CONFIG_ARCH_INLINE_WRITE_LOCK_IRQ               policy<{'arm64': '-'}>
-CONFIG_ARCH_INLINE_WRITE_LOCK_IRQSAVE           policy<{'arm64': '-'}>
-CONFIG_ARCH_INLINE_WRITE_UNLOCK                 policy<{'arm64': '-'}>
-CONFIG_ARCH_INLINE_WRITE_UNLOCK_BH              policy<{'arm64': '-'}>
-CONFIG_ARCH_INLINE_WRITE_UNLOCK_IRQ             policy<{'arm64': '-'}>
-CONFIG_ARCH_INLINE_WRITE_UNLOCK_IRQRESTORE      policy<{'arm64': '-'}>
 CONFIG_ARM64_BTI_KERNEL                         policy<{'arm64': '-'}>
 CONFIG_AS_VERSION                               policy<{'amd64': '23400', 'arm64': '23400'}>
 CONFIG_AUFS_BDEV_LOOP                           policy<{'amd64': 'y', 'arm64': 'y'}>
@@ -77,53 +36,13 @@ CONFIG_CC_HAS_KASAN_SW_TAGS                     policy<{'arm64': '-'}>
 CONFIG_CC_HAS_SLS                               policy<{'amd64': '-'}>
 CONFIG_CC_HAS_ZERO_CALL_USED_REGS               policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_CC_VERSION_TEXT                          policy<{'amd64': '"x86_64-linux-gnu-gcc (Ubuntu 9.4.0-1ubuntu1~20.04.1) 9.4.0"', 'arm64': '"aarch64-linux-gnu-gcc (Ubuntu 9.4.0-1ubuntu1~20.04.1) 9.4.0"'}>
-CONFIG_CEC_GPIO                                 policy<{'amd64': 'm', 'arm64': 'm'}>
-CONFIG_CEC_PIN                                  policy<{'amd64': 'y', 'arm64': 'y'}>
-CONFIG_CEC_PIN_ERROR_INJ                        policy<{'amd64': 'n', 'arm64': 'n'}>
-CONFIG_COMEDI_TESTS_EXAMPLE                     policy<{'amd64': 'n', 'arm64': 'm'}>
-CONFIG_COMEDI_TESTS_NI_ROUTES                   policy<{'amd64': 'n', 'arm64': 'm'}>
 CONFIG_DEBUG_INFO_DWARF5                        policy<{'amd64': 'n', 'arm64': 'n'}>
 CONFIG_DEBUG_INFO_DWARF_TOOLCHAIN_DEFAULT       policy<{'amd64': 'y', 'arm64': 'y'}>
-CONFIG_DEBUG_PREEMPT                            policy<{'amd64': 'n', 'arm64': 'n'}>
 CONFIG_GCC_VERSION                              policy<{'amd64': '90400', 'arm64': '90400'}>
 CONFIG_HAVE_KCSAN_COMPILER                      policy<{'amd64': '-', 'arm64': '-'}>
-CONFIG_HZ                                       policy<{'amd64': '1000', 'arm64': '1000'}>
-CONFIG_INLINE_READ_LOCK                         policy<{'arm64': '-'}>
-CONFIG_INLINE_READ_LOCK_BH                      policy<{'arm64': '-'}>
-CONFIG_INLINE_READ_LOCK_IRQ                     policy<{'arm64': '-'}>
-CONFIG_INLINE_READ_LOCK_IRQSAVE                 policy<{'arm64': '-'}>
-CONFIG_INLINE_READ_UNLOCK                       policy<{'amd64': '-', 'arm64': '-'}>
-CONFIG_INLINE_READ_UNLOCK_BH                    policy<{'arm64': '-'}>
-CONFIG_INLINE_READ_UNLOCK_IRQ                   policy<{'amd64': '-', 'arm64': '-'}>
-CONFIG_INLINE_READ_UNLOCK_IRQRESTORE            policy<{'arm64': '-'}>
-CONFIG_INLINE_SPIN_LOCK                         policy<{'arm64': '-'}>
-CONFIG_INLINE_SPIN_LOCK_BH                      policy<{'arm64': '-'}>
-CONFIG_INLINE_SPIN_LOCK_IRQ                     policy<{'arm64': '-'}>
-CONFIG_INLINE_SPIN_LOCK_IRQSAVE                 policy<{'arm64': '-'}>
-CONFIG_INLINE_SPIN_TRYLOCK                      policy<{'arm64': '-'}>
-CONFIG_INLINE_SPIN_TRYLOCK_BH                   policy<{'arm64': '-'}>
-CONFIG_INLINE_SPIN_UNLOCK_BH                    policy<{'arm64': '-'}>
-CONFIG_INLINE_SPIN_UNLOCK_IRQ                   policy<{'amd64': '-', 'arm64': '-'}>
-CONFIG_INLINE_SPIN_UNLOCK_IRQRESTORE            policy<{'arm64': '-'}>
-CONFIG_INLINE_WRITE_LOCK                        policy<{'arm64': '-'}>
-CONFIG_INLINE_WRITE_LOCK_BH                     policy<{'arm64': '-'}>
-CONFIG_INLINE_WRITE_LOCK_IRQ                    policy<{'arm64': '-'}>
-CONFIG_INLINE_WRITE_LOCK_IRQSAVE                policy<{'arm64': '-'}>
-CONFIG_INLINE_WRITE_UNLOCK                      policy<{'amd64': '-', 'arm64': '-'}>
-CONFIG_INLINE_WRITE_UNLOCK_BH                   policy<{'arm64': '-'}>
-CONFIG_INLINE_WRITE_UNLOCK_IRQ                  policy<{'amd64': '-', 'arm64': '-'}>
-CONFIG_INLINE_WRITE_UNLOCK_IRQRESTORE           policy<{'arm64': '-'}>
 CONFIG_KCSAN                                    policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_LD_VERSION                               policy<{'amd64': '23400', 'arm64': '23400'}>
 CONFIG_PAHOLE_VERSION                           policy<{'amd64': '121', 'arm64': '121'}>
-CONFIG_PREEMPTION                               policy<{'amd64': 'y', 'arm64': 'y'}>
-CONFIG_PREEMPT_COUNT                            policy<{'amd64': 'y', 'arm64': 'y'}>
-CONFIG_PREEMPT_DYNAMIC                          policy<{'amd64': 'y'}>
-CONFIG_PREEMPT_RCU                              policy<{'amd64': 'y', 'arm64': 'y'}>
-CONFIG_PREEMPT_TRACER                           policy<{'amd64': 'n', 'arm64': 'n'}>
 CONFIG_SECURITY_DMESG_RESTRICT                  policy<{'amd64': 'n', 'arm64': 'n'}>
 CONFIG_SLS                                      policy<{'amd64': '-'}>
-CONFIG_TASKS_RCU                                policy<{'amd64': 'y', 'arm64': 'y'}>
-CONFIG_TEST_DIV64                               policy<{'amd64': 'm', 'arm64': 'm'}>
-CONFIG_UNINLINE_SPIN_UNLOCK                     policy<{'amd64': 'y', 'arm64': 'y'}>
 CONFIG_ZERO_CALL_USED_REGS                      policy<{'amd64': '-', 'arm64': '-'}>
