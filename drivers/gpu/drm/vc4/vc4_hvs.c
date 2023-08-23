@@ -241,7 +241,7 @@ static int vc6_hvs_debugfs_dlist(struct seq_file *m, void *data)
 
 		drm_printf(&p, "HVS chan %u:\n", i);
 
-		active_dlist = VC4_GET_FIELD(SCALER6_DISPX_DL(i),
+		active_dlist = VC4_GET_FIELD(HVS_READ(SCALER6_DISPX_DL(i)),
 					     SCALER6_DISPX_DL_LACT);
 		for (j = active_dlist; j < 256; j++) {
 			u32 dlist_word;
