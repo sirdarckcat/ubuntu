@@ -26,9 +26,9 @@ fi
 SKIP_RULES_D=${SKIP_RULES_D:-}
 
 #
-# Update configs from master
+# Update configs from master (SMB: no longer, instead include).
 #
-rsync -avc --delete "${DEBIAN_MASTER}/config/" "${DEBIAN}/config"
+# rsync -avc --delete "${DEBIAN_MASTER}/config/" "${DEBIAN}/config"
 
 #
 # Update package and DTB settings from master.
