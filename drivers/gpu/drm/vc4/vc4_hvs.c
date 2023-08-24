@@ -1818,6 +1818,10 @@ static int vc6_hvs_hw_init(struct vc4_hvs *hvs)
 		  VC4_SET_FIELD(8, SCALER6_CONTROL_PF_LINES) |
 		  VC4_SET_FIELD(15, SCALER6_CONTROL_MAX_REQS));
 
+	/* Set HVS arbiter priority to max */
+	HVS_WRITE(SCALER6_PRI_MAP0, 0xffffffff);
+	HVS_WRITE(SCALER6_PRI_MAP1, 0xffffffff);
+
 	for (i = 0; i < 6; i++) {
 		coeffs = &csc_coeffs[i / 3][i % 3];
 
