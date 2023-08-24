@@ -1,79 +1,20 @@
 ---
-name: PR Check
-
 on:
   pull_request_target:
     types:
       - edited
       - opened
-      - reopened
       - synchronize
 
-env:
-  HTTP_CLONE_URL: ${{ github.event.pull_request.head.repo.clone_url }}
-  CHECKOUT_REF: ${{ github.event.pull_request.head.ref }}
-  CHECKOUT_BASE: ${{ github.event.pull_request.base.ref }}
-  CBD_USER: jenkins
-  CBD_HOST: ${{ secrets.CBD_HOST }}
-
 jobs:
-  pr_check:
-    container:
-      # Actual image, not the Action label
-      image: 10.131.201.69/actions/tnt_jammy:latest
-      volumes:
-        - /data/repos:/repos
-    steps:
-      # LP: #2024236
-      # - name: SSH Setup
-      #   env:
-      #     SSH_AUTH_SOCK: /tmp/ssh_agent.sock
-      #   run: |
-      #     ssh-agent -a $SSH_AUTH_SOCK > /dev/null
-      #     echo "${{ secrets.CBD_BOT_KEY }}" | base64 -d | ssh-add -
-      #     mkdir -p ~/.ssh && chmod 700 ~/.ssh
-      #     ssh-keyscan -H $CBD_HOST > ~/.ssh/known_hosts
-      #     chmod 600 ~/.ssh/known_hosts
-      # TODO: our actions/checkout should add --reference support
-      - name: Checkout w/ Reference
-        run: |
-          git clone $HTTP_CLONE_URL --reference /repos/linux --reference /repos/jammy-linux-oem .
-          git checkout $CHECKOUT_REF
-          git fetch origin $CHECKOUT_BASE
-      # TODO merge s-o-b check into checkpatch
-      - step:
-        name: Sign-off Check
-        uses: actions/tnt-sign-off-check@v1
-        with:
-          check-owner-sob: false
-      - name: Ubuntu Checkpatch
-        uses: actions/tnt-ubuntu-checkpatch@v1
-        with:
-          verbose: true
-      # LP: #2024236
-      # - name: Submit Build
-      #   id: build
-      #   env:
-      #     SSH_AUTH_SOCK: /tmp/ssh_agent.sock
-      #   # TODO jammy.git should be dynamic
-      #   run: |
-      #     echo "Submitting build request"
-      #     raw_output=$(git push $CBD_USER@$CBD_HOST:jammy.git -o vars -o no-wait 2>&1)
-      #     pattern="remote: CBD_JOB='([a-zA-Z0-9\-]+)'"
-      #     job_id=$(echo "$raw_output" | sed -nr "s/.*CBD_JOB='([a-zA-Z0-9\-]+)'.*/\1/p")
-      #     echo "::set-output name=job_id::$job_id"
-      #     echo "Builder assigned job id: $job_id"
-      # - name: Wait for Build
-      #   env:
-      #     SSH_AUTH_SOCK: /tmp/ssh_agent.sock
-      #   # The logging mechanism doesn't utilize \r so discard all output to avoid
-      #   # filling the logs with junk.
-      #   run: |
-      #     ssh $CBD_USER@$CBD_HOST wait ${{ steps.build.outputs.job_id }} 2>&1 > /dev/null
-      #   shell: bash
-      # # TODO this would be dynamic
-      # - name: "Arch Check: amd64"
-      #   env:
-      #     SSH_AUTH_SOCK: /tmp/ssh_agent.sock
-      #   run: |
-      #     ssh $CBD_USER@$CBD_HOST cat ${{ steps.build.outputs.job_id }}/amd64/BUILD-OK
+  sru-checks:
+    uses:  kernel/kernel-ci/.gitea/workflows/sru-kernel.yaml@v1
+    with:
+      clone_head_url: ${{ github.event.pull_request.head.repo.clone_url }}
+      clone_base_url: ${{ github.event.pull_request.base.repo.clone_url }}
+      head_ref: ${{ github.event.pull_request.head.ref }}
+      base_ref: ${{ github.event.pull_request.base.ref }}
+    secrets:
+      cbd_user: ${{ secrets.CBD_BOT_USER }}
+      cbd_key: ${{ secrets.CBD_BOT_KEY }}
+      cbd_host: ${{ secrets.CBD_HOST }}
