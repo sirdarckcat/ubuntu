@@ -1267,7 +1267,7 @@ next_pdu:
 
 		/* do this reconnect at the very end after processing all MIDs */
 		if (pending_reconnect)
-			cifs_reconnect(server);
+			cifs_reconnect(server, true);
 
 	} /* end while !EXITING */
 
