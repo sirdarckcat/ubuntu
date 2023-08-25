@@ -21,6 +21,7 @@ enum cc_vendor cc_vendor __ro_after_init = CC_VENDOR_NONE;
 SYM_PIC_ALIAS(cc_vendor);
 u64 cc_mask __ro_after_init;
 SYM_PIC_ALIAS(cc_mask);
+bool cc_attr_cpu_hotplug_disabled __ro_after_init = true;
 
 static struct cc_attr_flags {
 	__u64 host_sev_snp	: 1,
@@ -34,6 +35,10 @@ static bool noinstr intel_cc_platform_has(enum cc_attr attr)
 	case CC_ATTR_GUEST_MEM_ENCRYPT:
 	case CC_ATTR_MEM_ENCRYPT:
 		return true;
+
+	case CC_ATTR_HOTPLUG_DISABLED:
+		return cc_attr_cpu_hotplug_disabled;
+
 	default:
 		return false;
 	}
