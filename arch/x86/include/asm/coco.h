@@ -10,6 +10,8 @@ enum cc_vendor {
 	CC_VENDOR_INTEL,
 };
 
+extern bool cc_attr_cpu_hotplug_disabled;
+
 #ifdef CONFIG_ARCH_HAS_CC_PLATFORM
 extern enum cc_vendor cc_vendor;
 void cc_set_mask(u64 mask);
