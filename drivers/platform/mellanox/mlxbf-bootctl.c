@@ -67,6 +67,168 @@ static const char * const mlxbf_bootctl_lifecycle_states[] = {
 #define MLXBF_RSH_SCRATCH_BUF_CTL_OFF	0
 #define MLXBF_RSH_SCRATCH_BUF_DATA_OFF	0x10
 
+static int rsh_log_clear_on_read;
+module_param(rsh_log_clear_on_read, int, 0644);
+MODULE_PARM_DESC(rsh_log_clear_on_read, "Clear rshim logging buffer after read.");
+
+/* Log header format. */
+#define RSH_LOG_TYPE_SHIFT	56
+#define RSH_LOG_LEN_SHIFT	48
+#define RSH_LOG_LEVEL_SHIFT	0
+
+/* Module ID and type used here. */
+#define BF_RSH_LOG_TYPE_UNKNOWN		0x00ULL
+#define BF_RSH_LOG_TYPE_PANIC		0x01ULL
+#define BF_RSH_LOG_TYPE_EXCEPTION	0x02ULL
+#define BF_RSH_LOG_TYPE_UNUSED		0x03ULL
+#define BF_RSH_LOG_TYPE_MSG		0x04ULL
+
+/* Utility macro. */
+#define BF_RSH_LOG_MOD_MASK		0x0FULL
+#define BF_RSH_LOG_MOD_SHIFT		60
+#define BF_RSH_LOG_TYPE_MASK		0x0FULL
+#define BF_RSH_LOG_TYPE_SHIFT		56
+#define BF_RSH_LOG_LEN_MASK		0x7FULL
+#define BF_RSH_LOG_LEN_SHIFT		48
+#define BF_RSH_LOG_ARG_MASK		0xFFFFFFFFULL
+#define BF_RSH_LOG_ARG_SHIFT		16
+#define BF_RSH_LOG_HAS_ARG_MASK		0xFFULL
+#define BF_RSH_LOG_HAS_ARG_SHIFT	8
+#define BF_RSH_LOG_LEVEL_MASK		0xFFULL
+#define BF_RSH_LOG_LEVEL_SHIFT		0
+#define BF_RSH_LOG_PC_MASK		0xFFFFFFFFULL
+#define BF_RSH_LOG_PC_SHIFT		0
+#define BF_RSH_LOG_SYNDROME_MASK	0xFFFFFFFFULL
+#define BF_RSH_LOG_SYNDROME_SHIFT	0
+
+#define BF_RSH_LOG_HEADER_GET(f, h) \
+	(((h) >> BF_RSH_LOG_##f##_SHIFT) & BF_RSH_LOG_##f##_MASK)
+
+/* Log module */
+const char * const mlxbf_rsh_log_mod[] = {
+	"MISC", "BL1", "BL2", "BL2R", "BL31", "UEFI"
+};
+
+#define AARCH64_MRS_REG_SHIFT 5
+#define AARCH64_MRS_REG_MASK  0xffff
+#define AARCH64_ESR_ELX_EXCEPTION_CLASS_SHIFT 26
+
+struct rsh_log_reg {
+	char *name;
+	u32 opcode;
+} rsh_log_reg;
+
+static struct rsh_log_reg rsh_log_regs[] = {
+	{"actlr_el1",		0b1100000010000001},
+	{"actlr_el2",		0b1110000010000001},
+	{"actlr_el3",		0b1111000010000001},
+	{"afsr0_el1",		0b1100001010001000},
+	{"afsr0_el2",		0b1110001010001000},
+	{"afsr0_el3",		0b1111001010001000},
+	{"afsr1_el1",		0b1100001010001001},
+	{"afsr1_el2",		0b1110001010001001},
+	{"afsr1_el3",		0b1111001010001001},
+	{"amair_el1",		0b1100010100011000},
+	{"amair_el2",		0b1110010100011000},
+	{"amair_el3",		0b1111010100011000},
+	{"ccsidr_el1",		0b1100100000000000},
+	{"clidr_el1",		0b1100100000000001},
+	{"cntkctl_el1",		0b1100011100001000},
+	{"cntp_ctl_el0",	0b1101111100010001},
+	{"cntp_cval_el0",	0b1101111100010010},
+	{"cntv_ctl_el0",	0b1101111100011001},
+	{"cntv_cval_el0",	0b1101111100011010},
+	{"contextidr_el1",	0b1100011010000001},
+	{"cpacr_el1",		0b1100000010000010},
+	{"cptr_el2",		0b1110000010001010},
+	{"cptr_el3",		0b1111000010001010},
+	{"vtcr_el2",		0b1110000100001010},
+	{"ctr_el0",		0b1101100000000001},
+	{"currentel",		0b1100001000010010},
+	{"dacr32_el2",		0b1110000110000000},
+	{"daif",		0b1101101000010001},
+	{"dczid_el0",		0b1101100000000111},
+	{"dlr_el0",		0b1101101000101001},
+	{"dspsr_el0",		0b1101101000101000},
+	{"elr_el1",		0b1100001000000001},
+	{"elr_el2",		0b1110001000000001},
+	{"elr_el3",		0b1111001000000001},
+	{"esr_el1",		0b1100001010010000},
+	{"esr_el2",		0b1110001010010000},
+	{"esr_el3",		0b1111001010010000},
+	{"esselr_el1",		0b1101000000000000},
+	{"far_el1",		0b1100001100000000},
+	{"far_el2",		0b1110001100000000},
+	{"far_el3",		0b1111001100000000},
+	{"fpcr",		0b1101101000100000},
+	{"fpexc32_el2",		0b1110001010011000},
+	{"fpsr",		0b1101101000100001},
+	{"hacr_el2",		0b1110000010001111},
+	{"har_el2",		0b1110000010001000},
+	{"hpfar_el2",		0b1110001100000100},
+	{"hstr_el2",		0b1110000010001011},
+	{"far_el1",		0b1100001100000000},
+	{"far_el2",		0b1110001100000000},
+	{"far_el3",		0b1111001100000000},
+	{"hcr_el2",		0b1110000010001000},
+	{"hpfar_el2",		0b1110001100000100},
+	{"id_aa64afr0_el1",	0b1100000000101100},
+	{"id_aa64afr1_el1",	0b1100000000101101},
+	{"id_aa64dfr0_el1",	0b1100000000101100},
+	{"id_aa64isar0_el1",	0b1100000000110000},
+	{"id_aa64isar1_el1",	0b1100000000110001},
+	{"id_aa64mmfr0_el1",	0b1100000000111000},
+	{"id_aa64mmfr1_el1",	0b1100000000111001},
+	{"id_aa64pfr0_el1",	0b1100000000100000},
+	{"id_aa64pfr1_el1",	0b1100000000100001},
+	{"ifsr32_el2",		0b1110001010000001},
+	{"isr_el1",		0b1100011000001000},
+	{"mair_el1",		0b1100010100010000},
+	{"mair_el2",		0b1110010100010000},
+	{"mair_el3",		0b1111010100010000},
+	{"midr_el1",		0b1100000000000000},
+	{"mpidr_el1",		0b1100000000000101},
+	{"nzcv",		0b1101101000010000},
+	{"revidr_el1",		0b1100000000000110},
+	{"rmr_el3",		0b1111011000000010},
+	{"par_el1",		0b1100001110100000},
+	{"rvbar_el3",		0b1111011000000001},
+	{"scr_el3",		0b1111000010001000},
+	{"sctlr_el1",		0b1100000010000000},
+	{"sctlr_el2",		0b1110000010000000},
+	{"sctlr_el3",		0b1111000010000000},
+	{"sp_el0",		0b1100001000001000},
+	{"sp_el1",		0b1110001000001000},
+	{"spsel",		0b1100001000010000},
+	{"spsr_abt",		0b1110001000011001},
+	{"spsr_el1",		0b1100001000000000},
+	{"spsr_el2",		0b1110001000000000},
+	{"spsr_el3",		0b1111001000000000},
+	{"spsr_fiq",		0b1110001000011011},
+	{"spsr_irq",		0b1110001000011000},
+	{"spsr_und",		0b1110001000011010},
+	{"tcr_el1",		0b1100000100000010},
+	{"tcr_el2",		0b1110000100000010},
+	{"tcr_el3",		0b1111000100000010},
+	{"tpidr_el0",		0b1101111010000010},
+	{"tpidr_el1",		0b1100011010000100},
+	{"tpidr_el2",		0b1110011010000010},
+	{"tpidr_el3",		0b1111011010000010},
+	{"tpidpro_el0",		0b1101111010000011},
+	{"vbar_el1",		0b1100011000000000},
+	{"vbar_el2",		0b1110011000000000},
+	{"vbar_el3",		0b1111011000000000},
+	{"vmpidr_el2",		0b1110000000000101},
+	{"vpidr_el2",		0b1110000000000000},
+	{"ttbr0_el1",		0b1100000100000000},
+	{"ttbr0_el2",		0b1110000100000000},
+	{"ttbr0_el3",		0b1111000100000000},
+	{"ttbr1_el1",		0b1100000100000001},
+	{"vtcr_el2",		0b1110000100001010},
+	{"vttbr_el2",		0b1110000100001000},
+	{NULL,			0b0000000000000000},
+};
+
 /* Log message levels. */
 enum {
 	MLXBF_RSH_LOG_INFO,
@@ -889,13 +1051,198 @@ static ssize_t mfg_lock_store(struct device *dev,
 	return count;
 }
 
+static char *rsh_log_get_reg_name(u64 opcode)
+{
+	struct rsh_log_reg *reg = rsh_log_regs;
+
+	while (reg->name) {
+		if (reg->opcode == opcode)
+			return reg->name;
+		reg++;
+	}
+
+	return "unknown";
+}
+
+static int rsh_log_show_crash(u64 hdr, char *buf, int size)
+{
+	int i, module, type, len, n = 0;
+	u32 pc, syndrome, ec;
+	u64 opcode, data;
+	char *p = buf;
+
+	module = BF_RSH_LOG_HEADER_GET(MOD, hdr);
+	if (module >= ARRAY_SIZE(mlxbf_rsh_log_mod))
+		module = 0;
+	type = BF_RSH_LOG_HEADER_GET(TYPE, hdr);
+	len = BF_RSH_LOG_HEADER_GET(LEN, hdr);
+
+	if (type == BF_RSH_LOG_TYPE_EXCEPTION) {
+		syndrome = BF_RSH_LOG_HEADER_GET(SYNDROME, hdr);
+		ec = syndrome >> AARCH64_ESR_ELX_EXCEPTION_CLASS_SHIFT;
+		n = snprintf(p, size, " Exception(%s): syndrome = 0x%x%s\n",
+			    mlxbf_rsh_log_mod[module], syndrome,
+			    (ec == 0x24 || ec == 0x25) ? "(Data Abort)" :
+			    (ec == 0x2f) ? "(SError)" : "");
+	} else if (type == BF_RSH_LOG_TYPE_PANIC) {
+		pc = BF_RSH_LOG_HEADER_GET(PC, hdr);
+		n = snprintf(p, size,
+			     " PANIC(%s): PC = 0x%x\n", mlxbf_rsh_log_mod[module],
+			     pc);
+	}
+	if (n > 0) {
+		p += n;
+		size -= n;
+	}
+
+	/*
+	 * Read the registers in a loop. 'len' is the total number of words in
+	 * 8-bytes. Two words are read in each loop.
+	 */
+	for (i = 0; i < len/2; i++) {
+		opcode = readq(mlxbf_rsh_scratch_buf_data);
+		data = readq(mlxbf_rsh_scratch_buf_data);
+
+		opcode = (opcode >> AARCH64_MRS_REG_SHIFT) &
+			AARCH64_MRS_REG_MASK;
+		n = snprintf(p, size,
+			     "   %-16s0x%llx\n", rsh_log_get_reg_name(opcode),
+			     (unsigned long long)data);
+		if (n > 0) {
+			p += n;
+			size -= n;
+		}
+	}
+
+	return p - buf;
+}
+
+static int rsh_log_format_msg(char *buf, int size, const char *msg, ...)
+{
+	va_list args;
+	int len;
+
+	va_start(args, msg);
+	len = vsnprintf(buf, size, msg, args);
+	va_end(args);
+
+	return len;
+}
+
+static int rsh_log_show_msg(u64 hdr, char *buf, int size)
+{
+	int has_arg = BF_RSH_LOG_HEADER_GET(HAS_ARG, hdr);
+	int level = BF_RSH_LOG_HEADER_GET(LEVEL, hdr);
+	int module = BF_RSH_LOG_HEADER_GET(MOD, hdr);
+	int len = BF_RSH_LOG_HEADER_GET(LEN, hdr);
+	u32 arg = BF_RSH_LOG_HEADER_GET(ARG, hdr);
+	char *msg, *p;
+	u64 data;
+
+	if (len <= 0)
+		return -EINVAL;
+
+	if (module >= ARRAY_SIZE(mlxbf_rsh_log_mod))
+		module = 0;
+
+	if (level >= ARRAY_SIZE(mlxbf_rsh_log_level))
+		level = 0;
+
+	msg = kmalloc(len * sizeof(u64) + 1, GFP_KERNEL);
+	if (!msg)
+		return 0;
+	p = msg;
+
+	while (len--) {
+		data = readq(mlxbf_rsh_scratch_buf_data);
+		memcpy(p, &data, sizeof(data));
+		p += sizeof(data);
+	}
+	*p = '\0';
+	if (!has_arg) {
+		len = snprintf(buf, size, " %s[%s]: %s\n", mlxbf_rsh_log_level[level],
+			       mlxbf_rsh_log_mod[module], msg);
+	} else {
+		len = snprintf(buf, size, " %s[%s]: ", mlxbf_rsh_log_level[level],
+			       mlxbf_rsh_log_mod[module]);
+		len += rsh_log_format_msg(buf + len, size - len, msg, arg);
+		len += snprintf(buf + len, size - len, "\n");
+	}
+
+	kfree(msg);
+	return len;
+}
+
+static ssize_t rsh_log_show(struct device *dev,
+			    struct device_attribute *attr,
+			    char *buf)
+{
+	u64 hdr;
+	char *p = buf;
+	int i, n, rc, idx, type, len, size = PAGE_SIZE;
+
+	if (!mlxbf_rsh_semaphore || !mlxbf_rsh_scratch_buf_ctl)
+		return -EOPNOTSUPP;
+
+	/* Take the semaphore. */
+	rc = mlxbf_rsh_log_sem_lock();
+	if (rc)
+		return rc;
+
+	/* Save the current index and read from 0. */
+	idx = readq(mlxbf_rsh_scratch_buf_ctl) & RSH_SCRATCH_BUF_CTL_IDX_MASK;
+	if (!idx)
+		goto done;
+	writeq(0, mlxbf_rsh_scratch_buf_ctl);
+
+	i = 0;
+	while (i < idx) {
+		hdr = readq(mlxbf_rsh_scratch_buf_data);
+		type = BF_RSH_LOG_HEADER_GET(TYPE, hdr);
+		len = BF_RSH_LOG_HEADER_GET(LEN, hdr);
+		i += 1 + len;
+		if (i > idx)
+			break;
+
+		switch (type) {
+		case BF_RSH_LOG_TYPE_PANIC:
+		case BF_RSH_LOG_TYPE_EXCEPTION:
+			n = rsh_log_show_crash(hdr, p, size);
+			p += n;
+			size -= n;
+			break;
+		case BF_RSH_LOG_TYPE_MSG:
+			n = rsh_log_show_msg(hdr, p, size);
+			p += n;
+			size -= n;
+			break;
+		default:
+			/* Drain this message. */
+			while (len--)
+				(void) readq(mlxbf_rsh_scratch_buf_data);
+			break;
+		}
+	}
+
+	if (rsh_log_clear_on_read)
+		writeq(0, mlxbf_rsh_scratch_buf_ctl);
+	else
+		writeq(idx, mlxbf_rsh_scratch_buf_ctl);
+
+done:
+	/* Release the semaphore. */
+	mlxbf_rsh_log_sem_unlock();
+
+	return p - buf;
+}
+
 static DEVICE_ATTR_RW(post_reset_wdog);
 static DEVICE_ATTR_RW(reset_action);
 static DEVICE_ATTR_RW(second_reset_action);
 static DEVICE_ATTR_RO(lifecycle_state);
 static DEVICE_ATTR_RO(secure_boot_fuse_state);
 static DEVICE_ATTR_WO(fw_reset);
-static DEVICE_ATTR_WO(rsh_log);
+static DEVICE_ATTR_RW(rsh_log);
 static DEVICE_ATTR_RW(large_icm);
 static DEVICE_ATTR_WO(os_up);
 static DEVICE_ATTR_RW(oob_mac);
