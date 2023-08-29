@@ -1125,7 +1125,6 @@ struct dwc3_scratchpad_array {
  * @dis_split_quirk: set to disable split boundary.
  * @wakeup_configured: set if the device is configured for remote wakeup.
  * @suspended: set to track suspend event due to U3/L2.
- * @dis_in_autoretry_quirk: set to disable USB3 IN bulk burst autoretries.
  * @imod_interval: set the interrupt moderation interval in 250ns
  *			increments or 0 to disable.
  * @max_cfg_eps: current max number of IN eps used across all USB configs.
@@ -1344,7 +1343,6 @@ struct dwc3 {
 	unsigned		async_callbacks:1;
 	unsigned		wakeup_configured:1;
 	unsigned		suspended:1;
-	unsigned		dis_in_autoretry_quirk:1;
 
 	u16			imod_interval;
 

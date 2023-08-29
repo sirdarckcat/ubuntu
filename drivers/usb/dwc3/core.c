@@ -1559,9 +1559,6 @@ static void dwc3_get_properties(struct dwc3 *dwc)
 	dwc->dis_split_quirk = device_property_read_bool(dev,
 				"snps,dis-split-quirk");
 
-	dwc->dis_in_autoretry_quirk = device_property_read_bool(dev,
-				"snps,dis-in-autoretry-quirk");
-
 	device_property_read_u8(dev, "snps,axi-pipe-limit",
 				   &axi_pipe_limit);
 
