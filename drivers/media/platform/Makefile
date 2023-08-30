@@ -23,7 +23,6 @@ obj-y += qcom/
 obj-y += raspberrypi/
 obj-y += renesas/
 obj-y += rockchip/
-obj-y += rp1/
 obj-y += samsung/
 obj-y += st/
 obj-y += sunxi/
