@@ -1992,7 +1992,7 @@ static inline void xfrm_dev_policy_free(struct xfrm_policy *x)
 		if (dev->xfrmdev_ops->xdo_dev_policy_free)
 			dev->xfrmdev_ops->xdo_dev_policy_free(x);
 		xdo->dev = NULL;
-		netdev_put(dev, &xdo->dev_tracker);
+		dev_put(dev);
 	}
 }
 #else
