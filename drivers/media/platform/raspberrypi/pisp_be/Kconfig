@@ -1,5 +1,5 @@
-config VIDEO_BCM2712_PISP_BE
-	tristate "BCM2712 PiSP Backend (BE) ISP driver"
+config VIDEO_RASPBERRYPI_PISP_BE
+	tristate "Raspberry Pi PiSP Backend (BE) ISP driver"
 	depends on VIDEO_DEV && PM
 	select VIDEO_V4L2_SUBDEV_API
 	select MEDIA_CONTROLLER
@@ -9,4 +9,4 @@ config VIDEO_BCM2712_PISP_BE
 	  Say Y here to enable support for the PiSP Backend (BE) ISP driver.
 
 	  To compile this driver as a module, choose M here. The module will be
-	  called bcm2712-pisp-be.
+	  called pisp-be.
