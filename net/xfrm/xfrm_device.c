@@ -138,7 +138,7 @@ struct sk_buff *validate_xmit_xfrm(struct sk_buff *skb, netdev_features_t featur
 	 */
 	if (x->xso.type == XFRM_DEV_OFFLOAD_PACKET && x->xso.dev != dev) {
 		kfree_skb(skb);
-		dev_core_stats_tx_dropped_inc(dev);
+		atomic_long_inc(&dev->tx_dropped);
 		return NULL;
 	}
 
@@ -363,7 +363,6 @@ int xfrm_dev_policy_add(struct net *net, struct xfrm_policy *xp,
 	}
 
 	xdo->dev = dev;
-	netdev_tracker_alloc(dev, &xdo->dev_tracker, GFP_ATOMIC);
 	xdo->real_dev = dev;
 	xdo->type = XFRM_DEV_OFFLOAD_PACKET;
 	switch (dir) {
@@ -389,7 +388,7 @@ int xfrm_dev_policy_add(struct net *net, struct xfrm_policy *xp,
 		xdo->real_dev = NULL;
 		xdo->type = XFRM_DEV_OFFLOAD_UNSPECIFIED;
 		xdo->dir = 0;
-		netdev_put(dev, &xdo->dev_tracker);
+		dev_put(dev);
 		NL_SET_ERR_MSG_WEAK(extack, "Device failed to offload this policy");
 		return err;
 	}
