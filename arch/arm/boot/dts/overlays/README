@@ -167,6 +167,9 @@ Params:
                                 Default of GPIO expander 5 on CM4, but override
                                 switches to normal GPIO.
 
+        cooling_fan             Enables the Pi 5 cooling fan (enabled
+                                automatically by the firmware)
+
         eee                     Enable Energy Efficient Ethernet support for
                                 compatible devices (default "on"). See also
                                 "tx_lpi_timer". Pi3B+ only.
@@ -206,22 +209,28 @@ Params:
         hdmi                    Set to "off" to disable the HDMI interface
                                 (default "on")
 
+        i2c                     An alias for i2c_arm
+
         i2c_arm                 Set to "on" to enable the ARM's i2c interface
                                 (default "off")
+
+        i2c_arm_baudrate        Set the baudrate of the ARM's i2c interface
+                                (default "100000")
+
+        i2c_baudrate            An alias for i2c_arm_baudrate
+
+        i2c_csi_dsi             Set to "on" to enable the i2c_csi_dsi interface
+
+        i2c_csi_dsi0            Set to "on" to enable the i2c_csi_dsi0 interface
+
+        i2c_csi_dsi1            Set to "on" to enable the i2c_csi_dsi1 interface
 
         i2c_vc                  Set to "on" to enable the i2c interface
                                 usually reserved for the VideoCore processor
                                 (default "off")
 
-        i2c                     An alias for i2c_arm
-
-        i2c_arm_baudrate        Set the baudrate of the ARM's i2c interface
-                                (default "100000")
-
         i2c_vc_baudrate         Set the baudrate of the VideoCore i2c interface
                                 (default "100000")
-
-        i2c_baudrate            An alias for i2c_arm_baudrate
 
         i2s                     Set to "on" to enable the i2s interface
                                 (default "off")
@@ -237,10 +246,18 @@ Params:
         krnbt_baudrate          Set the baudrate of the PL011 UART when used
                                 with krnbt=on
 
+        nvme                    Alias for "pciex1" (2712 only)
+
         pcie                    Set to "off" to disable the PCIe interface
                                 (default "on")
                                 (2711 only, but not applicable on CM4S)
                                 N.B. USB-A ports on 4B are subsequently disabled
+
+        pciex1                  Set to "on" to enable the external PCIe link
+                                (2712 only, default "off")
+
+        pciex1_gen              Sets the PCIe "GEN"/speed for the external PCIe
+                                link (2712 only, default "2")
 
         spi                     Set to "on" to enable the spi interfaces
                                 (default "off")
@@ -276,11 +293,18 @@ Params:
         sdio_overclock          Clock (in MHz) to use when the MMC framework
                                 requests 50MHz for the SDIO/WLAN interface.
 
+        suspend                 Make the power button trigger a suspend rather
+                                than a power-off (2712 only, default "off")
+
         tx_lpi_timer            Set the delay in microseconds between going idle
                                 and entering the low power state (default 600).
                                 Requires EEE to be enabled - see "eee".
 
         uart0                   Set to "off" to disable uart0 (default "on")
+
+        uart0_console           Move the kernel boot console to UART0 on pins
+                                6, 8 and 10 of the 40-way header (2712 only,
+                                default "off")
 
         uart1                   Set to "on" or "off" to enable or disable uart1
                                 (default varies)
@@ -4684,6 +4708,8 @@ Params: 2_8_inch                2.8" 480x640
         invx                    Touchscreen inverted x axis
         invy                    Touchscreen inverted y axis
         swapxy                  Touchscreen swapped x y axis
+        dsi0                    Use DSI0 and i2c_csi_dsi0 (rather than
+                                the default DSI1 and i2c_csi_dsi).
 
 
 Name:   vc4-kms-kippah-7inch
