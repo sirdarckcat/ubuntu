@@ -1098,6 +1098,7 @@ int vc4_hvs_atomic_check(struct drm_crtc *crtc, struct drm_atomic_state *state)
 	struct drm_plane *plane;
 	const struct drm_plane_state *plane_state;
 	u32 dlist_count = 0;
+	u32 lbm_count = 0;
 
 	/* The pixelvalve can only feed one encoder (and encoders are
 	 * 1:1 with connectors.)
@@ -1106,6 +1107,8 @@ int vc4_hvs_atomic_check(struct drm_crtc *crtc, struct drm_atomic_state *state)
 		return -EINVAL;
 
 	drm_atomic_crtc_state_for_each_plane_state(plane, plane_state, crtc_state) {
+		const struct vc4_plane_state *vc4_plane_state =
+						to_vc4_plane_state(plane_state);
 		u32 plane_dlist_count = vc4_plane_dlist_size(plane_state);
 
 		drm_dbg_driver(dev, "[CRTC:%d:%s] Found [PLANE:%d:%s] with DLIST size: %u\n",
@@ -1114,6 +1117,7 @@ int vc4_hvs_atomic_check(struct drm_crtc *crtc, struct drm_atomic_state *state)
 			       plane_dlist_count);
 
 		dlist_count += plane_dlist_count;
+		lbm_count += vc4_plane_state->lbm_size;
 	}
 
 	dlist_count++; /* Account for SCALER_CTL0_END. */
@@ -1126,6 +1130,8 @@ int vc4_hvs_atomic_check(struct drm_crtc *crtc, struct drm_atomic_state *state)
 		return PTR_ERR(alloc);
 
 	vc4_state->mm = alloc;
+
+	/* FIXME: Check total lbm allocation here */
 
 	return vc4_hvs_gamma_check(crtc, state);
 }
@@ -1241,7 +1247,10 @@ void vc4_hvs_atomic_flush(struct drm_crtc *crtc,
 	bool debug_dump_regs = false;
 	bool enable_bg_fill = false;
 	u32 __iomem *dlist_start, *dlist_next;
+	unsigned long irqflags;
 	unsigned int zpos = 0;
+	u32 lbm_offset = 0;
+	u32 lbm_size = 0;
 	bool found = false;
 	int idx;
 
@@ -1260,6 +1269,32 @@ void vc4_hvs_atomic_flush(struct drm_crtc *crtc,
 		vc4_hvs_dump_state(hvs);
 	}
 
+	drm_atomic_crtc_for_each_plane(plane, crtc) {
+		lbm_size += vc4_plane_state->lbm_size;
+	}
+
+	if (drm_mm_node_allocated(&vc4_state->lbm)) {
+		spin_lock_irqsave(&vc4->hvs->mm_lock, irqflags);
+		drm_mm_remove_node(&vc4_state->lbm);
+		spin_unlock_irqrestore(&vc4->hvs->mm_lock, irqflags);
+	}
+
+	if (lbm_size) {
+		int ret;
+
+		spin_lock_irqsave(&vc4->hvs->mm_lock, irqflags);
+		ret = drm_mm_insert_node_generic(&vc4->hvs->lbm_mm,
+						 &vc4_state->lbm,
+						 lbm_size, 1,
+						 0, 0);
+		spin_unlock_irqrestore(&vc4->hvs->mm_lock, irqflags);
+
+		if (ret)
+			return;
+	}
+
+	lbm_offset = vc4_state->lbm.start;
+
 	dlist_start = vc4->hvs->dlist + vc4_state->mm->mm_node.start;
 	dlist_next = dlist_start;
 
@@ -1271,6 +1306,8 @@ void vc4_hvs_atomic_flush(struct drm_crtc *crtc,
 			if (plane->state->normalized_zpos != zpos)
 				continue;
 
+			vc4_plane_state = to_vc4_plane_state(plane->state);
+
 			/* Is this the first active plane? */
 			if (dlist_next == dlist_start) {
 				/* We need to enable background fill when a plane
@@ -1281,8 +1318,13 @@ void vc4_hvs_atomic_flush(struct drm_crtc *crtc,
 				 * already needs it or all planes on top blend from
 				 * the first or a lower plane.
 				 */
-				vc4_plane_state = to_vc4_plane_state(plane->state);
 				enable_bg_fill = vc4_plane_state->needs_bg_fill;
+			}
+
+			if (vc4_plane_state->lbm_size) {
+				vc4_plane_state->dlist[vc4_plane_state->lbm_offset] =
+								lbm_offset;
+				lbm_offset += vc4_plane_state->lbm_size;
 			}
 
 			dlist_next += vc4_plane_write_dlist(plane, dlist_next);
