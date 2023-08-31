@@ -49,6 +49,7 @@ dtbo-$(CONFIG_ARCH_BCM2835) += \
 	dionaudio-loco.dtbo \
 	dionaudio-loco-v2.dtbo \
 	disable-bt.dtbo \
+	disable-bt-pi5.dtbo \
 	disable-emmc2.dtbo \
 	disable-wifi.dtbo \
 	disable-wifi-pi5.dtbo \

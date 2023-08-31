@@ -899,7 +899,6 @@ spi10_cs_pins: &spi10_cs_gpio1 {};
 
 	__overrides__ {
 		bdaddr = <&bluetooth>, "local-bd-address[";
-		bluetooth = <&bluetooth>, "status";
 		cooling_fan = <&fan>, "status", <&rp1_pwm1>, "status";
 		uart0_console = <&uart0>,"status", <&aliases>, "console=",&uart0;
 		i2c_rp1boot = <&i2c_rp1boot>, "status";

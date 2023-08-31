@@ -9,6 +9,16 @@
 		bcm2711;
 	};
 
+	disable-bt {
+		bcm2835;
+		bcm2711;
+		bcm2712 = "disable-bt-pi5";
+	};
+
+	disable-bt-pi5 {
+		bcm2712;
+	};
+
 	disable-emmc2 {
 		bcm2711;
 	};
@@ -136,6 +146,11 @@
 	};
 
 	midi-uart5 {
+		bcm2711;
+	};
+
+	miniuart-bt {
+		bcm2835;
 		bcm2711;
 	};
 

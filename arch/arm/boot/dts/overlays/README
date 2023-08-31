@@ -924,11 +924,16 @@ Params: 24db_digital_gain       Allow gain to be applied via the PCM512x codec
 
 
 Name:   disable-bt
-Info:   Disable onboard Bluetooth on Pi 3B, 3B+, 3A+, 4B and Zero W, restoring
-        UART0/ttyAMA0 over GPIOs 14 & 15.
-        N.B. To disable the systemd service that initialises the modem so it
-        doesn't use the UART, use 'sudo systemctl disable hciuart'.
+Info:   Disable onboard Bluetooth on Bluetooth-capable Raspberry Pis. On Pis
+        prior to Pi 5 this restores UART0/ttyAMA0 over GPIOs 14 & 15.
 Load:   dtoverlay=disable-bt
+Params: <None>
+
+
+Name:   disable-bt-pi5
+Info:   Disable onboard Bluetooth on Pi 5 (redirected automatically from
+        disable-bt on Pi 5)
+Load:   dtoverlay=disable-bt-pi5
 Params: <None>
 
 
