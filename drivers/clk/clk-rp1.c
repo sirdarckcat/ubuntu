@@ -188,6 +188,10 @@
 #define VIDEO_CLK_MIPI1_DPI_DIV_FRAC	(VIDEO_CLOCKS_OFFSET + 0x0038)
 #define VIDEO_CLK_MIPI1_DPI_SEL		(VIDEO_CLOCKS_OFFSET + 0x003c)
 
+#define DIV_INT_8BIT_MAX		0x000000ffu /* max divide for most clocks */
+#define DIV_INT_16BIT_MAX		0x0000ffffu /* max divide for GPx, PWM */
+#define DIV_INT_24BIT_MAX               0x00ffffffu /* max divide for CLK_SYS */
+
 #define FC0_STATUS_DONE			BIT(4)
 #define FC0_STATUS_RUNNING		BIT(8)
 #define FC0_RESULT_FRAC_SHIFT		5
@@ -352,6 +356,7 @@ struct rp1_clock_data {
 	u32 div_int_reg;
 	u32 div_frac_reg;
 	u32 sel_reg;
+	u32 div_int_max;
 	u32 fc0_src;
 };
 
@@ -442,7 +447,7 @@ static unsigned long clockman_measure_clock(struct rp1_clockman *clockman,
 
 	/* fc_src == 0 is invalid. */
 	if (!fc_src || fc_idx >= FC_COUNT)
-	    return 0;
+		return 0;
 
 	fc_offset = fc_idx * FC_SIZE;
 
@@ -1205,9 +1210,10 @@ static void rp1_clock_off(struct clk_hw *hw)
 	spin_unlock(&clockman->regs_lock);
 }
 
-static u32 rp1_clock_choose_div(unsigned long rate, unsigned long parent_rate)
+static u32 rp1_clock_choose_div(unsigned long rate, unsigned long parent_rate,
+				const struct rp1_clock_data *data)
 {
-	u64 div = (u64)parent_rate << CLK_DIV_FRAC_BITS;
+	u64 div;
 
 	/*
 	 * Due to earlier rounding, calculated parent_rate may differ from
@@ -1216,8 +1222,21 @@ static u32 rp1_clock_choose_div(unsigned long rate, unsigned long parent_rate)
 	if (!rate || rate > parent_rate + (parent_rate >> CLK_DIV_FRAC_BITS))
 		return 0;
 
-	div = DIV_U64_NEAREST(div, rate);
-	div = clamp(div, 1ull << CLK_DIV_FRAC_BITS, 0xffffffffull);
+	/*
+	 * Always express div in fixed-point format for fractional division;
+	 * If no fractional divider is present, the fraction part will be zero.
+	 */
+	if (data->div_frac_reg) {
+		div = (u64)parent_rate << CLK_DIV_FRAC_BITS;
+		div = DIV_U64_NEAREST(div, rate);
+	} else {
+		div = DIV_U64_NEAREST(parent_rate, rate);
+		div <<= CLK_DIV_FRAC_BITS;
+	}
+
+	div = clamp(div,
+		    1ull << CLK_DIV_FRAC_BITS,
+		    (u64)data->div_int_max << CLK_DIV_FRAC_BITS);
 
 	return div;
 }
@@ -1311,7 +1330,7 @@ static int rp1_clock_set_rate_and_parent(struct clk_hw *hw,
 	struct rp1_clock *clock = container_of(hw, struct rp1_clock, hw);
 	struct rp1_clockman *clockman = clock->clockman;
 	const struct rp1_clock_data *data = clock->data;
-	u32 div = rp1_clock_choose_div(rate, parent_rate);
+	u32 div = rp1_clock_choose_div(rate, parent_rate, data);
 
 	WARN(rate > 4000000000ll, "rate is -ve (%d)\n", (int)rate);
 	if (clockman->running_on_fpga) {
@@ -1333,18 +1352,10 @@ static int rp1_clock_set_rate_and_parent(struct clk_hw *hw,
 
 	spin_lock(&clockman->regs_lock);
 
-	if (data->div_frac_reg != 0) {
-		clockman_write(clockman, data->div_int_reg, div >> CLK_DIV_FRAC_BITS);
+	clockman_write(clockman, data->div_int_reg, div >> CLK_DIV_FRAC_BITS);
+	if (data->div_frac_reg)
 		clockman_write(clockman, data->div_frac_reg, div << (32-CLK_DIV_FRAC_BITS));
-	} else {
-		/*
-		 * Not all dividers have a fractional part; and there might be
-		 * as few as 8 integer bits. Round where it seems safe to do so.
-		 */
-		if (div < (0xFFull << CLK_DIV_FRAC_BITS))
-			div += (1<<CLK_DIV_FRAC_BITS)>>1;
-		clockman_write(clockman, data->div_int_reg, div >> CLK_DIV_FRAC_BITS);
-	}
+
 	spin_unlock(&clockman->regs_lock);
 
 	if (parent != 0xff)
@@ -1385,7 +1396,7 @@ static void rp1_clock_choose_div_and_prate(struct clk_hw *hw,
 
 	parent = clk_hw_get_parent_by_index(hw, parent_idx);
 	*prate = clk_hw_get_rate(parent);
-	div = rp1_clock_choose_div(rate, *prate);
+	div = rp1_clock_choose_div(rate, *prate, data);
 
 	if (!div) {
 		*calc_rate = 0;
@@ -1411,7 +1422,7 @@ static int rp1_clock_determine_rate(struct clk_hw *hw,
 	struct clk_hw *parent, *best_parent = NULL;
 	unsigned long best_rate = 0;
 	unsigned long best_prate = 0;
-	unsigned long best_rate_diff;
+	unsigned long best_rate_diff = ULONG_MAX;
 	unsigned long prate, calc_rate;
 	size_t i;
 
@@ -1454,12 +1465,14 @@ static int rp1_clock_determine_rate(struct clk_hw *hw,
 			__func__, data->name, (int)i, calc_rate,
 			req->rate, prate, best_rate);
 
-		if (!best_parent ||
-		    ABS_DIFF(calc_rate, req->rate) < best_rate_diff) {
+		if (ABS_DIFF(calc_rate, req->rate) < best_rate_diff) {
 			best_parent = parent;
 			best_prate = prate;
 			best_rate = calc_rate;
 			best_rate_diff = ABS_DIFF(calc_rate, req->rate);
+
+			if (best_rate_diff == 0)
+				break;
 		}
 	}
 
@@ -1870,6 +1883,7 @@ static const struct rp1_clk_desc clk_desc_array[] = {
 				.ctrl_reg = CLK_SYS_CTRL,
 				.div_int_reg = CLK_SYS_DIV_INT,
 				.sel_reg = CLK_SYS_SEL,
+				.div_int_max = DIV_INT_24BIT_MAX,
 				.fc0_src = FC_NUM(0, 4),
 				.clk_src_mask = 0x3,
 				),
@@ -1882,6 +1896,7 @@ static const struct rp1_clk_desc clk_desc_array[] = {
 				.ctrl_reg = CLK_SLOW_SYS_CTRL,
 				.div_int_reg = CLK_SLOW_SYS_DIV_INT,
 				.sel_reg = CLK_SLOW_SYS_SEL,
+				.div_int_max = DIV_INT_8BIT_MAX,
 				.fc0_src = FC_NUM(1, 4),
 				.clk_src_mask = 0x1,
 				),
@@ -1896,6 +1911,7 @@ static const struct rp1_clk_desc clk_desc_array[] = {
 				.ctrl_reg = CLK_DMA_CTRL,
 				.div_int_reg = CLK_DMA_DIV_INT,
 				.sel_reg = CLK_DMA_SEL,
+				.div_int_max = DIV_INT_8BIT_MAX,
 				.fc0_src = FC_NUM(2, 4),
 				),
 */
@@ -1909,6 +1925,7 @@ static const struct rp1_clk_desc clk_desc_array[] = {
 				.ctrl_reg = CLK_UART_CTRL,
 				.div_int_reg = CLK_UART_DIV_INT,
 				.sel_reg = CLK_UART_SEL,
+				.div_int_max = DIV_INT_8BIT_MAX,
 				.fc0_src = FC_NUM(6, 7),
 				),
 
@@ -1920,6 +1937,7 @@ static const struct rp1_clk_desc clk_desc_array[] = {
 				.ctrl_reg = CLK_ETH_CTRL,
 				.div_int_reg = CLK_ETH_DIV_INT,
 				.sel_reg = CLK_ETH_SEL,
+				.div_int_max = DIV_INT_8BIT_MAX,
 				.fc0_src = FC_NUM(4, 6),
 				),
 
@@ -1934,6 +1952,7 @@ static const struct rp1_clk_desc clk_desc_array[] = {
 				.div_int_reg = CLK_PWM0_DIV_INT,
 				.div_frac_reg = CLK_PWM0_DIV_FRAC,
 				.sel_reg = CLK_PWM0_SEL,
+				.div_int_max = DIV_INT_16BIT_MAX,
 				.fc0_src = FC_NUM(0, 5),
 				),
 
@@ -1948,6 +1967,7 @@ static const struct rp1_clk_desc clk_desc_array[] = {
 				.div_int_reg = CLK_PWM1_DIV_INT,
 				.div_frac_reg = CLK_PWM1_DIV_FRAC,
 				.sel_reg = CLK_PWM1_SEL,
+				.div_int_max = DIV_INT_16BIT_MAX,
 				.fc0_src = FC_NUM(1, 5),
 				),
 
@@ -1959,6 +1979,7 @@ static const struct rp1_clk_desc clk_desc_array[] = {
 				.ctrl_reg = CLK_AUDIO_IN_CTRL,
 				.div_int_reg = CLK_AUDIO_IN_DIV_INT,
 				.sel_reg = CLK_AUDIO_IN_SEL,
+				.div_int_max = DIV_INT_8BIT_MAX,
 				.fc0_src = FC_NUM(2, 5),
 				),
 
@@ -1970,6 +1991,7 @@ static const struct rp1_clk_desc clk_desc_array[] = {
 				.ctrl_reg = CLK_AUDIO_OUT_CTRL,
 				.div_int_reg = CLK_AUDIO_OUT_DIV_INT,
 				.sel_reg = CLK_AUDIO_OUT_SEL,
+				.div_int_max = DIV_INT_8BIT_MAX,
 				.fc0_src = FC_NUM(3, 5),
 				),
 
@@ -1983,6 +2005,7 @@ static const struct rp1_clk_desc clk_desc_array[] = {
 				.ctrl_reg = CLK_I2S_CTRL,
 				.div_int_reg = CLK_I2S_DIV_INT,
 				.sel_reg = CLK_I2S_SEL,
+				.div_int_max = DIV_INT_8BIT_MAX,
 				.fc0_src = FC_NUM(4, 4),
 				),
 
@@ -1994,6 +2017,7 @@ static const struct rp1_clk_desc clk_desc_array[] = {
 				.ctrl_reg = CLK_MIPI0_CFG_CTRL,
 				.div_int_reg = CLK_MIPI0_CFG_DIV_INT,
 				.sel_reg = CLK_MIPI0_CFG_SEL,
+				.div_int_max = DIV_INT_8BIT_MAX,
 				.fc0_src = FC_NUM(4, 5),
 				),
 
@@ -2006,6 +2030,7 @@ static const struct rp1_clk_desc clk_desc_array[] = {
 				.div_int_reg = CLK_MIPI1_CFG_DIV_INT,
 				.sel_reg = CLK_MIPI1_CFG_SEL,
 				.clk_src_mask = 1,
+				.div_int_max = DIV_INT_8BIT_MAX,
 				.fc0_src = FC_NUM(5, 6),
 				),
 /* XXX: don't mess with these clocks
@@ -2017,6 +2042,7 @@ static const struct rp1_clk_desc clk_desc_array[] = {
 				.ctrl_reg = CLK_PCIE_AUX_CTRL,
 				.div_int_reg = CLK_PCIE_AUX_DIV_INT,
 				.sel_reg = CLK_PCIE_AUX_SEL,
+				.div_int_max = DIV_INT_8BIT_MAX,
 				.fc0_src = FC_NUM(6, 6),
 				),
 
@@ -2028,6 +2054,7 @@ static const struct rp1_clk_desc clk_desc_array[] = {
 				.ctrl_reg = CLK_USBH0_MICROFRAME_CTRL,
 				.div_int_reg = CLK_USBH0_MICROFRAME_DIV_INT,
 				.sel_reg = CLK_USBH0_MICROFRAME_SEL,
+				.div_int_max = DIV_INT_8BIT_MAX,
 				.fc0_src = FC_NUM(0, 7),
 				),
 
@@ -2039,6 +2066,7 @@ static const struct rp1_clk_desc clk_desc_array[] = {
 				.ctrl_reg = CLK_USBH1_MICROFRAME_CTRL,
 				.div_int_reg = CLK_USBH1_MICROFRAME_DIV_INT,
 				.sel_reg = CLK_USBH1_MICROFRAME_SEL,
+				.div_int_max = DIV_INT_8BIT_MAX,
 				.fc0_src = FC_NUM(1, 7),
 				),
 
@@ -2050,6 +2078,7 @@ static const struct rp1_clk_desc clk_desc_array[] = {
 				.ctrl_reg = CLK_USBH0_SUSPEND_CTRL,
 				.div_int_reg = CLK_USBH0_SUSPEND_DIV_INT,
 				.sel_reg = CLK_USBH0_SUSPEND_SEL,
+				.div_int_max = DIV_INT_8BIT_MAX,
 				.fc0_src = FC_NUM(2, 7),
 				),
 
@@ -2061,6 +2090,7 @@ static const struct rp1_clk_desc clk_desc_array[] = {
 				.ctrl_reg = CLK_USBH1_SUSPEND_CTRL,
 				.div_int_reg = CLK_USBH1_SUSPEND_DIV_INT,
 				.sel_reg = CLK_USBH1_SUSPEND_SEL,
+				.div_int_max = DIV_INT_8BIT_MAX,
 				.fc0_src = FC_NUM(3, 7),
 				),
 */
@@ -2072,6 +2102,7 @@ static const struct rp1_clk_desc clk_desc_array[] = {
 				.ctrl_reg = CLK_ETH_TSU_CTRL,
 				.div_int_reg = CLK_ETH_TSU_DIV_INT,
 				.sel_reg = CLK_ETH_TSU_SEL,
+				.div_int_max = DIV_INT_8BIT_MAX,
 				.fc0_src = FC_NUM(5, 7),
 				),
 
@@ -2083,6 +2114,7 @@ static const struct rp1_clk_desc clk_desc_array[] = {
 				.ctrl_reg = CLK_ADC_CTRL,
 				.div_int_reg = CLK_ADC_DIV_INT,
 				.sel_reg = CLK_ADC_SEL,
+				.div_int_max = DIV_INT_8BIT_MAX,
 				.fc0_src = FC_NUM(5, 5),
 				),
 
@@ -2094,6 +2126,7 @@ static const struct rp1_clk_desc clk_desc_array[] = {
 				.ctrl_reg = CLK_SDIO_TIMER_CTRL,
 				.div_int_reg = CLK_SDIO_TIMER_DIV_INT,
 				.sel_reg = CLK_SDIO_TIMER_SEL,
+				.div_int_max = DIV_INT_8BIT_MAX,
 				.fc0_src = FC_NUM(3, 4),
 				),
 
@@ -2105,6 +2138,7 @@ static const struct rp1_clk_desc clk_desc_array[] = {
 				.ctrl_reg = CLK_SDIO_ALT_SRC_CTRL,
 				.div_int_reg = CLK_SDIO_ALT_SRC_DIV_INT,
 				.sel_reg = CLK_SDIO_ALT_SRC_SEL,
+				.div_int_max = DIV_INT_8BIT_MAX,
 				.fc0_src = FC_NUM(5, 4),
 				),
 
@@ -2117,6 +2151,7 @@ static const struct rp1_clk_desc clk_desc_array[] = {
 				.div_int_reg = CLK_GP0_DIV_INT,
 				.div_frac_reg = CLK_GP0_DIV_FRAC,
 				.sel_reg = CLK_GP0_SEL,
+				.div_int_max = DIV_INT_16BIT_MAX,
 				.fc0_src = FC_NUM(0, 1),
 				),
 
@@ -2129,6 +2164,7 @@ static const struct rp1_clk_desc clk_desc_array[] = {
 				.div_int_reg = CLK_GP1_DIV_INT,
 				.div_frac_reg = CLK_GP1_DIV_FRAC,
 				.sel_reg = CLK_GP1_SEL,
+				.div_int_max = DIV_INT_16BIT_MAX,
 				.fc0_src = FC_NUM(1, 1),
 				),
 
@@ -2141,6 +2177,7 @@ static const struct rp1_clk_desc clk_desc_array[] = {
 				.div_int_reg = CLK_GP2_DIV_INT,
 				.div_frac_reg = CLK_GP2_DIV_FRAC,
 				.sel_reg = CLK_GP2_SEL,
+				.div_int_max = DIV_INT_16BIT_MAX,
 				.fc0_src = FC_NUM(2, 1),
 				),
 
@@ -2153,6 +2190,7 @@ static const struct rp1_clk_desc clk_desc_array[] = {
 				.div_int_reg = CLK_GP3_DIV_INT,
 				.div_frac_reg = CLK_GP3_DIV_FRAC,
 				.sel_reg = CLK_GP3_SEL,
+				.div_int_max = DIV_INT_16BIT_MAX,
 				.fc0_src = FC_NUM(3, 1),
 				),
 
@@ -2165,6 +2203,7 @@ static const struct rp1_clk_desc clk_desc_array[] = {
 				.div_int_reg = CLK_GP4_DIV_INT,
 				.div_frac_reg = CLK_GP4_DIV_FRAC,
 				.sel_reg = CLK_GP4_SEL,
+				.div_int_max = DIV_INT_16BIT_MAX,
 				.fc0_src = FC_NUM(4, 1),
 				),
 
@@ -2177,6 +2216,7 @@ static const struct rp1_clk_desc clk_desc_array[] = {
 				.div_int_reg = CLK_GP5_DIV_INT,
 				.div_frac_reg = CLK_GP5_DIV_FRAC,
 				.sel_reg = CLK_GP5_SEL,
+				.div_int_max = DIV_INT_16BIT_MAX,
 				.fc0_src = FC_NUM(5, 1),
 				),
 
@@ -2195,6 +2235,8 @@ static const struct rp1_clk_desc clk_desc_array[] = {
 				.ctrl_reg = VIDEO_CLK_VEC_CTRL,
 				.div_int_reg = VIDEO_CLK_VEC_DIV_INT,
 				.sel_reg = VIDEO_CLK_VEC_SEL,
+				.flags = CLK_SET_RATE_NO_REPARENT, /* Let VEC driver set parent */
+				.div_int_max = DIV_INT_8BIT_MAX,
 				.fc0_src = FC_NUM(0, 6),
 				),
 
@@ -2213,6 +2255,8 @@ static const struct rp1_clk_desc clk_desc_array[] = {
 				.ctrl_reg = VIDEO_CLK_DPI_CTRL,
 				.div_int_reg = VIDEO_CLK_DPI_DIV_INT,
 				.sel_reg = VIDEO_CLK_DPI_SEL,
+				.flags = CLK_SET_RATE_NO_REPARENT, /* Let DPI driver set parent */
+				.div_int_max = DIV_INT_8BIT_MAX,
 				.fc0_src = FC_NUM(1, 6),
 				),
 
@@ -2232,7 +2276,8 @@ static const struct rp1_clk_desc clk_desc_array[] = {
 				.div_int_reg = VIDEO_CLK_MIPI0_DPI_DIV_INT,
 				.div_frac_reg = VIDEO_CLK_MIPI0_DPI_DIV_FRAC,
 				.sel_reg = VIDEO_CLK_MIPI0_DPI_SEL,
-				.flags = CLK_SET_RATE_NO_REPARENT, /* Let DSI driver choose parent */
+				.flags = CLK_SET_RATE_NO_REPARENT, /* Let DSI driver set parent */
+				.div_int_max = DIV_INT_8BIT_MAX,
 				.fc0_src = FC_NUM(2, 6),
 				),
 
@@ -2252,7 +2297,8 @@ static const struct rp1_clk_desc clk_desc_array[] = {
 				.div_int_reg = VIDEO_CLK_MIPI1_DPI_DIV_INT,
 				.div_frac_reg = VIDEO_CLK_MIPI1_DPI_DIV_FRAC,
 				.sel_reg = VIDEO_CLK_MIPI1_DPI_SEL,
-				.flags = CLK_SET_RATE_NO_REPARENT, /* Let DSI driver choose parent */
+				.flags = CLK_SET_RATE_NO_REPARENT, /* Let DSI driver set parent */
+				.div_int_max = DIV_INT_8BIT_MAX,
 				.fc0_src = FC_NUM(3, 6),
 				),
 };
