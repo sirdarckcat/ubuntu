@@ -13,6 +13,16 @@
 		bcm2711;
 	};
 
+	disable-wifi {
+		bcm2835;
+		bcm2711;
+		bcm2712 = "disable-wifi-pi5";
+	};
+
+	disable-wifi-pi5 {
+		bcm2712;
+	};
+
 	highperi {
 		bcm2711;
 	};

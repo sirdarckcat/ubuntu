@@ -941,8 +941,15 @@ Params: <None>
 
 
 Name:   disable-wifi
-Info:   Disable onboard WLAN on Pi 3B, 3B+, 3A+, 4B and Zero W.
+Info:   Disable onboard WLAN on WiFi-capable Raspberry Pis.
 Load:   dtoverlay=disable-wifi
+Params: <None>
+
+
+Name:   disable-wifi-pi5
+Info:   Disable onboard WLAN on Pi 5 (redirected automatically from disable-wifi
+        on Pi 5)
+Load:   dtoverlay=disable-wifi-pi5
 Params: <None>
 
 
