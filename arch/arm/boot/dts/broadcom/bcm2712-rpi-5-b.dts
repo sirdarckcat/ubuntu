@@ -208,6 +208,10 @@
 		regulator-name = "cam-dummy-reg";
 		status = "okay";
 	};
+
+	dummy: dummy {
+		// A target for unwanted overlay fragments
+	};
 };
 
 rp1_target: &pcie2 {
@@ -298,6 +302,7 @@ spi2: &rp1_spi2 { };
 spi3: &rp1_spi3 { };
 spi4: &rp1_spi4 { };
 spi5: &rp1_spi5 { };
+aux: &dummy {};
 
 uart0_pins: &rp1_uart0_14_15 {};
 uart0_ctsrts_pins: &rp1_uart0_ctsrts_16_17 {};
@@ -374,6 +379,8 @@ dsi0: &rp1_dsi0 { };
 dsi1: &rp1_dsi1 { };
 dpi: &rp1_dpi { };
 vec: &rp1_vec { };
+dpi_gpio0:              &rp1_dpi_24bit_gpio0        { };
+dpi_gpio1:              &rp1_dpi_24bit_gpio2        { };
 dpi_18bit_cpadhi_gpio0: &rp1_dpi_18bit_cpadhi_gpio0 { };
 dpi_18bit_cpadhi_gpio2: &rp1_dpi_18bit_cpadhi_gpio2 { };
 dpi_18bit_gpio0:        &rp1_dpi_18bit_gpio0        { };
@@ -554,7 +561,7 @@ spi0_cs_pins: &rp1_spi0_cs_gpio7 {};
 #include "bcm2712-rpi.dtsi"
 
 / {
-	chosen {
+	chosen: chosen {
 		bootargs = "coherent_pool=1M 8250.nr_uarts=1 snd_bcm2835.enable_compat_alsa=0 snd_bcm2835.enable_hdmi=1";
 		stdout-path = "serial10:115200n8";
 	};
