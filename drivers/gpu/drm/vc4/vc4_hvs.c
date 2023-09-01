@@ -1273,6 +1273,8 @@ struct vc4_hvs *__vc4_hvs_alloc(struct vc4_dev *vc4,
 		    HVS_BOOTLOADER_DLIST_END,
 		    hvs->dlist_mem_size);
 
+	hvs->dlist_mem_size = dlist_size;
+
 	/* Set up the HVS LBM memory manager.  We could have some more
 	 * complicated data structure that allowed reuse of LBM areas
 	 * between planes when they don't overlap on the screen, but
