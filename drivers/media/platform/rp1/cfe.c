@@ -62,7 +62,7 @@
 #define SEL_CSI		BIT(0)
 #define INT_CSI_DMA	BIT(0)
 #define INT_CSI_HOST	BIT(2)
-#define INT_PISP_FE	BIT(3)
+#define INT_PISP_FE	BIT(4)
 
 #define BPL_ALIGNMENT 16
 #define MAX_BYTESPERLINE 0xffffff00
