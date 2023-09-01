@@ -95,7 +95,6 @@ CONFIG_DEVFREQ_GOV_USERSPACE                    policy<{'arm64': 'm', 'armhf': '
 CONFIG_DEV_DAX                                  policy<{'arm64': 'm'}> note<'Required for Pi (different from master)'>
 CONFIG_DMA_BCM2708                              policy<{'arm64': 'y', 'armhf': 'y'}> note<'Introduced by rpi-6.2.y'>
 CONFIG_DMA_BCM2835                              policy<{'arm64': 'y', 'armhf': 'y'}> note<'Required for Pi (not in master)'>
-CONFIG_DMI_SYSFS                                policy<{'arm64': 'm'}> note<'Required for Pi (different from master)'>
 CONFIG_DRM_DISPLAY_CONNECTOR                    policy<{'arm64': 'm', 'armhf': 'm'}> note<'LP: #1916721'>
 CONFIG_DRM_PANEL_ILITEK_ILI9806E                policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
 CONFIG_DRM_PANEL_TPO_Y17P                       policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
@@ -108,16 +107,13 @@ CONFIG_DRM_VC4                                  policy<{'arm64': 'm', 'armhf': '
 CONFIG_DRM_VC4_HDMI_CEC                         policy<{'arm64': 'y', 'armhf': 'y'}> note<'Required for Pi (not in master)'>
 CONFIG_DVB_USB_DIBUSB_MB_FAULTY                 policy<{'arm64': 'y', 'armhf': 'y'}> note<'Required for Pi (different from master)'>
 CONFIG_ECRYPT_FS                                policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
-CONFIG_EFI                                      policy<{'arm64': 'y', 'armhf': 'n'}> note<'Not supported on Pi'>
-CONFIG_EFI_BOOTLOADER_CONTROL                   policy<{'arm64': 'm'}> note<'Required for Pi (different from master)'>
-CONFIG_EFI_VARS_PSTORE                          policy<{'arm64': 'm'}> note<'Required for Pi (different from master)'>
+CONFIG_EFI                                      policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not supported on Pi'>
 CONFIG_EMBEDDED                                 policy<{'arm64': 'y', 'armhf': 'y'}> note<'Required for Pi (different from master)'>
 CONFIG_EROFS_FS_SECURITY                        policy<{'arm64': 'n', 'armhf': 'n'}> note<'Required for Pi (different from master)'>
 CONFIG_EROFS_FS_ZIP                             policy<{'arm64': 'n', 'armhf': 'n'}> note<'Required for Pi (different from master)'>
 CONFIG_EZX_PCAP                                 policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not supported on Pi'>
 CONFIG_FAT_DEFAULT_IOCHARSET                    policy<{'arm64': '"ascii"', 'armhf': '"ascii"'}> note<'Required for Pi (different from master)'>
 CONFIG_FB_BCM2708                               policy<{'arm64': 'y', 'armhf': 'y'}> note<'Introduced by rpi-6.2.y'>
-CONFIG_FB_EFI                                   policy<{'arm64': 'n'}> note<'Not supported on Pi'>
 CONFIG_FB_RPISENSE                              policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
 CONFIG_FB_SIMPLE                                policy<{'arm64': 'y', 'armhf': 'y'}> note<'LP: #1976147'>
 CONFIG_FIQ                                      policy<{'armhf': 'y'}> note<'Introduced by rpi-6.2.y'>
@@ -313,7 +309,6 @@ CONFIG_RPIVID_MEM                               policy<{'arm64': 'm', 'armhf': '
 CONFIG_RPI_AXIPERF                              policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
 CONFIG_RPI_POE_POWER                            policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
 CONFIG_RTC_DRV_CMOS                             policy<{'armhf': 'y'}> note<'Required for Pi (different from master)'>
-CONFIG_RTC_DRV_EFI                              policy<{'arm64': 'm'}> note<'Required for Pi (different from master)'>
 CONFIG_RTC_DRV_PCF8523                          policy<{'arm64': 'm', 'armhf': 'm'}> note<'Required for Pi (different from master)'>
 CONFIG_RTC_DRV_PL031                            policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
 CONFIG_RTC_DRV_PM8XXX                           policy<{'armhf': 'm'}> note<'Required for Pi (different from master)'>
@@ -493,7 +488,6 @@ CONFIG_ACCESSIBILITY                            policy<{'arm64': 'y', 'armhf': '
 CONFIG_ACENIC                                   policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_ACENIC_OMIT_TIGON_I                      policy<{'arm64': 'n', 'armhf': 'n'}>
 CONFIG_ACORN_PARTITION                          policy<{'arm64': 'n', 'armhf': 'n'}>
-CONFIG_ACPI                                     policy<{'arm64': 'n'}>
 CONFIG_AD2S1200                                 policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_AD2S1210                                 policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_AD2S90                                   policy<{'arm64': 'm', 'armhf': 'm'}>
@@ -807,7 +801,6 @@ CONFIG_ARCH_STACKWALK                           policy<{'arm64': 'y', 'armhf': '
 CONFIG_ARCH_STI                                 policy<{'armhf': 'n'}>
 CONFIG_ARCH_SUNPLUS                             policy<{'armhf': 'n'}>
 CONFIG_ARCH_SUNXI                               policy<{'arm64': 'n', 'armhf': 'n'}>
-CONFIG_ARCH_SUPPORTS_ACPI                       policy<{'arm64': 'y'}>
 CONFIG_ARCH_SUPPORTS_ATOMIC_RMW                 policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_ARCH_SUPPORTS_CFI_CLANG                  policy<{'arm64': 'y'}>
 CONFIG_ARCH_SUPPORTS_DEBUG_PAGEALLOC            policy<{'arm64': 'y'}>
@@ -833,7 +826,6 @@ CONFIG_ARCH_USES_PG_ARCH_X                      policy<{'arm64': 'y'}>
 CONFIG_ARCH_USE_BUILTIN_BSWAP                   policy<{'armhf': 'y'}>
 CONFIG_ARCH_USE_CMPXCHG_LOCKREF                 policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_ARCH_USE_GNU_PROPERTY                    policy<{'arm64': 'y'}>
-CONFIG_ARCH_USE_MEMREMAP_PROT                   policy<{'arm64': 'y'}>
 CONFIG_ARCH_USE_MEMTEST                         policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_ARCH_USE_QUEUED_RWLOCKS                  policy<{'arm64': 'y'}>
 CONFIG_ARCH_USE_QUEUED_SPINLOCKS                policy<{'arm64': 'y'}>
@@ -2189,7 +2181,6 @@ CONFIG_DEBUG_CGROUP_REF                         policy<{'arm64': 'n', 'armhf': '
 CONFIG_DEBUG_CREDENTIALS                        policy<{'arm64': 'n', 'armhf': 'n'}>
 CONFIG_DEBUG_DEVRES                             policy<{'arm64': 'n', 'armhf': 'n'}>
 CONFIG_DEBUG_DRIVER                             policy<{'arm64': 'n', 'armhf': 'n'}>
-CONFIG_DEBUG_EFI                                policy<{'arm64': 'n'}>
 CONFIG_DEBUG_FORCE_FUNCTION_ALIGN_64B           policy<{'arm64': 'n'}>
 CONFIG_DEBUG_FORCE_WEAK_PER_CPU                 policy<{'arm64': 'n', 'armhf': 'n'}>
 CONFIG_DEBUG_FS                                 policy<{'arm64': 'y', 'armhf': 'y'}>
@@ -2320,8 +2311,6 @@ CONFIG_DMA_PERNUMA_CMA                          policy<{'arm64': 'n', 'armhf': '
 CONFIG_DMA_RESTRICTED_POOL                      policy<{'arm64': 'n', 'armhf': 'n'}>
 CONFIG_DMA_SHARED_BUFFER                        policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_DMA_VIRTUAL_CHANNELS                     policy<{'arm64': 'y', 'armhf': 'y'}>
-CONFIG_DMI                                      policy<{'arm64': 'y'}>
-CONFIG_DMIID                                    policy<{'arm64': 'y'}>
 CONFIG_DM_AUDIT                                 policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_DM_BIO_PRISON                            policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_DM_BUFIO                                 policy<{'arm64': 'm', 'armhf': 'm'}>
@@ -2803,22 +2792,7 @@ CONFIG_EEPROM_EE1004                            policy<{'arm64': 'm', 'armhf': '
 CONFIG_EEPROM_IDT_89HPESX                       policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_EEPROM_LEGACY                            policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_EEPROM_MAX6875                           policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_EFIVAR_FS                                policy<{'arm64': 'm'}>
-CONFIG_EFI_ARMSTUB_DTB_LOADER                   policy<{'arm64': 'y'}>
-CONFIG_EFI_CAPSULE_LOADER                       policy<{'arm64': 'n'}>
-CONFIG_EFI_COCO_SECRET                          policy<{'arm64': 'n'}>
-CONFIG_EFI_DISABLE_PCI_DMA                      policy<{'arm64': 'n'}>
-CONFIG_EFI_DISABLE_RUNTIME                      policy<{'arm64': 'n'}>
-CONFIG_EFI_EARLYCON                             policy<{'arm64': 'y'}>
-CONFIG_EFI_ESRT                                 policy<{'arm64': 'y'}>
-CONFIG_EFI_GENERIC_STUB                         policy<{'arm64': 'y'}>
-CONFIG_EFI_PARAMS_FROM_FDT                      policy<{'arm64': 'y'}>
 CONFIG_EFI_PARTITION                            policy<{'arm64': 'y', 'armhf': 'y'}>
-CONFIG_EFI_RUNTIME_WRAPPERS                     policy<{'arm64': 'y'}>
-CONFIG_EFI_STUB                                 policy<{'arm64': 'y'}>
-CONFIG_EFI_TEST                                 policy<{'arm64': 'n'}>
-CONFIG_EFI_VARS_PSTORE_DEFAULT_DISABLE          policy<{'arm64': 'n'}>
-CONFIG_EFI_ZBOOT                                policy<{'arm64': 'n'}>
 CONFIG_EFS_FS                                   policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_ELFCORE                                  policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_ELF_CORE                                 policy<{'arm64': 'y', 'armhf': 'y'}>
@@ -3852,7 +3826,6 @@ CONFIG_IMA_MEASURE_PCR_IDX                      policy<{'arm64': '10', 'armhf': 
 CONFIG_IMA_NG_TEMPLATE                          policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_IMA_QUEUE_EARLY_BOOT_KEYS                policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_IMA_READ_POLICY                          policy<{'arm64': 'n', 'armhf': 'n'}>
-CONFIG_IMA_SECURE_AND_OR_TRUSTED_BOOT           policy<{'arm64': 'n'}>
 CONFIG_IMA_SIG_TEMPLATE                         policy<{'arm64': 'n', 'armhf': 'n'}>
 CONFIG_IMA_TRUSTED_KEYRING                      policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_IMA_WRITE_POLICY                         policy<{'arm64': 'n', 'armhf': 'n'}>
@@ -4547,7 +4520,6 @@ CONFIG_LOCKDEP_SUPPORT                          policy<{'arm64': 'y', 'armhf': '
 CONFIG_LOCKD_V4                                 policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_LOCKUP_DETECTOR                          policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_LOCK_DEBUGGING_SUPPORT                   policy<{'arm64': 'y', 'armhf': 'y'}>
-CONFIG_LOCK_DOWN_IN_SECURE_BOOT                 policy<{'arm64': 'n'}>
 CONFIG_LOCK_DOWN_KERNEL_FORCE_CONFIDENTIALITY   policy<{'arm64': 'n', 'armhf': 'n'}>
 CONFIG_LOCK_DOWN_KERNEL_FORCE_INTEGRITY         policy<{'arm64': 'n', 'armhf': 'n'}>
 CONFIG_LOCK_DOWN_KERNEL_FORCE_NONE              policy<{'arm64': 'y', 'armhf': 'y'}>
@@ -6135,7 +6107,6 @@ CONFIG_PCI_HOST_THUNDER_ECAM                    policy<{'arm64': 'n'}>
 CONFIG_PCI_HOST_THUNDER_PEM                     policy<{'arm64': 'n'}>
 CONFIG_PCI_IOV                                  policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_PCI_J721E_HOST                           policy<{'arm64': 'n', 'armhf': 'n'}>
-CONFIG_PCI_LABEL                                policy<{'arm64': 'y'}>
 CONFIG_PCI_LAYERSCAPE                           policy<{'armhf': 'n'}>
 CONFIG_PCI_MESON                                policy<{'arm64': 'n', 'armhf': 'n'}>
 CONFIG_PCI_MSI                                  policy<{'arm64': 'y', 'armhf': 'y'}>
@@ -6621,7 +6592,6 @@ CONFIG_RELAY                                    policy<{'arm64': 'y', 'armhf': '
 CONFIG_RELOCATABLE                              policy<{'arm64': 'y'}>
 CONFIG_REMOTE_TARGET                            policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_RENESAS_PHY                              policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_RESET_ATTACK_MITIGATION                  policy<{'arm64': 'n'}>
 CONFIG_RESET_CONTROLLER                         policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_RESET_SIMPLE                             policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_RESET_TI_SYSCON                          policy<{'arm64': 'm', 'armhf': 'm'}>
@@ -8081,7 +8051,6 @@ CONFIG_SYN_COOKIES                              policy<{'arm64': 'y', 'armhf': '
 CONFIG_SYSCON_REBOOT_MODE                       policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_SYSCTL                                   policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_SYSCTL_EXCEPTION_TRACE                   policy<{'arm64': 'y'}>
-CONFIG_SYSFB_SIMPLEFB                           policy<{'arm64': 'n'}>
 CONFIG_SYSFS                                    policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_SYSFS_SYSCALL                            policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_SYSTEMPORT                               policy<{'arm64': 'm', 'armhf': 'm'}>
@@ -8482,7 +8451,6 @@ CONFIG_UBUNTU_HOST                              policy<{'arm64': 'm', 'armhf': '
 CONFIG_UCLAMP_BUCKETS_COUNT                     policy<{'arm64': '5', 'armhf': '5'}>
 CONFIG_UCLAMP_TASK                              policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_UCLAMP_TASK_GROUP                        policy<{'arm64': 'n', 'armhf': 'n'}>
-CONFIG_UCS2_STRING                              policy<{'arm64': 'y'}>
 CONFIG_UCSI_CCG                                 policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_UCSI_PMIC_GLINK                          policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_UCSI_STM32G0                             policy<{'arm64': 'm', 'armhf': 'm'}>
