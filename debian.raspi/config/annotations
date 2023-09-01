@@ -16,6 +16,9 @@ CONFIG_ARM64_ERRATUM_834220                     policy<{'arm64': 'n'}> note<'Req
 CONFIG_ARM64_RAS_EXTN                           policy<{'arm64': 'n'}> note<'Required for Pi (different from master)'>
 CONFIG_ARM_CCI_PMU                              policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not supported on Pi'>
 CONFIG_ARM_CCN                                  policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
+CONFIG_ARM_ERRATA_814220                        policy<{'armhf': 'n'}> note<'Not required for Pi'>
+CONFIG_ARM_ERRATA_857271                        policy<{'armhf': 'n'}> note<'Not required for Pi'>
+CONFIG_ARM_ERRATA_857272                        policy<{'armhf': 'n'}> note<'Not required for Pi'>
 CONFIG_ARM_LPAE                                 policy<{'armhf': 'y'}> note<'LP: #1896761'>
 CONFIG_ARM_RASPBERRYPI_CPUFREQ                  policy<{'arm64': 'y', 'armhf': 'y'}> note<'Required for Pi (not in master)'>
 CONFIG_ARM_SCMI_PROTOCOL                        policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not supported on Pi'>
@@ -955,14 +958,11 @@ CONFIG_ARM_ERRATA_764369                        policy<{'armhf': 'n'}>
 CONFIG_ARM_ERRATA_773022                        policy<{'armhf': 'n'}>
 CONFIG_ARM_ERRATA_775420                        policy<{'armhf': 'n'}>
 CONFIG_ARM_ERRATA_798181                        policy<{'armhf': 'n'}>
-CONFIG_ARM_ERRATA_814220                        policy<{'armhf': 'y'}>
 CONFIG_ARM_ERRATA_818325_852422                 policy<{'armhf': 'n'}>
 CONFIG_ARM_ERRATA_821420                        policy<{'armhf': 'n'}>
 CONFIG_ARM_ERRATA_825619                        policy<{'armhf': 'n'}>
 CONFIG_ARM_ERRATA_852421                        policy<{'armhf': 'n'}>
 CONFIG_ARM_ERRATA_852423                        policy<{'armhf': 'n'}>
-CONFIG_ARM_ERRATA_857271                        policy<{'armhf': 'y'}>
-CONFIG_ARM_ERRATA_857272                        policy<{'armhf': 'y'}>
 CONFIG_ARM_FFA_SMCCC                            policy<{'arm64': 'y'}>
 CONFIG_ARM_FFA_TRANSPORT                        policy<{'arm64': 'm'}>
 CONFIG_ARM_GIC                                  policy<{'arm64': 'y', 'armhf': 'y'}>
