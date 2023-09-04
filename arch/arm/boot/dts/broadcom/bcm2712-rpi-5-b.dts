@@ -3,7 +3,6 @@
 
 #include <dt-bindings/gpio/gpio.h>
 #include <dt-bindings/clock/rp1.h>
-#include <dt-bindings/input/raspberrypi-button.h>
 #include <dt-bindings/interrupt-controller/irq.h>
 #include <dt-bindings/mfd/rp1.h>
 #include <dt-bindings/pwm/pwm.h>
@@ -491,6 +490,12 @@ dpi_16bit_gpio2:        &rp1_dpi_16bit_gpio2        { };
 };
 
 &pinctrl {
+	pwr_button_pins: pwr_button_pins {
+		function = "gpio";
+		pins = "gpio20";
+		bias-pull-up;
+	};
+
 	wl_on_pins: wl_on_pins {
 		function = "gpio";
 		pins = "gpio28";
@@ -577,15 +582,21 @@ spi0_cs_pins: &rp1_spi0_cs_gpio7 {};
 		rpm-regmap = <&rp1_pwm1>;
 		rpm-offset = <0x3c>;
 	};
-};
 
-&firmware {
-	pwr_button: pwr_button {
-		compatible = "raspberrypi,firmware-button";
-		id = <RASPBERRYPI_BUTTON_POWER>;
-		label = "pwr_button";
-		// linux,code = <205>; // KEY_SUSPEND
-		linux,code = <116>; // KEY_POWER
+	pwr_button {
+		compatible = "gpio-keys";
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&pwr_button_pins>;
+		status = "okay";
+
+		pwr_key: pwr {
+			label = "pwr_button";
+			// linux,code = <205>; // KEY_SUSPEND
+			linux,code = <116>; // KEY_POWER
+			gpios = <&gio 20 GPIO_ACTIVE_LOW>;
+			debounce-interval = <200>; // ms
+		};
 	};
 };
 
@@ -942,7 +953,7 @@ spi10_cs_pins: &spi10_cs_gpio1 {};
 		pciex1_no_l0s = <&pciex1>, "aspm-no-l0s?";
 		random = <&random>, "status";
 		spi = <&spi0>, "status";
-		suspend = <&pwr_button>, "linux,code:0=205";
+		suspend = <&pwr_key>, "linux,code:0=205";
 		uart0 = <&uart0>, "status";
 		wifiaddr = <&wifi>, "local-mac-address[";
 
