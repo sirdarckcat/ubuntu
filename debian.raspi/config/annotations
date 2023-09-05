@@ -295,6 +295,7 @@ CONFIG_PSTORE_RAM                               policy<{'arm64': 'm', 'armhf': '
 CONFIG_PTP_1588_CLOCK_KVM                       policy<{'arm64': 'm'}> note<'Required for Pi (different from master)'>
 CONFIG_PWM_BCM2835                              policy<{'arm64': 'm', 'armhf': 'm'}> note<'Required for Pi (not in master)'>
 CONFIG_PWM_RASPBERRYPI_POE                      policy<{'arm64': 'm', 'armhf': 'm'}> note<'Required for Pi (not in master)'>
+CONFIG_PWM_STMPE                                policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not supported on Pi'>
 CONFIG_QUICC_ENGINE                             policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not supported on Pi'>
 CONFIG_RASPBERRYPI_FIRMWARE                     policy<{'arm64': 'y', 'armhf': 'y'}> note<'Required for Pi (not in master)'>
 CONFIG_RASPBERRYPI_POWER                        policy<{'arm64': 'y', 'armhf': 'y'}> note<'Required for Pi (not in master)'>
@@ -6327,7 +6328,6 @@ CONFIG_PWM_IQS620A                              policy<{'arm64': 'm', 'armhf': '
 CONFIG_PWM_LP3943                               policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_PWM_NTXEC                                policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_PWM_PCA9685                              policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_PWM_STMPE                                policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_PWM_SYSFS                                policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_PWM_XILINX                               policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_PWRSEQ_EMMC                              policy<{'arm64': 'y', 'armhf': 'y'}>
