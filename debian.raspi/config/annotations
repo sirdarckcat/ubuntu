@@ -175,6 +175,7 @@ CONFIG_KSM                                      policy<{'arm64': 'n', 'armhf': '
 CONFIG_LAN966X_SWITCH                           policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not desired on Pi'>
 CONFIG_LDM_PARTITION                            policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not desired on Pi'>
 CONFIG_LEDS_GPIO                                policy<{'arm64': 'y', 'armhf': 'y'}> note<'Required for Pi (different from master)'>
+CONFIG_LEDS_SYSCON                              policy<{'arm64': 'n', 'armhf': 'y'}> note<'Not supported on Pi'>
 CONFIG_LEDS_TRIGGER_ACTPWR                      policy<{'arm64': 'y', 'armhf': 'y'}> note<'Introduced by rpi-6.2.y'>
 CONFIG_LEDS_TRIGGER_BACKLIGHT                   policy<{'arm64': 'y', 'armhf': 'y'}> note<'Required for Pi (different from master)'>
 CONFIG_LEDS_TRIGGER_DEFAULT_ON                  policy<{'arm64': 'y', 'armhf': 'y'}> note<'Required for Pi (different from master)'>
@@ -4454,7 +4455,6 @@ CONFIG_LEDS_RT4505                              policy<{'arm64': 'm', 'armhf': '
 CONFIG_LEDS_RT8515                              policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_LEDS_SGM3140                             policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_LEDS_SPI_BYTE                            policy<{'arm64': 'n', 'armhf': 'n'}>
-CONFIG_LEDS_SYSCON                              policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_LEDS_TCA6507                             policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_LEDS_TI_LMU_COMMON                       policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_LEDS_TLC591XX                            policy<{'arm64': 'm', 'armhf': 'm'}>
