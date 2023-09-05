@@ -925,6 +925,7 @@ spi10_cs_pins: &spi10_cs_gpio1 {};
 		nvme = <&pciex1>, "status";
 		pciex1 = <&pciex1>, "status";
 		pciex1_gen = <&pciex1> , "max-link-speed:0";
+		pciex1_no_l0s = <&pciex1>, "aspm-no-l0s?";
 		random = <&random>, "status";
 		spi = <&spi0>, "status";
 		suspend = <&pwr_button>, "linux,code:0=205";
