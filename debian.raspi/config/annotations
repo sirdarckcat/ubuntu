@@ -70,6 +70,7 @@ CONFIG_CLK_RASPBERRYPI                          policy<{'arm64': 'y', 'armhf': '
 CONFIG_CMA_SIZE_MBYTES                          policy<{'arm64': '5', 'armhf': '5'}> note<'Required for Pi (different from master)'>
 CONFIG_CMDLINE                                  policy<{'arm64': '"console=ttyAMA0,115200"', 'armhf': '"console=ttyAMA0,115200"'}> note<'Required for Pi (different from master)'>
 CONFIG_CMDLINE_PARTITION                        policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not desired on Pi'>
+CONFIG_COMMON_CLK_FIXED_MMIO                    policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not supported on Pi'>
 CONFIG_COMMON_CLK_HIFIBERRY_DACPLUSHD           policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
 CONFIG_COMMON_CLK_HIFIBERRY_DACPRO              policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
 CONFIG_COMMON_CLK_XGENE                         policy<{'arm64': 'n'}> note<'Not supported on Pi'>
@@ -1841,7 +1842,6 @@ CONFIG_COMMON_CLK_BD718XX                       policy<{'arm64': 'n', 'armhf': '
 CONFIG_COMMON_CLK_CDCE706                       policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_COMMON_CLK_CDCE925                       policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_COMMON_CLK_CS2000_CP                     policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_COMMON_CLK_FIXED_MMIO                    policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_COMMON_CLK_MAX77686                      policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_COMMON_CLK_MAX9485                       policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_COMMON_CLK_PALMAS                        policy<{'arm64': 'm', 'armhf': 'm'}>
