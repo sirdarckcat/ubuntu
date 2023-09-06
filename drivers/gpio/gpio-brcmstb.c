@@ -710,8 +710,10 @@ static int brcmstb_gpio_probe(struct platform_device *pdev)
 		 * Mask all interrupts by default, since wakeup interrupts may
 		 * be retained from S5 cold boot
 		 */
-		need_wakeup_event |= !!__brcmstb_gpio_get_active_irqs(bank);
-		gc->write_reg(reg_base + GIO_MASK(bank->id), 0);
+		if (priv->parent_irq > 0) {
+			need_wakeup_event |= !!__brcmstb_gpio_get_active_irqs(bank);
+			gc->write_reg(reg_base + GIO_MASK(bank->id), 0);
+		}
 
 		err = gpiochip_add_data(gc, bank);
 		if (err) {
