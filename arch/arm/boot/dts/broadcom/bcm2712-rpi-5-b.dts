@@ -658,6 +658,13 @@ spi10_cs_pins: &spi10_cs_gpio1 {};
 	/delete-property/ interrupt-controller;
 };
 
+&main_aon_irq {
+	// Don't use the MAIN_AON_IRQ interrupt controller because it will
+	// clash with the firmware monitoring the PMIC interrupt via the VPU.
+
+	status = "disabled";
+};
+
 &rp1_pwm1 {
 	status = "disabled";
 	pinctrl-0 = <&rp1_pwm1_gpio45>;
