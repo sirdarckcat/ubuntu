@@ -651,6 +651,13 @@ spi10_cs_pins: &spi10_cs_gpio1 {};
 // =============================================
 // Board specific stuff here
 
+&gio_aon {
+	// Don't use GIO_AON as an interrupt controller because it will
+	// clash with the firmware monitoring the PMIC interrupt via the VPU.
+
+	/delete-property/ interrupt-controller;
+};
+
 &rp1_pwm1 {
 	status = "disabled";
 	pinctrl-0 = <&rp1_pwm1_gpio45>;
