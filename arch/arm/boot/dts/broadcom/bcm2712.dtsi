@@ -645,7 +645,7 @@
 			clocks = <&clk_27MHz>;
 		};
 
-		main_aon_irq: intc@7d517a80 {
+		main_aon_irq: intc@7d517ac0 {
 			compatible = "brcm,bcm7271-l2-intc";
 			reg = <0x7d517ac0 0x10>;
 			interrupts = <GIC_SPI 245 IRQ_TYPE_LEVEL_HIGH>;
@@ -653,7 +653,7 @@
 			#interrupt-cells = <1>;
 		};
 
-		bsc_aon_irq: intc@7d517ac0 {
+		bsc_aon_irq: intc@7d517b00 {
 			compatible = "brcm,bcm7271-l2-intc";
 			reg = <0x7d517b00 0x10>;
 			interrupts = <GIC_SPI 243 IRQ_TYPE_LEVEL_HIGH>;
