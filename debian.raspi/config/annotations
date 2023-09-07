@@ -36,7 +36,7 @@ CONFIG_BACKLIGHT_RT4831                         policy<{'arm64': 'm', 'armhf': '
 CONFIG_BACKLIGHT_SKY81452                       policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
 CONFIG_BCM2708_VCMEM                            policy<{'arm64': 'y', 'armhf': 'y'}> note<'Introduced by rpi-6.2.y'>
 CONFIG_BCM2711_THERMAL                          policy<{'arm64': 'y', 'armhf': 'y'}> note<'Required for Pi (not in master)'>
-CONFIG_BCM2835_DEVGPIOMEM                       policy<{'arm64': 'y', 'armhf': 'y'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_BCM2712_MIP                              policy<{'arm64': 'y', 'armhf': 'y'}> note<'Introduced by pi5_61'>
 CONFIG_BCM2835_MBOX                             policy<{'arm64': 'y', 'armhf': 'y'}> note<'Required for Pi (not in master)'>
 CONFIG_BCM2835_SMI                              policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
 CONFIG_BCM2835_SMI_DEV                          policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
@@ -73,6 +73,8 @@ CONFIG_CMDLINE_PARTITION                        policy<{'arm64': 'n', 'armhf': '
 CONFIG_COMMON_CLK_FIXED_MMIO                    policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not supported on Pi'>
 CONFIG_COMMON_CLK_HIFIBERRY_DACPLUSHD           policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
 CONFIG_COMMON_CLK_HIFIBERRY_DACPRO              policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_COMMON_CLK_RP1                           policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by pi5_61'>
+CONFIG_COMMON_CLK_RP1_SDIO                      policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by pi5_61'>
 CONFIG_COMMON_CLK_XGENE                         policy<{'arm64': 'n'}> note<'Not supported on Pi'>
 CONFIG_CONNECTOR                                policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
 CONFIG_CRYPTO_AEAD                              policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
@@ -105,6 +107,9 @@ CONFIG_DRM_PANEL_ILITEK_ILI9806E                policy<{'arm64': 'm', 'armhf': '
 CONFIG_DRM_PANEL_TPO_Y17P                       policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
 CONFIG_DRM_PANEL_WAVESHARE_TOUCHSCREEN          policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.5.y'>
 CONFIG_DRM_PANFROST                             policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not supported on Pi'>
+CONFIG_DRM_RP1_DPI                              policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by pi5_61'>
+CONFIG_DRM_RP1_DSI                              policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by pi5_61'>
+CONFIG_DRM_RP1_VEC                              policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by pi5_61'>
 CONFIG_DRM_SIMPLEDRM                            policy<{'arm64': 'n', 'armhf': 'n'}> note<'LP: #1976147'>
 CONFIG_DRM_SIMPLE_BRIDGE                        policy<{'arm64': 'm', 'armhf': 'm'}> note<'LP: #1916721'>
 CONFIG_DRM_V3D                                  policy<{'arm64': 'm', 'armhf': 'm'}> note<'Required for Pi (not in master)'>
@@ -129,6 +134,7 @@ CONFIG_FUNCTION_ERROR_INJECTION                 policy<{'arm64': 'n', 'armhf': '
 CONFIG_FUSE_FS                                  policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
 CONFIG_FW_CFG_SYSFS                             policy<{'arm64': 'm', 'armhf': 'm'}> note<'Required for Pi (different from master)'>
 CONFIG_GPIO_BCM_VIRT                            policy<{'arm64': 'y', 'armhf': 'y'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_GPIO_BRCMSTB                             policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by pi5_61'>
 CONFIG_GPIO_CDEV_V1                             policy<{'arm64': 'y', 'armhf': 'y'}> note<'LP: #1919973'>
 CONFIG_GPIO_FSM                                 policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
 CONFIG_GPIO_GENERIC_PLATFORM                    policy<{'arm64': 'm', 'armhf': 'm'}> note<'Required for Pi (different from master)'>
@@ -161,6 +167,7 @@ CONFIG_IKCONFIG_PROC                            policy<{'arm64': 'y', 'armhf': '
 CONFIG_IMA_ARCH_POLICY                          policy<{'arm64': 'n', 'armhf': 'n'}> note<'LP: #1982090'>
 CONFIG_INIT_STACK_NONE                          policy<{'arm64': 'y', 'armhf': 'y'}> note<'Required for Pi (different from master)'>
 CONFIG_INPUT_PM8XXX_VIBRATOR                    policy<{'armhf': 'm'}> note<'Required for Pi (different from master)'>
+CONFIG_INPUT_RASPBERRYPI_BUTTON                 policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by pi5_61'>
 CONFIG_INPUT_UINPUT                             policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
 CONFIG_INTEGRITY_PLATFORM_KEYRING               policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not (yet) required on Pi'>
 CONFIG_IOMMU_SUPPORT                            policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not supported on Pi'>
@@ -217,6 +224,7 @@ CONFIG_MFD_MAX8998                              policy<{'arm64': 'n', 'armhf': '
 CONFIG_MFD_PALMAS                               policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
 CONFIG_MFD_RASPBERRYPI_POE_HAT                  policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
 CONFIG_MFD_RC5T583                              policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not desired on Pi'>
+CONFIG_MFD_RP1                                  policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by pi5_61'>
 CONFIG_MFD_RPISENSE_CORE                        policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
 CONFIG_MFD_SEC_CORE                             policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
 CONFIG_MFD_SM501                                policy<{'arm64': 'm', 'armhf': 'm'}> note<'Required for Pi (different from master)'>
@@ -285,9 +293,12 @@ CONFIG_PCIE_CADENCE_PLAT_HOST                   policy<{'arm64': 'n', 'armhf': '
 CONFIG_PCIE_XILINX                              policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not supported on Pi'>
 CONFIG_PCI_HOST_GENERIC                         policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
 CONFIG_PCI_MESON                                policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not supported on Pi'>
+CONFIG_PHY_BRCM_USB                             policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by pi5_61'>
 CONFIG_PINCTRL_AS3722                           policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
+CONFIG_PINCTRL_BCM2712                          policy<{'arm64': 'y', 'armhf': 'y'}> note<'Introduced by pi5_61'>
 CONFIG_PINCTRL_MICROCHIP_SGPIO                  policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
 CONFIG_PINCTRL_PALMAS                           policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
+CONFIG_PINCTRL_RP1                              policy<{'arm64': 'y', 'armhf': 'y'}> note<'Introduced by pi5_61'>
 CONFIG_PINCTRL_SX150X                           policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not supported on Pi'>
 CONFIG_PL320_MBOX                               policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not supported on Pi'>
 CONFIG_PMIC_ADP5520                             policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not supported on Pi'>
@@ -307,9 +318,11 @@ CONFIG_PSTORE_RAM                               policy<{'arm64': 'm', 'armhf': '
 CONFIG_PTP_1588_CLOCK_KVM                       policy<{'arm64': 'm'}> note<'Required for Pi (different from master)'>
 CONFIG_PWM_BCM2835                              policy<{'arm64': 'm', 'armhf': 'm'}> note<'Required for Pi (not in master)'>
 CONFIG_PWM_RASPBERRYPI_POE                      policy<{'arm64': 'm', 'armhf': 'm'}> note<'Required for Pi (not in master)'>
+CONFIG_PWM_RP1                                  policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by pi5_61'>
 CONFIG_PWM_STMPE                                policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not supported on Pi'>
 CONFIG_QUICC_ENGINE                             policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not supported on Pi'>
 CONFIG_RASPBERRYPI_FIRMWARE                     policy<{'arm64': 'y', 'armhf': 'y'}> note<'Required for Pi (not in master)'>
+CONFIG_RASPBERRYPI_GPIOMEM                      policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by pi5_61'>
 CONFIG_RASPBERRYPI_POWER                        policy<{'arm64': 'y', 'armhf': 'y'}> note<'Required for Pi (not in master)'>
 CONFIG_RCU_EXP_CPU_STALL_TIMEOUT                policy<{'arm64': '20', 'armhf': '20'}> note<'Required for Pi (different from master)'>
 CONFIG_RC_CORE                                  policy<{'arm64': 'y', 'armhf': 'y'}> note<'Required for Pi (different from master)'>
@@ -317,6 +330,7 @@ CONFIG_REGULATOR_FIXED_VOLTAGE                  policy<{'arm64': 'y', 'armhf': '
 CONFIG_REGULATOR_GPIO                           policy<{'arm64': 'y', 'armhf': 'y'}> note<'Required for Pi (different from master)'>
 CONFIG_REGULATOR_TPS65217                       policy<{'arm64': 'm', 'armhf': 'm'}> note<'Required for Pi (different from master)'>
 CONFIG_REMOTEPROC                               policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not supported on Pi'>
+CONFIG_RESET_BRCMSTB                            policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by pi5_61'>
 CONFIG_RESET_RASPBERRYPI                        policy<{'arm64': 'y', 'armhf': 'y'}> note<'Required for Pi (not in master)'>
 CONFIG_RFKILL                                   policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
 CONFIG_ROCKCHIP_ERRATUM_3588001                 policy<{'arm64': 'n'}> note<'Not essential on Pi'>
@@ -334,6 +348,7 @@ CONFIG_SCSI_VIRTIO                              policy<{'arm64': 'm', 'armhf': '
 CONFIG_SECURITY_APPARMOR_RESTRICT_USERNS        policy<{'arm64': 'n', 'armhf': 'n'}> note<'Required for Pi (different from master)'>
 CONFIG_SENSORS_LIS3_SPI                         policy<{'arm64': 'm', 'armhf': 'm'}> note<'Required for Pi (different from master)'>
 CONFIG_SENSORS_RASPBERRYPI_HWMON                policy<{'arm64': 'm', 'armhf': 'm'}> note<'Required for Pi (not in master)'>
+CONFIG_SENSORS_RP1_ADC                          policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by pi5_61'>
 CONFIG_SERIAL_8250_BCM2835AUX                   policy<{'arm64': 'y', 'armhf': 'y'}> note<'Required for Pi (not in master)'>
 CONFIG_SERIAL_8250_DMA                          policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not desired on Pi'>
 CONFIG_SERIAL_8250_DW                           policy<{'arm64': 'm', 'armhf': 'm'}> note<'Required for Pi (different from master)'>
@@ -459,6 +474,8 @@ CONFIG_VIDEO_IMX708                             policy<{'arm64': 'm', 'armhf': '
 CONFIG_VIDEO_IRS1125                            policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
 CONFIG_VIDEO_ISP_BCM2835                        policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
 CONFIG_VIDEO_OV2311                             policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
+CONFIG_VIDEO_RASPBERRYPI_PISP_BE                policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by pi5_61'>
+CONFIG_VIDEO_RP1_CFE                            policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by pi5_61'>
 CONFIG_VIDEO_RPIVID                             policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
 CONFIG_VIRTIO_BALLOON                           policy<{'arm64': 'm', 'armhf': 'm'}> note<'Required for Pi (different from master)'>
 CONFIG_VIRTIO_BLK                               policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
@@ -1642,7 +1659,7 @@ CONFIG_CC_IS_GCC                                policy<{'arm64': 'y', 'armhf': '
 CONFIG_CC_NO_ARRAY_BOUNDS                       policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_CC_OPTIMIZE_FOR_PERFORMANCE              policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_CC_OPTIMIZE_FOR_SIZE                     policy<{'arm64': 'n', 'armhf': 'n'}>
-CONFIG_CC_VERSION_TEXT                          policy<{'arm64': '"aarch64-linux-gnu-gcc-13 (Ubuntu 13.2.0-2ubuntu1) 13.2.0"', 'armhf': '"arm-linux-gnueabihf-gcc-13 (Ubuntu 13.2.0-2ubuntu1) 13.2.0"'}>
+CONFIG_CC_VERSION_TEXT                          policy<{'arm64': '"aarch64-linux-gnu-gcc-13 (Ubuntu 13.2.0-4ubuntu3) 13.2.0"', 'armhf': '"arm-linux-gnueabihf-gcc-13 (Ubuntu 13.2.0-4ubuntu3) 13.2.0"'}>
 CONFIG_CDNS_I3C_MASTER                          policy<{'arm64': 'n', 'armhf': 'n'}>
 CONFIG_CDROM                                    policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_CDROM_PKTCDVD_BUFFERS                    policy<{'arm64': '8', 'armhf': '8'}>
