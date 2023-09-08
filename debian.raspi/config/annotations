@@ -73,8 +73,8 @@ CONFIG_CMDLINE_PARTITION                        policy<{'arm64': 'n', 'armhf': '
 CONFIG_COMMON_CLK_FIXED_MMIO                    policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not supported on Pi'>
 CONFIG_COMMON_CLK_HIFIBERRY_DACPLUSHD           policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
 CONFIG_COMMON_CLK_HIFIBERRY_DACPRO              policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
-CONFIG_COMMON_CLK_RP1                           policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by pi5_61'>
-CONFIG_COMMON_CLK_RP1_SDIO                      policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by pi5_61'>
+CONFIG_COMMON_CLK_RP1                           policy<{'arm64': 'y', 'armhf': 'y'}> note<'Introduced by pi5_61, fails to build as a module'>
+CONFIG_COMMON_CLK_RP1_SDIO                      policy<{'arm64': 'y', 'armhf': 'y'}> note<'Introduced by pi5_61, fails to build as a module'>
 CONFIG_COMMON_CLK_XGENE                         policy<{'arm64': 'n'}> note<'Not supported on Pi'>
 CONFIG_CONNECTOR                                policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
 CONFIG_CRYPTO_AEAD                              policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
@@ -224,7 +224,7 @@ CONFIG_MFD_MAX8998                              policy<{'arm64': 'n', 'armhf': '
 CONFIG_MFD_PALMAS                               policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
 CONFIG_MFD_RASPBERRYPI_POE_HAT                  policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
 CONFIG_MFD_RC5T583                              policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not desired on Pi'>
-CONFIG_MFD_RP1                                  policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by pi5_61'>
+CONFIG_MFD_RP1                                  policy<{'arm64': 'y', 'armhf': 'y'}> note<'Introduced by pi5_61, fails to build as a module'>
 CONFIG_MFD_RPISENSE_CORE                        policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
 CONFIG_MFD_SEC_CORE                             policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
 CONFIG_MFD_SM501                                policy<{'arm64': 'm', 'armhf': 'm'}> note<'Required for Pi (different from master)'>
@@ -318,7 +318,7 @@ CONFIG_PSTORE_RAM                               policy<{'arm64': 'm', 'armhf': '
 CONFIG_PTP_1588_CLOCK_KVM                       policy<{'arm64': 'm'}> note<'Required for Pi (different from master)'>
 CONFIG_PWM_BCM2835                              policy<{'arm64': 'm', 'armhf': 'm'}> note<'Required for Pi (not in master)'>
 CONFIG_PWM_RASPBERRYPI_POE                      policy<{'arm64': 'm', 'armhf': 'm'}> note<'Required for Pi (not in master)'>
-CONFIG_PWM_RP1                                  policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by pi5_61'>
+CONFIG_PWM_RP1                                  policy<{'arm64': 'y', 'armhf': 'n'}> note<'Introduced by pi5_61, fails to build on armhf'>
 CONFIG_PWM_STMPE                                policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not supported on Pi'>
 CONFIG_QUICC_ENGINE                             policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not supported on Pi'>
 CONFIG_RASPBERRYPI_FIRMWARE                     policy<{'arm64': 'y', 'armhf': 'y'}> note<'Required for Pi (not in master)'>
@@ -348,7 +348,7 @@ CONFIG_SCSI_VIRTIO                              policy<{'arm64': 'm', 'armhf': '
 CONFIG_SECURITY_APPARMOR_RESTRICT_USERNS        policy<{'arm64': 'n', 'armhf': 'n'}> note<'Required for Pi (different from master)'>
 CONFIG_SENSORS_LIS3_SPI                         policy<{'arm64': 'm', 'armhf': 'm'}> note<'Required for Pi (different from master)'>
 CONFIG_SENSORS_RASPBERRYPI_HWMON                policy<{'arm64': 'm', 'armhf': 'm'}> note<'Required for Pi (not in master)'>
-CONFIG_SENSORS_RP1_ADC                          policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by pi5_61'>
+CONFIG_SENSORS_RP1_ADC                          policy<{'arm64': 'y', 'armhf': 'n'}> note<'Introduced by pi5_61, fails to build on armhf'>
 CONFIG_SERIAL_8250_BCM2835AUX                   policy<{'arm64': 'y', 'armhf': 'y'}> note<'Required for Pi (not in master)'>
 CONFIG_SERIAL_8250_DMA                          policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not desired on Pi'>
 CONFIG_SERIAL_8250_DW                           policy<{'arm64': 'm', 'armhf': 'm'}> note<'Required for Pi (different from master)'>
