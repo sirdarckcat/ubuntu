@@ -1,10 +1,4 @@
-menu "Ubuntu Supplied Third-Party Device Drivers"
-
-
-config UBUNTU_ODM_DRIVERS
-	def_bool $(success,$(srctree)/debian/scripts/misc/arch-has-odm-enabled.sh $(DEB_ARCH))
-	help
-	  Turn on support for Ubuntu ODM supplied drivers
+menu "experimental"
 
 #
 # NOTE: to allow drivers to be added and removed without causing merge
@@ -16,11 +10,11 @@ config UBUNTU_ODM_DRIVERS
 ##
 ##
 ##
-source "ubuntu/ubuntu-host/Kconfig"
+source "ubuntu/staging/mali/Kconfig"
 ##
 ##
 ##
-source "ubuntu/staging/Kconfig"
+source "ubuntu/staging/xilinx-mv-camera-10gige-module/Kconfig"
 ##
 ##
 ##
