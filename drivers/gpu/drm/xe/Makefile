@@ -135,7 +135,8 @@ xe-y += xe_bb.o \
 
 xe-$(CONFIG_I2C)	+= xe_i2c.o
 
-xe-$(CONFIG_DRM_XE_EUDEBUG) += xe_eudebug.o
+xe-$(CONFIG_DRM_XE_EUDEBUG) += xe_eudebug.o \
+	xe_debug_metadata.o
 
 xe-$(CONFIG_HMM_MIRROR) += xe_hmm.o
 xe-$(CONFIG_DRM_XE_GPUSVM) += xe_svm.o
