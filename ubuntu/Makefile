@@ -15,27 +15,7 @@
 ##
 ##
 ##
-obj-$(CONFIG_MALI400) += mali/
-##
-##
-##
-obj-y += xilinx-vcu/
-##
-##
-##
-obj-y += xilinx-hdmi/
-##
-##
-##
-obj-$(CONFIG_NET_VENDOR_S2I) += xilinx-mv-camera-10gige-module/
-##
-##
-##
-obj-y += xilinx-mv-camera-sensor-module/
-##
-##
-##
-obj-y += xilinx-isp-module/
+obj-y += staging/
 ##
 ##
 ##
