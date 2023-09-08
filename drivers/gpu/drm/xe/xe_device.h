@@ -217,6 +217,8 @@ static inline int xe_eudebug_needs_lock(const unsigned int cmd)
 	case DRM_XE_EXEC_QUEUE_CREATE:
 	case DRM_XE_EXEC_QUEUE_DESTROY:
 	case DRM_XE_EUDEBUG_CONNECT:
+	case DRM_XE_DEBUG_METADATA_CREATE:
+	case DRM_XE_DEBUG_METADATA_DESTROY:
 		return 1;
 	}
 

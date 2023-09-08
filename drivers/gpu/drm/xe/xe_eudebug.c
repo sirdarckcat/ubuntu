@@ -21,6 +21,7 @@
 #include "xe_assert.h"
 #include "xe_bo.h"
 #include "xe_device.h"
+#include "xe_debug_metadata.h"
 #include "xe_eudebug.h"
 #include "xe_eudebug_types.h"
 #include "xe_exec_queue.h"
@@ -2141,6 +2142,8 @@ void xe_eudebug_file_open(struct xe_file *xef)
 	struct xe_eudebug *d;
 
 	INIT_LIST_HEAD(&xef->eudebug.client_link);
+	mutex_init(&xef->eudebug.metadata.lock);
+	xa_init_flags(&xef->eudebug.metadata.xa, XA_FLAGS_ALLOC1);
 
 	down_read(&xef->xe->eudebug.discovery_lock);
 
@@ -2158,11 +2161,21 @@ void xe_eudebug_file_open(struct xe_file *xef)
 void xe_eudebug_file_close(struct xe_file *xef)
 {
 	struct xe_eudebug *d;
+	unsigned long idx;
+	struct xe_debug_metadata *mdata;
 
 	down_read(&xef->xe->eudebug.discovery_lock);
 	d = xe_eudebug_get(xef);
 	if (d)
 		xe_eudebug_event_put(d, client_destroy_event(d, xef));
+
+	mutex_lock(&xef->eudebug.metadata.lock);
+	xa_for_each(&xef->eudebug.metadata.xa, idx, mdata)
+		xe_debug_metadata_put(mdata);
+	mutex_unlock(&xef->eudebug.metadata.lock);
+
+	xa_destroy(&xef->eudebug.metadata.xa);
+	mutex_destroy(&xef->eudebug.metadata.lock);
 
 	spin_lock(&xef->xe->clients.lock);
 	list_del_init(&xef->eudebug.client_link);

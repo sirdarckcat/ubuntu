@@ -693,6 +693,13 @@ struct xe_file {
 	struct {
 		/** @client_link: list entry in xe_device.clients.list */
 		struct list_head client_link;
+
+		struct {
+			/** @xa: xarray to store debug metadata */
+			struct xarray xa;
+			/** @lock: protects debug metadata xarray */
+			struct mutex lock;
+		} metadata;
 	} eudebug;
 #endif
 };
