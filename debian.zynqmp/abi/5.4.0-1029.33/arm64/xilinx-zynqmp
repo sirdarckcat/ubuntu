@@ -7238,7 +7238,9 @@ EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	cdc_ncm_change_mtu
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	cdc_ncm_fill_tx_frame
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	cdc_ncm_rx_fixup
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	cdc_ncm_rx_verify_ndp16
+EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	cdc_ncm_rx_verify_ndp32
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	cdc_ncm_rx_verify_nth16
+EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	cdc_ncm_rx_verify_nth32
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	cdc_ncm_select_altsetting
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	cdc_ncm_tx_fixup
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	cdc_ncm_unbind
@@ -7858,6 +7860,7 @@ EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	device_remove_groups
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	device_remove_properties
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	device_rename
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	device_reprobe
+EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	device_set_node
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	device_set_of_node_from_dev
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	device_set_wakeup_capable
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	device_set_wakeup_enable
@@ -8841,6 +8844,7 @@ EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	iio_validate_scan_mask_onehot
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	iio_write_channel_attribute
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	iio_write_channel_ext_info
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	iio_write_channel_raw
+EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	inet6_cleanup_sock
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	inet6_csk_addr2sockaddr
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	inet6_csk_update_pmtu
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	inet6_csk_xmit
@@ -8850,6 +8854,7 @@ EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	inet6_hash_connect
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	inet6_lookup
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	inet6_lookup_listener
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	inet6_sk_rebuild_header
+EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	inet6_sock_destruct
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	inet_csk_addr2sockaddr
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	inet_csk_clone_lock
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	inet_csk_compat_getsockopt
@@ -10444,6 +10449,7 @@ EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	power_supply_get_by_name
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	power_supply_get_by_phandle
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	power_supply_get_drvdata
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	power_supply_get_property
+EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	power_supply_get_property_from_supplier
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	power_supply_is_system_supplied
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	power_supply_notifier
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	power_supply_ocv2cap_simple
@@ -10455,7 +10461,6 @@ EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	power_supply_reg_notifier
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	power_supply_register
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	power_supply_register_no_ws
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	power_supply_set_battery_charged
-EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	power_supply_set_input_current_limit_from_supplier
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	power_supply_set_property
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	power_supply_unreg_notifier
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	power_supply_unregister
@@ -11816,8 +11821,7 @@ EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	udp4_lib_lookup_skb
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	udp6_lib_lookup_skb
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	udp_abort
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	udp_cmsg_send
-EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	udp_destruct_sock
-EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	udp_init_sock
+EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	udp_destruct_common
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	uhci_check_and_reset_hc
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	uhci_reset_hc
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	uio_event_notify
@@ -11907,6 +11911,8 @@ EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	usb_bus_idr
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	usb_bus_idr_lock
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	usb_bus_start_enum
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	usb_calc_bus_time
+EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	usb_check_bulk_endpoints
+EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	usb_check_int_endpoints
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	usb_choose_configuration
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	usb_clear_halt
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	usb_composite_overwrite_options
