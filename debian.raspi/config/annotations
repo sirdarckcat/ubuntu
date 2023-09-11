@@ -37,6 +37,7 @@ CONFIG_BACKLIGHT_RT4831                         policy<{'arm64': 'm', 'armhf': '
 CONFIG_BACKLIGHT_SKY81452                       policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
 CONFIG_BCM2708_VCMEM                            policy<{'arm64': 'y', 'armhf': 'y'}> note<'Introduced by rpi-6.2.y'>
 CONFIG_BCM2711_THERMAL                          policy<{'arm64': 'y', 'armhf': 'y'}> note<'Required for Pi (not in master)'>
+CONFIG_BCM2712_IOMMU                            policy<{'arm64': 'y'}> note<'Required for Pi 5B, fails to build as a module'>
 CONFIG_BCM2712_MIP                              policy<{'arm64': 'y', 'armhf': 'y'}> note<'Introduced by pi5_61'>
 CONFIG_BCM2835_MBOX                             policy<{'arm64': 'y', 'armhf': 'y'}> note<'Required for Pi (not in master)'>
 CONFIG_BCM2835_SMI                              policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
@@ -171,7 +172,7 @@ CONFIG_INPUT_PM8XXX_VIBRATOR                    policy<{'armhf': 'm'}> note<'Req
 CONFIG_INPUT_RASPBERRYPI_BUTTON                 policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by pi5_61'>
 CONFIG_INPUT_UINPUT                             policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
 CONFIG_INTEGRITY_PLATFORM_KEYRING               policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not (yet) required on Pi'>
-CONFIG_IOMMU_SUPPORT                            policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not supported on Pi'>
+CONFIG_IOMMU_SUPPORT                            policy<{'arm64': 'y', 'armhf': 'n'}> note<'Required for Pi 5B'>
 CONFIG_IPMI_HANDLER                             policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not supported on Pi'>
 CONFIG_IPV6                                     policy<{'arm64': 'y', 'armhf': 'y'}> note<'LP: #2027983'>
 CONFIG_IP_PNP                                   policy<{'arm64': 'y', 'armhf': 'y'}> note<'Required for Pi (different from master)'>
@@ -778,7 +779,7 @@ CONFIG_ARCH_HAS_SUBPAGE_FAULTS                  policy<{'arm64': 'y'}>
 CONFIG_ARCH_HAS_SYNC_DMA_FOR_CPU                policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_ARCH_HAS_SYNC_DMA_FOR_DEVICE             policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_ARCH_HAS_SYSCALL_WRAPPER                 policy<{'arm64': 'y'}>
-CONFIG_ARCH_HAS_TEARDOWN_DMA_OPS                policy<{'armhf': 'y'}>
+CONFIG_ARCH_HAS_TEARDOWN_DMA_OPS                policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_ARCH_HAS_TICK_BROADCAST                  policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_ARCH_HAS_UACCESS_FLUSHCACHE              policy<{'arm64': 'y'}>
 CONFIG_ARCH_HAS_UBSAN_SANITIZE_ALL              policy<{'arm64': 'y', 'armhf': 'y'}>
@@ -1022,6 +1023,10 @@ CONFIG_ARM_SCPI_POWER_DOMAIN                    policy<{'arm64': 'm', 'armhf': '
 CONFIG_ARM_SCPI_PROTOCOL                        policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_ARM_SMCCC_SOC_ID                         policy<{'arm64': 'y'}>
 CONFIG_ARM_SMC_WATCHDOG                         policy<{'arm64': 'm', 'armhf': 'm'}>
+CONFIG_ARM_SMMU                                 policy<{'arm64': 'm', 'armhf': '-'}>
+CONFIG_ARM_SMMU_DISABLE_BYPASS_BY_DEFAULT       policy<{'arm64': 'y', 'armhf': '-'}>
+CONFIG_ARM_SMMU_V3                              policy<{'arm64': 'm'}>
+CONFIG_ARM_SMMU_V3_SVA                          policy<{'arm64': 'y'}>
 CONFIG_ARM_SP805_WATCHDOG                       policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_ARM_SPE_PMU                              policy<{'arm64': 'm'}>
 CONFIG_ARM_THUMB                                policy<{'armhf': 'y'}>
@@ -4013,6 +4018,7 @@ CONFIG_INTEL_XWAY_PHY                           policy<{'arm64': 'm', 'armhf': '
 CONFIG_INTERCONNECT                             policy<{'arm64': 'n', 'armhf': 'n'}>
 CONFIG_INTERRUPT_CNT                            policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_INTERVAL_TREE                            policy<{'arm64': 'y', 'armhf': 'y'}>
+CONFIG_INTERVAL_TREE_SPAN_ITER                  policy<{'arm64': 'y', 'armhf': '-'}>
 CONFIG_INTERVAL_TREE_TEST                       policy<{'arm64': 'n', 'armhf': 'n'}>
 CONFIG_INV_ICM42600                             policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_INV_ICM42600_I2C                         policy<{'arm64': 'm', 'armhf': 'm'}>
@@ -4020,8 +4026,20 @@ CONFIG_INV_ICM42600_SPI                         policy<{'arm64': 'm', 'armhf': '
 CONFIG_INV_MPU6050_I2C                          policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_INV_MPU6050_IIO                          policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_INV_MPU6050_SPI                          policy<{'arm64': 'm', 'armhf': 'm'}>
+CONFIG_IOMMUFD                                  policy<{'arm64': 'm', 'armhf': '-'}>
 CONFIG_IOMMU_API                                policy<{'arm64': 'y', 'armhf': 'y'}>
-CONFIG_IOMMU_IOVA                               policy<{'arm64': 'm', 'armhf': 'm'}>
+CONFIG_IOMMU_DEBUGFS                            policy<{'arm64': 'n', 'armhf': '-'}>
+CONFIG_IOMMU_DEFAULT_DMA_LAZY                   policy<{'arm64': 'n', 'armhf': '-'}>
+CONFIG_IOMMU_DEFAULT_DMA_STRICT                 policy<{'arm64': 'y', 'armhf': '-'}>
+CONFIG_IOMMU_DEFAULT_PASSTHROUGH                policy<{'arm64': 'n', 'armhf': '-'}>
+CONFIG_IOMMU_DMA                                policy<{'arm64': 'y'}>
+CONFIG_IOMMU_IOVA                               policy<{'arm64': 'y', 'armhf': 'm'}>
+CONFIG_IOMMU_IO_PGTABLE                         policy<{'arm64': 'y', 'armhf': '-'}>
+CONFIG_IOMMU_IO_PGTABLE_ARMV7S                  policy<{'arm64': 'n', 'armhf': '-'}>
+CONFIG_IOMMU_IO_PGTABLE_DART                    policy<{'arm64': 'n'}>
+CONFIG_IOMMU_IO_PGTABLE_LPAE                    policy<{'arm64': 'y', 'armhf': '-'}>
+CONFIG_IOMMU_IO_PGTABLE_LPAE_SELFTEST           policy<{'arm64': 'n', 'armhf': '-'}>
+CONFIG_IOMMU_SVA                                policy<{'arm64': 'y'}>
 CONFIG_IONIC                                    policy<{'arm64': 'm'}>
 CONFIG_IOSCHED_BFQ                              policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_IOSM                                     policy<{'arm64': 'm', 'armhf': 'm'}>
@@ -4182,6 +4200,7 @@ CONFIG_IRQ_BYPASS_MANAGER                       policy<{'arm64': 'y', 'armhf': '
 CONFIG_IRQ_DOMAIN                               policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_IRQ_DOMAIN_HIERARCHY                     policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_IRQ_FORCED_THREADING                     policy<{'arm64': 'y', 'armhf': 'y'}>
+CONFIG_IRQ_MSI_IOMMU                            policy<{'arm64': 'y'}>
 CONFIG_IRQ_POLL                                 policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_IRQ_SIM                                  policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_IRQ_TIME_ACCOUNTING                      policy<{'arm64': 'n', 'armhf': 'n'}>
@@ -5285,7 +5304,8 @@ CONFIG_ND_CLAIM                                 policy<{'arm64': 'y', 'armhf': '
 CONFIG_NE2K_PCI                                 policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_NEED_DMA_MAP_STATE                       policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_NEED_KVM_DIRTY_RING_WITH_BITMAP          policy<{'arm64': 'y'}>
-CONFIG_NEED_SG_DMA_LENGTH                       policy<{'arm64': 'y'}>
+CONFIG_NEED_SG_DMA_FLAGS                        policy<{'arm64': 'y'}>
+CONFIG_NEED_SG_DMA_LENGTH                       policy<{'arm64': 'y', 'armhf': '-'}>
 CONFIG_NEED_SRCU_NMI_SAFE                       policy<{'armhf': 'y'}>
 CONFIG_NEON                                     policy<{'armhf': 'y'}>
 CONFIG_NET                                      policy<{'arm64': 'y', 'armhf': 'y'}>
@@ -5959,6 +5979,7 @@ CONFIG_OF_FLATTREE                              policy<{'arm64': 'y', 'armhf': '
 CONFIG_OF_FPGA_REGION                           policy<{'arm64': 'n', 'armhf': 'n'}>
 CONFIG_OF_GPIO                                  policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_OF_GPIO_MM_GPIOCHIP                      policy<{'arm64': 'y', 'armhf': 'y'}>
+CONFIG_OF_IOMMU                                 policy<{'arm64': 'y', 'armhf': '-'}>
 CONFIG_OF_IRQ                                   policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_OF_KOBJ                                  policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_OF_MDIO                                  policy<{'arm64': 'y', 'armhf': 'y'}>
@@ -9195,6 +9216,7 @@ CONFIG_VIRTIO_ANCHOR                            policy<{'arm64': 'y', 'armhf': '
 CONFIG_VIRTIO_DMA_SHARED_BUFFER                 policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_VIRTIO_FS                                policy<{'arm64': 'n', 'armhf': 'n'}>
 CONFIG_VIRTIO_INPUT                             policy<{'arm64': 'm', 'armhf': 'm'}>
+CONFIG_VIRTIO_IOMMU                             policy<{'arm64': 'm'}>
 CONFIG_VIRTIO_MENU                              policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_VIRTIO_MMIO_CMDLINE_DEVICES              policy<{'arm64': 'n', 'armhf': 'n'}>
 CONFIG_VIRTIO_NET                               policy<{'arm64': 'm', 'armhf': 'm'}>
