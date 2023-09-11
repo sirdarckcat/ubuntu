@@ -974,7 +974,12 @@ CONFIG_SERIAL_ALTERA_UART_BAUDRATE              policy<{'amd64': '115200', 'arm6
 # Menu: Device Drivers >> Character devices >> Serial drivers >> Blackfin serial port support >> UART Mode
 
 # Menu: Device Drivers >> Character devices >> Serial drivers >> SuperH SCI(F) serial port support
-CONFIG_SERIAL_SH_SCI                            policy<{'arm64': 'm', 'armhf': 'm'}>
+CONFIG_SERIAL_SH_SCI                            policy<{'arm64': 'y', 'armhf': 'y'}>
+CONFIG_SERIAL_SH_SCI                            note<'LP: #2022361'>
+CONFIG_SERIAL_SH_SCI_CONSOLE                    policy<{'arm64': 'y', 'armhf': 'y'}>
+CONFIG_SERIAL_SH_SCI_CONSOLE                    note<'LP: #2022361'>
+CONFIG_SERIAL_SH_SCI_EARLYCON                   policy<{'arm64': 'y', 'armhf': 'y'}>
+CONFIG_SERIAL_SH_SCI_EARLYCON                   note<'LP: #2022361'>
 CONFIG_SERIAL_SH_SCI_NR_UARTS                   policy<{'arm64': '2', 'armhf': '2'}>
 CONFIG_SERIAL_SH_SCI_DMA                        policy<{'arm64': 'y', 'armhf': 'y'}>
 
