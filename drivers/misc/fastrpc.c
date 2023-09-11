@@ -316,12 +316,6 @@ static void fastrpc_free_map(struct kref *ref)
 					 DMA_BIDIRECTIONAL);
 		dma_buf_detach(map->buf, map->attach);
 		dma_buf_put(map->buf);
-		if (map->fl) {
-			spin_lock(&map->fl->lock);
-			list_del(&map->node);
-			spin_unlock(&map->fl->lock);
-			map->fl = NULL;
-		}
 	}
 
 	if (map->fl) {
