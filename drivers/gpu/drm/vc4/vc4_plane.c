@@ -483,8 +483,7 @@ static int vc4_plane_setup_clipping_and_scaling(struct drm_plane_state *state)
 		return ret;
 
 	for (i = 0; i < num_planes; i++) {
-		bo = drm_fb_dma_get_gem_obj(fb, i);
-		vc4_state->offsets[i] = bo->dma_addr + fb->offsets[i];
+		vc4_state->offsets[i] = fb->offsets[i];
 	}
 
 	vc4_state->src_x = state->src.x1;
@@ -1458,8 +1457,11 @@ static int vc4_plane_mode_set(struct drm_plane *plane,
 	 * The pointers may be any byte address.
 	 */
 	vc4_state->ptr0_offset[0] = vc4_state->dlist_count;
-	for (i = 0; i < num_planes; i++)
-		vc4_dlist_write(vc4_state, vc4_state->offsets[i]);
+	for (i = 0; i < num_planes; i++) {
+		dma_addr_t paddr = drm_fb_dma_get_gem_addr(fb, state, i);
+
+		vc4_dlist_write(vc4_state, paddr + vc4_state->offsets[i]);
+	}
 
 	/* Pointer Context Word 0/1/2: Written by the HVS */
 	for (i = 0; i < num_planes; i++)
@@ -1859,6 +1861,8 @@ static int vc6_plane_mode_set(struct drm_plane *plane,
 	 */
 	for (i = 0; i < num_planes; i++) {
 		dma_addr_t paddr = drm_fb_dma_get_gem_addr(fb, state, i);
+
+		paddr += vc4_state->offsets[i];
 
 		/* Pointer Word 0 */
 		vc4_state->ptr0_offset[i] = vc4_state->dlist_count;
