@@ -248,6 +248,7 @@ static int dell_uart_set_bl_power(struct backlight_device *bd, int power)
 	}
 
 	dell_uart_write(uart, bl_cmd->cmd, bl_cmd->tx_len);
+	msleep(1);
 	rx_len = dell_uart_read(uart, bl_cmd->ret, bl_cmd->rx_len);
 
 	mutex_unlock(&dell_pdata->brightness_mutex);
@@ -275,6 +276,7 @@ static int dell_uart_get_brightness(struct backlight_device *bd)
 	}
 
 	dell_uart_write(uart, bl_cmd->cmd, bl_cmd->tx_len);
+	msleep(1);
 	rx_len = dell_uart_read(uart, bl_cmd->ret, bl_cmd->rx_len);
 
 	mutex_unlock(&dell_pdata->brightness_mutex);
@@ -304,6 +306,7 @@ static int dell_uart_update_status(struct backlight_device *bd)
 	}
 
 	dell_uart_write(uart, bl_cmd->cmd, bl_cmd->tx_len);
+	msleep(1);
 	rx_len = dell_uart_read(uart, bl_cmd->ret, bl_cmd->rx_len);
 
 	mutex_unlock(&dell_pdata->brightness_mutex);
@@ -330,6 +333,7 @@ static int dell_uart_show_firmware_ver(struct dell_uart_backlight *dell_pdata)
 	}
 
 	dell_uart_write(uart, bl_cmd->cmd, bl_cmd->tx_len);
+	msleep(1);
 	while (retry-- > 0) {
 		/* first byte is data length */
 		dell_uart_read(uart, bl_cmd->ret, 1);
@@ -371,6 +375,7 @@ static int dell_uart_get_display_mode(struct dell_uart_backlight *dell_pdata)
 		}
 
 		dell_uart_write(uart, bl_cmd->cmd, bl_cmd->tx_len);
+		msleep(1);
 		rx_len = dell_uart_read(uart, bl_cmd->ret, bl_cmd->rx_len);
 
 		mutex_unlock(&dell_pdata->brightness_mutex);
