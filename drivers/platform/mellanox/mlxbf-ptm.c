@@ -28,6 +28,7 @@
 #define MLNX_PTM_GET_CUR_PPROFILE       0x8200010D
 #define MLNX_PTM_GET_DDR_TTHROTTLE      0x8200010E
 #define MLNX_PTM_GET_DDR_TEMP_EVT_CTR   0x8200010F
+#define MLNX_PTM_GET_TEMP_ENVELOPE	0x82000110
 
 #define MLNX_POWER_ERROR		300
 
@@ -156,6 +157,15 @@ static int power_envelope_show(void *data, u64 *val)
 DEFINE_SIMPLE_ATTRIBUTE(power_envelope_fops,
 			power_envelope_show, NULL, "%llu\n");
 
+static int temp_envelope_show(void *data, u64 *val)
+{
+	*val = smc_call0(MLNX_PTM_GET_TEMP_ENVELOPE);
+
+	return 0;
+}
+DEFINE_SIMPLE_ATTRIBUTE(temp_envelope_fops,
+			temp_envelope_show, NULL, "%llu\n");
+
 static int atx_status_show(void *data, u64 *val)
 {
 	*val = smc_call0(MLNX_PTM_GET_ATX_PWR_STATE);
@@ -227,6 +237,8 @@ static int __init mlxbf_ptm_init(void)
 			    NULL, &error_status_fops);
 	debugfs_create_file("power_envelope", 0444, status,
 			    NULL, &power_envelope_fops);
+	debugfs_create_file("temp_envelope", 0444, status,
+			    NULL, &temp_envelope_fops);
 	debugfs_create_file("atx_power_available", 0444, status,
 			    NULL, &atx_status_fops);
 	debugfs_create_file("active_power_profile", 0444, status,
