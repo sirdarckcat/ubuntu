@@ -10,6 +10,113 @@
 
 #include "xe_device.h"
 #include "xe_macros.h"
+#include "xe_vm.h"
+
+void xe_eudebug_free_vma_metadata(struct xe_eudebug_vma_metadata *mdata)
+{
+	struct xe_vma_debug_metadata *vmad, *tmp;
+
+	list_for_each_entry_safe(vmad, tmp, &mdata->list, link) {
+		list_del(&vmad->link);
+		kfree(vmad);
+	}
+}
+
+static struct xe_vma_debug_metadata *
+vma_new_debug_metadata(u32 metadata_id, u64 cookie)
+{
+	struct xe_vma_debug_metadata *vmad;
+
+	vmad = kzalloc(sizeof(*vmad), GFP_KERNEL);
+	if (!vmad)
+		return ERR_PTR(-ENOMEM);
+
+	INIT_LIST_HEAD(&vmad->link);
+
+	vmad->metadata_id = metadata_id;
+	vmad->cookie = cookie;
+
+	return vmad;
+}
+
+int xe_eudebug_copy_vma_metadata(struct xe_eudebug_vma_metadata *from,
+				 struct xe_eudebug_vma_metadata *to)
+{
+	struct xe_vma_debug_metadata *vmad, *vma;
+
+	list_for_each_entry(vmad, &from->list, link) {
+		vma = vma_new_debug_metadata(vmad->metadata_id, vmad->cookie);
+		if (IS_ERR(vma))
+			return PTR_ERR(vma);
+
+		list_add_tail(&vmad->link, &to->list);
+	}
+
+	return 0;
+}
+
+static int vma_new_debug_metadata_op(struct xe_vma_op *op,
+				     u32 metadata_id, u64 cookie,
+				     u64 flags)
+{
+	struct xe_vma_debug_metadata *vmad;
+
+	vmad = vma_new_debug_metadata(metadata_id, cookie);
+	if (IS_ERR(vmad))
+		return PTR_ERR(vmad);
+
+	list_add_tail(&vmad->link, &op->map.eudebug.metadata.list);
+
+	return 0;
+}
+
+int vm_bind_op_ext_attach_debug(struct xe_device *xe,
+				struct xe_file *xef,
+				struct drm_gpuva_ops *ops,
+				u32 operation, u64 extension)
+{
+	u64 __user *address = u64_to_user_ptr(extension);
+	struct drm_xe_vm_bind_op_ext_attach_debug ext;
+	struct xe_debug_metadata *mdata;
+	struct drm_gpuva_op *__op;
+	int err;
+
+	err = __copy_from_user(&ext, address, sizeof(ext));
+	if (XE_IOCTL_DBG(xe, err))
+		return -EFAULT;
+
+	if (XE_IOCTL_DBG(xe,
+			 operation != DRM_XE_VM_BIND_OP_MAP_USERPTR &&
+			 operation != DRM_XE_VM_BIND_OP_MAP))
+		return -EINVAL;
+
+	if (XE_IOCTL_DBG(xe, ext.flags))
+		return -EINVAL;
+
+	mdata = xe_debug_metadata_get(xef, (u32)ext.metadata_id);
+	if (XE_IOCTL_DBG(xe, !mdata))
+		return -ENOENT;
+
+	/* care about metadata existence only on the time of attach */
+	xe_debug_metadata_put(mdata);
+
+	if (!ops)
+		return 0;
+
+	drm_gpuva_for_each_op(__op, ops) {
+		struct xe_vma_op *op = gpuva_op_to_vma_op(__op);
+
+		if (op->base.op == DRM_GPUVA_OP_MAP) {
+			err = vma_new_debug_metadata_op(op,
+							ext.metadata_id,
+							ext.cookie,
+							ext.flags);
+			if (err)
+				return err;
+		}
+	}
+	return 0;
+}
 
 static void xe_debug_metadata_release(struct kref *ref)
 {
@@ -22,6 +129,19 @@ static void xe_debug_metadata_release(struct kref *ref)
 void xe_debug_metadata_put(struct xe_debug_metadata *mdata)
 {
 	kref_put(&mdata->refcount, xe_debug_metadata_release);
+}
+
+struct xe_debug_metadata *xe_debug_metadata_get(struct xe_file *xef, u32 id)
+{
+	struct xe_debug_metadata *mdata;
+
+	mutex_lock(&xef->eudebug.metadata.lock);
+	mdata = xa_load(&xef->eudebug.metadata.xa, id);
+	if (mdata)
+		kref_get(&mdata->refcount);
+	mutex_unlock(&xef->eudebug.metadata.lock);
+
+	return mdata;
 }
 
 int xe_debug_metadata_create_ioctl(struct drm_device *dev,
