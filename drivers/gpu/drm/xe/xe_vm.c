@@ -24,6 +24,7 @@
 #include "regs/xe_gtt_defs.h"
 #include "xe_assert.h"
 #include "xe_bo.h"
+#include "xe_debug_metadata.h"
 #include "xe_device.h"
 #include "xe_drm_client.h"
 #include "xe_eudebug.h"
@@ -1242,6 +1243,9 @@ static struct xe_vma *xe_vma_create(struct xe_vm *vm,
 			vma->gpuva.gem.obj = &bo->ttm.base;
 	}
 
+#if IS_ENABLED(CONFIG_DRM_XE_EUDEBUG)
+	INIT_LIST_HEAD(&vma->eudebug.metadata.list);
+#endif
 	INIT_LIST_HEAD(&vma->combined_links.rebind);
 
 	INIT_LIST_HEAD(&vma->gpuva.gem.entry);
@@ -1336,6 +1340,7 @@ static void xe_vma_destroy_late(struct xe_vma *vma)
 		xe_bo_put(xe_vma_bo(vma));
 	}
 
+	xe_eudebug_free_vma_metadata(&vma->eudebug.metadata);
 	xe_vma_free(vma);
 }
 
@@ -2442,6 +2447,10 @@ vm_bind_ioctl_ops_create(struct xe_vm *vm, struct xe_vma_ops *vops,
 			op->map.pat_index = pat_index;
 			op->map.invalidate_on_bind =
 				__xe_vm_needs_clear_scratch_pages(vm, flags);
+
+#if IS_ENABLED(CONFIG_DRM_XE_EUDEBUG)
+			INIT_LIST_HEAD(&op->map.eudebug.metadata.list);
+#endif
 		} else if (__op->op == DRM_GPUVA_OP_PREFETCH) {
 			struct xe_vma *vma = gpuva_to_vma(op->base.prefetch.va);
 			struct xe_svm_range *svm_range;
@@ -2706,6 +2715,9 @@ static int vm_bind_ioctl_ops_parse(struct xe_vm *vm, struct drm_gpuva_ops *ops,
 			if (IS_ERR(vma))
 				return PTR_ERR(vma);
 
+			xe_eudebug_move_vma_metadata(&op->map.eudebug.metadata,
+						     &vma->eudebug.metadata);
+
 			op->map.vma = vma;
 			if (((op->map.immediate || !xe_vm_in_fault_mode(vm)) &&
 			     !op->map.is_cpu_addr_mirror) ||
@@ -2753,6 +2765,9 @@ static int vm_bind_ioctl_ops_parse(struct xe_vm *vm, struct drm_gpuva_ops *ops,
 				if (IS_ERR(vma))
 					return PTR_ERR(vma);
 
+				xe_eudebug_move_vma_metadata(&old->eudebug.metadata,
+							     &vma->eudebug.metadata);
+
 				op->remap.prev = vma;
 
 				/*
@@ -2782,6 +2797,16 @@ static int vm_bind_ioctl_ops_parse(struct xe_vm *vm, struct drm_gpuva_ops *ops,
 					      old->pat_index, flags);
 				if (IS_ERR(vma))
 					return PTR_ERR(vma);
+
+				if (op->base.remap.prev) {
+					err = xe_eudebug_copy_vma_metadata(&op->remap.prev->eudebug.metadata,
+									   &vma->eudebug.metadata);
+					if (err)
+						return err;
+				} else {
+					xe_eudebug_move_vma_metadata(&old->eudebug.metadata,
+								     &vma->eudebug.metadata);
+				}
 
 				op->remap.next = vma;
 
@@ -2859,6 +2884,7 @@ static void xe_vma_op_unwind(struct xe_vm *vm, struct xe_vma_op *op,
 	switch (op->base.op) {
 	case DRM_GPUVA_OP_MAP:
 		if (op->map.vma) {
+			xe_eudebug_free_vma_metadata(&op->map.eudebug.metadata);
 			prep_vma_destroy(vm, op->map.vma, post_commit);
 			xe_vma_destroy_unlocked(op->map.vma);
 		}
@@ -3189,6 +3215,58 @@ static int vm_ops_setup_tile_args(struct xe_vm *vm, struct xe_vma_ops *vops)
 	}
 
 	return number_tiles;
+};
+
+typedef int (*xe_vm_bind_op_user_extension_fn)(struct xe_device *xe,
+					       struct xe_file *xef,
+					       struct drm_gpuva_ops *ops,
+					       u32 operation, u64 extension);
+
+static const xe_vm_bind_op_user_extension_fn vm_bind_op_extension_funcs[] = {
+	[XE_VM_BIND_OP_EXTENSIONS_ATTACH_DEBUG] = vm_bind_op_ext_attach_debug,
+};
+
+#define MAX_USER_EXTENSIONS	16
+static int vm_bind_op_user_extensions(struct xe_device *xe,
+				      struct xe_file *xef,
+				      struct drm_gpuva_ops *ops,
+				      u32 operation,
+				      u64 extensions, int ext_number)
+{
+	u64 __user *address = u64_to_user_ptr(extensions);
+	struct drm_xe_user_extension ext;
+	int err;
+
+	if (XE_IOCTL_DBG(xe, ext_number >= MAX_USER_EXTENSIONS))
+		return -E2BIG;
+
+	err = __copy_from_user(&ext, address, sizeof(ext));
+	if (XE_IOCTL_DBG(xe, err))
+		return -EFAULT;
+
+	if (XE_IOCTL_DBG(xe, ext.pad) ||
+	    XE_IOCTL_DBG(xe, ext.name >=
+			 ARRAY_SIZE(vm_bind_op_extension_funcs)))
+		return -EINVAL;
+
+	err = vm_bind_op_extension_funcs[ext.name](xe, xef, ops,
+						   operation, extensions);
+	if (XE_IOCTL_DBG(xe, err))
+		return err;
+
+	if (ext.next_extension)
+		return vm_bind_op_user_extensions(xe, xef, ops,
+						  operation, ext.next_extension,
+						  ++ext_number);
+
+	return 0;
+}
+
+static int vm_bind_op_user_extensions_check(struct xe_device *xe,
+					    struct xe_file *xef,
+					    u32 operation, u64 extensions)
+{
+	return vm_bind_op_user_extensions(xe, xef, NULL, operation, extensions, 0);
 }
 
 static struct dma_fence *ops_execute(struct xe_vm *vm,
@@ -3391,7 +3469,9 @@ ALLOW_ERROR_INJECTION(vm_bind_ioctl_ops_execute, ERRNO);
 #define XE_64K_PAGE_MASK 0xffffull
 #define ALL_DRM_XE_SYNCS_FLAGS (DRM_XE_SYNCS_FLAG_WAIT_FOR_OP)
 
-static int vm_bind_ioctl_check_args(struct xe_device *xe, struct xe_vm *vm,
+static int vm_bind_ioctl_check_args(struct xe_device *xe,
+				    struct xe_file *xef,
+				    struct xe_vm *vm,
 				    struct drm_xe_vm_bind *args,
 				    struct drm_xe_vm_bind_op **bind_ops)
 {
@@ -3441,6 +3521,7 @@ static int vm_bind_ioctl_check_args(struct xe_device *xe, struct xe_vm *vm,
 		bool is_null = flags & DRM_XE_VM_BIND_FLAG_NULL;
 		bool is_cpu_addr_mirror = flags &
 			DRM_XE_VM_BIND_FLAG_CPU_ADDR_MIRROR;
+		u64 extensions = (*bind_ops)[i].extensions;
 		u16 pat_index = (*bind_ops)[i].pat_index;
 		u16 coh_mode;
 
@@ -3509,6 +3590,13 @@ static int vm_bind_ioctl_check_args(struct xe_device *xe, struct xe_vm *vm,
 			err = -EINVAL;
 			goto free_bind_ops;
 		}
+
+		if (extensions) {
+			err = vm_bind_op_user_extensions_check(xe, xef, op, extensions);
+			if (err)
+				goto free_bind_ops;
+		}
+
 	}
 
 	return 0;
@@ -3633,7 +3721,7 @@ int xe_vm_bind_ioctl(struct drm_device *dev, void *data, struct drm_file *file)
 	if (XE_IOCTL_DBG(xe, !vm))
 		return -EINVAL;
 
-	err = vm_bind_ioctl_check_args(xe, vm, args, &bind_ops);
+	err = vm_bind_ioctl_check_args(xe, xef, vm, args, &bind_ops);
 	if (err)
 		goto put_vm;
 
@@ -3764,11 +3852,17 @@ int xe_vm_bind_ioctl(struct drm_device *dev, void *data, struct drm_file *file)
 		u64 obj_offset = bind_ops[i].obj_offset;
 		u32 prefetch_region = bind_ops[i].prefetch_mem_region_instance;
 		u16 pat_index = bind_ops[i].pat_index;
+		u64 extensions = bind_ops[i].extensions;
 
 		ops[i] = vm_bind_ioctl_ops_create(vm, &vops, bos[i], obj_offset,
 						  addr, range, op, flags,
 						  prefetch_region, pat_index);
-		if (IS_ERR(ops[i])) {
+		if (!IS_ERR(ops[i]) && extensions) {
+			err = vm_bind_op_user_extensions(xe, xef, ops[i],
+							 op, extensions, 0);
+			if (err)
+				goto unwind_ops;
+		} else if (IS_ERR(ops[i])) {
 			err = PTR_ERR(ops[i]);
 			ops[i] = NULL;
 			goto unwind_ops;
