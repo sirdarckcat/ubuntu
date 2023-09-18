@@ -2216,6 +2216,8 @@ static void add_staging_flag(struct buffer *b, const char *name)
 {
 	if (strstarts(name, "drivers/staging"))
 		buf_printf(b, "\nMODULE_INFO(staging, \"Y\");\n");
+	if (strstarts(name, "ubuntu/staging"))
+		buf_printf(b, "\nMODULE_INFO(staging, \"Y\");\n");
 }
 
 /**
