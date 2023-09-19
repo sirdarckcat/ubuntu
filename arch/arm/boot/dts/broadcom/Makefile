@@ -16,6 +16,7 @@ DTC_FLAGS_bcm2709-rpi-cm2 := -@
 DTC_FLAGS_bcm2710-rpi-cm3 := -@
 DTC_FLAGS_bcm2711-rpi-cm4 := -@
 DTC_FLAGS_bcm2711-rpi-cm4s := -@
+DTC_FLAGS_bcm2712-rpi-5-b := -@
 dtb-$(CONFIG_ARCH_BCM2835) += \
         bcm2710-rpi-zero-2.dtb \
         bcm2710-rpi-zero-2-w.dtb \
@@ -26,7 +27,8 @@ dtb-$(CONFIG_ARCH_BCM2835) += \
         bcm2709-rpi-cm2.dtb \
         bcm2710-rpi-cm3.dtb \
         bcm2711-rpi-cm4.dtb \
-        bcm2711-rpi-cm4s.dtb
+        bcm2711-rpi-cm4s.dtb \
+        bcm2712-rpi-5-b.dtb
 
 dtb-$(CONFIG_ARCH_BCMBCA) += \
 	bcm947622.dtb \
