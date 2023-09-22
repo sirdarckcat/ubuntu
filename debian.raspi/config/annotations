@@ -83,6 +83,9 @@ CONFIG_CRYPTO_GHASH                             policy<{'arm64': 'm', 'armhf': '
 CONFIG_CRYPTO_LIB_GF128MUL                      policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
 CONFIG_CRYPTO_NULL                              policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
 CONFIG_CRYPTO_SEQIV                             policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
+CONFIG_CRYPTO_SHA512_ARM                        policy<{'armhf': 'm'}> note<'Not essential on Pi'>
+CONFIG_CRYPTO_SHA512_ARM64                      policy<{'arm64': 'm'}> note<'Not essential on Pi'>
+CONFIG_CRYPTO_SHA512_ARM64_CE                   policy<{'arm64': 'm'}> note<'Not essential on Pi'>
 CONFIG_CRYPTO_XTS                               policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
 CONFIG_CS89x0_PLATFORM                          policy<{'armhf': 'y'}> note<'Required for Pi (different from master)'>
 CONFIG_CXL_BUS                                  policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not desired on Pi'>
@@ -2131,9 +2134,6 @@ CONFIG_CRYPTO_SHA2_ARM_CE                       policy<{'armhf': 'm'}>
 CONFIG_CRYPTO_SHA3                              policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_CRYPTO_SHA3_ARM64                        policy<{'arm64': 'm'}>
 CONFIG_CRYPTO_SHA512                            policy<{'arm64': 'y', 'armhf': 'y'}>
-CONFIG_CRYPTO_SHA512_ARM                        policy<{'armhf': 'm'}>
-CONFIG_CRYPTO_SHA512_ARM64                      policy<{'arm64': 'm'}>
-CONFIG_CRYPTO_SHA512_ARM64_CE                   policy<{'arm64': 'm'}>
 CONFIG_CRYPTO_SIG2                              policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_CRYPTO_SIMD                              policy<{'armhf': 'm'}>
 CONFIG_CRYPTO_SKCIPHER                          policy<{'arm64': 'y', 'armhf': 'y'}>
@@ -3822,7 +3822,6 @@ CONFIG_IMA_APPRAISE                             policy<{'arm64': 'y', 'armhf': '
 CONFIG_IMA_APPRAISE_BOOTPARAM                   policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_IMA_APPRAISE_BUILD_POLICY                policy<{'arm64': 'n', 'armhf': 'n'}>
 CONFIG_IMA_APPRAISE_MODSIG                      policy<{'arm64': 'n', 'armhf': 'n'}>
-CONFIG_IMA_BLACKLIST_KEYRING                    policy<{'arm64': 'n', 'armhf': 'n'}>
 CONFIG_IMA_DEFAULT_HASH                         policy<{'arm64': '"sha1"', 'armhf': '"sha1"'}>
 CONFIG_IMA_DEFAULT_HASH_SHA1                    policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_IMA_DEFAULT_HASH_SHA256                  policy<{'arm64': 'n', 'armhf': 'n'}>
@@ -3830,7 +3829,6 @@ CONFIG_IMA_DEFAULT_HASH_SHA512                  policy<{'arm64': 'n', 'armhf': '
 CONFIG_IMA_DEFAULT_TEMPLATE                     policy<{'arm64': '"ima-ng"', 'armhf': '"ima-ng"'}>
 CONFIG_IMA_DISABLE_HTABLE                       policy<{'arm64': 'n', 'armhf': 'n'}>
 CONFIG_IMA_KEYRINGS_PERMIT_SIGNED_BY_BUILTIN_OR_SECONDARY policy<{'arm64': 'n', 'armhf': 'n'}>
-CONFIG_IMA_LOAD_X509                            policy<{'arm64': 'n', 'armhf': 'n'}>
 CONFIG_IMA_LSM_RULES                            policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_IMA_MEASURE_ASYMMETRIC_KEYS              policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_IMA_MEASURE_PCR_IDX                      policy<{'arm64': '10', 'armhf': '10'}>
@@ -3838,7 +3836,6 @@ CONFIG_IMA_NG_TEMPLATE                          policy<{'arm64': 'y', 'armhf': '
 CONFIG_IMA_QUEUE_EARLY_BOOT_KEYS                policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_IMA_READ_POLICY                          policy<{'arm64': 'n', 'armhf': 'n'}>
 CONFIG_IMA_SIG_TEMPLATE                         policy<{'arm64': 'n', 'armhf': 'n'}>
-CONFIG_IMA_TRUSTED_KEYRING                      policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_IMA_WRITE_POLICY                         policy<{'arm64': 'n', 'armhf': 'n'}>
 CONFIG_IMG_ASCII_LCD                            policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_INA2XX_ADC                               policy<{'arm64': 'm', 'armhf': 'm'}>
@@ -4829,7 +4826,7 @@ CONFIG_MFD_PM8XXX                               policy<{'armhf': 'm'}>
 CONFIG_MFD_QCOM_PM8008                          policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_MFD_RDC321X                              policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_MFD_RETU                                 policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_MFD_RK8XX                                policy<{'arm64': 'y', 'armhf': 'y'}>
+CONFIG_MFD_RK8XX                                policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_MFD_RK8XX_I2C                            policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_MFD_RK8XX_SPI                            policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_MFD_RN5T618                              policy<{'arm64': 'm', 'armhf': 'm'}>
@@ -8991,6 +8988,7 @@ CONFIG_VIDEO_BT866                              policy<{'arm64': 'm', 'armhf': '
 CONFIG_VIDEO_CADENCE_CSI2RX                     policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_VIDEO_CADENCE_CSI2TX                     policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_VIDEO_CAFE_CCIC                          policy<{'arm64': 'm', 'armhf': 'm'}>
+CONFIG_VIDEO_CAMERA_SENSOR                      policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_VIDEO_CCS                                policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_VIDEO_CCS_PLL                            policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_VIDEO_CMDLINE                            policy<{'arm64': 'y', 'armhf': 'y'}>
