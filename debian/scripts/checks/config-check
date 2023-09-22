@@ -1,0 +1,75 @@
+#!/bin/bash -eu
+#
+# Master configs with notes are important. Check that the derivative's config
+# values either match master or have a note (that should explain the
+# difference).
+
+function out()
+{
+	local rc=${?}
+
+	trap - EXIT INT TERM HUP
+
+	rm -f config-*.json
+	git restore debian/debian.env
+
+	if [ ${rc} -ne 0 ] ; then
+		echo "EE: Config check failed" >&2
+	fi
+
+	exit "${rc}"
+}
+
+trap out EXIT INT TERM HUP
+
+echo "II: Checking derivative configs against master"
+
+# Generate config json
+./debian/scripts/misc/annotations > config-deriv.json
+
+# Generate master config json
+echo "DEBIAN=debian.master" > debian/debian.env
+./debian/scripts/misc/annotations > config-master.json
+
+python3 -c "
+import json
+import sys
+
+with open('config-deriv.json') as fh:
+    d = json.load(fh)['*']
+
+with open('config-master.json') as fh:
+    m = json.load(fh)['*']
+
+good = 0
+bad = 0
+for cfg in m.keys():
+    if 'note' in m[cfg] and cfg in d and 'note' not in d[cfg]:
+        m_arm64 = m[cfg]['policy'].get('arm64', '-')
+        m_armhf = m[cfg]['policy'].get('armhf', '-')
+        m_note  = m[cfg]['note']
+        d_arm64 = d[cfg]['policy'].get('arm64', '-')
+        d_armhf = d[cfg]['policy'].get('armhf', '-')
+
+        if m_arm64 == d_arm64 and m_armhf == d_armhf:
+            # Configs match, all good
+            good += 1
+        else:
+            bad += 1
+            print('EE: {:<40} {:<10} {:<10} {}'.format(
+                  cfg,
+                  d_arm64 + '/' + d_armhf,
+                  m_arm64 + '/' + m_armhf,
+                  m_note
+            ))
+
+if good:
+    print('II: Found {} config matches'.format(good))
+
+if bad:
+    print('EE: Found {} config mismatches'.format(bad))
+    sys.exit(1)
+
+print('II: Done')
+sys.exit(0)
+"
