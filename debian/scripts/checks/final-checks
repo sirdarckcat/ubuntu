@@ -95,4 +95,8 @@ do
 	done
 done
 
+if ! debian/scripts/checks/config-check ; then
+	failure "config-check failed"
+fi
+
 exit "$fail"
