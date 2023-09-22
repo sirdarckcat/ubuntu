@@ -24,6 +24,7 @@ CONFIG_ARM_ERRATA_857272                        policy<{'armhf': 'n'}> note<'Not
 CONFIG_ARM_LPAE                                 policy<{'armhf': 'y'}> note<'LP: #1896761'>
 CONFIG_ARM_RASPBERRYPI_CPUFREQ                  policy<{'arm64': 'y', 'armhf': 'y'}> note<'Required for Pi (not in master)'>
 CONFIG_ARM_SCMI_PROTOCOL                        policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not supported on Pi'>
+CONFIG_ARM_SMMU_DISABLE_BYPASS_BY_DEFAULT       policy<{'arm64': 'y', 'armhf': '-'}> note<'Required for Pi (different from master)'>
 CONFIG_ATA                                      policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
 CONFIG_ATARI_PARTITION                          policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not desired on Pi'>
 CONFIG_ATH9K_PCI                                policy<{'arm64': 'n', 'armhf': 'n'}> note<'Required for Pi (different from master)'>
@@ -172,6 +173,7 @@ CONFIG_INPUT_PM8XXX_VIBRATOR                    policy<{'armhf': 'm'}> note<'Req
 CONFIG_INPUT_RASPBERRYPI_BUTTON                 policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by pi5_61'>
 CONFIG_INPUT_UINPUT                             policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
 CONFIG_INTEGRITY_PLATFORM_KEYRING               policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not (yet) required on Pi'>
+CONFIG_IOMMU_DEBUGFS                            policy<{'arm64': 'n', 'armhf': '-'}> note<'Required for Pi (different from master)'>
 CONFIG_IOMMU_SUPPORT                            policy<{'arm64': 'y', 'armhf': 'n'}> note<'Required for Pi 5B'>
 CONFIG_IPMI_HANDLER                             policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not supported on Pi'>
 CONFIG_IPV6                                     policy<{'arm64': 'y', 'armhf': 'y'}> note<'LP: #2027983'>
@@ -1024,7 +1026,6 @@ CONFIG_ARM_SCPI_PROTOCOL                        policy<{'arm64': 'm', 'armhf': '
 CONFIG_ARM_SMCCC_SOC_ID                         policy<{'arm64': 'y'}>
 CONFIG_ARM_SMC_WATCHDOG                         policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_ARM_SMMU                                 policy<{'arm64': 'm', 'armhf': '-'}>
-CONFIG_ARM_SMMU_DISABLE_BYPASS_BY_DEFAULT       policy<{'arm64': 'y', 'armhf': '-'}>
 CONFIG_ARM_SMMU_V3                              policy<{'arm64': 'm'}>
 CONFIG_ARM_SMMU_V3_SVA                          policy<{'arm64': 'y'}>
 CONFIG_ARM_SP805_WATCHDOG                       policy<{'arm64': 'm', 'armhf': 'm'}>
@@ -4028,7 +4029,6 @@ CONFIG_INV_MPU6050_IIO                          policy<{'arm64': 'm', 'armhf': '
 CONFIG_INV_MPU6050_SPI                          policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_IOMMUFD                                  policy<{'arm64': 'm', 'armhf': '-'}>
 CONFIG_IOMMU_API                                policy<{'arm64': 'y', 'armhf': 'y'}>
-CONFIG_IOMMU_DEBUGFS                            policy<{'arm64': 'n', 'armhf': '-'}>
 CONFIG_IOMMU_DEFAULT_DMA_LAZY                   policy<{'arm64': 'n', 'armhf': '-'}>
 CONFIG_IOMMU_DEFAULT_DMA_STRICT                 policy<{'arm64': 'y', 'armhf': '-'}>
 CONFIG_IOMMU_DEFAULT_PASSTHROUGH                policy<{'arm64': 'n', 'armhf': '-'}>
