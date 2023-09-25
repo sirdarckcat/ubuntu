@@ -264,7 +264,10 @@ struct fiq_dma_channel {
 } __attribute__((packed));
 
 struct fiq_dma_blob {
-	struct fiq_dma_channel channel[0];
+	union {
+		struct fiq_dma_channel padding;
+		DECLARE_FLEX_ARRAY(struct fiq_dma_channel, channel);
+	};
 } __attribute__((packed));
 
 /**
@@ -365,7 +368,7 @@ struct fiq_state {
 	char * buffer;
 	unsigned int bufsiz;
 #endif
-	struct fiq_channel_state channel[0];
+	struct fiq_channel_state channel[];
 };
 
 #ifdef CONFIG_ARM64
