@@ -5,3 +5,20 @@
 
 include "../../debian.master/config/annotations"
 
+CONFIG_SUN8I_DE2_CCU                            policy<{'riscv64': 'y'}>
+CONFIG_SUN8I_DE2_CCU                            note<'This could be a module, but is not autoloaded'>
+
+
+# ---- Annotations without notes ----
+
+CONFIG_DRM_PANEL_SITRONIX_ST7701S               policy<{'riscv64': 'm'}>
+CONFIG_IOMMU_DMA                                policy<{'riscv64': 'y'}>
+CONFIG_IOMMU_IOVA                               policy<{'riscv64': 'y'}>
+CONFIG_IRQ_MSI_IOMMU                            policy<{'riscv64': 'y'}>
+CONFIG_LEDS_SUN50I_A100                         policy<{'riscv64': 'm'}>
+CONFIG_NEED_SG_DMA_FLAGS                        policy<{'riscv64': 'y'}>
+CONFIG_NEED_SG_DMA_LENGTH                       policy<{'riscv64': 'y'}>
+CONFIG_PWM_SUN8I_V536                           policy<{'riscv64': 'm'}>
+CONFIG_REGULATOR_SUN20I                         policy<{'riscv64': 'm'}>
+CONFIG_SND_SUN20I_CODEC                         policy<{'riscv64': 'm'}>
+CONFIG_SUN20I_GPADC                             policy<{'riscv64': 'm'}>
