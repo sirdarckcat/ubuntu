@@ -24,6 +24,7 @@ static DEFINE_PER_CPU_READ_MOSTLY(int, dummy_cpu_number);
 
 static int virq_sgi;
 static int event_manager_availability = -EACCES;
+static u32 pm_sub_family_code;
 
 /* SGI number used for Event management driver */
 #define XLNX_EVENT_SGI_NUM	(15)
@@ -638,6 +639,7 @@ static void xlnx_event_cleanup_sgi(struct platform_device *pdev)
 static int xlnx_event_manager_probe(struct platform_device *pdev)
 {
 	int ret;
+	u32 *platform_data;
 
 	ret = zynqmp_pm_feature(PM_REGISTER_NOTIFIER);
 	if (ret < 0) {
@@ -676,6 +678,8 @@ static int xlnx_event_manager_probe(struct platform_device *pdev)
 	}
 
 	event_manager_availability = 0;
+	platform_data = (u32 *)dev_get_platdata((const struct device *)&pdev->dev);
+	pm_sub_family_code = *platform_data;
 
 	dev_info(&pdev->dev, "SGI %d Registered over TF-A\n", sgi_num);
 	dev_info(&pdev->dev, "Xilinx Event Management driver probed\n");
