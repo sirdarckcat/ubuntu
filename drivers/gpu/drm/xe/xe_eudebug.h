@@ -5,11 +5,14 @@
 
 #ifndef _XE_EUDEBUG_H_
 
+#include <linux/types.h>
+
 struct drm_device;
 struct drm_file;
 struct xe_device;
 struct xe_file;
 struct xe_vm;
+struct xe_vma;
 struct xe_exec_queue;
 struct xe_hw_engine;
 
@@ -33,6 +36,11 @@ void xe_eudebug_vm_destroy(struct xe_file *xef, struct xe_vm *vm);
 void xe_eudebug_exec_queue_create(struct xe_file *xef, struct xe_exec_queue *q);
 void xe_eudebug_exec_queue_destroy(struct xe_file *xef, struct xe_exec_queue *q);
 
+void xe_eudebug_vm_init(struct xe_vm *vm);
+void xe_eudebug_vm_bind_start(struct xe_vm *vm);
+void xe_eudebug_vm_bind_op_add(struct xe_vm *vm, u32 op, u64 addr, u64 range);
+void xe_eudebug_vm_bind_end(struct xe_vm *vm, bool has_ufence, int err);
+
 #else
 
 static inline int xe_eudebug_connect_ioctl(struct drm_device *dev,
@@ -52,6 +60,11 @@ static inline void xe_eudebug_vm_destroy(struct xe_file *xef, struct xe_vm *vm) 
 
 static inline void xe_eudebug_exec_queue_create(struct xe_file *xef, struct xe_exec_queue *q) { }
 static inline void xe_eudebug_exec_queue_destroy(struct xe_file *xef, struct xe_exec_queue *q) { }
+
+static inline void xe_eudebug_vm_init(struct xe_vm *vm) { }
+static inline void xe_eudebug_vm_bind_start(struct xe_vm *vm) { }
+static inline void xe_eudebug_vm_bind_op_add(struct xe_vm *vm, u32 op, u64 addr, u64 range) { }
+static inline void xe_eudebug_vm_bind_end(struct xe_vm *vm, bool has_ufence, int err) { }
 
 #endif /* CONFIG_DRM_XE_EUDEBUG */
 
