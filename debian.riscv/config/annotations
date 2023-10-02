@@ -11,14 +11,41 @@ CONFIG_SUN8I_DE2_CCU                            note<'This could be a module, bu
 
 # ---- Annotations without notes ----
 
+CONFIG_AMBA_PL08X                               policy<{'riscv64': 'y'}>
+CONFIG_ARM_AMBA                                 policy<{'riscv64': 'y'}>
+CONFIG_ARM_MHU                                  policy<{'riscv64': 'n'}>
+CONFIG_ARM_MHU_V2                               policy<{'riscv64': 'n'}>
+CONFIG_ARM_PL172_MPMC                           policy<{'riscv64': 'n'}>
+CONFIG_CLK_STARFIVE_JH7110_ISP                  policy<{'riscv64': 'm'}>
+CONFIG_CLK_STARFIVE_JH7110_PLL                  policy<{'riscv64': 'y'}>
+CONFIG_CLK_STARFIVE_JH7110_STG                  policy<{'riscv64': 'y'}>
+CONFIG_CLK_STARFIVE_JH7110_VOUT                 policy<{'riscv64': 'm'}>
+CONFIG_DMA_VIRTUAL_CHANNELS                     policy<{'riscv64': 'y'}>
 CONFIG_DRM_PANEL_SITRONIX_ST7701S               policy<{'riscv64': 'm'}>
+CONFIG_GPIO_PL061                               policy<{'riscv64': 'n'}>
+CONFIG_I2C_NOMADIK                              policy<{'riscv64': 'n'}>
 CONFIG_IOMMU_DMA                                policy<{'riscv64': 'y'}>
 CONFIG_IOMMU_IOVA                               policy<{'riscv64': 'y'}>
 CONFIG_IRQ_MSI_IOMMU                            policy<{'riscv64': 'y'}>
 CONFIG_LEDS_SUN50I_A100                         policy<{'riscv64': 'm'}>
+CONFIG_MMC_ARMMMCI                              policy<{'riscv64': 'n'}>
 CONFIG_NEED_SG_DMA_FLAGS                        policy<{'riscv64': 'y'}>
 CONFIG_NEED_SG_DMA_LENGTH                       policy<{'riscv64': 'y'}>
+CONFIG_PCIE_PLDA_HOST                           policy<{'riscv64': 'y'}>
+CONFIG_PCIE_STARFIVE_HOST                       policy<{'riscv64': 'y'}>
+CONFIG_PHY_STARFIVE_JH7110_DPHY_RX              policy<{'riscv64': 'm'}>
+CONFIG_PHY_STARFIVE_JH7110_PCIE                 policy<{'riscv64': 'y'}>
+CONFIG_PHY_STARFIVE_JH7110_USB                  policy<{'riscv64': 'm'}>
+CONFIG_PL320_MBOX                               policy<{'riscv64': 'n'}>
+CONFIG_PL330_DMA                                policy<{'riscv64': 'n'}>
+CONFIG_PWM_STARFIVE                             policy<{'riscv64': 'm'}>
 CONFIG_PWM_SUN8I_V536                           policy<{'riscv64': 'm'}>
 CONFIG_REGULATOR_SUN20I                         policy<{'riscv64': 'm'}>
+CONFIG_RTC_DRV_PL030                            policy<{'riscv64': 'n'}>
+CONFIG_RTC_DRV_PL031                            policy<{'riscv64': 'n'}>
+CONFIG_SERIAL_AMBA_PL010                        policy<{'riscv64': 'n'}>
+CONFIG_SERIAL_AMBA_PL011                        policy<{'riscv64': 'n'}>
+CONFIG_SERIO_AMBAKMI                            policy<{'riscv64': 'n'}>
 CONFIG_SND_SUN20I_CODEC                         policy<{'riscv64': 'm'}>
+CONFIG_SPI_PL022                                policy<{'riscv64': 'n'}>
 CONFIG_SUN20I_GPADC                             policy<{'riscv64': 'm'}>
