@@ -177,6 +177,11 @@ struct xe_eudebug_event {
 	u8 data[];
 };
 
+struct xe_eudebug_event_envelope {
+	struct list_head link;
+	struct xe_eudebug_event *event;
+};
+
 /**
  * struct xe_eudebug_event_open - Internal event for client open/close
  */
@@ -282,6 +287,30 @@ struct xe_eudebug_event_eu_attention {
 	 * starting from natural hardware order of DSS=0, eu=0
 	 */
 	u8 bitmask[] __counted_by(bitmask_size);
+};
+
+/**
+ * struct xe_eudebug_event_vm_bind - Internal event for vm bind/unbind operation
+ */
+struct xe_eudebug_event_vm_bind {
+	/** @base: base event */
+	struct xe_eudebug_event base;
+
+	u64 client_handle;
+	u64 vm_handle;
+
+	u32 flags;
+	u32 num_binds;
+};
+
+struct xe_eudebug_event_vm_bind_op {
+	/** @base: base event */
+	struct xe_eudebug_event base;
+	u64 vm_bind_ref_seqno;
+	u64 num_extensions;
+
+	u64 addr; /* Zero for unmap all ? */
+	u64 range; /* Zero for unmap all ? */
 };
 
 #endif

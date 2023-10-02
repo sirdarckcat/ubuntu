@@ -286,6 +286,19 @@ struct xe_vm {
 	bool batch_invalidate_tlb;
 	/** @xef: XE file handle for tracking this VM's drm client */
 	struct xe_file *xef;
+
+#if IS_ENABLED(CONFIG_DRM_XE_EUDEBUG)
+	struct {
+		/** @lock: Lock for eudebug_bind members */
+		spinlock_t lock;
+		/** @events: List of vm bind ops gathered */
+		struct list_head events;
+		/** @ops: How many operations we have stored */
+		u32 ops;
+		/** @ref_seqno: Reference to the VM_BIND that the ops relate */
+		u64 ref_seqno;
+	} eudebug;
+#endif
 };
 
 /** struct xe_vma_op_map - VMA map operation */
