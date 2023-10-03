@@ -5,3 +5,23 @@
 
 include "../../debian.master/config/annotations"
 
+
+# ---- Annotations without notes ----
+
+CONFIG_DMA_GLOBAL_POOL                          policy<{'riscv64': 'y'}>
+CONFIG_DRM_STARFIVE                             policy<{'riscv64': 'm'}>
+CONFIG_ERRATA_STARFIVE_JH7100                   policy<{'riscv64': 'y'}>
+CONFIG_HW_RANDOM_STARFIVE_VIC                   policy<{'riscv64': 'm'}>
+CONFIG_MMC_DW                                   policy<{'riscv64': 'y'}>
+CONFIG_MMC_DW_PLTFM                             policy<{'riscv64': 'y'}>
+CONFIG_NVDLA                                    policy<{'riscv64': 'm'}>
+CONFIG_PINCTRL_STARFIVE_JH7100                  policy<{'riscv64': 'y'}>
+CONFIG_POWER_RESET_TPS65086                     policy<{'riscv64': 'm'}>
+CONFIG_PWM_STARFIVE                             policy<{'riscv64': 'm'}>
+CONFIG_RESET_STARFIVE_JH7100_AUDIO              policy<{'riscv64': 'm'}>
+CONFIG_RISCV_NONSTANDARD_CACHE_OPS              policy<{'riscv64': 'y'}>
+CONFIG_SND_STARFIVE_I2SVAD                      policy<{'riscv64': 'n'}>
+CONFIG_SND_STARFIVE_PDM                         policy<{'riscv64': 'n'}>
+CONFIG_SND_STARFIVE_PWMDAC                      policy<{'riscv64': 'm'}>
+CONFIG_SND_STARFIVE_PWMDAC_PCM                  policy<{'riscv64': 'n'}>
+CONFIG_SND_STARFIVE_SPDIF                       policy<{'riscv64': 'n'}>
