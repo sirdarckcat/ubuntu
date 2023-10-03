@@ -61,7 +61,7 @@ class Annotation(Config):
     """
     Parse body of annotations file
     """
-    def _parse_body(self, data: str):
+    def _parse_body(self, data: str, parent=True):
         for line in data.splitlines():
             # Replace tabs with spaces, squeeze multiple into singles and
             # remove leading and trailing spaces
@@ -85,10 +85,11 @@ class Annotation(Config):
             # Handle includes (recursively)
             m = re.match(r'^include\s+"?([^"]*)"?', line)
             if m:
-                self.include.append(m.group(1))
+                if parent:
+                    self.include.append(m.group(1))
                 include_fname = dirname(abspath(self.fname)) + '/' + m.group(1)
                 include_data = self._load(include_fname)
-                self._parse_body(include_data)
+                self._parse_body(include_data, parent=False)
                 continue
 
             # Handle policy and note lines
@@ -104,7 +105,10 @@ class Annotation(Config):
                     m = re.match(r'.* policy<(.*?)>', line)
                     if m:
                         match = True
-                        entry['policy'] |= literal_eval(m.group(1))
+                        try:
+                            entry['policy'] |= literal_eval(m.group(1))
+                        except TypeError:
+                            entry['policy'] = {**entry['policy'], **literal_eval(m.group(1))}
 
                     m = re.match(r'.* note<(.*?)>', line)
                     if m:
@@ -113,14 +117,14 @@ class Annotation(Config):
                         entry['note'] = "'" + m.group(1).replace("'", '') + "'"
 
                     if not match:
-                        raise Exception('syntax error')
+                        raise SyntaxError('syntax error')
                     self.config[conf] = entry
                 except Exception as e:
-                    raise Exception(str(e) + f', line = {line}') from e
+                    raise SyntaxError(str(e) + f', line = {line}') from e
                 continue
 
             # Invalid line
-            raise Exception(f'invalid line: {line}')
+            raise SyntaxError(f'invalid line: {line}')
 
     def _parse(self, data: str):
         """
@@ -158,9 +162,9 @@ class Annotation(Config):
         # Sanity check: Verify that all FLAVOUR_DEP flavors are valid
         for src, tgt in self.flavour_dep.items():
             if src not in self.flavour:
-                raise Exception(f'Invalid source flavour in FLAVOUR_DEP: {src}')
+                raise SyntaxError(f'Invalid source flavour in FLAVOUR_DEP: {src}')
             if tgt not in self.include_flavour:
-                raise Exception(f'Invalid target flavour in FLAVOUR_DEP: {tgt}')
+                raise SyntaxError(f'Invalid target flavour in FLAVOUR_DEP: {tgt}')
 
     def _remove_entry(self, config: str):
         if self.config[config]:
@@ -203,7 +207,10 @@ class Annotation(Config):
         # Determine if we need to import all configs or a single config
         if not configs:
             configs = c.config.keys()
-            configs |= self.search_config(arch=arch, flavour=flavour).keys()
+            try:
+                configs |= self.search_config(arch=arch, flavour=flavour).keys()
+            except TypeError:
+                configs = {**configs, **self.search_config(arch=arch, flavour=flavour).keys()}
 
         # Import configs from the Kconfig object into Annotations
         if flavour is not None:
@@ -331,11 +338,20 @@ class Annotation(Config):
                 if 'policy' not in new_val:
                     continue
 
-                # If new_val is a subset of old_val, skip it
+                # If new_val is a subset of old_val, skip it unless there are
+                # new notes that are different than the old ones.
                 old_val = tmp_a.config.get(conf)
                 if old_val and 'policy' in old_val:
-                    if old_val['policy'] == old_val['policy'] | new_val['policy']:
-                        continue
+                    try:
+                        can_skip = old_val['policy'] == old_val['policy'] | new_val['policy']
+                    except TypeError:
+                        can_skip = old_val['policy'] == {**old_val['policy'], **new_val['policy']}
+                    if can_skip:
+                        if 'note' not in new_val:
+                            continue
+                        if 'note' in old_val and 'note' in new_val:
+                            if old_val['note'] == new_val['note']:
+                                continue
 
                 # Write out the policy (and note) line(s)
                 val = dict(sorted(new_val['policy'].items()))
