@@ -60,10 +60,6 @@ static int igc_tsn_disable_offload(struct igc_adapter *adapter)
 
 	int i;
 
-	if (!(adapter->flags & IGC_FLAG_TSN_QBV_ENABLED))
-		return 0;
-
-	adapter->cycle_time = 0;
 	adapter->add_frag_size = IGC_I225_MIN_FRAG_SIZE_DEFAULT;
 
 	wr32(IGC_TXPBS, I225_TXPBSIZE_DEFAULT);
