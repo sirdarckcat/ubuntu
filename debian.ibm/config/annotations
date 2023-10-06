@@ -5,40 +5,47 @@
 
 include "../../debian.master/config/annotations"
 
-# The following annotations may need to be re-visited for f/ibm
-# For the initial bring-up, these annotations were changed to avoid
-# changing the kernel config from which this kernel was originally 
-# derived - that is, from b/hwe-5.4 
+CONFIG_AHC1EC0_WDT                              policy<{'amd64': '-'}>
+CONFIG_AHC1EC0_WDT                              note<'maintaining original config'>
 
-CONFIG_PREEMPT_VOLUNTARY			policy<{'amd64': 'y'}>
-CONFIG_PREEMPT_VOLUNTARY			 note<maintaining original config>
+CONFIG_HZ_1000                                  policy<{'amd64': 'n'}>
+CONFIG_HZ_1000                                  note<'maintaining original config'>
 
-CONFIG_IRQ_FORCED_THREADING_DEFAULT		policy<{'amd64': 'n'}>
-CONFIG_IRQ_FORCED_THREADING_DEFAULT		 note<maintaining original config>
+CONFIG_HZ_250                                   policy<{'amd64': 'y'}>
+CONFIG_HZ_250                                   note<'maintaining original config'>
 
-CONFIG_MFD_AHC1EC0				policy<{'amd64': '-'}>
-CONFIG_MFD_AHC1EC0				 note<maintaining original config>
+CONFIG_IRQ_FORCED_THREADING_DEFAULT             policy<{'amd64': 'n'}>
+CONFIG_IRQ_FORCED_THREADING_DEFAULT             note<'maintaining original config'>
 
-CONFIG_KERNEL_GZIP				policy<{'amd64': 'y'}>
-CONFIG_KERNEL_GZIP				 note<maintaining original config>
+CONFIG_KERNEL_GZIP                              policy<{'amd64': 'y'}>
+CONFIG_KERNEL_GZIP                              note<'maintaining original config'>
 
-CONFIG_HZ_1000					policy<{'amd64': 'n'}>
-CONFIG_HZ_1000					 note<maintaining original config>
+CONFIG_KERNEL_LZ4                               policy<{'amd64': 'n'}>
+CONFIG_KERNEL_LZ4                               note<'maintaining original config'>
 
-CONFIG_AHC1EC0_WDT				policy<{'amd64': '-'}>
-CONFIG_AHC1EC0_WDT				 note<maintaining original config>
+CONFIG_LATENCYTOP                               policy<{'amd64': 'n'}>
+CONFIG_LATENCYTOP                               note<'maintaining original config'>
 
-CONFIG_SENSORS_AHC1EC0_HWMON			policy<{'amd64': '-'}>
-CONFIG_SENSORS_AHC1EC0_HWMON			 note<maintaining original config>
+CONFIG_MFD_AHC1EC0                              policy<{'amd64': '-'}>
+CONFIG_MFD_AHC1EC0                              note<'maintaining original config'>
 
-CONFIG_HZ_250					policy<{'amd64': 'y'}>
-CONFIG_HZ_250					 note<maintaining original config>
+CONFIG_PREEMPT                                  policy<{'amd64': 'n'}>
+CONFIG_PREEMPT                                  note<'maintaining original config'>
 
-CONFIG_PREEMPT					policy<{'amd64': 'n'}>
-CONFIG_PREEMPT					 note<maintaining original config>
+CONFIG_PREEMPT_VOLUNTARY                        policy<{'amd64': 'y'}>
+CONFIG_PREEMPT_VOLUNTARY                        note<'maintaining original config'>
 
-CONFIG_KERNEL_LZ4				policy<{'amd64': 'n'}>
-CONFIG_KERNEL_LZ4				 note<maintaining original config>
+CONFIG_SENSORS_AHC1EC0_HWMON                    policy<{'amd64': '-'}>
+CONFIG_SENSORS_AHC1EC0_HWMON                    note<'maintaining original config'>
 
-CONFIG_LATENCYTOP				policy<{'amd64': 'n'}>
-CONFIG_LATENCYTOP				 note<maintaining original config>
+
+# ---- Annotations without notes ----
+
+CONFIG_HZ                                       policy<{'amd64': '250'}>
+CONFIG_INLINE_READ_UNLOCK                       policy<{'amd64': 'y'}>
+CONFIG_INLINE_READ_UNLOCK_IRQ                   policy<{'amd64': 'y'}>
+CONFIG_INLINE_SPIN_UNLOCK_IRQ                   policy<{'amd64': 'y'}>
+CONFIG_INLINE_WRITE_UNLOCK                      policy<{'amd64': 'y'}>
+CONFIG_INLINE_WRITE_UNLOCK_IRQ                  policy<{'amd64': 'y'}>
+CONFIG_TREE_RCU                                 policy<{'amd64': 'y'}>
+CONFIG_UBUNTU_ODM_DRIVERS                       policy<{'amd64': '-'}>
