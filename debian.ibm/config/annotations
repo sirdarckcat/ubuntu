@@ -1,6 +1,7 @@
 # Menu: HEADER
-# FORMAT: 3
-# ARCH: x86
+# FORMAT: 4
+# ARCH: amd64
+# FLAVOUR: amd64-ibm
 
 include "../../debian.master/config/annotations"
 
@@ -10,34 +11,34 @@ include "../../debian.master/config/annotations"
 # derived - that is, from b/hwe-5.4 
 
 CONFIG_PREEMPT_VOLUNTARY			policy<{'amd64': 'y'}>
-CONFIG_PREEMPT_VOLUNTARY			flag<ENFORCE> note<maintaining original config>
+CONFIG_PREEMPT_VOLUNTARY			 note<maintaining original config>
 
 CONFIG_IRQ_FORCED_THREADING_DEFAULT		policy<{'amd64': 'n'}>
-CONFIG_IRQ_FORCED_THREADING_DEFAULT		flag<ENFORCE> note<maintaining original config>
+CONFIG_IRQ_FORCED_THREADING_DEFAULT		 note<maintaining original config>
 
 CONFIG_MFD_AHC1EC0				policy<{'amd64': '-'}>
-CONFIG_MFD_AHC1EC0				flag<ENFORCE> note<maintaining original config>
+CONFIG_MFD_AHC1EC0				 note<maintaining original config>
 
 CONFIG_KERNEL_GZIP				policy<{'amd64': 'y'}>
-CONFIG_KERNEL_GZIP				flag<ENFORCE> note<maintaining original config>
+CONFIG_KERNEL_GZIP				 note<maintaining original config>
 
 CONFIG_HZ_1000					policy<{'amd64': 'n'}>
-CONFIG_HZ_1000					flag<ENFORCE> note<maintaining original config>
+CONFIG_HZ_1000					 note<maintaining original config>
 
 CONFIG_AHC1EC0_WDT				policy<{'amd64': '-'}>
-CONFIG_AHC1EC0_WDT				flag<ENFORCE> note<maintaining original config>
+CONFIG_AHC1EC0_WDT				 note<maintaining original config>
 
 CONFIG_SENSORS_AHC1EC0_HWMON			policy<{'amd64': '-'}>
-CONFIG_SENSORS_AHC1EC0_HWMON			flag<ENFORCE> note<maintaining original config>
+CONFIG_SENSORS_AHC1EC0_HWMON			 note<maintaining original config>
 
 CONFIG_HZ_250					policy<{'amd64': 'y'}>
-CONFIG_HZ_250					flag<ENFORCE> note<maintaining original config>
+CONFIG_HZ_250					 note<maintaining original config>
 
 CONFIG_PREEMPT					policy<{'amd64': 'n'}>
-CONFIG_PREEMPT					flag<ENFORCE> note<maintaining original config>
+CONFIG_PREEMPT					 note<maintaining original config>
 
 CONFIG_KERNEL_LZ4				policy<{'amd64': 'n'}>
-CONFIG_KERNEL_LZ4				flag<ENFORCE> note<maintaining original config>
+CONFIG_KERNEL_LZ4				 note<maintaining original config>
 
 CONFIG_LATENCYTOP				policy<{'amd64': 'n'}>
-CONFIG_LATENCYTOP				flag<ENFORCE> note<maintaining original config>
+CONFIG_LATENCYTOP				 note<maintaining original config>
