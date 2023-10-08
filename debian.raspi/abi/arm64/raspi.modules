@@ -5,6 +5,7 @@
 6lowpan
 6pack
 8021q
+8250_bcm7271
 8250_dfl
 8250_dw
 8250_men_mcb
@@ -263,6 +264,7 @@ afs
 ah4
 ah6
 ahci
+ahci_brcm
 ahci_ceva
 ahci_dwc
 ahci_platform
@@ -368,6 +370,8 @@ arm_mhuv2
 arm_scpi
 arm_smc_wdt
 arm_smccc_trng
+arm_smmu
+arm_smmu_v3
 arm_spe_pmu
 armmmci
 arp_tables
@@ -504,6 +508,7 @@ bcm590xx-regulator
 bcm5974
 bcm63138_nand
 bcm6368_nand
+bcm7038_wdt
 bcm84881
 bcm87xx
 bcm_vk
@@ -600,8 +605,13 @@ brcmfmac-cyw
 brcmfmac-wcc
 brcmnand
 brcmsmac
+brcmstb-avs-cpufreq
+brcmstb-usb-pinmap
+brcmstb_dpfe
 brcmstb_gisb
+brcmstb_memc
 brcmstb_nand
+brcmstb_thermal
 brcmutil
 brd
 bridge
@@ -989,6 +999,9 @@ dps920ab
 drbd
 drivetemp
 drm
+drm-rp1-dpi
+drm-rp1-dsi
+drm-rp1-vec
 drm_display_helper
 drm_dma_helper
 drm_dp_aux_bus
@@ -1139,6 +1152,7 @@ efct
 efs
 egalax_ts
 egalax_ts_serial
+ehci-brcm
 ehci-fsl
 ehci-hcd
 ehci-pci
@@ -1414,6 +1428,7 @@ gpio-bd71815
 gpio-bd71828
 gpio-bd9571mwv
 gpio-beeper
+gpio-brcmstb
 gpio-charger
 gpio-dln2
 gpio-dwapb
@@ -1958,9 +1973,9 @@ inv-mpu6050-i2c
 inv-mpu6050-spi
 io_edgeport
 io_ti
+iommufd
 ionic
 iosm
-iova
 iowarrior
 ip5xxx_power
 ip6_gre
@@ -2075,6 +2090,8 @@ ir35221
 ir36021
 ir_toy
 irps5401
+irq-bcm7038-l1
+irq-bcm7120-l2
 irq-madera
 irs1125
 iscsi_boot_sysfs
@@ -3088,6 +3105,9 @@ ntfs3
 ntxec
 null_blk
 nvidiafb
+nvme
+nvme-common
+nvme-core
 nvme-fabrics
 nvme-fc
 nvme-loop
@@ -3354,6 +3374,8 @@ phantom
 phonet
 phram
 phy-bcm-kona-usb2
+phy-brcm-sata
+phy-brcm-usb-dvr
 phy-cadence-salvo
 phy-cadence-torrent
 phy-can-transceiver
@@ -3385,6 +3407,7 @@ pinctrl-palmas
 pinctrl-rk805
 pinephone-keyboard
 ping
+pisp-be
 pistachio-internal-dac
 pixcir_i2c_ts
 pkcs7_test_key
@@ -3477,6 +3500,7 @@ pwm-atmel-hlcdc
 pwm-atmel-tcb
 pwm-bcm2835
 pwm-beeper
+pwm-brcmstb
 pwm-clk
 pwm-dwc
 pwm-fan
@@ -3588,6 +3612,8 @@ raid6_pq
 raid_class
 rainshadow-cec
 ramoops
+raspberrypi-button
+raspberrypi-gpiomem
 raspberrypi-hwmon
 raspberrypi-ts
 raspberrypi_axi_monitor
@@ -3763,6 +3789,8 @@ regmap-w1
 regulator-haptic
 reiserfs
 repaper
+reset-brcmstb
+reset-brcmstb-rescal
 reset-ti-syscon
 reset-tps380x
 resistive-adc-touch
@@ -3780,6 +3808,7 @@ rivafb
 rk805-pwrkey
 rk808-regulator
 rk817_charger
+rk8xx-core
 rk8xx-i2c
 rk8xx-spi
 rm3100-core
@@ -3812,6 +3841,7 @@ roles
 romfs
 rose
 rotary_encoder
+rp1-cfe
 rp2
 rpcrdma
 rpcsec_gss_krb5
@@ -3877,6 +3907,7 @@ rtc-abx80x
 rtc-as3722
 rtc-bq32k
 rtc-bq4802
+rtc-brcmstb-waketimer
 rtc-cadence
 rtc-cpcap
 rtc-da9063
@@ -3936,6 +3967,7 @@ rtc-r9701
 rtc-rc5t619
 rtc-rk808
 rtc-rp5c01
+rtc-rpi
 rtc-rs5c348
 rtc-rs5c372
 rtc-rv3028
@@ -4131,6 +4163,7 @@ scsi_transport_spi
 scsi_transport_srp
 sctp
 sctp_diag
+sdhci-brcmstb
 sdhci-cadence
 sdhci-milbeaut
 sdhci-of-arasan
@@ -4239,6 +4272,7 @@ smartpqi
 smb347-charger
 smc
 smc91x
+smc_diag
 smm665
 smpro-core
 smpro-errmon
@@ -4713,6 +4747,7 @@ spi-zynqmp-gqspi
 spi_ks8995
 spidev
 spinand
+spl
 spmi
 sprd_serial
 sps30
@@ -4948,6 +4983,7 @@ team_mode_roundrobin
 tee
 tef6862
 teranetics
+test_blackhole_dev
 test_bpf
 test_div64
 test_power
@@ -5306,6 +5342,7 @@ viperboard_adc
 virt_wifi
 virtio
 virtio-gpu
+virtio-iommu
 virtio-rng
 virtio_balloon
 virtio_blk
@@ -5576,6 +5613,7 @@ zd1301
 zd1301_demod
 zet6223
 zforce_ts
+zfs
 zhenhua
 ziirave_wdt
 zinitix
