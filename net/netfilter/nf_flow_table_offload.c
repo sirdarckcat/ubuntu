@@ -13,6 +13,8 @@
 #include <net/netfilter/nf_conntrack_core.h>
 #include <net/netfilter/nf_conntrack_tuple.h>
 
+extern unsigned int nf_tables_net_id;
+
 static struct workqueue_struct *nf_flow_offload_add_wq;
 static struct workqueue_struct *nf_flow_offload_del_wq;
 static struct workqueue_struct *nf_flow_offload_stats_wq;
@@ -1074,15 +1076,16 @@ static void nf_flow_table_indr_block_cb(struct net_device *dev,
 					enum flow_block_command cmd)
 {
 	struct net *net = dev_net(dev);
+	struct nftables_pernet *nft_net = net_generic(net, nf_tables_net_id);
 	struct nft_flowtable *nft_ft;
 	struct nft_table *table;
 	struct nft_hook *hook;
 
-	if (!net->nft.base_seq)
+	if (!nft_net->base_seq)
 		return;
 
-	mutex_lock(&net->nft.commit_mutex);
-	list_for_each_entry(table, &net->nft.tables, list) {
+	mutex_lock(&nft_net->commit_mutex);
+	list_for_each_entry(table, &nft_net->tables, list) {
 		list_for_each_entry(nft_ft, &table->flowtables, list) {
 			list_for_each_entry(hook, &nft_ft->hook_list, list) {
 				if (hook->ops.dev != dev)
@@ -1094,7 +1097,7 @@ static void nf_flow_table_indr_block_cb(struct net_device *dev,
 			}
 		}
 	}
-	mutex_unlock(&net->nft.commit_mutex);
+	mutex_unlock(&nft_net->commit_mutex);
 }
 
 static struct flow_indr_block_entry block_ing_entry = {
