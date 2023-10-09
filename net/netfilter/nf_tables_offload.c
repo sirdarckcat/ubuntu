@@ -385,9 +385,10 @@ static int nft_flow_offload_chain(struct nft_chain *chain,
 static void nft_flow_rule_offload_abort(struct net *net,
 					struct nft_trans *trans)
 {
+	struct nftables_pernet *nft_net = net_generic(net, nf_tables_net_id);
 	int err = 0;
 
-	list_for_each_entry_continue_reverse(trans, &net->nft.commit_list, list) {
+	list_for_each_entry_continue_reverse(trans, &nft_net->commit_list, list) {
 		if (trans->ctx.family != NFPROTO_NETDEV)
 			continue;
 
