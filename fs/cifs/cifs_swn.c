@@ -465,7 +465,7 @@ static int cifs_swn_reconnect(struct cifs_tcon *tcon, struct sockaddr_storage *a
 	int ret = 0;
 
 	/* Store the reconnect address */
-	cifs_server_lock(tcon->ses->server);
+	mutex_lock(&tcon->ses->server->srv_mutex);
 	if (cifs_sockaddr_equal(&tcon->ses->server->dstaddr, addr))
 		goto unlock;
 
@@ -501,7 +501,7 @@ static int cifs_swn_reconnect(struct cifs_tcon *tcon, struct sockaddr_storage *a
 	cifs_signal_cifsd_for_reconnect(tcon->ses->server, false);
 
 unlock:
-	cifs_server_unlock(tcon->ses->server);
+	mutex_unlock(&tcon->ses->server->srv_mutex);
 
 	return ret;
 }
