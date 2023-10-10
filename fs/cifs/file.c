@@ -4871,9 +4871,7 @@ void cifs_oplock_break(struct work_struct *work)
 	struct TCP_Server_Info *server;
 	struct tcon_link *tlink;
 	int rc = 0;
-	bool purge_cache = false, oplock_break_cancelled;
-	__u64 persistent_fid, volatile_fid;
-	__u16 net_fid;
+	bool purge_cache = false;
 
 	wait_on_bit(&cinode->flags, CIFS_INODE_PENDING_WRITERS,
 			TASK_UNINTERRUPTIBLE);
@@ -4924,26 +4922,19 @@ oplock_break_ack:
 	if (!CIFS_CACHE_HANDLE(cinode) && !list_empty(&cinode->deferred_closes))
 		cifs_close_deferred_file(cinode);
 
-	persistent_fid = cfile->fid.persistent_fid;
-	volatile_fid = cfile->fid.volatile_fid;
-	net_fid = cfile->fid.netfid;
-	oplock_break_cancelled = cfile->oplock_break_cancelled;
-
-	_cifsFileInfo_put(cfile, false /* do not wait for ourself */, false);
 	/*
 	 * releasing stale oplock after recent reconnect of smb session using
 	 * a now incorrect file handle is not a data integrity issue but do
 	 * not bother sending an oplock release if session to server still is
 	 * disconnected since oplock already released by the server
 	 */
-	if (!oplock_break_cancelled) {
-		rc = tcon->ses->server->ops->oplock_response(tcon, persistent_fid,
-				volatile_fid, net_fid, cinode);
+	if (!cfile->oplock_break_cancelled) {
+		rc = tcon->ses->server->ops->oplock_response(tcon, &cfile->fid,
+							     cinode);
 		cifs_dbg(FYI, "Oplock release rc = %d\n", rc);
 	}
 
-	cifs_put_tlink(tlink);
-out:
+	_cifsFileInfo_put(cfile, false /* do not wait for ourself */, false);
 	cifs_done_oplock_break(cinode);
 }
 
