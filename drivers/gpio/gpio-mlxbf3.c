@@ -49,6 +49,9 @@ struct mlxbf3_gpio_context {
 
 	/* YU GPIO cause block address */
 	void __iomem *gpio_cause_io;
+
+	/* Mask of valid gpios that can be accessed by software */
+	unsigned int valid_mask;
 };
 
 static void mlxbf3_gpio_irq_enable(struct irq_data *irqd)
@@ -150,6 +153,17 @@ static void mlxbf3_gpio_irq_ack(struct irq_data *data)
 {
 }
 
+static int mlxbf3_gpio_init_valid_mask(struct gpio_chip *gc,
+				       unsigned long *valid_mask,
+				       unsigned int ngpios)
+{
+	struct mlxbf3_gpio_context *gs = gpiochip_get_data(gc);
+
+	*valid_mask = gs->valid_mask;
+
+	return 0;
+}
+
 static struct irq_chip gpio_mlxbf3_irqchip = {
 	.name = "MLNXBF33",
 	.irq_ack = mlxbf3_gpio_irq_ack,
@@ -205,6 +219,9 @@ static int mlxbf3_gpio_probe(struct platform_device *pdev)
 	gs->gpio_clr_io = devm_platform_ioremap_resource(pdev, 3);
 	if (IS_ERR(gs->gpio_clr_io))
 		return PTR_ERR(gs->gpio_clr_io);
+
+	device_property_read_u32(dev, "valid_mask", &gs->valid_mask);
+
 	gc = &gs->gc;
 
 	ret = bgpio_init(gc, dev, 4,
@@ -218,6 +235,7 @@ static int mlxbf3_gpio_probe(struct platform_device *pdev)
 	gc->free = gpiochip_generic_free;
 	gc->owner = THIS_MODULE;
 	gc->add_pin_ranges = mlxbf3_gpio_add_pin_ranges;
+	gc->init_valid_mask = mlxbf3_gpio_init_valid_mask;
 
 	irq = platform_get_irq(pdev, 0);
 	if (irq >= 0) {
