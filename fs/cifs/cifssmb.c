@@ -75,11 +75,12 @@ cifs_mark_open_files_invalid(struct cifs_tcon *tcon)
 
 	/* only send once per connect */
 	spin_lock(&cifs_tcp_ses_lock);
-	if ((tcon->ses->status != CifsGood) || (tcon->status != TID_NEED_RECON)) {
+	if (tcon->ses->status != CifsGood ||
+	    tcon->tidStatus != CifsNeedReconnect) {
 		spin_unlock(&cifs_tcp_ses_lock);
 		return;
 	}
-	tcon->status = TID_IN_FILES_INVALIDATE;
+	tcon->tidStatus = CifsInFilesInvalidate;
 	spin_unlock(&cifs_tcp_ses_lock);
 
 	/* list all files open on tree connection and mark them invalid */
@@ -99,8 +100,8 @@ cifs_mark_open_files_invalid(struct cifs_tcon *tcon)
 	mutex_unlock(&tcon->crfid.fid_mutex);
 
 	spin_lock(&cifs_tcp_ses_lock);
-	if (tcon->status == TID_IN_FILES_INVALIDATE)
-		tcon->status = TID_NEED_TCON;
+	if (tcon->tidStatus == CifsInFilesInvalidate)
+		tcon->tidStatus = CifsNeedTcon;
 	spin_unlock(&cifs_tcp_ses_lock);
 
 	/*
@@ -135,7 +136,7 @@ cifs_reconnect_tcon(struct cifs_tcon *tcon, int smb_command)
 	 * have tcon) are allowed as we start force umount
 	 */
 	spin_lock(&cifs_tcp_ses_lock);
-	if (tcon->status == TID_EXITING) {
+	if (tcon->tidStatus == CifsExiting) {
 		if (smb_command != SMB_COM_WRITE_ANDX &&
 		    smb_command != SMB_COM_OPEN_ANDX &&
 		    smb_command != SMB_COM_TREE_DISCONNECT) {
