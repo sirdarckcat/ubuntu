@@ -3934,7 +3934,7 @@ cifs_setup_session(const unsigned int xid, struct cifs_ses *ses,
 		spin_unlock(&cifs_tcp_ses_lock);
 		return 0;
 	}
-	server->tcpStatus = CifsInSessSetup;
+	ses->status = CifsInSessSetup;
 	spin_unlock(&cifs_tcp_ses_lock);
 
 	spin_lock(&ses->chan_lock);
@@ -3972,7 +3972,8 @@ cifs_setup_session(const unsigned int xid, struct cifs_ses *ses,
 		if (server->tcpStatus == CifsInSessSetup)
 			server->tcpStatus = CifsGood;
 		/* Even if one channel is active, session is in good state */
-		ses->status = CifsGood;
+		if (ses->status == CifsInSessSetup)
+			ses->status = CifsGood;
 		spin_unlock(&cifs_tcp_ses_lock);
 
 		spin_lock(&ses->chan_lock);
