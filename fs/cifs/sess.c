@@ -742,9 +742,9 @@ static int size_of_ntlmssp_blob(struct cifs_ses *ses, int base_size)
 	else
 		sz += sizeof(__le16);
 
-	if (ses->workstation_name[0])
+	if (ses->workstation_name)
 		sz += sizeof(__le16) * strnlen(ses->workstation_name,
-					       ntlmssp_workstation_name_size(ses));
+			CIFS_MAX_WORKSTATION_LEN);
 	else
 		sz += sizeof(__le16);
 
@@ -988,7 +988,7 @@ int build_ntlmssp_auth_blob(unsigned char **pbuffer,
 
 	cifs_security_buffer_from_str(&sec_blob->WorkstationName,
 				      ses->workstation_name,
-				      ntlmssp_workstation_name_size(ses),
+				      CIFS_MAX_WORKSTATION_LEN,
 				      *pbuffer, &tmp,
 				      nls_cp);
 
