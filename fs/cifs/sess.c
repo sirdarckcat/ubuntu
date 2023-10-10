@@ -1415,7 +1415,7 @@ sess_auth_rawntlmssp_negotiate(struct sess_data *sess_data)
 				     &blob_len, ses, server,
 				     sess_data->nls_cp);
 	if (rc)
-		goto out_free_ntlmsspblob;
+		goto out;
 
 	sess_data->iov[1].iov_len = blob_len;
 	sess_data->iov[1].iov_base = ntlmsspblob;
@@ -1423,7 +1423,7 @@ sess_auth_rawntlmssp_negotiate(struct sess_data *sess_data)
 
 	rc = _sess_auth_rawntlmssp_assemble_req(sess_data);
 	if (rc)
-		goto out_free_ntlmsspblob;
+		goto out;
 
 	rc = sess_sendreceive(sess_data);
 
@@ -1437,14 +1437,14 @@ sess_auth_rawntlmssp_negotiate(struct sess_data *sess_data)
 		rc = 0;
 
 	if (rc)
-		goto out_free_ntlmsspblob;
+		goto out;
 
 	cifs_dbg(FYI, "rawntlmssp session setup challenge phase\n");
 
 	if (smb_buf->WordCount != 4) {
 		rc = -EIO;
 		cifs_dbg(VFS, "bad word count %d\n", smb_buf->WordCount);
-		goto out_free_ntlmsspblob;
+		goto out;
 	}
 
 	ses->Suid = smb_buf->Uid;   /* UID left in wire format (le) */
@@ -1458,13 +1458,10 @@ sess_auth_rawntlmssp_negotiate(struct sess_data *sess_data)
 		cifs_dbg(VFS, "bad security blob length %d\n",
 				blob_len);
 		rc = -EINVAL;
-		goto out_free_ntlmsspblob;
+		goto out;
 	}
 
 	rc = decode_ntlmssp_challenge(bcc_ptr, blob_len, ses);
-
-out_free_ntlmsspblob:
-	kfree(ntlmsspblob);
 out:
 	sess_free_buffer(sess_data);
 
