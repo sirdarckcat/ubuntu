@@ -4010,7 +4010,7 @@ cifs_negotiate_protocol(const unsigned int xid, struct cifs_ses *ses,
 	if (rc == 0) {
 		spin_lock(&cifs_tcp_ses_lock);
 		if (server->tcpStatus == CifsInNegotiate)
-			server->tcpStatus = CifsGood;
+			server->tcpStatus = CifsNeedSessSetup;
 		else
 			rc = -EHOSTDOWN;
 		spin_unlock(&cifs_tcp_ses_lock);
@@ -4033,17 +4033,18 @@ cifs_setup_session(const unsigned int xid, struct cifs_ses *ses,
 	bool is_binding = false;
 
 	/* only send once per connect */
-	spin_lock(&ses->chan_lock);
-	is_binding = !CIFS_ALL_CHANS_NEED_RECONNECT(ses);
-	spin_unlock(&ses->chan_lock);
-
 	spin_lock(&cifs_tcp_ses_lock);
-	if (ses->status == CifsExiting) {
+	if ((server->tcpStatus != CifsNeedSessSetup) &&
+	    (ses->status == CifsGood)) {
 		spin_unlock(&cifs_tcp_ses_lock);
 		return 0;
 	}
-	ses->status = CifsInSessSetup;
+	server->tcpStatus = CifsInSessSetup;
 	spin_unlock(&cifs_tcp_ses_lock);
+
+	spin_lock(&ses->chan_lock);
+	is_binding = !CIFS_ALL_CHANS_NEED_RECONNECT(ses);
+	spin_unlock(&ses->chan_lock);
 
 	if (!is_binding) {
 		ses->capabilities = server->capabilities;
@@ -4068,13 +4069,13 @@ cifs_setup_session(const unsigned int xid, struct cifs_ses *ses,
 	if (rc) {
 		cifs_server_dbg(VFS, "Send error in SessSetup = %d\n", rc);
 		spin_lock(&cifs_tcp_ses_lock);
-		if (ses->status == CifsInSessSetup)
-			ses->status = CifsNeedSessSetup;
+		if (server->tcpStatus == CifsInSessSetup)
+			server->tcpStatus = CifsNeedSessSetup;
 		spin_unlock(&cifs_tcp_ses_lock);
 	} else {
 		spin_lock(&cifs_tcp_ses_lock);
-		if (ses->status == CifsInSessSetup)
-			ses->status = CifsGood;
+		if (server->tcpStatus == CifsInSessSetup)
+			server->tcpStatus = CifsGood;
 		/* Even if one channel is active, session is in good state */
 		ses->status = CifsGood;
 		spin_unlock(&cifs_tcp_ses_lock);
