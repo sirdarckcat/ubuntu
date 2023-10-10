@@ -643,8 +643,7 @@ smb2_sign_rqst(struct smb_rqst *rqst, struct TCP_Server_Info *server)
 	if (!is_signed)
 		return 0;
 	spin_lock(&cifs_tcp_ses_lock);
-	if (server->ops->need_neg &&
-	    server->ops->need_neg(server)) {
+	if (server->tcpStatus == CifsNeedNegotiate) {
 		spin_unlock(&cifs_tcp_ses_lock);
 		return 0;
 	}
