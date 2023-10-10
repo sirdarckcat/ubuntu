@@ -108,7 +108,7 @@
  * CIFS vfs client Status information (based on what we know.)
  */
 
-/* associated with each connection */
+/* associated with each tcp and smb session */
 enum statusEnum {
 	CifsNew = 0,
 	CifsGood,
@@ -116,15 +116,8 @@ enum statusEnum {
 	CifsNeedReconnect,
 	CifsNeedNegotiate,
 	CifsInNegotiate,
-};
-
-/* associated with each smb session */
-enum ses_status_enum {
-	SES_NEW = 0,
-	SES_GOOD,
-	SES_EXITING,
-	SES_NEED_RECON,
-	SES_IN_SETUP
+	CifsNeedSessSetup,
+	CifsInSessSetup,
 };
 
 /* associated with each tree connection to the server */
@@ -942,7 +935,7 @@ struct cifs_ses {
 	struct mutex session_mutex;
 	struct TCP_Server_Info *server;	/* pointer to server info */
 	int ses_count;		/* reference counter */
-	enum ses_status_enum ses_status;  /* updates protected by cifs_tcp_ses_lock */
+	enum statusEnum status;  /* updates protected by cifs_tcp_ses_lock */
 	unsigned overrideSecFlg;  /* if non-zero override global sec flags */
 	char *serverOS;		/* name of operating system underlying server */
 	char *serverNOS;	/* name of network operating system of server */
