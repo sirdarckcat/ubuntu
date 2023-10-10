@@ -822,7 +822,7 @@ cifs_call_async(struct TCP_Server_Info *server, struct smb_rqst *rqst,
 	} else
 		instance = exist_credits->instance;
 
-	cifs_server_lock(server);
+	mutex_lock(&server->srv_mutex);
 
 	/*
 	 * We can't use credits obtained from the previous session to send this
@@ -830,14 +830,14 @@ cifs_call_async(struct TCP_Server_Info *server, struct smb_rqst *rqst,
 	 * return -EAGAIN in such cases to let callers handle it.
 	 */
 	if (instance != server->reconnect_instance) {
-		cifs_server_unlock(server);
+		mutex_unlock(&server->srv_mutex);
 		add_credits_and_wake_if(server, &credits, optype);
 		return -EAGAIN;
 	}
 
 	mid = server->ops->setup_async_request(server, rqst);
 	if (IS_ERR(mid)) {
-		cifs_server_unlock(server);
+		mutex_unlock(&server->srv_mutex);
 		add_credits_and_wake_if(server, &credits, optype);
 		return PTR_ERR(mid);
 	}
@@ -866,7 +866,7 @@ cifs_call_async(struct TCP_Server_Info *server, struct smb_rqst *rqst,
 		cifs_delete_mid(mid);
 	}
 
-	cifs_server_unlock(server);
+	mutex_unlock(&server->srv_mutex);
 
 	if (rc == 0)
 		return 0;
@@ -1107,7 +1107,7 @@ compound_send_recv(const unsigned int xid, struct cifs_ses *ses,
 	 * of smb data.
 	 */
 
-	cifs_server_lock(server);
+	mutex_lock(&server->srv_mutex);
 
 	/*
 	 * All the parts of the compound chain belong obtained credits from the
@@ -1117,7 +1117,7 @@ compound_send_recv(const unsigned int xid, struct cifs_ses *ses,
 	 * handle it.
 	 */
 	if (instance != server->reconnect_instance) {
-		cifs_server_unlock(server);
+		mutex_unlock(&server->srv_mutex);
 		for (j = 0; j < num_rqst; j++)
 			add_credits(server, &credits[j], optype);
 		return -EAGAIN;
@@ -1129,7 +1129,7 @@ compound_send_recv(const unsigned int xid, struct cifs_ses *ses,
 			revert_current_mid(server, i);
 			for (j = 0; j < i; j++)
 				cifs_delete_mid(midQ[j]);
-			cifs_server_unlock(server);
+			mutex_unlock(&server->srv_mutex);
 
 			/* Update # of requests on wire to server */
 			for (j = 0; j < num_rqst; j++)
@@ -1159,7 +1159,7 @@ compound_send_recv(const unsigned int xid, struct cifs_ses *ses,
 		server->sequence_number -= 2;
 	}
 
-	cifs_server_unlock(server);
+	mutex_unlock(&server->srv_mutex);
 
 	/*
 	 * If sending failed for some reason or it is an oplock break that we
@@ -1186,9 +1186,9 @@ compound_send_recv(const unsigned int xid, struct cifs_ses *ses,
 	if ((ses->ses_status == SES_NEW) || (optype & CIFS_NEG_OP) || (optype & CIFS_SESS_OP)) {
 		spin_unlock(&cifs_tcp_ses_lock);
 
-		cifs_server_lock(server);
+		mutex_lock(&server->srv_mutex);
 		smb311_update_preauth_hash(ses, server, rqst[0].rq_iov, rqst[0].rq_nvec);
-		cifs_server_unlock(server);
+		mutex_unlock(&server->srv_mutex);
 
 		spin_lock(&cifs_tcp_ses_lock);
 	}
@@ -1262,9 +1262,9 @@ compound_send_recv(const unsigned int xid, struct cifs_ses *ses,
 			.iov_len = resp_iov[0].iov_len
 		};
 		spin_unlock(&cifs_tcp_ses_lock);
-		cifs_server_lock(server);
+		mutex_lock(&server->srv_mutex);
 		smb311_update_preauth_hash(ses, server, &iov, 1);
-		cifs_server_unlock(server);
+		mutex_unlock(&server->srv_mutex);
 		spin_lock(&cifs_tcp_ses_lock);
 	}
 	spin_unlock(&cifs_tcp_ses_lock);
@@ -1381,11 +1381,11 @@ SendReceive(const unsigned int xid, struct cifs_ses *ses,
 	   and avoid races inside tcp sendmsg code that could cause corruption
 	   of smb data */
 
-	cifs_server_lock(server);
+	mutex_lock(&server->srv_mutex);
 
 	rc = allocate_mid(ses, in_buf, &midQ);
 	if (rc) {
-		cifs_server_unlock(server);
+		mutex_unlock(&server->srv_mutex);
 		/* Update # of requests on wire to server */
 		add_credits(server, &credits, 0);
 		return rc;
@@ -1393,7 +1393,7 @@ SendReceive(const unsigned int xid, struct cifs_ses *ses,
 
 	rc = cifs_sign_smb(in_buf, server, &midQ->sequence_number);
 	if (rc) {
-		cifs_server_unlock(server);
+		mutex_unlock(&server->srv_mutex);
 		goto out;
 	}
 
@@ -1405,7 +1405,7 @@ SendReceive(const unsigned int xid, struct cifs_ses *ses,
 	if (rc < 0)
 		server->sequence_number -= 2;
 
-	cifs_server_unlock(server);
+	mutex_unlock(&server->srv_mutex);
 
 	if (rc < 0)
 		goto out;
@@ -1524,18 +1524,18 @@ SendReceiveBlockingLock(const unsigned int xid, struct cifs_tcon *tcon,
 	   and avoid races inside tcp sendmsg code that could cause corruption
 	   of smb data */
 
-	cifs_server_lock(server);
+	mutex_lock(&server->srv_mutex);
 
 	rc = allocate_mid(ses, in_buf, &midQ);
 	if (rc) {
-		cifs_server_unlock(server);
+		mutex_unlock(&server->srv_mutex);
 		return rc;
 	}
 
 	rc = cifs_sign_smb(in_buf, server, &midQ->sequence_number);
 	if (rc) {
 		cifs_delete_mid(midQ);
-		cifs_server_unlock(server);
+		mutex_unlock(&server->srv_mutex);
 		return rc;
 	}
 
@@ -1546,7 +1546,7 @@ SendReceiveBlockingLock(const unsigned int xid, struct cifs_tcon *tcon,
 	if (rc < 0)
 		server->sequence_number -= 2;
 
-	cifs_server_unlock(server);
+	mutex_unlock(&server->srv_mutex);
 
 	if (rc < 0) {
 		cifs_delete_mid(midQ);
