@@ -1704,7 +1704,6 @@ static struct smbd_connection *_smbd_get_connection(
 
 allocate_mr_failed:
 	/* At this point, need to a full transport shutdown */
-	server->smbd_conn = info;
 	smbd_destroy(server);
 	return NULL;
 
