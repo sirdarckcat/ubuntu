@@ -107,7 +107,7 @@ struct negotiate_message {
 	SECURITY_BUFFER WorkstationName;	/* RFC 1001 and ASCII */
 	struct	ntlmssp_version Version;
 	/* SECURITY_BUFFER */
-	char DomainString[];
+	char DomainString[0];
 	/* followed by WorkstationString */
 } __packed;
 
