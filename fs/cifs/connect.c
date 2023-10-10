@@ -3450,9 +3450,8 @@ cifs_are_all_path_components_accessible(struct TCP_Server_Info *server,
 }
 
 /*
- * Check if path is remote (i.e. a DFS share).
- *
- * Return -EREMOTE if it is, otherwise 0 or -errno.
+ * Check if path is remote (e.g. a DFS share). Return -EREMOTE if it is,
+ * otherwise 0.
  */
 static int is_path_remote(struct mount_ctx *mnt_ctx)
 {
@@ -3742,7 +3741,6 @@ int cifs_mount(struct cifs_sb_info *cifs_sb, struct smb3_fs_context *ctx)
 	if (!isdfs)
 		goto out;
 
-	/* proceed as DFS mount */
 	uuid_gen(&mnt_ctx.mount_id);
 	rc = connect_dfs_root(&mnt_ctx, &tl);
 	dfs_cache_free_tgts(&tl);
