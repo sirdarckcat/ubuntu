@@ -1331,9 +1331,9 @@ static bool target_share_equal(struct TCP_Server_Info *server, const char *s1, c
 		cifs_dbg(VFS, "%s: failed to convert address \'%s\'. skip address matching.\n",
 			 __func__, ip);
 	} else {
-		cifs_server_lock(server);
+		mutex_lock(&server->srv_mutex);
 		match = cifs_match_ipaddr((struct sockaddr *)&server->dstaddr, &sa);
-		cifs_server_unlock(server);
+		mutex_unlock(&server->srv_mutex);
 	}
 
 	kfree(ip);
