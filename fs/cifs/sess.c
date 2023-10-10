@@ -474,14 +474,6 @@ cifs_ses_add_channel(struct cifs_sb_info *cifs_sb, struct cifs_ses *ses,
 
 out:
 	if (rc && chan->server) {
-		/*
-		 * we should avoid race with these delayed works before we
-		 * remove this channel
-		 */
-		cancel_delayed_work_sync(&chan->server->echo);
-		cancel_delayed_work_sync(&chan->server->resolve);
-		cancel_delayed_work_sync(&chan->server->reconnect);
-
 		spin_lock(&ses->chan_lock);
 		/* we rely on all bits beyond chan_count to be clear */
 		cifs_chan_clear_need_reconnect(ses, chan->server);
@@ -492,9 +484,10 @@ out:
 		 */
 		WARN_ON(ses->chan_count < 1);
 		spin_unlock(&ses->chan_lock);
-
-		cifs_put_tcp_session(chan->server, 0);
 	}
+
+	if (rc && chan->server)
+		cifs_put_tcp_session(chan->server, 0);
 
 	free_xid(xid);
 	return rc;
