@@ -248,7 +248,7 @@ smb2_reconnect(__le16 smb2_command, struct cifs_tcon *tcon,
 	 * need to prevent multiple threads trying to simultaneously reconnect
 	 * the same SMB session
 	 */
-	mutex_lock(&ses->session_mutex);
+	mutex_lock(&tcon->ses->session_mutex);
 
 	/*
 	 * Recheck after acquire mutex. If another thread is negotiating
@@ -257,8 +257,16 @@ smb2_reconnect(__le16 smb2_command, struct cifs_tcon *tcon,
 	 */
 	if (server->tcpStatus == CifsNeedReconnect) {
 		rc = -EHOSTDOWN;
-		mutex_unlock(&ses->session_mutex);
+		mutex_unlock(&tcon->ses->session_mutex);
 		goto out;
+	}
+
+	/*
+	 * If we are reconnecting an extra channel, bind
+	 */
+	if (CIFS_SERVER_IS_CHAN(server)) {
+		ses->binding = true;
+		ses->binding_chan = cifs_ses_find_chan(ses, server);
 	}
 
 	/*
@@ -269,7 +277,7 @@ smb2_reconnect(__le16 smb2_command, struct cifs_tcon *tcon,
 	if (!cifs_chan_needs_reconnect(ses, server)) {
 		spin_unlock(&ses->chan_lock);
 
-		/* this means that we only need to tree connect */
+		/* this just means that we only need to tcon */
 		if (tcon->need_reconnect)
 			goto skip_sess_setup;
 
@@ -279,18 +287,25 @@ smb2_reconnect(__le16 smb2_command, struct cifs_tcon *tcon,
 	}
 	spin_unlock(&ses->chan_lock);
 
-	rc = cifs_negotiate_protocol(0, ses, server);
+	rc = cifs_negotiate_protocol(0, tcon->ses);
 	if (!rc) {
-		rc = cifs_setup_session(0, ses, server, nls_codepage);
+		rc = cifs_setup_session(0, tcon->ses, nls_codepage);
 		if ((rc == -EACCES) && !tcon->retry) {
 			rc = -EHOSTDOWN;
-			mutex_unlock(&ses->session_mutex);
+			ses->binding = false;
+			ses->binding_chan = NULL;
+			mutex_unlock(&tcon->ses->session_mutex);
 			goto failed;
 		} else if (rc) {
 			mutex_unlock(&ses->session_mutex);
 			goto out;
 		}
 	}
+	/*
+	 * End of channel binding
+	 */
+	ses->binding = false;
+	ses->binding_chan = NULL;
 
 	if (rc || !tcon->need_reconnect) {
 		mutex_unlock(&tcon->ses->session_mutex);
@@ -847,9 +862,7 @@ add_posix_context(struct kvec *iov, unsigned int *num_iovec, umode_t mode)
  */
 
 int
-SMB2_negotiate(const unsigned int xid,
-	       struct cifs_ses *ses,
-	       struct TCP_Server_Info *server)
+SMB2_negotiate(const unsigned int xid, struct cifs_ses *ses)
 {
 	struct smb_rqst rqst;
 	struct smb2_negotiate_req *req;
@@ -858,6 +871,7 @@ SMB2_negotiate(const unsigned int xid,
 	struct kvec rsp_iov;
 	int rc = 0;
 	int resp_buftype;
+	struct TCP_Server_Info *server = cifs_ses_server(ses);
 	int blob_offset, blob_length;
 	char *security_blob;
 	int flags = CIFS_NEG_OP;
@@ -1238,7 +1252,6 @@ smb2_select_sectype(struct TCP_Server_Info *server, enum securityEnum requested)
 struct SMB2_sess_data {
 	unsigned int xid;
 	struct cifs_ses *ses;
-	struct TCP_Server_Info *server;
 	struct nls_table *nls_cp;
 	void (*func)(struct SMB2_sess_data *);
 	int result;
@@ -1260,10 +1273,9 @@ SMB2_sess_alloc_buffer(struct SMB2_sess_data *sess_data)
 {
 	int rc;
 	struct cifs_ses *ses = sess_data->ses;
-	struct TCP_Server_Info *server = sess_data->server;
 	struct smb2_sess_setup_req *req;
+	struct TCP_Server_Info *server = cifs_ses_server(ses);
 	unsigned int total_len;
-	bool is_binding = false;
 
 	rc = smb2_plain_req_init(SMB2_SESSION_SETUP, NULL, server,
 				 (void **) &req,
@@ -1271,16 +1283,11 @@ SMB2_sess_alloc_buffer(struct SMB2_sess_data *sess_data)
 	if (rc)
 		return rc;
 
-	spin_lock(&ses->chan_lock);
-	is_binding = !CIFS_ALL_CHANS_NEED_RECONNECT(ses);
-	spin_unlock(&ses->chan_lock);
-
-	if (is_binding) {
-		req->hdr.SessionId = cpu_to_le64(ses->Suid);
+	if (sess_data->ses->binding) {
+		req->hdr.SessionId = cpu_to_le64(sess_data->ses->Suid);
 		req->hdr.Flags |= SMB2_FLAGS_SIGNED;
 		req->PreviousSessionId = 0;
 		req->Flags = SMB2_SESSION_REQ_FLAG_BINDING;
-		cifs_dbg(FYI, "Binding to sess id: %llx\n", ses->Suid);
 	} else {
 		/* First session, not a reauthenticate */
 		req->hdr.SessionId = 0;
@@ -1290,8 +1297,6 @@ SMB2_sess_alloc_buffer(struct SMB2_sess_data *sess_data)
 		 */
 		req->PreviousSessionId = cpu_to_le64(sess_data->previous_session);
 		req->Flags = 0; /* MBZ */
-		cifs_dbg(FYI, "Fresh session. Previous: %llx\n",
-			 sess_data->previous_session);
 	}
 
 	/* enough to enable echos and oplocks and one max size write */
@@ -1351,7 +1356,7 @@ SMB2_sess_sendreceive(struct SMB2_sess_data *sess_data)
 
 	/* BB add code to build os and lm fields */
 	rc = cifs_send_recv(sess_data->xid, sess_data->ses,
-			    sess_data->server,
+			    cifs_ses_server(sess_data->ses),
 			    &rqst,
 			    &sess_data->buf0_type,
 			    CIFS_LOG_ERROR | CIFS_SESS_OP, &rsp_iov);
@@ -1366,11 +1371,11 @@ SMB2_sess_establish_session(struct SMB2_sess_data *sess_data)
 {
 	int rc = 0;
 	struct cifs_ses *ses = sess_data->ses;
-	struct TCP_Server_Info *server = sess_data->server;
+	struct TCP_Server_Info *server = cifs_ses_server(ses);
 
 	mutex_lock(&server->srv_mutex);
 	if (server->ops->generate_signingkey) {
-		rc = server->ops->generate_signingkey(ses, server);
+		rc = server->ops->generate_signingkey(ses);
 		if (rc) {
 			cifs_dbg(FYI,
 				"SMB3 session key generation failed\n");
@@ -1387,12 +1392,16 @@ SMB2_sess_establish_session(struct SMB2_sess_data *sess_data)
 	cifs_dbg(FYI, "SMB2/3 session established successfully\n");
 
 	spin_lock(&ses->chan_lock);
-	cifs_chan_clear_need_reconnect(ses, server);
+	if (ses->binding)
+		cifs_chan_clear_need_reconnect(ses, ses->binding_chan->server);
+	else
+		cifs_chan_clear_need_reconnect(ses, ses->server);
 	spin_unlock(&ses->chan_lock);
 
-	/* Even if one channel is active, session is in good state */
+	/* keep existing ses state if binding */
 	spin_lock(&GlobalMid_Lock);
-	ses->status = CifsGood;
+	if (!ses->binding)
+		ses->status = CifsGood;
 	spin_unlock(&GlobalMid_Lock);
 
 	return rc;
@@ -1404,17 +1413,15 @@ SMB2_auth_kerberos(struct SMB2_sess_data *sess_data)
 {
 	int rc;
 	struct cifs_ses *ses = sess_data->ses;
-	struct TCP_Server_Info *server = sess_data->server;
 	struct cifs_spnego_msg *msg;
 	struct key *spnego_key = NULL;
 	struct smb2_sess_setup_rsp *rsp = NULL;
-	bool is_binding = false;
 
 	rc = SMB2_sess_alloc_buffer(sess_data);
 	if (rc)
 		goto out;
 
-	spnego_key = cifs_get_spnego_key(ses, server);
+	spnego_key = cifs_get_spnego_key(ses);
 	if (IS_ERR(spnego_key)) {
 		rc = PTR_ERR(spnego_key);
 		if (rc == -ENOKEY)
@@ -1435,12 +1442,8 @@ SMB2_auth_kerberos(struct SMB2_sess_data *sess_data)
 		goto out_put_spnego_key;
 	}
 
-	spin_lock(&ses->chan_lock);
-	is_binding = !CIFS_ALL_CHANS_NEED_RECONNECT(ses);
-	spin_unlock(&ses->chan_lock);
-
 	/* keep session key if binding */
-	if (!is_binding) {
+	if (!ses->binding) {
 		ses->auth_key.response = kmemdup(msg->data, msg->sesskey_len,
 						 GFP_KERNEL);
 		if (!ses->auth_key.response) {
@@ -1461,7 +1464,7 @@ SMB2_auth_kerberos(struct SMB2_sess_data *sess_data)
 
 	rsp = (struct smb2_sess_setup_rsp *)sess_data->iov[0].iov_base;
 	/* keep session id and flags if binding */
-	if (!is_binding) {
+	if (!ses->binding) {
 		ses->Suid = le64_to_cpu(rsp->hdr.SessionId);
 		ses->session_flags = le16_to_cpu(rsp->SessionFlags);
 	}
@@ -1493,12 +1496,10 @@ SMB2_sess_auth_rawntlmssp_negotiate(struct SMB2_sess_data *sess_data)
 {
 	int rc;
 	struct cifs_ses *ses = sess_data->ses;
-	struct TCP_Server_Info *server = sess_data->server;
 	struct smb2_sess_setup_rsp *rsp = NULL;
 	unsigned char *ntlmssp_blob = NULL;
 	bool use_spnego = false; /* else use raw ntlmssp */
 	u16 blob_length = 0;
-	bool is_binding = false;
 
 	/*
 	 * If memory allocation is successful, caller of this function
@@ -1516,7 +1517,7 @@ SMB2_sess_auth_rawntlmssp_negotiate(struct SMB2_sess_data *sess_data)
 		goto out_err;
 
 	rc = build_ntlmssp_negotiate_blob(&ntlmssp_blob,
-					  &blob_length, ses, server,
+					  &blob_length, ses,
 					  sess_data->nls_cp);
 	if (rc)
 		goto out_err;
@@ -1555,12 +1556,8 @@ SMB2_sess_auth_rawntlmssp_negotiate(struct SMB2_sess_data *sess_data)
 
 	cifs_dbg(FYI, "rawntlmssp session setup challenge phase\n");
 
-	spin_lock(&ses->chan_lock);
-	is_binding = !CIFS_ALL_CHANS_NEED_RECONNECT(ses);
-	spin_unlock(&ses->chan_lock);
-
 	/* keep existing ses id and flags if binding */
-	if (!is_binding) {
+	if (!ses->binding) {
 		ses->Suid = le64_to_cpu(rsp->hdr.SessionId);
 		ses->session_flags = le16_to_cpu(rsp->SessionFlags);
 	}
@@ -1585,13 +1582,11 @@ SMB2_sess_auth_rawntlmssp_authenticate(struct SMB2_sess_data *sess_data)
 {
 	int rc;
 	struct cifs_ses *ses = sess_data->ses;
-	struct TCP_Server_Info *server = sess_data->server;
 	struct smb2_sess_setup_req *req;
 	struct smb2_sess_setup_rsp *rsp = NULL;
 	unsigned char *ntlmssp_blob = NULL;
 	bool use_spnego = false; /* else use raw ntlmssp */
 	u16 blob_length = 0;
-	bool is_binding = false;
 
 	rc = SMB2_sess_alloc_buffer(sess_data);
 	if (rc)
@@ -1600,9 +1595,8 @@ SMB2_sess_auth_rawntlmssp_authenticate(struct SMB2_sess_data *sess_data)
 	req = (struct smb2_sess_setup_req *) sess_data->iov[0].iov_base;
 	req->hdr.SessionId = cpu_to_le64(ses->Suid);
 
-	rc = build_ntlmssp_auth_blob(&ntlmssp_blob, &blob_length,
-				     ses, server,
-				     sess_data->nls_cp);
+	rc = build_ntlmssp_auth_blob(&ntlmssp_blob, &blob_length, ses,
+					sess_data->nls_cp);
 	if (rc) {
 		cifs_dbg(FYI, "build_ntlmssp_auth_blob failed %d\n", rc);
 		goto out;
@@ -1623,12 +1617,8 @@ SMB2_sess_auth_rawntlmssp_authenticate(struct SMB2_sess_data *sess_data)
 
 	rsp = (struct smb2_sess_setup_rsp *)sess_data->iov[0].iov_base;
 
-	spin_lock(&ses->chan_lock);
-	is_binding = !CIFS_ALL_CHANS_NEED_RECONNECT(ses);
-	spin_unlock(&ses->chan_lock);
-
 	/* keep existing ses id and flags if binding */
-	if (!is_binding) {
+	if (!ses->binding) {
 		ses->Suid = le64_to_cpu(rsp->hdr.SessionId);
 		ses->session_flags = le16_to_cpu(rsp->SessionFlags);
 	}
@@ -1659,13 +1649,11 @@ out:
 }
 
 static int
-SMB2_select_sec(struct SMB2_sess_data *sess_data)
+SMB2_select_sec(struct cifs_ses *ses, struct SMB2_sess_data *sess_data)
 {
 	int type;
-	struct cifs_ses *ses = sess_data->ses;
-	struct TCP_Server_Info *server = sess_data->server;
 
-	type = smb2_select_sectype(server, ses->sectype);
+	type = smb2_select_sectype(cifs_ses_server(ses), ses->sectype);
 	cifs_dbg(FYI, "sess setup type %d\n", type);
 	if (type == Unspecified) {
 		cifs_dbg(VFS, "Unable to select appropriate authentication method!\n");
@@ -1689,10 +1677,10 @@ SMB2_select_sec(struct SMB2_sess_data *sess_data)
 
 int
 SMB2_sess_setup(const unsigned int xid, struct cifs_ses *ses,
-		struct TCP_Server_Info *server,
 		const struct nls_table *nls_cp)
 {
 	int rc = 0;
+	struct TCP_Server_Info *server = cifs_ses_server(ses);
 	struct SMB2_sess_data *sess_data;
 
 	cifs_dbg(FYI, "Session Setup\n");
@@ -1706,16 +1694,14 @@ SMB2_sess_setup(const unsigned int xid, struct cifs_ses *ses,
 	if (!sess_data)
 		return -ENOMEM;
 
+	rc = SMB2_select_sec(ses, sess_data);
+	if (rc)
+		goto out;
 	sess_data->xid = xid;
 	sess_data->ses = ses;
-	sess_data->server = server;
 	sess_data->buf0_type = CIFS_NO_BUFFER;
 	sess_data->nls_cp = (struct nls_table *) nls_cp;
 	sess_data->previous_session = ses->Suid;
-
-	rc = SMB2_select_sec(sess_data);
-	if (rc)
-		goto out;
 
 	/*
 	 * Initialize the session hash with the server one.
