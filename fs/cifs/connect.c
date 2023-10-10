@@ -169,7 +169,6 @@ static void cifs_resolve_server(struct work_struct *work)
  */
 static void cifs_mark_tcp_ses_conns_for_reconnect(struct TCP_Server_Info *server)
 {
-	unsigned int num_sessions = 0;
 	struct cifs_ses *ses;
 	struct cifs_tcon *tcon;
 	struct mid_q_entry *mid, *nmid;
@@ -202,8 +201,6 @@ static void cifs_mark_tcp_ses_conns_for_reconnect(struct TCP_Server_Info *server
 		if (!CIFS_ALL_CHANS_NEED_RECONNECT(ses))
 			goto next_session;
 
-		num_sessions++;
-
 		list_for_each_entry(tcon, &ses->tcon_list, tcon_list)
 			tcon->need_reconnect = true;
 		if (ses->tcon_ipc)
@@ -214,14 +211,6 @@ next_session:
 	}
 	spin_unlock(&cifs_tcp_ses_lock);
 
-	if (num_sessions == 0)
-		return;
-	/*
-	 * before reconnecting the tcp session, mark the smb session (uid)
-	 * and the tid bad so they are not used until reconnected
-	 */
-	cifs_dbg(FYI, "%s: marking sessions and tcons for reconnect\n",
-		 __func__);
 	/* do not want to be sending data on a socket we are freeing */
 	cifs_dbg(FYI, "%s: tearing down socket\n", __func__);
 	mutex_lock(&server->srv_mutex);
@@ -2030,7 +2019,7 @@ cifs_get_smb_ses(struct TCP_Server_Info *server, struct smb3_fs_context *ctx)
 			spin_unlock(&ses->chan_lock);
 			cifs_dbg(FYI, "Session needs reconnect\n");
 
-			rc = cifs_negotiate_protocol(xid, ses, server);
+			rc = cifs_negotiate_protocol(xid, ses);
 			if (rc) {
 				mutex_unlock(&ses->session_mutex);
 				/* problem -- put our ses reference */
@@ -2039,7 +2028,7 @@ cifs_get_smb_ses(struct TCP_Server_Info *server, struct smb3_fs_context *ctx)
 				return ERR_PTR(rc);
 			}
 
-			rc = cifs_setup_session(xid, ses, server,
+			rc = cifs_setup_session(xid, ses,
 						ctx->local_nls);
 			if (rc) {
 				mutex_unlock(&ses->session_mutex);
@@ -2132,9 +2121,9 @@ cifs_get_smb_ses(struct TCP_Server_Info *server, struct smb3_fs_context *ctx)
 	ses->chans_need_reconnect = 1;
 	spin_unlock(&ses->chan_lock);
 
-	rc = cifs_negotiate_protocol(xid, ses, server);
+	rc = cifs_negotiate_protocol(xid, ses);
 	if (!rc)
-		rc = cifs_setup_session(xid, ses, server, ctx->local_nls);
+		rc = cifs_setup_session(xid, ses, ctx->local_nls);
 
 	/* each channel uses a different signing key */
 	memcpy(ses->chans[0].signkey, ses->smb3signingkey,
@@ -3882,10 +3871,10 @@ cifs_umount(struct cifs_sb_info *cifs_sb)
 }
 
 int
-cifs_negotiate_protocol(const unsigned int xid, struct cifs_ses *ses,
-			struct TCP_Server_Info *server)
+cifs_negotiate_protocol(const unsigned int xid, struct cifs_ses *ses)
 {
 	int rc = 0;
+	struct TCP_Server_Info *server = cifs_ses_server(ses);
 
 	if (!server->ops->need_neg || !server->ops->negotiate)
 		return -ENOSYS;
@@ -3894,7 +3883,7 @@ cifs_negotiate_protocol(const unsigned int xid, struct cifs_ses *ses,
 	if (!server->ops->need_neg(server))
 		return 0;
 
-	rc = server->ops->negotiate(xid, ses, server);
+	rc = server->ops->negotiate(xid, ses);
 	if (rc == 0) {
 		spin_lock(&GlobalMid_Lock);
 		if (server->tcpStatus == CifsNeedNegotiate)
@@ -3909,17 +3898,12 @@ cifs_negotiate_protocol(const unsigned int xid, struct cifs_ses *ses,
 
 int
 cifs_setup_session(const unsigned int xid, struct cifs_ses *ses,
-		   struct TCP_Server_Info *server,
 		   struct nls_table *nls_info)
 {
 	int rc = -ENOSYS;
-	bool is_binding = false;
+	struct TCP_Server_Info *server = cifs_ses_server(ses);
 
-	spin_lock(&ses->chan_lock);
-	is_binding = !CIFS_ALL_CHANS_NEED_RECONNECT(ses);
-	spin_unlock(&ses->chan_lock);
-
-	if (!is_binding) {
+	if (!ses->binding) {
 		ses->capabilities = server->capabilities;
 		if (!linuxExtEnabled)
 			ses->capabilities &= (~server->vals->cap_unix);
@@ -3937,7 +3921,7 @@ cifs_setup_session(const unsigned int xid, struct cifs_ses *ses,
 		 server->sec_mode, server->capabilities, server->timeAdj);
 
 	if (server->ops->sess_setup)
-		rc = server->ops->sess_setup(xid, ses, server, nls_info);
+		rc = server->ops->sess_setup(xid, ses, nls_info);
 
 	if (rc)
 		cifs_server_dbg(VFS, "Send error in SessSetup = %d\n", rc);
