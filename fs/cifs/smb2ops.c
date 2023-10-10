@@ -121,13 +121,9 @@ smb2_add_credits(struct TCP_Server_Info *server,
 			 optype, scredits, add);
 	}
 
-	spin_lock(&cifs_tcp_ses_lock);
 	if (server->tcpStatus == CifsNeedReconnect
-	    || server->tcpStatus == CifsExiting) {
-		spin_unlock(&cifs_tcp_ses_lock);
+	    || server->tcpStatus == CifsExiting)
 		return;
-	}
-	spin_unlock(&cifs_tcp_ses_lock);
 
 	switch (rc) {
 	case -1:
@@ -212,15 +208,11 @@ smb2_wait_mtu_credits(struct TCP_Server_Info *server, unsigned int size,
 				return rc;
 			spin_lock(&server->req_lock);
 		} else {
-			spin_unlock(&server->req_lock);
-			spin_lock(&cifs_tcp_ses_lock);
 			if (server->tcpStatus == CifsExiting) {
-				spin_unlock(&cifs_tcp_ses_lock);
+				spin_unlock(&server->req_lock);
 				return -ENOENT;
 			}
-			spin_unlock(&cifs_tcp_ses_lock);
 
-			spin_lock(&server->req_lock);
 			scredits = server->credits;
 			/* can deadlock with reopen */
 			if (scredits <= 8) {
@@ -5012,12 +5004,10 @@ static void smb2_decrypt_offload(struct work_struct *work)
 
 			mid->callback(mid);
 		} else {
-			spin_lock(&cifs_tcp_ses_lock);
 			spin_lock(&GlobalMid_Lock);
 			if (dw->server->tcpStatus == CifsNeedReconnect) {
 				mid->mid_state = MID_RETRY_NEEDED;
 				spin_unlock(&GlobalMid_Lock);
-				spin_unlock(&cifs_tcp_ses_lock);
 				mid->callback(mid);
 			} else {
 				mid->mid_state = MID_REQUEST_SUBMITTED;
@@ -5025,7 +5015,6 @@ static void smb2_decrypt_offload(struct work_struct *work)
 				list_add_tail(&mid->qhead,
 					&dw->server->pending_mid_q);
 				spin_unlock(&GlobalMid_Lock);
-				spin_unlock(&cifs_tcp_ses_lock);
 			}
 		}
 		cifs_mid_q_entry_release(mid);
