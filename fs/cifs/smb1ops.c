@@ -414,16 +414,14 @@ cifs_need_neg(struct TCP_Server_Info *server)
 }
 
 static int
-cifs_negotiate(const unsigned int xid,
-	       struct cifs_ses *ses,
-	       struct TCP_Server_Info *server)
+cifs_negotiate(const unsigned int xid, struct cifs_ses *ses)
 {
 	int rc;
-	rc = CIFSSMBNegotiate(xid, ses, server);
+	rc = CIFSSMBNegotiate(xid, ses);
 	if (rc == -EAGAIN) {
 		/* retry only once on 1st time connection */
-		set_credits(server, 1);
-		rc = CIFSSMBNegotiate(xid, ses, server);
+		set_credits(ses->server, 1);
+		rc = CIFSSMBNegotiate(xid, ses);
 		if (rc == -EAGAIN)
 			rc = -EHOSTDOWN;
 	}
