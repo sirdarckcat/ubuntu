@@ -371,10 +371,10 @@ void cifs_ses_mark_for_reconnect(struct cifs_ses *ses)
 	int i;
 
 	for (i = 0; i < ses->chan_count; i++) {
-		spin_lock(&cifs_tcp_ses_lock);
+		spin_lock(&GlobalMid_Lock);
 		if (ses->chans[i].server->tcpStatus != CifsExiting)
 			ses->chans[i].server->tcpStatus = CifsNeedReconnect;
-		spin_unlock(&cifs_tcp_ses_lock);
+		spin_unlock(&GlobalMid_Lock);
 	}
 }
 
@@ -1054,9 +1054,9 @@ sess_establish_session(struct sess_data *sess_data)
 	spin_unlock(&ses->chan_lock);
 
 	/* Even if one channel is active, session is in good state */
-	spin_lock(&cifs_tcp_ses_lock);
+	spin_lock(&GlobalMid_Lock);
 	ses->status = CifsGood;
-	spin_unlock(&cifs_tcp_ses_lock);
+	spin_unlock(&GlobalMid_Lock);
 
 	return 0;
 }
