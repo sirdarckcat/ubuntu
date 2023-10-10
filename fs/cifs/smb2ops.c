@@ -776,8 +776,7 @@ int open_cached_dir(unsigned int xid, struct cifs_tcon *tcon,
 	struct cifs_fid *pfid;
 	struct dentry *dentry;
 
-	if (tcon == NULL || tcon->nohandlecache ||
-	    is_smb1_server(tcon->ses->server))
+	if (tcon->nohandlecache)
 		return -ENOTSUPP;
 
 	ses = tcon->ses;
