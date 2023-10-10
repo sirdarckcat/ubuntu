@@ -4873,6 +4873,8 @@ void cifs_oplock_break(struct work_struct *work)
 	struct tcon_link *tlink;
 	int rc = 0;
 	bool purge_cache = false;
+	struct cifs_deferred_close *dclose;
+	bool is_deferred = false;
 
 	/*
 	 * Hold a reference to the superblock to prevent it and its inodes from
@@ -4925,9 +4927,14 @@ oplock_break_ack:
 	 * file handles but cached, then schedule deferred close immediately.
 	 * So, new open will not use cached handle.
 	 */
+	spin_lock(&CIFS_I(inode)->deferred_lock);
+	is_deferred = cifs_is_deferred_close(cfile, &dclose);
+	spin_unlock(&CIFS_I(inode)->deferred_lock);
 
-	if (!CIFS_CACHE_HANDLE(cinode) && !list_empty(&cinode->deferred_closes))
+	if (!CIFS_CACHE_HANDLE(cinode) && is_deferred &&
+			cfile->deferred_close_scheduled && delayed_work_pending(&cfile->deferred)) {
 		cifs_close_deferred_file(cinode);
+	}
 
 	/*
 	 * releasing stale oplock after recent reconnect of smb session using
