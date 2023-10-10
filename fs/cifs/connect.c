@@ -1217,13 +1217,7 @@ static int match_server(struct TCP_Server_Info *server, struct smb3_fs_context *
 {
 	struct sockaddr *addr = (struct sockaddr *)&ctx->dstaddr;
 
-	if (ctx->nosharesock) {
-		server->nosharesock = true;
-		return 0;
-	}
-
-	/* this server does not share socket */
-	if (server->nosharesock)
+	if (ctx->nosharesock)
 		return 0;
 
 	/* If multidialect negotiation see if existing sessions match one */
