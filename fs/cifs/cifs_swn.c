@@ -498,10 +498,10 @@ static int cifs_swn_reconnect(struct cifs_tcon *tcon, struct sockaddr_storage *a
 		goto unlock;
 	}
 
-	spin_lock(&cifs_tcp_ses_lock);
+	spin_lock(&GlobalMid_Lock);
 	if (tcon->ses->server->tcpStatus != CifsExiting)
 		tcon->ses->server->tcpStatus = CifsNeedReconnect;
-	spin_unlock(&cifs_tcp_ses_lock);
+	spin_unlock(&GlobalMid_Lock);
 
 unlock:
 	mutex_unlock(&tcon->ses->server->srv_mutex);
