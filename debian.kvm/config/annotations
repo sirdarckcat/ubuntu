@@ -3,8 +3,6 @@
 # ARCH: amd64
 # FLAVOUR: amd64-kvm
 
-# include "../../debian.master/config/annotations"
-
 CONFIG_BLK_DEV_RAM				policy<{'amd64': 'm'}>
 CONFIG_BLK_DEV_RAM				note<LP: #1873809>
 
@@ -14,8 +12,8 @@ CONFIG_BLK_DEV_RAM_SIZE				note<LP: #1873809>
 CONFIG_FB_EFI					policy<{'amd64': 'y'}>
 CONFIG_FB_EFI					note<LP: #1873809>
 
-BRIDGE_VLAN_FILTERING				policy<{'amd64': 'y'}>
-BRIDGE_VLAN_FILTERING				note<LP: #1882955>
+CONFIG_BRIDGE_VLAN_FILTERING			policy<{'amd64': 'y'}>
+CONFIG_BRIDGE_VLAN_FILTERING			note<LP: #1882955>
 
 CONFIG_PCI_MSI					policy<{'amd64': 'y'}>
 CONFIG_PCI_MSI					note<LP: #1914283>
