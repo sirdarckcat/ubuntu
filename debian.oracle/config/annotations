@@ -1,69 +1,95 @@
 # Menu: HEADER
-# FORMAT: 3
-# ARCH: x86
+# FORMAT: 4
+# ARCH: amd64 arm64
+# FLAVOUR: amd64-oracle arm64-oracle
+# FLAVOUR_DEP: {'amd64-oracle': 'amd64-generic', 'arm64-oracle': 'arm64-generic'}
 
 include "../../debian.master/config/annotations"
 
 CONFIG_SOUNDWIRE                                  policy<{'amd64': 'n', 'arm64':'n'}>
-CONFIG_SOUNDWIRE                                  mark<ENFORCED> note<not needed for cloud kernels>
+CONFIG_SOUNDWIRE                                   note<not needed for cloud kernels>
+
 CONFIG_SND_SOC_SOF_HDA_COMMON_HDMI_CODEC          policy<{'amd64': 'n'}>
-CONFIG_SND_SOC_SOF_HDA_COMMON_HDMI_CODEC          mark<ENFORCED> note<not needed for cloud kernels>
+CONFIG_SND_SOC_SOF_HDA_COMMON_HDMI_CODEC           note<not needed for cloud kernels>
+
 CONFIG_LATENCYTOP                                 policy<{'amd64': 'n', 'arm64':'n'}>
-CONFIG_LATENCYTOP                                 mark<ENFORCED> note<not needed for cloud kernels>
+CONFIG_LATENCYTOP                                  note<not needed for cloud kernels>
+
 CONFIG_SND_SOC_INTEL_CML_LP                       policy<{'amd64': '-'}>
-CONFIG_SND_SOC_INTEL_CML_LP                       mark<ENFORCED> note<not selectable for linux-oracle>
+CONFIG_SND_SOC_INTEL_CML_LP                        note<not selectable for linux-oracle>
+
 CONFIG_SND_SOC_INTEL_SKYLAKE_HDAUDIO_CODEC        policy<{'amd64': '-'}>
-CONFIG_SND_SOC_INTEL_SKYLAKE_HDAUDIO_CODEC        mark<ENFORCED> note<not selectable for linux-oracle>
+CONFIG_SND_SOC_INTEL_SKYLAKE_HDAUDIO_CODEC         note<not selectable for linux-oracle>
+
 CONFIG_SND_SOC_INTEL_SKYLAKE                      policy<{'amd64': '-'}>
-CONFIG_SND_SOC_INTEL_SKYLAKE                      mark<ENFORCED> note<not selectable for linux-oracle>
+CONFIG_SND_SOC_INTEL_SKYLAKE                       note<not selectable for linux-oracle>
+
 CONFIG_SND_SOC_INTEL_CML_H                        policy<{'amd64': '-'}>
-CONFIG_SND_SOC_INTEL_CML_H                        mark<ENFORCED> note<not selectable for linux-oracle>
+CONFIG_SND_SOC_INTEL_CML_H                         note<not selectable for linux-oracle>
+
 CONFIG_SND_SOC_INTEL_CFL                          policy<{'amd64': '-'}>
-CONFIG_SND_SOC_INTEL_CFL                          mark<ENFORCED> note<not selectable for linux-oracle>
+CONFIG_SND_SOC_INTEL_CFL                           note<not selectable for linux-oracle>
+
 CONFIG_SND_SOC_INTEL_CNL                          policy<{'amd64': '-'}>
-CONFIG_SND_SOC_INTEL_CNL                          mark<ENFORCED> note<not selectable for linux-oracle>
+CONFIG_SND_SOC_INTEL_CNL                           note<not selectable for linux-oracle>
+
 CONFIG_X86_UV                                     policy<{'amd64': 'n'}>
-CONFIG_X86_UV                                     mark<ENFORCED> note<not needed for cloud kernels>
+CONFIG_X86_UV                                      note<not needed for cloud kernels>
+
 CONFIG_ATARI_PARTITION                            policy<{'amd64': 'n', 'arm64':'n'}>
-CONFIG_ATARI_PARTITION                            mark<ENFORCED> note<LP:1908264>
+CONFIG_ATARI_PARTITION                             note<LP:1908264>
+
 CONFIG_MTD_DOCG3                                  policy<{'amd64': 'm', 'arm64':'m'}>
-CONFIG_MTD_DOCG3                                  mark<ENFORCED> note<LP:1792205>
+CONFIG_MTD_DOCG3                                   note<LP:1792205>
+
 CONFIG_SAMPLE_TRACE_PRINTK                        policy<{'amd64': '-'}>
-CONFIG_SAMPLE_TRACE_PRINTK                        mark<ENFORCED> note<Disabled for cloud kernel>
+CONFIG_SAMPLE_TRACE_PRINTK                         note<Disabled for cloud kernel>
+
 CONFIG_REGULATOR_TPS65217                         policy<{'arm64': '-'}>
-CONFIG_REGULATOR_TPS65217                         mark<ENFORCED> note<not needed for cloud kernels>
+CONFIG_REGULATOR_TPS65217                          note<not needed for cloud kernels>
+
 CONFIG_MFD_TPS65217                               policy<{'arm64': 'n'}>
-CONFIG_MFD_TPS65217                               mark<ENFORCED> note<not needed for cloud kernels>
+CONFIG_MFD_TPS65217                                note<not needed for cloud kernels>
+
 CONFIG_ANDROID                                    policy<{'amd64': 'y', 'arm64':'y'}>
-CONFIG_ANDROID                                    mark<ENFORCED> note<needed for Anbox - LP #1928686>
+CONFIG_ANDROID                                     note<needed for Anbox - LP #1928686>
+
 CONFIG_ANDROID_BINDERFS                           policy<{'amd64': 'm', 'arm64':'m'}>
-CONFIG_ANDROID_BINDERFS                           mark<ENFORCED> note<needed for Anbox - LP #1928686>
+CONFIG_ANDROID_BINDERFS                            note<needed for Anbox - LP #1928686>
+
 CONFIG_ANDROID_BINDER_DEVICES                     policy<{'amd64': '""', 'arm64':'""'}>
-CONFIG_ANDROID_BINDER_DEVICES                     mark<ENFORCED> note<needed for Anbox - LP #1928686>
+CONFIG_ANDROID_BINDER_DEVICES                      note<needed for Anbox - LP #1928686>
+
 CONFIG_ANDROID_BINDER_IPC                         policy<{'amd64': 'm', 'arm64':'m'}>
-CONFIG_ANDROID_BINDER_IPC                         mark<ENFORCED> note<needed for Anbox - LP #1928686>
+CONFIG_ANDROID_BINDER_IPC                          note<needed for Anbox - LP #1928686>
+
 CONFIG_ASHMEM                                     policy<{'amd64': 'm', 'arm64':'m'}>
-CONFIG_ASHMEM                                     mark<ENFORCED> note<needed for Anbox - LP #1928686>
+CONFIG_ASHMEM                                      note<needed for Anbox - LP #1928686>
+
 CONFIG_SERIAL_AMBA_PL011                          policy<{'arm64':'y'}>
-CONFIG_SERIAL_AMBA_PL011                          mark<ENFORCED> note<needed for serial support in VMs>
+CONFIG_SERIAL_AMBA_PL011                           note<needed for serial support in VMs>
+
 CONFIG_SERIAL_AMBA_PL011_CONSOLE                  policy<{'arm64':'y'}>
-CONFIG_SERIAL_AMBA_PL011_CONSOLE                  mark<ENFORCED> note<needed for serial support in VMs>
+CONFIG_SERIAL_AMBA_PL011_CONSOLE                   note<needed for serial support in VMs>
 
 # Menu: Processor type and features >> Architecture: arm64
 CONFIG_ARM64_SW_TTBR0_PAN                       policy<{'arm64': 'y'}>
-CONFIG_ARM64_SW_TTBR0_PAN 			mark<ENFORCED> note<LP: #1968902>
-
+CONFIG_ARM64_SW_TTBR0_PAN 			 note<LP: #1968902>
 
 
 
 # Specifically requested or needed by Oracle:
 CONFIG_FAILOVER                                   policy<{'amd64': 'm', 'arm64':'m'}>
-CONFIG_FAILOVER                                   mark<ENFORCED> note<OCI requirement>
+CONFIG_FAILOVER                                    note<OCI requirement>
+
 CONFIG_NET_FAILOVER                               policy<{'amd64': 'm', 'arm64':'m'}>
-CONFIG_NET_FAILOVER                               mark<ENFORCED> note<OCI requirement>
+CONFIG_NET_FAILOVER                                note<OCI requirement>
+
 CONFIG_PAGE_POOL                                  policy<{'amd64': 'y', 'arm64':'y'}>
-CONFIG_PAGE_POOL                                  mark<ENFORCED> note<OCI requirement>
+CONFIG_PAGE_POOL                                   note<OCI requirement>
+
 CONFIG_ARM_SMMU                                   policy<{'arm64':'y'}>
-CONFIG_ARM_SMMU                                   mark<ENFORCED> note<Requested by Oracle after suspected related to some boot-issues, LP #2002381>
+CONFIG_ARM_SMMU                                    note<Requested by Oracle after suspected related to some boot-issues, LP #2002381>
+
 CONFIG_ARM_SMMU_V3                                policy<{'arm64':'y'}>
-CONFIG_ARM_SMMU_V3                                mark<ENFORCED> note<Requested by Oracle after suspected related to some boot-issues, LP #2002381>
+CONFIG_ARM_SMMU_V3                                 note<Requested by Oracle after suspected related to some boot-issues, LP #2002381>
