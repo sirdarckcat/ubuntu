@@ -246,6 +246,7 @@ struct tegra_xusb_soc {
 	bool otg_set_port_power;
 
 	bool has_bar2;
+	bool has_pg_support;
 };
 
 struct tegra_xusb_context {
@@ -1243,6 +1244,46 @@ static int tegra_xusb_powergate_partitions(struct tegra_xusb *tegra)
 	return 0;
 }
 
+static int tegra_xusb_reset_assert(struct tegra_xusb *tegra)
+{
+	struct device *dev = tegra->dev;
+	int rc;
+
+	rc = reset_control_assert(tegra->host_rst);
+	if (rc < 0) {
+		dev_err(dev, "failed to assert xusb_host reset: %d\n", rc);
+		return rc;
+	}
+
+	rc = reset_control_assert(tegra->ss_rst);
+	if (rc < 0) {
+		dev_err(dev, "failed to assert xusb_ss reset: %d\n", rc);
+		return rc;
+	}
+
+	return 0;
+}
+
+static int tegra_xusb_reset_deassert(struct tegra_xusb *tegra)
+{
+	struct device *dev = tegra->dev;
+	int rc;
+
+	rc = reset_control_deassert(tegra->host_rst);
+	if (rc < 0) {
+		dev_err(dev, "failed to deassert xusb_host reset: %d\n", rc);
+		return rc;
+	}
+
+	rc = reset_control_deassert(tegra->ss_rst);
+	if (rc < 0) {
+		dev_err(dev, "failed to deassert xusb_ss reset: %d\n", rc);
+		return rc;
+	}
+
+	return 0;
+}
+
 static int __tegra_xusb_enable_firmware_messages(struct tegra_xusb *tegra)
 {
 	struct tegra_xusb_mbox_msg msg;
@@ -1686,7 +1727,7 @@ static int tegra_xusb_probe(struct platform_device *pdev)
 			goto put_padctl;
 		}
 
-		tegra->ss_rst = devm_reset_control_get(&pdev->dev, "xusb_ss");
+		tegra->ss_rst = devm_reset_control_get_shared(&pdev->dev, "xusb_ss");
 		if (IS_ERR(tegra->ss_rst)) {
 			err = PTR_ERR(tegra->ss_rst);
 			dev_err(&pdev->dev, "failed to get xusb_ss reset: %d\n",
@@ -1805,7 +1846,10 @@ static int tegra_xusb_probe(struct platform_device *pdev)
 		}
 	}
 
-	err = tegra_xusb_unpowergate_partitions(tegra);
+	if (tegra->soc->has_pg_support)
+		err = tegra_xusb_unpowergate_partitions(tegra);
+	else
+		err = tegra_xusb_reset_deassert(tegra);
 	if (err)
 		goto free_firmware;
 
@@ -1901,7 +1945,10 @@ put_usb3:
 remove_usb2:
 	usb_remove_hcd(tegra->hcd);
 powergate:
-	tegra_xusb_powergate_partitions(tegra);
+	if (tegra->soc->has_pg_support)
+		tegra_xusb_powergate_partitions(tegra);
+	else
+		tegra_xusb_reset_assert(tegra);
 free_firmware:
 	dma_free_coherent(&pdev->dev, tegra->fw.size, tegra->fw.virt,
 			  tegra->fw.phys);
@@ -1923,7 +1970,10 @@ put_padctl:
 
 static void tegra_xusb_disable(struct tegra_xusb *tegra)
 {
-	tegra_xusb_powergate_partitions(tegra);
+	if (tegra->soc->has_pg_support)
+		tegra_xusb_powergate_partitions(tegra);
+	else
+		tegra_xusb_reset_assert(tegra);
 	tegra_xusb_powerdomain_remove(tegra->dev, tegra);
 	tegra_xusb_phy_disable(tegra);
 	tegra_xusb_clk_disable(tegra);
@@ -2224,7 +2274,12 @@ static int tegra_xusb_enter_elpg(struct tegra_xusb *tegra, bool runtime)
 	if (wakeup)
 		tegra_xhci_enable_phy_sleepwalk_wake(tegra);
 
-	tegra_xusb_powergate_partitions(tegra);
+	if (tegra->soc->has_pg_support)
+		tegra_xusb_powergate_partitions(tegra);
+	else {
+		if (!runtime)
+			tegra_xusb_reset_assert(tegra);
+	}
 
 	for (i = 0; i < tegra->num_phys; i++) {
 		if (!tegra->phys[i])
@@ -2270,7 +2325,14 @@ static int tegra_xusb_exit_elpg(struct tegra_xusb *tegra, bool runtime)
 		goto out;
 	}
 
-	err = tegra_xusb_unpowergate_partitions(tegra);
+	if (tegra->soc->has_pg_support)
+		err = tegra_xusb_unpowergate_partitions(tegra);
+	else {
+		if (runtime)
+			err = reset_control_reset(tegra->host_rst);
+		else
+			err = tegra_xusb_reset_deassert(tegra);
+	}
 	if (err)
 		goto disable_clks;
 
@@ -2328,7 +2390,13 @@ disable_phy:
 		if (!wakeup)
 			phy_exit(tegra->phys[i]);
 	}
-	tegra_xusb_powergate_partitions(tegra);
+
+	if (tegra->soc->has_pg_support)
+		tegra_xusb_powergate_partitions(tegra);
+	else {
+		if (!runtime)
+			tegra_xusb_reset_assert(tegra);
+	}
 disable_clks:
 	tegra_xusb_clk_disable(tegra);
 out:
@@ -2524,6 +2592,7 @@ static const struct tegra_xusb_soc tegra124_soc = {
 		.owner = 0xf0,
 		.smi_intr = XUSB_CFG_ARU_SMI_INTR,
 	},
+	.has_pg_support = true,
 };
 MODULE_FIRMWARE("nvidia/tegra124/xusb.bin");
 
@@ -2563,6 +2632,7 @@ static const struct tegra_xusb_soc tegra210_soc = {
 		.owner = 0xf0,
 		.smi_intr = XUSB_CFG_ARU_SMI_INTR,
 	},
+	.has_pg_support = true,
 };
 MODULE_FIRMWARE("nvidia/tegra210/xusb.bin");
 
@@ -2608,6 +2678,7 @@ static const struct tegra_xusb_soc tegra186_soc = {
 		.smi_intr = XUSB_CFG_ARU_SMI_INTR,
 	},
 	.lpm_support = true,
+	.has_pg_support = true,
 };
 
 static const char * const tegra194_supply_names[] = {
@@ -2642,6 +2713,7 @@ static const struct tegra_xusb_soc tegra194_soc = {
 		.smi_intr = XUSB_CFG_ARU_SMI_INTR,
 	},
 	.lpm_support = true,
+	.has_pg_support = true,
 };
 MODULE_FIRMWARE("nvidia/tegra194/xusb.bin");
 
@@ -2676,6 +2748,7 @@ static const struct tegra_xusb_soc tegra234_soc = {
 	},
 	.lpm_support = true,
 	.has_bar2 = true,
+	.has_pg_support = true,
 };
 
 static const struct of_device_id tegra_xusb_of_match[] = {
