@@ -2,7 +2,7 @@
 /*
  * Driver for the NVIDIA Tegra pinmux
  *
- * Copyright (c) 2011-2012, NVIDIA CORPORATION.  All rights reserved.
+ * Copyright (c) 2011-2024, NVIDIA CORPORATION.  All rights reserved.
  *
  * Derived from code:
  * Copyright (C) 2010 Google, Inc.
