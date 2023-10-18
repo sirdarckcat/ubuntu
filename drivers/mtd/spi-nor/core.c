@@ -301,6 +301,12 @@ static ssize_t spi_nor_spimem_write_data(struct spi_nor *nor, loff_t to,
 ssize_t spi_nor_write_data(struct spi_nor *nor, loff_t to, size_t len,
 			   const u8 *buf)
 {
+	int ret;
+
+	ret = spi_nor_write_enable(nor);
+	if (ret)
+		return ret;
+
 	if (nor->spimem)
 		return spi_nor_spimem_write_data(nor, to, len, buf);
 
@@ -1074,6 +1080,10 @@ static int spi_nor_erase_chip(struct spi_nor *nor)
 
 	dev_dbg(nor->dev, " %lldKiB\n", (long long)(nor->mtd.size >> 10));
 
+	ret = spi_nor_write_enable(nor);
+	if (ret)
+		return ret;
+
 	if (nor->spimem) {
 		struct spi_mem_op op = SPI_NOR_CHIP_ERASE_OP;
 
@@ -1481,9 +1491,13 @@ static u32 spi_nor_convert_addr(struct spi_nor *nor, loff_t addr)
  */
 int spi_nor_erase_sector(struct spi_nor *nor, u32 addr)
 {
-	int i;
+	int i, ret;
 
 	addr = spi_nor_convert_addr(nor, addr);
+
+	ret = spi_nor_write_enable(nor);
+	if (ret)
+		return ret;
 
 	if (nor->spimem) {
 		struct spi_mem_op op =
@@ -1777,12 +1791,6 @@ static int spi_nor_erase_multi_sectors(struct spi_nor *nor, u64 addr, u32 len)
 			if (ret)
 				goto destroy_erase_cmd_list;
 
-			ret = spi_nor_write_enable(nor);
-			if (ret) {
-				spi_nor_unlock_device(nor);
-				goto destroy_erase_cmd_list;
-			}
-
 			ret = spi_nor_erase_sector(nor, addr);
 			spi_nor_unlock_device(nor);
 			if (ret)
@@ -1813,11 +1821,16 @@ destroy_erase_cmd_list:
 static int spi_nor_erase(struct mtd_info *mtd, struct erase_info *instr)
 {
 	struct spi_nor *nor = mtd_to_spi_nor(mtd);
-	u32 addr, len, rem;
+	struct spi_nor_flash_parameter *params;
+	u32 addr, len, rem, offset, cur_cs_num = 0;
 	int ret;
+	u64 sz;
 
 	dev_dbg(nor->dev, "at 0x%llx, len %lld\n", (long long)instr->addr,
 			(long long)instr->len);
+
+	params = spi_nor_get_params(nor, 0);
+	sz = params->size;
 
 	if (spi_nor_has_uniform_erase(nor)) {
 		div_u64_rem(instr->len, mtd->erasesize, &rem);
@@ -1840,29 +1853,27 @@ static int spi_nor_erase(struct mtd_info *mtd, struct erase_info *instr)
 		if (ret)
 			goto erase_err;
 
-		ret = spi_nor_write_enable(nor);
-		if (ret) {
+		while (cur_cs_num < nor->num_flash) {
+			nor->spimem->spi->cs_index_mask = 0x01 << cur_cs_num;
+			ret = spi_nor_erase_chip(nor);
 			spi_nor_unlock_device(nor);
-			goto erase_err;
+			if (ret)
+				goto erase_err;
+
+			/*
+			 * Scale the timeout linearly with the size of the flash, with
+			 * a minimum calibrated to an old 2MB flash. We could try to
+			 * pull these from CFI/SFDP, but these values should be good
+			 * enough for now.
+			 */
+			timeout = max(CHIP_ERASE_2MB_READY_WAIT_JIFFIES,
+				      CHIP_ERASE_2MB_READY_WAIT_JIFFIES *
+				      (unsigned long)(params->size / SZ_2M));
+			ret = spi_nor_wait_till_ready_with_timeout(nor, timeout);
+			if (ret)
+				goto erase_err;
+			cur_cs_num++;
 		}
-
-		ret = spi_nor_erase_chip(nor);
-		spi_nor_unlock_device(nor);
-		if (ret)
-			goto erase_err;
-
-		/*
-		 * Scale the timeout linearly with the size of the flash, with
-		 * a minimum calibrated to an old 2MB flash. We could try to
-		 * pull these from CFI/SFDP, but these values should be good
-		 * enough for now.
-		 */
-		timeout = max(CHIP_ERASE_2MB_READY_WAIT_JIFFIES,
-			      CHIP_ERASE_2MB_READY_WAIT_JIFFIES *
-			      (unsigned long)(mtd->size / SZ_2M));
-		ret = spi_nor_wait_till_ready_with_timeout(nor, timeout);
-		if (ret)
-			goto erase_err;
 
 	/* REVISIT in some cases we could speed up erasing large regions
 	 * by using SPINOR_OP_SE instead of SPINOR_OP_BE_4K.  We may have set up
@@ -1871,18 +1882,26 @@ static int spi_nor_erase(struct mtd_info *mtd, struct erase_info *instr)
 
 	/* "sector"-at-a-time erase */
 	} else if (spi_nor_has_uniform_erase(nor)) {
+		/* Determine the flash from which the operation need to start */
+		while ((cur_cs_num < nor->num_flash) && (addr > sz - 1)) {
+			cur_cs_num++;
+			params = spi_nor_get_params(nor, cur_cs_num);
+			sz += params->size;
+		}
+
 		while (len) {
 			ret = spi_nor_lock_device(nor);
 			if (ret)
 				goto erase_err;
 
-			ret = spi_nor_write_enable(nor);
-			if (ret) {
-				spi_nor_unlock_device(nor);
-				goto erase_err;
+			nor->spimem->spi->cs_index_mask = 0x01 << cur_cs_num;
+			offset = addr;
+			if (nor->flags & SNOR_F_HAS_STACKED) {
+				params = spi_nor_get_params(nor, cur_cs_num);
+				offset -= (sz - params->size);
 			}
 
-			ret = spi_nor_erase_sector(nor, addr);
+			ret = spi_nor_erase_sector(nor, offset);
 			spi_nor_unlock_device(nor);
 			if (ret)
 				goto erase_err;
@@ -1893,13 +1912,45 @@ static int spi_nor_erase(struct mtd_info *mtd, struct erase_info *instr)
 
 			addr += mtd->erasesize;
 			len -= mtd->erasesize;
+
+			/*
+			 * Flash cross over condition in stacked mode.
+			 */
+			if ((nor->flags & SNOR_F_HAS_STACKED) && (addr > sz - 1)) {
+				cur_cs_num++;
+				params = spi_nor_get_params(nor, cur_cs_num);
+				sz += params->size;
+			}
 		}
 
 	/* erase multiple sectors */
 	} else {
-		ret = spi_nor_erase_multi_sectors(nor, addr, len);
-		if (ret)
-			goto erase_err;
+		u64 erase_len = 0;
+
+		/* Determine the flash from which the operation need to start */
+		while ((cur_cs_num < nor->num_flash) && (addr > sz - 1)) {
+			cur_cs_num++;
+			params = spi_nor_get_params(nor, cur_cs_num);
+			sz += params->size;
+		}
+		/* perform multi sector erase onec per Flash*/
+		while (len) {
+			erase_len = (len > (sz - addr)) ? (sz - addr) : len;
+			offset = addr;
+			nor->spimem->spi->cs_index_mask = 0x01 << cur_cs_num;
+			if (nor->flags & SNOR_F_HAS_STACKED) {
+				params = spi_nor_get_params(nor, cur_cs_num);
+				offset -= (sz - params->size);
+			}
+			ret = spi_nor_erase_multi_sectors(nor, offset, erase_len);
+			if (ret)
+				goto erase_err;
+			len -= erase_len;
+			addr += erase_len;
+			cur_cs_num++;
+			params = spi_nor_get_params(nor, cur_cs_num);
+			sz += params->size;
+		}
 	}
 
 	ret = spi_nor_write_disable(nor);
@@ -2086,83 +2137,15 @@ static const struct flash_info *spi_nor_detect(struct spi_nor *nor)
 	return info;
 }
 
-/*
- * On Octal DTR capable flashes, reads cannot start or end at an odd
- * address in Octal DTR mode. Extra bytes need to be read at the start
- * or end to make sure both the start address and length remain even.
- */
-static int spi_nor_octal_dtr_read(struct spi_nor *nor, loff_t from, size_t len,
-				  u_char *buf)
-{
-	u_char *tmp_buf;
-	size_t tmp_len;
-	loff_t start, end;
-	int ret, bytes_read;
-
-	if (IS_ALIGNED(from, 2) && IS_ALIGNED(len, 2))
-		return spi_nor_read_data(nor, from, len, buf);
-	else if (IS_ALIGNED(from, 2) && len > PAGE_SIZE)
-		return spi_nor_read_data(nor, from, round_down(len, PAGE_SIZE),
-					 buf);
-
-	tmp_buf = kmalloc(PAGE_SIZE, GFP_KERNEL);
-	if (!tmp_buf)
-		return -ENOMEM;
-
-	start = round_down(from, 2);
-	end = round_up(from + len, 2);
-
-	/*
-	 * Avoid allocating too much memory. The requested read length might be
-	 * quite large. Allocating a buffer just as large (slightly bigger, in
-	 * fact) would put unnecessary memory pressure on the system.
-	 *
-	 * For example if the read is from 3 to 1M, then this will read from 2
-	 * to 4098. The reads from 4098 to 1M will then not need a temporary
-	 * buffer so they can proceed as normal.
-	 */
-	tmp_len = min_t(size_t, end - start, PAGE_SIZE);
-
-	ret = spi_nor_read_data(nor, start, tmp_len, tmp_buf);
-	if (ret == 0) {
-		ret = -EIO;
-		goto out;
-	}
-	if (ret < 0)
-		goto out;
-
-	/*
-	 * More bytes are read than actually requested, but that number can't be
-	 * reported to the calling function or it will confuse its calculations.
-	 * Calculate how many of the _requested_ bytes were read.
-	 */
-	bytes_read = ret;
-
-	if (from != start)
-		ret -= from - start;
-
-	/*
-	 * Only account for extra bytes at the end if they were actually read.
-	 * For example, if the total length was truncated because of temporary
-	 * buffer size limit then the adjustment for the extra bytes at the end
-	 * is not needed.
-	 */
-	if (start + bytes_read == end)
-		ret -= end - (from + len);
-
-	memcpy(buf, tmp_buf + (from - start), ret);
-out:
-	kfree(tmp_buf);
-	return ret;
-}
-
 static int spi_nor_read(struct mtd_info *mtd, loff_t from, size_t len,
 			size_t *retlen, u_char *buf)
 {
 	struct spi_nor *nor = mtd_to_spi_nor(mtd);
+	struct spi_nor_flash_parameter *params;
+	ssize_t ret, read_len, len_lock =  len;
 	loff_t from_lock = from;
-	size_t len_lock = len;
-	ssize_t ret;
+	u32 cur_cs_num = 0;
+	u64 sz;
 
 	dev_dbg(nor->dev, "from 0x%08x, len %zd\n", (u32)from, len);
 
@@ -2170,16 +2153,26 @@ static int spi_nor_read(struct mtd_info *mtd, loff_t from, size_t len,
 	if (ret)
 		return ret;
 
+	params = spi_nor_get_params(nor, 0);
+	sz = params->size;
+
+	/* Determine the flash from which the operation need to start */
+	while ((cur_cs_num < nor->num_flash) && (from > sz - 1)) {
+		cur_cs_num++;
+		params = spi_nor_get_params(nor, cur_cs_num);
+		sz += params->size;
+	}
 	while (len) {
 		loff_t addr = from;
 
+		nor->spimem->spi->cs_index_mask = 0x01 << cur_cs_num;
+		read_len = (len > (sz - addr)) ? (sz - addr) : len;
+		params = spi_nor_get_params(nor, cur_cs_num);
+		addr -= (sz - params->size);
+
 		addr = spi_nor_convert_addr(nor, addr);
 
-		if (nor->read_proto == SNOR_PROTO_8_8_8_DTR)
-			ret = spi_nor_octal_dtr_read(nor, addr, len, buf);
-		else
-			ret = spi_nor_read_data(nor, addr, len, buf);
-
+		ret = spi_nor_read_data(nor, addr, len, buf);
 		if (ret == 0) {
 			/* We shouldn't see 0-length reads */
 			ret = -EIO;
@@ -2188,79 +2181,28 @@ static int spi_nor_read(struct mtd_info *mtd, loff_t from, size_t len,
 		if (ret < 0)
 			goto read_err;
 
-		WARN_ON(ret > len);
+		WARN_ON(ret > read_len);
 		*retlen += ret;
 		buf += ret;
 		from += ret;
 		len -= ret;
+
+		/*
+		 * Flash cross over condition in stacked mode.
+		 *
+		 */
+		if ((nor->flags & SNOR_F_HAS_STACKED) && (from > sz - 1)) {
+			cur_cs_num++;
+			params = spi_nor_get_params(nor, cur_cs_num);
+			sz += params->size;
+		}
+
 	}
 	ret = 0;
 
 read_err:
 	spi_nor_unlock_and_unprep_rd(nor, from_lock, len_lock);
 
-	return ret;
-}
-
-/*
- * On Octal DTR capable flashes, writes cannot start or end at an odd address
- * in Octal DTR mode. Extra 0xff bytes need to be appended or prepended to
- * make sure the start address and end address are even. 0xff is used because
- * on NOR flashes a program operation can only flip bits from 1 to 0, not the
- * other way round. 0 to 1 flip needs to happen via erases.
- */
-static int spi_nor_octal_dtr_write(struct spi_nor *nor, loff_t to, size_t len,
-				   const u8 *buf)
-{
-	u8 *tmp_buf;
-	size_t bytes_written;
-	loff_t start, end;
-	int ret;
-
-	if (IS_ALIGNED(to, 2) && IS_ALIGNED(len, 2))
-		return spi_nor_write_data(nor, to, len, buf);
-
-	tmp_buf = kmalloc(nor->params->page_size, GFP_KERNEL);
-	if (!tmp_buf)
-		return -ENOMEM;
-
-	memset(tmp_buf, 0xff, nor->params->page_size);
-
-	start = round_down(to, 2);
-	end = round_up(to + len, 2);
-
-	memcpy(tmp_buf + (to - start), buf, len);
-
-	ret = spi_nor_write_data(nor, start, end - start, tmp_buf);
-	if (ret == 0) {
-		ret = -EIO;
-		goto out;
-	}
-	if (ret < 0)
-		goto out;
-
-	/*
-	 * More bytes are written than actually requested, but that number can't
-	 * be reported to the calling function or it will confuse its
-	 * calculations. Calculate how many of the _requested_ bytes were
-	 * written.
-	 */
-	bytes_written = ret;
-
-	if (to != start)
-		ret -= to - start;
-
-	/*
-	 * Only account for extra bytes at the end if they were actually
-	 * written. For example, if for some reason the controller could only
-	 * complete a partial write then the adjustment for the extra bytes at
-	 * the end is not needed.
-	 */
-	if (start + bytes_written == end)
-		ret -= end - (to + len);
-
-out:
-	kfree(tmp_buf);
 	return ret;
 }
 
@@ -2275,8 +2217,9 @@ static int spi_nor_write(struct mtd_info *mtd, loff_t to, size_t len,
 	struct spi_nor *nor = mtd_to_spi_nor(mtd);
 	struct spi_nor_flash_parameter *params;
 	size_t page_offset, page_remain, i;
+	u32 page_size, cur_cs_num = 0;
 	ssize_t ret;
-	u32 page_size;
+	u64 sz;
 
 	dev_dbg(nor->dev, "to 0x%08x, len %zd\n", (u32)to, len);
 
@@ -2286,6 +2229,14 @@ static int spi_nor_write(struct mtd_info *mtd, loff_t to, size_t len,
 
 	params = spi_nor_get_params(nor, 0);
 	page_size = params->page_size;
+	sz = params->size;
+
+	/* Determine the flash from which the operation need to start */
+	while ((cur_cs_num < nor->num_flash) && (to > sz - 1)) {
+		cur_cs_num++;
+		params = spi_nor_get_params(nor, cur_cs_num);
+		sz += params->size;
+	}
 
 	for (i = 0; i < len; ) {
 		ssize_t written;
@@ -2306,24 +2257,17 @@ static int spi_nor_write(struct mtd_info *mtd, loff_t to, size_t len,
 		/* the size of data remaining on the first page */
 		page_remain = min_t(size_t, page_size - page_offset, len - i);
 
+		nor->spimem->spi->cs_index_mask = 0x01 << cur_cs_num;
+		params = spi_nor_get_params(nor, cur_cs_num);
+		addr -= (sz - params->size);
+
 		addr = spi_nor_convert_addr(nor, addr);
 
 		ret = spi_nor_lock_device(nor);
 		if (ret)
 			goto write_err;
 
-		ret = spi_nor_write_enable(nor);
-		if (ret) {
-			spi_nor_unlock_device(nor);
-			goto write_err;
-		}
-
-		if (nor->write_proto == SNOR_PROTO_8_8_8_DTR)
-			ret = spi_nor_octal_dtr_write(nor, addr, page_remain,
-						      buf + i);
-		else
-			ret = spi_nor_write_data(nor, addr, page_remain,
-						 buf + i);
+		ret = spi_nor_write_data(nor, addr, page_remain, buf + i);
 		spi_nor_unlock_device(nor);
 		if (ret < 0)
 			goto write_err;
@@ -2334,6 +2278,15 @@ static int spi_nor_write(struct mtd_info *mtd, loff_t to, size_t len,
 			goto write_err;
 		*retlen += written;
 		i += written;
+
+		/*
+		 * Flash cross over condition in stacked mode.
+		 */
+		if ((nor->flags & SNOR_F_HAS_STACKED) && ((to + i) > sz - 1)) {
+			cur_cs_num++;
+			params = spi_nor_get_params(nor, cur_cs_num);
+			sz += params->size;
+		}
 	}
 
 write_err:
@@ -2447,8 +2400,6 @@ int spi_nor_hwcaps_pp2cmd(u32 hwcaps)
 static int spi_nor_spimem_check_op(struct spi_nor *nor,
 				   struct spi_mem_op *op)
 {
-	struct spi_nor_flash_parameter *params = spi_nor_get_params(nor, 0);
-
 	/*
 	 * First test with 4 address bytes. The opcode itself might
 	 * be a 3B addressing opcode but we don't care, because
@@ -2457,7 +2408,7 @@ static int spi_nor_spimem_check_op(struct spi_nor *nor,
 	 */
 	op->addr.nbytes = 4;
 	if (!spi_mem_supports_op(nor->spimem, op)) {
-		if (params->size > SZ_16M)
+		if (nor->mtd.size > SZ_16M)
 			return -EOPNOTSUPP;
 
 		/* If flash size <= 16MB, 3 address bytes are sufficient */
@@ -2487,7 +2438,7 @@ static int spi_nor_spimem_check_readop(struct spi_nor *nor,
 	/* convert the dummy cycles to the number of bytes */
 	op.dummy.nbytes = (read->num_mode_clocks + read->num_wait_states) *
 			  op.dummy.buswidth / 8;
-	if (spi_nor_protocol_is_dtr(read->proto))
+	if (spi_nor_protocol_is_dtr(nor->read_proto))
 		op.dummy.nbytes *= 2;
 
 	return spi_nor_spimem_check_op(nor, &op);
@@ -3054,7 +3005,10 @@ static void spi_nor_init_fixup_flags(struct spi_nor *nor)
 static int spi_nor_late_init_params(struct spi_nor *nor)
 {
 	struct spi_nor_flash_parameter *params = spi_nor_get_params(nor, 0);
-	int ret;
+	struct device_node *np = spi_nor_get_flash_node(nor);
+	u64 flash_size[SNOR_FLASH_CNT_MAX];
+	u32 idx = 0;
+	int rc, ret;
 
 	if (nor->manufacturer && nor->manufacturer->fixups &&
 	    nor->manufacturer->fixups->late_init) {
@@ -3083,8 +3037,48 @@ static int spi_nor_late_init_params(struct spi_nor *nor)
 	if (nor->flags & SNOR_F_HAS_LOCK && !params->locking_ops)
 		spi_nor_init_default_locking_ops(nor);
 
+	params->bank_size = div64_u64(params->size, nor->info->n_banks);
+
+	nor->num_flash = 0;
+
+	/*
+	 * The flashes that are connected in stacked mode should be of same make.
+	 * Except the flash size all other properties are identical for all the
+	 * flashes connected in stacked mode.
+	 * The flashes that are connected in parallel mode should be identical.
+	 */
+	while (idx < SNOR_FLASH_CNT_MAX) {
+		rc = of_property_read_u64_index(np, "stacked-memories", idx, &flash_size[idx]);
+		if (rc)
+			break;
+		idx++;
+		if (!(nor->flags & SNOR_F_HAS_STACKED))
+			nor->flags |= SNOR_F_HAS_STACKED;
+
+		nor->num_flash++;
+	}
+
+	/*
+	 * By default one flash device should be connected
+	 * so, nor->num_flash is 1.
+	 */
+	if (!nor->num_flash)
+		nor->num_flash = 1;
+
+	if (nor->flags & SNOR_F_HAS_STACKED) {
+		for (idx = 1; idx < nor->num_flash; idx++) {
+			params = spi_nor_get_params(nor, idx);
+			params = devm_kzalloc(nor->dev, sizeof(*params), GFP_KERNEL);
+			if (params) {
+				memcpy(params, spi_nor_get_params(nor, 0), sizeof(*params));
+				params->size = flash_size[idx];
+				spi_nor_set_params(nor, idx, params);
+			}
+		}
+	}
+
 	if (params->n_banks > 1)
-		params->bank_size = div64_u64(params->size, params->n_banks);
+		params->bank_size = div64_u64(params->size, nor->info->n_banks);
 
 	return 0;
 }
@@ -3294,16 +3288,28 @@ static int spi_nor_set_octal_dtr(struct spi_nor *nor, bool enable)
  */
 static int spi_nor_quad_enable(struct spi_nor *nor)
 {
-	struct spi_nor_flash_parameter *params = spi_nor_get_params(nor, 0);
+	struct spi_nor_flash_parameter *params;
+	int err, idx;
 
-	if (!params->quad_enable)
-		return 0;
+	for (idx = 0; idx < nor->num_flash; idx++) {
+		params = spi_nor_get_params(nor, idx);
+		if (!params->quad_enable)
+			return 0;
 
-	if (!(spi_nor_get_protocol_width(nor->read_proto) == 4 ||
-	      spi_nor_get_protocol_width(nor->write_proto) == 4))
-		return 0;
+		if (!(spi_nor_get_protocol_width(nor->read_proto) == 4 ||
+		      spi_nor_get_protocol_width(nor->write_proto) == 4))
+			return 0;
+		/*
+		 * Set the appropriate CS index before
+		 * issuing the command.
+		 */
+		nor->spimem->spi->cs_index_mask = 0x01 << idx;
 
-	return params->quad_enable(nor);
+		err = params->quad_enable(nor);
+		if (err)
+			return err;
+	}
+	return err;
 }
 
 /**
@@ -3335,7 +3341,7 @@ int spi_nor_set_4byte_addr_mode(struct spi_nor *nor, bool enable)
 
 static int spi_nor_init(struct spi_nor *nor)
 {
-	int err;
+	int err, idx;
 
 	err = spi_nor_set_octal_dtr(nor, true);
 	if (err) {
@@ -3376,9 +3382,16 @@ static int spi_nor_init(struct spi_nor *nor)
 		 */
 		WARN_ONCE(nor->flags & SNOR_F_BROKEN_RESET,
 			  "enabling reset hack; may not recover from unexpected reboots\n");
-		err = spi_nor_set_4byte_addr_mode(nor, true);
-		if (err)
-			return err;
+		for (idx = 0; idx < nor->num_flash; idx++) {
+			/*
+			 * Select the appropriate CS index before
+			 * issuing the command.
+			 */
+			nor->spimem->spi->cs_index_mask = 0x01 << idx;
+			err = spi_nor_set_4byte_addr_mode(nor, true);
+			if (err)
+				return err;
+		}
 	}
 
 	return 0;
@@ -3494,18 +3507,28 @@ static void spi_nor_put_device(struct mtd_info *mtd)
 static void spi_nor_restore(struct spi_nor *nor)
 {
 	int ret;
+	int idx;
 
 	/* restore the addressing mode */
 	if (nor->addr_nbytes == 4 && !(nor->flags & SNOR_F_4B_OPCODES) &&
 	    nor->flags & SNOR_F_BROKEN_RESET) {
-		ret = spi_nor_set_4byte_addr_mode(nor, false);
-		if (ret)
+		for (idx = 0; idx < nor->num_flash; idx++) {
 			/*
-			 * Do not stop the execution in the hope that the flash
-			 * will default to the 3-byte address mode after the
-			 * software reset.
+			 * Select the appropriate CS index before
+			 * issuing the command.
 			 */
-			dev_err(nor->dev, "Failed to exit 4-byte address mode, err = %d\n", ret);
+			nor->spimem->spi->cs_index_mask = 1 << idx;
+			ret = spi_nor_set_4byte_addr_mode(nor, false);
+			if (ret)
+				/*
+				 * Do not stop the execution in the hope that the flash
+				 * will default to the 3-byte address mode after the
+				 * software reset.
+				 */
+				dev_err(nor->dev,
+					"Failed to exit 4-byte address mode, err = %d\n",
+					ret);
+		}
 	}
 
 	if (nor->flags & SNOR_F_SOFT_RESET)
@@ -3572,6 +3595,8 @@ static void spi_nor_set_mtd_info(struct spi_nor *nor)
 	struct spi_nor_flash_parameter *params = spi_nor_get_params(nor, 0);
 	struct mtd_info *mtd = &nor->mtd;
 	struct device *dev = nor->dev;
+	u64 total_sz = 0;
+	int idx;
 
 	spi_nor_set_mtd_locking_ops(nor);
 	spi_nor_set_mtd_otp_ops(nor);
@@ -3590,7 +3615,11 @@ static void spi_nor_set_mtd_info(struct spi_nor *nor)
 		mtd->_erase = spi_nor_erase;
 	mtd->writesize = params->writesize;
 	mtd->writebufsize = params->page_size;
-	mtd->size = params->size;
+	for (idx = 0; idx < nor->num_flash; idx++) {
+		params = spi_nor_get_params(nor, idx);
+		total_sz += params->size;
+	}
+	mtd->size = total_sz;
 	mtd->_read = spi_nor_read;
 	/* Might be already set by some SST flashes. */
 	if (!mtd->_write)
