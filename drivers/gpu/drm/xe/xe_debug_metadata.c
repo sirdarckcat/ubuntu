@@ -9,6 +9,7 @@
 #include <uapi/drm/xe_drm.h>
 
 #include "xe_device.h"
+#include "xe_eudebug.h"
 #include "xe_macros.h"
 #include "xe_vm.h"
 
@@ -158,7 +159,7 @@ int xe_debug_metadata_create_ioctl(struct drm_device *dev,
 	if (XE_IOCTL_DBG(xe, args->extensions))
 		return -EINVAL;
 
-	if (XE_IOCTL_DBG(xe, args->type > DRM_XE_DEBUG_METADATA_PROGRAM_MODULE))
+	if (XE_IOCTL_DBG(xe, args->type >= WORK_IN_PROGRESS_DRM_XE_DEBUG_METADATA_NUM))
 		return -EINVAL;
 
 	if (XE_IOCTL_DBG(xe, !args->user_addr || !args->len))
@@ -194,7 +195,10 @@ int xe_debug_metadata_create_ioctl(struct drm_device *dev,
 	if (err)
 		goto put_mdata;
 
+
 	args->metadata_id = id;
+
+	xe_eudebug_debug_metadata_create(xef, mdata);
 
 	return 0;
 
@@ -220,6 +224,8 @@ int xe_debug_metadata_destroy_ioctl(struct drm_device *dev,
 	mutex_unlock(&xef->eudebug.metadata.lock);
 	if (XE_IOCTL_DBG(xe, !mdata))
 		return -ENOENT;
+
+	xe_eudebug_debug_metadata_destroy(xef, mdata);
 
 	xe_debug_metadata_put(mdata);
 
