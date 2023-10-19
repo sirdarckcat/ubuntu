@@ -50,6 +50,27 @@ CONFIG_KVM_TDX_ACCOUNT_PRIVATE_PAGES            note<'Required for TDX support'>
 CONFIG_KVM_TDX_OPERAND_BUSY_INJECTION           policy<{'amd64': 'n'}>
 CONFIG_KVM_TDX_OPERAND_BUSY_INJECTION           note<'Required for TDX support'>
 
+CONFIG_ARCH_KEEP_MEMBLOCK                       policy<{'amd64': 'y'}>
+CONFIG_ARCH_KEEP_MEMBLOCK                       note<'Required for TDX support'>
+
+CONFIG_KVM_GENERIC_MEMORY_ATTRIBUTES            policy<{'amd64': 'y'}>
+CONFIG_KVM_GENERIC_MEMORY_ATTRIBUTES            note<'Required for TDX support'>
+
+CONFIG_KVM_GENERIC_PRIVATE_MEM                  policy<{'amd64': 'y'}>
+CONFIG_KVM_GENERIC_PRIVATE_MEM                  note<'Required for TDX support'>
+
+CONFIG_KVM_MMU_PRIVATE                          policy<{'amd64': 'y'}>
+CONFIG_KVM_MMU_PRIVATE                          note<'Required for TDX support'>
+
+CONFIG_KVM_PRIVATE_MEM                          policy<{'amd64': 'y'}>
+CONFIG_KVM_PRIVATE_MEM                          note<'Required for TDX support'>
+
+CONFIG_INTEL_TDX_GUEST                          policy<{'amd64': 'y'}>
+CONFIG_INTEL_TDX_GUEST                          note<'Required for TDX support'>
+
+CONFIG_TDX_GUEST_DRIVER                         policy<{'amd64': 'm'}>
+CONFIG_TDX_GUEST_DRIVER                         note<'Required for TDX support'>
+
 CONFIG_RUST                                     policy<{'amd64': '-'}>
 CONFIG_RUST                                     note<'required to enable Rust support, LP: #1993183'>
 
@@ -114,7 +135,6 @@ CONFIG_A11Y_BRAILLE_CONSOLE                     policy<{'amd64': '-'}>
 CONFIG_AAEON_IWMI_WDT                           policy<{'amd64': '-'}>
 CONFIG_AC97_BUS                                 policy<{'amd64': '-'}>
 CONFIG_ADXRS290                                 policy<{'amd64': 'n'}>
-CONFIG_ARCH_KEEP_MEMBLOCK                       policy<{'amd64': 'y'}>
 CONFIG_ARCH_NR_GPIO                             policy<{'amd64': '-'}>
 CONFIG_AS73211                                  policy<{'amd64': 'n'}>
 CONFIG_BACKLIGHT_KTD253                         policy<{'amd64': 'n'}>
@@ -240,10 +260,6 @@ CONFIG_ISDN_CAPI                                policy<{'amd64': '-'}>
 CONFIG_ISDN_CAPI_MIDDLEWARE                     policy<{'amd64': '-'}>
 CONFIG_JOYSTICK_ADC                             policy<{'amd64': 'n'}>
 CONFIG_KEYBOARD_CYPRESS_SF                      policy<{'amd64': 'n'}>
-CONFIG_KVM_GENERIC_MEMORY_ATTRIBUTES            policy<{'amd64': 'y'}>
-CONFIG_KVM_GENERIC_PRIVATE_MEM                  policy<{'amd64': 'y'}>
-CONFIG_KVM_MMU_PRIVATE                          policy<{'amd64': 'y'}>
-CONFIG_KVM_PRIVATE_MEM                          policy<{'amd64': 'y'}>
 CONFIG_LEDS_AAEON                               policy<{'amd64': '-'}>
 CONFIG_LEDS_LP50XX                              policy<{'amd64': 'n'}>
 CONFIG_LEDS_RT8515                              policy<{'amd64': 'n'}>
