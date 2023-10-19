@@ -5,8 +5,6 @@
 
 include "../../debian.master/config/annotations"
 
-# Below configs were defined by flavour for amd64. As gkeop only has one
-# flavour, we replace those options with an arch only definition.
 CONFIG_ATARI_PARTITION                          policy<{'amd64': 'n'}>
 CONFIG_ATARI_PARTITION                          note<'LP:1908264'>
 
