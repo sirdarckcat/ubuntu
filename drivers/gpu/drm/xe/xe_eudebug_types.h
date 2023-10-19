@@ -56,7 +56,8 @@ struct xe_eudebug_resource {
 #define XE_EUDEBUG_RES_TYPE_VM		1
 #define XE_EUDEBUG_RES_TYPE_EXEC_QUEUE	2
 #define XE_EUDEBUG_RES_TYPE_LRC		3
-#define XE_EUDEBUG_RES_TYPE_COUNT	(XE_EUDEBUG_RES_TYPE_LRC + 1)
+#define XE_EUDEBUG_RES_TYPE_METADATA	4
+#define XE_EUDEBUG_RES_TYPE_COUNT	(XE_EUDEBUG_RES_TYPE_METADATA + 1)
 
 /**
  * struct xe_eudebug_resources - eudebug resources for all types
@@ -324,6 +325,30 @@ struct xe_eudebug_event_vm_bind_op {
 struct xe_eudebug_event_vm_bind_ufence {
 	struct xe_eudebug_event base;
 	u64 vm_bind_ref_seqno;
+};
+
+struct xe_eudebug_event_metadata {
+	struct xe_eudebug_event base;
+
+	/** @client_handle: client for the attention */
+	u64 client_handle;
+
+	/** @metadata_handle: debug metadata handle it's created/destroyed */
+	u64 metadata_handle;
+
+	/* @type: metadata type, refer to xe_drm.h for options */
+	u64 type;
+
+	/* @len: size of metadata paylad */
+	u64 len;
+};
+
+struct xe_eudebug_event_vm_bind_op_metadata {
+	struct xe_eudebug_event base;
+	u64 vm_bind_op_ref_seqno;
+
+	u64 metadata_handle;
+	u64 metadata_cookie;
 };
 
 #endif
