@@ -8,6 +8,9 @@ include "../../debian.master/config/annotations"
 CONFIG_ACCESSIBILITY                            policy<{'amd64': 'n'}>
 CONFIG_ACCESSIBILITY                            note<'LP: #1967702'>
 
+CONFIG_ARCH_KEEP_MEMBLOCK                       policy<{'amd64': 'y'}>
+CONFIG_ARCH_KEEP_MEMBLOCK                       note<'Required for TDX support'>
+
 CONFIG_BLK_DEV_NVME                             policy<{'amd64': 'y'}>
 CONFIG_BLK_DEV_NVME                             note<'LP: #1759893'>
 
@@ -22,6 +25,9 @@ CONFIG_DRM_ETNAVIV                              note<'LP: #1990167'>
 
 CONFIG_GPIO_CDEV_V1                             policy<{'amd64': 'n'}>
 CONFIG_GPIO_CDEV_V1                             note<'LP: #1953613'>
+
+CONFIG_INTEL_TDX_GUEST                          policy<{'amd64': 'y'}>
+CONFIG_INTEL_TDX_GUEST                          note<'Required for TDX support'>
 
 CONFIG_INTEL_TDX_HOST                           policy<{'amd64': 'y'}>
 CONFIG_INTEL_TDX_HOST                           note<'Required for TDX support'>
@@ -38,23 +44,11 @@ CONFIG_IOMMU_DEFAULT_DMA_LAZY                   note<'LP: #1806488'>
 CONFIG_IOMMU_DEFAULT_DMA_STRICT                 policy<{'amd64': 'n'}>
 CONFIG_IOMMU_DEFAULT_DMA_STRICT                 note<'LP: #1806488'>
 
-CONFIG_KVM_GENERIC_MMU_NOTIFIER                 policy<{'amd64': 'y'}>
-CONFIG_KVM_GENERIC_MMU_NOTIFIER                 note<'Required for TDX support'>
-
-CONFIG_KVM_SW_PROTECTED_VM                      policy<{'amd64': 'y'}>
-CONFIG_KVM_SW_PROTECTED_VM                      note<'Required for TDX support'>
-
-CONFIG_KVM_TDX_ACCOUNT_PRIVATE_PAGES            policy<{'amd64': 'y'}>
-CONFIG_KVM_TDX_ACCOUNT_PRIVATE_PAGES            note<'Required for TDX support'>
-
-CONFIG_KVM_TDX_OPERAND_BUSY_INJECTION           policy<{'amd64': 'n'}>
-CONFIG_KVM_TDX_OPERAND_BUSY_INJECTION           note<'Required for TDX support'>
-
-CONFIG_ARCH_KEEP_MEMBLOCK                       policy<{'amd64': 'y'}>
-CONFIG_ARCH_KEEP_MEMBLOCK                       note<'Required for TDX support'>
-
 CONFIG_KVM_GENERIC_MEMORY_ATTRIBUTES            policy<{'amd64': 'y'}>
 CONFIG_KVM_GENERIC_MEMORY_ATTRIBUTES            note<'Required for TDX support'>
+
+CONFIG_KVM_GENERIC_MMU_NOTIFIER                 policy<{'amd64': 'y'}>
+CONFIG_KVM_GENERIC_MMU_NOTIFIER                 note<'Required for TDX support'>
 
 CONFIG_KVM_GENERIC_PRIVATE_MEM                  policy<{'amd64': 'y'}>
 CONFIG_KVM_GENERIC_PRIVATE_MEM                  note<'Required for TDX support'>
@@ -65,11 +59,14 @@ CONFIG_KVM_MMU_PRIVATE                          note<'Required for TDX support'>
 CONFIG_KVM_PRIVATE_MEM                          policy<{'amd64': 'y'}>
 CONFIG_KVM_PRIVATE_MEM                          note<'Required for TDX support'>
 
-CONFIG_INTEL_TDX_GUEST                          policy<{'amd64': 'y'}>
-CONFIG_INTEL_TDX_GUEST                          note<'Required for TDX support'>
+CONFIG_KVM_SW_PROTECTED_VM                      policy<{'amd64': 'y'}>
+CONFIG_KVM_SW_PROTECTED_VM                      note<'Required for TDX support'>
 
-CONFIG_TDX_GUEST_DRIVER                         policy<{'amd64': 'm'}>
-CONFIG_TDX_GUEST_DRIVER                         note<'Required for TDX support'>
+CONFIG_KVM_TDX_ACCOUNT_PRIVATE_PAGES            policy<{'amd64': 'y'}>
+CONFIG_KVM_TDX_ACCOUNT_PRIVATE_PAGES            note<'Required for TDX support'>
+
+CONFIG_KVM_TDX_OPERAND_BUSY_INJECTION           policy<{'amd64': 'n'}>
+CONFIG_KVM_TDX_OPERAND_BUSY_INJECTION           note<'Required for TDX support'>
 
 CONFIG_RUST                                     policy<{'amd64': '-'}>
 CONFIG_RUST                                     note<'required to enable Rust support, LP: #1993183'>
@@ -127,6 +124,9 @@ CONFIG_SND_SOC_SOF_HDA_LINK                     note<'LP: #1848490'>
 
 CONFIG_SOUND_OSS_CORE_PRECLAIM                  policy<{'amd64': '-'}>
 CONFIG_SOUND_OSS_CORE_PRECLAIM                  note<'LP: #1385510'>
+
+CONFIG_TDX_GUEST_DRIVER                         policy<{'amd64': 'm'}>
+CONFIG_TDX_GUEST_DRIVER                         note<'Required for TDX support'>
 
 
 # ---- Annotations without notes ----
