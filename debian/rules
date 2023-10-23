@@ -41,6 +41,7 @@ override_dh_auto_build: signingv = $(signing)/$(VERSION)
 override_dh_auto_build: signing_tar = $(SOURCE)_$(VERSION)_$(DEB_HOST_ARCH).tar.gz
 override_dh_auto_build: outdir = $(CURDIR)/debian/tmp
 override_dh_auto_build: initrd = $(outdir)/initramfs.img
+override_dh_auto_build: snapd_info = $(firstword $(wildcard /usr/lib/ubuntu-core-initramfs/main/usr/lib/snapd/info /usr/lib/snapd/info))
 override_dh_auto_build:
 	install -d $(signingv)/control
 	mkdir -p $(outdir)
@@ -74,6 +75,9 @@ override_dh_auto_build:
 				--output $(signingv)/vmlinuz-$(KERNEL_ABI_VERSION)-$$flavour.android-kernel; \
 		fi; \
 	done
+	if [ -n "$(snapd_info)" ]; then \
+		cp $(snapd_info) $(signingv)/snapd-info; \
+	fi
 	{ echo "tarball"; } >$(signingv)/control/options
 	cd $(signing) && tar czvf ../../$(signing_tar) .
 	dpkg-distaddfile $(signing_tar) raw-signing -
