@@ -153,7 +153,7 @@ struct td_params {
 	u64 reserved2[4];
 
 	union {
-		struct tdx_cpuid_value cpuid_values[0];
+		DECLARE_FLEX_ARRAY(struct tdx_cpuid_value, cpuid_values);
 		u8 reserved3[768];
 	};
 } __packed __aligned(1024);
