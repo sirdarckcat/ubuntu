@@ -1,5 +1,6 @@
 human_arch	= 64 bit x86
 build_arch	= x86
+header_arch	= $(build_arch)
 defconfig	= defconfig
 build_image	= bzImage
 kernel_file	= arch/$(build_arch)/boot/bzImage
@@ -19,5 +20,4 @@ do_extras_package = true
 do_tools_common = true
 do_tools_acpidbg = true
 do_odm_drivers  = true
-do_lib_rust     = true
 flavours	= lowlatency
