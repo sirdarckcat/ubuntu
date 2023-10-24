@@ -1,0 +1,47 @@
+# Menu: HEADER
+# FORMAT: 4
+# ARCH: amd64 arm64
+# FLAVOUR: amd64-lowlatency arm64-lowlatency arm64-lowlatency-64k
+# FLAVOUR_DEP: {'amd64-lowlatency': 'amd64-generic', 'arm64-lowlatency': 'arm64-generic', 'arm64-lowlatency-64k': 'arm64-generic-64k'}
+
+include "../../debian.master/config/annotations"
+
+CONFIG_HZ_1000                                  policy<{'amd64': 'y', 'arm64': 'y'}>
+CONFIG_HZ_1000                                  note<'HZ for lowlatency must be set to 1000 to provide better system responsiveness'>
+
+CONFIG_HZ_250                                   policy<{'amd64': 'n', 'arm64': 'n'}>
+CONFIG_HZ_250                                   note<'Override default HZ used in generic'>
+
+CONFIG_LATENCYTOP                               policy<{'amd64': 'y', 'arm64': 'y'}>
+CONFIG_LATENCYTOP                               note<'https://lists.ubuntu.com/archives/kernel-team/2014-July/045006.html, LP#1655986'>
+
+CONFIG_NO_HZ_FULL                               policy<{'amd64': 'y', 'arm64': 'y'}>
+CONFIG_NO_HZ_FULL                               note<'Enable access to "Full tickless mode" (LP: #2023007)'>
+
+CONFIG_NO_HZ_IDLE                               policy<{'amd64': 'n', 'arm64': 'n'}>
+CONFIG_NO_HZ_IDLE                               note<'Disabled in favor of CONFIG_NO_HZ_FULL (LP: #2023007)'>
+
+CONFIG_PREEMPT                                  policy<{'amd64': 'y', 'arm64': 'y'}>
+CONFIG_PREEMPT                                  note<'Enable fully preemptible kernel by default (can be changed at runtime via /sys/kernel/debug/sched/preempt)'>
+
+CONFIG_PREEMPT_VOLUNTARY                        policy<{'amd64': 'n', 'arm64': 'n'}>
+CONFIG_PREEMPT_VOLUNTARY                        note<'Disable voluntary preemption model by default (can be changed at runtime via /sys/kernel/debug/sched/preempt)'>
+
+CONFIG_RCU_LAZY                                 policy<{'amd64': 'y', 'arm64': 'y'}>
+CONFIG_RCU_LAZY                                 note<'Batch RCU callbacks and then flush them after a timed delay instead of executing them immediately (LP: #2023007)'>
+
+CONFIG_RCU_NOCB_CPU                             policy<{'amd64': 'y', 'arm64': 'y'}>
+CONFIG_RCU_NOCB_CPU                             note<'Move RCU callbacks from softirq context to kthread context (LP: #2023007)'>
+
+CONFIG_RCU_NOCB_CPU_DEFAULT_ALL                 policy<{'amd64': 'y', 'arm64': 'y'}>
+CONFIG_RCU_NOCB_CPU_DEFAULT_ALL                 note<'Enable CONFIG_RCU_NOCB_CPU across all CPUs by default (LP: #2023007)'>
+
+
+# ---- Annotations without notes ----
+
+CONFIG_CONTEXT_TRACKING_USER                    policy<{'amd64': 'y', 'arm64': 'y'}>
+CONFIG_CONTEXT_TRACKING_USER_FORCE              policy<{'amd64': 'n', 'arm64': 'n'}>
+CONFIG_HZ                                       policy<{'amd64': '1000', 'arm64': '1000'}>
+CONFIG_TICK_CPU_ACCOUNTING                      policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_VIRT_CPU_ACCOUNTING                      policy<{'amd64': 'y', 'arm64': 'y'}>
+CONFIG_VIRT_CPU_ACCOUNTING_GEN                  policy<{'amd64': 'y', 'arm64': 'y'}>
