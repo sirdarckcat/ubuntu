@@ -391,7 +391,7 @@ static int __init early_set_memory_enc_dec(unsigned long vaddr,
 
 	ret = 0;
 
-	notify_range_enc_status_changed(start, PAGE_ALIGN(size) >> PAGE_SHIFT, enc);
+	notify_range_enc_status_changed(start, size, enc);
 out:
 	__flush_tlb_all();
 	return ret;
