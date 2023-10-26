@@ -1029,7 +1029,7 @@ static void __vc6_hvs_stop_channel(struct vc4_hvs *hvs, unsigned int chan)
 	if (!drm_dev_enter(drm, &idx))
 		return;
 
-	if (HVS_READ(SCALER6_DISPX_CTRL0(chan)) & SCALER6_DISPX_CTRL0_ENB)
+	if (!(HVS_READ(SCALER6_DISPX_CTRL0(chan)) & SCALER6_DISPX_CTRL0_ENB))
 		goto out;
 
 	HVS_WRITE(SCALER6_DISPX_CTRL0(chan),
