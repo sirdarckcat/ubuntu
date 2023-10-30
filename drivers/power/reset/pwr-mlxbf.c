@@ -72,6 +72,8 @@ pwr_mlxbf_probe(struct platform_device *pdev)
 
 	INIT_WORK(&priv->send_work, pwr_mlxbf_send_work);
 
+	platform_set_drvdata(pdev, priv);
+
 	err = devm_request_irq(dev, irq, pwr_mlxbf_irq, 0, hid, priv);
 	if (err)
 		dev_err(dev, "Failed request of %s irq\n", priv->hid);
