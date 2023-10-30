@@ -63,11 +63,11 @@ pwr_mlxbf_probe(struct platform_device *pdev)
 	priv->hid = hid;
 
 	irq = acpi_dev_gpio_irq_get(ACPI_COMPANION(dev), 0);
-	if (irq == -EPROBE_DEFER) {
+
+	/* This happens if the GPIO driver is not yet completely probed, let's always defer */
+	if (irq < 0) {
+		dev_dbg(dev, "Error getting %s irq from gpio driver so defer probe\n", priv->hid);
 		return -EPROBE_DEFER;
-	} else if (irq < 0) {
-		dev_err(dev, "Error getting %s irq.\n", priv->hid);
-		return -ENXIO;
 	}
 
 	INIT_WORK(&priv->send_work, pwr_mlxbf_send_work);
