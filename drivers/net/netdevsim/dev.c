@@ -357,62 +357,62 @@ static int nsim_dev_resources_register(struct devlink *devlink)
 	int err;
 
 	/* Resources for IPv4 */
-	err = devlink_resource_register(devlink, "IPv4", (u64)-1,
-					NSIM_RESOURCE_IPV4,
-					DEVLINK_RESOURCE_ID_PARENT_TOP,
-					&params);
+	err = devl_resource_register(devlink, "IPv4", (u64)-1,
+				     NSIM_RESOURCE_IPV4,
+				     DEVLINK_RESOURCE_ID_PARENT_TOP,
+				     &params);
 	if (err) {
 		pr_err("Failed to register IPv4 top resource\n");
 		goto out;
 	}
 
-	err = devlink_resource_register(devlink, "fib", (u64)-1,
-					NSIM_RESOURCE_IPV4_FIB,
-					NSIM_RESOURCE_IPV4, &params);
+	err = devl_resource_register(devlink, "fib", (u64)-1,
+				     NSIM_RESOURCE_IPV4_FIB,
+				     NSIM_RESOURCE_IPV4, &params);
 	if (err) {
 		pr_err("Failed to register IPv4 FIB resource\n");
 		return err;
 	}
 
-	err = devlink_resource_register(devlink, "fib-rules", (u64)-1,
-					NSIM_RESOURCE_IPV4_FIB_RULES,
-					NSIM_RESOURCE_IPV4, &params);
+	err = devl_resource_register(devlink, "fib-rules", (u64)-1,
+				     NSIM_RESOURCE_IPV4_FIB_RULES,
+				     NSIM_RESOURCE_IPV4, &params);
 	if (err) {
 		pr_err("Failed to register IPv4 FIB rules resource\n");
 		return err;
 	}
 
 	/* Resources for IPv6 */
-	err = devlink_resource_register(devlink, "IPv6", (u64)-1,
-					NSIM_RESOURCE_IPV6,
-					DEVLINK_RESOURCE_ID_PARENT_TOP,
-					&params);
+	err = devl_resource_register(devlink, "IPv6", (u64)-1,
+				     NSIM_RESOURCE_IPV6,
+				     DEVLINK_RESOURCE_ID_PARENT_TOP,
+				     &params);
 	if (err) {
 		pr_err("Failed to register IPv6 top resource\n");
 		goto out;
 	}
 
-	err = devlink_resource_register(devlink, "fib", (u64)-1,
-					NSIM_RESOURCE_IPV6_FIB,
-					NSIM_RESOURCE_IPV6, &params);
+	err = devl_resource_register(devlink, "fib", (u64)-1,
+				     NSIM_RESOURCE_IPV6_FIB,
+				     NSIM_RESOURCE_IPV6, &params);
 	if (err) {
 		pr_err("Failed to register IPv6 FIB resource\n");
 		return err;
 	}
 
-	err = devlink_resource_register(devlink, "fib-rules", (u64)-1,
-					NSIM_RESOURCE_IPV6_FIB_RULES,
-					NSIM_RESOURCE_IPV6, &params);
+	err = devl_resource_register(devlink, "fib-rules", (u64)-1,
+				     NSIM_RESOURCE_IPV6_FIB_RULES,
+				     NSIM_RESOURCE_IPV6, &params);
 	if (err) {
 		pr_err("Failed to register IPv6 FIB rules resource\n");
 		return err;
 	}
 
 	/* Resources for nexthops */
-	err = devlink_resource_register(devlink, "nexthops", (u64)-1,
-					NSIM_RESOURCE_NEXTHOPS,
-					DEVLINK_RESOURCE_ID_PARENT_TOP,
-					&params);
+	err = devl_resource_register(devlink, "nexthops", (u64)-1,
+				     NSIM_RESOURCE_NEXTHOPS,
+				     DEVLINK_RESOURCE_ID_PARENT_TOP,
+				     &params);
 
 out:
 	return err;
@@ -478,15 +478,15 @@ static int nsim_dev_dummy_region_init(struct nsim_dev *nsim_dev,
 				      struct devlink *devlink)
 {
 	nsim_dev->dummy_region =
-		devlink_region_create(devlink, &dummy_region_ops,
-				      NSIM_DEV_DUMMY_REGION_SNAPSHOT_MAX,
-				      NSIM_DEV_DUMMY_REGION_SIZE);
+		devl_region_create(devlink, &dummy_region_ops,
+				   NSIM_DEV_DUMMY_REGION_SNAPSHOT_MAX,
+				   NSIM_DEV_DUMMY_REGION_SIZE);
 	return PTR_ERR_OR_ZERO(nsim_dev->dummy_region);
 }
 
 static void nsim_dev_dummy_region_exit(struct nsim_dev *nsim_dev)
 {
-	devlink_region_destroy(nsim_dev->dummy_region);
+	devl_region_destroy(nsim_dev->dummy_region);
 }
 
 static void __nsim_dev_port_del(struct nsim_dev_port *nsim_dev_port);
@@ -799,18 +799,18 @@ static int nsim_dev_traps_init(struct devlink *devlink)
 	nsim_trap_data->nsim_dev = nsim_dev;
 	nsim_dev->trap_data = nsim_trap_data;
 
-	err = devlink_trap_policers_register(devlink, nsim_trap_policers_arr,
-					     policers_count);
+	err = devl_trap_policers_register(devlink, nsim_trap_policers_arr,
+					  policers_count);
 	if (err)
 		goto err_trap_policers_cnt_free;
 
-	err = devlink_trap_groups_register(devlink, nsim_trap_groups_arr,
-					   ARRAY_SIZE(nsim_trap_groups_arr));
+	err = devl_trap_groups_register(devlink, nsim_trap_groups_arr,
+					ARRAY_SIZE(nsim_trap_groups_arr));
 	if (err)
 		goto err_trap_policers_unregister;
 
-	err = devlink_traps_register(devlink, nsim_traps_arr,
-				     ARRAY_SIZE(nsim_traps_arr), NULL);
+	err = devl_traps_register(devlink, nsim_traps_arr,
+				  ARRAY_SIZE(nsim_traps_arr), NULL);
 	if (err)
 		goto err_trap_groups_unregister;
 
@@ -822,11 +822,11 @@ static int nsim_dev_traps_init(struct devlink *devlink)
 	return 0;
 
 err_trap_groups_unregister:
-	devlink_trap_groups_unregister(devlink, nsim_trap_groups_arr,
-				       ARRAY_SIZE(nsim_trap_groups_arr));
+	devl_trap_groups_unregister(devlink, nsim_trap_groups_arr,
+				    ARRAY_SIZE(nsim_trap_groups_arr));
 err_trap_policers_unregister:
-	devlink_trap_policers_unregister(devlink, nsim_trap_policers_arr,
-					 ARRAY_SIZE(nsim_trap_policers_arr));
+	devl_trap_policers_unregister(devlink, nsim_trap_policers_arr,
+				      ARRAY_SIZE(nsim_trap_policers_arr));
 err_trap_policers_cnt_free:
 	kfree(nsim_trap_data->trap_policers_cnt_arr);
 err_trap_items_free:
@@ -841,12 +841,12 @@ static void nsim_dev_traps_exit(struct devlink *devlink)
 	struct nsim_dev *nsim_dev = devlink_priv(devlink);
 
 	cancel_delayed_work_sync(&nsim_dev->trap_data->trap_report_dw);
-	devlink_traps_unregister(devlink, nsim_traps_arr,
-				 ARRAY_SIZE(nsim_traps_arr));
-	devlink_trap_groups_unregister(devlink, nsim_trap_groups_arr,
-				       ARRAY_SIZE(nsim_trap_groups_arr));
-	devlink_trap_policers_unregister(devlink, nsim_trap_policers_arr,
-					 ARRAY_SIZE(nsim_trap_policers_arr));
+	devl_traps_unregister(devlink, nsim_traps_arr,
+			      ARRAY_SIZE(nsim_traps_arr));
+	devl_trap_groups_unregister(devlink, nsim_trap_groups_arr,
+				    ARRAY_SIZE(nsim_trap_groups_arr));
+	devl_trap_policers_unregister(devlink, nsim_trap_policers_arr,
+				      ARRAY_SIZE(nsim_trap_policers_arr));
 	kfree(nsim_dev->trap_data->trap_policers_cnt_arr);
 	kfree(nsim_dev->trap_data->trap_items_arr);
 	kfree(nsim_dev->trap_data);
@@ -861,7 +861,6 @@ static int nsim_dev_reload_down(struct devlink *devlink, bool netns_change,
 				struct netlink_ext_ack *extack)
 {
 	struct nsim_dev *nsim_dev = devlink_priv(devlink);
-	struct nsim_bus_dev *nsim_bus_dev;
 
 	if (nsim_dev->dont_allow_reload) {
 		/* For testing purposes, user set debugfs dont_allow_reload
@@ -870,7 +869,6 @@ static int nsim_dev_reload_down(struct devlink *devlink, bool netns_change,
 		NL_SET_ERR_MSG_MOD(extack, "User forbid the reload for testing purposes");
 		return -EOPNOTSUPP;
 	}
-	nsim_bus_dev->in_reload = true;
 
 	nsim_dev_reload_destroy(nsim_dev);
 	return 0;
@@ -881,7 +879,6 @@ static int nsim_dev_reload_up(struct devlink *devlink, enum devlink_reload_actio
 			      struct netlink_ext_ack *extack)
 {
 	struct nsim_dev *nsim_dev = devlink_priv(devlink);
-	struct nsim_bus_dev *nsim_bus_dev;
 	int ret;
 
 	if (nsim_dev->fail_reload) {
@@ -1437,6 +1434,7 @@ int nsim_dev_probe(struct nsim_bus_dev *nsim_bus_dev)
 				 nsim_bus_dev->initial_net, &nsim_bus_dev->dev);
 	if (!devlink)
 		return -ENOMEM;
+	devl_lock(devlink);
 	nsim_dev = devlink_priv(devlink);
 	nsim_dev->nsim_bus_dev = nsim_bus_dev;
 	nsim_dev->switch_id.id_len = sizeof(nsim_dev->switch_id.id);
