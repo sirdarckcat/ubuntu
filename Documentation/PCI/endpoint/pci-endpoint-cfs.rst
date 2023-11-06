@@ -69,24 +69,6 @@ created)
 				... subsys_vendor_id
 				... subsys_id
 				... interrupt_pin
-			        ... <Symlink EPF Device 31>/
-                                ... primary/
-			                ... <Symlink EPC Device1>/
-                                ... secondary/
-			                ... <Symlink EPC Device2>/
-
-If an EPF device has to be associated with 2 EPCs (like in the case of
-Non-transparent bridge), symlink of endpoint controller connected to primary
-interface should be added in 'primary' directory and symlink of endpoint
-controller connected to secondary interface should be added in 'secondary'
-directory.
-
-The <EPF Device> directory can have a list of symbolic links
-(<Symlink EPF Device 31>) to other <EPF Device>. These symbolic links should
-be created by the user to represent the virtual functions that are bound to
-the physical function. In the above directory structure <EPF Device 11> is a
-physical function and <EPF Device 31> is a virtual function. An EPF device once
-it's linked to another EPF device, cannot be linked to a EPC device.
 
 EPC Device
 ==========
