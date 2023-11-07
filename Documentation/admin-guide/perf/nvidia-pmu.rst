@@ -10,6 +10,11 @@ metrics like memory bandwidth, latency, and utilization:
 * NVLink-C2C1
 * CNVLink
 * PCIE
+* Unified Coherency Fabric (UCF)
+* Vision
+* Display
+* High-speed IO
+* UCF-GPU
 
 PMU Driver
 ----------
@@ -182,6 +187,159 @@ Example usage:
 * Count event id 0x0 from root port 0 and 1 of socket 1::
 
    perf stat -a -e nvidia_pcie_pmu_1/event=0x0,root_port=0x3/
+
+UCF PMU
+-------
+
+The UCF PMU monitors system level cache events and DRAM traffic that flows
+through UCF.
+
+The events and configuration options of this PMU device are described in sysfs,
+see /sys/bus/event_sources/devices/nvidia_ucf_pmu_<socket-id>.
+
+User can configure the PMU to capture events from specific source and destination.
+The source/destination filter is described in
+/sys/bus/event_sources/devices/nvidia_ucf_pmu_<socket-id>/format/. By default
+traffic from all sources and destinations will be captured if no source/destination
+is specified.
+
+Example usage:
+
+* Count event id 0x0 from any source/destination of socket 0::
+
+   perf stat -a -e nvidia_ucf_pmu_0/event=0x0/
+
+* Count event id 0x1 from socket 0's CPUs to socket 0's DRAM::
+
+   perf stat -a -e nvidia_ucf_pmu_0/event=0x1,src_loc_cpu=0x1,dst_loc=0x1/
+
+* Count event id 0x1 from remote source of socket 0 to local and remote DRAM::
+
+   perf stat -a -e nvidia_ucf_pmu_0/event=0x1,src_rem=0x1,dst_loc=0x1,dst_rem=0x1/
+
+* Count event id 0x2 from any source/destination of socket 1::
+
+   perf stat -a -e nvidia_ucf_pmu_1/event=0x2/
+
+* Count event id 0x3 from socket 1's CPUs to socket 1's DRAM::
+
+   perf stat -a -e nvidia_ucf_pmu_1/event=0x3,src_loc_cpu=0x1,dst_loc=0x1/
+
+
+Vision PMU
+------------
+
+The vision PMU monitors memory traffic from the multimedia IPs in the SOC.
+
+The events and configuration options of this PMU device are described in sysfs,
+see /sys/bus/event_sources/devices/nvidia_vision_pmu_<socket-id>.
+
+User can configure the PMU to capture events from specific IPs.
+/sys/bus/event_sources/devices/nvidia_vision_pmu_<socket-id>/format/ contains
+the filter attribute name of each multimedia IP. This filter attribute is a
+bitmask to select the AXI/hub interface of the IP to monitor. By default traffic
+from all interfaces of all IPs will be captured if no IPs are specified.
+
+Example usage:
+
+* Count event id 0x0 from all multimedia IPs in socket 0::
+
+   perf stat -a -e nvidia_vision_pmu_0/event=0x0/
+
+* Count event id 0x1 from AXI/hub interface 0 in VI-0 of socket 0::
+
+   perf stat -a -e nvidia_vision_pmu_0/event=0x1,vi_0=0x1/
+
+* Count event id 0x1 from AXI/hub interface 0 and 1 in VI-0 of socket 0::
+
+   perf stat -a -e nvidia_vision_pmu_0/event=0x1,vi_0=0x3/
+
+* Count event id 0x2 from all multimedia IPs in socket 1::
+
+   perf stat -a -e nvidia_vision_pmu_1/event=0x2/
+
+* Count event id 0x3 from AXI/hub interface 0 in VI-0 and PVA of socket 1::
+
+   perf stat -a -e nvidia_vision_pmu_1/event=0x3,vi_0=0x1,pva=0x1/
+
+
+Display PMU
+------------
+
+The display PMU monitors memory traffic from the display IP in the SOC.
+
+The events and configuration options of this PMU device are described in sysfs,
+see /sys/bus/event_sources/devices/nvidia_display_pmu_<socket-id>.
+
+Example usage:
+
+* Count event id 0x0 in socket 0::
+
+   perf stat -a -e nvidia_display_pmu_0/event=0x0/
+
+* Count event id 0x0 in socket 1::
+
+   perf stat -a -e nvidia_display_pmu_1/event=0x0/
+
+
+High-speed I/O PMU
+-------------------
+
+The high-speed I/O PMU monitors memory traffic from the high speed I/O devices
+in the SOC.
+
+The events and configuration options of this PMU device are described in sysfs,
+see /sys/bus/event_sources/devices/nvidia_uphy_pmu_<socket-id>.
+
+User can configure the PMU to capture events from specific I/Os.
+/sys/bus/event_sources/devices/nvidia_uphy_pmu_<socket-id>/format/ contains
+the filter attribute name of each I/O. This filter attribute is a
+bitmask to select the AXI/hub interface of the I/O to monitor. By default
+traffic from all interfaces of all I/Os will be captured if no I/Os are
+specified.
+
+Example usage:
+
+* Count event id 0x0 from all I/Os in socket 0::
+
+   perf stat -a -e nvidia_uphy_pmu_0/event=0x0/
+
+* Count event id 0x1 from PCIE Root Port 1 of socket 0::
+
+   perf stat -a -e nvidia_uphy_pmu_0/event=0x1,pcie_rp_1=0x1/
+
+* Count event id 0x1 from PCIE Root Port 1 and Root Port 2 of socket 0::
+
+   perf stat -a -e nvidia_uphy_pmu_0/event=0x1,pcie_rp_1=0x1,pcie_rp_2=0x1/
+
+* Count event id 0x2 from all IPs in socket 1::
+
+   perf stat -a -e nvidia_uphy_pmu_1/event=0x2/
+
+* Count event id 0x3 from PCIE Root Port 3 and UFS of socket 1::
+
+   perf stat -a -e nvidia_uphy_pmu_1/event=0x1,pcie_rp_3=0x1,ufs=0x1/
+
+
+UCF-GPU PMU
+------------
+
+The UCF-GPU PMU monitors integrated GPU physical address traffic flowing through
+UCF.
+
+The events and configuration options of this PMU device are described in sysfs,
+see /sys/bus/event_sources/devices/nvidia_ucf_gpu_pmu_<socket-id>.
+
+Example usage:
+
+* Count event id 0x0 in socket 0::
+
+   perf stat -a -e nvidia_ucf_gpu_pmu_0/event=0x0/
+
+* Count event id 0x0 in socket 1::
+
+   perf stat -a -e nvidia_ucf_gpu_pmu_1/event=0x0/
+
 
 .. _NVIDIA_Uncore_PMU_Traffic_Coverage_Section:
 
