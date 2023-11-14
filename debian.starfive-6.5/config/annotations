@@ -1,0 +1,19 @@
+# Menu: HEADER
+# FORMAT: 4
+# ARCH: riscv64
+# FLAVOUR: riscv64-starfive
+# FLAVOUR_DEP: {'riscv64-starfive': 'riscv64-generic'}
+
+include "../../debian.starfive/config/annotations"
+
+
+# ---- Annotations without notes ----
+
+CONFIG_AS_HAS_NON_CONST_LEB128                  policy<{'riscv64': '-'}>
+CONFIG_AS_VERSION                               policy<{'riscv64': '23800'}>
+CONFIG_CC_VERSION_TEXT                          policy<{'riscv64': '"riscv64-linux-gnu-gcc-12 (Ubuntu 12.3.0-1ubuntu1~22.04) 12.3.0"'}>
+CONFIG_DEBUG_INFO_COMPRESSED_ZSTD               policy<{'riscv64': '-'}>
+CONFIG_GCC_VERSION                              policy<{'riscv64': '120300'}>
+CONFIG_LD_VERSION                               policy<{'riscv64': '23800'}>
+CONFIG_RISCV_ISA_ZBB                            policy<{'riscv64': '-'}>
+CONFIG_TOOLCHAIN_HAS_ZBB                        policy<{'riscv64': '-'}>
