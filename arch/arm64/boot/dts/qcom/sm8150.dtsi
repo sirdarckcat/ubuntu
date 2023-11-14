@@ -772,10 +772,12 @@
 			no-map;
 		};
 
-		qseecom_mem: memory@9e400000 {
+		qseecom_mem: qseecom_region {
 			compatible = "shared-dma-pool";
-			reg = <0x0 0x9e400000 0x0 0x1400000>;
-			no-map;
+			alloc-ranges = <0x0 0x00000000 0x0 0xffffffff>;
+			reusable;
+			alignment = <0x0 0x400000>;
+			size = <0x0 0x1400000>;
 		};
 
 		cdsp_sec_mem: memory@a4c00000 {
