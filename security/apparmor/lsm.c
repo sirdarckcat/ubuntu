@@ -2105,7 +2105,7 @@ __initcall(apparmor_nf_ip_init);
 static char nulldfa_src[] = {
 	#include "nulldfa.in"
 };
-struct aa_dfa *nulldfa;
+static struct aa_dfa *nulldfa;
 
 static char stacksplitdfa_src[] = {
 	#include "stacksplitdfa.in"
