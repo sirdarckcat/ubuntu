@@ -1,51 +1,78 @@
 # Menu: HEADER
-# FORMAT: 3
-# ARCH: x86
+# FORMAT: 4
+# ARCH: amd64
+# FLAVOUR: amd64-gkeop
+
+include "../../debian.master/config/annotations"
+
+BRIDGE_VLAN_FILTERING                           policy<{'amd64': '-'}>
+BRIDGE_VLAN_FILTERING                           note<'LP: #1882955'>
+
+CONFIG_BLK_DEV_RAM                              policy<{'amd64': 'm'}>
+CONFIG_BLK_DEV_RAM                              note<'LP: #1873809'>
+
+CONFIG_BLK_DEV_RAM_SIZE                         policy<{'amd64': '65536'}>
+CONFIG_BLK_DEV_RAM_SIZE                         note<'LP: #1873809'>
+
+CONFIG_BLK_DEV_RBD                              policy<{'amd64': 'm'}>
+CONFIG_BLK_DEV_RBD                              note<'LP: #1902434'>
+
+CONFIG_DM_VERITY_VERIFY_ROOTHASH_SIG_SECONDARY_KEYRING policy<{'amd64': 'n'}>
+CONFIG_DM_VERITY_VERIFY_ROOTHASH_SIG_SECONDARY_KEYRING note<'LP: #2019040'>
+
+CONFIG_FB_EFI                                   policy<{'amd64': 'y'}>
+CONFIG_FB_EFI                                   note<'LP: #1873809'>
+
+CONFIG_FW_LOADER_COMPRESS_ZSTD                  policy<{'amd64': 'n'}>
+CONFIG_FW_LOADER_COMPRESS_ZSTD                  note<'LP: #2028550'>
+
+CONFIG_LOAD_UEFI_KEYS                           policy<{'amd64': 'y'}>
+CONFIG_LOAD_UEFI_KEYS                           note<'LP: #1942319'>
+
+CONFIG_LOOPBACK_TARGET                          policy<{'amd64': 'm'}>
+CONFIG_LOOPBACK_TARGET                          note<'Specifically requested by GKE. Must ensure tcm_loop.ko is in default module list'>
+
+CONFIG_MODVERSIONS                              policy<{'amd64': 'y'}>
+CONFIG_MODVERSIONS                              note<'LP: #1898716'>
+
+CONFIG_NUMA_EMU                                 policy<{'amd64': 'n'}>
+CONFIG_NUMA_EMU                                 note<'LP:1864198'>
+
+CONFIG_OSNOISE_TRACER                           policy<{'amd64': 'n'}>
+CONFIG_OSNOISE_TRACER                           note<'This enables the osnoise tracer for the kernel. LP: #2018591'>
+
+CONFIG_PCI_MSI                                  policy<{'amd64': 'y'}>
+CONFIG_PCI_MSI                                  note<'LP: #1914283'>
+
+CONFIG_PREEMPT_NONE                             policy<{'amd64': 'y'}>
+CONFIG_PREEMPT_NONE                             note<'LP:1543165'>
+
+CONFIG_SYSTEM_REVOCATION_KEYS                   policy<{'amd64': '"debian/canonical-revoked-certs.pem"'}>
+CONFIG_SYSTEM_REVOCATION_KEYS                   note<'LP: #1942319'>
+
+CONFIG_SYSTEM_TRUSTED_KEYS                      policy<{'amd64': '"debian/canonical-certs.pem"'}>
+CONFIG_SYSTEM_TRUSTED_KEYS                      note<'LP: #1898716'>
+
+CONFIG_TIMERLAT_TRACER                          policy<{'amd64': 'n'}>
+CONFIG_TIMERLAT_TRACER                          note<'This enables the osnoise tracer for the kernel. LP: #2018591'>
+
+CONFIG_VMWARE_PVSCSI                            policy<{'amd64': 'm'}>
+CONFIG_VMWARE_PVSCSI                            note<'Needed for vmware vsphere'>
 
 
-#########################
-# NOTE: The following modules should be included 
-# in the default included modules (linux-modules) not 
-# linux-modules-extra:
-#
-# drivers/target/loopback/tcm_loop.ko  (CONFIG_LOOPBACK_TARGET)
-# drivers/target/loopback/target_core*.ko  (CONFIG_LOOPBACK_TARGET)
+# ---- Annotations without notes ----
 
-
-
-CONFIG_MODVERSIONS              policy<{'amd64': 'y'}>
-CONFIG_MODVERSIONS              mark<ENFORCED> note<LP: #1898716>
-
-CONFIG_SYSTEM_TRUSTED_KEYS      policy<{'amd64': '"debian/canonical-certs.pem"'}>
-CONFIG_SYSTEM_TRUSTED_KEYS      mark<ENFORCED> note<LP: #1898716>
-
-CONFIG_LOAD_UEFI_KEYS           policy<{'amd64': 'y'}>
-CONFIG_SYSTEM_REVOCATION_KEYS   policy<{'amd64': '"debian/canonical-revoked-certs.pem"'}>
-CONFIG_LOAD_UEFI_KEYS           mark<ENFORCED> note<LP: #1942319>
-CONFIG_SYSTEM_REVOCATION_KEYS   mark<ENFORCED> note<LP: #1942319>
-
-CONFIG_BLK_DEV_RAM				policy<{'amd64': 'm'}>
-CONFIG_BLK_DEV_RAM				mark<ENFORCED> note<LP: #1873809>
-
-CONFIG_BLK_DEV_RBD				policy<{'amd64': 'm'}>
-CONFIG_BLK_DEV_RBD				mark<ENFORCED> note<LP: #1902434>
-
-CONFIG_BLK_DEV_RAM_SIZE				policy<{'amd64': '65536'}>
-CONFIG_BLK_DEV_RAM_SIZE				mark<ENFORCED> note<LP: #1873809>
-
-CONFIG_FB_EFI					policy<{'amd64': 'y'}>
-CONFIG_FB_EFI					mark<ENFORCED> note<LP: #1873809>
-
-BRIDGE_VLAN_FILTERING				policy<{'amd64': 'y'}>
-BRIDGE_VLAN_FILTERING				mark<ENFORCED> note<LP: #1882955>
-
-CONFIG_PCI_MSI					policy<{'amd64': 'y'}>
-CONFIG_PCI_MSI					mark<ENFORCED> note<LP: #1914283>
-
-CONFIG_VMWARE_PVSCSI				policy<{'amd64': 'm'}>
-CONFIG_VMWARE_PVSCSI				mark<ENFORCED> note<Needed for vmware vsphere>
-
-CONFIG_LOOPBACK_TARGET				policy<{'amd64': 'm', 'arm64': 'm'}>
-CONFIG_LOOPBACK_TARGET				mark<ENFORCED> note<Specifically requested by GKE. Must ensure tcm_loop.ko is in default module list>
-
-CONFIG_CPU_SRSO                                 policy<{'amd64': 'y'}>
+CONFIG_AAEON_IWMI_WDT                           policy<{'amd64': '-'}>
+CONFIG_COMEDI_TESTS_EXAMPLE                     policy<{'amd64': 'n'}>
+CONFIG_COMEDI_TESTS_NI_ROUTES                   policy<{'amd64': 'n'}>
+CONFIG_FW_LOADER_COMPRESS_XZ                    policy<{'amd64': 'n'}>
+CONFIG_GPIO_AAEON                               policy<{'amd64': '-'}>
+CONFIG_HP_ACCEL                                 policy<{'amd64': '-'}>
+CONFIG_HP_WMI                                   policy<{'amd64': '-'}>
+CONFIG_LEDS_AAEON                               policy<{'amd64': '-'}>
+CONFIG_MFD_AAEON                                policy<{'amd64': '-'}>
+CONFIG_PREEMPT_VOLUNTARY                        policy<{'amd64': 'n'}>
+CONFIG_SENSORS_AAEON                            policy<{'amd64': '-'}>
+CONFIG_SND_HDA_INTEL_HDMI_SILENT_STREAM         policy<{'amd64': 'n'}>
+CONFIG_UBUNTU_ODM_DRIVERS                       policy<{'amd64': '-'}>
+CONFIG_X86_PLATFORM_DRIVERS_HP                  policy<{'amd64': 'n'}>
