@@ -1156,9 +1156,10 @@ int dpll_nl_pin_id_get_doit(struct sk_buff *skb, struct genl_info *info)
 		return -ENOMEM;
 	hdr = genlmsg_put_reply(msg, info, &dpll_nl_family, 0,
 				DPLL_CMD_PIN_ID_GET);
-	if (!hdr)
+	if (!hdr) {
+		nlmsg_free(msg);
 		return -EMSGSIZE;
-
+	}
 	pin = dpll_pin_find_from_nlattr(info);
 	if (!IS_ERR(pin)) {
 		if (!dpll_pin_available(pin)) {
@@ -1190,8 +1191,10 @@ int dpll_nl_pin_get_doit(struct sk_buff *skb, struct genl_info *info)
 		return -ENOMEM;
 	hdr = genlmsg_put_reply(msg, info, &dpll_nl_family, 0,
 				DPLL_CMD_PIN_GET);
-	if (!hdr)
+	if (!hdr) {
+		nlmsg_free(msg);
 		return -EMSGSIZE;
+	}
 	ret = dpll_cmd_pin_get_one(msg, pin, info->extack);
 	if (ret) {
 		nlmsg_free(msg);
@@ -1328,8 +1331,10 @@ int dpll_nl_device_id_get_doit(struct sk_buff *skb, struct genl_info *info)
 		return -ENOMEM;
 	hdr = genlmsg_put_reply(msg, info, &dpll_nl_family, 0,
 				DPLL_CMD_DEVICE_ID_GET);
-	if (!hdr)
+	if (!hdr) {
+		nlmsg_free(msg);
 		return -EMSGSIZE;
+	}
 
 	dpll = dpll_device_find_from_nlattr(info);
 	if (!IS_ERR(dpll)) {
@@ -1356,8 +1361,10 @@ int dpll_nl_device_get_doit(struct sk_buff *skb, struct genl_info *info)
 		return -ENOMEM;
 	hdr = genlmsg_put_reply(msg, info, &dpll_nl_family, 0,
 				DPLL_CMD_DEVICE_GET);
-	if (!hdr)
+	if (!hdr) {
+		nlmsg_free(msg);
 		return -EMSGSIZE;
+	}
 
 	ret = dpll_device_get_one(dpll, msg, info->extack);
 	if (ret) {
