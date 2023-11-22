@@ -364,6 +364,7 @@ CONFIG_SERIAL_MAX310X                           policy<{'arm64': 'm', 'armhf': '
 CONFIG_SERIAL_SCCNXP                            policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
 CONFIG_SERIO                                    policy<{'arm64': 'm', 'armhf': 'm'}> note<'Not essential on Pi'>
 CONFIG_SGI_PARTITION                            policy<{'arm64': 'n', 'armhf': 'n'}> note<'Not desired on Pi'>
+CONFIG_SHIFT_FS                                 policy<{'arm64': 'n', 'armhf': 'n'}> note<'LP: #2038522'>
 CONFIG_SMC91X                                   policy<{'arm64': 'm', 'armhf': 'm'}> note<'Required for Pi (different from master)'>
 CONFIG_SND                                      policy<{'arm64': 'm', 'armhf': 'm'}> note<'Required for Pi (different from master)'>
 CONFIG_SND_AUDIOINJECTOR_ISOLATED_SOUNDCARD     policy<{'arm64': 'm', 'armhf': 'm'}> note<'Introduced by rpi-6.2.y'>
@@ -7450,8 +7451,6 @@ CONFIG_SGETMASK_SYSCALL                         policy<{'arm64': 'y', 'armhf': '
 CONFIG_SGL_ALLOC                                policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_SG_POOL                                  policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_SHADOW_CALL_STACK                        policy<{'arm64': 'n'}>
-CONFIG_SHIFT_FS                                 policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_SHIFT_FS_POSIX_ACL                       policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_SHMEM                                    policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_SHRINKER_DEBUG                           policy<{'arm64': 'n', 'armhf': 'n'}>
 CONFIG_SHUFFLE_PAGE_ALLOCATOR                   policy<{'arm64': 'n', 'armhf': 'n'}>
