@@ -25,6 +25,7 @@
 		     "xlnx,zynqmp-sk-kv260-revY",
 		     "xlnx,zynqmp-sk-kv260-revZ",
 		     "xlnx,zynqmp-sk-kv260", "xlnx,zynqmp";
+	model = "ZynqMP KV260 revA";
 };
 
 &i2c1 { /* I2C_SCK C23/C24 - MIO from SOM */
@@ -33,8 +34,8 @@
 	pinctrl-names = "default", "gpio";
 	pinctrl-0 = <&pinctrl_i2c1_default>;
 	pinctrl-1 = <&pinctrl_i2c1_gpio>;
-	scl-gpios = <&gpio 24 GPIO_ACTIVE_HIGH>;
-	sda-gpios = <&gpio 25 GPIO_ACTIVE_HIGH>;
+	scl-gpios = <&gpio 24 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
+	sda-gpios = <&gpio 25 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
 
 	u14: ina260@40 { /* u14 */
 		compatible = "ti,ina260";
@@ -164,6 +165,7 @@
 	pinctrl-0 = <&pinctrl_gem3_default>;
 	phy-handle = <&phy0>;
 	phy-mode = "rgmii-id";
+	assigned-clock-rates = <250000000>;
 
 	mdio: mdio {
 		#address-cells = <1>;
