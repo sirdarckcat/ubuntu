@@ -654,14 +654,14 @@ struct xe_device {
 		/** @session_count: session counter to track connections */
 		u64 session_count;
 
-		/** @available: is the debugging functionality available */
-		bool available;
-
 		/** @ordered_wq: used to discovery */
 		struct workqueue_struct *ordered_wq;
 
 		/** discovery_lock: used for discovery to block xe ioctls */
 		struct rw_semaphore discovery_lock;
+
+		/** @enable: is the debugging functionality enabled */
+		bool enable;
 
 		/** @attention_scan: attention scan worker */
 		struct delayed_work attention_scan;
