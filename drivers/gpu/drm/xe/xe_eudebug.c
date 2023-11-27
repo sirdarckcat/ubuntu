@@ -2028,9 +2028,6 @@ xe_eudebug_connect(struct xe_device *xe,
 
 	param->version = DRM_XE_EUDEBUG_VERSION;
 
-	if (!xe->eudebug.available)
-		return -EOPNOTSUPP;
-
 	d = kzalloc(sizeof(*d), GFP_KERNEL);
 	if (!d)
 		return -ENOMEM;
@@ -2090,28 +2087,30 @@ int xe_eudebug_connect_ioctl(struct drm_device *dev,
 {
 	struct xe_device *xe = to_xe_device(dev);
 	struct drm_xe_eudebug_connect * const param = data;
-	int ret = 0;
 
-	ret = xe_eudebug_connect(xe, param);
+	lockdep_assert_held(&xe->eudebug.discovery_lock);
 
-	return ret;
+	if (!xe->eudebug.enable)
+		return -ENODEV;
+
+	return xe_eudebug_connect(xe, param);
 }
 
 static void add_sr_entry(struct xe_hw_engine *hwe,
 			 struct xe_reg_mcr mcr_reg,
-			 u32 mask)
+			 u32 mask, bool enable)
 {
 	const struct xe_reg_sr_entry sr_entry = {
 		.reg = mcr_reg.__reg,
 		.clr_bits = mask,
-		.set_bits = mask,
+		.set_bits = enable ? mask : 0,
 		.read_mask = mask,
 	};
 
-	xe_reg_sr_add(&hwe->reg_sr, &sr_entry, hwe->gt);
+	xe_reg_sr_add(&hwe->reg_sr, &sr_entry, hwe->gt, true);
 }
 
-void xe_eudebug_init_hw_engine(struct xe_hw_engine *hwe)
+static void xe_eudebug_reinit_hw_engine(struct xe_hw_engine *hwe, bool enable)
 {
 	struct xe_gt *gt = hwe->gt;
 	struct xe_device *xe = gt_to_xe(gt);
@@ -2123,23 +2122,113 @@ void xe_eudebug_init_hw_engine(struct xe_hw_engine *hwe)
 		return;
 
 	if (XE_WA(gt, 18022722726))
-		add_sr_entry(hwe, ROW_CHICKEN, STALL_DOP_GATING_DISABLE);
+		add_sr_entry(hwe, ROW_CHICKEN,
+			     STALL_DOP_GATING_DISABLE, enable);
 
 	if (XE_WA(gt, 14015474168))
-		add_sr_entry(hwe, ROW_CHICKEN2, XEHPC_DISABLE_BTB);
+		add_sr_entry(hwe, ROW_CHICKEN2,
+			     XEHPC_DISABLE_BTB,
+			     enable);
 
 	if (xe->info.graphics_verx100 >= 1200)
 		add_sr_entry(hwe, TD_CTL,
 			     TD_CTL_BREAKPOINT_ENABLE |
 			     TD_CTL_FORCE_THREAD_BREAKPOINT_ENABLE |
-			     TD_CTL_FEH_AND_FEE_ENABLE);
+			     TD_CTL_FEH_AND_FEE_ENABLE,
+			     enable);
 
 	if (xe->info.graphics_verx100 >= 1250)
-		add_sr_entry(hwe, TD_CTL, TD_CTL_GLOBAL_DEBUG_ENABLE);
+		add_sr_entry(hwe, TD_CTL,
+			     TD_CTL_GLOBAL_DEBUG_ENABLE, enable);
+}
+
+static int xe_eudebug_enable(struct xe_device *xe, bool enable)
+{
+	struct xe_gt *gt;
+	int i;
+	u8 id;
+
+	if (!xe->eudebug.available)
+		return -EOPNOTSUPP;
+
+	/*
+	 * The connect ioctl has read lock so we can
+	 * serialize with taking write
+	 */
+	down_write(&xe->eudebug.discovery_lock);
+
+	if (!enable && !list_empty(&xe->eudebug.list)) {
+		up_write(&xe->eudebug.discovery_lock);
+		return -EBUSY;
+	}
+
+	if (enable == xe->eudebug.enable) {
+		up_write(&xe->eudebug.discovery_lock);
+		return 0;
+	}
+
+	for_each_gt(gt, xe, id) {
+		for (i = 0; i < ARRAY_SIZE(gt->hw_engines); i++) {
+			if (!(gt->info.engine_mask & BIT(i)))
+				continue;
+
+			xe_eudebug_reinit_hw_engine(&gt->hw_engines[i], enable);
+		}
+
+		xe_gt_reset_async(gt);
+		flush_work(&gt->reset.worker);
+	}
+
+	xe->eudebug.enable = enable;
+	up_write(&xe->eudebug.discovery_lock);
+
+	if (enable)
+		attention_scan_flush(xe);
+	else
+		attention_scan_cancel(xe);
+
+	return 0;
+}
+
+static ssize_t enable_eudebug_show(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	struct xe_device *xe = pdev_to_xe_device(to_pci_dev(dev));
+
+	return sysfs_emit(buf, "%u\n", xe->eudebug.enable);
+}
+
+static ssize_t enable_eudebug_store(struct device *dev, struct device_attribute *attr,
+				    const char *buf, size_t count)
+{
+	struct xe_device *xe = pdev_to_xe_device(to_pci_dev(dev));
+	bool enable;
+	int ret;
+
+	ret = kstrtobool(buf, &enable);
+	if (ret)
+		return ret;
+
+	ret = xe_eudebug_enable(xe, enable);
+	if (ret)
+		return ret;
+
+	return count;
+}
+
+static DEVICE_ATTR_RW(enable_eudebug);
+
+static void xe_eudebug_sysfs_fini(void *arg)
+{
+	struct xe_device *xe = arg;
+
+	sysfs_remove_file(&xe->drm.dev->kobj, &dev_attr_enable_eudebug.attr);
 }
 
 void xe_eudebug_init(struct xe_device *xe)
 {
+	struct device *dev = xe->drm.dev;
+	int ret;
+
 	spin_lock_init(&xe->eudebug.lock);
 	INIT_LIST_HEAD(&xe->eudebug.list);
 
@@ -2150,14 +2239,17 @@ void xe_eudebug_init(struct xe_device *xe)
 
 	xe->eudebug.ordered_wq = alloc_ordered_workqueue("xe-eudebug-ordered-wq", 0);
 	xe->eudebug.available = !!xe->eudebug.ordered_wq;
-}
 
-void xe_eudebug_init_late(struct xe_device *xe)
-{
 	if (!xe->eudebug.available)
 		return;
 
-	attention_scan_flush(xe);
+	ret = sysfs_create_file(&xe->drm.dev->kobj, &dev_attr_enable_eudebug.attr);
+	if (ret)
+		drm_warn(&xe->drm, "eudebug sysfs init failed: %d, debugger unavailable\n", ret);
+	else
+		devm_add_action_or_reset(dev, xe_eudebug_sysfs_fini, xe);
+
+	xe->eudebug.available = ret == 0;
 }
 
 void xe_eudebug_fini(struct xe_device *xe)

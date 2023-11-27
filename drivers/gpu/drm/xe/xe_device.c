@@ -783,8 +783,6 @@ int xe_device_probe(struct xe_device *xe)
 
 	xe_debugfs_register(xe);
 
-	xe_eudebug_init_late(xe);
-
 	xe_hwmon_register(xe);
 
 	for_each_gt(gt, xe, id)
