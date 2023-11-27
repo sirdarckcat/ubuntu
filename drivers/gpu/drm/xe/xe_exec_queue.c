@@ -435,6 +435,11 @@ static int exec_queue_set_eudebug(struct xe_device *xe, struct xe_exec_queue *q,
 			 !(value & DRM_XE_EXEC_QUEUE_EUDEBUG_FLAG_ENABLE)))
 		return -EINVAL;
 
+#if IS_ENABLED(CONFIG_DRM_XE_EUDEBUG)
+	if (XE_IOCTL_DBG(xe, !xe->eudebug.enable))
+		return -EPERM;
+#endif
+
 	q->eudebug_flags = EXEC_QUEUE_EUDEBUG_FLAG_ENABLE;
 	q->sched_props.preempt_timeout_us = 0;
 
