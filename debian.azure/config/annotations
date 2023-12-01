@@ -164,7 +164,7 @@ CONFIG_POWERCAP                                 note<'kernel reduction'>
 CONFIG_REGULATOR_TWL4030                        policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_REGULATOR_TWL4030                        note<'Unnecessary for Azure'>
 
-CONFIG_RUST                                     policy<{'amd64': 'n'}>
+CONFIG_RUST                                     policy<{'amd64': '-'}>
 CONFIG_RUST                                     note<'required to enable Rust support, LP: #1993183'>
 
 CONFIG_SAMPLE_TRACE_PRINTK                      policy<{'amd64': '-', 'arm64': 'm'}>
@@ -721,6 +721,7 @@ CONFIG_BCM7038_L1_IRQ                           policy<{'arm64': 'y'}>
 CONFIG_BCM7038_WDT                              policy<{'arm64': 'm'}>
 CONFIG_BCM7120_L2_IRQ                           policy<{'arm64': 'm'}>
 CONFIG_BCM87XX_PHY                              policy<{'amd64': 'n', 'arm64': 'm'}>
+CONFIG_BCMASP                                   policy<{'arm64': 'm'}>
 CONFIG_BCMA_BLOCKIO                             policy<{'amd64': '-', 'arm64': 'y'}>
 CONFIG_BCM_FLEXRM_MBOX                          policy<{'arm64': 'm'}>
 CONFIG_BCM_IPROC_ADC                            policy<{'arm64': 'm'}>
@@ -973,34 +974,34 @@ CONFIG_COMEDI_ADDI_WATCHDOG                     policy<{'amd64': '-', 'arm64': '
 CONFIG_COMEDI_ADL_PCI6208                       policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_COMEDI_ADL_PCI7X3X                       policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_COMEDI_ADL_PCI8164                       policy<{'amd64': '-', 'arm64': 'm'}>
-CONFIG_COMEDI_ADL_PCI9111                       policy<{'amd64': '-', 'arm64': '-'}>
-CONFIG_COMEDI_ADL_PCI9118                       policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_COMEDI_ADL_PCI9111                       policy<{'amd64': '-', 'arm64': 'n'}>
+CONFIG_COMEDI_ADL_PCI9118                       policy<{'amd64': '-', 'arm64': 'n'}>
 CONFIG_COMEDI_ADQ12B                            policy<{'amd64': '-', 'arm64': '-'}>
-CONFIG_COMEDI_ADV_PCI1710                       policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_COMEDI_ADV_PCI1710                       policy<{'amd64': '-', 'arm64': 'n'}>
 CONFIG_COMEDI_ADV_PCI1720                       policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_COMEDI_ADV_PCI1723                       policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_COMEDI_ADV_PCI1724                       policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_COMEDI_ADV_PCI1760                       policy<{'amd64': '-', 'arm64': 'm'}>
-CONFIG_COMEDI_ADV_PCI_DIO                       policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_COMEDI_ADV_PCI_DIO                       policy<{'amd64': '-', 'arm64': 'n'}>
 CONFIG_COMEDI_AIO_AIO12_8                       policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_COMEDI_AIO_IIRO_16                       policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_COMEDI_AMPLC_DIO200                      policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_COMEDI_AMPLC_DIO200_ISA                  policy<{'amd64': '-', 'arm64': '-'}>
-CONFIG_COMEDI_AMPLC_DIO200_PCI                  policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_COMEDI_AMPLC_DIO200_PCI                  policy<{'amd64': '-', 'arm64': 'n'}>
 CONFIG_COMEDI_AMPLC_PC236                       policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_COMEDI_AMPLC_PC236_ISA                   policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_COMEDI_AMPLC_PC236_PCI                   policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_COMEDI_AMPLC_PC263_ISA                   policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_COMEDI_AMPLC_PC263_PCI                   policy<{'amd64': '-', 'arm64': 'm'}>
-CONFIG_COMEDI_AMPLC_PCI224                      policy<{'amd64': '-', 'arm64': '-'}>
-CONFIG_COMEDI_AMPLC_PCI230                      policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_COMEDI_AMPLC_PCI224                      policy<{'amd64': '-', 'arm64': 'n'}>
+CONFIG_COMEDI_AMPLC_PCI230                      policy<{'amd64': '-', 'arm64': 'n'}>
 CONFIG_COMEDI_BOND                              policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_COMEDI_C6XDIGIO                          policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_COMEDI_CB_DAS16_CS                       policy<{'amd64': '-'}>
-CONFIG_COMEDI_CB_PCIDAS                         policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_COMEDI_CB_PCIDAS                         policy<{'amd64': '-', 'arm64': 'n'}>
 CONFIG_COMEDI_CB_PCIDAS64                       policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_COMEDI_CB_PCIDDA                         policy<{'amd64': '-', 'arm64': 'm'}>
-CONFIG_COMEDI_CB_PCIMDAS                        policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_COMEDI_CB_PCIMDAS                        policy<{'amd64': '-', 'arm64': 'n'}>
 CONFIG_COMEDI_CB_PCIMDDA                        policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_COMEDI_CONTEC_PCI_DIO                    policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_COMEDI_DAC02                             policy<{'amd64': '-', 'arm64': '-'}>
@@ -1008,7 +1009,7 @@ CONFIG_COMEDI_DAQBOARD2000                      policy<{'amd64': '-', 'arm64': '
 CONFIG_COMEDI_DAS08                             policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_COMEDI_DAS08_CS                          policy<{'amd64': '-'}>
 CONFIG_COMEDI_DAS08_ISA                         policy<{'amd64': '-', 'arm64': '-'}>
-CONFIG_COMEDI_DAS08_PCI                         policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_COMEDI_DAS08_PCI                         policy<{'amd64': '-', 'arm64': 'n'}>
 CONFIG_COMEDI_DAS16                             policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_COMEDI_DAS16M1                           policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_COMEDI_DAS1800                           policy<{'amd64': '-', 'arm64': '-'}>
@@ -1032,11 +1033,11 @@ CONFIG_COMEDI_GSC_HPDI                          policy<{'amd64': '-', 'arm64': '
 CONFIG_COMEDI_ICP_MULTI                         policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_COMEDI_II_PCI20KC                        policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_COMEDI_ISADMA                            policy<{'amd64': '-'}>
-CONFIG_COMEDI_ISA_DRIVERS                       policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_COMEDI_ISA_DRIVERS                       policy<{'amd64': '-', 'arm64': 'n'}>
 CONFIG_COMEDI_JR3_PCI                           policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_COMEDI_KCOMEDILIB                        policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_COMEDI_KE_COUNTER                        policy<{'amd64': '-', 'arm64': 'm'}>
-CONFIG_COMEDI_ME4000                            policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_COMEDI_ME4000                            policy<{'amd64': '-', 'arm64': 'n'}>
 CONFIG_COMEDI_ME_DAQ                            policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_COMEDI_MF6X4                             policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_COMEDI_MISC_DRIVERS                      policy<{'amd64': '-', 'arm64': 'y'}>
@@ -1057,7 +1058,7 @@ CONFIG_COMEDI_NI_LABPC                          policy<{'amd64': '-', 'arm64': '
 CONFIG_COMEDI_NI_LABPC_CS                       policy<{'amd64': '-'}>
 CONFIG_COMEDI_NI_LABPC_ISA                      policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_COMEDI_NI_LABPC_ISADMA                   policy<{'amd64': '-'}>
-CONFIG_COMEDI_NI_LABPC_PCI                      policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_COMEDI_NI_LABPC_PCI                      policy<{'amd64': '-', 'arm64': 'n'}>
 CONFIG_COMEDI_NI_MIO_CS                         policy<{'amd64': '-'}>
 CONFIG_COMEDI_NI_PCIDIO                         policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_COMEDI_NI_PCIMIO                         policy<{'amd64': '-', 'arm64': 'm'}>
@@ -1081,7 +1082,7 @@ CONFIG_COMEDI_PCMDA12                           policy<{'amd64': '-', 'arm64': '
 CONFIG_COMEDI_PCMMIO                            policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_COMEDI_PCMUIO                            policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_COMEDI_QUATECH_DAQP_CS                   policy<{'amd64': '-'}>
-CONFIG_COMEDI_RTD520                            policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_COMEDI_RTD520                            policy<{'amd64': '-', 'arm64': 'n'}>
 CONFIG_COMEDI_RTI800                            policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_COMEDI_RTI802                            policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_COMEDI_S526                              policy<{'amd64': '-', 'arm64': '-'}>
@@ -1415,6 +1416,7 @@ CONFIG_EROFS_FS_ONDEMAND                        policy<{'amd64': 'y', 'arm64': '
 CONFIG_EROFS_FS_PCPU_KTHREAD                    policy<{'amd64': '-', 'arm64': 'y'}>
 CONFIG_EROFS_FS_PCPU_KTHREAD_HIPRI              policy<{'amd64': '-', 'arm64': 'n'}>
 CONFIG_EROFS_FS_ZIP                             policy<{'amd64': 'n', 'arm64': 'y'}>
+CONFIG_EROFS_FS_ZIP_DEFLATE                     policy<{'amd64': '-', 'arm64': 'y'}>
 CONFIG_EROFS_FS_ZIP_LZMA                        policy<{'amd64': '-', 'arm64': 'y'}>
 CONFIG_EXTCON_ADC_JACK                          policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_EXTCON_INTEL_CHT_WC                      policy<{'amd64': '-'}>
@@ -1550,8 +1552,8 @@ CONFIG_GADGET_UAC1_LEGACY                       policy<{'amd64': '-', 'arm64': '
 CONFIG_GAMEPORT                                 policy<{'amd64': 'n', 'arm64': 'm'}>
 CONFIG_GAMEPORT_EMU10K1                         policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_GAMEPORT_FM801                           policy<{'amd64': '-', 'arm64': 'm'}>
-CONFIG_GAMEPORT_L4                              policy<{'amd64': '-', 'arm64': 'm'}>
-CONFIG_GAMEPORT_NS558                           policy<{'amd64': '-', 'arm64': 'm'}>
+CONFIG_GAMEPORT_L4                              policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_GAMEPORT_NS558                           policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_GCC_SUPPORTS_DYNAMIC_FTRACE_WITH_REGS    policy<{'arm64': '-'}>
 CONFIG_GENERIC_ADC_BATTERY                      policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_GENERIC_ADC_THERMAL                      policy<{'amd64': '-', 'arm64': 'm'}>
@@ -1707,7 +1709,7 @@ CONFIG_HID_SIGMAMICRO                           policy<{'amd64': '-', 'arm64': '
 CONFIG_HID_SMARTJOYPLUS                         policy<{'amd64': 'n', 'arm64': 'm'}>
 CONFIG_HID_SONY                                 policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_HID_SPEEDLINK                            policy<{'amd64': 'n', 'arm64': 'm'}>
-CONFIG_HID_STEELSERIES                          policy<{'amd64': 'n', 'arm64': 'm'}>
+CONFIG_HID_STEELSERIES                          policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_HID_SUNPLUS                              policy<{'amd64': 'n', 'arm64': 'm'}>
 CONFIG_HID_THRUSTMASTER                         policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_HID_TIVO                                 policy<{'amd64': 'n', 'arm64': 'm'}>
@@ -1808,6 +1810,7 @@ CONFIG_IIO_CROS_EC_SENSORS_LID_ANGLE            policy<{'amd64': '-', 'arm64': '
 CONFIG_IIO_GTS_HELPER                           policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_IIO_HRTIMER_TRIGGER                      policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_IIO_INTERRUPT_TRIGGER                    policy<{'amd64': '-', 'arm64': 'm'}>
+CONFIG_IIO_INV_SENSORS_TIMESTAMP                policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_IIO_KFIFO_BUF                            policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_IIO_KX022A                               policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_IIO_KX022A_I2C                           policy<{'amd64': '-', 'arm64': 'm'}>
@@ -1951,6 +1954,7 @@ CONFIG_INTEL_TH_MSU                             policy<{'amd64': '-', 'arm64': '
 CONFIG_INTEL_TH_PCI                             policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_INTEL_TH_PTI                             policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_INTEL_TH_STH                             policy<{'amd64': '-', 'arm64': 'm'}>
+CONFIG_INTEL_VSC                                policy<{'amd64': '-'}>
 CONFIG_INTEL_XWAY_PHY                           policy<{'amd64': 'n', 'arm64': 'm'}>
 CONFIG_INTERVAL_TREE_TEST                       policy<{'amd64': '-', 'arm64': 'n'}>
 CONFIG_INV_ICM42600                             policy<{'amd64': '-', 'arm64': 'm'}>
@@ -1959,7 +1963,7 @@ CONFIG_INV_ICM42600_SPI                         policy<{'amd64': '-', 'arm64': '
 CONFIG_INV_MPU6050_I2C                          policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_INV_MPU6050_IIO                          policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_INV_MPU6050_SPI                          policy<{'amd64': '-', 'arm64': 'm'}>
-CONFIG_IPU_BRIDGE                               policy<{'amd64': '-'}>
+CONFIG_IPU_BRIDGE                               policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_IPW2100                                  policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_IPW2100_DEBUG                            policy<{'amd64': '-', 'arm64': 'n'}>
 CONFIG_IPW2100_MONITOR                          policy<{'amd64': '-', 'arm64': 'y'}>
@@ -1973,6 +1977,7 @@ CONFIG_IP_MROUTE_MULTIPLE_TABLES                policy<{'amd64': 'n', 'arm64': '
 CONFIG_IQS620AT_TEMP                            policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_IQS621_ALS                               policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_IQS624_POS                               policy<{'amd64': '-', 'arm64': 'm'}>
+CONFIG_IRSD200                                  policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_IR_IGORPLUGUSB                           policy<{'amd64': 'n', 'arm64': 'm'}>
 CONFIG_IR_IGUANA                                policy<{'amd64': 'n', 'arm64': 'm'}>
 CONFIG_IR_IMON                                  policy<{'amd64': 'n', 'arm64': 'm'}>
@@ -2113,6 +2118,7 @@ CONFIG_LEDS_88PM860X                            policy<{'amd64': '-', 'arm64': '
 CONFIG_LEDS_AAEON                               policy<{'amd64': '-'}>
 CONFIG_LEDS_ADP5520                             policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_LEDS_AS3645A                             policy<{'amd64': '-', 'arm64': 'm'}>
+CONFIG_LEDS_BCM63138                            policy<{'arm64': 'm'}>
 CONFIG_LEDS_BD2802                              policy<{'amd64': 'n', 'arm64': 'm'}>
 CONFIG_LEDS_BLINKM                              policy<{'amd64': 'n', 'arm64': 'm'}>
 CONFIG_LEDS_CHT_WCOVE                           policy<{'amd64': '-'}>
@@ -2217,6 +2223,7 @@ CONFIG_MACB_PCI                                 policy<{'amd64': '-', 'arm64': '
 CONFIG_MACB_USE_HWSTAMP                         policy<{'amd64': '-', 'arm64': 'y'}>
 CONFIG_MAG3110                                  policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_MANTIS_CORE                              policy<{'amd64': '-', 'arm64': 'm'}>
+CONFIG_MARVELL_GTI_WDT                          policy<{'arm64': 'm'}>
 CONFIG_MARVELL_PHY                              policy<{'amd64': 'n', 'arm64': 'm'}>
 CONFIG_MAX1027                                  policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_MAX11100                                 policy<{'amd64': '-', 'arm64': 'm'}>
@@ -2252,6 +2259,7 @@ CONFIG_MCP41010                                 policy<{'amd64': '-', 'arm64': '
 CONFIG_MCP4131                                  policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_MCP4531                                  policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_MCP4725                                  policy<{'amd64': '-', 'arm64': 'm'}>
+CONFIG_MCP4728                                  policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_MCP4922                                  policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_MDIO_BCM_IPROC                           policy<{'arm64': 'n'}>
 CONFIG_MDIO_BUS_MUX                             policy<{'arm64': 'y'}>
@@ -2382,7 +2390,7 @@ CONFIG_MISDN_NETJET                             policy<{'amd64': '-', 'arm64': '
 CONFIG_MISDN_SPEEDFAX                           policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_MISDN_W6692                              policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_MKISS                                    policy<{'amd64': 'n', 'arm64': 'm'}>
-CONFIG_MLX5_EN_MACSEC                           policy<{'amd64': 'y', 'arm64': 'y'}>
+CONFIG_MLX5_EN_MACSEC                           policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_MLX5_VDPA                                policy<{'amd64': '-', 'arm64': 'y'}>
 CONFIG_MLX5_VDPA_NET                            policy<{'amd64': 'n', 'arm64': 'm'}>
 CONFIG_MLX90614                                 policy<{'amd64': '-', 'arm64': 'm'}>
@@ -2497,7 +2505,9 @@ CONFIG_MT7921E                                  policy<{'amd64': '-', 'arm64': '
 CONFIG_MT7921S                                  policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_MT7921U                                  policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_MT7921_COMMON                            policy<{'amd64': '-', 'arm64': 'm'}>
-CONFIG_MT7986_WMAC                              policy<{'arm64': 'n'}>
+CONFIG_MT792x_LIB                               policy<{'amd64': '-', 'arm64': 'm'}>
+CONFIG_MT792x_USB                               policy<{'amd64': '-', 'arm64': 'm'}>
+CONFIG_MT7986_WMAC                              policy<{'arm64': '-'}>
 CONFIG_MT7996E                                  policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_MTDRAM_ERASE_SIZE                        policy<{'amd64': '-', 'arm64': '128'}>
 CONFIG_MTDRAM_TOTAL_SIZE                        policy<{'amd64': '-', 'arm64': '4096'}>
@@ -2772,6 +2782,7 @@ CONFIG_PCS_LYNX                                 policy<{'amd64': '-', 'arm64': '
 CONFIG_PDA_POWER                                policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_PDS_CORE                                 policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_PDS_VDPA                                 policy<{'amd64': '-', 'arm64': 'm'}>
+CONFIG_PDS_VFIO_PCI                             policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_PERCPU_TEST                              policy<{'amd64': '-', 'arm64': 'n'}>
 CONFIG_PHY_BCM_NS_USB2                          policy<{'arm64': 'm'}>
 CONFIG_PHY_BCM_NS_USB3                          policy<{'arm64': 'm'}>
@@ -2895,7 +2906,6 @@ CONFIG_REGMAP_AC97                              policy<{'arm64': '-'}>
 CONFIG_REGMAP_I2C                               policy<{'amd64': 'm', 'arm64': 'y'}>
 CONFIG_REGMAP_I3C                               policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_REGMAP_SCCB                              policy<{'amd64': '-', 'arm64': 'm'}>
-CONFIG_REGMAP_SOUNDWIRE                         policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_REGMAP_SOUNDWIRE_MBQ                     policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_REGMAP_SPMI                              policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_REGMAP_W1                                policy<{'amd64': '-', 'arm64': 'm'}>
@@ -3056,7 +3066,7 @@ CONFIG_RTC_DRV_88PM860X                         policy<{'amd64': '-', 'arm64': '
 CONFIG_RTC_DRV_ABB5ZES3                         policy<{'amd64': 'n', 'arm64': 'm'}>
 CONFIG_RTC_DRV_ABX80X                           policy<{'amd64': 'n', 'arm64': 'm'}>
 CONFIG_RTC_DRV_BQ32K                            policy<{'amd64': 'n', 'arm64': 'm'}>
-CONFIG_RTC_DRV_BQ4802                           policy<{'amd64': 'n', 'arm64': 'm'}>
+CONFIG_RTC_DRV_BQ4802                           policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_RTC_DRV_BRCMSTB                          policy<{'arm64': 'm'}>
 CONFIG_RTC_DRV_CROS_EC                          policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_RTC_DRV_DA9052                           policy<{'amd64': 'n', 'arm64': 'm'}>
@@ -3256,7 +3266,7 @@ CONFIG_SCSI_UFS_BSG                             policy<{'amd64': '-', 'arm64': '
 CONFIG_SCSI_UFS_CDNS_PLATFORM                   policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_SCSI_UFS_CRYPTO                          policy<{'amd64': '-', 'arm64': 'y'}>
 CONFIG_SCSI_UFS_DWC_TC_PCI                      policy<{'amd64': '-', 'arm64': 'm'}>
-CONFIG_SCSI_UFS_HPB                             policy<{'amd64': '-', 'arm64': 'y'}>
+CONFIG_SCSI_UFS_HPB                             policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_SCSI_UFS_HWMON                           policy<{'amd64': '-', 'arm64': 'y'}>
 CONFIG_SDIO_UART                                policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_SDR_MAX2175                              policy<{'amd64': '-', 'arm64': 'm'}>
@@ -3316,6 +3326,7 @@ CONFIG_SENSORS_MAX6620                          policy<{'amd64': 'n', 'arm64': '
 CONFIG_SENSORS_MAX8688                          policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_SENSORS_MP2888                           policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_SENSORS_MP2975                           policy<{'amd64': '-', 'arm64': 'm'}>
+CONFIG_SENSORS_MP2975_REGULATOR                 policy<{'amd64': '-', 'arm64': 'y'}>
 CONFIG_SENSORS_MP5023                           policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_SENSORS_MPQ7932                          policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_SENSORS_MPQ7932_REGULATOR                policy<{'amd64': '-', 'arm64': 'y'}>
@@ -3482,6 +3493,10 @@ CONFIG_SND_HDA_PREALLOC_SIZE                    policy<{'amd64': '-', 'arm64': '
 CONFIG_SND_HDA_SCODEC_CS35L41                   policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_SND_HDA_SCODEC_CS35L41_I2C               policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_SND_HDA_SCODEC_CS35L41_SPI               policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_SND_HDA_SCODEC_CS35L56                   policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_SND_HDA_SCODEC_CS35L56_I2C               policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_SND_HDA_SCODEC_CS35L56_SPI               policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_SND_HDA_SCODEC_TAS2781_I2C               policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_SND_HDA_TEGRA                            policy<{'arm64': '-'}>
 CONFIG_SND_HDSP                                 policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_SND_HDSPM                                policy<{'amd64': '-', 'arm64': '-'}>
@@ -3617,6 +3632,7 @@ CONFIG_SND_SOC_AMD_ACP5x                        policy<{'amd64': '-'}>
 CONFIG_SND_SOC_AMD_ACP6x                        policy<{'amd64': '-'}>
 CONFIG_SND_SOC_AMD_ACP_COMMON                   policy<{'amd64': '-'}>
 CONFIG_SND_SOC_AMD_ACP_I2S                      policy<{'amd64': '-'}>
+CONFIG_SND_SOC_AMD_ACP_LEGACY_COMMON            policy<{'amd64': '-'}>
 CONFIG_SND_SOC_AMD_ACP_PCI                      policy<{'amd64': '-'}>
 CONFIG_SND_SOC_AMD_ACP_PCM                      policy<{'amd64': '-'}>
 CONFIG_SND_SOC_AMD_ACP_PDM                      policy<{'amd64': '-'}>
@@ -3635,7 +3651,9 @@ CONFIG_SND_SOC_AMD_YC_MACH                      policy<{'amd64': '-'}>
 CONFIG_SND_SOC_APPLE_MCA                        policy<{'arm64': '-'}>
 CONFIG_SND_SOC_APQ8016_SBC                      policy<{'arm64': '-'}>
 CONFIG_SND_SOC_ARIZONA                          policy<{'amd64': '-'}>
+CONFIG_SND_SOC_AUDIO_IIO_AUX                    policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_SND_SOC_AW8738                           policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_SND_SOC_AW88261                          policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_SND_SOC_AW88395                          policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_SND_SOC_AW88395_LIB                      policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_SND_SOC_BD28623                          policy<{'amd64': '-', 'arm64': '-'}>
@@ -3672,6 +3690,8 @@ CONFIG_SND_SOC_CS4271_SPI                       policy<{'amd64': '-', 'arm64': '
 CONFIG_SND_SOC_CS42L42                          policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_SND_SOC_CS42L42_CORE                     policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_SND_SOC_CS42L42_SDW                      policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_SND_SOC_CS42L43                          policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_SND_SOC_CS42L43_SDW                      policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_SND_SOC_CS42L51                          policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_SND_SOC_CS42L51_I2C                      policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_SND_SOC_CS42L52                          policy<{'amd64': '-', 'arm64': '-'}>
@@ -3742,6 +3762,7 @@ CONFIG_SND_SOC_INTEL_APL                        policy<{'amd64': '-'}>
 CONFIG_SND_SOC_INTEL_AVS                        policy<{'amd64': '-'}>
 CONFIG_SND_SOC_INTEL_AVS_MACH_DA7219            policy<{'amd64': '-'}>
 CONFIG_SND_SOC_INTEL_AVS_MACH_DMIC              policy<{'amd64': '-'}>
+CONFIG_SND_SOC_INTEL_AVS_MACH_ES8336            policy<{'amd64': '-'}>
 CONFIG_SND_SOC_INTEL_AVS_MACH_HDAUDIO           policy<{'amd64': '-'}>
 CONFIG_SND_SOC_INTEL_AVS_MACH_I2S_TEST          policy<{'amd64': '-'}>
 CONFIG_SND_SOC_INTEL_AVS_MACH_MAX98357A         policy<{'amd64': '-'}>
@@ -3752,6 +3773,7 @@ CONFIG_SND_SOC_INTEL_AVS_MACH_PROBE             policy<{'amd64': '-'}>
 CONFIG_SND_SOC_INTEL_AVS_MACH_RT274             policy<{'amd64': '-'}>
 CONFIG_SND_SOC_INTEL_AVS_MACH_RT286             policy<{'amd64': '-'}>
 CONFIG_SND_SOC_INTEL_AVS_MACH_RT298             policy<{'amd64': '-'}>
+CONFIG_SND_SOC_INTEL_AVS_MACH_RT5663            policy<{'amd64': '-'}>
 CONFIG_SND_SOC_INTEL_AVS_MACH_RT5682            policy<{'amd64': '-'}>
 CONFIG_SND_SOC_INTEL_AVS_MACH_SSM4567           policy<{'amd64': '-'}>
 CONFIG_SND_SOC_INTEL_BDW_RT5650_MACH            policy<{'amd64': '-'}>
@@ -3855,6 +3877,8 @@ CONFIG_SND_SOC_MT6359_ACCDET                    policy<{'arm64': '-'}>
 CONFIG_SND_SOC_MT6660                           policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_SND_SOC_MT6797                           policy<{'arm64': '-'}>
 CONFIG_SND_SOC_MT6797_MT6351                    policy<{'arm64': '-'}>
+CONFIG_SND_SOC_MT7986                           policy<{'arm64': '-'}>
+CONFIG_SND_SOC_MT7986_WM8960                    policy<{'arm64': '-'}>
 CONFIG_SND_SOC_MT8173                           policy<{'arm64': '-'}>
 CONFIG_SND_SOC_MT8183                           policy<{'arm64': '-'}>
 CONFIG_SND_SOC_MT8183_DA7219_MAX98357A          policy<{'arm64': '-'}>
@@ -3931,6 +3955,7 @@ CONFIG_SND_SOC_ROCKCHIP_SPDIF                   policy<{'arm64': '-'}>
 CONFIG_SND_SOC_RT1011                           policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_SND_SOC_RT1015                           policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_SND_SOC_RT1015P                          policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_SND_SOC_RT1017_SDCA_SDW                  policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_SND_SOC_RT1019                           policy<{'amd64': '-'}>
 CONFIG_SND_SOC_RT1308                           policy<{'amd64': '-'}>
 CONFIG_SND_SOC_RT1308_SDW                       policy<{'amd64': '-', 'arm64': '-'}>
@@ -3987,11 +4012,13 @@ CONFIG_SND_SOC_SMA1303                          policy<{'amd64': '-', 'arm64': '
 CONFIG_SND_SOC_SOF                              policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_SND_SOC_SOF_ACPI                         policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_SND_SOC_SOF_ACPI_DEV                     policy<{'amd64': '-'}>
+CONFIG_SND_SOC_SOF_ACP_PROBES                   policy<{'amd64': '-'}>
 CONFIG_SND_SOC_SOF_ALDERLAKE                    policy<{'amd64': '-'}>
 CONFIG_SND_SOC_SOF_AMD_COMMON                   policy<{'amd64': '-'}>
 CONFIG_SND_SOC_SOF_AMD_REMBRANDT                policy<{'amd64': '-'}>
 CONFIG_SND_SOC_SOF_AMD_RENOIR                   policy<{'amd64': '-'}>
 CONFIG_SND_SOC_SOF_AMD_TOPLEVEL                 policy<{'amd64': '-'}>
+CONFIG_SND_SOC_SOF_AMD_VANGOGH                  policy<{'amd64': '-'}>
 CONFIG_SND_SOC_SOF_APOLLOLAKE                   policy<{'amd64': '-'}>
 CONFIG_SND_SOC_SOF_BAYTRAIL                     policy<{'amd64': '-'}>
 CONFIG_SND_SOC_SOF_BROADWELL                    policy<{'amd64': '-'}>
@@ -4022,6 +4049,7 @@ CONFIG_SND_SOC_SOF_INTEL_COMMON                 policy<{'amd64': '-'}>
 CONFIG_SND_SOC_SOF_INTEL_HIFI_EP_IPC            policy<{'amd64': '-'}>
 CONFIG_SND_SOC_SOF_INTEL_ICL                    policy<{'amd64': '-'}>
 CONFIG_SND_SOC_SOF_INTEL_IPC4                   policy<{'amd64': '-'}>
+CONFIG_SND_SOC_SOF_INTEL_LNL                    policy<{'amd64': '-'}>
 CONFIG_SND_SOC_SOF_INTEL_MTL                    policy<{'amd64': '-'}>
 CONFIG_SND_SOC_SOF_INTEL_SKL                    policy<{'amd64': '-'}>
 CONFIG_SND_SOC_SOF_INTEL_SOUNDWIRE              policy<{'amd64': '-'}>
@@ -4031,6 +4059,7 @@ CONFIG_SND_SOC_SOF_INTEL_TOPLEVEL               policy<{'amd64': '-'}>
 CONFIG_SND_SOC_SOF_IPC3                         policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_SND_SOC_SOF_JASPERLAKE                   policy<{'amd64': '-'}>
 CONFIG_SND_SOC_SOF_KABYLAKE                     policy<{'amd64': '-'}>
+CONFIG_SND_SOC_SOF_LUNARLAKE                    policy<{'amd64': '-'}>
 CONFIG_SND_SOC_SOF_MERRIFIELD                   policy<{'amd64': '-'}>
 CONFIG_SND_SOC_SOF_METEORLAKE                   policy<{'amd64': '-'}>
 CONFIG_SND_SOC_SOF_MT8186                       policy<{'arm64': '-'}>
@@ -4139,6 +4168,7 @@ CONFIG_SND_SOC_WCD9335                          policy<{'amd64': '-', 'arm64': '
 CONFIG_SND_SOC_WCD934X                          policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_SND_SOC_WCD938X                          policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_SND_SOC_WCD938X_SDW                      policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_SND_SOC_WCD_CLASSH                       policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_SND_SOC_WCD_MBHC                         policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_SND_SOC_WM5102                           policy<{'amd64': '-'}>
 CONFIG_SND_SOC_WM8510                           policy<{'amd64': '-', 'arm64': '-'}>
@@ -4481,6 +4511,7 @@ CONFIG_TOUCHSCREEN_IMAGIS                       policy<{'amd64': '-', 'arm64': '
 CONFIG_TOUCHSCREEN_INEXIO                       policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_TOUCHSCREEN_IPROC                        policy<{'arm64': 'm'}>
 CONFIG_TOUCHSCREEN_IQS5XX                       policy<{'amd64': '-', 'arm64': 'm'}>
+CONFIG_TOUCHSCREEN_IQS7211                      policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_TOUCHSCREEN_MAX11801                     policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_TOUCHSCREEN_MC13783                      policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_TOUCHSCREEN_MCS5000                      policy<{'amd64': '-', 'arm64': 'm'}>
@@ -4659,6 +4690,7 @@ CONFIG_USB_CONFIGFS_F_FS                        policy<{'amd64': '-', 'arm64': '
 CONFIG_USB_CONFIGFS_F_HID                       policy<{'amd64': '-', 'arm64': 'y'}>
 CONFIG_USB_CONFIGFS_F_LB_SS                     policy<{'amd64': '-', 'arm64': 'y'}>
 CONFIG_USB_CONFIGFS_F_MIDI                      policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_USB_CONFIGFS_F_MIDI2                     policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_USB_CONFIGFS_F_PRINTER                   policy<{'amd64': '-', 'arm64': 'y'}>
 CONFIG_USB_CONFIGFS_F_TCM                       policy<{'amd64': '-', 'arm64': 'y'}>
 CONFIG_USB_CONFIGFS_F_UAC1                      policy<{'amd64': '-', 'arm64': '-'}>
@@ -4721,6 +4753,7 @@ CONFIG_USB_F_FS                                 policy<{'amd64': '-', 'arm64': '
 CONFIG_USB_F_HID                                policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_USB_F_MASS_STORAGE                       policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_USB_F_MIDI                               policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_USB_F_MIDI2                              policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_USB_F_NCM                                policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_USB_F_OBEX                               policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_USB_F_PHONET                             policy<{'amd64': '-', 'arm64': 'm'}>
@@ -5008,6 +5041,8 @@ CONFIG_USB_ZERO                                 policy<{'amd64': '-', 'arm64': '
 CONFIG_USB_ZR364XX                              policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_UVC_COMMON                               policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_U_SERIAL_CONSOLE                         policy<{'amd64': '-', 'arm64': 'y'}>
+CONFIG_V4L2_CCI                                 policy<{'amd64': '-', 'arm64': 'm'}>
+CONFIG_V4L2_CCI_I2C                             policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_V4L2_FLASH_LED_CLASS                     policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_VBOXSF_FS                                policy<{'amd64': '-'}>
 CONFIG_VCHIQ_CDEV                               policy<{'arm64': 'y'}>
@@ -5026,8 +5061,8 @@ CONFIG_VIA_RHINE                                policy<{'amd64': '-', 'arm64': '
 CONFIG_VIA_RHINE_MMIO                           policy<{'amd64': '-', 'arm64': 'y'}>
 CONFIG_VIA_VELOCITY                             policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_VIDEOBUF2_DVB                            policy<{'amd64': '-', 'arm64': 'm'}>
-CONFIG_VIDEOBUF_DMA_SG                          policy<{'amd64': '-', 'arm64': 'm'}>
-CONFIG_VIDEOBUF_GEN                             policy<{'amd64': '-', 'arm64': 'm'}>
+CONFIG_VIDEOBUF_DMA_SG                          policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_VIDEOBUF_GEN                             policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_VIDEOBUF_VMALLOC                         policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_VIDEO_AD5820                             policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_VIDEO_ADP1653                            policy<{'amd64': '-', 'arm64': 'm'}>
@@ -5065,6 +5100,7 @@ CONFIG_VIDEO_CX88_MPEG                          policy<{'amd64': '-', 'arm64': '
 CONFIG_VIDEO_CX88_VP3054                        policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_VIDEO_DT3155                             policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_VIDEO_DW9714                             policy<{'amd64': '-', 'arm64': 'm'}>
+CONFIG_VIDEO_DW9719                             policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_VIDEO_DW9768                             policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_VIDEO_DW9807_VCM                         policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_VIDEO_EM28XX                             policy<{'amd64': '-', 'arm64': 'm'}>
@@ -5135,6 +5171,7 @@ CONFIG_VIDEO_OV5695                             policy<{'amd64': '-', 'arm64': '
 CONFIG_VIDEO_OV6650                             policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_VIDEO_OV7251                             policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_VIDEO_OV7640                             policy<{'amd64': '-', 'arm64': 'm'}>
+CONFIG_VIDEO_OV7670                             policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_VIDEO_OV772X                             policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_VIDEO_OV7740                             policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_VIDEO_OV8856                             policy<{'amd64': '-', 'arm64': 'm'}>
@@ -5311,6 +5348,7 @@ CONFIG_XEN_PCIDEV_BACKEND                       policy<{'amd64': '-'}>
 CONFIG_XEN_PCIDEV_FRONTEND                      policy<{'amd64': '-'}>
 CONFIG_XEN_PCI_STUB                             policy<{'amd64': '-', 'arm64': 'y'}>
 CONFIG_XEN_PRIVCMD                              policy<{'amd64': '-', 'arm64': 'm'}>
+CONFIG_XEN_PRIVCMD_IRQFD                        policy<{'amd64': '-', 'arm64': 'y'}>
 CONFIG_XEN_PV                                   policy<{'amd64': '-'}>
 CONFIG_XEN_PVCALLS_BACKEND                      policy<{'amd64': '-', 'arm64': 'n'}>
 CONFIG_XEN_PVCALLS_FRONTEND                     policy<{'amd64': '-', 'arm64': 'm'}>
