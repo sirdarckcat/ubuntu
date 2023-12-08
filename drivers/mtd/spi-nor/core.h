@@ -534,6 +534,8 @@ struct spi_nor_id {
  *                  hooks to differentiate support between flashes of the same
  *                  manufacturer.
  *   SST_WRITE                use SST byte programming
+ *   USE_FSR                  flash_info mfr_flag. Used to read proprietary FSR
+ *                            register
  * @otp_org:        flash's OTP organization.
  * @fixups:         part specific fixup hooks.
  */
@@ -575,6 +577,8 @@ struct flash_info {
 
 	u8 mfr_flags;
 #define	SST_WRITE			BIT(0)
+#define USE_FSR				BIT(1)
+
 
 	const struct spi_nor_otp_organization *otp;
 	const struct spi_nor_fixups *fixups;
