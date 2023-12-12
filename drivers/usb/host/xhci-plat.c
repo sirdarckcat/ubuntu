@@ -273,6 +273,9 @@ int xhci_plat_probe(struct platform_device *pdev, struct device *sysdev, const s
 		if (device_property_read_bool(tmpdev, "xhci-sg-trb-cache-size-quirk"))
 			xhci->quirks |= XHCI_SG_TRB_CACHE_SIZE_QUIRK;
 
+		if (device_property_read_bool(tmpdev, "xhci-reset-on-resume"))
+			xhci->quirks |= XHCI_RESET_ON_RESUME;
+
 		device_property_read_u32(tmpdev, "imod-interval-ns",
 					 &xhci->imod_interval);
 	}
@@ -475,8 +478,10 @@ static int xhci_plat_suspend(struct device *dev)
 	if (device_may_wakeup(&hcd->self.root_hub->dev)) {
 		host_wakeup_capable(dev, true);
 		enable_irq_wake(hcd->irq);
+		xhci->quirks &= ~XHCI_RESET_ON_RESUME;
 	} else {
 		host_wakeup_capable(dev, false);
+		xhci->quirks |= XHCI_RESET_ON_RESUME;
 	}
 
 	/*
