@@ -144,4 +144,6 @@ void intel_dp_phy_test(struct intel_encoder *encoder);
 
 void intel_dp_wait_source_oui(struct intel_dp *intel_dp);
 
+const struct edid *intel_dp_fetch_edid(struct intel_dp *intel_dp);
+
 #endif /* __INTEL_DP_H__ */
