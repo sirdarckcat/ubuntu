@@ -159,6 +159,22 @@ int dwc3_host_init(struct dwc3 *dwc)
 		}
 	}
 
+	phy_create_lookup(dwc->usb2_generic_phy, "usb2-phy",
+			  dev_name(dwc->dev));
+	phy_create_lookup(dwc->usb3_generic_phy, "usb3-phy",
+			  dev_name(dwc->dev));
+
+	if (dwc->dr_mode == USB_DR_MODE_OTG) {
+		struct usb_phy *phy = usb_get_phy(USB_PHY_TYPE_USB3);
+
+		if (!IS_ERR(phy)) {
+			if (phy && phy->otg)
+				otg_set_host(phy->otg,
+					     (struct usb_bus *)0xdeadbeef);
+
+			usb_put_phy(phy);
+		}
+	}
 	ret = platform_device_add_data(xhci, &dwc3_xhci_plat_quirk,
 				       sizeof(struct xhci_plat_priv));
 	if (ret)
