@@ -728,6 +728,10 @@ static int tegra_spi_set_hw_cs_timing(struct spi_device *spi)
 	u32 inactive_cycles;
 	u8 cs_state;
 
+	setup->unit = SPI_DELAY_UNIT_SCK;
+	hold->unit = SPI_DELAY_UNIT_SCK;
+	inactive->unit = SPI_DELAY_UNIT_SCK;
+
 	if (setup->unit != SPI_DELAY_UNIT_SCK ||
 	    hold->unit != SPI_DELAY_UNIT_SCK ||
 	    inactive->unit != SPI_DELAY_UNIT_SCK) {
