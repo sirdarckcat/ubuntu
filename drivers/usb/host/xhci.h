@@ -1856,6 +1856,8 @@ void xhci_remove_secondary_interrupter(struct usb_hcd
 
 /* xHCI host controller glue */
 typedef void (*xhci_get_quirks_t)(struct device *, struct xhci_hcd *);
+typedef void (*host_wakeup_t)(struct device *dev, bool wakeup);
+void dwc3_host_wakeup_capable(struct device *dev, bool wakeup);
 int xhci_handshake(void __iomem *ptr, u32 mask, u32 done, u64 timeout_us);
 void xhci_quiesce(struct xhci_hcd *xhci);
 int xhci_halt(struct xhci_hcd *xhci);
