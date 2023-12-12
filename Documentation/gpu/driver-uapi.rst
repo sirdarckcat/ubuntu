@@ -27,3 +27,8 @@ drm/xe uAPI
 ===========
 
 .. kernel-doc:: include/uapi/drm/xe_drm.h
+
+drm/xe PRELIM uAPI
+==================
+
+.. kernel-doc:: include/uapi/drm/xe_drm_prelim.h
