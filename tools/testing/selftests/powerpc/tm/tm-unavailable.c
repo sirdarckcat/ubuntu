@@ -344,6 +344,7 @@ int tm_unavailable_test(void)
 	cpu_set_t cpuset;
 
 	SKIP_IF(!have_htm());
+	SKIP_IF(htm_is_synthetic());
 
 	/* Set only CPU 0 in the mask. Both threads will be bound to CPU 0. */
 	CPU_ZERO(&cpuset);

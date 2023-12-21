@@ -34,6 +34,7 @@ int tm_poison_test(void)
 	bool fail_vr = false;
 
 	SKIP_IF(!have_htm());
+	SKIP_IF(htm_is_synthetic());
 
 	/* Attach both Child and Parent to CPU 0 */
 	CPU_ZERO(&cpuset);
