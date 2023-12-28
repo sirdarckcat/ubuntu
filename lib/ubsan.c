@@ -214,7 +214,8 @@ static void ubsan_prologue(struct source_location *loc, const char *reason)
 
 static void ubsan_epilogue(void)
 {
-	dump_stack();
+	/* Avoid dump stack */
+	/* dump_stack(); */
 	pr_warn("---[ end trace ]---\n");
 
 	current->in_ubsan--;
