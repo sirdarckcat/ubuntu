@@ -820,5 +820,18 @@ spi10_cs_pins: &spi10_cs_gpio1 {};
 		act_led_trigger = <&act_led>, "linux,default-trigger";
 		pwr_led_activelow = <&pwr_led>, "gpios:8";
 		pwr_led_trigger = <&pwr_led>, "linux,default-trigger";
+
+		fan_temp0 = <&cpu_tepid>,"temperature:0";
+		fan_temp1 = <&cpu_warm>,"temperature:0";
+		fan_temp2 = <&cpu_hot>,"temperature:0";
+		fan_temp3 = <&cpu_vhot>,"temperature:0";
+		fan_temp0_hyst = <&cpu_tepid>,"hysteresis:0";
+		fan_temp1_hyst = <&cpu_warm>,"hysteresis:0";
+		fan_temp2_hyst = <&cpu_hot>,"hysteresis:0";
+		fan_temp3_hyst = <&cpu_vhot>,"hysteresis:0";
+		fan_temp0_speed = <&fan>, "cooling-levels:4";
+		fan_temp1_speed = <&fan>, "cooling-levels:8";
+		fan_temp2_speed = <&fan>, "cooling-levels:12";
+		fan_temp3_speed = <&fan>, "cooling-levels:16";
 	};
 };
