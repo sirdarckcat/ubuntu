@@ -1,4 +1,4 @@
-# Men: HEADER
+# Menu: HEADER
 # FORMAT: 4
 # ARCH: arm64
 # FLAVOUR: arm64-capilano arm64-capilano-debug
@@ -39,7 +39,7 @@ CONFIG_DEBUG_INFO_SPLIT                         policy<{'arm64': '-', 'arm64-cap
 CONFIG_DEBUG_INFO_SPLIT                         note<'LP:1413646 and LP:1413664'>
 
 CONFIG_DM_VERITY_VERIFY_ROOTHASH_SIG_SECONDARY_KEYRING policy<{'arm64': 'n'}>
-CONFIG_DM_VERITY_VERIFY_ROOTHASH_SIG_SECONDARY_KEYRING note<TODO: update note>
+CONFIG_DM_VERITY_VERIFY_ROOTHASH_SIG_SECONDARY_KEYRING note<'TODO: update note'>
 
 CONFIG_DRM_AMDGPU_CIK                           policy<{'arm64': '-'}>
 CONFIG_DRM_AMDGPU_CIK                           note<'LP:1661887 for zesty'>
@@ -73,7 +73,7 @@ CONFIG_EXT3_FS                                  note<'ext4 handling via EXT4_USE
 
 CONFIG_FORCE_MAX_ZONEORDER                      policy<{'arm64': '11'}> note<'LP:#2004473'>
 CONFIG_FW_LOADER_COMPRESS_ZSTD                  policy<{'arm64': '-'}>
-CONFIG_FW_LOADER_COMPRESS_ZSTD                  note<TODO: update note>
+CONFIG_FW_LOADER_COMPRESS_ZSTD                  note<'TODO: update note'>
 
 CONFIG_GPIO_TWL4030                             policy<{'arm64': '-'}>
 CONFIG_GPIO_TWL4030                             note<'LP:#921934'>
@@ -115,7 +115,7 @@ CONFIG_IMA_KEXEC                                policy<{'arm64': '-'}>
 CONFIG_IMA_KEXEC                                note<'LP:1643652'>
 
 CONFIG_IMA_KEYRINGS_PERMIT_SIGNED_BY_BUILTIN_OR_SECONDARY policy<{'arm64': '-'}>
-CONFIG_IMA_KEYRINGS_PERMIT_SIGNED_BY_BUILTIN_OR_SECONDARY note<TODO: update note>
+CONFIG_IMA_KEYRINGS_PERMIT_SIGNED_BY_BUILTIN_OR_SECONDARY note<'TODO: update note'>
 
 CONFIG_IMA_LOAD_X509                            policy<{'arm64': '-'}>
 CONFIG_IMA_LOAD_X509                            note<'LP:1643652'>
@@ -199,7 +199,7 @@ CONFIG_N_GSM                                    policy<{'arm64': 'n'}>
 CONFIG_N_GSM                                    note<'LP#1404670'>
 
 CONFIG_OSNOISE_TRACER                           policy<{'arm64': 'n'}>
-CONFIG_OSNOISE_TRACER                           note<TODO: update note>
+CONFIG_OSNOISE_TRACER                           note<'TODO: update note'>
 
 CONFIG_PATA_HPT3X3_DMA                          policy<{'arm64': '-'}>
 CONFIG_PATA_HPT3X3_DMA                          note<'DMA mode is documented problematic'>
@@ -242,13 +242,13 @@ CONFIG_SCSI_VIRTIO                              policy<{'arm64': 'n'}>
 CONFIG_SCSI_VIRTIO                              note<'tech preview of new feature'>
 
 CONFIG_SERIAL_SH_SCI                            policy<{'arm64': 'm'}>
-CONFIG_SERIAL_SH_SCI                            note<TODO: update note>
+CONFIG_SERIAL_SH_SCI                            note<'TODO: update note'>
 
 CONFIG_SERIAL_SH_SCI_CONSOLE                    policy<{'arm64': '-'}>
-CONFIG_SERIAL_SH_SCI_CONSOLE                    note<TODO: update note>
+CONFIG_SERIAL_SH_SCI_CONSOLE                    note<'TODO: update note'>
 
 CONFIG_SERIAL_SH_SCI_EARLYCON                   policy<{'arm64': '-'}>
-CONFIG_SERIAL_SH_SCI_EARLYCON                   note<TODO: update note>
+CONFIG_SERIAL_SH_SCI_EARLYCON                   note<'TODO: update note'>
 
 CONFIG_SND                                      policy<{'arm64': 'y'}>
 CONFIG_SND                                      note<'not autoloadable on omap'>
@@ -311,7 +311,7 @@ CONFIG_TEST_BLACKHOLE_DEV                       policy<{'arm64': 'n'}>
 CONFIG_TEST_BLACKHOLE_DEV                       note<'Used by net selftests'>
 
 CONFIG_TIMERLAT_TRACER                          policy<{'arm64': 'n'}>
-CONFIG_TIMERLAT_TRACER                          note<TODO: update note>
+CONFIG_TIMERLAT_TRACER                          note<'TODO: update note'>
 
 CONFIG_UBSAN                                    policy<{'arm64': 'n'}>
 CONFIG_UBSAN                                    note<'LP#1942215'>
@@ -360,7 +360,7 @@ CONFIG_VMWARE_VMCI_VSOCKETS                     policy<{'arm64': '-'}>
 CONFIG_VMWARE_VMCI_VSOCKETS                     note<'LP: #1978145'>
 
 CONFIG_WWAN                                     policy<{'arm64': 'y'}>
-CONFIG_WWAN                                     note<TODO: update note>
+CONFIG_WWAN                                     note<'TODO: update note'>
 
 
 # ---- Annotations without notes ----
@@ -606,13 +606,10 @@ CONFIG_ARM64_64K_PAGES                          policy<{'arm64': 'n'}>
 CONFIG_ARM64_ACPI_PARKING_PROTOCOL              policy<{'arm64': 'n'}>
 CONFIG_ARM64_CONT_PMD_SHIFT                     policy<{'arm64': '4'}>
 CONFIG_ARM64_CONT_PTE_SHIFT                     policy<{'arm64': '4'}>
-CONFIG_ARM64_ERRATUM_2054223                    policy<{'arm64': 'y'}>
-CONFIG_ARM64_ERRATUM_2067961                    policy<{'arm64': 'y'}>
 CONFIG_ARM64_PAGE_SHIFT                         policy<{'arm64': '12'}>
 CONFIG_ARM64_SW_TTBR0_PAN                       policy<{'arm64': 'n'}>
 CONFIG_ARM64_VA_BITS                            policy<{'arm64': '39'}>
 CONFIG_ARM64_VA_BITS_39                         policy<{'arm64': 'y'}>
-CONFIG_ARM64_WORKAROUND_TSB_FLUSH_FAILURE       policy<{'arm64': 'y'}>
 CONFIG_ARM_ALLWINNER_SUN50I_CPUFREQ_NVMEM       policy<{'arm64': '-'}>
 CONFIG_ARM_BRCMSTB_AVS_CPUFREQ                  policy<{'arm64': '-'}>
 CONFIG_ARM_IMX6Q_CPUFREQ                        policy<{'arm64': '-'}>
@@ -1659,13 +1656,6 @@ CONFIG_DRM_QXL                                  policy<{'arm64': 'n'}>
 CONFIG_DRM_R128                                 policy<{'arm64': 'n'}>
 CONFIG_DRM_RADEON                               policy<{'arm64': 'n'}>
 CONFIG_DRM_RADEON_USERPTR                       policy<{'arm64': '-'}>
-CONFIG_DRM_RCAR_CMM                             policy<{'arm64': 'm'}>
-CONFIG_DRM_RCAR_DU                              policy<{'arm64': 'm'}>
-CONFIG_DRM_RCAR_LVDS                            policy<{'arm64': 'm'}>
-CONFIG_DRM_RCAR_USE_CMM                         policy<{'arm64': 'y'}>
-CONFIG_DRM_RCAR_USE_LVDS                        policy<{'arm64': 'y'}>
-CONFIG_DRM_RCAR_VSP                             policy<{'arm64': 'y'}>
-CONFIG_DRM_RCAR_WRITEBACK                       policy<{'arm64': 'y'}>
 CONFIG_DRM_ROCKCHIP                             policy<{'arm64': '-'}>
 CONFIG_DRM_SAVAGE                               policy<{'arm64': 'n'}>
 CONFIG_DRM_SII9234                              policy<{'arm64': 'n'}>
@@ -2538,7 +2528,6 @@ CONFIG_HP03                                     policy<{'arm64': 'n'}>
 CONFIG_HP206C                                   policy<{'arm64': 'n'}>
 CONFIG_HPFS_FS                                  policy<{'arm64': 'n'}>
 CONFIG_HP_ILO                                   policy<{'arm64': 'n'}>
-CONFIG_HP_WATCHDOG                              policy<{'arm64': 'm'}>
 CONFIG_HSA_AMD                                  policy<{'arm64': '-'}>
 CONFIG_HSA_AMD_SVM                              policy<{'arm64': '-'}>
 CONFIG_HSI                                      policy<{'arm64': 'n'}>
@@ -5502,7 +5491,6 @@ CONFIG_SENSORS_WM8350                           policy<{'arm64': '-'}>
 CONFIG_SENSORS_XDPE122                          policy<{'arm64': '-'}>
 CONFIG_SENSORS_XGENE                            policy<{'arm64': 'n'}>
 CONFIG_SENSORS_ZL6100                           policy<{'arm64': '-'}>
-CONFIG_SERIAL_8250_ASPEED_VUART                 policy<{'arm64': '-'}>
 CONFIG_SERIAL_8250_BCM7271                      policy<{'arm64': '-'}>
 CONFIG_SERIAL_8250_DEPRECATED_OPTIONS           policy<{'arm64': 'y'}>
 CONFIG_SERIAL_8250_EXAR                         policy<{'arm64': 'y'}>
