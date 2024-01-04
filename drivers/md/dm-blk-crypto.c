@@ -73,18 +73,12 @@ static int get_key(u8 *key, size_t len, char *key_string)
 
 static int blk_crypto_evict_and_wipe_key(struct dm_blk_crypto_config *bcc)
 {
-	int err;
-
-	err = blk_crypto_evict_key(bdev_get_queue(bcc->dev->bdev), &bcc->key);
-	if (err == -ENOKEY)
-		err = 0;
-	if (err)
-		DMWARN("Failed to evict crypto key: %d", err);
+	blk_crypto_evict_key(bdev_get_queue(bcc->dev->bdev), &bcc->key);
 
 	memzero_explicit(bcc->key.raw, sizeof(bcc->key.raw));
 	clear_bit(DM_BLK_CRYPTO_KEY_VALID, &bcc->flags);
 
-	return err;
+	return 0;
 }
 
 static void blk_crypto_dtr(struct dm_target *ti)
