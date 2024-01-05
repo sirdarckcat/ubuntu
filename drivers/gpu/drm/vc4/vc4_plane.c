@@ -673,7 +673,7 @@ static u32 __vc4_lbm_size(struct drm_plane_state *state)
 static unsigned int vc4_lbm_words_per_component(const struct drm_plane_state *state,
 						unsigned int channel)
 {
-	struct vc4_plane_state *vc4_state = to_vc4_plane_state(state);
+	const struct vc4_plane_state *vc4_state = to_vc4_plane_state(state);
 
 	switch (vc4_state->y_scaling[channel]) {
 	case VC4_SCALING_PPF:
@@ -691,7 +691,7 @@ static unsigned int vc4_lbm_components(const struct drm_plane_state *state,
 				       unsigned int channel)
 {
 	const struct drm_format_info *info = state->fb->format;
-	struct vc4_plane_state *vc4_state = to_vc4_plane_state(state);
+	const struct vc4_plane_state *vc4_state = to_vc4_plane_state(state);
 
 	if (vc4_state->y_scaling[channel] == VC4_SCALING_NONE)
 		return 0;
@@ -709,7 +709,7 @@ static unsigned int vc4_lbm_channel_size(const struct drm_plane_state *state,
 					 unsigned int channel)
 {
 	const struct drm_format_info *info = state->fb->format;
-	struct vc4_plane_state *vc4_state = to_vc4_plane_state(state);
+	const struct vc4_plane_state *vc4_state = to_vc4_plane_state(state);
 	unsigned int channels_scaled = 0;
 	unsigned int components, words, wpc;
 	unsigned int width, lines;
@@ -780,7 +780,7 @@ u32 vc4_lbm_size(struct drm_plane_state *state)
 static size_t vc6_upm_size(const struct drm_plane_state *state,
 			   unsigned int plane)
 {
-	struct vc4_plane_state *vc4_state = to_vc4_plane_state(state);
+	const struct vc4_plane_state *vc4_state = to_vc4_plane_state(state);
 	unsigned int stride = state->fb->pitches[plane];
 
 	/*
