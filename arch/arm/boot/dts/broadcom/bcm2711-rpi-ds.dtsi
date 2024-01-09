@@ -187,12 +187,7 @@
 };
 
 &usb {
-	/* Enable the FIQ support */
-	reg = <0x7e980000 0x10000>,
-	      <0x7e00b200 0x200>;
-	interrupts = <GIC_SPI 73 IRQ_TYPE_LEVEL_HIGH>,
-		     <GIC_SPI 40 IRQ_TYPE_LEVEL_HIGH>;
-	status = "disabled";
+	interrupts = <GIC_SPI 73 IRQ_TYPE_LEVEL_HIGH>;
 };
 
 &gpio {
