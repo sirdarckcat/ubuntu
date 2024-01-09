@@ -750,5 +750,7 @@ spi10_cs_pins: &spi10_cs_gpio1 {};
 / {
 	__overrides__ {
 		sd_cqe = <&sdio1>, "supports-cqe?";
+
+		dwc2_dr_mode = <&usb>, "dr_mode";
 	};
 };
