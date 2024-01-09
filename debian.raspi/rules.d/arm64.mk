@@ -17,5 +17,4 @@ do_common_headers_indep	= false
 
 do_dtbs			= true
 do_source_package	= false
-do_extras_package	= true
 do_zfs			= true
