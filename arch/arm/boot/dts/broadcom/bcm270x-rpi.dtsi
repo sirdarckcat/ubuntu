@@ -119,6 +119,8 @@
 				<&cam1_reg>,"gpio:0=", <&gpio>;
 
 		strict_gpiod = <&chosen>, "bootargs=pinctrl_bcm2835.persist_gpio_outputs=n";
+
+		dwc2_dr_mode = <&usb>,"dr_mode";
 	};
 };
 
