@@ -1,5 +1,9 @@
 # Recreate any symlinks created since the orig.
 # Remove any files deleted from the orig.
+rm -f 'drivers/phy/realtek/Kconfig'
+rm -f 'drivers/phy/realtek/Makefile'
+rm -f 'drivers/phy/realtek/phy-rtk-usb2.c'
+rm -f 'drivers/phy/realtek/phy-rtk-usb3.c'
 rm -f 'include/linux/ceph/mdsmap.h'
 chmod +x 'debian/cloud-tools/hv_get_dhcp_info'
 chmod +x 'debian/cloud-tools/hv_get_dns_info'
