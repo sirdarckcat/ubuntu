@@ -169,3 +169,6 @@ dtb-$(CONFIG_ARCH_ZYNQMP) += versal-net-vn-p-b2197-00-revA-x-prc-07-i3c-revA.dtb
 dtb-$(CONFIG_ARCH_ZYNQMP) += versal-net-vn-p-b2197-00-revA-x-prc-08-revA.dtb
 dtb-$(CONFIG_ARCH_ZYNQMP) += versal-net-vn-p-b2197-00-revA-x-prc-09-revA.dtb
 dtb-$(CONFIG_ARCH_ZYNQMP) += versal-net-vn-p-b2197-00-revA-x-prc-09-i3c-revA.dtb
+
+# Make sure that symbols are compiled in for device trees that are not overlayed
+DTC_FLAGS += -@
