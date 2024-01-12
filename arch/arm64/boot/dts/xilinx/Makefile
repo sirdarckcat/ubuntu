@@ -99,3 +99,6 @@ dtb-$(CONFIG_ARCH_ZYNQMP) += versal-vp-x-a2785-00-revA.dtb
 dtb-$(CONFIG_ARCH_ZYNQMP) += versal-vpk120-revA.dtb
 dtb-$(CONFIG_ARCH_ZYNQMP) += versal-vpk120-revB.dtb
 dtb-$(CONFIG_ARCH_ZYNQMP) += versal-vpk180-revA.dtb
+
+# Make sure that symbols are compiled in for device trees that are not overlayed
+DTC_FLAGS += -@
