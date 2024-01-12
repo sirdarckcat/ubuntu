@@ -1,6 +1,6 @@
-Name:    linux
-Version: 6.1.0
-Series:  23.04 (lunar)
+Name:    linux-realtime
+Version: 6.7.0
+Series:  24.04 (noble)
 Description:
     This is the source code for the Ubuntu linux kernel for the 23.04 series. This
     source tree is used to produce the flavours: generic, generic-64k, generic-lpae.
