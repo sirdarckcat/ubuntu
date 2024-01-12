@@ -136,7 +136,7 @@ struct netdev_queue_mgmt_ops {
 		int _res;						\
 									\
 		_res = -1;						\
-		if (likely(get_desc > start_thrs)) {			\
+		if (likely(get_desc >= start_thrs)) {			\
 			/* Make sure that anybody stopping the queue after \
 			 * this sees the new next_to_clean.		\
 			 */						\
