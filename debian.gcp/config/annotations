@@ -39,8 +39,8 @@ CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC               note<'initial packaging'>
 CONFIG_BT_HS                                    policy<{'amd64': 'n', 'arm64': 'n'}>
 CONFIG_BT_HS                                    note<'Not reachable under GCP'>
 
-CONFIG_LATENCYTOP                               policy<{'amd64': '-', 'arm64': 'n'}>
-CONFIG_LATENCYTOP                               note<'Unnecessary for linux-gcp'>
+CONFIG_LATENCYTOP                               policy<{'amd64': 'n', 'arm64': 'n'}>
+CONFIG_LATENCYTOP                               note<'https://lists.ubuntu.com/archives/kernel-team/2014-July/045006.html, LP#1655986'>
 
 CONFIG_NETFILTER_NETLINK_LOG                    policy<{'amd64': 'y', 'arm64': 'y'}>
 CONFIG_NETFILTER_NETLINK_LOG                    note<'initial packaging'>
