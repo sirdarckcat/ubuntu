@@ -3339,6 +3339,7 @@ EXPORT_SYMBOL	 vmlinux 0x00000000	logfc
 EXPORT_SYMBOL	 vmlinux 0x00000000	lookup_bdev
 EXPORT_SYMBOL	 vmlinux 0x00000000	lookup_one_len
 EXPORT_SYMBOL	 vmlinux 0x00000000	lookup_one_len_unlocked
+EXPORT_SYMBOL	 vmlinux 0x00000000	lookup_positive_unlocked
 EXPORT_SYMBOL	 vmlinux 0x00000000	lookup_user_key
 EXPORT_SYMBOL	 vmlinux 0x00000000	loop_register_transfer
 EXPORT_SYMBOL	 vmlinux 0x00000000	loop_unregister_transfer
@@ -4567,7 +4568,7 @@ EXPORT_SYMBOL	 vmlinux 0x00000000	rtnl_kfree_skbs
 EXPORT_SYMBOL	 vmlinux 0x00000000	rtnl_link_get_net
 EXPORT_SYMBOL	 vmlinux 0x00000000	rtnl_lock
 EXPORT_SYMBOL	 vmlinux 0x00000000	rtnl_lock_killable
-EXPORT_SYMBOL	 vmlinux 0x00000000	rtnl_nla_parse_ifla
+EXPORT_SYMBOL	 vmlinux 0x00000000	rtnl_nla_parse_ifinfomsg
 EXPORT_SYMBOL	 vmlinux 0x00000000	rtnl_notify
 EXPORT_SYMBOL	 vmlinux 0x00000000	rtnl_set_sk_err
 EXPORT_SYMBOL	 vmlinux 0x00000000	rtnl_trylock
@@ -5276,7 +5277,6 @@ EXPORT_SYMBOL	 vmlinux 0x00000000	tcp_connect
 EXPORT_SYMBOL	 vmlinux 0x00000000	tcp_create_openreq_child
 EXPORT_SYMBOL	 vmlinux 0x00000000	tcp_disconnect
 EXPORT_SYMBOL	 vmlinux 0x00000000	tcp_enter_cwr
-EXPORT_SYMBOL	 vmlinux 0x00000000	tcp_enter_quickack_mode
 EXPORT_SYMBOL	 vmlinux 0x00000000	tcp_fastopen_defer_connect
 EXPORT_SYMBOL	 vmlinux 0x00000000	tcp_filter
 EXPORT_SYMBOL	 vmlinux 0x00000000	tcp_get_cookie_sock
@@ -6543,6 +6543,7 @@ EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	__pneigh_lookup
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	__put_mtd_device
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	__put_net
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	__put_task_struct
+EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	__put_task_struct_rcu_cb
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	__raw_notifier_call_chain
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	__raw_v4_lookup
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	__raw_v6_lookup
@@ -7720,6 +7721,7 @@ EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	dev_change_net_namespace
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	dev_coredumpm
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	dev_coredumpsg
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	dev_coredumpv
+EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	dev_err_probe
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	dev_fill_metadata_dst
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	dev_forward_skb
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	dev_fwnode
@@ -7801,6 +7803,7 @@ EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	dev_pm_qos_remove_request
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	dev_pm_qos_update_request
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	dev_pm_qos_update_user_latency_tolerance
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	dev_pm_set_dedicated_wake_irq
+EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	dev_pm_set_dedicated_wake_irq_reverse
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	dev_pm_set_wake_irq
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	dev_queue_xmit_nit
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	dev_set_name
@@ -8219,6 +8222,7 @@ EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	esp_output_head
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	esp_output_tail
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	event_triggers_call
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	event_triggers_post_call
+EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	eventfd_ctx_do_read
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	eventfd_ctx_fdget
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	eventfd_ctx_fileget
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	eventfd_ctx_put
@@ -10364,7 +10368,7 @@ EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	pm_runtime_enable
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	pm_runtime_forbid
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	pm_runtime_force_resume
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	pm_runtime_force_suspend
-EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	pm_runtime_get_if_in_use
+EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	pm_runtime_get_if_active
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	pm_runtime_irq_safe
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	pm_runtime_no_callbacks
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	pm_runtime_set_autosuspend_delay
