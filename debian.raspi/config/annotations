@@ -933,6 +933,7 @@ CONFIG_ARM64_ERRATUM_2441009                    policy<{'arm64': 'y'}>
 CONFIG_ARM64_ERRATUM_2457168                    policy<{'arm64': 'y'}>
 CONFIG_ARM64_ERRATUM_2645198                    policy<{'arm64': 'y'}>
 CONFIG_ARM64_ERRATUM_2658417                    policy<{'arm64': 'y'}>
+CONFIG_ARM64_ERRATUM_2966298                    policy<{'arm64': 'y'}>
 CONFIG_ARM64_ERRATUM_819472                     policy<{'arm64': 'y'}>
 CONFIG_ARM64_ERRATUM_824069                     policy<{'arm64': 'y'}>
 CONFIG_ARM64_ERRATUM_826319                     policy<{'arm64': 'y'}>
@@ -1820,6 +1821,7 @@ CONFIG_CMDLINE_FROM_BOOTLOADER                  policy<{'arm64': 'y', 'armhf': '
 CONFIG_CNIC                                     policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_CODA_FS                                  policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_COMEDI                                   policy<{'arm64': 'm', 'armhf': 'm'}>
+CONFIG_COMEDI_8254                              policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_COMEDI_8255                              policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_COMEDI_8255_PCI                          policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_COMEDI_8255_SA                           policy<{'arm64': 'm', 'armhf': 'm'}>
@@ -1837,19 +1839,31 @@ CONFIG_COMEDI_ADDI_WATCHDOG                     policy<{'arm64': 'm', 'armhf': '
 CONFIG_COMEDI_ADL_PCI6208                       policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_COMEDI_ADL_PCI7X3X                       policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_COMEDI_ADL_PCI8164                       policy<{'arm64': 'm', 'armhf': 'm'}>
+CONFIG_COMEDI_ADL_PCI9111                       policy<{'arm64': 'm', 'armhf': 'm'}>
+CONFIG_COMEDI_ADL_PCI9118                       policy<{'arm64': 'm', 'armhf': 'm'}>
+CONFIG_COMEDI_ADV_PCI1710                       policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_COMEDI_ADV_PCI1720                       policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_COMEDI_ADV_PCI1723                       policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_COMEDI_ADV_PCI1724                       policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_COMEDI_ADV_PCI1760                       policy<{'arm64': 'm', 'armhf': 'm'}>
+CONFIG_COMEDI_ADV_PCI_DIO                       policy<{'arm64': 'm', 'armhf': 'm'}>
+CONFIG_COMEDI_AMPLC_DIO200                      policy<{'arm64': 'm', 'armhf': 'm'}>
+CONFIG_COMEDI_AMPLC_DIO200_PCI                  policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_COMEDI_AMPLC_PC236                       policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_COMEDI_AMPLC_PC236_PCI                   policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_COMEDI_AMPLC_PC263_PCI                   policy<{'arm64': 'm', 'armhf': 'm'}>
+CONFIG_COMEDI_AMPLC_PCI224                      policy<{'arm64': 'm', 'armhf': 'm'}>
+CONFIG_COMEDI_AMPLC_PCI230                      policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_COMEDI_BOND                              policy<{'arm64': 'm', 'armhf': 'm'}>
+CONFIG_COMEDI_CB_PCIDAS                         policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_COMEDI_CB_PCIDAS64                       policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_COMEDI_CB_PCIDDA                         policy<{'arm64': 'm', 'armhf': 'm'}>
+CONFIG_COMEDI_CB_PCIMDAS                        policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_COMEDI_CB_PCIMDDA                        policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_COMEDI_CONTEC_PCI_DIO                    policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_COMEDI_DAQBOARD2000                      policy<{'arm64': 'm', 'armhf': 'm'}>
+CONFIG_COMEDI_DAS08                             policy<{'arm64': 'm', 'armhf': 'm'}>
+CONFIG_COMEDI_DAS08_PCI                         policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_COMEDI_DEBUG                             policy<{'arm64': 'n', 'armhf': 'n'}>
 CONFIG_COMEDI_DEFAULT_BUF_MAXSIZE_KB            policy<{'arm64': '20480', 'armhf': '20480'}>
 CONFIG_COMEDI_DEFAULT_BUF_SIZE_KB               policy<{'arm64': '2048', 'armhf': '2048'}>
@@ -1858,9 +1872,11 @@ CONFIG_COMEDI_DT9812                            policy<{'arm64': 'm', 'armhf': '
 CONFIG_COMEDI_DYNA_PCI10XX                      policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_COMEDI_GSC_HPDI                          policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_COMEDI_ICP_MULTI                         policy<{'arm64': 'm', 'armhf': 'm'}>
+CONFIG_COMEDI_ISA_DRIVERS                       policy<{'arm64': 'n', 'armhf': 'n'}>
 CONFIG_COMEDI_JR3_PCI                           policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_COMEDI_KCOMEDILIB                        policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_COMEDI_KE_COUNTER                        policy<{'arm64': 'm', 'armhf': 'm'}>
+CONFIG_COMEDI_ME4000                            policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_COMEDI_ME_DAQ                            policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_COMEDI_MF6X4                             policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_COMEDI_MISC_DRIVERS                      policy<{'arm64': 'y', 'armhf': 'y'}>
@@ -1869,6 +1885,8 @@ CONFIG_COMEDI_NI_6527                           policy<{'arm64': 'm', 'armhf': '
 CONFIG_COMEDI_NI_65XX                           policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_COMEDI_NI_660X                           policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_COMEDI_NI_670X                           policy<{'arm64': 'm', 'armhf': 'm'}>
+CONFIG_COMEDI_NI_LABPC                          policy<{'arm64': 'm', 'armhf': 'm'}>
+CONFIG_COMEDI_NI_LABPC_PCI                      policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_COMEDI_NI_PCIDIO                         policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_COMEDI_NI_PCIMIO                         policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_COMEDI_NI_ROUTING                        policy<{'arm64': 'm', 'armhf': 'm'}>
@@ -1877,6 +1895,7 @@ CONFIG_COMEDI_NI_TIOCMD                         policy<{'arm64': 'm', 'armhf': '
 CONFIG_COMEDI_NI_USB6501                        policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_COMEDI_PARPORT                           policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_COMEDI_PCI_DRIVERS                       policy<{'arm64': 'm', 'armhf': 'm'}>
+CONFIG_COMEDI_RTD520                            policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_COMEDI_S626                              policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_COMEDI_TEST                              policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_COMEDI_TESTS                             policy<{'arm64': 'm', 'armhf': 'm'}>
@@ -3857,6 +3876,7 @@ CONFIG_IMA_APPRAISE                             policy<{'arm64': 'y', 'armhf': '
 CONFIG_IMA_APPRAISE_BOOTPARAM                   policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_IMA_APPRAISE_BUILD_POLICY                policy<{'arm64': 'n', 'armhf': 'n'}>
 CONFIG_IMA_APPRAISE_MODSIG                      policy<{'arm64': 'n', 'armhf': 'n'}>
+CONFIG_IMA_BLACKLIST_KEYRING                    policy<{'arm64': 'n', 'armhf': 'n'}>
 CONFIG_IMA_DEFAULT_HASH                         policy<{'arm64': '"sha1"', 'armhf': '"sha1"'}>
 CONFIG_IMA_DEFAULT_HASH_SHA1                    policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_IMA_DEFAULT_HASH_SHA256                  policy<{'arm64': 'n', 'armhf': 'n'}>
@@ -3864,6 +3884,7 @@ CONFIG_IMA_DEFAULT_HASH_SHA512                  policy<{'arm64': 'n', 'armhf': '
 CONFIG_IMA_DEFAULT_TEMPLATE                     policy<{'arm64': '"ima-ng"', 'armhf': '"ima-ng"'}>
 CONFIG_IMA_DISABLE_HTABLE                       policy<{'arm64': 'n', 'armhf': 'n'}>
 CONFIG_IMA_KEYRINGS_PERMIT_SIGNED_BY_BUILTIN_OR_SECONDARY policy<{'arm64': 'n', 'armhf': 'n'}>
+CONFIG_IMA_LOAD_X509                            policy<{'arm64': 'n', 'armhf': 'n'}>
 CONFIG_IMA_LSM_RULES                            policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_IMA_MEASURE_ASYMMETRIC_KEYS              policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_IMA_MEASURE_PCR_IDX                      policy<{'arm64': '10', 'armhf': '10'}>
