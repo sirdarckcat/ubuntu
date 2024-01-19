@@ -308,6 +308,10 @@ int mlxbf_gige_poll(struct napi_struct *napi, int budget)
 
 	mlxbf_gige_handle_tx_complete(priv);
 
+	data = readq(priv->base + MLXBF_GIGE_RX_DMA);
+	data &= ~MLXBF_GIGE_RX_DMA_EN;
+	writeq(data, priv->base + MLXBF_GIGE_RX_DMA);
+
 	do {
 		remaining_pkts = mlxbf_gige_rx_packet(priv, &work_done);
 	} while (remaining_pkts && work_done < budget);
@@ -323,6 +327,10 @@ int mlxbf_gige_poll(struct napi_struct *napi, int budget)
 		data = readq(priv->base + MLXBF_GIGE_INT_MASK);
 		data &= ~MLXBF_GIGE_INT_MASK_RX_RECEIVE_PACKET;
 		writeq(data, priv->base + MLXBF_GIGE_INT_MASK);
+
+		data = readq(priv->base + MLXBF_GIGE_RX_DMA);
+		data |= MLXBF_GIGE_RX_DMA_EN;
+		writeq(data, priv->base + MLXBF_GIGE_RX_DMA);
 	}
 
 	return work_done;
