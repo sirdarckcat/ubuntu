@@ -2,6 +2,7 @@ Source: SRCPKGNAME
 Section: devel
 Priority: optional
 Maintainer: Ubuntu Kernel Team <kernel-team@lists.ubuntu.com>
+Rules-Requires-Root: no
 Standards-Version: 3.9.4.0
 Build-Depends:
  debhelper-compat (= 10),
@@ -39,26 +40,19 @@ Build-Depends:
  curl <!stage1>,
  zstd <!stage1>,
  pahole [amd64 arm64 armhf ppc64el s390x riscv64] | dwarves (>= 1.21) [amd64 arm64 armhf ppc64el s390x riscv64] <!stage1>,
- bindgen-0.56 [amd64],
+ clang-17 [amd64 arm64 armhf ppc64el s390x],
+ libclang1-17 [amd64 arm64 armhf ppc64el s390x],
+ rustc [amd64 arm64 armhf ppc64el s390x],
+ rust-src [amd64 arm64 armhf ppc64el s390x],
+ rustfmt [amd64 arm64 armhf ppc64el s390x],
+ bindgen-0.65 [amd64 arm64 armhf ppc64el s390x],
  libstdc++-dev,
 Build-Depends-Indep:
  xmlto <!stage1>,
- docbook-utils <!stage1>,
- ghostscript <!stage1>,
- fig2dev <!stage1>,
  bzip2 <!stage1>,
  sharutils <!stage1>,
  asciidoc <!stage1>,
- python3-sphinx <!stage1>,
- python3-sphinx-rtd-theme <!stage1>,
- fontconfig <!stage1>,
  python3-docutils <!stage1>,
- imagemagick <!stage1>,
- graphviz <!stage1>,
- dvipng <!stage1>,
- fonts-noto-cjk <!stage1>,
- latexmk <!stage1>,
- librsvg2-bin <!stage1>,
 Vcs-Git: git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-raspi/+git/=SERIES=
 XS-Testsuite: autopkgtest
 #XS-Testsuite-Depends: gcc-4.7 binutils
