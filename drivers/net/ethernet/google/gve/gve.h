@@ -1100,6 +1100,9 @@ static inline bool gve_supports_xdp_xmit(struct gve_priv *priv)
 	}
 }
 
+/* gqi napi handler defined in gve_main.c */
+int gve_napi_poll(struct napi_struct *napi, int budget);
+
 /* buffers */
 int gve_alloc_page(struct gve_priv *priv, struct device *dev,
 		   struct page **page, dma_addr_t *dma,
