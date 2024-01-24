@@ -2540,6 +2540,30 @@ out_set_count:
 	return pgsize;
 }
 
+static int __iommu_map_pages(struct iommu_domain *domain, unsigned long iova,
+			     phys_addr_t paddr, size_t size, int prot,
+			     gfp_t gfp, size_t *mapped)
+{
+	const struct iommu_domain_ops *ops = domain->ops;
+	size_t pgsize, count;
+	int ret;
+
+	pgsize = iommu_pgsize(domain, iova, paddr, size, &count);
+
+	pr_debug("mapping: iova 0x%lx pa %pa pgsize 0x%zx count %zu\n",
+		 iova, &paddr, pgsize, count);
+
+	if (ops->map_pages) {
+		ret = ops->map_pages(domain, iova, paddr, pgsize, count, prot,
+				     gfp, mapped);
+	} else {
+		ret = ops->map(domain, iova, paddr, pgsize, prot, gfp);
+		*mapped = ret ? 0 : pgsize;
+	}
+
+	return ret;
+}
+
 static int __iommu_map(struct iommu_domain *domain, unsigned long iova,
 		       phys_addr_t paddr, size_t size, int prot, gfp_t gfp)
 {
@@ -2553,7 +2577,8 @@ static int __iommu_map(struct iommu_domain *domain, unsigned long iova,
 	if (unlikely(!(domain->type & __IOMMU_DOMAIN_PAGING)))
 		return -EINVAL;
 
-	if (WARN_ON(!ops->map_pages || domain->pgsize_bitmap == 0UL))
+	if (WARN_ON(!(ops->map || ops->map_pages) ||
+		    domain->pgsize_bitmap == 0UL))
 		return -ENODEV;
 
 	/* find out the minimum page size supported */
@@ -2573,14 +2598,10 @@ static int __iommu_map(struct iommu_domain *domain, unsigned long iova,
 	pr_debug("map: iova 0x%lx pa %pa size 0x%zx\n", iova, &paddr, size);
 
 	while (size) {
-		size_t pgsize, count, mapped = 0;
+		size_t mapped = 0;
 
-		pgsize = iommu_pgsize(domain, iova, paddr, size, &count);
-
-		pr_debug("mapping: iova 0x%lx pa %pa pgsize 0x%zx count %zu\n",
-			 iova, &paddr, pgsize, count);
-		ret = ops->map_pages(domain, iova, paddr, pgsize, count, prot,
-				     gfp, &mapped);
+		ret = __iommu_map_pages(domain, iova, paddr, size, prot, gfp,
+					&mapped);
 		/*
 		 * Some pages may have been mapped, even if an error occurred,
 		 * so we should account for those so they can be unmapped.
@@ -2633,6 +2654,19 @@ out_err:
 }
 EXPORT_SYMBOL_GPL(iommu_map);
 
+static size_t __iommu_unmap_pages(struct iommu_domain *domain,
+				  unsigned long iova, size_t size,
+				  struct iommu_iotlb_gather *iotlb_gather)
+{
+	const struct iommu_domain_ops *ops = domain->ops;
+	size_t pgsize, count;
+
+	pgsize = iommu_pgsize(domain, iova, iova, size, &count);
+	return ops->unmap_pages ?
+	       ops->unmap_pages(domain, iova, pgsize, count, iotlb_gather) :
+	       ops->unmap(domain, iova, pgsize, iotlb_gather);
+}
+
 static size_t __iommu_unmap(struct iommu_domain *domain,
 			    unsigned long iova, size_t size,
 			    struct iommu_iotlb_gather *iotlb_gather)
@@ -2642,10 +2676,12 @@ static size_t __iommu_unmap(struct iommu_domain *domain,
 	unsigned long orig_iova = iova;
 	unsigned int min_pagesz;
 
+
 	if (unlikely(!(domain->type & __IOMMU_DOMAIN_PAGING)))
 		return 0;
 
-	if (WARN_ON(!ops->unmap_pages || domain->pgsize_bitmap == 0UL))
+	if (WARN_ON(!(ops->unmap || ops->unmap_pages) ||
+		    domain->pgsize_bitmap == 0UL))
 		return 0;
 
 	/* find out the minimum page size supported */
@@ -2669,10 +2705,9 @@ static size_t __iommu_unmap(struct iommu_domain *domain,
 	 * or we hit an area that isn't mapped.
 	 */
 	while (unmapped < size) {
-		size_t pgsize, count;
-
-		pgsize = iommu_pgsize(domain, iova, iova, size - unmapped, &count);
-		unmapped_page = ops->unmap_pages(domain, iova, pgsize, count, iotlb_gather);
+		unmapped_page = __iommu_unmap_pages(domain, iova,
+						    size - unmapped,
+						    iotlb_gather);
 		if (!unmapped_page)
 			break;
 
