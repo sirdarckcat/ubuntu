@@ -102,8 +102,12 @@ static int commit_epss_l3(struct dcvs_path *path, struct dcvs_freq *freqs,
 {
 	struct dcvs_hw *hw = path->hw;
 	struct epss_dev_data *d = path->data;
-	int cpu = smp_processor_id();
+	int cpu;
 	u32 idx, offset;
+
+	local_bh_disable();
+	cpu = smp_processor_id();
+	local_bh_enable();
 
 	for (idx = 0; idx < hw->table_len; idx++)
 		if (freqs->ib <= hw->freq_table[idx])
