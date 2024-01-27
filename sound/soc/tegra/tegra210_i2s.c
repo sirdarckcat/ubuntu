@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
+// SPDX-FileCopyrightText: Copyright (c) 2020-2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 //
 // tegra210_i2s.c - Tegra210 I2S driver
-//
-// Copyright (c) 2020 NVIDIA CORPORATION.  All rights reserved.
 
 #include <linux/clk.h>
 #include <linux/device.h>
@@ -603,6 +602,7 @@ static int tegra210_i2s_hw_params(struct snd_pcm_substream *substream,
 	struct tegra210_i2s *i2s = snd_soc_dai_get_drvdata(dai);
 	unsigned int sample_size, channels, srate, val, reg, path;
 	struct tegra_cif_conf cif_conf;
+	int stream = substream->stream;
 
 	memset(&cif_conf, 0, sizeof(struct tegra_cif_conf));
 
@@ -647,12 +647,14 @@ static int tegra210_i2s_hw_params(struct snd_pcm_substream *substream,
 	srate = params_rate(params);
 
 	/* For playback I2S RX-CIF and for capture TX-CIF is used */
-	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK)
-		path = I2S_RX_PATH;
-	else
-		path = I2S_TX_PATH;
+	if (!dai->component->card->component_chaining) {
+		if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK)
+			stream = SNDRV_PCM_STREAM_CAPTURE;
+		else
+			stream = SNDRV_PCM_STREAM_PLAYBACK;
+	}
 
-	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK) {
+	if (stream == SNDRV_PCM_STREAM_PLAYBACK) {
 		unsigned int max_th;
 
 		/* FIFO threshold in terms of frames */
@@ -664,8 +666,10 @@ static int tegra210_i2s_hw_params(struct snd_pcm_substream *substream,
 		cif_conf.threshold = i2s->rx_fifo_th;
 
 		reg = TEGRA210_I2S_RX_CIF_CTRL;
+		path = I2S_RX_PATH;
 	} else {
 		reg = TEGRA210_I2S_TX_CIF_CTRL;
+		path = I2S_TX_PATH;
 	}
 
 	cif_conf.mono_conv = i2s->mono_to_stereo[path];
@@ -796,11 +800,40 @@ static const struct snd_soc_dapm_route tegra210_i2s_routes[] = {
 	{ "DAP-Capture",	NULL,	"MIC" },
 };
 
+static const struct snd_soc_dapm_route tegra210_i2s_c2c_routes[] = {
+	/* XBAR routes */
+	{ "XBAR-RX",		NULL,	"XBAR-Playback" },
+	{ "XBAR-Capture",	NULL,	"XBAR-TX" },
+
+	/* I2S routes */
+	{ "RX",			NULL,	"CIF-Playback" },
+	{ "DAP-Capture",	NULL,	"RX" },
+	{ "CIF-Capture",	NULL,	"TX" },
+	{ "TX",			NULL,	"DAP-Playback" },
+};
+
+static int tegra210_i2s_component_probe(struct snd_soc_component *component)
+{
+	struct snd_soc_dapm_context *dapm = snd_soc_component_get_dapm(component);
+	struct snd_soc_card *card = component->card;
+	const struct snd_soc_dapm_route *route;
+	int num_route;
+
+	if (card->component_chaining) {
+		route = tegra210_i2s_routes;
+		num_route = ARRAY_SIZE(tegra210_i2s_routes);
+	} else {
+		route = tegra210_i2s_c2c_routes;
+		num_route = ARRAY_SIZE(tegra210_i2s_c2c_routes);
+	}
+
+	return snd_soc_dapm_add_routes(dapm, route, num_route);
+}
+
 static const struct snd_soc_component_driver tegra210_i2s_cmpnt = {
+	.probe			= tegra210_i2s_component_probe,
 	.dapm_widgets		= tegra210_i2s_widgets,
 	.num_dapm_widgets	= ARRAY_SIZE(tegra210_i2s_widgets),
-	.dapm_routes		= tegra210_i2s_routes,
-	.num_dapm_routes	= ARRAY_SIZE(tegra210_i2s_routes),
 	.controls		= tegra210_i2s_controls,
 	.num_controls		= ARRAY_SIZE(tegra210_i2s_controls),
 };
