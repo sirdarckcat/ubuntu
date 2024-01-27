@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
+// SPDX-FileCopyrightText: Copyright (c) 2021-2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 //
 // tegra210_mixer.c - Tegra210 MIXER driver
-//
-// Copyright (c) 2021 NVIDIA CORPORATION.  All rights reserved.
 
 #include <linux/clk.h>
 #include <linux/device.h>
@@ -499,11 +498,83 @@ static const struct snd_soc_dapm_route tegra210_mixer_routes[] = {
 	MIXER_TX_ROUTES(5),
 };
 
+#define MIXER_ROUTES(name, id)			\
+	{name,		"RX1",	"RX1",},	\
+	{name,		"RX2",	"RX2",},	\
+	{name,		"RX3",	"RX3",},	\
+	{name,		"RX4",	"RX4",},	\
+	{name,		"RX5",	"RX5",},	\
+	{name,		"RX6",	"RX6",},	\
+	{name,		"RX7",	"RX7",},	\
+	{name,		"RX8",	"RX8",},	\
+	{name,		"RX9",	"RX9",},	\
+	{name,		"RX10", "RX10"},	\
+	{"TX"#id,	NULL,	name}
+
+static const struct snd_soc_dapm_route tegra210_mixer_c2c_routes[] = {
+	/* XBAR routes */
+	{ "RX1 XBAR-Capture",	NULL,	"RX1 XBAR-TX" },
+	{ "RX2 XBAR-Capture",	NULL,	"RX2 XBAR-TX" },
+	{ "RX3 XBAR-Capture",	NULL,	"RX3 XBAR-TX" },
+	{ "RX4 XBAR-Capture",	NULL,	"RX4 XBAR-TX" },
+	{ "RX5 XBAR-Capture",	NULL,	"RX5 XBAR-TX" },
+	{ "RX6 XBAR-Capture",	NULL,	"RX6 XBAR-TX" },
+	{ "RX7 XBAR-Capture",	NULL,	"RX7 XBAR-TX" },
+	{ "RX8 XBAR-Capture",	NULL,	"RX8 XBAR-TX" },
+	{ "RX9 XBAR-Capture",	NULL,	"RX9 XBAR-TX" },
+	{ "RX10 XBAR-Capture",	NULL,	"RX10 XBAR-TX" },
+	{ "TX1 XBAR-RX",	NULL,	"TX1 XBAR-Playback" },
+	{ "TX2 XBAR-RX",	NULL,	"TX2 XBAR-Playback" },
+	{ "TX3 XBAR-RX",	NULL,	"TX3 XBAR-Playback" },
+	{ "TX4 XBAR-RX",	NULL,	"TX4 XBAR-Playback" },
+	{ "TX5 XBAR-RX",	NULL,	"TX5 XBAR-Playback" },
+
+	/* MIXER routes */
+	{ "RX1",		NULL,	"RX1-CIF-Playback" },
+	{ "RX2",		NULL,	"RX2-CIF-Playback" },
+	{ "RX3",		NULL,	"RX3-CIF-Playback" },
+	{ "RX4",		NULL,	"RX4-CIF-Playback" },
+	{ "RX5",		NULL,	"RX5-CIF-Playback" },
+	{ "RX6",		NULL,	"RX6-CIF-Playback" },
+	{ "RX7",		NULL,	"RX7-CIF-Playback" },
+	{ "RX8",		NULL,	"RX8-CIF-Playback" },
+	{ "RX9",		NULL,	"RX9-CIF-Playback" },
+	{ "RX10",		NULL,	"RX10-CIF-Playback" },
+	/* route between MIXER RXs and TXs */
+	MIXER_ROUTES("Adder1", 1),
+	MIXER_ROUTES("Adder2", 2),
+	MIXER_ROUTES("Adder3", 3),
+	MIXER_ROUTES("Adder4", 4),
+	MIXER_ROUTES("Adder5", 5),
+	{ "TX1-CIF-Capture",	NULL,	"TX1" },
+	{ "TX2-CIF-Capture",	NULL,	"TX2" },
+	{ "TX3-CIF-Capture",	NULL,	"TX3" },
+	{ "TX4-CIF-Capture",	NULL,	"TX4" },
+	{ "TX5-CIF-Capture",	NULL,	"TX5" },
+};
+
+static int tegra210_mixer_component_probe(struct snd_soc_component *component)
+{
+	struct snd_soc_dapm_context *dapm = snd_soc_component_get_dapm(component);
+	struct snd_soc_card *card = component->card;
+	const struct snd_soc_dapm_route *route;
+	int num_route;
+
+	if (card->component_chaining) {
+		route = tegra210_mixer_routes;
+		num_route = ARRAY_SIZE(tegra210_mixer_routes);
+	} else {
+		route = tegra210_mixer_c2c_routes;
+		num_route = ARRAY_SIZE(tegra210_mixer_c2c_routes);
+	}
+
+	return snd_soc_dapm_add_routes(dapm, route, num_route);
+}
+
 static const struct snd_soc_component_driver tegra210_mixer_cmpnt = {
+	.probe			= tegra210_mixer_component_probe,
 	.dapm_widgets		= tegra210_mixer_widgets,
 	.num_dapm_widgets	= ARRAY_SIZE(tegra210_mixer_widgets),
-	.dapm_routes		= tegra210_mixer_routes,
-	.num_dapm_routes	= ARRAY_SIZE(tegra210_mixer_routes),
 	.controls		= tegra210_mixer_gain_ctls,
 	.num_controls		= ARRAY_SIZE(tegra210_mixer_gain_ctls),
 };
