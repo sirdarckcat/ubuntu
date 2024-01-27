@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
+// SPDX-FileCopyrightText: Copyright (c) 2022-2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 //
 // tegra186_asrc.c - Tegra186 ASRC driver
-//
-// Copyright (c) 2022, NVIDIA CORPORATION. All rights reserved.
 
 #include <linux/clk.h>
 #include <linux/delay.h>
@@ -636,6 +635,44 @@ static const struct snd_soc_dapm_route tegra186_asrc_routes[] = {
 	ASRC_RATIO_ROUTE("Capture")
 };
 
+static const struct snd_soc_dapm_route tegra186_asrc_c2c_routes[] = {
+	/* XBAR routes */
+	{ "TX1 XBAR-RX",	NULL,	"TX1 XBAR-Playback"},
+	{ "TX2 XBAR-RX",	NULL,	"TX2 XBAR-Playback"},
+	{ "TX3 XBAR-RX",	NULL,	"TX3 XBAR-Playback"},
+	{ "TX4 XBAR-RX",	NULL,	"TX4 XBAR-Playback"},
+	{ "TX5 XBAR-RX",	NULL,	"TX5 XBAR-Playback"},
+	{ "TX6 XBAR-RX",	NULL,	"TX6 XBAR-Playback"},
+	{ "RX1 XBAR-Capture",	NULL,	"RX1 XBAR-TX"},
+	{ "RX2 XBAR-Capture",	NULL,	"RX2 XBAR-TX"},
+	{ "RX3 XBAR-Capture",	NULL,	"RX3 XBAR-TX"},
+	{ "RX4 XBAR-Capture",	NULL,	"RX4 XBAR-TX"},
+	{ "RX5 XBAR-Capture",	NULL,	"RX5 XBAR-TX"},
+	{ "RX6 XBAR-Capture",	NULL,	"RX6 XBAR-TX"},
+	{ "RX7 XBAR-Capture",	NULL,	"RX7 XBAR-TX"},
+
+	/* ASRC routes */
+	{ "RX1",		NULL,	"RX1-CIF-Playback" },
+	{ "TX1",		NULL,	"RX1" },
+	{ "TX1-CIF-Capture",	NULL,	"TX1" },
+	{ "RX2",		NULL,	"RX2-CIF-Playback" },
+	{ "TX2",		NULL,	"RX2" },
+	{ "TX2-CIF-Capture",	NULL,	"TX2" },
+	{ "RX3",		NULL,	"RX3-CIF-Playback" },
+	{ "TX3",		NULL,	"RX3" },
+	{ "TX3-CIF-Capture",	NULL,	"TX3" },
+	{ "RX4",		NULL,	"RX4-CIF-Playback" },
+	{ "TX4",		NULL,	"RX4" },
+	{ "TX4-CIF-Capture",	NULL,	"TX4" },
+	{ "RX5",		NULL,	"RX5-CIF-Playback" },
+	{ "TX5",		NULL,	"RX5" },
+	{ "TX5-CIF-Capture",	NULL,	"TX5" },
+	{ "RX6",		NULL,	"RX6-CIF-Playback" },
+	{ "TX6",		NULL,	"RX6" },
+	{ "TX6-CIF-Capture",	NULL,	"TX6" },
+	{ "RX7",		NULL,	"RX7-CIF-Playback" },
+};
+
 static const char * const tegra186_asrc_ratio_source_text[] = {
 	"ARAD",
 	"SW",
@@ -866,11 +903,28 @@ static const struct snd_kcontrol_new tegra186_asrc_controls[] = {
 		       tegra186_asrc_put_output_threshold),
 };
 
+static int tegra186_asrc_component_probe(struct snd_soc_component *component)
+{
+	struct snd_soc_dapm_context *dapm = snd_soc_component_get_dapm(component);
+	struct snd_soc_card *card = component->card;
+	const struct snd_soc_dapm_route *route;
+	int num_route;
+
+	if (card->component_chaining) {
+		route = tegra186_asrc_routes;
+		num_route = ARRAY_SIZE(tegra186_asrc_routes);
+	} else {
+		route = tegra186_asrc_c2c_routes;
+		num_route = ARRAY_SIZE(tegra186_asrc_c2c_routes);
+	}
+
+	return snd_soc_dapm_add_routes(dapm, route, num_route);
+}
+
 static const struct snd_soc_component_driver tegra186_asrc_cmpnt = {
+	.probe			= tegra186_asrc_component_probe,
 	.dapm_widgets		= tegra186_asrc_widgets,
 	.num_dapm_widgets	= ARRAY_SIZE(tegra186_asrc_widgets),
-	.dapm_routes		= tegra186_asrc_routes,
-	.num_dapm_routes	= ARRAY_SIZE(tegra186_asrc_routes),
 	.controls		= tegra186_asrc_controls,
 	.num_controls		= ARRAY_SIZE(tegra186_asrc_controls),
 };
