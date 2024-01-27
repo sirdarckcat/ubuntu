@@ -2,7 +2,7 @@
 //
 // tegra210_mvc.c - Tegra210 MVC driver
 //
-// Copyright (c) 2021 NVIDIA CORPORATION.  All rights reserved.
+// SPDX-FileCopyrightText: Copyright (c) 2021-2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 
 #include <linux/clk.h>
 #include <linux/device.h>
@@ -627,11 +627,39 @@ static const struct snd_soc_dapm_route tegra210_mvc_routes[] = {
 	MVC_ROUTES("Capture"),
 };
 
+static const struct snd_soc_dapm_route tegra210_mvc_c2c_routes[] = {
+	/* XBAR routes */
+	{ "XBAR-RX",		NULL,	"TX XBAR-Playback"},
+	{ "RX XBAR-Capture",	NULL,	"XBAR-TX"},
+
+	/* MVC routes */
+	{ "RX",			NULL,	"RX-CIF-Playback" },
+	{ "TX",			NULL,	"RX" },
+	{ "TX-CIF-Capture",	NULL,	"TX" },
+};
+
+static int tegra210_mvc_component_probe(struct snd_soc_component *component)
+{
+	struct snd_soc_dapm_context *dapm = snd_soc_component_get_dapm(component);
+	struct snd_soc_card *card = component->card;
+	const struct snd_soc_dapm_route *route;
+	int num_route;
+
+	if (card->component_chaining) {
+		route = tegra210_mvc_routes;
+		num_route = ARRAY_SIZE(tegra210_mvc_routes);
+	} else {
+		route = tegra210_mvc_c2c_routes;
+		num_route = ARRAY_SIZE(tegra210_mvc_c2c_routes);
+	}
+
+	return snd_soc_dapm_add_routes(dapm, route, num_route);
+}
+
 static const struct snd_soc_component_driver tegra210_mvc_cmpnt = {
+	.probe			= tegra210_mvc_component_probe,
 	.dapm_widgets		= tegra210_mvc_widgets,
 	.num_dapm_widgets	= ARRAY_SIZE(tegra210_mvc_widgets),
-	.dapm_routes		= tegra210_mvc_routes,
-	.num_dapm_routes	= ARRAY_SIZE(tegra210_mvc_routes),
 	.controls		= tegra210_mvc_vol_ctrl,
 	.num_controls		= ARRAY_SIZE(tegra210_mvc_vol_ctrl),
 };
