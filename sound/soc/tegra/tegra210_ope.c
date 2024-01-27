@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
+// SPDX-FileCopyrightText: Copyright (c) 2022-2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 //
 // tegra210_ope.c - Tegra210 OPE driver
-//
-// Copyright (c) 2022, NVIDIA CORPORATION. All rights reserved.
 
 #include <linux/clk.h>
 #include <linux/device.h>
@@ -92,29 +91,6 @@ static int tegra210_ope_hw_params(struct snd_pcm_substream *substream,
 	return err;
 }
 
-static int tegra210_ope_component_probe(struct snd_soc_component *cmpnt)
-{
-	struct tegra210_ope *ope = dev_get_drvdata(cmpnt->dev);
-
-	tegra210_peq_component_init(cmpnt);
-	tegra210_mbdrc_component_init(cmpnt);
-
-	/*
-	 * The OPE, PEQ and MBDRC functionalities are combined under one
-	 * device registered by OPE driver. In fact OPE HW block includes
-	 * sub blocks PEQ and MBDRC. However driver registers separate
-	 * regmap interfaces for each of these. ASoC core depends on
-	 * dev_get_regmap() to populate the regmap field for a given ASoC
-	 * component. A component can have one regmap reference and since
-	 * the DAPM routes depend on OPE regmap only, below explicit
-	 * assignment is done to highlight this. This is needed for ASoC
-	 * core to access correct regmap during DAPM path setup.
-	 */
-	snd_soc_component_init_regmap(cmpnt, ope->regmap);
-
-	return 0;
-}
-
 static const struct snd_soc_dai_ops tegra210_ope_dai_ops = {
 	.hw_params	= tegra210_ope_hw_params,
 };
@@ -185,6 +161,17 @@ static const struct snd_soc_dapm_route tegra210_ope_routes[] = {
 	OPE_ROUTES("Capture"),
 };
 
+static const struct snd_soc_dapm_route tegra210_ope_c2c_routes[] = {
+	/* XBAR routes */
+	{ "XBAR-RX",		NULL,	"TX XBAR-Playback"},
+	{ "RX XBAR-Capture",	NULL,	"XBAR-TX"},
+
+	/* OPE routes */
+	{ "RX",			NULL,	"RX-CIF-Playback" },
+	{ "TX",			NULL,	"RX" },
+	{ "TX-CIF-Capture",	NULL,	"TX" },
+};
+
 static const char * const tegra210_ope_data_dir_text[] = {
 	"MBDRC to PEQ",
 	"PEQ to MBDRC"
@@ -225,12 +212,45 @@ static const struct snd_kcontrol_new tegra210_ope_controls[] = {
 		     tegra210_ope_get_data_dir, tegra210_ope_put_data_dir),
 };
 
+static int tegra210_ope_component_probe(struct snd_soc_component *component)
+{
+	struct snd_soc_dapm_context *dapm = snd_soc_component_get_dapm(component);
+	struct snd_soc_card *card = component->card;
+	struct tegra210_ope *ope = dev_get_drvdata(component->dev);
+	const struct snd_soc_dapm_route *route;
+	int num_route;
+
+	tegra210_peq_component_init(component);
+	tegra210_mbdrc_component_init(component);
+
+	/*
+	 * The OPE, PEQ and MBDRC functionalities are combined under one
+	 * device registered by OPE driver. In fact OPE HW block includes
+	 * sub blocks PEQ and MBDRC. However driver registers separate
+	 * regmap interfaces for each of these. ASoC core depends on
+	 * dev_get_regmap() to populate the regmap field for a given ASoC
+	 * component. A component can have one regmap reference and since
+	 * the DAPM routes depend on OPE regmap only, below explicit
+	 * assignment is done to highlight this. This is needed for ASoC
+	 * core to access correct regmap during DAPM path setup.
+	 */
+	snd_soc_component_init_regmap(component, ope->regmap);
+
+	if (card->component_chaining) {
+		route = tegra210_ope_routes;
+		num_route = ARRAY_SIZE(tegra210_ope_routes);
+	} else {
+		route = tegra210_ope_c2c_routes;
+		num_route = ARRAY_SIZE(tegra210_ope_c2c_routes);
+	}
+
+	return snd_soc_dapm_add_routes(dapm, route, num_route);
+}
+
 static const struct snd_soc_component_driver tegra210_ope_cmpnt = {
 	.probe			= tegra210_ope_component_probe,
 	.dapm_widgets		= tegra210_ope_widgets,
 	.num_dapm_widgets	= ARRAY_SIZE(tegra210_ope_widgets),
-	.dapm_routes		= tegra210_ope_routes,
-	.num_dapm_routes	= ARRAY_SIZE(tegra210_ope_routes),
 	.controls		= tegra210_ope_controls,
 	.num_controls		= ARRAY_SIZE(tegra210_ope_controls),
 };
