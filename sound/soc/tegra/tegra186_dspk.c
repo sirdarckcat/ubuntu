@@ -326,6 +326,14 @@ static struct snd_soc_dai_driver tegra186_dspk_dais[] = {
 		.formats = SNDRV_PCM_FMTBIT_S16_LE |
 			   SNDRV_PCM_FMTBIT_S32_LE,
 	    },
+	    .capture = {
+		.stream_name = "DAP-Capture",
+		.channels_min = 1,
+		.channels_max = 2,
+		.rates = SNDRV_PCM_RATE_8000_48000,
+		.formats = SNDRV_PCM_FMTBIT_S16_LE |
+			   SNDRV_PCM_FMTBIT_S32_LE,
+	    },
 	    .ops = &tegra186_dspk_dai_ops,
 	    .symmetric_rate = 1,
 	},
@@ -342,6 +350,16 @@ static const struct snd_soc_dapm_route tegra186_dspk_routes[] = {
 	{ "RX",			NULL,	"CIF-Playback" },
 	{ "DAP-Playback",	NULL,	"RX" },
 	{ "SPK",		NULL,	"DAP-Playback" },
+};
+
+static const struct snd_soc_dapm_route tegra186_dspk_c2c_routes[] = {
+	/* XBAR routes */
+	{ "XBAR-RX",		NULL,	"XBAR-Playback" },
+	{ "XBAR-Capture",	NULL,	"XBAR-TX" },
+
+	/* DSPK routes */
+	{ "RX",			NULL,	"CIF-Playback" },
+	{ "DAP-Capture",	NULL,	"RX" },
 };
 
 static const char * const tegra186_dspk_ch_sel_text[] = {
@@ -404,11 +422,28 @@ static const struct snd_kcontrol_new tegrat186_dspk_controls[] = {
 		     tegra186_dspk_put_stereo_to_mono),
 };
 
+static int tegra186_dspk_component_probe(struct snd_soc_component *component)
+{
+	struct snd_soc_dapm_context *dapm = snd_soc_component_get_dapm(component);
+	struct snd_soc_card *card = component->card;
+	const struct snd_soc_dapm_route *route;
+	int num_route;
+
+	if (card->component_chaining) {
+		route = tegra186_dspk_routes;
+		num_route = ARRAY_SIZE(tegra186_dspk_routes);
+	} else {
+		route = tegra186_dspk_c2c_routes;
+		num_route = ARRAY_SIZE(tegra186_dspk_c2c_routes);
+	}
+
+	return snd_soc_dapm_add_routes(dapm, route, num_route);
+}
+
 static const struct snd_soc_component_driver tegra186_dspk_cmpnt = {
+	.probe = tegra186_dspk_component_probe,
 	.dapm_widgets = tegra186_dspk_widgets,
 	.num_dapm_widgets = ARRAY_SIZE(tegra186_dspk_widgets),
-	.dapm_routes = tegra186_dspk_routes,
-	.num_dapm_routes = ARRAY_SIZE(tegra186_dspk_routes),
 	.controls = tegrat186_dspk_controls,
 	.num_controls = ARRAY_SIZE(tegrat186_dspk_controls),
 };

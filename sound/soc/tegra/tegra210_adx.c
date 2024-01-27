@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
+// SPDX-FileCopyrightText: Copyright (c) 2021-2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 //
 // tegra210_adx.c - Tegra210 ADX driver
-//
-// Copyright (c) 2021-2023 NVIDIA CORPORATION.  All rights reserved.
 
 #include <linux/clk.h>
 #include <linux/device.h>
@@ -325,6 +324,26 @@ static const struct snd_soc_dapm_route tegra210_adx_routes[] = {
 	ADX_ROUTES(4),
 };
 
+static const struct snd_soc_dapm_route tegra210_adx_c2c_routes[] = {
+	/* XBAR routes */
+	{ "XBAR-Capture",	NULL,	"XBAR-TX" },
+	{ "TX1 XBAR-RX",	NULL,	"TX1 XBAR-Playback" },
+	{ "TX2 XBAR-RX",	NULL,	"TX2 XBAR-Playback" },
+	{ "TX3 XBAR-RX",	NULL,	"TX3 XBAR-Playback" },
+	{ "TX4 XBAR-RX",	NULL,	"TX4 XBAR-Playback" },
+
+	/* ADX routes */
+	{ "RX",			NULL,	"RX-CIF-Playback" },
+	{ "TX1",		NULL,	"RX" },
+	{ "TX2",		NULL,	"RX" },
+	{ "TX3",		NULL,	"RX" },
+	{ "TX4",		NULL,	"RX" },
+	{ "TX1-CIF-Capture",	NULL,	"TX1" },
+	{ "TX2-CIF-Capture",	NULL,	"TX2" },
+	{ "TX3-CIF-Capture",	NULL,	"TX3" },
+	{ "TX4-CIF-Capture",	NULL,	"TX4" },
+};
+
 #define TEGRA210_ADX_BYTE_MAP_CTRL(reg)			 \
 	SOC_SINGLE_EXT("Byte Map " #reg, reg, 0, 256, 0, \
 		       tegra210_adx_get_byte_map,	 \
@@ -397,11 +416,28 @@ static struct snd_kcontrol_new tegra210_adx_controls[] = {
 	TEGRA210_ADX_BYTE_MAP_CTRL(63),
 };
 
+static int tegra210_adx_component_probe(struct snd_soc_component *component)
+{
+	struct snd_soc_dapm_context *dapm = snd_soc_component_get_dapm(component);
+	struct snd_soc_card *card = component->card;
+	const struct snd_soc_dapm_route *route;
+	int num_route, err;
+
+	if (card->component_chaining) {
+		route = tegra210_adx_routes;
+		num_route = ARRAY_SIZE(tegra210_adx_routes);
+	} else {
+		route = tegra210_adx_c2c_routes;
+		num_route = ARRAY_SIZE(tegra210_adx_c2c_routes);
+	}
+
+	return snd_soc_dapm_add_routes(dapm, route, num_route);
+}
+
 static const struct snd_soc_component_driver tegra210_adx_cmpnt = {
+	.probe			= tegra210_adx_component_probe,
 	.dapm_widgets		= tegra210_adx_widgets,
 	.num_dapm_widgets	= ARRAY_SIZE(tegra210_adx_widgets),
-	.dapm_routes		= tegra210_adx_routes,
-	.num_dapm_routes	= ARRAY_SIZE(tegra210_adx_routes),
 	.controls		= tegra210_adx_controls,
 	.num_controls		= ARRAY_SIZE(tegra210_adx_controls),
 };
