@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
+// SPDX-FileCopyrightText: Copyright (c) 2021-2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 //
 // tegra210_sfc.c - Tegra210 SFC driver
-//
-// Copyright (c) 2021-2023 NVIDIA CORPORATION.  All rights reserved.
 
 #include <linux/clk.h>
 #include <linux/device.h>
@@ -3453,6 +3452,17 @@ static const struct snd_soc_dapm_route tegra210_sfc_routes[] = {
 	RESAMPLE_ROUTE("Capture"),
 };
 
+static const struct snd_soc_dapm_route tegra210_sfc_c2c_routes[] = {
+	/* XBAR routes */
+	{ "XBAR-RX",		NULL,	"TX XBAR-Playback"},
+	{ "RX XBAR-Capture",	NULL,	"XBAR-TX"},
+
+	/* SFC routes */
+	{ "RX",			NULL,	"RX-CIF-Playback" },
+	{ "TX",			NULL,	"RX" },
+	{ "TX-CIF-Capture",	NULL,	"TX" },
+};
+
 static const char * const tegra210_sfc_stereo_conv_text[] = {
 	"CH0", "CH1", "AVG",
 };
@@ -3486,11 +3496,28 @@ static const struct snd_kcontrol_new tegra210_sfc_controls[] = {
 		     tegra210_sfc_oput_mono_to_stereo),
 };
 
+static int tegra210_sfc_component_probe(struct snd_soc_component *component)
+{
+	struct snd_soc_dapm_context *dapm = snd_soc_component_get_dapm(component);
+	struct snd_soc_card *card = component->card;
+	const struct snd_soc_dapm_route *route;
+	int num_route;
+
+	if (card->component_chaining) {
+		route = tegra210_sfc_routes;
+		num_route = ARRAY_SIZE(tegra210_sfc_routes);
+	} else {
+		route = tegra210_sfc_c2c_routes;
+		num_route = ARRAY_SIZE(tegra210_sfc_c2c_routes);
+	}
+
+	return snd_soc_dapm_add_routes(dapm, route, num_route);
+}
+
 static const struct snd_soc_component_driver tegra210_sfc_cmpnt = {
+	.probe			= tegra210_sfc_component_probe,
 	.dapm_widgets		= tegra210_sfc_widgets,
 	.num_dapm_widgets	= ARRAY_SIZE(tegra210_sfc_widgets),
-	.dapm_routes		= tegra210_sfc_routes,
-	.num_dapm_routes	= ARRAY_SIZE(tegra210_sfc_routes),
 	.controls		= tegra210_sfc_controls,
 	.num_controls		= ARRAY_SIZE(tegra210_sfc_controls),
 };
