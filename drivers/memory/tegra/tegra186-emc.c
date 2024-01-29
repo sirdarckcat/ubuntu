@@ -283,6 +283,10 @@ static int tegra_emc_interconnect_init(struct tegra186_emc *emc)
 		goto err_msg;
 	}
 
+	/* Don't create duplicate entry if already created */
+	if (node->provider)
+		return 0;
+
 	node->name = "External Memory Controller";
 	icc_node_add(node, &emc->provider);
 
