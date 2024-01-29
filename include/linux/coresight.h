@@ -226,7 +226,10 @@ struct coresight_sysfs_link {
  *		by @coresight_ops.
  * @access:	Device i/o access abstraction for this device.
  * @dev:	The device entity associated to this component.
- * @refcnt:	keep track of what is in use.
+ * @refcnt:	keep track of what is in use. Only access this outside of the
+ *		device's spinlock when the coresight_mutex held and mode ==
+ *		CS_MODE_SYSFS. Otherwise it must be accessed from inside the
+ *		spinlock.
  * @orphan:	true if the component has connections that haven't been linked.
  * @enable:	'true' if component is currently part of an active path.
  * @activated:	'true' only if a _sink_ has been activated.  A sink can be
@@ -250,7 +253,7 @@ struct coresight_device {
 	const struct coresight_ops *ops;
 	struct csdev_access access;
 	struct device dev;
-	atomic_t refcnt;
+	int refcnt;
 	bool orphan;
 	bool enable;	/* true only if configured as part of a path */
 	/* sink specific fields */
