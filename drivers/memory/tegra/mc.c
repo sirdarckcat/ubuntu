@@ -841,6 +841,10 @@ static int tegra_mc_interconnect_setup(struct tegra_mc *mc)
 	if (IS_ERR(node))
 		return PTR_ERR(node);
 
+	/* Don't create duplicate entry if already created */
+	if (node->provider)
+		return 0;
+
 	node->name = "Memory Controller";
 	icc_node_add(node, &mc->provider);
 
@@ -927,8 +931,6 @@ static int tegra_mc_probe(struct platform_device *pdev)
 	if (IS_ERR(mc->regs))
 		return PTR_ERR(mc->regs);
 
-	mc->debugfs.root = debugfs_create_dir("mc", NULL);
-
 	if (mc->soc->ops && mc->soc->ops->probe) {
 		err = mc->soc->ops->probe(mc);
 		if (err < 0)
@@ -965,10 +967,13 @@ static int tegra_mc_probe(struct platform_device *pdev)
 			dev_err(&pdev->dev, "failed to register reset controller: %d\n", err);
 	}
 
-	err = tegra_mc_interconnect_setup(mc);
-	if (err < 0)
-		dev_err(&pdev->dev, "failed to initialize interconnect: %d\n",
-			err);
+	if (!debugfs_lookup("mc", NULL)) {
+		mc->debugfs.root = debugfs_create_dir("mc", NULL);
+
+		err = tegra_mc_interconnect_setup(mc);
+		if (err < 0)
+			dev_err(&pdev->dev, "failed to initialize interconnect: %d\n", err);
+	}
 
 	if (IS_ENABLED(CONFIG_TEGRA_IOMMU_SMMU) && mc->soc->smmu) {
 		mc->smmu = tegra_smmu_probe(&pdev->dev, mc->soc->smmu, mc);
