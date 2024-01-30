@@ -1363,6 +1363,7 @@ static int xlnx_dp_check_clock_recovery(struct xlnx_dp *dp, u8 lane_cnt)
 			return 1;
 		}
 		link_config->cr_done_cnt = 0x1;
+		break;
 	default:
 		break;
 	}
