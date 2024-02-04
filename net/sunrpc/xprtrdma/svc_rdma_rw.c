@@ -622,9 +622,11 @@ out_err:
 }
 
 /**
- * svc_rdma_send_reply_chunk - Write all segments in the Reply chunk
+ * svc_rdma_prepare_reply_chunk - Write all segments in the Reply chunk
  * @rdma: controlling RDMA transport
- * @rctxt: Write and Reply chunks from client
+ * @write_pcl: Write chunk list provided by client
+ * @reply_pcl: Reply chunk provided by client
+ * @sctxt: Send WR resources
  * @xdr: xdr_buf containing an RPC Reply
  *
  * Returns a non-negative number of bytes the chunk consumed, or
@@ -634,25 +636,24 @@ out_err:
  *	%-ENOTCONN if posting failed (connection is lost),
  *	%-EIO if rdma_rw initialization failed (DMA mapping, etc).
  */
-int svc_rdma_send_reply_chunk(struct svcxprt_rdma *rdma,
-			      const struct svc_rdma_recv_ctxt *rctxt,
-			      const struct xdr_buf *xdr)
+int svc_rdma_prepare_reply_chunk(struct svcxprt_rdma *rdma,
+				 const struct svc_rdma_pcl *write_pcl,
+				 const struct svc_rdma_pcl *reply_pcl,
+				 struct svc_rdma_send_ctxt *sctxt,
+				 const struct xdr_buf *xdr)
 {
 	struct svc_rdma_write_info *info;
 	struct svc_rdma_chunk_ctxt *cc;
 	struct svc_rdma_chunk *chunk;
 	int ret;
 
-	if (pcl_is_empty(&rctxt->rc_reply_pcl))
-		return 0;
-
-	chunk = pcl_first_chunk(&rctxt->rc_reply_pcl);
+	chunk = pcl_first_chunk(reply_pcl);
 	info = svc_rdma_write_info_alloc(rdma, chunk);
 	if (!info)
 		return -ENOMEM;
 	cc = &info->wi_cc;
 
-	ret = pcl_process_nonpayloads(&rctxt->rc_write_pcl, xdr,
+	ret = pcl_process_nonpayloads(write_pcl, xdr,
 				      svc_rdma_xb_write, info);
 	if (ret < 0)
 		goto out_err;

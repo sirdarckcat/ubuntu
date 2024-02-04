@@ -867,15 +867,9 @@ static void svc_rdma_save_io_pages(struct svc_rqst *rqstp,
  * in sc_sges[0], and the RPC xdr_buf is prepared in following sges.
  *
  * Depending on whether a Write list or Reply chunk is present,
- * the server may send all, a portion of, or none of the xdr_buf.
+ * the server may Send all, a portion of, or none of the xdr_buf.
  * In the latter case, only the transport header (sc_sges[0]) is
  * transmitted.
- *
- * RDMA Send is the last step of transmitting an RPC reply. Pages
- * involved in the earlier RDMA Writes are here transferred out
- * of the rqstp and into the sctxt's page array. These pages are
- * DMA unmapped by each Write completion, but the subsequent Send
- * completion finally releases these pages.
  *
  * Assumptions:
  * - The Reply's transport header will never be larger than a page.
@@ -885,6 +879,7 @@ static int svc_rdma_send_reply_msg(struct svcxprt_rdma *rdma,
 				   const struct svc_rdma_recv_ctxt *rctxt,
 				   struct svc_rqst *rqstp)
 {
+	struct ib_send_wr *send_wr = &sctxt->sc_send_wr;
 	int ret;
 
 	ret = svc_rdma_map_reply_msg(rdma, sctxt, &rctxt->rc_write_pcl,
@@ -892,13 +887,16 @@ static int svc_rdma_send_reply_msg(struct svcxprt_rdma *rdma,
 	if (ret < 0)
 		return ret;
 
+	/* Transfer pages involved in RDMA Writes to the sctxt's
+	 * page array. Completion handling releases these pages.
+	 */
 	svc_rdma_save_io_pages(rqstp, sctxt);
 
 	if (rctxt->rc_inv_rkey) {
-		sctxt->sc_send_wr.opcode = IB_WR_SEND_WITH_INV;
-		sctxt->sc_send_wr.ex.invalidate_rkey = rctxt->rc_inv_rkey;
+		send_wr->opcode = IB_WR_SEND_WITH_INV;
+		send_wr->ex.invalidate_rkey = rctxt->rc_inv_rkey;
 	} else {
-		sctxt->sc_send_wr.opcode = IB_WR_SEND;
+		send_wr->opcode = IB_WR_SEND;
 	}
 
 	return svc_rdma_post_send(rdma, sctxt);
@@ -1012,10 +1010,15 @@ int svc_rdma_sendto(struct svc_rqst *rqstp)
 	if (!p)
 		goto put_ctxt;
 
-	ret = svc_rdma_send_reply_chunk(rdma, rctxt, &rqstp->rq_res);
-	if (ret < 0)
-		goto reply_chunk;
-	rc_size = ret;
+	rc_size = 0;
+	if (!pcl_is_empty(&rctxt->rc_reply_pcl)) {
+		ret = svc_rdma_prepare_reply_chunk(rdma, &rctxt->rc_write_pcl,
+						   &rctxt->rc_reply_pcl, sctxt,
+						   &rqstp->rq_res);
+		if (ret < 0)
+			goto reply_chunk;
+		rc_size = ret;
+	}
 
 	*p++ = *rdma_argp;
 	*p++ = *(rdma_argp + 1);
