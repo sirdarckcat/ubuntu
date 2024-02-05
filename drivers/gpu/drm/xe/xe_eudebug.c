@@ -3243,6 +3243,47 @@ void xe_eudebug_debug_metadata_destroy(struct xe_file *xef, struct xe_debug_meta
 	xe_eudebug_event_put(d, debug_metadata_destroy_event(d, xef, m));
 }
 
+static int vm_discover_binds(struct xe_eudebug *d, struct xe_vm *vm)
+{
+	struct drm_gpuva *va;
+	unsigned int num_ops = 0, send_ops = 0;
+	u64 ref_seqno = 0;
+	int err;
+
+	/*
+	 * Currently only vm_bind_ioctl inserts vma's
+	 * and with discovery lock, we have exclusivity.
+	 */
+	lockdep_assert_held_write(&d->xe->eudebug.discovery_lock);
+
+	drm_gpuvm_for_each_va(va, &vm->gpuvm)
+		num_ops++;
+
+	if (!num_ops)
+		return 0;
+
+	err = vm_bind_event(d, vm, num_ops, &ref_seqno);
+	if (err)
+		return err;
+
+	drm_gpuvm_for_each_va(va, &vm->gpuvm) {
+		struct xe_vma *vma = container_of(va, struct xe_vma, gpuva);
+
+		if (send_ops >= num_ops)
+			break;
+
+		err = vm_bind_op(d, vm, DRM_XE_EUDEBUG_EVENT_CREATE, ref_seqno,
+				 xe_vma_start(vma), xe_vma_size(vma),
+				 &vma->eudebug.metadata.list);
+		if (err)
+			return err;
+
+		send_ops++;
+	}
+
+	return num_ops == send_ops ? 0 : -EINVAL;
+}
+
 static int discover_client(struct xe_eudebug *d, struct xe_file *xef)
 {
 	struct xe_debug_metadata *m;
@@ -3263,6 +3304,10 @@ static int discover_client(struct xe_eudebug *d, struct xe_file *xef)
 
 	xa_for_each(&xef->vm.xa, i, vm) {
 		err = vm_create_event(d, xef, vm);
+		if (err)
+			break;
+
+		err = vm_discover_binds(d, vm);
 		if (err)
 			break;
 	}
