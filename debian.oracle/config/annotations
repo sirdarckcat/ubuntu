@@ -38,8 +38,8 @@ CONFIG_PAGE_POOL                                note<'OCI requirement'>
 CONFIG_PREEMPT_NONE                             policy<{'amd64': 'y', 'arm64': 'y'}>
 CONFIG_PREEMPT_NONE                             note<'LP: #1543165'>
 
-CONFIG_RUST                                     policy<{'amd64': '-', 'arm64': '-'}>
-CONFIG_RUST                                     note<'required to enable Rust support, LP: #1993183'>
+CONFIG_RUST                                     policy<{'amd64': 'n', 'arm64': '-'}>
+CONFIG_RUST                                     note<'TODO: update note'>
 
 CONFIG_SERIAL_AMBA_PL011                        policy<{'arm64': 'y'}>
 CONFIG_SERIAL_AMBA_PL011                        note<'oracle: needed for serial support in VMs'>
@@ -88,6 +88,8 @@ CONFIG_ARCH_NR_GPIO                             policy<{'amd64': '-', 'arm64': '
 CONFIG_ARM_BRCMSTB_AVS_CPUFREQ                  policy<{'arm64': 'm'}>
 CONFIG_ARM_RASPBERRYPI_CPUFREQ                  policy<{'arm64': 'm'}>
 CONFIG_ARM_SMMU_QCOM_DEBUG                      policy<{'arm64': 'n'}>
+CONFIG_AS_VERSION                               policy<{'amd64': '24200', 'arm64': '24200'}>
+CONFIG_AX88796B_RUST_PHY                        policy<{'amd64': '-'}>
 CONFIG_BATTERY_SAMSUNG_SDI                      policy<{'amd64': 'n', 'arm64': 'y'}>
 CONFIG_BCM2711_THERMAL                          policy<{'arm64': 'm'}>
 CONFIG_BCM2835_MBOX                             policy<{'arm64': 'y'}>
@@ -112,6 +114,7 @@ CONFIG_BGMAC                                    policy<{'arm64': 'y'}>
 CONFIG_BGMAC_PLATFORM                           policy<{'arm64': 'y'}>
 CONFIG_BINDGEN_VERSION_TEXT                     policy<{'amd64': '-'}>
 CONFIG_BRCMSTB_DPFE                             policy<{'arm64': 'y'}>
+CONFIG_BRCMSTB_GISB_ARB                         policy<{'arm64': 'm'}>
 CONFIG_BRCMSTB_L2_IRQ                           policy<{'arm64': 'y'}>
 CONFIG_BRCMSTB_MEMC                             policy<{'arm64': 'm'}>
 CONFIG_BRCMSTB_PM                               policy<{'arm64': '-'}>
@@ -119,6 +122,7 @@ CONFIG_BRCMSTB_THERMAL                          policy<{'arm64': 'm'}>
 CONFIG_BRCM_USB_PINMAP                          policy<{'arm64': 'm'}>
 CONFIG_BUILD_BIN2C                              policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_CACHEFILES_ERROR_INJECTION               policy<{'amd64': 'n', 'arm64': 'n'}>
+CONFIG_CC_VERSION_TEXT                          policy<{'amd64': '"x86_64-linux-gnu-gcc-13 (Ubuntu 13.2.0-13ubuntu1) 13.2.0"', 'arm64': '"aarch64-linux-gnu-gcc-13 (Ubuntu 13.2.0-11ubuntu1) 13.2.0"'}>
 CONFIG_CEC_GPIO                                 policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_CEC_PIN                                  policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_CEC_PIN_ERROR_INJ                        policy<{'amd64': '-', 'arm64': '-'}>
@@ -187,6 +191,7 @@ CONFIG_INLINE_WRITE_UNLOCK                      policy<{'amd64': 'y', 'arm64': '
 CONFIG_INLINE_WRITE_UNLOCK_BH                   policy<{'arm64': 'y'}>
 CONFIG_INLINE_WRITE_UNLOCK_IRQ                  policy<{'amd64': 'y', 'arm64': 'y'}>
 CONFIG_INLINE_WRITE_UNLOCK_IRQRESTORE           policy<{'arm64': 'y'}>
+CONFIG_LD_VERSION                               policy<{'amd64': '24200', 'arm64': '24200'}>
 CONFIG_LEDS_AAEON                               policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_LEDS_BCM63138                            policy<{'arm64': 'm'}>
 CONFIG_MARVELL_GTI_WDT                          policy<{'arm64': 'm'}>
@@ -227,6 +232,7 @@ CONFIG_PINCTRL_BCM4908                          policy<{'arm64': 'm'}>
 CONFIG_PINCTRL_IPROC_GPIO                       policy<{'arm64': 'y'}>
 CONFIG_PINCTRL_MESON_S4                         policy<{'arm64': 'y'}>
 CONFIG_PINCTRL_NS2_MUX                          policy<{'arm64': 'y'}>
+CONFIG_POWER_RESET_BRCMSTB                      policy<{'arm64': 'y'}>
 CONFIG_PREEMPTION                               policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_PREEMPT_BUILD                            policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_PREEMPT_COUNT                            policy<{'amd64': '-', 'arm64': '-'}>
@@ -252,6 +258,7 @@ CONFIG_RUSTC_VERSION_TEXT                       policy<{'amd64': '-'}>
 CONFIG_RUST_BUILD_ASSERT_ALLOW                  policy<{'amd64': '-'}>
 CONFIG_RUST_DEBUG_ASSERTIONS                    policy<{'amd64': '-'}>
 CONFIG_RUST_OVERFLOW_CHECKS                     policy<{'amd64': '-'}>
+CONFIG_RUST_PHYLIB_ABSTRACTIONS                 policy<{'amd64': '-'}>
 CONFIG_RV_MON_WWNR                              policy<{'amd64': 'n', 'arm64': 'n'}>
 CONFIG_SAMPLES_RUST                             policy<{'amd64': '-'}>
 CONFIG_SCSI_UFS_HWMON                           policy<{'amd64': 'n', 'arm64': 'y'}>
@@ -270,6 +277,7 @@ CONFIG_SND_BCM2835_SOC_I2S                      policy<{'arm64': 'm'}>
 CONFIG_SND_CTL_FAST_LOOKUP                      policy<{'amd64': 'y', 'arm64': 'y'}>
 CONFIG_SND_SOC_AMD_PS                           policy<{'amd64': 'n'}>
 CONFIG_SND_SOC_AMD_PS_MACH                      policy<{'amd64': '-'}>
+CONFIG_SOC_BRCMSTB                              policy<{'arm64': 'y'}>
 CONFIG_SPEAKUP                                  policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_SPEAKUP_SYNTH_ACNTSA                     policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_SPEAKUP_SYNTH_APOLLO                     policy<{'amd64': '-', 'arm64': '-'}>
@@ -293,6 +301,7 @@ CONFIG_SPI_INTEL_PCI                            policy<{'amd64': 'n'}>
 CONFIG_SPI_INTEL_PLATFORM                       policy<{'amd64': 'n'}>
 CONFIG_TASKS_RCU                                policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_TEE_BNXT_FW                              policy<{'arm64': 'm'}>
+CONFIG_TEE_STMM_EFI                             policy<{'arm64': 'm'}>
 CONFIG_TEST_DIV64                               policy<{'amd64': 'n', 'arm64': 'm'}>
 CONFIG_TEST_LIST_SORT                           policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_TEST_SIPHASH                             policy<{'amd64': '-', 'arm64': '-'}>
