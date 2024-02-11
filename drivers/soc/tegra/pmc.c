@@ -385,6 +385,7 @@ struct tegra_pmc_soc {
 	bool has_blink_output;
 	bool has_usb_sleepwalk;
 	bool supports_core_domain;
+	bool has_single_mmio_aperture;
 };
 
 /**
@@ -2977,31 +2978,28 @@ static int tegra_pmc_probe(struct platform_device *pdev)
 	if (IS_ERR(base))
 		return PTR_ERR(base);
 
-	res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "wake");
-	if (res) {
+	if (pmc->soc->has_single_mmio_aperture) {
+		pmc->wake = base;
+		pmc->aotag = base;
+		pmc->scratch = base;
+	} else {
+		res = platform_get_resource_byname(pdev, IORESOURCE_MEM,
+						"wake");
 		pmc->wake = devm_ioremap_resource(&pdev->dev, res);
 		if (IS_ERR(pmc->wake))
 			return PTR_ERR(pmc->wake);
-	} else {
-		pmc->wake = base;
-	}
 
-	res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "aotag");
-	if (res) {
+		res = platform_get_resource_byname(pdev, IORESOURCE_MEM,
+						"aotag");
 		pmc->aotag = devm_ioremap_resource(&pdev->dev, res);
 		if (IS_ERR(pmc->aotag))
 			return PTR_ERR(pmc->aotag);
-	} else {
-		pmc->aotag = base;
-	}
 
-	res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "scratch");
-	if (res) {
+		res = platform_get_resource_byname(pdev, IORESOURCE_MEM,
+						"scratch");
 		pmc->scratch = devm_ioremap_resource(&pdev->dev, res);
 		if (IS_ERR(pmc->scratch))
 			return PTR_ERR(pmc->scratch);
-	} else {
-		pmc->scratch = base;
 	}
 
 	pmc->clk = devm_clk_get_optional(&pdev->dev, "pclk");
@@ -3375,6 +3373,7 @@ static const struct tegra_pmc_soc tegra20_pmc_soc = {
 	.num_pmc_clks = 0,
 	.has_blink_output = true,
 	.has_usb_sleepwalk = true,
+	.has_single_mmio_aperture = true,
 };
 
 static const char * const tegra30_powergates[] = {
@@ -3436,6 +3435,7 @@ static const struct tegra_pmc_soc tegra30_pmc_soc = {
 	.num_pmc_clks = ARRAY_SIZE(tegra_pmc_clks_data),
 	.has_blink_output = true,
 	.has_usb_sleepwalk = true,
+	.has_single_mmio_aperture = true,
 };
 
 static const char * const tegra114_powergates[] = {
@@ -3493,6 +3493,7 @@ static const struct tegra_pmc_soc tegra114_pmc_soc = {
 	.num_pmc_clks = ARRAY_SIZE(tegra_pmc_clks_data),
 	.has_blink_output = true,
 	.has_usb_sleepwalk = true,
+	.has_single_mmio_aperture = true,
 };
 
 static const char * const tegra124_powergates[] = {
@@ -3637,6 +3638,7 @@ static const struct tegra_pmc_soc tegra124_pmc_soc = {
 	.num_pmc_clks = ARRAY_SIZE(tegra_pmc_clks_data),
 	.has_blink_output = true,
 	.has_usb_sleepwalk = true,
+	.has_single_mmio_aperture = true,
 };
 
 static const char * const tegra210_powergates[] = {
@@ -3800,6 +3802,7 @@ static const struct tegra_pmc_soc tegra210_pmc_soc = {
 	.num_pmc_clks = ARRAY_SIZE(tegra_pmc_clks_data),
 	.has_blink_output = true,
 	.has_usb_sleepwalk = true,
+	.has_single_mmio_aperture = true,
 };
 
 static const struct tegra_io_pad_soc tegra186_io_pads[] = {
@@ -3997,6 +4000,7 @@ static const struct tegra_pmc_soc tegra186_pmc_soc = {
 	.num_pmc_clks = 0,
 	.has_blink_output = false,
 	.has_usb_sleepwalk = false,
+	.has_single_mmio_aperture = false,
 };
 
 static const struct tegra_io_pad_soc tegra194_io_pads[] = {
@@ -4182,6 +4186,7 @@ static const struct tegra_pmc_soc tegra194_pmc_soc = {
 	.num_pmc_clks = 0,
 	.has_blink_output = false,
 	.has_usb_sleepwalk = false,
+	.has_single_mmio_aperture = false,
 };
 
 static const struct tegra_io_pad_soc tegra234_io_pads[] = {
@@ -4310,6 +4315,7 @@ static const struct tegra_pmc_soc tegra234_pmc_soc = {
 	.pmc_clks_data = NULL,
 	.num_pmc_clks = 0,
 	.has_blink_output = false,
+	.has_single_mmio_aperture = false,
 };
 
 static const struct of_device_id tegra_pmc_match[] = {
