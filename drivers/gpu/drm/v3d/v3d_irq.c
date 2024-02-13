@@ -72,7 +72,7 @@ v3d_overflow_mem_work(struct work_struct *work)
 
 	v3d_mmu_flush_all(v3d);
 
-	V3D_CORE_WRITE(0, V3D_PTB_BPOA, bo->node.start << PAGE_SHIFT);
+	V3D_CORE_WRITE(0, V3D_PTB_BPOA, bo->node.start << V3D_MMU_PAGE_SHIFT);
 	V3D_CORE_WRITE(0, V3D_PTB_BPOS, obj->size);
 
 out:
