@@ -520,6 +520,7 @@ static int ivpu_dev_init(struct ivpu_device *vdev)
 	atomic64_set(&vdev->unique_id_counter, 0);
 	xa_init_flags(&vdev->context_xa, XA_FLAGS_ALLOC | XA_FLAGS_LOCK_IRQ);
 	xa_init_flags(&vdev->submitted_jobs_xa, XA_FLAGS_ALLOC1);
+	xa_init_flags(&vdev->db_xa, XA_FLAGS_ALLOC1);
 	lockdep_set_class(&vdev->submitted_jobs_xa.xa_lock, &submitted_jobs_xa_lock_class_key);
 	INIT_LIST_HEAD(&vdev->bo_list);
 
@@ -591,6 +592,7 @@ err_mmu_gctx_fini:
 err_shutdown:
 	ivpu_shutdown(vdev);
 err_xa_destroy:
+	xa_destroy(&vdev->db_xa);
 	xa_destroy(&vdev->submitted_jobs_xa);
 	xa_destroy(&vdev->context_xa);
 	return ret;
@@ -625,6 +627,8 @@ static void ivpu_dev_fini(struct ivpu_device *vdev)
 	ivpu_mmu_reserved_context_fini(vdev);
 	ivpu_mmu_global_context_fini(vdev);
 
+	drm_WARN_ON(&vdev->drm, !xa_empty(&vdev->db_xa));
+	xa_destroy(&vdev->db_xa);
 	drm_WARN_ON(&vdev->drm, !xa_empty(&vdev->submitted_jobs_xa));
 	xa_destroy(&vdev->submitted_jobs_xa);
 	drm_WARN_ON(&vdev->drm, !xa_empty(&vdev->context_xa));
