@@ -1,0 +1,151 @@
+# SPDX-License-Identifier: GPL-2.0-only
+# Copyright (C) 2023 Canonical Ltd
+#
+# Build for arm64:
+#
+#  $ snapcraft --use-lxd --build-for=arm64
+#
+# Build for armhf:
+#
+#  $ snapcraft --use-lxd --build-for=armhf
+
+name: pi-kernel
+summary: The Canonical Raspberry Pi kernel
+description: The Canonical Raspberry Pi kernel
+type: kernel
+confinement: strict
+build-base: core22
+# Take the version from debian/changelog
+adopt-info: kernel
+
+architectures:
+  - build-on: [amd64, arm64]
+    build-for: arm64
+  - build-on: [amd64, armhf]
+    build-for: armhf
+
+package-repositories:
+  - type: apt
+    architectures: [arm64, armhf]
+    components: [main]
+    suites: [jammy]
+    key-id: 78E1918602959B9C59103100F1831DDAFC42E99D
+    url: https://ppa.launchpadcontent.net/snappy-dev/image/ubuntu
+  - type: apt
+    architectures: [arm64, armhf]
+    components: [main, restricted]
+    suites: [jammy, jammy-updates]
+    key-id: F6ECB3762474EDA9D21B7022871920D1991BC93C
+    url: http://ports.ubuntu.com/ubuntu-ports
+
+parts:
+  kernel:
+    build-packages:
+      - bc
+      - bison
+      - debhelper
+      - fakeroot
+      - flex
+      - gawk
+      - kmod
+      - libssl-dev
+      - pahole
+      - rsync
+      - on amd64 to arm64:
+        - gcc-aarch64-linux-gnu
+        - libc6-dev-arm64-cross
+      - on amd64 to armhf:
+        - gcc-arm-linux-gnueabihf
+        - libc6-dev-armhf-cross
+    plugin: nil
+    source-type: local
+    source: .
+    override-build: |
+      FLAVOUR=raspi
+      deb_arch=${SNAPCRAFT_TARGET_ARCH}
+
+      # Include 'DEBIAN' definition
+      . debian/debian.env
+      deb_ver=$(dpkg-parsechangelog -l "${DEBIAN}/changelog" -S version)
+      kernelrelease=$(echo "${deb_ver}" | cut -d. -f1-3)-${FLAVOUR}
+      craftctl set "version=local-${deb_ver}"
+
+      dpkg-architecture -a "${deb_arch}" -c fakeroot debian/rules clean
+      dpkg-architecture -a "${deb_arch}" -c debian/rules "build-${FLAVOUR}"
+      dpkg-architecture -a "${deb_arch}" -c fakeroot debian/rules "binary-${FLAVOUR}"
+
+      for pkg in linux-image linux-modules linux-buildinfo; do
+        dpkg-deb -x "../${pkg}-${kernelrelease}_${deb_ver}_${deb_arch}.deb" tmpdir
+      done
+
+      depmod -b tmpdir "${kernelrelease}"
+      mv tmpdir/boot/vmlinuz-* "${SNAPCRAFT_PART_INSTALL}/kernel.img"
+      mv tmpdir/boot/config-* tmpdir/boot/System.map-* "${SNAPCRAFT_PART_INSTALL}/"
+      mv tmpdir/lib/modules "${SNAPCRAFT_PART_INSTALL}"
+      mv "tmpdir/lib/firmware/${kernelrelease}/device-tree" "${SNAPCRAFT_PART_INSTALL}/dtbs"
+
+  firmware:
+    build-packages:
+      - bluez-firmware
+      - linux-firmware
+    plugin: nil
+    override-build: |
+      mkdir -p tmpdir/lib
+      cp -r /lib/firmware tmpdir/lib
+
+      # linux-firmware and linux-firmware-raspi provides the same firmware
+      # files with different contents. Copy linux-firmware-raspi last.
+      apt-get download "linux-firmware-raspi:${SNAPCRAFT_TARGET_ARCH}"
+      dpkg-deb -x linux-firmware-raspi_*.deb tmpdir
+      mv tmpdir/lib/firmware "${SNAPCRAFT_PART_INSTALL}"
+
+      # 'kernel-snap-uc22' runs 'trim-firmware' as the last step. Skip it here
+      # to simplify the build step. The resulting kernel snap will contain more
+      # firmware files than needed for raspberry pi, but it is not a big deal.
+
+  initrd:
+    after:
+      - firmware
+      - kernel
+    build-packages:
+      - dracut
+      - zstd
+    plugin: nil
+    override-build: |
+      apt-get download "ubuntu-core-initramfs:${SNAPCRAFT_TARGET_ARCH}"
+      dpkg-deb -x ubuntu-core-initramfs_*.deb tmpdir
+      apt-get download "snapd:${SNAPCRAFT_TARGET_ARCH}"
+      dpkg-deb -x snapd_*.deb tmpdir
+
+      mkdir tmpdir/lib/modules
+
+      kernelrelease=$(ls "${SNAPCRAFT_STAGE}/modules")
+
+      ln -s "${SNAPCRAFT_STAGE}/modules/${kernelrelease}" "tmpdir/lib/modules/${kernelrelease}"
+      ln -s "${SNAPCRAFT_STAGE}/firmware" tmpdir/lib/firmware
+
+      # Run usr/bin/ubuntu-core-initramfs inside 'tmpdir'.
+      # Otherwise, tmpdir would be included in initrd.img. Odd...
+      ( cd tmpdir; usr/bin/ubuntu-core-initramfs create-initrd \
+        --root . --output initrd.img --kernelver "${kernelrelease}" )
+      cp "tmpdir/initrd.img-${kernelrelease}" "${SNAPCRAFT_PART_INSTALL}"/initrd.img
+
+  finalize:
+    after:
+      - initrd
+    plugin: nil
+    override-build: |
+      # Mimic what 'kernel-snaps-uc22' does
+      cp /usr/share/common-licenses/GPL-2 "${SNAPCRAFT_PART_INSTALL}"
+      mkdir "${SNAPCRAFT_PART_INSTALL}/lib"
+      ln -s ../firmware "${SNAPCRAFT_PART_INSTALL}/lib"
+      ln -s ../modules "${SNAPCRAFT_PART_INSTALL}/lib"
+
+      mkdir -p "${SNAPCRAFT_PART_INSTALL}/meta"
+      {
+        echo "assets:"
+        echo "  dtbs:"
+        echo "    update: true"
+        echo "    content:"
+        echo "      - dtbs/"
+      } > "${SNAPCRAFT_PART_INSTALL}/meta/kernel.yaml"
