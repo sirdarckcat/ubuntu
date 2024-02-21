@@ -1551,7 +1551,7 @@ out_put:
  * try_to_grab_pending - steal work item from worklist and disable irq
  * @work: work item to steal
  * @is_dwork: @work is a delayed_work
- * @flags: place to store irq state
+ * @irq_flags: place to store irq state
  *
  * Try to grab PENDING bit of @work.  This function can handle @work in any
  * stable state - idle, on timer or on worklist.
@@ -1573,17 +1573,17 @@ out_put:
  * irqsafe, ensures that we return -EAGAIN for finite short period of time.
  *
  * On successful return, >= 0, irq is disabled and the caller is
- * responsible for releasing it using local_irq_restore(*@flags).
+ * responsible for releasing it using local_irq_restore(*@irq_flags).
  *
  * This function is safe to call from any context including IRQ handler.
  */
 static int try_to_grab_pending(struct work_struct *work, bool is_dwork,
-			       unsigned long *flags)
+			       unsigned long *irq_flags)
 {
 	struct worker_pool *pool;
 	struct pool_workqueue *pwq;
 
-	local_irq_save(*flags);
+	local_irq_save(*irq_flags);
 
 	/* try to steal the timer if it exists */
 	if (is_dwork) {
@@ -1651,7 +1651,7 @@ static int try_to_grab_pending(struct work_struct *work, bool is_dwork,
 	raw_spin_unlock(&pool->lock);
 fail:
 	rcu_read_unlock();
-	local_irq_restore(*flags);
+	local_irq_restore(*irq_flags);
 	if (work_is_canceling(work))
 		return -ENOENT;
 	cpu_relax();
@@ -1860,16 +1860,16 @@ bool queue_work_on(int cpu, struct workqueue_struct *wq,
 		   struct work_struct *work)
 {
 	bool ret = false;
-	unsigned long flags;
+	unsigned long irq_flags;
 
-	local_irq_save(flags);
+	local_irq_save(irq_flags);
 
 	if (!test_and_set_bit(WORK_STRUCT_PENDING_BIT, work_data_bits(work))) {
 		__queue_work(cpu, wq, work);
 		ret = true;
 	}
 
-	local_irq_restore(flags);
+	local_irq_restore(irq_flags);
 	return ret;
 }
 EXPORT_SYMBOL(queue_work_on);
@@ -1926,7 +1926,7 @@ static int select_numa_node_cpu(int node)
 bool queue_work_node(int node, struct workqueue_struct *wq,
 		     struct work_struct *work)
 {
-	unsigned long flags;
+	unsigned long irq_flags;
 	bool ret = false;
 
 	/*
@@ -1940,7 +1940,7 @@ bool queue_work_node(int node, struct workqueue_struct *wq,
 	 */
 	WARN_ON_ONCE(!(wq->flags & WQ_UNBOUND));
 
-	local_irq_save(flags);
+	local_irq_save(irq_flags);
 
 	if (!test_and_set_bit(WORK_STRUCT_PENDING_BIT, work_data_bits(work))) {
 		int cpu = select_numa_node_cpu(node);
@@ -1949,7 +1949,7 @@ bool queue_work_node(int node, struct workqueue_struct *wq,
 		ret = true;
 	}
 
-	local_irq_restore(flags);
+	local_irq_restore(irq_flags);
 	return ret;
 }
 EXPORT_SYMBOL_GPL(queue_work_node);
@@ -2011,17 +2011,17 @@ bool queue_delayed_work_on(int cpu, struct workqueue_struct *wq,
 {
 	struct work_struct *work = &dwork->work;
 	bool ret = false;
-	unsigned long flags;
+	unsigned long irq_flags;
 
 	/* read the comment in __queue_work() */
-	local_irq_save(flags);
+	local_irq_save(irq_flags);
 
 	if (!test_and_set_bit(WORK_STRUCT_PENDING_BIT, work_data_bits(work))) {
 		__queue_delayed_work(cpu, wq, dwork, delay);
 		ret = true;
 	}
 
-	local_irq_restore(flags);
+	local_irq_restore(irq_flags);
 	return ret;
 }
 EXPORT_SYMBOL(queue_delayed_work_on);
@@ -2047,16 +2047,16 @@ EXPORT_SYMBOL(queue_delayed_work_on);
 bool mod_delayed_work_on(int cpu, struct workqueue_struct *wq,
 			 struct delayed_work *dwork, unsigned long delay)
 {
-	unsigned long flags;
+	unsigned long irq_flags;
 	int ret;
 
 	do {
-		ret = try_to_grab_pending(&dwork->work, true, &flags);
+		ret = try_to_grab_pending(&dwork->work, true, &irq_flags);
 	} while (unlikely(ret == -EAGAIN));
 
 	if (likely(ret >= 0)) {
 		__queue_delayed_work(cpu, wq, dwork, delay);
-		local_irq_restore(flags);
+		local_irq_restore(irq_flags);
 	}
 
 	/* -ENOENT from try_to_grab_pending() becomes %true */
@@ -3551,18 +3551,18 @@ EXPORT_SYMBOL(flush_rcu_work);
 
 static bool __cancel_work(struct work_struct *work, bool is_dwork)
 {
-	unsigned long flags;
+	unsigned long irq_flags;
 	int ret;
 
 	do {
-		ret = try_to_grab_pending(work, is_dwork, &flags);
+		ret = try_to_grab_pending(work, is_dwork, &irq_flags);
 	} while (unlikely(ret == -EAGAIN));
 
 	if (unlikely(ret < 0))
 		return false;
 
 	set_work_pool_and_clear_pending(work, get_work_pool_id(work));
-	local_irq_restore(flags);
+	local_irq_restore(irq_flags);
 	return ret;
 }
 
@@ -3583,11 +3583,11 @@ static int cwt_wakefn(wait_queue_entry_t *wait, unsigned mode, int sync, void *k
 static bool __cancel_work_timer(struct work_struct *work, bool is_dwork)
 {
 	static DECLARE_WAIT_QUEUE_HEAD(cancel_waitq);
-	unsigned long flags;
+	unsigned long irq_flags;
 	int ret;
 
 	do {
-		ret = try_to_grab_pending(work, is_dwork, &flags);
+		ret = try_to_grab_pending(work, is_dwork, &irq_flags);
 		/*
 		 * If someone else is already canceling, wait for it to
 		 * finish.  flush_work() doesn't work for PREEMPT_NONE
@@ -3621,7 +3621,7 @@ static bool __cancel_work_timer(struct work_struct *work, bool is_dwork)
 
 	/* tell other tasks trying to grab @work to back off */
 	mark_work_canceling(work);
-	local_irq_restore(flags);
+	local_irq_restore(irq_flags);
 
 	/*
 	 * This allows canceling during early boot.  We know that @work
@@ -5062,7 +5062,7 @@ EXPORT_SYMBOL_GPL(workqueue_congested);
 unsigned int work_busy(struct work_struct *work)
 {
 	struct worker_pool *pool;
-	unsigned long flags;
+	unsigned long irq_flags;
 	unsigned int ret = 0;
 
 	if (work_pending(work))
@@ -5071,10 +5071,10 @@ unsigned int work_busy(struct work_struct *work)
 	rcu_read_lock();
 	pool = get_work_pool(work);
 	if (pool) {
-		raw_spin_lock_irqsave(&pool->lock, flags);
+		raw_spin_lock_irqsave(&pool->lock, irq_flags);
 		if (find_worker_executing_work(pool, work))
 			ret |= WORK_BUSY_RUNNING;
-		raw_spin_unlock_irqrestore(&pool->lock, flags);
+		raw_spin_unlock_irqrestore(&pool->lock, irq_flags);
 	}
 	rcu_read_unlock();
 
@@ -5290,7 +5290,7 @@ void show_one_workqueue(struct workqueue_struct *wq)
 {
 	struct pool_workqueue *pwq;
 	bool idle = true;
-	unsigned long flags;
+	unsigned long irq_flags;
 
 	for_each_pwq(pwq, wq) {
 		if (pwq->nr_active || !list_empty(&pwq->inactive_works)) {
@@ -5304,7 +5304,7 @@ void show_one_workqueue(struct workqueue_struct *wq)
 	pr_info("workqueue %s: flags=0x%x\n", wq->name, wq->flags);
 
 	for_each_pwq(pwq, wq) {
-		raw_spin_lock_irqsave(&pwq->pool->lock, flags);
+		raw_spin_lock_irqsave(&pwq->pool->lock, irq_flags);
 		if (pwq->nr_active || !list_empty(&pwq->inactive_works)) {
 			/*
 			 * Defer printing to avoid deadlocks in console
@@ -5315,7 +5315,7 @@ void show_one_workqueue(struct workqueue_struct *wq)
 			show_pwq(pwq);
 			printk_deferred_exit();
 		}
-		raw_spin_unlock_irqrestore(&pwq->pool->lock, flags);
+		raw_spin_unlock_irqrestore(&pwq->pool->lock, irq_flags);
 		/*
 		 * We could be printing a lot from atomic context, e.g.
 		 * sysrq-t -> show_all_workqueues(). Avoid triggering
@@ -5334,10 +5334,10 @@ static void show_one_worker_pool(struct worker_pool *pool)
 {
 	struct worker *worker;
 	bool first = true;
-	unsigned long flags;
+	unsigned long irq_flags;
 	unsigned long hung = 0;
 
-	raw_spin_lock_irqsave(&pool->lock, flags);
+	raw_spin_lock_irqsave(&pool->lock, irq_flags);
 	if (pool->nr_workers == pool->nr_idle)
 		goto next_pool;
 
@@ -5365,7 +5365,7 @@ static void show_one_worker_pool(struct worker_pool *pool)
 	pr_cont("\n");
 	printk_deferred_exit();
 next_pool:
-	raw_spin_unlock_irqrestore(&pool->lock, flags);
+	raw_spin_unlock_irqrestore(&pool->lock, irq_flags);
 	/*
 	 * We could be printing a lot from atomic context, e.g.
 	 * sysrq-t -> show_all_workqueues(). Avoid triggering
@@ -6494,10 +6494,10 @@ static DEFINE_PER_CPU(unsigned long, wq_watchdog_touched_cpu) = INITIAL_JIFFIES;
 static void show_cpu_pool_hog(struct worker_pool *pool)
 {
 	struct worker *worker;
-	unsigned long flags;
+	unsigned long irq_flags;
 	int bkt;
 
-	raw_spin_lock_irqsave(&pool->lock, flags);
+	raw_spin_lock_irqsave(&pool->lock, irq_flags);
 
 	hash_for_each(pool->busy_hash, bkt, worker, hentry) {
 		if (task_is_running(worker->task)) {
@@ -6515,7 +6515,7 @@ static void show_cpu_pool_hog(struct worker_pool *pool)
 		}
 	}
 
-	raw_spin_unlock_irqrestore(&pool->lock, flags);
+	raw_spin_unlock_irqrestore(&pool->lock, irq_flags);
 }
 
 static void show_cpu_pools_hogs(void)
