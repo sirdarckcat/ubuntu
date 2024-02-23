@@ -2299,7 +2299,7 @@ struct net_device {
 	struct bpf_xdp_entity	xdp_state[__MAX_XDP_MODE];
 
 #if IS_ENABLED(CONFIG_DPLL)
-	struct dpll_pin		*dpll_pin;
+	struct dpll_pin	__rcu	*dpll_pin;
 #endif
 };
 #define to_net_dev(d) container_of(d, struct net_device, dev)
@@ -4121,15 +4121,6 @@ void dev_change_proto_down_reason(struct net_device *dev, unsigned long mask,
 				  u32 value);
 void netdev_dpll_pin_set(struct net_device *dev, struct dpll_pin *dpll_pin);
 void netdev_dpll_pin_clear(struct net_device *dev);
-
-static inline struct dpll_pin *netdev_dpll_pin(const struct net_device *dev)
-{
-#if IS_ENABLED(CONFIG_DPLL)
-	return dev->dpll_pin;
-#else
-	return NULL;
-#endif
-}
 
 struct sk_buff *validate_xmit_skb_list(struct sk_buff *skb, struct net_device *dev, bool *again);
 struct sk_buff *dev_hard_start_xmit(struct sk_buff *skb, struct net_device *dev,
