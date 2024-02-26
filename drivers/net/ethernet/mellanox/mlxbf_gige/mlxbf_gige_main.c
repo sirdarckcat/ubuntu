@@ -13,6 +13,7 @@
 #include <linux/iopoll.h>
 #include <linux/module.h>
 #include <linux/phy.h>
+#include <linux/phy_fixed.h>
 #include <linux/platform_device.h>
 #include <linux/skbuff.h>
 
@@ -364,6 +365,7 @@ static struct mlxbf_gige_link_cfg mlxbf_gige_link_cfgs[] = {
 
 static int mlxbf_gige_probe(struct platform_device *pdev)
 {
+	struct fixed_phy_status fphy_status = {};
 	struct phy_device *phydev;
 	struct net_device *netdev;
 	struct mlxbf_gige *priv;
@@ -428,16 +430,53 @@ static int mlxbf_gige_probe(struct platform_device *pdev)
 	priv->rx_irq = platform_get_irq(pdev, MLXBF_GIGE_RECEIVE_PKT_INTR_IDX);
 	priv->llu_plu_irq = platform_get_irq(pdev, MLXBF_GIGE_LLU_PLU_INTR_IDX);
 
-	phy_irq = acpi_dev_gpio_irq_get_by(ACPI_COMPANION(&pdev->dev), "phy-gpios", 0);
-	if (phy_irq < 0) {
-		dev_err(&pdev->dev, "Error getting PHY irq. Use polling instead");
-		phy_irq = PHY_POLL;
-	}
+	if (device_property_read_bool(&pdev->dev, "fixed-link")) {
+		fphy_status.link = 1;
+		err = device_property_read_u32(&pdev->dev, "full-duplex", &fphy_status.duplex);
+		if (err) {
+			dev_err(&pdev->dev, "Failed to get duplex\n");
+			err = -EINVAL;
+			goto out;
+		}
+		err = device_property_read_u32(&pdev->dev, "speed", &fphy_status.speed);
+		if (err) {
+			dev_err(&pdev->dev, "Failed to get speed\n");
+			err = -EINVAL;
+			goto out;
+		}
+		err = device_property_read_u32(&pdev->dev, "pause", &fphy_status.pause);
+		if (err) {
+			dev_err(&pdev->dev, "Failed to get pause\n");
+			err = -EINVAL;
+			goto out;
+		}
+		err = device_property_read_u32(&pdev->dev, "asym-pause", &fphy_status.asym_pause);
+		if (err) {
+			dev_err(&pdev->dev, "Failed to get asym-pause\n");
+			err = -EINVAL;
+			goto out;
+		}
 
-	phydev = phy_find_first(priv->mdiobus);
-	if (!phydev) {
-		err = -ENODEV;
-		goto out;
+		phydev = fixed_phy_register(PHY_POLL, &fphy_status, NULL);
+		if (IS_ERR(phydev)) {
+			dev_err(&pdev->dev, "Failed to register fixed PHY device\n");
+			err = PTR_ERR(phydev);
+			goto out;
+		}
+
+		phy_irq = PHY_POLL;
+	} else {
+		phy_irq = acpi_dev_gpio_irq_get_by(ACPI_COMPANION(&pdev->dev), "phy-gpios", 0);
+		if (phy_irq < 0) {
+			dev_err(&pdev->dev, "Error getting PHY irq. Use polling instead");
+			phy_irq = PHY_POLL;
+		}
+
+		phydev = phy_find_first(priv->mdiobus);
+		if (!phydev) {
+			err = -ENODEV;
+			goto out;
+		}
 	}
 
 	addr = phydev->mdio.addr;
@@ -474,9 +513,14 @@ out:
 static int mlxbf_gige_remove(struct platform_device *pdev)
 {
 	struct mlxbf_gige *priv = platform_get_drvdata(pdev);
+	struct phy_device *phydev = priv->netdev->phydev;
 
 	unregister_netdev(priv->netdev);
-	phy_disconnect(priv->netdev->phydev);
+	phy_disconnect(phydev);
+
+	if (phy_is_pseudo_fixed_link(phydev))
+		fixed_phy_unregister(phydev);
+
 	mlxbf_gige_mdio_remove(priv);
 	platform_set_drvdata(pdev, NULL);
 
