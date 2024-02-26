@@ -2196,9 +2196,11 @@ errout_hw:
 errout_mask:
 	fl_mask_put(head, fnew->mask);
 errout_idr:
-	if (!fold)
+	if (!fold) {
+		spin_lock(&tp->lock);
 		idr_remove(&head->handle_idr, fnew->handle);
-errout:
+		spin_unlock(&tp->lock);
+	}
 	__fl_put(fnew);
 errout_tb:
 	kfree(tb);
