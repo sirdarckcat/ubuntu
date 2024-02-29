@@ -2353,7 +2353,7 @@ static int cqspi_runtime_suspend(struct device *dev)
 static int cqspi_runtime_resume(struct device *dev)
 {
 	struct cqspi_st *cqspi = dev_get_drvdata(dev);
-	struct spi_controller *host = dev_get_drvdata(dev);
+	struct spi_controller *host = cqspi->host;
 	u32 ret;
 
 	clk_prepare_enable(cqspi->clk);
