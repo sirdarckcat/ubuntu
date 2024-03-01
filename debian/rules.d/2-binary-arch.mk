@@ -79,7 +79,7 @@ endef
 # nvidia_build 450
 # nvidia_build 450-server
 define nvidia_build =
-	$(call nvidia_build_payload,$(1),$(shell echo $(1) | sed -e 's/-server/srv/'),$(shell awk '/^nvidia-graphics-drivers-$(1) / {print($$2);}' debian/dkms-versions))
+	$(call nvidia_build_payload,$(1),$(shell echo $(1) | sed -e 's/-server/srv/'),$(shell awk '/^nvidia-graphics-drivers-$(1) / {print($$2);}' $(DEBIAN)/dkms-versions))
 
 endef
 
