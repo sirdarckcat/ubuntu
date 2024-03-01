@@ -108,18 +108,6 @@ ifneq ($(do_tools),true)
 	do_tools_host=
 endif
 
-ifeq ($(do_zfs),false)
-	do_zfs_disable:=$(shell for m in $$(cat $(DROOT)/zfs-modules.ignore); do grep -qxF $$m $(prev_abidir)/../modules.ignore 2>/dev/null || echo $$m >> $(prev_abidir)/../modules.ignore; done)
-endif
-
-ifeq ($(do_dkms_vbox),false)
-	do_vbox_disable:=$(shell for m in $$(cat $(DROOT)/vbox-modules.ignore); do grep -qxF $$m $(prev_abidir)/../modules.ignore 2>/dev/null || echo $$m >> $(prev_abidir)/../modules.ignore; done)
-endif
-
-ifeq ($(do_dkms_wireguard),false)
-	do_wireguard_disable:=$(shell for m in $$(cat $(DROOT)/wireguard-modules.ignore); do grep -qxF $$m $(prev_abidir)/../modules.ignore 2>/dev/null || echo $$m >> $(prev_abidir)/../modules.ignore; done)
-endif
-
 # Either tools package needs the common source preparation
 do_any_tools=$(sort $(filter-out false,$(do_linux_tools) $(do_cloud_tools)))
 
@@ -148,7 +136,7 @@ clean: debian/control debian/canonical-certs.pem debian/canonical-revoked-certs.
 	rm -f $(DEBIAN)/d-i/firmware/$(arch)/kernel-image
 
 	# normal build junk
-	rm -rf $(DEBIAN)/abi/$(release)-$(revision)
+	rm -rf $(DEBIAN)/abi
 	rm -rf $(builddir)
 	rm -f $(stampdir)/stamp-*
 	rm -rf $(DEBIAN)/linux-*
