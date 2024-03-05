@@ -1,4 +1,4 @@
-checks-%:
+checks-%: install-%
 	@echo Debug: $@
 
 # Check the config against the known options list.
