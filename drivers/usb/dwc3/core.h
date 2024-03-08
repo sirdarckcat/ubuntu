@@ -1594,7 +1594,6 @@ void dwc3_set_mode(struct dwc3 *dwc, u32 mode);
 u32 dwc3_core_fifo_space(struct dwc3_ep *dep, u8 type);
 
 typedef void (*dwc3_wakeup_t)(struct device *dev, bool wakeup);
-void dwc3_host_wakeup_register(dwc3_wakeup_t func);
 
 #define DWC3_IP_IS(_ip)							\
 	(dwc->ip == _ip##_IP)
@@ -1646,10 +1645,13 @@ void dwc3_enable_susphy(struct dwc3 *dwc, bool enable);
 	 || IS_ENABLED(CONFIG_USB_DWC3_OTG)
 int dwc3_host_init(struct dwc3 *dwc);
 void dwc3_host_exit(struct dwc3 *dwc);
+void dwc3_host_wakeup_register(dwc3_wakeup_t func);
 #else
 static inline int dwc3_host_init(struct dwc3 *dwc)
 { return 0; }
 static inline void dwc3_host_exit(struct dwc3 *dwc)
+{ }
+static inline void dwc3_host_wakeup_register(dwc3_wakeup_t func)
 { }
 #endif
 
