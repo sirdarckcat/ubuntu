@@ -32,6 +32,7 @@
 #include "xe_reg_sr.h"
 #include "xe_rtp.h"
 #include "xe_sched_job.h"
+#include "xe_sync.h"
 #include "xe_vm.h"
 #include "xe_wa.h"
 
@@ -239,9 +240,117 @@ static void xe_eudebug_free(struct kref *ref)
 	kfree_rcu(d, rcu);
 }
 
-static void xe_eudebug_put(struct xe_eudebug *d)
+void xe_eudebug_put(struct xe_eudebug *d)
 {
 	kref_put(&d->ref, xe_eudebug_free);
+}
+
+struct xe_eudebug_ack {
+	struct rb_node rb_node;
+	u64 seqno;
+	u64 ts_insert;
+	struct xe_user_fence *ufence;
+};
+
+#define fetch_ack(x) rb_entry(x, struct xe_eudebug_ack, rb_node)
+
+static int compare_ack(const u64 a, const u64 b)
+{
+	if (a < b)
+		return -1;
+	else if (a > b)
+		return 1;
+
+	return 0;
+}
+
+static int ack_insert_cmp(struct rb_node * const node,
+			  const struct rb_node * const p)
+{
+	return compare_ack(fetch_ack(node)->seqno,
+			   fetch_ack(p)->seqno);
+}
+
+static int ack_lookup_cmp(const void * const key,
+			  const struct rb_node * const node)
+{
+	return compare_ack(*(const u64 *)key,
+			   fetch_ack(node)->seqno);
+}
+
+static struct xe_eudebug_ack *remove_ack(struct xe_eudebug *d, u64 seqno)
+{
+	struct rb_root * const root = &d->acks.tree;
+	struct rb_node *node;
+
+	spin_lock(&d->acks.lock);
+	node = rb_find(&seqno, root, ack_lookup_cmp);
+	if (node)
+		rb_erase(node, root);
+	spin_unlock(&d->acks.lock);
+
+	if (!node)
+		return NULL;
+
+	return rb_entry_safe(node, struct xe_eudebug_ack, rb_node);
+}
+
+static void ufence_signal_worker(struct work_struct *w)
+{
+	struct xe_user_fence * const ufence =
+		container_of(w, struct xe_user_fence, eudebug.worker);
+
+	if (READ_ONCE(ufence->signalled))
+		xe_sync_ufence_signal(ufence);
+
+	xe_sync_ufence_put(ufence);
+}
+
+static void kick_ufence_worker(struct xe_user_fence *f)
+{
+	queue_work(f->xe->eudebug.ordered_wq, &f->eudebug.worker);
+}
+
+static void handle_ack(struct xe_eudebug *d, struct xe_eudebug_ack *ack,
+		       bool on_disconnect)
+{
+	struct xe_user_fence *f = ack->ufence;
+	u64 signalled_by;
+	bool signal = false;
+
+	spin_lock(&f->eudebug.lock);
+	if (!f->eudebug.signalled_seqno) {
+		f->eudebug.signalled_seqno = ack->seqno;
+		signal = true;
+	}
+	signalled_by = f->eudebug.signalled_seqno;
+	spin_unlock(&f->eudebug.lock);
+
+	if (signal)
+		kick_ufence_worker(f);
+	else
+		xe_sync_ufence_put(f);
+
+	eu_dbg(d, "ACK: seqno=%llu: signalled by %llu (%s) (held %lluus)",
+	       ack->seqno, signalled_by,
+	       on_disconnect ? "disconnect" : "debugger",
+	       ktime_us_delta(ktime_get(), ack->ts_insert));
+
+	kfree(ack);
+}
+
+static void release_acks(struct xe_eudebug *d)
+{
+	struct xe_eudebug_ack *ack, *n;
+	struct rb_root root;
+
+	spin_lock(&d->acks.lock);
+	root = d->acks.tree;
+	d->acks.tree = RB_ROOT;
+	spin_unlock(&d->acks.lock);
+
+	rbtree_postorder_for_each_entry_safe(ack, n, &root, rb_node)
+		handle_ack(d, ack, true);
 }
 
 static struct task_struct *find_get_target(const pid_t nr)
@@ -327,6 +436,8 @@ static bool xe_eudebug_detach(struct xe_device *xe,
 	spin_unlock(&xe->eudebug.lock);
 
 	eu_dbg(d, "session %lld detached with %d", d->session, err);
+
+	release_acks(d);
 
 	/* Our ref with the connection_link */
 	xe_eudebug_put(d);
@@ -453,7 +564,7 @@ _xe_eudebug_get(struct xe_file *xef)
 	return d;
 }
 
-static struct xe_eudebug *
+struct xe_eudebug *
 xe_eudebug_get(struct xe_file *xef)
 {
 	struct xe_eudebug *d;
@@ -792,7 +903,7 @@ static struct xe_eudebug_event *
 xe_eudebug_create_event(struct xe_eudebug *d, u16 type, u64 seqno, u16 flags,
 			u32 len)
 {
-	const u16 max_event = DRM_XE_EUDEBUG_EVENT_VM_BIND_OP;
+	const u16 max_event = DRM_XE_EUDEBUG_EVENT_VM_BIND_UFENCE;
 	const u16 known_flags =
 		DRM_XE_EUDEBUG_EVENT_CREATE |
 		DRM_XE_EUDEBUG_EVENT_DESTROY |
@@ -827,7 +938,7 @@ static long xe_eudebug_read_event(struct xe_eudebug *d,
 		u64_to_user_ptr(arg);
 	struct drm_xe_eudebug_event user_event;
 	struct xe_eudebug_event *event;
-	const unsigned int max_event = DRM_XE_EUDEBUG_EVENT_VM_BIND_OP;
+	const unsigned int max_event = DRM_XE_EUDEBUG_EVENT_VM_BIND_UFENCE;
 	long ret = 0;
 
 	if (XE_IOCTL_DBG(xe, copy_from_user(&user_event, user_orig, sizeof(user_event))))
@@ -900,6 +1011,44 @@ static long xe_eudebug_read_event(struct xe_eudebug *d,
 	kfree(event);
 
 	return ret;
+}
+
+static long
+xe_eudebug_ack_event_ioctl(struct xe_eudebug *d,
+			   const unsigned int cmd,
+			   const u64 arg)
+{
+	struct drm_xe_eudebug_ack_event __user * const user_ptr =
+		u64_to_user_ptr(arg);
+	struct drm_xe_eudebug_ack_event user_arg;
+	struct xe_eudebug_ack *ack;
+	struct xe_device *xe = d->xe;
+
+	if (XE_IOCTL_DBG(xe, _IOC_SIZE(cmd) < sizeof(user_arg)))
+		return -EINVAL;
+
+	/* Userland write */
+	if (XE_IOCTL_DBG(xe, !(_IOC_DIR(cmd) & _IOC_WRITE)))
+		return -EINVAL;
+
+	if (XE_IOCTL_DBG(xe, copy_from_user(&user_arg,
+					    user_ptr,
+					    sizeof(user_arg))))
+		return -EFAULT;
+
+	if (XE_IOCTL_DBG(xe, user_arg.flags))
+		return -EINVAL;
+
+	if (XE_IOCTL_DBG(xe, xe_eudebug_detached(d)))
+		return -ENOTCONN;
+
+	ack = remove_ack(d, user_arg.seqno);
+	if (XE_IOCTL_DBG(xe, !ack))
+		return -EINVAL;
+
+	handle_ack(d, ack, false);
+
+	return 0;
 }
 
 static int do_eu_control(struct xe_eudebug *d,
@@ -1093,7 +1242,10 @@ static long xe_eudebug_ioctl(struct file *file,
 		ret = xe_eudebug_eu_control(d, arg);
 		eu_dbg(d, "ioctl cmd=EU_CONTROL ret=%ld\n", ret);
 		break;
-
+	case DRM_XE_EUDEBUG_IOCTL_ACK_EVENT:
+		ret = xe_eudebug_ack_event_ioctl(d, cmd, arg);
+		eu_dbg(d, "ioctl cmd=EVENT_ACK ret=%ld\n", ret);
+		break;
 	default:
 		ret = -EINVAL;
 	}
@@ -1792,6 +1944,9 @@ xe_eudebug_connect(struct xe_device *xe,
 	INIT_KFIFO(d->events.fifo);
 	INIT_WORK(&d->discovery_work, discovery_work_fn);
 
+	spin_lock_init(&d->acks.lock);
+	d->acks.tree = RB_ROOT;
+
 	d->res = xe_eudebug_resources_alloc();
 	if (IS_ERR(d->res)) {
 		err = PTR_ERR(d->res);
@@ -2486,6 +2641,70 @@ static int vm_bind_op(struct xe_eudebug *d, struct xe_vm *vm,
 	return 0;
 }
 
+static int xe_eudebug_track_ufence(struct xe_eudebug *d,
+				   struct xe_user_fence *f,
+				   u64 seqno)
+{
+	struct xe_eudebug_ack *ack;
+	struct rb_node *old;
+
+	ack = kzalloc(sizeof(*ack), GFP_KERNEL);
+	if (!ack)
+		return -ENOMEM;
+
+	ack->seqno = seqno;
+	ack->ts_insert = ktime_get();
+
+	spin_lock(&d->acks.lock);
+	old = rb_find_add(&ack->rb_node,
+			  &d->acks.tree, ack_insert_cmp);
+	if (!old) {
+		kref_get(&f->refcount);
+		ack->ufence = f;
+	}
+	spin_unlock(&d->acks.lock);
+
+	if (old) {
+		eu_dbg(d, "ACK: seqno=%llu: already exists", seqno);
+		kfree(ack);
+		return -EEXIST;
+	}
+
+	eu_dbg(d, "ACK: seqno=%llu: tracking started", seqno);
+
+	return 0;
+}
+
+static int vm_bind_ufence_event(struct xe_eudebug *d,
+				struct xe_user_fence *ufence)
+{
+	struct xe_eudebug_event *event;
+	struct xe_eudebug_event_vm_bind_ufence *e;
+	const u32 sz = sizeof(*e);
+	const u32 flags = DRM_XE_EUDEBUG_EVENT_CREATE |
+		DRM_XE_EUDEBUG_EVENT_NEED_ACK;
+	u64 seqno;
+	int ret;
+
+	seqno = atomic_long_inc_return(&d->events.seqno);
+
+	event = xe_eudebug_create_event(d, DRM_XE_EUDEBUG_EVENT_VM_BIND_UFENCE,
+					seqno, flags, sz);
+	if (!event)
+		return -ENOMEM;
+
+	e = cast_event(e, event);
+
+	write_member(struct drm_xe_eudebug_event_vm_bind_ufence,
+		     e, vm_bind_ref_seqno, ufence->eudebug.bind_ref_seqno);
+
+	ret = xe_eudebug_track_ufence(d, ufence, seqno);
+	if (!ret)
+		ret = xe_eudebug_queue_event(d, event);
+
+	return ret;
+}
+
 void xe_eudebug_vm_init(struct xe_vm *vm)
 {
 	INIT_LIST_HEAD(&vm->eudebug.events);
@@ -2673,6 +2892,24 @@ void xe_eudebug_vm_bind_end(struct xe_vm *vm, bool has_ufence, int bind_err)
 		xe_eudebug_put(d);
 }
 
+int xe_eudebug_vm_bind_ufence(struct xe_user_fence *ufence)
+{
+	struct xe_eudebug *d;
+	int err;
+
+	d = ufence->eudebug.debugger;
+	if (!d || xe_eudebug_detached(d))
+		return -ENOTCONN;
+
+	err = vm_bind_ufence_event(d, ufence);
+	if (err) {
+		eu_err(d, "error %d on %s", err, __func__);
+		xe_eudebug_disconnect(d, err);
+	}
+
+	return err;
+}
+
 static int discover_client(struct xe_eudebug *d, struct xe_file *xef)
 {
 	struct xe_exec_queue *q;
@@ -2764,4 +3001,40 @@ static void discovery_work_fn(struct work_struct *work)
 	up_write(&xe->eudebug.discovery_lock);
 
 	xe_eudebug_put(d);
+}
+
+void xe_eudebug_ufence_init(struct xe_user_fence *ufence,
+			    struct xe_file *xef,
+			    struct xe_vm *vm)
+{
+	u64 bind_ref;
+
+	/* Drop if OA */
+	if (!vm)
+		return;
+
+	spin_lock(&vm->eudebug.lock);
+	bind_ref = vm->eudebug.ref_seqno;
+	spin_unlock(&vm->eudebug.lock);
+
+	spin_lock_init(&ufence->eudebug.lock);
+	INIT_WORK(&ufence->eudebug.worker, ufence_signal_worker);
+
+	ufence->eudebug.signalled_seqno = 0;
+
+	if (bind_ref) {
+		ufence->eudebug.debugger = xe_eudebug_get(xef);
+
+		if (ufence->eudebug.debugger)
+			ufence->eudebug.bind_ref_seqno = bind_ref;
+	}
+}
+
+void xe_eudebug_ufence_fini(struct xe_user_fence *ufence)
+{
+	if (!ufence->eudebug.debugger)
+		return;
+
+	xe_eudebug_put(ufence->eudebug.debugger);
+	ufence->eudebug.debugger = NULL;
 }
