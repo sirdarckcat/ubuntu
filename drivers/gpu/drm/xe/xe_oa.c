@@ -1376,7 +1376,7 @@ static int xe_oa_parse_syncs(struct xe_oa *oa, struct xe_oa_open_param *param)
 	}
 
 	for (num_syncs = 0; num_syncs < param->num_syncs; num_syncs++) {
-		ret = xe_sync_entry_parse(oa->xe, param->xef, &param->syncs[num_syncs],
+		ret = xe_sync_entry_parse(oa->xe, param->xef, NULL, &param->syncs[num_syncs],
 					  &param->syncs_user[num_syncs], 0);
 		if (ret)
 			goto err_syncs;

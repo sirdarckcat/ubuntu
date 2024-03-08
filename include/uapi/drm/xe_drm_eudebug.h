@@ -17,6 +17,7 @@ extern "C" {
  */
 #define DRM_XE_EUDEBUG_IOCTL_READ_EVENT		_IO('j', 0x0)
 #define DRM_XE_EUDEBUG_IOCTL_EU_CONTROL		_IOWR('j', 0x2, struct drm_xe_eudebug_eu_control)
+#define DRM_XE_EUDEBUG_IOCTL_ACK_EVENT		_IOW('j', 0x4, struct drm_xe_eudebug_ack_event)
 
 /* XXX: Document events to match their internal counterparts when moved to xe_drm.h */
 struct drm_xe_eudebug_event {
@@ -32,6 +33,7 @@ struct drm_xe_eudebug_event {
 #define DRM_XE_EUDEBUG_EVENT_EU_ATTENTION	6
 #define DRM_XE_EUDEBUG_EVENT_VM_BIND		7
 #define DRM_XE_EUDEBUG_EVENT_VM_BIND_OP		8
+#define DRM_XE_EUDEBUG_EVENT_VM_BIND_UFENCE	9
 
 	__u16 flags;
 #define DRM_XE_EUDEBUG_EVENT_CREATE		(1 << 0)
@@ -172,6 +174,17 @@ struct drm_xe_eudebug_event_vm_bind_op {
 
 	__u64 addr; /* XXX: Zero for unmap all? */
 	__u64 range; /* XXX: Zero for unmap all? */
+};
+
+struct drm_xe_eudebug_event_vm_bind_ufence {
+	struct drm_xe_eudebug_event base;
+	__u64 vm_bind_ref_seqno; /* *_event_vm_bind.base.seqno */
+};
+
+struct drm_xe_eudebug_ack_event {
+	__u32 type;
+	__u32 flags; /* MBZ */
+	__u64 seqno;
 };
 
 #if defined(__cplusplus)

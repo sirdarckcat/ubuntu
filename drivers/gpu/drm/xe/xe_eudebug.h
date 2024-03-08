@@ -15,6 +15,7 @@ struct xe_vm;
 struct xe_vma;
 struct xe_exec_queue;
 struct xe_hw_engine;
+struct xe_user_fence;
 
 #if IS_ENABLED(CONFIG_DRM_XE_EUDEBUG)
 
@@ -41,6 +42,13 @@ void xe_eudebug_vm_bind_start(struct xe_vm *vm);
 void xe_eudebug_vm_bind_op_add(struct xe_vm *vm, u32 op, u64 addr, u64 range);
 void xe_eudebug_vm_bind_end(struct xe_vm *vm, bool has_ufence, int err);
 
+int xe_eudebug_vm_bind_ufence(struct xe_user_fence *ufence);
+void xe_eudebug_ufence_init(struct xe_user_fence *ufence, struct xe_file *xef, struct xe_vm *vm);
+void xe_eudebug_ufence_fini(struct xe_user_fence *ufence);
+
+struct xe_eudebug *xe_eudebug_get(struct xe_file *xef);
+void xe_eudebug_put(struct xe_eudebug *d);
+
 #else
 
 static inline int xe_eudebug_connect_ioctl(struct drm_device *dev,
@@ -65,6 +73,13 @@ static inline void xe_eudebug_vm_init(struct xe_vm *vm) { }
 static inline void xe_eudebug_vm_bind_start(struct xe_vm *vm) { }
 static inline void xe_eudebug_vm_bind_op_add(struct xe_vm *vm, u32 op, u64 addr, u64 range) { }
 static inline void xe_eudebug_vm_bind_end(struct xe_vm *vm, bool has_ufence, int err) { }
+
+static inline int xe_eudebug_vm_bind_ufence(struct xe_user_fence *ufence) { return 0; }
+static inline void xe_eudebug_ufence_init(struct xe_user_fence *ufence, struct xe_file *xef, struct xe_vm *vm) { }
+static inline void xe_eudebug_ufence_fini(struct xe_user_fence *ufence) { }
+
+static inline struct xe_eudebug *xe_eudebug_get(struct xe_file *xef) { return NULL; }
+static inline void xe_eudebug_put(struct xe_eudebug *d) { }
 
 #endif /* CONFIG_DRM_XE_EUDEBUG */
 

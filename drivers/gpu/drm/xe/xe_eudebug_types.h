@@ -150,6 +150,14 @@ struct xe_eudebug {
 		atomic_long_t seqno;
 	} events;
 
+	/* user fences tracked by this debugger */
+	struct {
+		/** @lock: guards access to tree */
+		spinlock_t lock;
+
+		struct rb_root tree;
+	} acks;
+
 	/** @ops operations for eu_control */
 	struct xe_eudebug_eu_control_ops *ops;
 };
@@ -311,6 +319,11 @@ struct xe_eudebug_event_vm_bind_op {
 
 	u64 addr; /* Zero for unmap all ? */
 	u64 range; /* Zero for unmap all ? */
+};
+
+struct xe_eudebug_event_vm_bind_ufence {
+	struct xe_eudebug_event base;
+	u64 vm_bind_ref_seqno;
 };
 
 #endif
