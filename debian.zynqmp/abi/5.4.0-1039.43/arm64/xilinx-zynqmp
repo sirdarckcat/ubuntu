@@ -38,6 +38,7 @@ EXPORT_SYMBOL	 drivers/rpmsg/rpmsg_core 0x00000000	rpmsg_destroy_ept
 EXPORT_SYMBOL	 drivers/rpmsg/rpmsg_core 0x00000000	rpmsg_find_device
 EXPORT_SYMBOL	 drivers/rpmsg/rpmsg_core 0x00000000	rpmsg_poll
 EXPORT_SYMBOL	 drivers/rpmsg/rpmsg_core 0x00000000	rpmsg_register_device
+EXPORT_SYMBOL	 drivers/rpmsg/rpmsg_core 0x00000000	rpmsg_register_device_override
 EXPORT_SYMBOL	 drivers/rpmsg/rpmsg_core 0x00000000	rpmsg_send
 EXPORT_SYMBOL	 drivers/rpmsg/rpmsg_core 0x00000000	rpmsg_send_offchannel
 EXPORT_SYMBOL	 drivers/rpmsg/rpmsg_core 0x00000000	rpmsg_sendto
@@ -3852,6 +3853,7 @@ EXPORT_SYMBOL	 vmlinux 0x00000000	of_get_address
 EXPORT_SYMBOL	 vmlinux 0x00000000	of_get_child_by_name
 EXPORT_SYMBOL	 vmlinux 0x00000000	of_get_compatible_child
 EXPORT_SYMBOL	 vmlinux 0x00000000	of_get_cpu_node
+EXPORT_SYMBOL	 vmlinux 0x00000000	of_get_cpu_state_node
 EXPORT_SYMBOL	 vmlinux 0x00000000	of_get_i2c_adapter_by_node
 EXPORT_SYMBOL	 vmlinux 0x00000000	of_get_mac_address
 EXPORT_SYMBOL	 vmlinux 0x00000000	of_get_next_available_child
@@ -8105,6 +8107,7 @@ EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	driver_find_device
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	driver_for_each_device
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	driver_register
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	driver_remove_file
+EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	driver_set_override
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	driver_unregister
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	drm_bus_flags_from_videomode
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	drm_class_device_register
@@ -9390,8 +9393,11 @@ EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	mmc_app_cmd
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	mmc_cmdq_disable
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	mmc_cmdq_enable
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	mmc_get_ext_csd
+EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	mmc_poll_for_busy
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	mmc_pwrseq_register
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	mmc_pwrseq_unregister
+EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	mmc_regulator_disable_vqmmc
+EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	mmc_regulator_enable_vqmmc
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	mmc_regulator_get_supply
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	mmc_regulator_set_ocr
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	mmc_regulator_set_vqmmc
@@ -9955,7 +9961,7 @@ EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	of_irq_parse_one
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	of_irq_parse_raw
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	of_irq_to_resource
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	of_irq_to_resource_table
-EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	of_map_rid
+EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	of_map_id
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	of_mm_gpiochip_add_data
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	of_mm_gpiochip_remove
 EXPORT_SYMBOL_GPL	 vmlinux 0x00000000	of_modalias_node
