@@ -1,8 +1,8 @@
 Name:    linux-oracle
-Version: 6.5.10
+Version: 6.5.0
 Series:  23.10 (mantic)
 Description:
-    This is the source code for the Ubuntu linux kernel for the 23.04 series. This
-    source tree is used to produce the flavours: oracle.
+    This is the source code for the Ubuntu linux kernel for the 23.10 series. This
+    source tree is used to produce the flavours: oracle, oracle-64k.
     This kernel is configured to support the widest range of desktop, laptop and
     server configurations.
