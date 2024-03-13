@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
+// SPDX-FileCopyrightText: Copyright (c) 2020-2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 //
 // tegra210_ahub.c - Tegra210 AHUB driver
-//
-// Copyright (c) 2020-2024, NVIDIA CORPORATION.  All rights reserved.
 
 #include <linux/clk.h>
 #include <linux/device.h>
@@ -1243,6 +1242,7 @@ static const struct snd_soc_component_driver tegra210_ahub_component = {
 	.num_dapm_widgets	= ARRAY_SIZE(tegra210_ahub_widgets),
 	.dapm_routes		= tegra210_ahub_routes,
 	.num_dapm_routes	= ARRAY_SIZE(tegra210_ahub_routes),
+	.endianness		= 1,
 };
 
 static const struct snd_soc_component_driver tegra186_ahub_component = {
@@ -1250,6 +1250,7 @@ static const struct snd_soc_component_driver tegra186_ahub_component = {
 	.num_dapm_widgets = ARRAY_SIZE(tegra186_ahub_widgets),
 	.dapm_routes = tegra186_ahub_routes,
 	.num_dapm_routes = ARRAY_SIZE(tegra186_ahub_routes),
+	.endianness = 1,
 };
 
 static const struct snd_soc_component_driver tegra234_ahub_component = {
@@ -1257,6 +1258,7 @@ static const struct snd_soc_component_driver tegra234_ahub_component = {
 	.num_dapm_widgets	= ARRAY_SIZE(tegra234_ahub_widgets),
 	.dapm_routes		= tegra186_ahub_routes,
 	.num_dapm_routes	= ARRAY_SIZE(tegra186_ahub_routes),
+	.endianness		= 1,
 };
 
 static const struct regmap_config tegra210_ahub_regmap_config = {
