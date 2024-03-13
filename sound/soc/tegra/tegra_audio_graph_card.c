@@ -1,16 +1,17 @@
 // SPDX-License-Identifier: GPL-2.0-only
+// SPDX-FileCopyrightText: Copyright (c) 2020-2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 //
 // tegra_audio_graph_card.c - Audio Graph based Tegra Machine Driver
-//
-// Copyright (c) 2020-2021 NVIDIA CORPORATION.  All rights reserved.
 
 #include <linux/math64.h>
 #include <linux/module.h>
 #include <linux/of.h>
+#include <linux/of_platform.h>
 #include <linux/platform_device.h>
 #include <sound/graph_card.h>
 #include <sound/pcm_params.h>
 #include <sound/soc-dai.h>
+#include <sound/soc-link.h>
 
 #define MAX_PLLA_OUT0_DIV 128
 
@@ -154,12 +155,43 @@ static int tegra_audio_graph_hw_params(struct snd_pcm_substream *substream,
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
+	struct snd_soc_pcm_stream *dai_params;
+	struct snd_soc_pcm_runtime *vrtd;
+	struct snd_pcm_hw_params codec_params;
 	int err;
 
 	if (need_clk_update(cpu_dai)) {
 		err = tegra_audio_graph_update_pll(substream, params);
 		if (err)
 			return err;
+	}
+
+	/*
+	 * For AHUB in c2c mode, hw_params() call here happens only for
+	 * FE links. The PLL update is required to take care of I/O
+	 * configuration.
+	 *
+	 */
+	if (cpu_dai->driver->ops && !rtd->card->component_chaining) {
+		for_each_card_rtds(rtd->card, vrtd) {
+			if (!vrtd->dai_link->c2c_params)
+				continue;
+
+			codec_params = *params;
+			snd_soc_link_be_hw_params_fixup(vrtd, &codec_params);
+
+			dai_params = (struct snd_soc_pcm_stream *)vrtd->dai_link->c2c_params;
+			dai_params->rate_min = params_rate(&codec_params);
+			dai_params->channels_min = params_channels(&codec_params);
+			dai_params->formats = 1 << params_format(&codec_params);
+
+			cpu_dai = snd_soc_rtd_to_cpu(vrtd, 0);
+			if (need_clk_update(cpu_dai)) {
+				err = tegra_audio_graph_update_pll(substream, &codec_params);
+				if (err)
+					return err;
+			}
+		}
 	}
 
 	return simple_util_hw_params(substream, params);
@@ -191,11 +223,58 @@ static int tegra_audio_graph_card_probe(struct snd_soc_card *card)
 	return graph_util_card_probe(card);
 }
 
+static struct snd_soc_dai_driver tegra_dummy_dai = {
+	.name = "tegra-snd-dummy-dai",
+	.playback = {
+		.stream_name	= "Dummy Playback",
+		.channels_min	= 1,
+		.channels_max	= 32,
+		.rates		= SNDRV_PCM_RATE_8000_192000,
+		.formats	= SNDRV_PCM_FMTBIT_S8 |
+				  SNDRV_PCM_FMTBIT_S16_LE |
+				  SNDRV_PCM_FMTBIT_S32_LE,
+	},
+	.capture = {
+		.stream_name	= "Dummy Capture",
+		.channels_min	= 1,
+		.channels_max	= 32,
+		.rates		= SNDRV_PCM_RATE_8000_192000,
+		.formats	= SNDRV_PCM_FMTBIT_S8 |
+				  SNDRV_PCM_FMTBIT_S16_LE |
+				  SNDRV_PCM_FMTBIT_S32_LE,
+	 },
+};
+
+static const struct snd_soc_dapm_widget tegra_dummy_widgets[] = {
+	SND_SOC_DAPM_MIC("Dummy MIC", NULL),
+	SND_SOC_DAPM_SPK("Dummy SPK", NULL),
+};
+
+static const struct snd_soc_dapm_route tegra_dummy_routes[] = {
+	{"Dummy SPK",		NULL,	"Dummy Playback"},
+	{"Dummy Capture",	NULL,	"Dummy MIC"},
+};
+
+static const struct snd_soc_component_driver tegra_dummy_component = {
+	.dapm_widgets		= tegra_dummy_widgets,
+	.num_dapm_widgets	= ARRAY_SIZE(tegra_dummy_widgets),
+	.dapm_routes		= tegra_dummy_routes,
+	.num_dapm_routes	= ARRAY_SIZE(tegra_dummy_routes),
+	.endianness		= 1,
+};
+
+static struct snd_soc_dai_link_component tegra_dummy_dlc = {
+	.of_node	= NULL,
+	.dai_name	= "tegra-snd-dummy-dai",
+	.name		= "sound",
+};
+
 static int tegra_audio_graph_probe(struct platform_device *pdev)
 {
 	struct tegra_audio_priv *priv;
 	struct device *dev = &pdev->dev;
 	struct snd_soc_card *card;
+	int ret;
 
 	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
 	if (!priv)
@@ -207,11 +286,31 @@ static int tegra_audio_graph_probe(struct platform_device *pdev)
 	card->probe = tegra_audio_graph_card_probe;
 
 	/* audio_graph_parse_of() depends on below */
-	card->component_chaining = 1;
-	priv->simple.ops = &tegra_audio_graph_ops;
-	priv->simple.force_dpcm = 1;
+	if (!of_property_read_bool(dev->of_node, "nvidia,ahub-c2c-links")) {
+		card->component_chaining = 1;
+		priv->simple.force_dpcm = 1;
+	}
 
-	return audio_graph_parse_of(&priv->simple, dev);
+	ret = devm_snd_soc_register_component(dev, &tegra_dummy_component,
+					      &tegra_dummy_dai, 1);
+	if (ret < 0) {
+		dev_err(dev, "Tegra dummy component registration fails\n");
+		return ret;
+	}
+
+	priv->simple.dummy_dlc = &tegra_dummy_dlc;
+	priv->simple.ops = &tegra_audio_graph_ops;
+
+	ret = audio_graph_parse_of(&priv->simple, dev);
+	if (ret < 0)
+		return ret;
+
+	of_platform_populate(pdev->dev.of_node, NULL, NULL, &pdev->dev);
+
+	dev_info(&pdev->dev, "Registered APE graph sound card with %s links for AHUB\n",
+		 card->component_chaining ? "DPCM" : "codec2codec");
+
+	return 0;
 }
 
 static const struct tegra_audio_cdata tegra210_data = {
