@@ -274,12 +274,18 @@ static int graph_dai_link_of(struct simple_util_priv *priv,
 	if (ret < 0)
 		return ret;
 
+	if (!codec_ep) {
+		codecs = priv->dummy_dlc;
+		dai_link->codecs = priv->dummy_dlc;
+	}
+
 	ret = graph_parse_node(priv, codec_ep, li, NULL);
 	if (ret < 0)
 		return ret;
 
 	snprintf(dai_name, sizeof(dai_name),
-		 "%s-%s", cpus->dai_name, codecs->dai_name);
+		 "%pOFP.%s-%pOFP.%s", dai_link->cpus->of_node, cpus->dai_name,
+		 dai_link->codecs->of_node, codecs->dai_name);
 
 	simple_util_canonicalize_cpu(cpus, is_single_links);
 	simple_util_canonicalize_platform(platforms, cpus);
