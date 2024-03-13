@@ -70,6 +70,7 @@ struct simple_util_priv {
 	struct snd_soc_dai_link *dai_link;
 	struct simple_util_dai *dais;
 	struct snd_soc_dai_link_component *dlcs;
+	struct snd_soc_dai_link_component *dummy_dlc;
 	struct snd_soc_codec_conf *codec_conf;
 	struct gpio_desc *pa_gpio;
 	const struct snd_soc_ops *ops;
