@@ -230,6 +230,9 @@ int simple_util_parse_clk(struct device *dev,
 	struct clk *clk;
 	u32 val;
 
+	if (!node)
+		return 0;
+
 	/*
 	 * Parse dai->sysclk come from "clocks = <&xxx>"
 	 * (if system has common clock)
