@@ -64,6 +64,7 @@ int snd_soc_link_be_hw_params_fixup(struct snd_soc_pcm_runtime *rtd,
 
 	return soc_link_ret(rtd, ret);
 }
+EXPORT_SYMBOL_GPL(snd_soc_link_be_hw_params_fixup);
 
 int snd_soc_link_startup(struct snd_pcm_substream *substream)
 {
