@@ -891,8 +891,10 @@ cifs_get_file_info(struct file *filp)
 	void *page = alloc_dentry_path();
 	const unsigned char *path;
 
-	if (!server->ops->query_file_info)
+	if (!server->ops->query_file_info) {
+		free_dentry_path(page);
 		return -ENOSYS;
+	}
 
 	xid = get_xid();
 	rc = server->ops->query_file_info(xid, tcon, cfile, &data);
@@ -906,8 +908,8 @@ cifs_get_file_info(struct file *filp)
 		}
 		path = build_path_from_dentry(dentry, page);
 		if (IS_ERR(path)) {
-			free_dentry_path(page);
-			return PTR_ERR(path);
+			rc = PTR_ERR(path);
+			goto cgfi_exit;
 		}
 		cifs_open_info_to_fattr(&fattr, &data, inode->i_sb);
 		if (fattr.cf_flags & CIFS_FATTR_DELETE_PENDING)
@@ -1080,7 +1082,6 @@ static int reparse_info_to_fattr(struct cifs_open_info_data *data,
 	struct kvec rsp_iov, *iov = NULL;
 	int rsp_buftype = CIFS_NO_BUFFER;
 	u32 tag = data->reparse.tag;
-	struct inode *inode = NULL;
 	int rc = 0;
 
 	if (!tag && server->ops->query_reparse_point) {
@@ -1120,12 +1121,8 @@ static int reparse_info_to_fattr(struct cifs_open_info_data *data,
 
 	if (tcon->posix_extensions)
 		smb311_posix_info_to_fattr(fattr, data, sb);
-	else {
+	else
 		cifs_open_info_to_fattr(fattr, data, sb);
-		inode = cifs_iget(sb, fattr);
-		if (inode && fattr->cf_flags & CIFS_FATTR_DELETE_PENDING)
-			cifs_mark_open_handles_for_deleted_file(inode, full_path);
-	}
 out:
 	fattr->cf_cifstag = data->reparse.tag;
 	free_rsp_buf(rsp_buftype, rsp_iov.iov_base);
@@ -1180,9 +1177,9 @@ static int cifs_get_fattr(struct cifs_open_info_data *data,
 						   full_path, fattr);
 		} else {
 			cifs_open_info_to_fattr(fattr, data, sb);
-			if (fattr->cf_flags & CIFS_FATTR_DELETE_PENDING)
-				cifs_mark_open_handles_for_deleted_file(*inode, full_path);
 		}
+		if (!rc && fattr->cf_flags & CIFS_FATTR_DELETE_PENDING)
+			cifs_mark_open_handles_for_deleted_file(*inode, full_path);
 		break;
 	case -EREMOTE:
 		/* DFS link, no metadata available on this server */
@@ -1411,6 +1408,8 @@ int smb311_posix_get_inode_info(struct inode **inode,
 		goto out;
 
 	rc = update_inode_info(sb, &fattr, inode);
+	if (!rc && fattr.cf_flags & CIFS_FATTR_DELETE_PENDING)
+		cifs_mark_open_handles_for_deleted_file(*inode, full_path);
 out:
 	kfree(fattr.cf_symlink_target);
 	return rc;
@@ -1574,6 +1573,9 @@ iget_root:
 		inode = ERR_PTR(rc);
 		goto out;
 	}
+
+	if (!rc && fattr.cf_flags & CIFS_FATTR_DELETE_PENDING)
+		cifs_mark_open_handles_for_deleted_file(inode, path);
 
 	if (rc && tcon->pipe) {
 		cifs_dbg(FYI, "ipc connection - fake read inode\n");
