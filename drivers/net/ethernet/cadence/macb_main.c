@@ -2575,12 +2575,14 @@ static int macb_alloc_consistent(struct macb *bp)
 		goto out_err;
 
 	/* Required for tie off descriptor for PM cases */
-	bp->rx_ring_tieoff = dma_alloc_coherent(&bp->pdev->dev,
-						macb_dma_desc_get_size(bp),
-						&bp->rx_ring_tieoff_dma,
-						GFP_KERNEL);
-	if (!bp->rx_ring_tieoff)
-		goto out_err;
+	if (!(bp->caps & MACB_CAPS_QUEUE_DISABLE)) {
+		bp->rx_ring_tieoff = dma_alloc_coherent(&bp->pdev->dev,
+							macb_dma_desc_get_size(bp),
+							&bp->rx_ring_tieoff_dma,
+							GFP_KERNEL);
+		if (!bp->rx_ring_tieoff)
+			goto out_err;
+	}
 
 	return 0;
 
@@ -2624,7 +2626,9 @@ static void gem_init_rings(struct macb *bp)
 
 		gem_rx_refill(queue);
 	}
-	macb_init_tieoff(bp);
+
+	if (!(bp->caps & MACB_CAPS_QUEUE_DISABLE))
+		macb_init_tieoff(bp);
 
 }
 
@@ -4944,7 +4948,7 @@ static const struct macb_config sama7g5_emac_config = {
 static const struct macb_config versal_config = {
 	.caps = MACB_CAPS_GIGABIT_MODE_AVAILABLE | MACB_CAPS_JUMBO |
 		MACB_CAPS_GEM_HAS_PTP | MACB_CAPS_BD_RD_PREFETCH | MACB_CAPS_NEED_TSUCLK |
-		MACB_CAPS_WOL,
+		MACB_CAPS_WOL | MACB_CAPS_QUEUE_DISABLE,
 	.dma_burst_length = 16,
 	.clk_init = macb_clk_init,
 	.init = init_reset_optional,
@@ -5256,8 +5260,11 @@ static int __maybe_unused macb_suspend(struct device *dev)
 		/* Tie off RX queues */
 		for (q = 0, queue = bp->queues; q < bp->num_queues;
 		     ++q, ++queue) {
-			queue_writel(queue, RBQP,
-				     lower_32_bits(bp->rx_ring_tieoff_dma));
+			if (bp->caps & MACB_CAPS_QUEUE_DISABLE)
+				queue_writel(queue, RBQP, GEM_RBQP_DISABLE);
+			else
+				queue_writel(queue, RBQP,
+					     lower_32_bits(bp->rx_ring_tieoff_dma));
 		}
 		ctrl = macb_readl(bp, NCR);
 		ctrl |= MACB_BIT(RE);
