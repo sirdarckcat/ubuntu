@@ -849,7 +849,7 @@ static int smmu_pmu_probe(struct platform_device *pdev)
 	struct smmu_pmu *smmu_pmu;
 	struct resource *res_0;
 	u32 cfgr, reg_size;
-	u64 ceid_64[2];
+	u64 ceid_64[2], ceid;
 	int irq, err;
 	char *name;
 	struct device *dev = &pdev->dev;
@@ -895,8 +895,14 @@ static int smmu_pmu_probe(struct platform_device *pdev)
 	if (irq > 0)
 		smmu_pmu->irq = irq;
 
-	ceid_64[0] = readq_relaxed(smmu_pmu->reg_base + SMMU_PMCG_CEID0);
-	ceid_64[1] = readq_relaxed(smmu_pmu->reg_base + SMMU_PMCG_CEID1);
+	if (!of_property_read_u64(dev->of_node, "ceid0-override", &ceid)) {
+		ceid_64[0] = ceid;
+		ceid_64[1] = 0;
+	} else {
+		ceid_64[0] = readq_relaxed(smmu_pmu->reg_base + SMMU_PMCG_CEID0);
+		ceid_64[1] = readq_relaxed(smmu_pmu->reg_base + SMMU_PMCG_CEID1);
+	}
+
 	bitmap_from_arr32(smmu_pmu->supported_events, (u32 *)ceid_64,
 			  SMMU_PMCG_ARCH_MAX_EVENTS);
 
