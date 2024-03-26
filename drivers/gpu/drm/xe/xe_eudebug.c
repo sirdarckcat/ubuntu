@@ -3908,3 +3908,7 @@ out_file_put:
 
 	return ret;
 }
+
+#if IS_ENABLED(CONFIG_DRM_XE_KUNIT_TEST)
+#include "tests/xe_eudebug.c"
+#endif
