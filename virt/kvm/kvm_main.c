@@ -4463,7 +4463,7 @@ static int kvm_vcpu_memory_mapping(struct kvm_vcpu *vcpu,
 
 	while (mapping->nr_pages) {
 		if (signal_pending(current)) {
-			r = -ERESTARTSYS;
+			r = -EINTR;
 			break;
 		}
 
