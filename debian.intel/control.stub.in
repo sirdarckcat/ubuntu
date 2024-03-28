@@ -23,7 +23,7 @@ Build-Depends:
  python3-dev <!stage1>,
  flex <!stage1>,
  bison <!stage1>,
- libunwind8-dev [amd64 arm64 armhf ppc64el] <!stage1>,
+ libunwind8-dev [amd64] <!stage1>,
  liblzma-dev <!stage1>,
  openssl <!stage1>,
  libssl-dev <!stage1>,
@@ -35,16 +35,16 @@ Build-Depends:
  automake <!stage1>,
  libtool <!stage1>,
  uuid-dev <!stage1>,
- libnuma-dev [amd64 arm64 ppc64el s390x] <!stage1>,
+ libnuma-dev [amd64] <!stage1>,
  dkms <!stage1>,
  curl <!stage1>,
  zstd <!stage1>,
- pahole [amd64 arm64 armhf ppc64el s390x riscv64] | dwarves (>= 1.21) [amd64 arm64 armhf ppc64el s390x riscv64] <!stage1>,
- clang-18 [amd64 arm64 armhf ppc64el riscv64 s390x],
- rustc [amd64 arm64 armhf ppc64el riscv64 s390x],
- rust-src [amd64 arm64 armhf ppc64el riscv64 s390x],
- rustfmt [amd64 arm64 armhf ppc64el riscv64 s390x],
- bindgen-0.65 [amd64 arm64 armhf ppc64el riscv64 s390x],
+ pahole [amd64] | dwarves (>= 1.21) [amd64 arm64 armhf ppc64el s390x riscv64] <!stage1>,
+ clang-18 [amd64],
+ rustc [amd64],
+ rust-src [amd64],
+ rustfmt [amd64],
+ bindgen-0.65 [amd64],
  libstdc++-dev,
 Build-Depends-Indep:
  xmlto <!stage1>,
@@ -70,7 +70,7 @@ Description: Header files related to Linux kernel version PKGVER
 
 Package: SRCPKGNAME-tools-PKGVER-ABINUM
 Build-Profiles: <!stage1>
-Architecture: amd64 armhf arm64 ppc64el s390x
+Architecture: amd64
 Section: devel
 Priority: optional
 Depends: ${misc:Depends}, ${shlibs:Depends}, linux-tools-common
@@ -83,7 +83,7 @@ Description: Linux kernel version specific tools for version PKGVER-ABINUM
 
 Package: SRCPKGNAME-cloud-tools-PKGVER-ABINUM
 Build-Profiles: <!stage1>
-Architecture: amd64 armhf
+Architecture: amd64
 Section: devel
 Priority: optional
 Depends: ${misc:Depends}, ${shlibs:Depends}, linux-cloud-tools-common
