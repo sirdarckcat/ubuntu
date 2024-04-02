@@ -637,6 +637,7 @@ int spi_nor_write_ear(struct spi_nor *nor, u32 addr)
 	u8 code = SPINOR_OP_WREAR;
 	u32 ear;
 	int ret;
+	u8 id;
 	struct mtd_info *mtd = &nor->mtd;
 
 	/* Wait until finished previous write command. */
@@ -665,13 +666,16 @@ int spi_nor_write_ear(struct spi_nor *nor, u32 addr)
 	if ((nor->flags & SNOR_F_HAS_STACKED) && mtd->size <= 0x2000000)
 		return 0;
 
-	if (nor->jedec_id == CFI_MFR_AMD)
-		code = SPINOR_OP_BRWR;
-	if (nor->jedec_id == CFI_MFR_ST ||
-	    nor->jedec_id == CFI_MFR_MACRONIX ||
-	    nor->jedec_id == CFI_MFR_PMC) {
-		spi_nor_write_enable(nor);
-		code = SPINOR_OP_WREAR;
+	if (nor->info->id && nor->info->id->bytes) {
+		id = nor->info->id->bytes[0];
+		if (id == CFI_MFR_AMD)
+			code = SPINOR_OP_BRWR;
+		if (id == CFI_MFR_ST ||
+		    id == CFI_MFR_MACRONIX ||
+		    id == CFI_MFR_PMC) {
+			spi_nor_write_enable(nor);
+			code = SPINOR_OP_WREAR;
+		}
 	}
 	nor->bouncebuf[0] = ear;
 
@@ -709,17 +713,20 @@ static int read_ear(struct spi_nor *nor, struct flash_info *info)
 {
 	int ret;
 	u8 code;
+	u8 id;
 
-	/* This is actually Spansion */
-	if (nor->jedec_id == CFI_MFR_AMD)
-		code = SPINOR_OP_BRRD;
-	/* This is actually Micron */
-	else if (nor->jedec_id == CFI_MFR_ST ||
-		 nor->jedec_id == CFI_MFR_MACRONIX ||
-		 nor->jedec_id == CFI_MFR_PMC)
-		code = SPINOR_OP_RDEAR;
-	else
-		return -EINVAL;
+	if (nor->info->id && nor->info->id->bytes) {
+		id = nor->info->id->bytes[0];
+		/* This is actually Spansion */
+		if (id == CFI_MFR_AMD)
+			code = SPINOR_OP_BRRD;
+		/* This is actually Micron */
+		else if (id == CFI_MFR_ST || id == CFI_MFR_MACRONIX ||
+			 id == CFI_MFR_PMC)
+			code = SPINOR_OP_RDEAR;
+		else
+			return -EINVAL;
+	}
 	if (nor->spimem) {
 		struct spi_mem_op op =
 			SPI_MEM_OP(SPI_MEM_OP_CMD(code, 1),
