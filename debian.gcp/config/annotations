@@ -59,6 +59,7 @@ CONFIG_RUST                                     note<'required to enable Rust su
 CONFIG_SEV_GUEST                                policy<{'amd64': 'y'}>
 CONFIG_SEV_GUEST                                note<'Always needed for GCP'>
 
+
 # ---- Annotations without notes ----
 
 CONFIG_A11Y_BRAILLE_CONSOLE                     policy<{'amd64': '-', 'arm64': '-'}>
@@ -314,7 +315,7 @@ CONFIG_TEST_SIPHASH                             policy<{'amd64': '-', 'arm64': '
 CONFIG_TOUCHSCREEN_IPROC                        policy<{'arm64': 'm'}>
 CONFIG_TOUCHSCREEN_RASPBERRYPI_FW               policy<{'arm64': 'm'}>
 CONFIG_TRACE_MMIO_ACCESS                        policy<{'arm64': 'n'}>
-CONFIG_TSM_REPORTS                              policy<{'amd64': 'm'}>
+CONFIG_TSM_REPORTS                              policy<{'amd64': 'y'}>
 CONFIG_TYPEC_WCOVE                              policy<{'amd64': 'n'}>
 CONFIG_UBUNTU_ODM_DRIVERS                       policy<{'amd64': '-'}>
 CONFIG_UNINLINE_SPIN_UNLOCK                     policy<{'amd64': '-', 'arm64': '-'}>
