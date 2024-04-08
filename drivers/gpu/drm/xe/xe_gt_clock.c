@@ -81,11 +81,6 @@ int xe_gt_clock_init(struct xe_gt *gt)
 	return 0;
 }
 
-u64 xe_gt_clock_cycles_to_ns(const struct xe_gt *gt, u64 count)
-{
-	return DIV_ROUND_CLOSEST_ULL(count * NSEC_PER_SEC, gt->info.reference_clock);
-}
-
 static u64 div_u64_roundup(u64 n, u32 d)
 {
 	return div_u64(n + d - 1, d);
