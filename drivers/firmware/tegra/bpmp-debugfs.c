@@ -772,6 +772,8 @@ free:
 int tegra_bpmp_init_debugfs(struct tegra_bpmp *bpmp)
 {
 	struct dentry *root;
+	struct dentry *symlink = NULL;
+	char tmp[10];
 	bool inband;
 	int err;
 
@@ -780,9 +782,18 @@ int tegra_bpmp_init_debugfs(struct tegra_bpmp *bpmp)
 	if (!inband && !tegra_bpmp_mrq_is_supported(bpmp, MRQ_DEBUGFS))
 		return 0;
 
-	root = debugfs_create_dir("bpmp", NULL);
+	if (dev_to_node(bpmp->dev) == NUMA_NO_NODE) {
+		root = debugfs_create_dir("bpmp", NULL);
+	} else {
+		snprintf(tmp, sizeof(tmp), "bpmp%d", dev_to_node(bpmp->dev));
+		root = debugfs_create_dir(tmp, NULL);
+	}
+
 	if (IS_ERR(root))
 		return -ENOMEM;
+
+	if (dev_to_node(bpmp->dev) == 0)
+		symlink = debugfs_create_symlink("bpmp", NULL, "bpmp0");
 
 	bpmp->debugfs_mirror = debugfs_create_dir("debug", root);
 	if (IS_ERR(bpmp->debugfs_mirror)) {
@@ -797,8 +808,10 @@ int tegra_bpmp_init_debugfs(struct tegra_bpmp *bpmp)
 		err = bpmp_populate_debugfs_shmem(bpmp);
 
 out:
-	if (err < 0)
+	if (err < 0) {
+		debugfs_remove(symlink);
 		debugfs_remove_recursive(root);
+	}
 
 	return err;
 }
