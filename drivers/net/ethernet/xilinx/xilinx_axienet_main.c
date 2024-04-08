@@ -2183,7 +2183,7 @@ free_netdev:
 	return ret;
 }
 
-static void axienet_remove(struct platform_device *pdev)
+static int axienet_remove(struct platform_device *pdev)
 {
 	struct net_device *ndev = platform_get_drvdata(pdev);
 	struct axienet_local *lp = netdev_priv(ndev);
@@ -2202,6 +2202,8 @@ static void axienet_remove(struct platform_device *pdev)
 	clk_disable_unprepare(lp->axi_clk);
 
 	free_netdev(ndev);
+
+	return 0;
 }
 
 static void axienet_shutdown(struct platform_device *pdev)
@@ -2254,7 +2256,7 @@ static DEFINE_SIMPLE_DEV_PM_OPS(axienet_pm_ops,
 
 static struct platform_driver axienet_driver = {
 	.probe = axienet_probe,
-	.remove_new = axienet_remove,
+	.remove = axienet_remove,
 	.shutdown = axienet_shutdown,
 	.driver = {
 		 .name = "xilinx_axienet",
