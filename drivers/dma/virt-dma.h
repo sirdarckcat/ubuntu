@@ -34,12 +34,74 @@ struct virt_dma_chan {
 	struct list_head desc_terminated;
 
 	struct virt_dma_desc *cyclic;
+
+	/* To-do: Upstream review for this WAR */
+	raw_spinlock_t rawlock;
+	uint32_t rt_spinlock_fix_enabled;
 };
+
+#define DMA_RT_SPINLOCK_FIX_ENABLED 0xAF5FA2B1
 
 static inline struct virt_dma_chan *to_virt_chan(struct dma_chan *chan)
 {
 	return container_of(chan, struct virt_dma_chan, chan);
 }
+
+#define dma_vchan_lock_init(vc)							\
+do {										\
+	if (DMA_RT_SPINLOCK_FIX_ENABLED == (vc)->rt_spinlock_fix_enabled)	\
+		raw_spin_lock_init(&(vc)->rawlock);				\
+	else									\
+		spin_lock_init(&(vc)->lock);					\
+} while (0)
+
+#define dma_vchan_lock(vc)							\
+do {										\
+	if (DMA_RT_SPINLOCK_FIX_ENABLED == (vc)->rt_spinlock_fix_enabled)	\
+		raw_spin_lock(&(vc)->rawlock);					\
+	else									\
+		spin_lock(&(vc)->lock);						\
+} while (0)
+
+#define dma_vchan_unlock(vc)							\
+do {										\
+	if (DMA_RT_SPINLOCK_FIX_ENABLED == (vc)->rt_spinlock_fix_enabled)	\
+		raw_spin_unlock(&(vc)->rawlock);				\
+	else									\
+		spin_unlock(&(vc)->lock);					\
+} while (0)
+
+#define dma_vchan_lock_irq(vc)							\
+do {										\
+	if (DMA_RT_SPINLOCK_FIX_ENABLED == (vc)->rt_spinlock_fix_enabled)	\
+		raw_spin_lock_irq(&(vc)->rawlock);				\
+	else									\
+		spin_lock_irq(&(vc)->lock);					\
+} while (0)
+
+#define dma_vchan_unlock_irq(vc)						\
+do {										\
+	if (DMA_RT_SPINLOCK_FIX_ENABLED == (vc)->rt_spinlock_fix_enabled)	\
+		raw_spin_unlock_irq(&(vc)->rawlock);				\
+	else									\
+		spin_unlock_irq(&(vc)->lock);					\
+} while (0)
+
+#define dma_vchan_lock_irqsave(vc, flags)					\
+do {										\
+	if (DMA_RT_SPINLOCK_FIX_ENABLED == (vc)->rt_spinlock_fix_enabled)	\
+		raw_spin_lock_irqsave(&(vc)->rawlock, flags);			\
+	else									\
+		spin_lock_irqsave(&(vc)->lock, flags);				\
+} while (0)
+
+#define dma_vchan_unlock_irqrestore(vc, flags)					\
+do {										\
+	if (DMA_RT_SPINLOCK_FIX_ENABLED == (vc)->rt_spinlock_fix_enabled)	\
+		raw_spin_unlock_irqrestore(&(vc)->rawlock, flags);		\
+	else									\
+		spin_unlock_irqrestore(&(vc)->lock, flags);			\
+} while (0)
 
 void vchan_dma_desc_free_list(struct virt_dma_chan *vc, struct list_head *head);
 void vchan_init(struct virt_dma_chan *vc, struct dma_device *dmadev);
@@ -66,9 +128,9 @@ static inline struct dma_async_tx_descriptor *vchan_tx_prep(struct virt_dma_chan
 	vd->tx_result.result = DMA_TRANS_NOERROR;
 	vd->tx_result.residue = 0;
 
-	spin_lock_irqsave(&vc->lock, flags);
+	dma_vchan_lock_irqsave(vc, flags);
 	list_add_tail(&vd->node, &vc->desc_allocated);
-	spin_unlock_irqrestore(&vc->lock, flags);
+	dma_vchan_unlock_irqrestore(vc, flags);
 
 	return &vd->tx;
 }
@@ -116,9 +178,9 @@ static inline void vchan_vdesc_fini(struct virt_dma_desc *vd)
 	if (dmaengine_desc_test_reuse(&vd->tx)) {
 		unsigned long flags;
 
-		spin_lock_irqsave(&vc->lock, flags);
+		dma_vchan_lock_irqsave(vc, flags);
 		list_add(&vd->node, &vc->desc_allocated);
-		spin_unlock_irqrestore(&vc->lock, flags);
+		dma_vchan_unlock_irqrestore(vc, flags);
 	} else {
 		vc->desc_free(vd);
 	}
@@ -190,11 +252,11 @@ static inline void vchan_free_chan_resources(struct virt_dma_chan *vc)
 	unsigned long flags;
 	LIST_HEAD(head);
 
-	spin_lock_irqsave(&vc->lock, flags);
+	dma_vchan_lock_irqsave(vc, flags);
 	vchan_get_all_descriptors(vc, &head);
 	list_for_each_entry(vd, &head, node)
 		dmaengine_desc_clear_reuse(&vd->tx);
-	spin_unlock_irqrestore(&vc->lock, flags);
+	dma_vchan_unlock_irqrestore(vc, flags);
 
 	vchan_dma_desc_free_list(vc, &head);
 }
@@ -215,11 +277,11 @@ static inline void vchan_synchronize(struct virt_dma_chan *vc)
 
 	tasklet_kill(&vc->task);
 
-	spin_lock_irqsave(&vc->lock, flags);
+	dma_vchan_lock_irqsave(vc, flags);
 
 	list_splice_tail_init(&vc->desc_terminated, &head);
 
-	spin_unlock_irqrestore(&vc->lock, flags);
+	dma_vchan_unlock_irqrestore(vc, flags);
 
 	vchan_dma_desc_free_list(vc, &head);
 }
