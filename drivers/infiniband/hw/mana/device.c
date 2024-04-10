@@ -147,10 +147,16 @@ static int mana_ib_probe(struct auxiliary_device *adev,
 		goto deregister_net_notifier;
 	}
 
+	ret = mana_ib_create_eqs(dev);
+	if (ret) {
+		ibdev_err(&dev->ib_dev, "Failed to create EQs, ret %d", ret);
+		goto deregister_device;
+	}
+
 	ret = ib_register_device(&dev->ib_dev, "mana_%d",
 				 mdev->gdma_context->dev);
 	if (ret)
-		goto deregister_device;
+		goto destroy_eqs;
 
 	dev_set_drvdata(&adev->dev, dev);
 
@@ -158,6 +164,8 @@ static int mana_ib_probe(struct auxiliary_device *adev,
 
 deregister_net_notifier:
 	unregister_netdevice_notifier(&dev->nb);
+destroy_eqs:
+	mana_ib_destroy_eqs(dev);
 deregister_device:
 	mana_gd_deregister_device(dev->gdma_dev);
 free_ib_device:
@@ -171,8 +179,8 @@ static void mana_ib_remove(struct auxiliary_device *adev)
 
 	ib_unregister_device(&dev->ib_dev);
 	unregister_netdevice_notifier(&dev->nb);
+	mana_ib_destroy_eqs(dev);
 	mana_gd_deregister_device(dev->gdma_dev);
-
 	ib_dealloc_device(&dev->ib_dev);
 }
 
