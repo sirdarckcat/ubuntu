@@ -41,6 +41,9 @@ CONFIG_NR_CPUS                                  note<'LP: #2046184'>
 CONFIG_PAGE_POOL                                policy<{'amd64': 'y', 'arm64': 'y'}>
 CONFIG_PAGE_POOL                                note<'OCI requirement'>
 
+CONFIG_PREEMPT_DYNAMIC                          policy<{'amd64': 'n', 'arm64': 'n'}>
+CONFIG_PREEMPT_DYNAMIC                          note<'LP: #2051342'>
+
 CONFIG_PREEMPT_NONE                             policy<{'amd64': 'y', 'arm64': 'y'}>
 CONFIG_PREEMPT_NONE                             note<'LP: #1543165'>
 
@@ -107,7 +110,6 @@ CONFIG_ARM64_VA_BITS_52                         policy<{'arm64-oracle-64k': 'n'}
 CONFIG_ARM_BRCMSTB_AVS_CPUFREQ                  policy<{'arm64': 'm'}>
 CONFIG_ARM_RASPBERRYPI_CPUFREQ                  policy<{'arm64': 'm'}>
 CONFIG_ARM_SMMU_QCOM_DEBUG                      policy<{'arm64': 'n'}>
-CONFIG_AS_VERSION                               policy<{'amd64': '24200', 'arm64': '24200'}>
 CONFIG_AX88796B_RUST_PHY                        policy<{'amd64': '-'}>
 CONFIG_BATTERY_SAMSUNG_SDI                      policy<{'amd64': 'n', 'arm64': 'y'}>
 CONFIG_BCM2711_THERMAL                          policy<{'arm64': 'm'}>
@@ -141,7 +143,6 @@ CONFIG_BRCMSTB_THERMAL                          policy<{'arm64': 'm'}>
 CONFIG_BRCM_USB_PINMAP                          policy<{'arm64': 'm'}>
 CONFIG_BUILD_BIN2C                              policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_CACHEFILES_ERROR_INJECTION               policy<{'amd64': 'n', 'arm64': 'n'}>
-CONFIG_CC_VERSION_TEXT                          policy<{'amd64': '"x86_64-linux-gnu-gcc-13 (Ubuntu 13.2.0-13ubuntu1) 13.2.0"', 'arm64': '"aarch64-linux-gnu-gcc-13 (Ubuntu 13.2.0-11ubuntu1) 13.2.0"'}>
 CONFIG_CEC_GPIO                                 policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_CEC_PIN                                  policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_CEC_PIN_ERROR_INJ                        policy<{'amd64': '-', 'arm64': '-'}>
@@ -211,7 +212,6 @@ CONFIG_INLINE_WRITE_UNLOCK                      policy<{'amd64': 'y', 'arm64': '
 CONFIG_INLINE_WRITE_UNLOCK_BH                   policy<{'arm64': 'y'}>
 CONFIG_INLINE_WRITE_UNLOCK_IRQ                  policy<{'amd64': 'y', 'arm64': 'y'}>
 CONFIG_INLINE_WRITE_UNLOCK_IRQRESTORE           policy<{'arm64': 'y'}>
-CONFIG_LD_VERSION                               policy<{'amd64': '24200', 'arm64': '24200'}>
 CONFIG_LEDS_AAEON                               policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_LEDS_BCM63138                            policy<{'arm64': 'm'}>
 CONFIG_MARVELL_GTI_WDT                          policy<{'arm64': 'm'}>
@@ -259,7 +259,6 @@ CONFIG_POWER_RESET_BRCMSTB                      policy<{'arm64': 'y'}>
 CONFIG_PREEMPTION                               policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_PREEMPT_BUILD                            policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_PREEMPT_COUNT                            policy<{'amd64': '-', 'arm64': '-'}>
-CONFIG_PREEMPT_DYNAMIC                          policy<{'amd64': 'n', 'arm64': 'n'}>
 CONFIG_PREEMPT_NONE_BUILD                       policy<{'amd64': 'y', 'arm64': 'y'}>
 CONFIG_PREEMPT_RCU                              policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_PREEMPT_TRACER                           policy<{'amd64': '-', 'arm64': '-'}>
@@ -334,7 +333,7 @@ CONFIG_TOUCHSCREEN_IPROC                        policy<{'arm64': 'm'}>
 CONFIG_TOUCHSCREEN_RASPBERRYPI_FW               policy<{'arm64': 'm'}>
 CONFIG_TRACE_MMIO_ACCESS                        policy<{'arm64': 'n'}>
 CONFIG_TYPEC_WCOVE                              policy<{'amd64': 'n'}>
-CONFIG_UBUNTU_ODM_DRIVERS                       policy<{'amd64': '-'}>
+CONFIG_UBUNTU_ODM_DRIVERS                       policy<{'amd64': 'n', 'arm64': 'n'}>
 CONFIG_UNINLINE_SPIN_UNLOCK                     policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_USB_BRCMSTB                              policy<{'arm64': 'm'}>
 CONFIG_USB_EHCI_BRCMSTB                         policy<{'arm64': 'm'}>
