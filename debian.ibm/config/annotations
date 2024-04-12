@@ -17,6 +17,9 @@ CONFIG_IRQ_FORCED_THREADING_DEFAULT             note<'maintaining original confi
 CONFIG_MFD_AHC1EC0                              policy<{'amd64': '-'}>
 CONFIG_MFD_AHC1EC0                              note<'maintaining original config'>
 
+CONFIG_PREEMPT_DYNAMIC                          policy<{'amd64': 'n'}>
+CONFIG_PREEMPT_DYNAMIC                          note<'LP: #2051342'>
+
 CONFIG_RUST                                     policy<{'amd64': 'n'}>
 CONFIG_RUST                                     note<'TODO: update note'>
 
@@ -63,7 +66,6 @@ CONFIG_PCI_MSI_IRQ_DOMAIN                       policy<{'amd64': '-'}>
 CONFIG_PREEMPTION                               policy<{'amd64': '-'}>
 CONFIG_PREEMPT_BUILD                            policy<{'amd64': '-'}>
 CONFIG_PREEMPT_COUNT                            policy<{'amd64': '-'}>
-CONFIG_PREEMPT_DYNAMIC                          policy<{'amd64': 'n'}>
 CONFIG_PREEMPT_RCU                              policy<{'amd64': '-'}>
 CONFIG_PREEMPT_TRACER                           policy<{'amd64': '-'}>
 CONFIG_PREEMPT_VOLUNTARY_BUILD                  policy<{'amd64': 'y'}>
@@ -91,7 +93,7 @@ CONFIG_SPI_INTEL_PLATFORM                       policy<{'amd64': 'n'}>
 CONFIG_TASKS_RCU                                policy<{'amd64': '-'}>
 CONFIG_TEST_SIPHASH                             policy<{'amd64': '-'}>
 CONFIG_TYPEC_WCOVE                              policy<{'amd64': 'n'}>
-CONFIG_UBUNTU_ODM_DRIVERS                       policy<{'amd64': '-'}>
+CONFIG_UBUNTU_ODM_DRIVERS                       policy<{'amd64': 'n'}>
 CONFIG_UNINLINE_SPIN_UNLOCK                     policy<{'amd64': '-'}>
 CONFIG_VIDEO_ADV7511_CEC                        policy<{'amd64': 'y'}>
 CONFIG_VIDEO_ATOMISP_ISP2401                    policy<{'amd64': '-'}>
