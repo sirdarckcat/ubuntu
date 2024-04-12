@@ -161,6 +161,15 @@ CONFIG_PCI_MESON                                note<'LP: #2007745'>
 CONFIG_POWERCAP                                 policy<{'amd64': 'y', 'arm64': 'n'}>
 CONFIG_POWERCAP                                 note<'kernel reduction'>
 
+CONFIG_PREEMPT_DYNAMIC                          policy<{'amd64': 'n', 'arm64': 'n'}>
+CONFIG_PREEMPT_DYNAMIC                          note<'LP: #2051342'>
+
+CONFIG_RCU_LAZY                                 policy<{'amd64': 'n', 'arm64': 'n'}>
+CONFIG_RCU_LAZY                                 note<'LP: #2051342'>
+
+CONFIG_RCU_LAZY_DEFAULT_OFF                     policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_RCU_LAZY_DEFAULT_OFF                     note<'Lazy RCUs are disabled in derivatives'>
+
 CONFIG_REGULATOR_TWL4030                        policy<{'amd64': 'n', 'arm64': 'n'}>
 CONFIG_REGULATOR_TWL4030                        note<'Unnecessary for Azure'>
 
@@ -569,7 +578,6 @@ CONFIG_ASUS_NB_WMI                              policy<{'amd64': '-'}>
 CONFIG_ASUS_TF103C_DOCK                         policy<{'amd64': 'n'}>
 CONFIG_ASUS_WMI                                 policy<{'amd64': '-'}>
 CONFIG_ASYNC_RAID6_TEST                         policy<{'amd64': '-', 'arm64': 'n'}>
-CONFIG_AS_VERSION                               policy<{'amd64': '24200', 'arm64': '24200'}>
 CONFIG_AT76C50X_USB                             policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_AT803X_PHY                               policy<{'amd64': 'n', 'arm64': 'm'}>
 CONFIG_ATA_OVER_ETH                             policy<{'amd64': 'n', 'arm64': 'm'}>
@@ -893,7 +901,7 @@ CONFIG_CB710_DEBUG                              policy<{'amd64': '-', 'arm64': '
 CONFIG_CB710_DEBUG_ASSUMPTIONS                  policy<{'amd64': '-', 'arm64': 'y'}>
 CONFIG_CC10001_ADC                              policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_CCS811                                   policy<{'amd64': '-', 'arm64': 'm'}>
-CONFIG_CC_VERSION_TEXT                          policy<{'amd64': '"x86_64-linux-gnu-gcc-13 (Ubuntu 13.2.0-13ubuntu1) 13.2.0"', 'arm64': '"aarch64-linux-gnu-gcc-13 (Ubuntu 13.2.0-11ubuntu1) 13.2.0"'}>
+CONFIG_CC_VERSION_TEXT                          policy<{'amd64': '"x86_64-linux-gnu-gcc-13 (Ubuntu 13.2.0-23ubuntu3) 13.2.0"', 'arm64': '"aarch64-linux-gnu-gcc-13 (Ubuntu 13.2.0-23ubuntu2) 13.2.0"'}>
 CONFIG_CEC_CH7322                               policy<{'amd64': 'n', 'arm64': 'm'}>
 CONFIG_CEC_CROS_EC                              policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_CEC_GPIO                                 policy<{'amd64': '-', 'arm64': '-'}>
@@ -1099,8 +1107,6 @@ CONFIG_COMMON_CLK_IPROC                         policy<{'arm64': 'y'}>
 CONFIG_COMMON_CLK_SI5351                        policy<{'amd64': 'n', 'arm64': 'm'}>
 CONFIG_COMMON_CLK_WM831X                        policy<{'amd64': 'n', 'arm64': 'm'}>
 CONFIG_CONSTRUCTORS                             policy<{'amd64': '-'}>
-CONFIG_CONTEXT_TRACKING_USER                    policy<{'amd64': 'y', 'arm64': 'y'}>
-CONFIG_CONTEXT_TRACKING_USER_FORCE              policy<{'amd64': 'n', 'arm64': 'n'}>
 CONFIG_CPU_FREQ_DEFAULT_GOV_SCHEDUTIL           policy<{'amd64': 'n', 'arm64': 'n'}>
 CONFIG_CPU_IDLE_THERMAL                         policy<{'arm64': '-'}>
 CONFIG_CRAMFS_MTD                               policy<{'amd64': '-', 'arm64': 'y'}>
@@ -1173,6 +1179,7 @@ CONFIG_DRM_I2C_NXP_TDA998X                      policy<{'amd64': 'n', 'arm64': '
 CONFIG_DRM_I2C_SIL164                           policy<{'amd64': 'n', 'arm64': 'm'}>
 CONFIG_DRM_NOMODESET                            policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_DRM_NOUVEAU_BACKLIGHT                    policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_DRM_NOUVEAU_GSP_DEFAULT                  policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_DRM_NOUVEAU_SVM                          policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_DRM_PRIVACY_SCREEN                       policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_DRM_UDL                                  policy<{'amd64': 'n', 'arm64': 'm'}>
@@ -1596,6 +1603,7 @@ CONFIG_GREYBUS_VIBRATOR                         policy<{'amd64': '-', 'arm64': '
 CONFIG_HAPPYMEAL                                policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_HDC100X                                  policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_HDC2010                                  policy<{'amd64': '-', 'arm64': 'm'}>
+CONFIG_HDC3020                                  policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_HDMI_LPE_AUDIO                           policy<{'amd64': '-'}>
 CONFIG_HERMES                                   policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_HERMES_CACHE_FW_ON_INIT                  policy<{'amd64': '-', 'arm64': '-'}>
@@ -1919,7 +1927,6 @@ CONFIG_INPUT_YEALINK                            policy<{'amd64': 'n', 'arm64': '
 CONFIG_INTEL_BYTCRC_PWRSRC                      policy<{'amd64': '-'}>
 CONFIG_INTEL_CHTDC_TI_PWRBTN                    policy<{'amd64': '-'}>
 CONFIG_INTEL_CHTWC_INT33FE                      policy<{'amd64': '-'}>
-CONFIG_INTEL_IOMMU_SCALABLE_MODE_DEFAULT_ON     policy<{'amd64': 'y'}>
 CONFIG_INTEL_ISHTP_ECLITE                       policy<{'amd64': 'n'}>
 CONFIG_INTEL_MENLOW                             policy<{'amd64': '-'}>
 CONFIG_INTEL_MRFLD_ADC                          policy<{'amd64': '-'}>
@@ -2094,7 +2101,6 @@ CONFIG_LCD_OTM3225A                             policy<{'amd64': '-', 'arm64': '
 CONFIG_LCD_PLATFORM                             policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_LCD_TDO24M                               policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_LCD_VGG2432A4                            policy<{'amd64': '-', 'arm64': 'm'}>
-CONFIG_LD_VERSION                               policy<{'amd64': '24200', 'arm64': '24200'}>
 CONFIG_LEDS_AAEON                               policy<{'amd64': '-'}>
 CONFIG_LEDS_AS3645A                             policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_LEDS_BCM63138                            policy<{'arm64': 'm'}>
@@ -2783,7 +2789,6 @@ CONFIG_PPS_CLIENT_PARPORT                       policy<{'amd64': 'n', 'arm64': '
 CONFIG_PREEMPTION                               policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_PREEMPT_BUILD                            policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_PREEMPT_COUNT                            policy<{'amd64': '-', 'arm64': '-'}>
-CONFIG_PREEMPT_DYNAMIC                          policy<{'amd64': 'n', 'arm64': 'n'}>
 CONFIG_PREEMPT_RCU                              policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_PREEMPT_TRACER                           policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_PREEMPT_VOLUNTARY_BUILD                  policy<{'amd64': 'y', 'arm64': 'y'}>
@@ -2853,9 +2858,6 @@ CONFIG_RAVE_SP_CORE                             policy<{'amd64': '-', 'arm64': '
 CONFIG_RAVE_SP_EEPROM                           policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_RAVE_SP_WATCHDOG                         policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_RBTREE_TEST                              policy<{'amd64': '-', 'arm64': 'n'}>
-CONFIG_RCU_LAZY                                 policy<{'amd64': 'n', 'arm64': 'n'}>
-CONFIG_RCU_NOCB_CPU                             policy<{'amd64': 'y', 'arm64': 'y'}>
-CONFIG_RCU_NOCB_CPU_DEFAULT_ALL                 policy<{'amd64': 'n', 'arm64': 'n'}>
 CONFIG_RC_ATI_REMOTE                            policy<{'amd64': 'n', 'arm64': 'm'}>
 CONFIG_RC_XBOX_DVD                              policy<{'amd64': 'n', 'arm64': 'm'}>
 CONFIG_RDMA_RXE                                 policy<{'amd64': 'n', 'arm64': 'm'}>
@@ -4582,7 +4584,7 @@ CONFIG_UBIFS_FS_SECURITY                        policy<{'amd64': '-', 'arm64': '
 CONFIG_UBIFS_FS_XATTR                           policy<{'amd64': '-', 'arm64': 'y'}>
 CONFIG_UBIFS_FS_ZLIB                            policy<{'amd64': '-', 'arm64': 'y'}>
 CONFIG_UBIFS_FS_ZSTD                            policy<{'amd64': '-', 'arm64': 'y'}>
-CONFIG_UBUNTU_ODM_DRIVERS                       policy<{'amd64': '-'}>
+CONFIG_UBUNTU_ODM_DRIVERS                       policy<{'amd64': 'n', 'arm64': 'n'}>
 CONFIG_UCB1400_CORE                             policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_UCSI_ACPI                                policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_UCSI_CCG                                 policy<{'amd64': '-', 'arm64': 'm'}>
@@ -5177,8 +5179,6 @@ CONFIG_VIDEO_ZORAN                              policy<{'amd64': '-', 'arm64': '
 CONFIG_VIDEO_ZORAN_DC30                         policy<{'arm64': 'n'}>
 CONFIG_VIDEO_ZORAN_ZR36060                      policy<{'arm64': 'n'}>
 CONFIG_VIPERBOARD_ADC                           policy<{'amd64': '-', 'arm64': 'm'}>
-CONFIG_VIRT_CPU_ACCOUNTING                      policy<{'amd64': 'y', 'arm64': 'y'}>
-CONFIG_VIRT_CPU_ACCOUNTING_GEN                  policy<{'amd64': 'y', 'arm64': 'y'}>
 CONFIG_VIRT_WIFI                                policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_VL53L0X_I2C                              policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_VL6180                                   policy<{'amd64': '-', 'arm64': 'm'}>
