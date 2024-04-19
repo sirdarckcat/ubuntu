@@ -300,7 +300,7 @@ skip_cbs:
 		tqavctrl |= IGC_TQAVCTRL_PREEMPT_ENA;
 
 	systim = ktime_set(sec, nsec);
-	if (ktime_compare(systim, base_time) > 0) {
+	if (ktime_compare(systim, base_time) > 0 && cycle != 0) {
 		s64 n = div64_s64(ktime_sub_ns(systim, base_time), cycle);
 
 		base_time = ktime_add_ns(base_time, (n + 1) * cycle);
