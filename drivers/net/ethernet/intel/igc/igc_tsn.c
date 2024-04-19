@@ -256,7 +256,7 @@ skip_cbs:
 	nsec = rd32(IGC_SYSTIML);
 	sec = rd32(IGC_SYSTIMH);
 	systim = ktime_set(sec, nsec);
-	if (ktime_compare(systim, base_time) > 0) {
+	if (ktime_compare(systim, base_time) > 0 && cycle != 0) {
 		s64 n = div64_s64(ktime_sub_ns(systim, base_time), cycle);
 
 		base_time = ktime_add_ns(base_time, (n + 1) * cycle);
