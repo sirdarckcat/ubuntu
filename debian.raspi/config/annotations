@@ -436,6 +436,7 @@ CONFIG_MFD_WM831X_I2C                           policy<{'arm64': 'n'}> note<'Not
 CONFIG_MFD_WM831X_SPI                           policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
 CONFIG_MFD_WM8350_I2C                           policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
 CONFIG_MFD_WM8400                               policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
+CONFIG_MHP_MEMMAP_ON_MEMORY                     policy<{'arm64': '-'}> note<'Introduced by LP: #2051835 (not required on Pi)'>
 CONFIG_MICROCHIP_PHY                            policy<{'arm64': 'y'}> note<'Different from master'>
 CONFIG_MIPI_I3C_HCI                             policy<{'arm64': 'n'}> note<'Required for Pi (different from master)'>
 CONFIG_MMC_ALCOR                                policy<{'arm64': 'n'}> note<'Different from master'>
@@ -2171,7 +2172,6 @@ CONFIG_MFD_TWL4030_AUDIO                        policy<{'arm64': '-'}>
 CONFIG_MFD_VEXPRESS_SYSREG                      policy<{'arm64': '-'}>
 CONFIG_MFD_WM831X                               policy<{'arm64': '-'}>
 CONFIG_MFD_WM8350                               policy<{'arm64': '-'}>
-CONFIG_MHP_MEMMAP_ON_MEMORY                     policy<{'arm64': '-'}>
 CONFIG_MLX5_CLS_ACT                             policy<{'arm64': '-'}>
 CONFIG_MLX5_TC_CT                               policy<{'arm64': '-'}>
 CONFIG_MLX5_TC_SAMPLE                           policy<{'arm64': '-'}>
