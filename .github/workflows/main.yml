@@ -17,7 +17,7 @@ jobs:
     - name: 'Re-configure remotes'
       run: |
         pip install yq
-        curl -L https://git.launchpad.net/~canonical-kernel/+git/kteam-tools/plain/info/kernel-series.yaml | yq -r -c '[(.[] | select(.development!=true and .supported and .esm!=true) | .sources?[]? | select(.supported!=false and .development!=true and .private!=true) | .packages[] | select(.type==null) | .repo[0])] | unique | .[] | (.|gsub("[^a-z0-9-]+"; "-")) + " " + .' | xargs -n 2 git remote add
+        curl -L https://git.launchpad.net/~canonical-kernel/+git/kteam-tools/plain/info/kernel-series.yaml | yq -r -c '[(.[] | select(.development!=true and .supported and .esm!=true) | .sources?[]? | select(.supported!=false and .development!=true and .private!=true) | .packages[] | select(.type==null) | .repo[0])] | unique | .[] | (.|gsub("[^a-z0-9-]+"; "-")) + " " + .' | xargs -n 2 echo git remote add
     - name: 'Re-fetch remotes'
       run: 'git remote | grep -v origin | xargs -i sh -c "git fetch {} --tags --filter=blob:none --verbose --progress || echo ERROR {}"'
     - name: 'Push update'
