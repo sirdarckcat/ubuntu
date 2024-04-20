@@ -29,8 +29,6 @@ CONFIG_KERNEL_ZSTD                              note<'LP: #1931725'>
 CONFIG_LOOPBACK_TARGET                          policy<{'amd64': 'm', 'arm64': 'm'}>
 CONFIG_LOOPBACK_TARGET                          note<'Specifically requested by GKE. Must ensure tcm_loop.ko is in default module list'>
 
-CONFIG_LSM                                      policy<{'amd64': '"landlock,lockdown,yama,integrity,apparmor,bpf"', 'arm64': '"landlock,lockdown,yama,integrity,apparmor,bpf"', 'armhf': '"landlock,lockdown,yama,integrity,apparmor,bpf"', 'ppc64el': '"landlock,lockdown,yama,integrity,apparmor,bpf"', 's390x': '"landlock,lockdown,yama,integrity,apparmor,bpf"'}>
-
 CONFIG_NETFILTER_NETLINK_LOG                    policy<{'amd64': 'y', 'arm64': 'y'}>
 CONFIG_NETFILTER_NETLINK_LOG                    note<'initial packaging'>
 
@@ -138,7 +136,6 @@ CONFIG_BRCMSTB_THERMAL                          policy<{'arm64': 'm'}>
 CONFIG_BRCM_USB_PINMAP                          policy<{'arm64': 'm'}>
 CONFIG_BUILD_BIN2C                              policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_CACHEFILES_ERROR_INJECTION               policy<{'amd64': 'n', 'arm64': 'n'}>
-CONFIG_CC_VERSION_TEXT                          policy<{'amd64': '"x86_64-linux-gnu-gcc-13 (Ubuntu 13.2.0-23ubuntu4) 13.2.0"', 'arm64': '"aarch64-linux-gnu-gcc-13 (Ubuntu 13.2.0-23ubuntu2) 13.2.0"'}>
 CONFIG_CEC_GPIO                                 policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_CEC_PIN                                  policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_CEC_PIN_ERROR_INJ                        policy<{'amd64': '-', 'arm64': '-'}>
@@ -211,6 +208,7 @@ CONFIG_KERNEL_GZIP                              policy<{'amd64': 'n', 'arm64': '
 CONFIG_LEDS_AAEON                               policy<{'amd64': '-'}>
 CONFIG_LEDS_BCM63138                            policy<{'arm64': 'm'}>
 CONFIG_LIBCRC32C                                policy<{'amd64': 'y', 'arm64': 'y'}>
+CONFIG_LSM                                      policy<{'amd64': '"landlock,lockdown,yama,integrity,apparmor,bpf"', 'arm64': '"landlock,lockdown,yama,integrity,apparmor,bpf"'}>
 CONFIG_MARVELL_GTI_WDT                          policy<{'arm64': 'm'}>
 CONFIG_MDIO_BCM_IPROC                           policy<{'arm64': 'n'}>
 CONFIG_MDIO_BUS_MUX                             policy<{'arm64': 'y'}>
