@@ -17,7 +17,7 @@ jobs:
     - name: 'Re-configure remotes'
       run: |
         pip install yq
-        curl -L https://git.launchpad.net/~canonical-kernel/+git/kteam-tools/plain/info/kernel-series.yaml > kernel-series.yaml
+        curl -L https://git.launchpad.net/~canonical-kernel/+git/kernel-versions/plain/info/kernel-series.yaml > kernel-series.yaml
         head kernel-series.yaml
         grep development kernel-series.yaml
         cat kernel-series.yaml | yq -r -c '[(.[] | select(.development!=true and .supported and .esm!=true) | .sources?[]? | select(.supported!=false and .development!=true and .private!=true) | .packages[] | select(.type==null) | .repo[0])] | unique | .[] | (.|gsub("[^a-z0-9-]+"; "-")) + " " + .' | xargs -n 2 git remote add
