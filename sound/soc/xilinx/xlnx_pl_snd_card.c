@@ -137,7 +137,7 @@ static int xlnx_i2s_card_hw_params(struct snd_pcm_substream *substream,
 	struct pl_card_data *prv;
 
 	struct snd_soc_pcm_runtime *rtd = substream->private_data;
-	struct snd_soc_dai *cpu_dai = asoc_rtd_to_cpu(rtd, 0);
+	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
 
 	ch = params_channels(params);
 	data_width = params_width(params);
