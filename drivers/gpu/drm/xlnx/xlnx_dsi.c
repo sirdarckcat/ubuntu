@@ -23,6 +23,7 @@
 #include <linux/of_device.h>
 #include <linux/of_graph.h>
 #include <linux/phy/phy.h>
+#include <linux/platform_device.h>
 #include <video/mipi_display.h>
 #include <video/videomode.h>
 
