@@ -22,6 +22,7 @@
 #include <linux/of_platform.h>
 #include <linux/of_address.h>
 #include <linux/of_net.h>
+#include <linux/platform_device.h>
 #include <linux/skbuff.h>
 
 #include "xilinx_axienet_tsn.h"
