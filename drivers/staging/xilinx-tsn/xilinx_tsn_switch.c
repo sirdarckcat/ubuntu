@@ -21,6 +21,7 @@
 #include <linux/miscdevice.h>
 #include <linux/of_net.h>
 #include <linux/of_platform.h>
+#include <linux/platform_device.h>
 #include "xilinx_tsn_switch.h"
 
 static struct miscdevice switch_dev;
