@@ -90,8 +90,10 @@ static int __ref kasan_init_region(void *start, size_t size)
 	if (ret)
 		return ret;
 
-	if (!slab_is_available())
+	if (!slab_is_available()) {
+		k_start = k_start & PAGE_MASK;
 		block = memblock_alloc(k_end - k_start, PAGE_SIZE);
+	}
 
 	for (k_cur = k_start & PAGE_MASK; k_cur < k_end; k_cur += PAGE_SIZE) {
 		pmd_t *pmd = pmd_offset(pud_offset(pgd_offset_k(k_cur), k_cur), k_cur);
