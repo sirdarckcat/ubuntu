@@ -16,6 +16,7 @@
 #include <linux/phy/phy.h>
 #include <linux/phy/phy-hdmi.h>
 #include <linux/platform_device.h>
+#include <linux/of_platform.h>
 #include <linux/delay.h>
 #include "xhdmiphy.h"
 
