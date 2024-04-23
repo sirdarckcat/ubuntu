@@ -351,6 +351,15 @@ static const struct tegra_audio_cdata tegra264_data = {
 	.plla_out0_rates[x11_RATE] = 45158400,
 };
 
+static const struct tegra_audio_cdata tegra238_data = {
+	/* PLLA */
+	.plla_rates[x8_RATE] = 1277952000,
+	.plla_rates[x11_RATE] = 1264435200,
+	/* PLLA_OUT0 */
+	.plla_out0_rates[x8_RATE] = 49152000,
+	.plla_out0_rates[x11_RATE] = 45158400,
+};
+
 static const struct of_device_id graph_of_tegra_match[] = {
 	{ .compatible = "nvidia,tegra210-audio-graph-card",
 	  .data = &tegra210_data },
@@ -358,6 +367,8 @@ static const struct of_device_id graph_of_tegra_match[] = {
 	  .data = &tegra186_data },
 	{ .compatible = "nvidia,tegra264-audio-graph-card",
 	  .data = &tegra264_data },
+	{ .compatible = "nvidia,tegra238-audio-graph-card",
+	  .data = &tegra238_data },
 	{},
 };
 MODULE_DEVICE_TABLE(of, graph_of_tegra_match);
