@@ -743,7 +743,7 @@ static int drm_atomic_connector_set_property(struct drm_connector *connector,
 				&replaced);
 		return ret;
 	} else if (property == config->gen_hdr_output_metadata_property) {
-		ret = drm_atomic_replace_property_blob_from_id(dev,
+		ret = drm_property_replace_blob_from_id(dev,
 				&state->gen_hdr_output_metadata,
 				val,
 				sizeof(struct gen_hdr_output_metadata), -1,
