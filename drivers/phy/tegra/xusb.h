@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 /*
- * Copyright (c) 2014-2022, NVIDIA CORPORATION.  All rights reserved.
+ * SPDX-FileCopyrightText: Copyright (c) 2014-2024, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * Copyright (c) 2015, Google Inc.
  */
 
@@ -11,6 +11,7 @@
 #include <linux/iopoll.h>
 #include <linux/mutex.h>
 #include <linux/workqueue.h>
+#include <linux/notifier.h>
 
 #include <linux/usb/ch9.h>
 #include <linux/usb/otg.h>
@@ -458,10 +459,13 @@ struct tegra_xusb_padctl {
 	struct list_head pads;
 
 	unsigned int enable;
+	bool is_xhci_iov;
 
 	struct clk *clk;
 
 	struct regulator_bulk_data *supplies;
+
+	struct blocking_notifier_head notifier;
 };
 
 static inline void padctl_writel(struct tegra_xusb_padctl *padctl, u32 value,
