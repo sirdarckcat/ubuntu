@@ -1743,7 +1743,7 @@ static int enum_fmt(struct xm2m_msc_dev *xm2msc, struct v4l2_fmtdesc *f)
 
 	/* Format found */
 	fmt = &formats[i];
-	strlcpy((char *)f->description, (char *)fmt->name,
+	strscpy((char *)f->description, (char *)fmt->name,
 		sizeof(f->description));
 	f->pixelformat = fmt->fourcc;
 
