@@ -433,7 +433,7 @@ static int xhls_probe(struct platform_device *pdev)
 	v4l2_subdev_init(subdev, &xhls_ops);
 	subdev->dev = &pdev->dev;
 	subdev->internal_ops = &xhls_internal_ops;
-	strlcpy(subdev->name, dev_name(&pdev->dev), sizeof(subdev->name));
+	strscpy(subdev->name, dev_name(&pdev->dev), sizeof(subdev->name));
 	v4l2_set_subdevdata(subdev, xhls);
 	subdev->flags |= V4L2_SUBDEV_FL_HAS_DEVNODE;
 

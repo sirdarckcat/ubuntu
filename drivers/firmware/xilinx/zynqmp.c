@@ -2719,7 +2719,7 @@ static ssize_t config_reg_store(struct kobject *kobj,
 	if (!kern_buff)
 		return -ENOMEM;
 
-	ret = strlcpy(kern_buff, buf, count);
+	ret = strscpy(kern_buff, buf, count);
 	if (ret < 0) {
 		ret = -EFAULT;
 		goto err;
