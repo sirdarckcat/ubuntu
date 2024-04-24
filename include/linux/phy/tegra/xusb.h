@@ -8,11 +8,20 @@
 
 struct tegra_xusb_padctl;
 struct device;
+struct notifier_block;
 enum usb_device_speed;
+
+#define PHY_TEGRA_XUSB_SUPPORT_EVENT
+
+#define XUSB_EVENT_VF_OFFSET		24
+#define XUSB_EVENT_VF_MASK		0xff
 
 struct tegra_xusb_padctl *tegra_xusb_padctl_get(struct device *dev);
 void tegra_xusb_padctl_put(struct tegra_xusb_padctl *padctl);
-
+int tegra_xusb_padctl_event_register(struct tegra_xusb_padctl *padctl,
+				     struct notifier_block *nb);
+int tegra_xusb_padctl_event_notify(struct tegra_xusb_padctl *padctl,
+				     unsigned long val);
 int tegra_xusb_padctl_usb3_save_context(struct tegra_xusb_padctl *padctl,
 					unsigned int port);
 int tegra_xusb_padctl_hsic_set_idle(struct tegra_xusb_padctl *padctl,
