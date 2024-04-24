@@ -354,7 +354,7 @@ static int xdmsc_probe(struct platform_device *pdev)
 	v4l2_subdev_init(subdev, &xdmsc_ops);
 	subdev->dev = &pdev->dev;
 	subdev->internal_ops = &xdmsc_internal_ops;
-	strlcpy(subdev->name, dev_name(&pdev->dev), sizeof(subdev->name));
+	strscpy(subdev->name, dev_name(&pdev->dev), sizeof(subdev->name));
 	subdev->flags |= V4L2_SUBDEV_FL_HAS_DEVNODE;
 
 	/* Default Formats Initialization */
