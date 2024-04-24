@@ -415,7 +415,7 @@ static int xsw_probe(struct platform_device *pdev)
 	v4l2_subdev_init(subdev, &xsw_ops);
 	subdev->dev = &pdev->dev;
 	subdev->internal_ops = &xsw_internal_ops;
-	strlcpy(subdev->name, dev_name(&pdev->dev), sizeof(subdev->name));
+	strscpy(subdev->name, dev_name(&pdev->dev), sizeof(subdev->name));
 	v4l2_set_subdevdata(subdev, xsw);
 	subdev->flags |= V4L2_SUBDEV_FL_HAS_DEVNODE;
 	subdev->entity.ops = &xsw_media_ops;
