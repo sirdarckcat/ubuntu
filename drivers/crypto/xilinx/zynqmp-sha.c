@@ -340,8 +340,6 @@ static void zynqmp_sha_remove(struct platform_device *pdev)
 	dma_free_coherent(sha3_drv_ctx->dev,
 			  SHA3_384_DIGEST_SIZE, fbuf, final_dma_addr);
 	crypto_unregister_shash(&sha3_drv_ctx->sha3_384);
-
-	return 0;
 }
 
 static struct platform_driver zynqmp_sha_driver = {
