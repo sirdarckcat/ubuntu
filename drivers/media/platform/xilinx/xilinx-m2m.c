@@ -779,9 +779,9 @@ xvip_dma_querycap(struct file *file, void *fh, struct v4l2_capability *cap)
 	cap->device_caps = V4L2_CAP_STREAMING | V4L2_CAP_VIDEO_M2M_MPLANE;
 	cap->capabilities = cap->device_caps | V4L2_CAP_DEVICE_CAPS;
 
-	strlcpy(cap->driver, XVIP_M2M_NAME, sizeof(cap->driver));
-	strlcpy(cap->card, XVIP_M2M_NAME, sizeof(cap->card));
-	strlcpy(cap->bus_info, XVIP_M2M_NAME, sizeof(cap->card));
+	strscpy(cap->driver, XVIP_M2M_NAME, sizeof(cap->driver));
+	strscpy(cap->card, XVIP_M2M_NAME, sizeof(cap->card));
+	strscpy(cap->bus_info, XVIP_M2M_NAME, sizeof(cap->card));
 
 	return 0;
 }
@@ -1691,7 +1691,7 @@ static int xvip_composite_v4l2_init(struct xvip_m2m_dev *xdev)
 	int ret;
 
 	xdev->media_dev.dev = xdev->dev;
-	strlcpy(xdev->media_dev.model, "Xilinx Video M2M Composite Device",
+	strscpy(xdev->media_dev.model, "Xilinx Video M2M Composite Device",
 		sizeof(xdev->media_dev.model));
 	xdev->media_dev.hw_revision = 0;
 

@@ -500,7 +500,7 @@ static int xremap_probe(struct platform_device *pdev)
 	v4l2_subdev_init(subdev, &xremap_ops);
 	subdev->dev = &pdev->dev;
 	subdev->internal_ops = &xremap_internal_ops;
-	strlcpy(subdev->name, dev_name(&pdev->dev), sizeof(subdev->name));
+	strscpy(subdev->name, dev_name(&pdev->dev), sizeof(subdev->name));
 	v4l2_set_subdevdata(subdev, xremap);
 	subdev->flags |= V4L2_SUBDEV_FL_HAS_DEVNODE;
 
