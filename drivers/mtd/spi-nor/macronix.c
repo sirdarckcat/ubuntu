@@ -51,7 +51,7 @@ static int spi_nor_macronix_octal_dtr_enable(struct spi_nor *nor, bool enable)
 		SPI_MEM_OP(SPI_MEM_OP_CMD(SPINOR_OP_RDID, 1),
 			   SPI_MEM_OP_ADDR(enable ? 4 : 0, 0, enable ? 1 : 0),
 			   SPI_MEM_OP_DUMMY(enable ? 4 : 0, 1),
-			   SPI_MEM_OP_DATA_IN(round_up(nor->info->id_len, 2),
+			   SPI_MEM_OP_DATA_IN(round_up(nor->info->id->len, 2),
 					      buf, 1));
 
 	if (enable)
@@ -62,10 +62,10 @@ static int spi_nor_macronix_octal_dtr_enable(struct spi_nor *nor, bool enable)
 		return ret;
 
 	if (enable) {
-		if (memcmp(buf, nor->spimem->device_id, nor->info->id_len))
+		if (memcmp(buf, nor->spimem->device_id, nor->info->id->len))
 			return -EINVAL;
 	} else {
-		if (memcmp(buf, nor->info->id, nor->info->id_len))
+		if (memcmp(buf, nor->info->id->bytes, nor->info->id->len))
 			return -EINVAL;
 	}
 
