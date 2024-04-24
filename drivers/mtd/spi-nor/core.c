@@ -3867,14 +3867,16 @@ static int spi_nor_init(struct spi_nor *nor)
 {
 	u32 n_flash = 1;
 	int err, idx;
+	u8 id;
 
-	if (nor->info->id[0] == CFI_MFR_ATMEL ||
-	    nor->info->id[0] == CFI_MFR_INTEL ||
-	    nor->info->id[0] == CFI_MFR_SST ||
-	    nor->info->id[0] & SNOR_F_HAS_LOCK) {
-		spi_nor_write_enable(nor);
-		nor->bouncebuf[0] = 0;
-		spi_nor_write_sr(nor, nor->bouncebuf, 1);
+	if (nor->info->id && nor->info->id->bytes) {
+		id = nor->info->id->bytes[0];
+		if (id == CFI_MFR_ATMEL || id == CFI_MFR_INTEL || id == CFI_MFR_SST ||
+		    id & SNOR_F_HAS_LOCK) {
+			spi_nor_write_enable(nor);
+			nor->bouncebuf[0] = 0;
+			spi_nor_write_sr(nor, nor->bouncebuf, 1);
+		}
 	}
 
 	if (nor->num_flash)
