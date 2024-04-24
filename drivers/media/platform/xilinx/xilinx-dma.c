@@ -709,7 +709,7 @@ xvip_dma_enum_input(struct file *file, void *priv, struct v4l2_input *i)
 	 * input like V4L2_INPUT_TYPE_TUNER and V4L2_INPUT_TYPE_TOUCH.
 	 */
 	i->type = V4L2_INPUT_TYPE_CAMERA;
-	strlcpy((char *)i->name, (char *)subdev->name, sizeof(i->name));
+	strscpy((char *)i->name, (char *)subdev->name, sizeof(i->name));
 
 	return 0;
 }
