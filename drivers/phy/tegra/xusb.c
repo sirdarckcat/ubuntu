@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
- * Copyright (c) 2014-2022, NVIDIA CORPORATION.  All rights reserved.
+ * SPDX-FileCopyrightText: Copyright (c) 2014-2024, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  */
 
 #include <linux/delay.h>
@@ -1194,11 +1194,15 @@ static int tegra_xusb_padctl_probe(struct platform_device *pdev)
 	if (IS_ERR(padctl))
 		return PTR_ERR(padctl);
 
+	padctl->is_xhci_iov = !!of_find_property(pdev->dev.of_node,
+						"is_xhci_iov", NULL);
+
 	platform_set_drvdata(pdev, padctl);
 	INIT_LIST_HEAD(&padctl->ports);
 	INIT_LIST_HEAD(&padctl->lanes);
 	INIT_LIST_HEAD(&padctl->pads);
 	mutex_init(&padctl->lock);
+	BLOCKING_INIT_NOTIFIER_HEAD(&padctl->notifier);
 
 	padctl->regs = devm_platform_ioremap_resource(pdev, 0);
 	if (IS_ERR(padctl->regs)) {
@@ -1206,39 +1210,41 @@ static int tegra_xusb_padctl_probe(struct platform_device *pdev)
 		goto remove;
 	}
 
-	padctl->rst = devm_reset_control_get(&pdev->dev, NULL);
-	if (IS_ERR(padctl->rst)) {
-		err = PTR_ERR(padctl->rst);
-		goto remove;
-	}
+	if (!padctl->is_xhci_iov) {
+		padctl->rst = devm_reset_control_get(&pdev->dev, NULL);
+		if (IS_ERR(padctl->rst)) {
+			err = PTR_ERR(padctl->rst);
+			goto remove;
+		}
 
-	padctl->supplies = devm_kcalloc(&pdev->dev, padctl->soc->num_supplies,
-					sizeof(*padctl->supplies), GFP_KERNEL);
-	if (!padctl->supplies) {
-		err = -ENOMEM;
-		goto remove;
-	}
+		padctl->supplies = devm_kcalloc(&pdev->dev, padctl->soc->num_supplies,
+						sizeof(*padctl->supplies), GFP_KERNEL);
+		if (!padctl->supplies) {
+			err = -ENOMEM;
+			goto remove;
+		}
 
-	regulator_bulk_set_supply_names(padctl->supplies,
-					padctl->soc->supply_names,
-					padctl->soc->num_supplies);
+		regulator_bulk_set_supply_names(padctl->supplies,
+						padctl->soc->supply_names,
+						padctl->soc->num_supplies);
 
-	err = devm_regulator_bulk_get(&pdev->dev, padctl->soc->num_supplies,
-				      padctl->supplies);
-	if (err < 0) {
-		dev_err_probe(&pdev->dev, err, "failed to get regulators\n");
-		goto remove;
-	}
+		err = devm_regulator_bulk_get(&pdev->dev, padctl->soc->num_supplies,
+					padctl->supplies);
+		if (err < 0) {
+			dev_err_probe(&pdev->dev, err, "failed to get regulators\n");
+			goto remove;
+		}
 
-	err = reset_control_deassert(padctl->rst);
-	if (err < 0)
-		goto remove;
+		err = reset_control_deassert(padctl->rst);
+		if (err < 0)
+			goto remove;
 
-	err = regulator_bulk_enable(padctl->soc->num_supplies,
-				    padctl->supplies);
-	if (err < 0) {
-		dev_err(&pdev->dev, "failed to enable supplies: %d\n", err);
-		goto reset;
+		err = regulator_bulk_enable(padctl->soc->num_supplies,
+					padctl->supplies);
+		if (err < 0) {
+			dev_err(&pdev->dev, "failed to enable supplies: %d\n", err);
+			goto reset;
+		}
 	}
 
 	err = tegra_xusb_setup_pads(padctl);
@@ -1264,9 +1270,11 @@ static int tegra_xusb_padctl_probe(struct platform_device *pdev)
 remove_pads:
 	tegra_xusb_remove_pads(padctl);
 power_down:
-	regulator_bulk_disable(padctl->soc->num_supplies, padctl->supplies);
+	if (!padctl->is_xhci_iov)
+		regulator_bulk_disable(padctl->soc->num_supplies, padctl->supplies);
 reset:
-	reset_control_assert(padctl->rst);
+	if (!padctl->is_xhci_iov)
+		reset_control_assert(padctl->rst);
 remove:
 	platform_set_drvdata(pdev, NULL);
 	soc->ops->remove(padctl);
@@ -1281,14 +1289,16 @@ static void tegra_xusb_padctl_remove(struct platform_device *pdev)
 	tegra_xusb_remove_ports(padctl);
 	tegra_xusb_remove_pads(padctl);
 
-	err = regulator_bulk_disable(padctl->soc->num_supplies,
-				     padctl->supplies);
-	if (err < 0)
-		dev_err(&pdev->dev, "failed to disable supplies: %d\n", err);
+	if (!padctl->is_xhci_iov) {
+		err = regulator_bulk_disable(padctl->soc->num_supplies,
+					padctl->supplies);
+		if (err < 0)
+			dev_err(&pdev->dev, "failed to disable supplies: %d\n", err);
 
-	err = reset_control_assert(padctl->rst);
-	if (err < 0)
-		dev_err(&pdev->dev, "failed to assert reset: %d\n", err);
+		err = reset_control_assert(padctl->rst);
+		if (err < 0)
+			dev_err(&pdev->dev, "failed to assert reset: %d\n", err);
+	}
 
 	padctl->soc->ops->remove(padctl);
 }
@@ -1368,6 +1378,20 @@ void tegra_xusb_padctl_put(struct tegra_xusb_padctl *padctl)
 		put_device(padctl->dev);
 }
 EXPORT_SYMBOL_GPL(tegra_xusb_padctl_put);
+
+int tegra_xusb_padctl_event_register(struct tegra_xusb_padctl *padctl,
+				     struct notifier_block *nb)
+{
+	return blocking_notifier_chain_register(&padctl->notifier, nb);
+}
+EXPORT_SYMBOL_GPL(tegra_xusb_padctl_event_register);
+
+int tegra_xusb_padctl_event_notify(struct tegra_xusb_padctl *padctl,
+				     unsigned long val)
+{
+	return blocking_notifier_call_chain(&padctl->notifier, val, padctl);
+}
+EXPORT_SYMBOL_GPL(tegra_xusb_padctl_event_notify);
 
 int tegra_xusb_padctl_usb3_save_context(struct tegra_xusb_padctl *padctl,
 					unsigned int port)
