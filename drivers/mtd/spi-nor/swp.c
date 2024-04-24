@@ -397,16 +397,20 @@ static inline u16 min_lockable_sectors(struct spi_nor *nor,
 				       u16 n_sectors)
 {
 	u16 lock_granularity;
+	u8 id;
 
 	/*
 	 * Revisit - SST (not used by us) has the same JEDEC ID as micron but
 	 * protected area table is similar to that of spansion.
 	 */
 	lock_granularity = max(1, n_sectors / M25P_MAX_LOCKABLE_SECTORS);
-	if (nor->info->id[0] == CFI_MFR_ST ||	/* Micron */
-	    nor->info->id[0] == CFI_MFR_PMC ||	/* ISSI */
-	    nor->info->id[0] == CFI_MFR_MACRONIX)	/* Macronix */
-		lock_granularity = 1;
+	if (nor->info->id && nor->info->id->bytes) {
+		id = nor->info->id->bytes[0];
+		if (id == CFI_MFR_ST ||	/* Micron */
+		    id == CFI_MFR_PMC ||	/* ISSI */
+		    id == CFI_MFR_MACRONIX)	/* Macronix */
+			lock_granularity = 1;
+	}
 
 	return lock_granularity;
 }
@@ -572,22 +576,25 @@ void spi_nor_try_unlock_all(struct spi_nor *nor)
 	struct spi_nor_flash_parameter *params = spi_nor_get_params(nor, 0);
 	int ret;
 	const struct flash_info *info = nor->info;
+	u8 id;
 
 	if (!(nor->flags & SNOR_F_HAS_LOCK))
 		return;
 
 	dev_dbg(nor->dev, "Unprotecting entire flash array\n");
 
-	if (nor->info->id[0] == CFI_MFR_ATMEL ||
-	    nor->info->id[0] == CFI_MFR_INTEL ||
-	    nor->info->id[0] == CFI_MFR_SST ||
-	    nor->flags & SNOR_F_HAS_LOCK) {
-		if (info->flags & SST_GLOBAL_PROT_UNLK) {
-			spi_nor_prot_unlock(nor);
-		} else {
-			ret = spi_nor_unlock(&nor->mtd, 0, params->size);
-				if (ret)
-					dev_dbg(nor->dev, "Failed to unlock the entire flash memory array\n");
+	if (nor->info->id && nor->info->id->bytes) {
+		id = nor->info->id->bytes[0];
+		if (id == CFI_MFR_ATMEL || id == CFI_MFR_INTEL ||
+		    id == CFI_MFR_SST ||
+		    nor->flags & SNOR_F_HAS_LOCK) {
+			if (info->flags & SST_GLOBAL_PROT_UNLK) {
+				spi_nor_prot_unlock(nor);
+			} else {
+				ret = spi_nor_unlock(&nor->mtd, 0, params->size);
+					if (ret)
+						dev_dbg(nor->dev, "Failed to unlock the entire flash memory array\n");
+			}
 		}
 	}
 }
