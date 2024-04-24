@@ -75,7 +75,7 @@ static int spi_nor_issi_octal_dtr_enable(struct spi_nor *nor, bool enable)
 		SPI_MEM_OP(SPI_MEM_OP_CMD(SPINOR_OP_RDID, 1),
 			   SPI_MEM_OP_NO_ADDR,
 			   SPI_MEM_OP_DUMMY(enable ? 8 : 0, 1),
-			   SPI_MEM_OP_DATA_IN(round_up(nor->info->id_len, 2),
+			   SPI_MEM_OP_DATA_IN(round_up(nor->info->id->len, 2),
 					      buf, 1));
 
 	if (enable)
@@ -85,7 +85,7 @@ static int spi_nor_issi_octal_dtr_enable(struct spi_nor *nor, bool enable)
 	if (ret)
 		return ret;
 
-	if (memcmp(buf, nor->info->id, nor->info->id_len))
+	if (memcmp(buf, nor->info->id->bytes, nor->info->id->len))
 		return -EINVAL;
 
 	return 0;
