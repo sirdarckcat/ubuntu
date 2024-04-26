@@ -317,6 +317,94 @@ static const struct tegra_hte_line_mapped tegra234_aon_gpio_sec_map[] = {
 	[40] = {2, NV_AON_HTE_SLICE2_IRQ_GPIO_23},
 };
 
+static const struct tegra_hte_line_mapped tegra264_aon_gpio_map[] = {
+        /* gpio, slice, bit_index */
+        /* AA port */
+        [0]  = {3, NV_AON_HTE_SLICE2_IRQ_GPIO_29},
+        [1]  = {3, NV_AON_HTE_SLICE2_IRQ_GPIO_28},
+        [2]  = {3, NV_AON_HTE_SLICE2_IRQ_GPIO_27},
+        [3]  = {3, NV_AON_HTE_SLICE2_IRQ_GPIO_26},
+        [4]  = {3, NV_AON_HTE_SLICE2_IRQ_GPIO_25},
+        [5]  = {3, NV_AON_HTE_SLICE2_IRQ_GPIO_24},
+        [6]  = {3, NV_AON_HTE_SLICE2_IRQ_GPIO_23},
+        [7]  = {3, NV_AON_HTE_SLICE2_IRQ_GPIO_22},
+        /* BB port */
+        [8]  = {3, NV_AON_HTE_SLICE2_IRQ_GPIO_21},
+        [9]  = {3, NV_AON_HTE_SLICE2_IRQ_GPIO_20},
+        /* CC port */
+        [10] = {3, NV_AON_HTE_SLICE2_IRQ_GPIO_19},
+        [11] = {3, NV_AON_HTE_SLICE2_IRQ_GPIO_18},
+        [12] = {3, NV_AON_HTE_SLICE2_IRQ_GPIO_17},
+        [13] = {3, NV_AON_HTE_SLICE2_IRQ_GPIO_16},
+        [14] = {3, NV_AON_HTE_SLICE2_IRQ_GPIO_15},
+        [15] = {3, NV_AON_HTE_SLICE2_IRQ_GPIO_14},
+        [16] = {3, NV_AON_HTE_SLICE2_IRQ_GPIO_13},
+        [17] = {3, NV_AON_HTE_SLICE2_IRQ_GPIO_12},
+        /* DD port */
+        [18] = {3, NV_AON_HTE_SLICE2_IRQ_GPIO_11},
+        [19] = {3, NV_AON_HTE_SLICE2_IRQ_GPIO_10},
+        [20] = {3, NV_AON_HTE_SLICE2_IRQ_GPIO_9},
+        [21] = {3, NV_AON_HTE_SLICE2_IRQ_GPIO_8},
+        [22] = {3, NV_AON_HTE_SLICE2_IRQ_GPIO_7},
+        [23] = {3, NV_AON_HTE_SLICE2_IRQ_GPIO_6},
+        [24] = {3, NV_AON_HTE_SLICE2_IRQ_GPIO_5},
+        [25] = {3, NV_AON_HTE_SLICE2_IRQ_GPIO_4},
+	/* EE port */
+	[26] = {3, NV_AON_HTE_SLICE2_IRQ_GPIO_3},
+        [27] = {3, NV_AON_HTE_SLICE2_IRQ_GPIO_2},
+        [28] = {3, NV_AON_HTE_SLICE2_IRQ_GPIO_1},
+        [29] = {3, NV_AON_HTE_SLICE2_IRQ_GPIO_0},
+};
+
+static const struct tegra_hte_line_mapped tegra264_aon_gpio_sec_map[] = {
+        /* gpio, slice, bit_index */
+        /* AA port */
+        [0]  = {3, NV_AON_HTE_SLICE2_IRQ_GPIO_29},
+        [1]  = {3, NV_AON_HTE_SLICE2_IRQ_GPIO_28},
+        [2]  = {3, NV_AON_HTE_SLICE2_IRQ_GPIO_27},
+        [3]  = {3, NV_AON_HTE_SLICE2_IRQ_GPIO_26},
+        [4]  = {3, NV_AON_HTE_SLICE2_IRQ_GPIO_25},
+        [5]  = {3, NV_AON_HTE_SLICE2_IRQ_GPIO_24},
+        [6]  = {3, NV_AON_HTE_SLICE2_IRQ_GPIO_23},
+        [7]  = {3, NV_AON_HTE_SLICE2_IRQ_GPIO_22},
+        /* BB port */
+        [8]  = {3, NV_AON_HTE_SLICE2_IRQ_GPIO_21},
+        [9]  = {3, NV_AON_HTE_SLICE2_IRQ_GPIO_20},
+        [10] = {NV_AON_SLICE_INVALID, 0},
+        [11] = {NV_AON_SLICE_INVALID, 0},
+        [12]  = {NV_AON_SLICE_INVALID, 0},
+        [13]  = {NV_AON_SLICE_INVALID, 0},
+        [14] = {NV_AON_SLICE_INVALID, 0},
+        [15] = {NV_AON_SLICE_INVALID, 0},
+        /* CC port */
+        [16] = {3, NV_AON_HTE_SLICE2_IRQ_GPIO_19},
+        [17] = {3, NV_AON_HTE_SLICE2_IRQ_GPIO_18},
+        [18] = {3, NV_AON_HTE_SLICE2_IRQ_GPIO_17},
+        [19] = {3, NV_AON_HTE_SLICE2_IRQ_GPIO_16},
+        [20] = {3, NV_AON_HTE_SLICE2_IRQ_GPIO_15},
+        [21] = {3, NV_AON_HTE_SLICE2_IRQ_GPIO_14},
+        [22] = {3, NV_AON_HTE_SLICE2_IRQ_GPIO_13},
+        [23] = {3, NV_AON_HTE_SLICE2_IRQ_GPIO_12},
+        /* DD port */
+        [24] = {3, NV_AON_HTE_SLICE2_IRQ_GPIO_11},
+        [25] = {3, NV_AON_HTE_SLICE2_IRQ_GPIO_10},
+        [26] = {3, NV_AON_HTE_SLICE2_IRQ_GPIO_9},
+        [27] = {3, NV_AON_HTE_SLICE2_IRQ_GPIO_8},
+        [28] = {3, NV_AON_HTE_SLICE2_IRQ_GPIO_7},
+        [29] = {3, NV_AON_HTE_SLICE2_IRQ_GPIO_6},
+        [30] = {3, NV_AON_HTE_SLICE2_IRQ_GPIO_5},
+        [31] = {3, NV_AON_HTE_SLICE2_IRQ_GPIO_4},
+        /* EE port */
+        [32] = {3, NV_AON_HTE_SLICE2_IRQ_GPIO_3},
+        [33] = {3, NV_AON_HTE_SLICE2_IRQ_GPIO_2},
+        [34] = {3, NV_AON_HTE_SLICE2_IRQ_GPIO_1},
+        [35] = {3, NV_AON_HTE_SLICE2_IRQ_GPIO_0},
+        [36] = {NV_AON_SLICE_INVALID, 0},
+        [37] = {NV_AON_SLICE_INVALID, 0},
+        [38] = {NV_AON_SLICE_INVALID, 0},
+        [39] = {NV_AON_SLICE_INVALID, 0},
+};
+
 static const struct tegra_hte_data t194_aon_hte = {
 	.map_sz = ARRAY_SIZE(tegra194_aon_gpio_map),
 	.map = tegra194_aon_gpio_map,
@@ -335,6 +423,15 @@ static const struct tegra_hte_data t234_aon_hte = {
 	.slices = 3,
 };
 
+static const struct tegra_hte_data t264_aon_hte = {
+        .map_sz = ARRAY_SIZE(tegra264_aon_gpio_map),
+        .map = tegra264_aon_gpio_map,
+        .sec_map_sz = ARRAY_SIZE(tegra264_aon_gpio_sec_map),
+        .sec_map = tegra264_aon_gpio_sec_map,
+        .type = HTE_TEGRA_TYPE_GPIO,
+        .slices = 4,
+};
+
 static const struct tegra_hte_data t194_lic_hte = {
 	.map_sz = 0,
 	.map = NULL,
@@ -347,6 +444,13 @@ static const struct tegra_hte_data t234_lic_hte = {
 	.map = NULL,
 	.type = HTE_TEGRA_TYPE_LIC,
 	.slices = 17,
+};
+
+static const struct tegra_hte_data t264_lic_hte = {
+        .map_sz = 0,
+        .map = NULL,
+        .type = HTE_TEGRA_TYPE_LIC,
+        .slices = 10,
 };
 
 static inline u32 tegra_hte_readl(struct tegra_hte_soc *hte, u32 reg)
@@ -656,6 +760,8 @@ static const struct of_device_id tegra_hte_of_match[] = {
 	{ .compatible = "nvidia,tegra194-gte-aon", .data = &t194_aon_hte},
 	{ .compatible = "nvidia,tegra234-gte-lic", .data = &t234_lic_hte},
 	{ .compatible = "nvidia,tegra234-gte-aon", .data = &t234_aon_hte},
+        { .compatible = "nvidia,tegra264-gte-lic", .data = &t264_lic_hte},
+        { .compatible = "nvidia,tegra264-gte-aon", .data = &t264_aon_hte},
 	{ }
 };
 MODULE_DEVICE_TABLE(of, tegra_hte_of_match);
