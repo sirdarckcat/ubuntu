@@ -17,8 +17,6 @@
 
 #define SPINOR_OP_CLSR		0x30	/* Clear status register 1 */
 #define SPINOR_OP_CLPEF		0x82	/* Clear program/erase failure flags */
-#define SPINOR_OP_CYPRESS_EX4B	0xB8	/* Exit 4-byte address mode */
-#define SPINOR_OP_CYPRESS_DIE_ERASE		0x61	/* Chip (die) erase */
 #define SPINOR_OP_RD_ANY_REG			0x65	/* Read any register */
 #define SPINOR_OP_WR_ANY_REG			0x71	/* Write any register */
 #define SPINOR_REG_CYPRESS_VREG			0x00800000
@@ -58,13 +56,6 @@
 		   SPI_MEM_OP_ADDR(naddr, addr, 0),			\
 		   SPI_MEM_OP_DUMMY(ndummy, 0),				\
 		   SPI_MEM_OP_DATA_IN(1, buf, 0))
-
-#define CYPRESS_NOR_EN4B_EX4B_OP(enable)				\
-	SPI_MEM_OP(SPI_MEM_OP_CMD(enable ? SPINOR_OP_EN4B :		\
-					   SPINOR_OP_CYPRESS_EX4B, 0),	\
-		   SPI_MEM_OP_NO_ADDR,					\
-		   SPI_MEM_OP_NO_DUMMY,					\
-		   SPI_MEM_OP_NO_DATA)
 
 #define SPANSION_OP(opcode)						\
 	SPI_MEM_OP(SPI_MEM_OP_CMD(opcode, 0),				\
@@ -364,20 +355,6 @@ static int cypress_nor_quad_enable_volatile(struct spi_nor *nor)
 	return 0;
 }
 
-static int cypress_nor_set_4byte_addr_mode(struct spi_nor *nor, bool enable)
-{
-	int ret;
-	struct spi_mem_op op = CYPRESS_NOR_EN4B_EX4B_OP(enable);
-
-	spi_nor_spimem_setup_op(nor, &op, nor->reg_proto);
-
-	ret = spi_mem_exec_op(nor->spimem, &op);
-	if (ret)
-		dev_dbg(nor->dev, "error %d setting 4-byte mode\n", ret);
-
-	return ret;
-}
-
 /**
  * cypress_nor_determine_addr_mode_by_sr1() - Determine current address mode
  *                                            (3 or 4-byte) by querying status
@@ -548,9 +525,6 @@ s25fs256t_post_bfpt_fixup(struct spi_nor *nor,
 	struct spi_mem_op op;
 	int ret;
 
-	/* Assign 4-byte address mode method that is not determined in BFPT */
-	nor->params->set_4byte_addr_mode = cypress_nor_set_4byte_addr_mode;
-
 	ret = cypress_nor_set_addr_mode_nbytes(nor);
 	if (ret)
 		return ret;
@@ -616,9 +590,6 @@ s25hx_t_post_bfpt_fixup(struct spi_nor *nor,
 {
 	int ret;
 
-	/* Assign 4-byte address mode method that is not determined in BFPT */
-	nor->params->set_4byte_addr_mode = cypress_nor_set_4byte_addr_mode;
-
 	ret = cypress_nor_set_addr_mode_nbytes(nor);
 	if (ret)
 		return ret;
@@ -673,9 +644,6 @@ static int s25hx_t_late_init(struct spi_nor *nor)
 	params->reads[SNOR_CMD_READ_FAST].num_mode_clocks = 8;
 	params->ready = cypress_nor_sr_ready_and_clear;
 	cypress_nor_ecc_init(nor);
-
-	if (params->n_dice > 1)
-		params->die_erase_opcode = SPINOR_OP_CYPRESS_DIE_ERASE;
 
 	return 0;
 }
@@ -748,9 +716,6 @@ static int s28hx_t_post_bfpt_fixup(struct spi_nor *nor,
 				   const struct sfdp_parameter_header *bfpt_header,
 				   const struct sfdp_bfpt *bfpt)
 {
-	/* Assign 4-byte address mode method that is not determined in BFPT */
-	nor->params->set_4byte_addr_mode = cypress_nor_set_4byte_addr_mode;
-
 	return cypress_nor_set_addr_mode_nbytes(nor);
 }
 
@@ -969,6 +934,7 @@ static const struct flash_info spansion_nor_parts[] = {
 		.id = SNOR_ID(0x34, 0x2a, 0x1c, 0x0f, 0x00, 0x90),
 		.name = "s25hl02gt",
 		.mfr_flags = USE_CLPEF,
+		.flags = NO_CHIP_ERASE,
 		.fixups = &s25hx_t_fixups
 	}, {
 		.id = SNOR_ID(0x34, 0x2b, 0x19, 0x0f, 0x08, 0x90),
@@ -989,6 +955,7 @@ static const struct flash_info spansion_nor_parts[] = {
 		.id = SNOR_ID(0x34, 0x2b, 0x1c, 0x0f, 0x00, 0x90),
 		.name = "s25hs02gt",
 		.mfr_flags = USE_CLPEF,
+		.flags = NO_CHIP_ERASE,
 		.fixups = &s25hx_t_fixups
 	}, {
 		.id = SNOR_ID(0x34, 0x5a, 0x1a),
