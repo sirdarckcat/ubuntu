@@ -8,6 +8,9 @@
 
 #include "core.h"
 
+/* flash_info mfr_flag. Used to read proprietary FSR register. */
+#define USE_FSR		BIT(0)
+
 #define SPINOR_OP_IS_DTR_RD	0xfd	/* Fast Read opcode in DTR mode */
 #define SPINOR_OP_IS_RD_ANY_REG	0x85	/* Read volatile register */
 #define SPINOR_OP_IS_WR_ANY_REG	0x81	/* Write volatile register */
