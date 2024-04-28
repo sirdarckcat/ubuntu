@@ -522,17 +522,17 @@ static void zynqmp_qspi_chipselect(struct spi_device *qspi, bool is_high)
 
 	if ((qspi->cs_index_mask & GQSPI_SELECT_LOWER_CS) &&
 	    (qspi->cs_index_mask & GQSPI_SELECT_UPPER_CS)) {
-		zynqmp_gqspi_selectslave(xqspi,
+		zynqmp_gqspi_selecttarget(xqspi,
 					 GQSPI_SELECT_FLASH_CS_BOTH,
 					 GQSPI_SELECT_FLASH_BUS_BOTH);
 		if (!xqspi->is_parallel)
 			xqspi->is_parallel = true;
 	} else if (qspi->cs_index_mask & GQSPI_SELECT_UPPER_CS) {
-		zynqmp_gqspi_selectslave(xqspi,
+		zynqmp_gqspi_selecttarget(xqspi,
 					 GQSPI_SELECT_FLASH_CS_UPPER,
 					 GQSPI_SELECT_FLASH_BUS_LOWER);
 	} else if (qspi->cs_index_mask & GQSPI_SELECT_LOWER_CS) {
-		zynqmp_gqspi_selectslave(xqspi,
+		zynqmp_gqspi_selecttarget(xqspi,
 					 GQSPI_SELECT_FLASH_CS_LOWER,
 					 GQSPI_SELECT_FLASH_BUS_LOWER);
 	}
