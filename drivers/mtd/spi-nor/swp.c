@@ -44,7 +44,8 @@ static u64 spi_nor_get_min_prot_length_sr(struct spi_nor *nor)
 	 * the flash. For now, we need to have that ugly default.
 	 */
 	unsigned int sector_size = nor->info->sector_size ?: SPI_NOR_DEFAULT_SECTOR_SIZE;
-	u64 n_sectors = div_u64(nor->params->size, sector_size);
+	struct spi_nor_flash_parameter *params = spi_nor_get_params(nor, 0);
+	u64 n_sectors = div_u64(params->size, sector_size);
 	u8 mask = spi_nor_get_sr_bp_mask(nor);
 
 	if (nor->flags & SNOR_F_HAS_STACKED)
