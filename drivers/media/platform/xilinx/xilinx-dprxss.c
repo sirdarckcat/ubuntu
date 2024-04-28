@@ -1693,7 +1693,7 @@ __xdprxss_get_pad_format(struct xdprxss_state *xdprxss,
 }
 
 /**
- * xdprxss_init_cfg - Initialise the pad format config to default
+ * xdprxss_init_state - Initialise the pad format config to default
  * @sd: Pointer to V4L2 Sub device structure
  * @sd_state: Pointer to sub device pad information structure
  *
@@ -1702,7 +1702,7 @@ __xdprxss_get_pad_format(struct xdprxss_state *xdprxss,
  *
  * Return: 0 on success
  */
-static int xdprxss_init_cfg(struct v4l2_subdev *sd,
+static int xdprxss_init_state(struct v4l2_subdev *sd,
 			    struct v4l2_subdev_state *sd_state)
 {
 	struct xdprxss_state *xdprxss = to_xdprxssstate(sd);
@@ -2230,7 +2230,6 @@ static const struct v4l2_subdev_video_ops xdprxss_video_ops = {
 };
 
 static const struct v4l2_subdev_pad_ops xdprxss_pad_ops = {
-	.init_cfg		= xdprxss_init_cfg,
 	.enum_mbus_code		= xdprxss_enum_mbus_code,
 	.get_fmt		= xdprxss_getset_format,
 	.set_fmt		= xdprxss_getset_format,
@@ -2242,6 +2241,10 @@ static const struct v4l2_subdev_ops xdprxss_ops = {
 	.core	= &xdprxss_core_ops,
 	.video	= &xdprxss_video_ops,
 	.pad	= &xdprxss_pad_ops
+};
+
+static const struct v4l2_subdev_internal_ops xdprxss_internal_ops = {
+	.init_state = xdprxss_init_state,
 };
 
 /* ----------------------------------------------------------------
@@ -3019,6 +3022,7 @@ static int xdprxss_probe(struct platform_device *pdev)
 	/* Initialize V4L2 subdevice and media entity */
 	subdev = &xdprxss->subdev;
 	v4l2_subdev_init(subdev, &xdprxss_ops);
+	subdev->internal_ops = &xdprxss_internal_ops;
 	subdev->dev = &pdev->dev;
 	strscpy(subdev->name, dev_name(&pdev->dev), sizeof(subdev->name));
 
