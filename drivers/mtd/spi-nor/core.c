@@ -3432,6 +3432,7 @@ static void spi_nor_no_sfdp_init_params(struct spi_nor *nor)
 static void spi_nor_init_flags(struct spi_nor *nor)
 {
 	struct device_node *np = spi_nor_get_flash_node(nor);
+	struct spi_nor_flash_parameter *params = spi_nor_get_params(nor, 0);
 	const u16 flags = nor->info->flags;
 
 	if (of_property_read_bool(np, "broken-flash-reset"))
@@ -3461,7 +3462,7 @@ static void spi_nor_init_flags(struct spi_nor *nor)
 	if (flags & NO_CHIP_ERASE)
 		nor->flags |= SNOR_F_NO_OP_CHIP_ERASE;
 
-	if (flags & SPI_NOR_RWW && nor->params->n_banks > 1 &&
+	if (flags & SPI_NOR_RWW && params->n_banks > 1 &&
 	    !nor->controller_ops)
 		nor->flags |= SNOR_F_RWW;
 }
