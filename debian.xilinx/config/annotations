@@ -119,7 +119,7 @@ CONFIG_EFIVAR_FS                                note<'TODO: update note'>
 CONFIG_EFI_ZBOOT                                policy<{'arm64': 'n'}>
 CONFIG_EFI_ZBOOT                                note<'TODO: update note'>
 
-CONFIG_EVM                                      policy<{'arm64': '-'}>
+CONFIG_EVM                                      policy<{'arm64': 'n'}>
 CONFIG_EVM                                      note<'TODO: update note'>
 
 CONFIG_EVM_ATTR_FSUUID                          policy<{'arm64': '-'}>
@@ -158,7 +158,7 @@ CONFIG_IIO_SIMPLE_DUMMY_BUFFER                  note<'TODO: update note'>
 CONFIG_IIO_SIMPLE_DUMMY_EVENTS                  policy<{'arm64': '-'}>
 CONFIG_IIO_SIMPLE_DUMMY_EVENTS                  note<'TODO: update note'>
 
-CONFIG_IMA                                      policy<{'arm64': '-'}>
+CONFIG_IMA                                      policy<{'arm64': 'n'}>
 CONFIG_IMA                                      note<'TODO: update note'>
 
 CONFIG_IMA_APPRAISE                             policy<{'arm64': '-'}>
@@ -344,7 +344,7 @@ CONFIG_SCSI_VIRTIO                              note<'TODO: update note'>
 CONFIG_SECURITY_APPARMOR_RESTRICT_USERNS        policy<{'arm64': '-'}>
 CONFIG_SECURITY_APPARMOR_RESTRICT_USERNS        note<'TODO: update note'>
 
-CONFIG_SECURITY_SAFESETID                       policy<{'arm64': '-'}>
+CONFIG_SECURITY_SAFESETID                       policy<{'arm64': 'n'}>
 CONFIG_SECURITY_SAFESETID                       note<'TODO: update note'>
 
 CONFIG_SERIAL_SH_SCI                            policy<{'arm64': '-'}>
@@ -2278,6 +2278,7 @@ CONFIG_CRYPTO_ECRDSA                            policy<{'arm64': 'n'}>
 CONFIG_CRYPTO_ENGINE                            policy<{'arm64': 'y'}>
 CONFIG_CRYPTO_ESSIV                             policy<{'arm64': 'n'}>
 CONFIG_CRYPTO_FCRYPT                            policy<{'arm64': 'n'}>
+CONFIG_CRYPTO_FIPS                              policy<{'arm64': 'n'}>
 CONFIG_CRYPTO_GENIV                             policy<{'arm64': '-'}>
 CONFIG_CRYPTO_GHASH_ARM64_CE                    policy<{'arm64': 'n'}>
 CONFIG_CRYPTO_HCTR2                             policy<{'arm64': 'n'}>
@@ -4318,12 +4319,10 @@ CONFIG_INPUT_TWL6040_VIBRA                      policy<{'arm64': '-'}>
 CONFIG_INPUT_WM831X_ON                          policy<{'arm64': '-'}>
 CONFIG_INPUT_XEN_KBDDEV_FRONTEND                policy<{'arm64': '-'}>
 CONFIG_INPUT_YEALINK                            policy<{'arm64': '-'}>
-CONFIG_INTEGRITY                                policy<{'arm64': '-'}>
 CONFIG_INTEGRITY_ASYMMETRIC_KEYS                policy<{'arm64': '-'}>
-CONFIG_INTEGRITY_AUDIT                          policy<{'arm64': '-'}>
 CONFIG_INTEGRITY_CA_MACHINE_KEYRING             policy<{'arm64': '-'}>
 CONFIG_INTEGRITY_MACHINE_KEYRING                policy<{'arm64': '-'}>
-CONFIG_INTEGRITY_SIGNATURE                      policy<{'arm64': '-'}>
+CONFIG_INTEGRITY_SIGNATURE                      policy<{'arm64': 'n'}>
 CONFIG_INTEGRITY_TRUSTED_KEYRING                policy<{'arm64': '-'}>
 CONFIG_INTEL_IDMA64                             policy<{'arm64': 'n'}>
 CONFIG_INTEL_STRATIX10_RSU                      policy<{'arm64': '-'}>
@@ -4416,7 +4415,7 @@ CONFIG_IP6_NF_MATCH_RT                          policy<{'arm64': 'n'}>
 CONFIG_IP6_NF_MATCH_SRH                         policy<{'arm64': 'n'}>
 CONFIG_IP6_NF_NAT                               policy<{'arm64': 'n'}>
 CONFIG_IP6_NF_RAW                               policy<{'arm64': 'n'}>
-CONFIG_IP6_NF_SECURITY                          policy<{'arm64': '-'}>
+CONFIG_IP6_NF_SECURITY                          policy<{'arm64': 'n'}>
 CONFIG_IP6_NF_TARGET_HL                         policy<{'arm64': 'n'}>
 CONFIG_IP6_NF_TARGET_MASQUERADE                 policy<{'arm64': '-'}>
 CONFIG_IP6_NF_TARGET_NPT                        policy<{'arm64': '-'}>
@@ -4501,7 +4500,7 @@ CONFIG_IP_NF_MATCH_RPFILTER                     policy<{'arm64': 'n'}>
 CONFIG_IP_NF_MATCH_TTL                          policy<{'arm64': 'n'}>
 CONFIG_IP_NF_NAT                                policy<{'arm64': 'n'}>
 CONFIG_IP_NF_RAW                                policy<{'arm64': 'n'}>
-CONFIG_IP_NF_SECURITY                           policy<{'arm64': '-'}>
+CONFIG_IP_NF_SECURITY                           policy<{'arm64': 'n'}>
 CONFIG_IP_NF_TARGET_ECN                         policy<{'arm64': 'n'}>
 CONFIG_IP_NF_TARGET_MASQUERADE                  policy<{'arm64': '-'}>
 CONFIG_IP_NF_TARGET_NETMAP                      policy<{'arm64': '-'}>
@@ -5522,20 +5521,10 @@ CONFIG_MMU_NOTIFIER                             policy<{'arm64': '-'}>
 CONFIG_MODULE_ALLOW_BTF_MISMATCH                policy<{'arm64': '-'}>
 CONFIG_MODULE_COMPRESS_NONE                     policy<{'arm64': 'y'}>
 CONFIG_MODULE_DECOMPRESS                        policy<{'arm64': '-'}>
-CONFIG_MODULE_SIG                               policy<{'arm64': 'n'}>
-CONFIG_MODULE_SIG_ALL                           policy<{'arm64': '-'}>
-CONFIG_MODULE_SIG_FORCE                         policy<{'arm64': '-'}>
-CONFIG_MODULE_SIG_FORMAT                        policy<{'arm64': '-'}>
-CONFIG_MODULE_SIG_HASH                          policy<{'arm64': '-'}>
-CONFIG_MODULE_SIG_KEY                           policy<{'arm64': '-'}>
+CONFIG_MODULE_SIG_HASH                          policy<{'arm64': '"sha256"'}>
 CONFIG_MODULE_SIG_KEY_TYPE_ECDSA                policy<{'arm64': '-'}>
-CONFIG_MODULE_SIG_KEY_TYPE_RSA                  policy<{'arm64': '-'}>
-CONFIG_MODULE_SIG_SHA256                        policy<{'arm64': '-'}>
-CONFIG_MODULE_SIG_SHA384                        policy<{'arm64': '-'}>
-CONFIG_MODULE_SIG_SHA3_256                      policy<{'arm64': '-'}>
-CONFIG_MODULE_SIG_SHA3_384                      policy<{'arm64': '-'}>
-CONFIG_MODULE_SIG_SHA3_512                      policy<{'arm64': '-'}>
-CONFIG_MODULE_SIG_SHA512                        policy<{'arm64': '-'}>
+CONFIG_MODULE_SIG_SHA256                        policy<{'arm64': 'y'}>
+CONFIG_MODULE_SIG_SHA512                        policy<{'arm64': 'n'}>
 CONFIG_MODULE_SRCVERSION_ALL                    policy<{'arm64': 'n'}>
 CONFIG_MOST                                     policy<{'arm64': 'n'}>
 CONFIG_MOST_CDEV                                policy<{'arm64': '-'}>
@@ -5903,7 +5892,7 @@ CONFIG_NETFILTER_XT_TARGET_TRACE                policy<{'arm64': '-'}>
 CONFIG_NETFS_STATS                              policy<{'arm64': '-'}>
 CONFIG_NETFS_SUPPORT                            policy<{'arm64': '-'}>
 CONFIG_NETKIT                                   policy<{'arm64': '-'}>
-CONFIG_NETLABEL                                 policy<{'arm64': '-'}>
+CONFIG_NETLABEL                                 policy<{'arm64': 'n'}>
 CONFIG_NETLINK_DIAG                             policy<{'arm64': 'n'}>
 CONFIG_NETPOLL                                  policy<{'arm64': '-'}>
 CONFIG_NETROM                                   policy<{'arm64': '-'}>
@@ -6152,7 +6141,6 @@ CONFIG_NFS_V3                                   policy<{'arm64': 'y'}>
 CONFIG_NFS_V4                                   policy<{'arm64': 'y'}>
 CONFIG_NFS_V4_1_MIGRATION                       policy<{'arm64': 'n'}>
 CONFIG_NFS_V4_2_READ_PLUS                       policy<{'arm64': 'y'}>
-CONFIG_NFS_V4_SECURITY_LABEL                    policy<{'arm64': '-'}>
 CONFIG_NFTL                                     policy<{'arm64': 'n'}>
 CONFIG_NFTL_RW                                  policy<{'arm64': '-'}>
 CONFIG_NFT_BRIDGE_META                          policy<{'arm64': '-'}>
@@ -8091,8 +8079,7 @@ CONFIG_SDX_GCC_75                               policy<{'arm64': '-'}>
 CONFIG_SD_ADC_MODULATOR                         policy<{'arm64': 'n'}>
 CONFIG_SECONDARY_TRUSTED_KEYRING                policy<{'arm64': 'n'}>
 CONFIG_SECONDARY_TRUSTED_KEYRING_SIGNED_BY_BUILTIN policy<{'arm64': '-'}>
-CONFIG_SECURITY                                 policy<{'arm64': 'n'}>
-CONFIG_SECURITY_APPARMOR                        policy<{'arm64': '-'}>
+CONFIG_SECURITY_APPARMOR                        policy<{'arm64': 'n'}>
 CONFIG_SECURITY_APPARMOR_DEBUG                  policy<{'arm64': '-'}>
 CONFIG_SECURITY_APPARMOR_EXPORT_BINARY          policy<{'arm64': '-'}>
 CONFIG_SECURITY_APPARMOR_HASH                   policy<{'arm64': '-'}>
@@ -8101,13 +8088,12 @@ CONFIG_SECURITY_APPARMOR_INTROSPECT_POLICY      policy<{'arm64': '-'}>
 CONFIG_SECURITY_APPARMOR_PARANOID_LOAD          policy<{'arm64': '-'}>
 CONFIG_SECURITY_DMESG_RESTRICT                  policy<{'arm64': 'n'}>
 CONFIG_SECURITY_INFINIBAND                      policy<{'arm64': '-'}>
-CONFIG_SECURITY_LANDLOCK                        policy<{'arm64': '-'}>
-CONFIG_SECURITY_LOADPIN                         policy<{'arm64': '-'}>
-CONFIG_SECURITY_LOCKDOWN_LSM                    policy<{'arm64': '-'}>
+CONFIG_SECURITY_LANDLOCK                        policy<{'arm64': 'n'}>
+CONFIG_SECURITY_LOCKDOWN_LSM                    policy<{'arm64': 'n'}>
 CONFIG_SECURITY_LOCKDOWN_LSM_EARLY              policy<{'arm64': '-'}>
-CONFIG_SECURITY_NETWORK                         policy<{'arm64': '-'}>
+CONFIG_SECURITY_NETWORK                         policy<{'arm64': 'n'}>
 CONFIG_SECURITY_NETWORK_XFRM                    policy<{'arm64': '-'}>
-CONFIG_SECURITY_PATH                            policy<{'arm64': '-'}>
+CONFIG_SECURITY_PATH                            policy<{'arm64': 'n'}>
 CONFIG_SECURITY_PERF_EVENTS_RESTRICT            policy<{'arm64': 'n'}>
 CONFIG_SECURITY_SELINUX                         policy<{'arm64': '-'}>
 CONFIG_SECURITY_SELINUX_AVC_STATS               policy<{'arm64': '-'}>
@@ -8116,18 +8102,18 @@ CONFIG_SECURITY_SELINUX_DEBUG                   policy<{'arm64': '-'}>
 CONFIG_SECURITY_SELINUX_DEVELOP                 policy<{'arm64': '-'}>
 CONFIG_SECURITY_SELINUX_SID2STR_CACHE_SIZE      policy<{'arm64': '-'}>
 CONFIG_SECURITY_SELINUX_SIDTAB_HASH_BITS        policy<{'arm64': '-'}>
-CONFIG_SECURITY_SMACK                           policy<{'arm64': '-'}>
+CONFIG_SECURITY_SMACK                           policy<{'arm64': 'n'}>
 CONFIG_SECURITY_SMACK_APPEND_SIGNALS            policy<{'arm64': '-'}>
 CONFIG_SECURITY_SMACK_BRINGUP                   policy<{'arm64': '-'}>
 CONFIG_SECURITY_SMACK_NETFILTER                 policy<{'arm64': '-'}>
-CONFIG_SECURITY_TOMOYO                          policy<{'arm64': '-'}>
+CONFIG_SECURITY_TOMOYO                          policy<{'arm64': 'n'}>
 CONFIG_SECURITY_TOMOYO_ACTIVATION_TRIGGER       policy<{'arm64': '-'}>
 CONFIG_SECURITY_TOMOYO_INSECURE_BUILTIN_SETTING policy<{'arm64': '-'}>
 CONFIG_SECURITY_TOMOYO_MAX_ACCEPT_ENTRY         policy<{'arm64': '-'}>
 CONFIG_SECURITY_TOMOYO_MAX_AUDIT_LOG            policy<{'arm64': '-'}>
 CONFIG_SECURITY_TOMOYO_OMIT_USERSPACE_LOADER    policy<{'arm64': '-'}>
 CONFIG_SECURITY_TOMOYO_POLICY_LOADER            policy<{'arm64': '-'}>
-CONFIG_SECURITY_YAMA                            policy<{'arm64': '-'}>
+CONFIG_SECURITY_YAMA                            policy<{'arm64': 'n'}>
 CONFIG_SENSEAIR_SUNRISE_CO2                     policy<{'arm64': 'n'}>
 CONFIG_SENSIRION_SGP30                          policy<{'arm64': 'n'}>
 CONFIG_SENSIRION_SGP40                          policy<{'arm64': 'n'}>
