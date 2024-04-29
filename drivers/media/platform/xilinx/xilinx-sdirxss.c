@@ -1939,7 +1939,7 @@ static int xsdirxss_log_status(struct v4l2_subdev *sd)
 }
 
 /**
- * xsdirxss_g_frame_interval - Get the frame interval
+ * xsdirxss_get_frame_interval - Get the frame interval
  * @sd: V4L2 Sub device
  * @fi: Pointer to V4l2 Sub device frame interval structure
  *
@@ -1950,8 +1950,9 @@ static int xsdirxss_log_status(struct v4l2_subdev *sd)
  *
  * Return: 0 on success
  */
-static int xsdirxss_g_frame_interval(struct v4l2_subdev *sd,
-				     struct v4l2_subdev_frame_interval *fi)
+static int xsdirxss_get_frame_interval(struct v4l2_subdev *sd,
+				       struct v4l2_subdev_state *sd_state,
+				       struct v4l2_subdev_frame_interval *fi)
 {
 	struct xsdirxss_state *xsdirxss = to_xsdirxssstate(sd);
 	struct xsdirxss_core *core = &xsdirxss->core;
@@ -2389,7 +2390,6 @@ static const struct v4l2_subdev_core_ops xsdirxss_core_ops = {
 };
 
 static const struct v4l2_subdev_video_ops xsdirxss_video_ops = {
-	.g_frame_interval = xsdirxss_g_frame_interval,
 	.s_stream = xsdirxss_s_stream,
 	.g_input_status = xsdirxss_g_input_status,
 	.query_dv_timings = xsdirxss_query_dv_timings,
@@ -2398,6 +2398,7 @@ static const struct v4l2_subdev_video_ops xsdirxss_video_ops = {
 static const struct v4l2_subdev_pad_ops xsdirxss_pad_ops = {
 	.get_fmt = xsdirxss_get_format,
 	.set_fmt = xsdirxss_set_format,
+	.get_frame_interval = xsdirxss_get_frame_interval,
 	.enum_mbus_code = xsdirxss_enum_mbus_code,
 	.enum_dv_timings = xsdirxss_enum_dv_timings,
 };
