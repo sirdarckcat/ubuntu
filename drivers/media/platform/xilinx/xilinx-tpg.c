@@ -245,8 +245,9 @@ static void xtpg_update_pattern_control(struct xtpg_device *xtpg,
  * V4L2 Subdevice Video Operations
  */
 
-static int xtpg_g_frame_interval(struct v4l2_subdev *subdev,
-				 struct v4l2_subdev_frame_interval *fi)
+static int xtpg_get_frame_interval(struct v4l2_subdev *subdev,
+				   struct v4l2_subdev_state *sd_state,
+				   struct v4l2_subdev_frame_interval *fi)
 {
 	struct xtpg_device *xtpg = to_tpg(subdev);
 
@@ -256,8 +257,9 @@ static int xtpg_g_frame_interval(struct v4l2_subdev *subdev,
 	return 0;
 }
 
-static int xtpg_s_frame_interval(struct v4l2_subdev *subdev,
-				 struct v4l2_subdev_frame_interval *fi)
+static int xtpg_set_frame_interval(struct v4l2_subdev *subdev,
+				   struct v4l2_subdev_state *sd_state,
+				   struct v4l2_subdev_frame_interval *fi)
 {
 	struct xtpg_device *xtpg = to_tpg(subdev);
 
@@ -697,14 +699,14 @@ static const struct v4l2_subdev_core_ops xtpg_core_ops = {
 };
 
 static const struct v4l2_subdev_video_ops xtpg_video_ops = {
-	.g_frame_interval = xtpg_g_frame_interval,
-	.s_frame_interval = xtpg_s_frame_interval,
 	.s_stream = xtpg_s_stream,
 };
 
 static const struct v4l2_subdev_pad_ops xtpg_pad_ops = {
 	.enum_mbus_code		= xvip_enum_mbus_code,
 	.enum_frame_size	= xtpg_enum_frame_size,
+	.set_frame_interval	= xtpg_set_frame_interval,
+	.get_frame_interval	= xtpg_get_frame_interval,
 	.get_fmt		= xtpg_get_format,
 	.set_fmt		= xtpg_set_format,
 };
