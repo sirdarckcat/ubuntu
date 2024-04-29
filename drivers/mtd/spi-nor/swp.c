@@ -417,13 +417,14 @@ static inline u16 min_lockable_sectors(struct spi_nor *nor,
 static inline uint32_t get_protected_area_start(struct spi_nor *nor,
 						u8 lock_bits)
 {
+	struct spi_nor_flash_parameter *params = spi_nor_get_params(nor, 0);
 	struct mtd_info *mtd = &nor->mtd;
 	u32 sector_size;
 	u16 n_sectors;
 	u64 mtd_size;
 
-	n_sectors = nor->info->n_sectors;
 	sector_size = nor->info->sector_size;
+	n_sectors = div_u64(params->size, sector_size);
 	mtd_size = mtd->size;
 
 	if (nor->flags & SNOR_F_HAS_PARALLEL) {
@@ -431,7 +432,7 @@ static inline uint32_t get_protected_area_start(struct spi_nor *nor,
 		mtd_size = (mtd->size >> 1);
 	}
 	if (nor->flags & SNOR_F_HAS_STACKED) {
-		n_sectors = (nor->info->n_sectors >> 1);
+		n_sectors = (n_sectors >> 1);
 		mtd_size = (mtd->size >> 1);
 	}
 
