@@ -2609,7 +2609,7 @@ int cifs_fiemap(struct inode *inode, struct fiemap_extent_info *fei, u64 start,
 	}
 
 	cifsFileInfo_put(cfile);
-	return -EOPNOTSUPP;
+	return -ENOTSUPP;
 }
 
 int cifs_truncate_page(struct address_space *mapping, loff_t from)
