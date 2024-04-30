@@ -132,6 +132,7 @@ static int mlxbf_gige_open(struct net_device *netdev)
 {
 	struct mlxbf_gige *priv = netdev_priv(netdev);
 	struct phy_device *phydev = netdev->phydev;
+	u8 timeout = 10;
 	u64 control;
 	u64 int_en;
 	int err;
@@ -153,6 +154,22 @@ static int mlxbf_gige_open(struct net_device *netdev)
 	priv->valid_polarity = 0;
 
 	phy_start(phydev);
+
+	if (priv->hw_version == MLXBF_GIGE_VERSION_BF2) {
+		/* On BlueField-2 systems, the KSZ9031 PHY hardware could fail
+		 * to complete autonegotiation and so the link remains down.
+		 * The software workaround is to restart autonegotiation.
+		 */
+		while (timeout) {
+			if (phy_aneg_done(phydev))
+				break;
+			msleep(1000);
+			timeout--;
+		};
+
+		if (timeout == 0)
+			phy_restart_aneg(phydev);
+	}
 
 	err = mlxbf_gige_tx_init(priv);
 	if (err)
