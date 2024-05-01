@@ -218,6 +218,7 @@ static void gve_tx_free_ring_dqo(struct gve_priv *priv, struct gve_tx_ring *tx,
 	struct device *hdev = &priv->pdev->dev;
 	int idx = tx->q_num;
 	size_t bytes;
+	u32 qpl_id;
 
 	if (tx->q_resources) {
 		dma_free_coherent(hdev, sizeof(*tx->q_resources),
@@ -245,7 +246,11 @@ static void gve_tx_free_ring_dqo(struct gve_priv *priv, struct gve_tx_ring *tx,
 	kvfree(tx->dqo.tx_qpl_buf_next);
 	tx->dqo.tx_qpl_buf_next = NULL;
 
-	tx->dqo.qpl = NULL;
+	if (tx->dqo.qpl) {
+		qpl_id = gve_tx_qpl_id(priv, tx->q_num);
+		gve_free_queue_page_list(priv, tx->dqo.qpl, qpl_id);
+		tx->dqo.qpl = NULL;
+	}
 
 	netif_dbg(priv, drv, priv->dev, "freed tx queue %d\n", idx);
 }
@@ -291,7 +296,9 @@ static int gve_tx_alloc_ring_dqo(struct gve_priv *priv,
 {
 	struct device *hdev = &priv->pdev->dev;
 	int num_pending_packets;
+	int qpl_page_cnt;
 	size_t bytes;
+	u32 qpl_id;
 	int i;
 
 	memset(tx, 0, sizeof(*tx));
@@ -358,9 +365,13 @@ static int gve_tx_alloc_ring_dqo(struct gve_priv *priv,
 		goto err;
 
 	if (!cfg->raw_addressing) {
-		u32 qpl_id = gve_tx_qpl_id(priv, tx->q_num);
+		qpl_id = gve_tx_qpl_id(priv, tx->q_num);
+		qpl_page_cnt = priv->tx_pages_per_qpl;
 
-		tx->dqo.qpl = &cfg->qpls[qpl_id];
+		tx->dqo.qpl = gve_alloc_queue_page_list(priv, qpl_id,
+							qpl_page_cnt);
+		if (!tx->dqo.qpl)
+			goto err;
 
 		if (gve_tx_qpl_buf_init(tx))
 			goto err;
@@ -379,12 +390,6 @@ int gve_tx_alloc_rings_dqo(struct gve_priv *priv,
 	struct gve_tx_ring *tx = cfg->tx;
 	int err = 0;
 	int i, j;
-
-	if (!cfg->raw_addressing && !cfg->qpls) {
-		netif_err(priv, drv, priv->dev,
-			  "Cannot alloc QPL ring before allocing QPLs\n");
-		return -EINVAL;
-	}
 
 	if (cfg->start_idx + cfg->num_rings > cfg->qcfg->max_queues) {
 		netif_err(priv, drv, priv->dev,
