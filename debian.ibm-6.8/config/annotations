@@ -1,0 +1,10 @@
+# Menu: HEADER
+# FORMAT: 4
+# ARCH: amd64
+# FLAVOUR: amd64-ibm
+
+include "../../debian.ibm/config/annotations"
+include "../../debian.ibm-6.8/config/annotations-disable-rust"
+
+CONFIG_RUST_IS_AVAILABLE                        policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_RUST_IS_AVAILABLE                        note<'required to enable Rust support, LP: #1993183'>
