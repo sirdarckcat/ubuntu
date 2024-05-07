@@ -6,5 +6,14 @@
 include "../../debian.ibm/config/annotations"
 include "../../debian.ibm-6.8/config/annotations-disable-rust"
 
-CONFIG_RUST_IS_AVAILABLE                        policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_RUST_IS_AVAILABLE                        policy<{'amd64': '-'}>
 CONFIG_RUST_IS_AVAILABLE                        note<'required to enable Rust support, LP: #1993183'>
+
+
+# ---- Annotations without notes ----
+
+CONFIG_AS_VERSION                               policy<{'amd64': '23800'}>
+CONFIG_CC_VERSION_TEXT                          policy<{'amd64': '"x86_64-linux-gnu-gcc-12 (Ubuntu 12.3.0-1ubuntu1~22.04) 12.3.0"'}>
+CONFIG_DEBUG_INFO_COMPRESSED_ZSTD               policy<{'amd64': '-'}>
+CONFIG_GCC_VERSION                              policy<{'amd64': '120300'}>
+CONFIG_LD_VERSION                               policy<{'amd64': '23800'}>
