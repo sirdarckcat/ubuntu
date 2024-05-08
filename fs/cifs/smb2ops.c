@@ -902,12 +902,10 @@ int open_cached_dir(unsigned int xid, struct cifs_tcon *tcon,
 		 * See commit 2f94a3125b87. Increment the refcount when we
 		 * get a lease for root, release it if lease break occurs
 		 */
-		rc = smb2_parse_contexts(server, rsp_iov,
+		smb2_parse_contexts(server, o_rsp,
 				&oparms.fid->epoch,
 				    oparms.fid->lease_key, &oplock,
 				    NULL, NULL);
-		if (rc)
-			goto oshr_exit;
 
 		if (!(oplock & SMB2_LEASE_READ_CACHING_HE))
 			goto oshr_exit;
