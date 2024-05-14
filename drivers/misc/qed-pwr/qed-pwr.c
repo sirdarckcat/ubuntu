@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0
 /*
- *  qed-prw.c - QED power managment driver.
+ *  qed-prw.c - QED power management driver.
  *
  *  Copyright (C) 2022 Lantronix Inc.
  *
@@ -23,10 +23,11 @@
 #include <linux/of.h>
 #include <linux/miscdevice.h>
 #include <linux/platform_device.h>
-#include <linux/dma-mapping.h>
 #include <linux/of_platform.h>
 #include <linux/mod_devicetable.h>
 #include <linux/gpio/consumer.h>
+
+#include <linux/completion.h>
 
 #define GPIO_OF "pwr"
 
@@ -41,18 +42,17 @@
 
 
 #define LTE_PWR_OFF_MAX_ITER 35
-#define BT_DELAY 35000 /* ms */
-#define LTE_DELAY 25000 /* ms */
+#define LTE_PWR_FW_READY_ITER 300
 
-#define	QED_PWR_IOCTL_BASE     'Q'
+#define QED_PWR_IOCTL_BASE     'Q'
 
-#define	QED_PWR_WIFI_GETSTATUS _IOR(QED_PWR_IOCTL_BASE, 0, int)
-#define	QED_PWR_BT_GETSTATUS _IOR(QED_PWR_IOCTL_BASE, 1, int)
-#define	QED_PWR_LTE_GETSTATUS _IOR(QED_PWR_IOCTL_BASE, 2, int)
+#define QED_PWR_WIFI_GETSTATUS _IOR(QED_PWR_IOCTL_BASE, 0, int)
+#define QED_PWR_BT_GETSTATUS _IOR(QED_PWR_IOCTL_BASE, 1, int)
+#define QED_PWR_LTE_GETSTATUS _IOR(QED_PWR_IOCTL_BASE, 2, int)
 
-#define	QED_PWR_WIFI_SET _IOW(QED_PWR_IOCTL_BASE, 3, int)
-#define	QED_PWR_BT_SET _IOW(QED_PWR_IOCTL_BASE, 4, int)
-#define	QED_PWR_LTE_SET _IOW(QED_PWR_IOCTL_BASE, 5, int)
+#define QED_PWR_WIFI_SET _IOW(QED_PWR_IOCTL_BASE, 3, int)
+#define QED_PWR_BT_SET _IOW(QED_PWR_IOCTL_BASE, 4, int)
+#define QED_PWR_LTE_SET _IOW(QED_PWR_IOCTL_BASE, 5, int)
 
 #if defined _LTE_DEBUG
 #undef _LTE_DEBUG
@@ -139,13 +139,17 @@ struct qed_pwr_data {
         struct kobject *qed_kobj;
         struct miscdevice mdev;
         struct mutex lock;
-        struct delayed_work bt_pwr_on;
-        struct delayed_work lte_pwr_on;
         struct gpio_desc *qed_gpios[END_GPIOS];
+        struct task_struct *qed_pwr_th;
+        struct completion qed_pwr_done;
 };
 #ifdef _LTE_DEBUG
 static struct task_struct *monitor_thread;
 #endif
+
+
+bool fpga_fw_load_done;
+EXPORT_SYMBOL(fpga_fw_load_done);
 
 static int get(struct device *, int);
 static int set(struct device *, int, bool);
@@ -601,25 +605,24 @@ int set_wifi_enable(struct device *dev, bool enable)
 
 int get_wifi_status(struct device *dev)
 {
-        dev_err(dev, "%s\n", __func__);
         return get(dev, WIFI_EN);
 }
 
 int reset_vsc(struct device *dev)
 {
         struct qed_pwr_data *pd = dev_get_drvdata(dev);
-	struct gpio_desc *gpod;
+        struct gpio_desc *gpod;
 
         mutex_lock(&pd->lock);
-	gpod = devm_gpiod_get(dev, VSC_RESET_OF, GPIOD_OUT_LOW);
+        gpod = devm_gpiod_get(dev, VSC_RESET_OF, GPIOD_OUT_LOW);
 
-	if (IS_ERR(gpod)) {
+        if (IS_ERR(gpod)) {
                 dev_err(dev, "Failed to get of "VSC_RESET_OF" gpio\n");
-		return 1;
-	}
+                return 1;
+        }
 
-	msleep(1);
-	devm_gpiod_put(dev, gpod);
+        msleep(1);
+        devm_gpiod_put(dev, gpod);
 
         mutex_unlock(&pd->lock);
         return 0;
@@ -636,7 +639,7 @@ int set_lte_power(struct device *dev, bool on)
         }
 
         if (on) {
-                dev_dbg(dev, "%s: *** set_lte_power -> on\n", __func__);
+                dev_info(dev, "%s: *** set_lte_power -> on\n", __func__);
                 if (state) {
                         dev_info(dev, "%s modem already enabled\n", __func__);
                 } else {
@@ -773,20 +776,54 @@ static int monitor_thread_f(void *pv)
 }
 #endif
 
-static void bt_pwr_f(struct work_struct *work)
+static int qed_pwr_th_f (void *pv)
 {
-        struct delayed_work *dw  = to_delayed_work(work);
-        struct qed_pwr_data *data = container_of(dw, struct qed_pwr_data, bt_pwr_on);
-        struct device __maybe_unused *dev = container_of((void*)data, struct device, driver_data);
-        set_bt_enable(&data->pdev->dev, true);
-}
+        struct device *dev = (struct device *)pv;
+        struct qed_pwr_data *pd = dev_get_drvdata(dev);
+        int retries = LTE_PWR_FW_READY_ITER;
+        uint32_t sleep = 100;
 
-static void lte_pwr_f(struct work_struct *work)
-{
-        struct delayed_work *dw  = to_delayed_work(work);
-        struct qed_pwr_data *data = container_of(dw, struct qed_pwr_data, lte_pwr_on);
-        struct device __maybe_unused *dev = container_of((void*)data, struct device, driver_data);
-        set_lte_power(&data->pdev->dev, true);
+        if (of_property_read_bool(dev->of_node, LTE_EN_OF)) {
+                dev_dbg(dev, "%s: lte power turn off\n", __func__);
+                qed_pwr_lte_off(pd->pdev);
+        }
+        if (of_property_read_bool(dev->of_node, WIFI_EN_OF)) {
+                set_wifi_enable(dev, false);
+        }
+
+        if (of_property_read_bool(dev->of_node, BT_EN_OF)) {
+                set_bt_enable(dev, false);
+        }
+
+        while(!kthread_should_stop() && --retries) {
+                if (fpga_fw_load_done) {
+                        dev_dbg(dev, "%s: fpga fw loaded after %d sec\n", __func__,
+                                (LTE_PWR_FW_READY_ITER - retries - 1) * sleep / 1000);
+                        break;
+                }
+                msleep(sleep);
+        }
+
+        if (!retries)
+                dev_info(dev, "timeout on fpga firmware loads\n");
+
+        if (of_property_read_bool(dev->of_node, LTE_EN_OF)) {
+                dev_dbg(dev, "LTE power on\n");
+                set_lte_power(dev, true);
+        }
+
+        if (of_property_read_bool(dev->of_node, WIFI_EN_OF)) {
+                dev_dbg(dev, "WIFI power on\n");
+                set_wifi_enable(dev, true);
+        }
+
+        if (of_property_read_bool(dev->of_node, BT_EN_OF)) {
+                dev_dbg(dev, "BT power on\n");
+                set_bt_enable(dev, true);
+        }
+
+        complete(&pd->qed_pwr_done);
+        return 0;
 }
 
 static long qed_pwr_ioctl(struct file *file, unsigned int cmd,
@@ -830,7 +867,7 @@ static long qed_pwr_ioctl(struct file *file, unsigned int cmd,
 static long qed_pwr_read(struct file *filp, char __user *buf, size_t count, loff_t *off)
 {
         struct miscdevice *mdev = filp->private_data;
-        struct qed_pwr_data *data = container_of(mdev, struct qed_pwr_data, mdev);
+        struct qed_pwr_data __maybe_unused *data = container_of(mdev, struct qed_pwr_data, mdev);
         return simple_read_from_buffer(buf, count, off, "qed power\n", 10);
 }
 
@@ -930,20 +967,21 @@ static int qed_pwr_probe(struct platform_device *pdev)
                 set_wifi_enable(dev, true);
         }
 
-        if (of_property_read_bool(dev->of_node, VSC_RESET_OF)) {
-		reset_vsc(dev);
-        }
+        if (of_property_read_bool(dev->of_node, VSC_RESET_OF))
+                reset_vsc(dev);
 
-        if (of_property_read_bool(dev->of_node, LTE_EN_OF)) {
-                INIT_DELAYED_WORK(&data->lte_pwr_on, lte_pwr_f);
-                schedule_delayed_work(&data->lte_pwr_on, msecs_to_jiffies(LTE_DELAY));
-        }
+        if (of_property_read_bool(dev->of_node, LTE_EN_OF)
+            || of_property_read_bool(dev->of_node, WIFI_EN_OF)
+            || of_property_read_bool(dev->of_node, BT_EN_OF)) {
 
-        if (of_property_read_bool(dev->of_node, BT_EN_OF)) {
-                INIT_DELAYED_WORK(&data->bt_pwr_on, bt_pwr_f);
-                schedule_delayed_work(&data->bt_pwr_on, msecs_to_jiffies(BT_DELAY));
-        }
+                init_completion(&data->qed_pwr_done);
 
+                data->qed_pwr_th = kthread_run(qed_pwr_th_f, dev, "qed_pwr");
+                if(!data->qed_pwr_th) {
+                        dev_err(dev, "Cannot create lte pwr thread\n");
+                        goto err_kobject;
+                }
+        }
 
         data->mdev.minor = MISC_DYNAMIC_MINOR;
         data->mdev.name = "qed_pwr";
@@ -979,27 +1017,28 @@ err_of_dev:
 void qed_pwr_lte_off(struct platform_device *pdev) {
         struct device *dev = &pdev->dev;
         struct qed_pwr_data *pd = platform_get_drvdata(pdev);
-        int retries = 0;
+        int retries = LTE_PWR_OFF_MAX_ITER;
         uint32_t sleep = 50;
 
         if (IS_ENABLED(CONFIG_QED_BTWIFI_PWR_COMPLIANCE_TEST))
                 return;
 
         set_lte_shdn(dev, true);
-        while (retries < LTE_PWR_OFF_MAX_ITER) {
+        while (--retries) {
                 if (!gpiod_get_value(pd->qed_gpios[LTE_SW_RDY])
                     && !gpiod_get_value(pd->qed_gpios[LTE_PWRMON])) {
                         dev_dbg(dev, "modem is off\n");
                         break;
                 }
-                ++retries;
                 msleep(sleep);
         }
 
-        if (LTE_PWR_OFF_MAX_ITER <= retries) {
-                dev_err(dev, "modem is still on after %u ms\n",
-                        (retries * sleep));
-        }
+        if (!retries)
+                dev_info(dev, "modem is still on after %u ms\n",
+                        ((LTE_PWR_OFF_MAX_ITER - 1) * sleep));
+        else
+                dev_info(dev, "modem is power off after %u ms\n",
+                        ((LTE_PWR_OFF_MAX_ITER - retries - 1) * sleep));
 }
 
 static int qed_pwr_remove(struct platform_device *pdev)
@@ -1007,8 +1046,12 @@ static int qed_pwr_remove(struct platform_device *pdev)
         struct device *dev = &pdev->dev;
         struct qed_pwr_data *pd = platform_get_drvdata(pdev);
 
-        misc_deregister(&pd->mdev);
-        flush_scheduled_work();
+        if (pd->qed_pwr_th) {
+                kthread_stop(pd->qed_pwr_th);
+                if (!completion_done(&pd->qed_pwr_done))
+                        complete(&pd->qed_pwr_done);
+        }
+
         qed_pwr_lte_off(pdev);
 #ifdef _LTE_DEBUG
         kthread_stop(monitor_thread);
@@ -1017,6 +1060,7 @@ static int qed_pwr_remove(struct platform_device *pdev)
 
         kobject_put(pd->qed_kobj);
         sysfs_remove_group(&pdev->dev.kobj, &qed_pwr_attr_group);
+        misc_deregister(&pd->mdev);
         dev_info(dev, "qed-pwr driver Unregistered\n");
 
         return 0;
