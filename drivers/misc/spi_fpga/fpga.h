@@ -220,4 +220,27 @@ struct fpga_pps_dbg {
 
 #define FPGA_FW_VERSION 0x71
 
+struct fpga_data {
+        struct spi_device *spi_cfg;
+        struct spi_device *spi_fw;
+        struct spi_board_info cfg_info;
+        struct spi_board_info fw_info;
+        struct gpio_desc *power;
+        struct gpio_desc *reset;
+        struct gpio_desc *programn;
+        struct gpio_desc *initn;
+        struct gpio_desc *done;
+        struct gpio_desc *nconfig;
+        struct kobject *fpga_kobj;
+        struct mutex lock;
+        /* adc clock rate */
+        unsigned long clock_rate;
+        unsigned int sampling_freq;
+        enum ad7768_power_modes power_mode;
+        enum fpga_cfg cfg_mode;
+        __be16 d16;
+        uint8_t slice_enabled;
+        enum fpga_type type;
+};
+
 #endif /* FPGA_H_ */
