@@ -19,7 +19,7 @@
 
 struct tegra_bpmp_clk_info {
 	unsigned int id;
-	char name[MRQ_CLK_NAME_MAXLEN];
+	char name[MRQ_CLK_NAME_MAXLEN + 2];
 	unsigned int parents[MRQ_CLK_MAX_PARENTS];
 	unsigned int num_parents;
 	unsigned long flags;
@@ -367,7 +367,12 @@ static int tegra_bpmp_clk_get_info(struct tegra_bpmp *bpmp, unsigned int id,
 	if (err < 0)
 		return err;
 
-	strscpy(info->name, response.name, MRQ_CLK_NAME_MAXLEN);
+	if (dev_to_node(bpmp->dev) == NUMA_NO_NODE)
+		strscpy(info->name, response.name, MRQ_CLK_NAME_MAXLEN);
+	else
+		snprintf(info->name, sizeof(info->name), "%s.%d",
+			 response.name, dev_to_node(bpmp->dev));
+
 	info->num_parents = response.num_parents;
 
 	for (i = 0; i < info->num_parents; i++)
