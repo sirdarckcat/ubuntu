@@ -26,8 +26,8 @@ CONFIG_BLK_DEV_NVME                             note<'LP:#1908571'>
 CONFIG_BLK_DEV_PMEM                             policy<{'amd64': 'y', 'arm64': 'y'}>
 CONFIG_BLK_DEV_PMEM                             note<'LP:#1711230'>
 
-CONFIG_BT_HS                                    policy<{'amd64': '-', 'arm64': 'y'}>
-CONFIG_BT_HS                                    note<'https://www.intel.com/content/www/us/en/security-center/advisory/intel-sa-00435.html'>
+CONFIG_BT_HS                                    policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_BT_HS                                    note<'TODO: update note'>
 
 CONFIG_CHROME_PLATFORMS                         policy<{'amd64': 'n', 'arm64': 'n'}>
 CONFIG_CHROME_PLATFORMS                         note<'kernel reduction'>
@@ -901,6 +901,7 @@ CONFIG_CB710_DEBUG                              policy<{'amd64': '-', 'arm64': '
 CONFIG_CB710_DEBUG_ASSUMPTIONS                  policy<{'amd64': '-', 'arm64': 'y'}>
 CONFIG_CC10001_ADC                              policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_CCS811                                   policy<{'amd64': '-', 'arm64': 'm'}>
+CONFIG_CC_VERSION_TEXT                          policy<{'amd64': '"x86_64-linux-gnu-gcc-13 (Ubuntu 13.2.0-17ubuntu2) 13.2.0"', 'arm64': '"aarch64-linux-gnu-gcc-13 (Ubuntu 13.2.0-11ubuntu1) 13.2.0"'}>
 CONFIG_CEC_CH7322                               policy<{'amd64': 'n', 'arm64': 'm'}>
 CONFIG_CEC_CROS_EC                              policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_CEC_GPIO                                 policy<{'amd64': '-', 'arm64': '-'}>
