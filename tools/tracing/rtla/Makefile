@@ -111,9 +111,6 @@ warnings: $(WARNINGS)
 	$(ERROR_OUT)
 endif
 
-%.o: %.c
-	$(CC) $(CFLAGS) -c -o $@ $<
-
 rtla: $(OBJ)
 	$(CC) -o rtla $(LDFLAGS) $(OBJ) $(LIBS)
 
