@@ -24,5 +24,4 @@ do_dkms_nvidia  = false
 do_dkms_nvidia_server = false
 do_dkms_vbox    = false
 do_dkms_wireguard = true
-do_odm_drivers    = true
 disable_d_i	= true
