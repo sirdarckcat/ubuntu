@@ -934,6 +934,7 @@ CONFIG_ARM64_ERRATUM_2457168                    policy<{'arm64': 'y'}>
 CONFIG_ARM64_ERRATUM_2645198                    policy<{'arm64': 'y'}>
 CONFIG_ARM64_ERRATUM_2658417                    policy<{'arm64': 'y'}>
 CONFIG_ARM64_ERRATUM_2966298                    policy<{'arm64': 'y'}>
+CONFIG_ARM64_ERRATUM_3117295                    policy<{'arm64': 'y'}>
 CONFIG_ARM64_ERRATUM_819472                     policy<{'arm64': 'y'}>
 CONFIG_ARM64_ERRATUM_824069                     policy<{'arm64': 'y'}>
 CONFIG_ARM64_ERRATUM_826319                     policy<{'arm64': 'y'}>
@@ -967,6 +968,7 @@ CONFIG_ARM64_VA_BITS_48                         policy<{'arm64': 'y'}>
 CONFIG_ARM64_WORKAROUND_CLEAN_CACHE             policy<{'arm64': 'y'}>
 CONFIG_ARM64_WORKAROUND_REPEAT_TLBI             policy<{'arm64': 'y'}>
 CONFIG_ARM64_WORKAROUND_SPECULATIVE_AT          policy<{'arm64': 'y'}>
+CONFIG_ARM64_WORKAROUND_SPECULATIVE_UNPRIV_LOAD policy<{'arm64': 'y'}>
 CONFIG_ARM64_WORKAROUND_TSB_FLUSH_FAILURE       policy<{'arm64': 'y'}>
 CONFIG_ARMV8_DEPRECATED                         policy<{'arm64': 'y'}>
 CONFIG_ARM_AMBA                                 policy<{'arm64': 'y', 'armhf': 'y'}>
@@ -4914,7 +4916,6 @@ CONFIG_MFD_STMPE                                policy<{'arm64': 'y', 'armhf': '
 CONFIG_MFD_STPMIC1                              policy<{'arm64': 'n', 'armhf': 'n'}>
 CONFIG_MFD_SY7636A                              policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_MFD_SYSCON                               policy<{'arm64': 'y', 'armhf': 'y'}>
-CONFIG_MFD_TI_AM335X_TSCADC                     policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_MFD_TI_LMU                               policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_MFD_TI_LP873X                            policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_MFD_TI_LP87565                           policy<{'arm64': 'm', 'armhf': 'm'}>
@@ -5042,7 +5043,6 @@ CONFIG_MMC_MTK                                  policy<{'arm64': 'm', 'armhf': '
 CONFIG_MMC_REALTEK_PCI                          policy<{'arm64': 'n', 'armhf': 'n'}>
 CONFIG_MMC_REALTEK_USB                          policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_MMC_RICOH_MMC                            policy<{'arm64': 'y', 'armhf': 'y'}>
-CONFIG_MMC_SDHCI_AM654                          policy<{'arm64': 'n', 'armhf': 'n'}>
 CONFIG_MMC_SDHCI_BRCMSTB                        policy<{'arm64': 'm', 'armhf': '-'}>
 CONFIG_MMC_SDHCI_CADENCE                        policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_MMC_SDHCI_F_SDH30                        policy<{'arm64': 'm', 'armhf': 'm'}>
@@ -5051,7 +5051,6 @@ CONFIG_MMC_SDHCI_MILBEAUT                       policy<{'arm64': 'm', 'armhf': '
 CONFIG_MMC_SDHCI_OF_ARASAN                      policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_MMC_SDHCI_OF_AT91                        policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_MMC_SDHCI_OF_DWCMSHC                     policy<{'arm64': 'n', 'armhf': 'n'}>
-CONFIG_MMC_SDHCI_OMAP                           policy<{'arm64': 'n', 'armhf': 'n'}>
 CONFIG_MMC_SDHCI_PCI                            policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_MMC_SDHCI_XENON                          policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_MMC_SPI                                  policy<{'arm64': 'm', 'armhf': 'm'}>
@@ -8307,7 +8306,6 @@ CONFIG_TI_ADS7924                               policy<{'arm64': 'm', 'armhf': '
 CONFIG_TI_ADS7950                               policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_TI_ADS8344                               policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_TI_ADS8688                               policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_TI_AM335X_ADC                            policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_TI_DAC082S085                            policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_TI_DAC5571                               policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_TI_DAC7311                               policy<{'arm64': 'm', 'armhf': 'm'}>
@@ -8395,7 +8393,6 @@ CONFIG_TOUCHSCREEN_STMPE                        policy<{'arm64': 'm', 'armhf': '
 CONFIG_TOUCHSCREEN_SUR40                        policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_TOUCHSCREEN_SURFACE3_SPI                 policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_TOUCHSCREEN_SX8654                       policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_TOUCHSCREEN_TI_AM335X_TSC                policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_TOUCHSCREEN_TOUCHIT213                   policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_TOUCHSCREEN_TOUCHRIGHT                   policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_TOUCHSCREEN_TOUCHWIN                     policy<{'arm64': 'm', 'armhf': 'm'}>
