@@ -216,8 +216,14 @@ free_irqs:
 static int mlxbf_gige_stop(struct net_device *netdev)
 {
 	struct mlxbf_gige *priv = netdev_priv(netdev);
+	u64 control;
+
+	control = readq(priv->base + MLXBF_GIGE_CONTROL);
+	control &= ~MLXBF_GIGE_CONTROL_PORT_EN;
+	writeq(control, priv->base + MLXBF_GIGE_CONTROL);
 
 	writeq(0, priv->base + MLXBF_GIGE_INT_EN);
+	mb();
 	netif_stop_queue(netdev);
 	napi_disable(&priv->napi);
 	netif_napi_del(&priv->napi);
