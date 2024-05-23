@@ -347,7 +347,7 @@ enum {
 	 */
 	IFLA_PARENT_DEV_NAME,
 	IFLA_PARENT_DEV_BUS_NAME,
-	IFLA_DPLL_PIN,
+	IFLA_DPLL_PIN = 65, /* Set it same num as upstream to avoid breaking uapi */
 	__IFLA_MAX
 };
 
