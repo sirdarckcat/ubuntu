@@ -21,10 +21,8 @@ drivers/block/floppy.ko
 drivers/block/loop.ko
 drivers/block/nbd.ko
 drivers/block/rbd.ko
-drivers/block/drbd/drbd.ko
 drivers/block/virtio_blk.ko
 drivers/block/xen-blkfront.ko
-drivers/block/zram/zram.ko
 drivers/char/hangcheck-timer.ko
 drivers/char/hw_random/powernv-rng.ko
 drivers/char/hw_random/virtio-rng.ko
@@ -40,9 +38,12 @@ drivers/crypto/vmx/vmx-crypto.ko
 drivers/firmware/efi/*
 drivers/firmware/iscsi_ibft.ko
 drivers/gpu/drm/ast/ast.ko
+drivers/gpu/drm/bochs/bochs-drm.ko
 drivers/gpu/drm/drm_kms_helper.ko
 drivers/gpu/drm/drm.ko
 drivers/gpu/drm/ttm/ttm.ko
+drivers/gpu/drm/vboxvideo/vboxvideo.ko
+drivers/gpu/drm/virtio/virtio-gpu.ko
 drivers/hid/hid-generic.ko
 drivers/hid/hid-hyperv.ko
 drivers/hid/hid.ko
@@ -54,11 +55,8 @@ drivers/infiniband/core/ib_cm.ko
 drivers/infiniband/core/ib_core.ko
 drivers/infiniband/core/ib_mad.ko
 drivers/infiniband/core/ib_sa.ko
-drivers/infiniband/core/ib_umad.ko
-drivers/infiniband/core/ib_uverbs.ko
 drivers/infiniband/core/iw_cm.ko
 drivers/infiniband/core/rdma_cm.ko
-drivers/infiniband/hw/efa/efa.ko
 drivers/infiniband/ulp/iser/ib_iser.ko
 drivers/infiniband/ulp/isert/ib_isert.ko
 drivers/input/evbug.ko
@@ -72,10 +70,7 @@ drivers/input/serio/serio_raw.ko
 drivers/input/serio/serport.ko
 drivers/input/touchscreen/usbtouchscreen.ko
 drivers/leds/leds-powernv.ko
-drivers/gpu/drm/drm.ko
-drivers/gpu/drm/drm_kms_helper.ko
 drivers/md/*
-drivers/media/v4l2-core/*
 drivers/message/fusion*
 drivers/misc/cxl/*
 drivers/misc/eeprom/at24.ko
@@ -94,6 +89,7 @@ drivers/net/ethernet/8390/ne2k-pci.ko
 drivers/net/ethernet/amazon/ena/ena.ko
 drivers/net/ethernet/amd/pcnet32.ko
 drivers/net/ethernet/broadcom/bnx2x/*
+drivers/net/ethernet/broadcom/bnxt/bnxt_en.ko
 drivers/net/ethernet/broadcom/tg3.ko
 drivers/net/ethernet/dec/tulip/*
 drivers/net/ethernet/emulex/benet/*
@@ -102,11 +98,11 @@ drivers/net/ethernet/intel/e1000/e1000.ko
 drivers/net/ethernet/intel/e1000e/e1000e.ko
 drivers/net/ethernet/intel/i40e/*
 drivers/net/ethernet/intel/igb/*
-drivers/net/ipvlan/ipvlan.ko
 drivers/net/ethernet/intel/igbvf/igbvf.ko
 drivers/net/ethernet/intel/ixgbe/*
 drivers/net/ethernet/intel/ixgbevf/ixgbevf.ko
 drivers/net/ethernet/mellanox/*
+drivers/net/ethernet/netronome/nfp/nfp.ko
 drivers/net/ethernet/realtek/8139cp.ko
 drivers/net/ethernet/realtek/8139too.ko
 drivers/net/fddi/*
@@ -127,6 +123,7 @@ drivers/net/vmxnet3/vmxnet3.ko
 drivers/net/vxlan.ko
 drivers/net/wireguard/wireguard.ko
 drivers/net/xen-netback/*
+drivers/net/xen-netfront.ko
 drivers/nvme/host/nvme.ko
 drivers/nvmem/nvmem_core.ko
 drivers/parport/parport.ko
@@ -160,7 +157,6 @@ drivers/scsi/osd/osd.ko
 drivers/scsi/qla1280.ko
 drivers/scsi/qla2xxx/*
 drivers/scsi/raid_class.ko
-drivers/scsi/scsi_debug.ko
 drivers/scsi/scsi_transport_fc.ko
 drivers/scsi/scsi_transport_iscsi.ko
 drivers/scsi/scsi_transport_sas.ko
@@ -169,9 +165,8 @@ drivers/scsi/sd_mod.ko
 drivers/scsi/sr_mod.ko
 drivers/scsi/virtio_scsi.ko
 drivers/scsi/vmw_pvscsi.ko
-drivers/soundwire/soundwire-bus.ko
-drivers/target/loopback/tcm_loop.ko
 drivers/target/target_core*.ko
+drivers/target/loopback/tcm_loop.ko
 drivers/tty/serial/jsm/*
 drivers/uio/uio.ko
 drivers/uio/uio_pdrv_genirq.ko
@@ -182,8 +177,8 @@ drivers/vfio/*
 drivers/vhost/*
 drivers/video/fbdev/*
 drivers/video/vgastate.ko
+drivers/virt/vboxguest/vboxguest.ko
 drivers/virtio/*
-drivers/virt/coco/sev-guest/*
 drivers/watchdog/softdog.ko
 drivers/xen/*
 ! find sound/core -name oss -prune -o -name *.ko -print
@@ -211,11 +206,12 @@ fs/nfs_common/*
 fs/nfsd/*
 fs/nls/nls_cp437.ko
 fs/nls/nls_iso8859-1.ko
-fs/nls/nls_utf8.ko
 fs/overlayfs/*
+fs/shiftfs.ko
 fs/squashfs/*
 fs/udf/*
 fs/ufs/*
+fs/vboxsf/vboxsf.ko
 fs/xfs/*
 lib/*
 net/6lowpan/*
@@ -225,7 +221,7 @@ net/9p/*
 net/appletalk/*
 net/atm/*
 net/ax25/*
-net/bpfilter/bpfilter.ko
+net/bpfilter/*
 net/bridge/*
 net/can/*
 net/ceph/libceph.ko
@@ -261,7 +257,5 @@ net/xfrm/*
 sound/drivers/pcsp/snd-pcsp.ko
 sound/pci/snd-ens1370.ko
 sound/soundcore.ko
-ubuntu/vbox/vboxguest/vboxguest.ko
-ubuntu/vbox/vboxsf/vboxsf.ko
 zfs/*
 ubuntu/ubuntu-host/ubuntu-host.ko
