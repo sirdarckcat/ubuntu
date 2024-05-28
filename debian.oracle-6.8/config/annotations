@@ -1,0 +1,11 @@
+# Menu: HEADER
+# FORMAT: 4
+# ARCH: amd64 arm64
+# FLAVOUR: amd64-oracle arm64-oracle
+
+include "../../debian.oracle/config/annotations"
+include "../../debian.oracle-6.8/config/annotations-disable-rust"
+
+CONFIG_RUST_IS_AVAILABLE                        policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_RUST_IS_AVAILABLE                        note<'required to enable Rust support, LP: #1993183'>
+
