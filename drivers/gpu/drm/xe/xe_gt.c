@@ -277,8 +277,8 @@ int xe_gt_record_default_lrcs(struct xe_gt *gt)
 		}
 
 		xe_map_memcpy_from(xe, default_lrc,
-				   &q->lrc[0].bo->vmap,
-				   xe_lrc_pphwsp_offset(&q->lrc[0]),
+				   &q->lrc[0]->bo->vmap,
+				   xe_lrc_pphwsp_offset(q->lrc[0]),
 				   xe_lrc_size(xe, hwe->class));
 
 		gt->default_lrc[hwe->class] = default_lrc;

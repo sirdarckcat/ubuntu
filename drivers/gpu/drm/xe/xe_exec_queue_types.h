@@ -163,7 +163,7 @@ struct xe_exec_queue {
 	 */
 	u64 tlb_flush_seqno;
 	/** @lrc: logical ring context for this exec queue */
-	struct xe_lrc lrc[];
+	struct xe_lrc *lrc[];
 };
 
 /**
