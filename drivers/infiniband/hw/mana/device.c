@@ -5,6 +5,7 @@
 
 #include "mana_ib.h"
 #include <net/mana/mana_auxiliary.h>
+#include <net/addrconf.h>
 
 MODULE_DESCRIPTION("Microsoft Azure Network Adapter IB driver");
 MODULE_LICENSE("GPL");
@@ -122,6 +123,7 @@ static int mana_ib_probe(struct auxiliary_device *adev,
 		goto free_ib_device;
 	}
 	ether_addr_copy(mac_addr, ndev->dev_addr);
+	addrconf_addr_eui48((u8 *)&dev->ib_dev.node_guid, ndev->dev_addr);
 	ret = ib_device_set_netdev(&dev->ib_dev, ndev, 1);
 	/* mana_get_primary_netdev() returns ndev with refcount held */
 	netdev_put(ndev, &dev->dev_tracker);
