@@ -119,7 +119,6 @@ static int reconn_set_ipaddr_from_hostname(struct TCP_Server_Info *server)
 static void smb2_query_server_interfaces(struct work_struct *work)
 {
 	int rc;
-	int xid;
 	struct cifs_tcon *tcon = container_of(work,
 					struct cifs_tcon,
 					query_interfaces.work);
@@ -127,14 +126,8 @@ static void smb2_query_server_interfaces(struct work_struct *work)
 	/*
 	 * query server network interfaces, in case they change
 	 */
-	xid = get_xid();
-	rc = SMB3_request_interfaces(xid, tcon, false);
-	free_xid(xid);
-
+	rc = SMB3_request_interfaces(0, tcon, false);
 	if (rc) {
-		if (rc == -EOPNOTSUPP)
-			return;
-
 		cifs_dbg(FYI, "%s: failed to query server interfaces: %d\n",
 				__func__, rc);
 	}
@@ -161,27 +154,22 @@ cifs_signal_cifsd_for_reconnect(struct TCP_Server_Info *server,
 	int i;
 
 	/* If server is a channel, select the primary channel */
-	pserver = SERVER_IS_CHAN(server) ? server->primary_server : server;
+	pserver = CIFS_SERVER_IS_CHAN(server) ? server->primary_server : server;
 
-	/* if we need to signal just this channel */
+	spin_lock(&pserver->srv_lock);
 	if (!all_channels) {
-		spin_lock(&server->srv_lock);
-		if (server->tcpStatus != CifsExiting)
-			server->tcpStatus = CifsNeedReconnect;
-		spin_unlock(&server->srv_lock);
+		pserver->tcpStatus = CifsNeedReconnect;
+		spin_unlock(&pserver->srv_lock);
 		return;
 	}
+	spin_unlock(&pserver->srv_lock);
 
 	spin_lock(&cifs_tcp_ses_lock);
 	list_for_each_entry(ses, &pserver->smb_ses_list, smb_ses_list) {
 		spin_lock(&ses->chan_lock);
 		for (i = 0; i < ses->chan_count; i++) {
-			if (!ses->chans[i].server)
-				continue;
-
 			spin_lock(&ses->chans[i].server->srv_lock);
-			if (ses->chans[i].server->tcpStatus != CifsExiting)
-				ses->chans[i].server->tcpStatus = CifsNeedReconnect;
+			ses->chans[i].server->tcpStatus = CifsNeedReconnect;
 			spin_unlock(&ses->chans[i].server->srv_lock);
 		}
 		spin_unlock(&ses->chan_lock);
@@ -214,31 +202,16 @@ cifs_mark_tcp_ses_conns_for_reconnect(struct TCP_Server_Info *server,
 	cifs_dbg(FYI, "%s: marking necessary sessions and tcons for reconnect\n", __func__);
 
 	/* If server is a channel, select the primary channel */
-	pserver = SERVER_IS_CHAN(server) ? server->primary_server : server;
+	pserver = CIFS_SERVER_IS_CHAN(server) ? server->primary_server : server;
 
-	/*
-	 * if the server has been marked for termination, there is a
-	 * chance that the remaining channels all need reconnect. To be
-	 * on the safer side, mark the session and trees for reconnect
-	 * for this scenario. This might cause a few redundant session
-	 * setup and tree connect requests, but it is better than not doing
-	 * a tree connect when needed, and all following requests failing
-	 */
-	if (server->terminate) {
-		mark_smb_session = true;
-		server = pserver;
-	}
 
 	spin_lock(&cifs_tcp_ses_lock);
 	list_for_each_entry_safe(ses, nses, &pserver->smb_ses_list, smb_ses_list) {
 		/* check if iface is still active */
-		spin_lock(&ses->chan_lock);
-		if (!cifs_chan_is_iface_active(ses, server)) {
-			spin_unlock(&ses->chan_lock);
+		if (!cifs_chan_is_iface_active(ses, server))
 			cifs_chan_update_iface(ses, server);
-			spin_lock(&ses->chan_lock);
-		}
 
+		spin_lock(&ses->chan_lock);
 		if (!mark_smb_session && cifs_chan_needs_reconnect(ses, server)) {
 			spin_unlock(&ses->chan_lock);
 			continue;
@@ -268,8 +241,6 @@ cifs_mark_tcp_ses_conns_for_reconnect(struct TCP_Server_Info *server,
 			spin_lock(&tcon->tc_lock);
 			tcon->status = TID_NEED_RECON;
 			spin_unlock(&tcon->tc_lock);
-
-			cancel_delayed_work(&tcon->query_interfaces);
 		}
 		if (ses->tcon_ipc) {
 			ses->tcon_ipc->need_reconnect = true;
@@ -482,11 +453,10 @@ static int reconnect_target_unlocked(struct TCP_Server_Info *server, struct dfs_
 
 static int reconnect_dfs_server(struct TCP_Server_Info *server)
 {
-	struct dfs_cache_tgt_iterator *target_hint = NULL;
-
-	DFS_CACHE_TGT_LIST(tl);
-	int num_targets = 0;
 	int rc = 0;
+	struct dfs_cache_tgt_list tl = DFS_CACHE_TGT_LIST_INIT(tl);
+	struct dfs_cache_tgt_iterator *target_hint = NULL;
+	int num_targets = 0;
 
 	/*
 	 * Determine the number of dfs targets the referral path in @cifs_sb resolves to.
@@ -746,7 +716,6 @@ cifs_read_from_socket(struct TCP_Server_Info *server, char *buf,
 {
 	struct msghdr smb_msg = {};
 	struct kvec iov = {.iov_base = buf, .iov_len = to_read};
-
 	iov_iter_kvec(&smb_msg.msg_iter, READ, &iov, 1, to_read);
 
 	return cifs_readv_from_socket(server, &smb_msg);
@@ -941,8 +910,8 @@ cifs_enable_signing(struct TCP_Server_Info *server, bool mnt_sign_required)
 	return 0;
 }
 
-static noinline_for_stack void
-clean_demultiplex_info(struct TCP_Server_Info *server)
+
+static void clean_demultiplex_info(struct TCP_Server_Info *server)
 {
 	int length;
 
@@ -1209,12 +1178,7 @@ next_pdu:
 		server->total_read += length;
 
 		if (server->ops->next_header) {
-			if (server->ops->next_header(server, buf, &next_offset)) {
-				cifs_dbg(VFS, "%s: malformed response (next_offset=%u)\n",
-					 __func__, next_offset);
-				cifs_reconnect(server, true);
-				continue;
-			}
+			next_offset = server->ops->next_header(buf);
 			if (next_offset)
 				server->pdu_size = next_offset;
 		}
@@ -1267,14 +1231,9 @@ next_pdu:
 			if (mids[i] != NULL) {
 				mids[i]->resp_buf_size = server->pdu_size;
 
-				if (bufs[i] != NULL) {
-					if (server->ops->is_network_name_deleted &&
-					    server->ops->is_network_name_deleted(bufs[i],
-										 server)) {
-						cifs_server_dbg(FYI,
-								"Share deleted. Reconnect needed");
-					}
-				}
+				if (bufs[i] && server->ops->is_network_name_deleted)
+					server->ops->is_network_name_deleted(bufs[i],
+									server);
 
 				if (!mids[i]->multiRsp || mids[i]->multiEnd)
 					mids[i]->callback(mids[i]);
@@ -1401,13 +1360,11 @@ cifs_match_ipaddr(struct sockaddr *srcaddr, struct sockaddr *rhs)
 	case AF_INET: {
 		struct sockaddr_in *saddr4 = (struct sockaddr_in *)srcaddr;
 		struct sockaddr_in *vaddr4 = (struct sockaddr_in *)rhs;
-
 		return (saddr4->sin_addr.s_addr == vaddr4->sin_addr.s_addr);
 	}
 	case AF_INET6: {
 		struct sockaddr_in6 *saddr6 = (struct sockaddr_in6 *)srcaddr;
 		struct sockaddr_in6 *vaddr6 = (struct sockaddr_in6 *)rhs;
-
 		return (ipv6_addr_equal(&saddr6->sin6_addr, &vaddr6->sin6_addr)
 			&& saddr6->sin6_scope_id == vaddr6->sin6_scope_id);
 	}
@@ -1573,9 +1530,6 @@ static int match_server(struct TCP_Server_Info *server,
 	if (server->min_offload != ctx->min_offload)
 		return 0;
 
-	if (server->retrans != ctx->retrans)
-		return 0;
-
 	return 1;
 }
 
@@ -1591,7 +1545,7 @@ cifs_find_tcp_session(struct smb3_fs_context *ctx)
 		 * Skip ses channels since they're only handled in lower layers
 		 * (e.g. cifs_send_recv).
 		 */
-		if (SERVER_IS_CHAN(server) ||
+		if (CIFS_SERVER_IS_CHAN(server) ||
 		    !match_server(server, ctx, false)) {
 			spin_unlock(&server->srv_lock);
 			continue;
@@ -1626,6 +1580,10 @@ cifs_put_tcp_session(struct TCP_Server_Info *server, int from_reconnect)
 	list_del_init(&server->tcp_ses_list);
 	spin_unlock(&cifs_tcp_ses_lock);
 
+	/* For secondary channels, we pick up ref-count on the primary server */
+	if (CIFS_SERVER_IS_CHAN(server))
+		cifs_put_tcp_session(server->primary_server, from_reconnect);
+
 	cancel_delayed_work_sync(&server->echo);
 
 	if (from_reconnect)
@@ -1639,10 +1597,6 @@ cifs_put_tcp_session(struct TCP_Server_Info *server, int from_reconnect)
 	else
 		cancel_delayed_work_sync(&server->reconnect);
 
-	/* For secondary channels, we pick up ref-count on the primary server */
-	if (SERVER_IS_CHAN(server))
-		cifs_put_tcp_session(server->primary_server, from_reconnect);
-
 	spin_lock(&server->srv_lock);
 	server->tcpStatus = CifsExiting;
 	spin_unlock(&server->srv_lock);
@@ -1650,7 +1604,7 @@ cifs_put_tcp_session(struct TCP_Server_Info *server, int from_reconnect)
 	cifs_crypto_secmech_release(server);
 
 	/* fscache server cookies are based on primary channel only */
-	if (!SERVER_IS_CHAN(server))
+	if (!CIFS_SERVER_IS_CHAN(server))
 		cifs_fscache_release_client_cookie(server);
 
 	kfree_sensitive(server->session_key.response);
@@ -1730,7 +1684,6 @@ cifs_get_tcp_session(struct smb3_fs_context *ctx,
 		ctx->target_rfc1001_name, RFC1001_NAME_LEN_WITH_NULL);
 	tcp_ses->session_estab = false;
 	tcp_ses->sequence_number = 0;
-	tcp_ses->channel_sequence_num = 0; /* only tracked for primary channel */
 	tcp_ses->reconnect_instance = 1;
 	tcp_ses->lstrp = jiffies;
 	tcp_ses->compress_algorithm = cpu_to_le16(ctx->compression);
@@ -1804,7 +1757,6 @@ smbd_connected:
 		goto out_err_crypto_release;
 	}
 	tcp_ses->min_offload = ctx->min_offload;
-	tcp_ses->retrans = ctx->retrans;
 	/*
 	 * at this point we are the only ones with the pointer
 	 * to the struct since the kernel thread not created yet
@@ -1827,7 +1779,7 @@ smbd_connected:
 	spin_unlock(&cifs_tcp_ses_lock);
 
 	/* fscache server cookies are based on primary channel only */
-	if (!SERVER_IS_CHAN(tcp_ses))
+	if (!CIFS_SERVER_IS_CHAN(tcp_ses))
 		cifs_fscache_get_client_cookie(tcp_ses);
 #ifdef CONFIG_CIFS_FSCACHE
 	else
@@ -1846,7 +1798,7 @@ out_err_crypto_release:
 
 out_err:
 	if (tcp_ses) {
-		if (SERVER_IS_CHAN(tcp_ses))
+		if (CIFS_SERVER_IS_CHAN(tcp_ses))
 			cifs_put_tcp_session(tcp_ses->primary_server, false);
 		kfree(tcp_ses->hostname);
 		kfree(tcp_ses->leaf_fullpath);
@@ -1896,10 +1848,6 @@ static int match_session(struct cifs_ses *ses, struct smb3_fs_context *ctx)
 			    CIFS_MAX_PASSWORD_LEN))
 			return 0;
 	}
-
-	if (strcmp(ctx->local_nls->charset, ses->local_nls->charset))
-		return 0;
-
 	return 1;
 }
 
@@ -1935,8 +1883,7 @@ cifs_setup_ipc(struct cifs_ses *ses, struct smb3_fs_context *ctx)
 		}
 	}
 
-	/* no need to setup directory caching on IPC share, so pass in false */
-	tcon = tcon_info_alloc(false);
+	tcon = tconInfoAlloc();
 	if (tcon == NULL)
 		return -ENOMEM;
 
@@ -2022,10 +1969,9 @@ cifs_find_smb_ses(struct TCP_Server_Info *server, struct smb3_fs_context *ctx)
 
 void __cifs_put_smb_ses(struct cifs_ses *ses)
 {
+	unsigned int rc, xid;
+	unsigned int chan_count;
 	struct TCP_Server_Info *server = ses->server;
-	unsigned int xid;
-	size_t i;
-	int rc;
 
 	spin_lock(&ses->ses_lock);
 	if (ses->ses_status == SES_EXITING) {
@@ -2071,20 +2017,20 @@ void __cifs_put_smb_ses(struct cifs_ses *ses)
 	list_del_init(&ses->smb_ses_list);
 	spin_unlock(&cifs_tcp_ses_lock);
 
-	/* close any extra channels */
-	for (i = 1; i < ses->chan_count; i++) {
-		if (ses->chans[i].iface) {
-			kref_put(&ses->chans[i].iface->refcount, release_iface);
-			ses->chans[i].iface = NULL;
-		}
-		cifs_put_tcp_session(ses->chans[i].server, 0);
-		ses->chans[i].server = NULL;
-	}
+	chan_count = ses->chan_count;
 
-	/* we now account for primary channel in iface->refcount */
-	if (ses->chans[0].iface) {
-		kref_put(&ses->chans[0].iface->refcount, release_iface);
-		ses->chans[0].server = NULL;
+	/* close any extra channels */
+	if (chan_count > 1) {
+		int i;
+
+		for (i = 1; i < chan_count; i++) {
+			if (ses->chans[i].iface) {
+				kref_put(&ses->chans[i].iface->refcount, release_iface);
+				ses->chans[i].iface = NULL;
+			}
+			cifs_put_tcp_session(ses->chans[i].server, 0);
+			ses->chans[i].server = NULL;
+		}
 	}
 
 	sesInfoFree(ses);
@@ -2346,7 +2292,6 @@ cifs_get_smb_ses(struct TCP_Server_Info *server, struct smb3_fs_context *ctx)
 
 	ses->sectype = ctx->sectype;
 	ses->sign = ctx->sign;
-	ses->local_nls = load_nls(ctx->local_nls->charset);
 
 	/* add server as first channel */
 	spin_lock(&ses->chan_lock);
@@ -2528,9 +2473,8 @@ cifs_put_tcon(struct cifs_tcon *tcon)
 static struct cifs_tcon *
 cifs_get_tcon(struct cifs_ses *ses, struct smb3_fs_context *ctx)
 {
-	struct cifs_tcon *tcon;
-	bool nohandlecache;
 	int rc, xid;
+	struct cifs_tcon *tcon;
 
 	tcon = cifs_find_tcon(ses, ctx);
 	if (tcon) {
@@ -2548,17 +2492,11 @@ cifs_get_tcon(struct cifs_ses *ses, struct smb3_fs_context *ctx)
 		goto out_fail;
 	}
 
-	if (ses->server->dialect >= SMB20_PROT_ID &&
-	    (ses->server->capabilities & SMB2_GLOBAL_CAP_DIRECTORY_LEASING))
-		nohandlecache = ctx->nohandlecache;
-	else
-		nohandlecache = true;
-	tcon = tcon_info_alloc(!nohandlecache);
+	tcon = tconInfoAlloc();
 	if (tcon == NULL) {
 		rc = -ENOMEM;
 		goto out_fail;
 	}
-	tcon->nohandlecache = nohandlecache;
 
 	if (ctx->snapshot_time) {
 		if (ses->server->vals->protocol_id == 0) {
@@ -2618,8 +2556,8 @@ cifs_get_tcon(struct cifs_ses *ses, struct smb3_fs_context *ctx)
 			rc = -EOPNOTSUPP;
 			goto out_fail;
 		} else {
-			cifs_dbg(VFS,
-				"Check vers= mount option. SMB3.11 disabled but required for POSIX extensions\n");
+			cifs_dbg(VFS, "Check vers= mount option. SMB3.11 "
+				"disabled but required for POSIX extensions\n");
 			rc = -EOPNOTSUPP;
 			goto out_fail;
 		}
@@ -2719,7 +2657,10 @@ cifs_get_tcon(struct cifs_ses *ses, struct smb3_fs_context *ctx)
 	tcon->retry = ctx->retry;
 	tcon->nocase = ctx->nocase;
 	tcon->broken_sparse_sup = ctx->no_sparse;
-	tcon->max_cached_dirs = ctx->max_cached_dirs;
+	if (ses->server->capabilities & SMB2_GLOBAL_CAP_DIRECTORY_LEASING)
+		tcon->nohandlecache = ctx->nohandlecache;
+	else
+		tcon->nohandlecache = true;
 	tcon->nodelete = ctx->nodelete;
 	tcon->local_lease = ctx->local_lease;
 	INIT_LIST_HEAD(&tcon->pending_opens);
@@ -2762,6 +2703,7 @@ cifs_put_tlink(struct tcon_link *tlink)
 	if (!IS_ERR(tlink_tcon(tlink)))
 		cifs_put_tcon(tlink_tcon(tlink));
 	kfree(tlink);
+	return;
 }
 
 static int
@@ -2902,7 +2844,6 @@ static inline void
 cifs_reclassify_socket4(struct socket *sock)
 {
 	struct sock *sk = sock->sk;
-
 	BUG_ON(!sock_allow_reclassification(sk));
 	sock_lock_init_class_and_name(sk, "slock-AF_INET-CIFS",
 		&cifs_slock_key[0], "sk_lock-AF_INET-CIFS", &cifs_key[0]);
@@ -2912,7 +2853,6 @@ static inline void
 cifs_reclassify_socket6(struct socket *sock)
 {
 	struct sock *sk = sock->sk;
-
 	BUG_ON(!sock_allow_reclassification(sk));
 	sock_lock_init_class_and_name(sk, "slock-AF_INET6-CIFS",
 		&cifs_slock_key[1], "sk_lock-AF_INET6-CIFS", &cifs_key[1]);
@@ -2947,18 +2887,15 @@ static int
 bind_socket(struct TCP_Server_Info *server)
 {
 	int rc = 0;
-
 	if (server->srcaddr.ss_family != AF_UNSPEC) {
 		/* Bind to the specified local IP address */
 		struct socket *socket = server->ssocket;
-
 		rc = socket->ops->bind(socket,
 				       (struct sockaddr *) &server->srcaddr,
 				       sizeof(server->srcaddr));
 		if (rc < 0) {
 			struct sockaddr_in *saddr4;
 			struct sockaddr_in6 *saddr6;
-
 			saddr4 = (struct sockaddr_in *)&server->srcaddr;
 			saddr6 = (struct sockaddr_in6 *)&server->srcaddr;
 			if (saddr6->sin6_family == AF_INET6)
@@ -3187,7 +3124,6 @@ void reset_cifs_unix_caps(unsigned int xid, struct cifs_tcon *tcon,
 
 	if (!CIFSSMBQFSUnixInfo(xid, tcon)) {
 		__u64 cap = le64_to_cpu(tcon->fsUnixInfo.Capability);
-
 		cifs_dbg(FYI, "unix caps which server supports %lld\n", cap);
 		/*
 		 * check for reconnect case in which we do not
@@ -3617,7 +3553,7 @@ int cifs_mount(struct cifs_sb_info *cifs_sb, struct smb3_fs_context *ctx)
 	ctx->prepath = NULL;
 
 out:
-	cifs_try_adding_channels(mnt_ctx.ses);
+	cifs_try_adding_channels(cifs_sb, mnt_ctx.ses);
 	rc = mount_setup_tlink(cifs_sb, mnt_ctx.ses, mnt_ctx.tcon);
 	if (rc)
 		goto error;
@@ -3690,7 +3626,7 @@ CIFSTCon(const unsigned int xid, struct cifs_ses *ses,
 	smb_buffer_response = smb_buffer;
 
 	header_assemble(smb_buffer, SMB_COM_TREE_CONNECT_ANDX,
-			NULL /*no tid */, 4 /*wct */);
+			NULL /*no tid */ , 4 /*wct */ );
 
 	smb_buffer->Mid = get_next_mid(ses->server);
 	smb_buffer->Uid = ses->Suid;
@@ -3709,12 +3645,12 @@ CIFSTCon(const unsigned int xid, struct cifs_ses *ses,
 	if (ses->server->sign)
 		smb_buffer->Flags2 |= SMBFLG2_SECURITY_SIGNATURE;
 
-	if (ses->capabilities & CAP_STATUS32)
+	if (ses->capabilities & CAP_STATUS32) {
 		smb_buffer->Flags2 |= SMBFLG2_ERR_STATUS;
-
-	if (ses->capabilities & CAP_DFS)
+	}
+	if (ses->capabilities & CAP_DFS) {
 		smb_buffer->Flags2 |= SMBFLG2_DFS;
-
+	}
 	if (ses->capabilities & CAP_UNICODE) {
 		smb_buffer->Flags2 |= SMBFLG2_UNICODE;
 		length =
@@ -3876,7 +3812,7 @@ cifs_setup_session(const unsigned int xid, struct cifs_ses *ses,
 		   struct nls_table *nls_info)
 {
 	int rc = -ENOSYS;
-	struct TCP_Server_Info *pserver = SERVER_IS_CHAN(server) ? server->primary_server : server;
+	struct TCP_Server_Info *pserver = CIFS_SERVER_IS_CHAN(server) ? server->primary_server : server;
 	struct sockaddr_in6 *addr6 = (struct sockaddr_in6 *)&pserver->dstaddr;
 	struct sockaddr_in *addr = (struct sockaddr_in *)&pserver->dstaddr;
 	bool is_binding = false;
@@ -3906,12 +3842,8 @@ cifs_setup_session(const unsigned int xid, struct cifs_ses *ses,
 	is_binding = !CIFS_ALL_CHANS_NEED_RECONNECT(ses);
 	spin_unlock(&ses->chan_lock);
 
-	if (!is_binding) {
+	if (!is_binding)
 		ses->ses_status = SES_IN_SETUP;
-
-		/* force iface_list refresh */
-		ses->iface_last_update = 0;
-	}
 	spin_unlock(&ses->ses_lock);
 
 	/* update ses ip_addr only for primary chan */

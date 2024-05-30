@@ -889,16 +889,14 @@ reopen_success:
 		if (!is_interrupt_error(rc))
 			mapping_set_error(inode->i_mapping, rc);
 
-		if (tcon->posix_extensions) {
-			rc = smb311_posix_get_inode_info(&inode, full_path,
-							 NULL, inode->i_sb, xid);
-		} else if (tcon->unix_ext) {
+		if (tcon->posix_extensions)
+			rc = smb311_posix_get_inode_info(&inode, full_path, inode->i_sb, xid);
+		else if (tcon->unix_ext)
 			rc = cifs_get_inode_info_unix(&inode, full_path,
 						      inode->i_sb, xid);
-		} else {
+		else
 			rc = cifs_get_inode_info(&inode, full_path, NULL,
 						 inode->i_sb, xid, NULL);
-		}
 	}
 	/*
 	 * Else we are writing out data to server already and could deadlock if
@@ -2503,7 +2501,7 @@ static int cifs_partialpagewrite(struct page *page, unsigned from, unsigned to)
 					   write_data, to - from, &offset);
 		cifsFileInfo_put(open_file);
 		/* Does mm or vfs already set times? */
-		inode->i_atime = inode->i_mtime = inode->i_ctime = current_time(inode);
+		inode->i_atime = inode->i_mtime = current_time(inode);
 		if ((bytes_written > 0) && (offset))
 			rc = 0;
 		else if (bytes_written < 0)
@@ -4920,7 +4918,7 @@ static int cifs_readpage_worker(struct file *file, struct page *page,
 
 	/* we do not want atime to be less than mtime, it broke some apps */
 	file_inode(file)->i_atime = current_time(file_inode(file));
-	if (timespec64_compare(&(file_inode(file)->i_atime), &(file_inode(file)->i_mtime)) < 0)
+	if (timespec64_compare(&(file_inode(file)->i_atime), &(file_inode(file)->i_mtime)))
 		file_inode(file)->i_atime = file_inode(file)->i_mtime;
 	else
 		file_inode(file)->i_atime = current_time(file_inode(file));
