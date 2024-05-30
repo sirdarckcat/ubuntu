@@ -6,6 +6,8 @@
 #ifndef _XE_LRC_TYPES_H_
 #define _XE_LRC_TYPES_H_
 
+#include <linux/kref.h>
+
 #include "xe_hw_fence_types.h"
 
 struct xe_bo;
@@ -25,6 +27,9 @@ struct xe_lrc {
 
 	/** @flags: LRC flags */
 	u32 flags;
+
+	/** @refcount: ref count of this lrc */
+	struct kref refcount;
 
 	/** @ring: submission ring state */
 	struct {

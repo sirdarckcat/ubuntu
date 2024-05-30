@@ -240,7 +240,7 @@ static void hw_engine_fini(struct drm_device *drm, void *arg)
 
 	if (hwe->exl_port)
 		xe_execlist_port_destroy(hwe->exl_port);
-	xe_lrc_finish(&hwe->kernel_lrc);
+	xe_lrc_put(hwe->kernel_lrc);
 
 	hwe->gt = NULL;
 }
@@ -450,9 +450,11 @@ static int hw_engine_init(struct xe_gt *gt, struct xe_hw_engine *hwe,
 		goto err_name;
 	}
 
-	err = xe_lrc_init(&hwe->kernel_lrc, hwe, NULL, NULL, SZ_16K);
-	if (err)
+	hwe->kernel_lrc = xe_lrc_create(hwe, NULL, SZ_16K);
+	if (IS_ERR(hwe->kernel_lrc)) {
+		err = PTR_ERR(hwe->kernel_lrc);
 		goto err_hwsp;
+	}
 
 	if (!xe_device_uc_enabled(xe)) {
 		hwe->exl_port = xe_execlist_port_create(xe, hwe);
@@ -476,7 +478,7 @@ static int hw_engine_init(struct xe_gt *gt, struct xe_hw_engine *hwe,
 	return 0;
 
 err_kernel_lrc:
-	xe_lrc_finish(&hwe->kernel_lrc);
+	xe_lrc_put(hwe->kernel_lrc);
 err_hwsp:
 	xe_bo_unpin_map_no_vm(hwe->hwsp);
 err_name:

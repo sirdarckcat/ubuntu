@@ -109,7 +109,7 @@ struct xe_sched_job *xe_sched_job_create(struct xe_exec_queue *q,
 		goto err_free;
 
 	if (!xe_exec_queue_is_parallel(q)) {
-		job->fence = xe_lrc_create_seqno_fence(q->lrc);
+		job->fence = xe_lrc_create_seqno_fence(q->lrc[0]);
 		if (IS_ERR(job->fence)) {
 			err = PTR_ERR(job->fence);
 			goto err_sched_job;
@@ -124,7 +124,7 @@ struct xe_sched_job *xe_sched_job_create(struct xe_exec_queue *q,
 		}
 
 		for (j = 0; j < q->width; ++j) {
-			fences[j] = xe_lrc_create_seqno_fence(q->lrc + j);
+			fences[j] = xe_lrc_create_seqno_fence(q->lrc[j]);
 			if (IS_ERR(fences[j])) {
 				err = PTR_ERR(fences[j]);
 				goto err_fences;
@@ -165,7 +165,7 @@ struct xe_sched_job *xe_sched_job_create(struct xe_exec_queue *q,
 
 err_fences:
 	for (j = j - 1; j >= 0; --j) {
-		--q->lrc[j].fence_ctx.next_seqno;
+		--q->lrc[j]->fence_ctx.next_seqno;
 		dma_fence_put(fences[j]);
 	}
 	kfree(fences);
@@ -229,7 +229,7 @@ void xe_sched_job_set_error(struct xe_sched_job *job, int error)
 
 bool xe_sched_job_started(struct xe_sched_job *job)
 {
-	struct xe_lrc *lrc = job->q->lrc;
+	struct xe_lrc *lrc = job->q->lrc[0];
 
 	return !__dma_fence_is_later(xe_sched_job_seqno(job),
 				     xe_lrc_start_seqno(lrc),
@@ -238,7 +238,7 @@ bool xe_sched_job_started(struct xe_sched_job *job)
 
 bool xe_sched_job_completed(struct xe_sched_job *job)
 {
-	struct xe_lrc *lrc = job->q->lrc;
+	struct xe_lrc *lrc = job->q->lrc[0];
 
 	/*
 	 * Can safely check just LRC[0] seqno as that is last seqno written when

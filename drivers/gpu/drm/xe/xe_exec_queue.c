@@ -44,7 +44,7 @@ static struct xe_exec_queue *__xe_exec_queue_create(struct xe_device *xe,
 	/* only kernel queues can be permanent */
 	XE_WARN_ON((flags & EXEC_QUEUE_FLAG_PERMANENT) && !(flags & EXEC_QUEUE_FLAG_KERNEL));
 
-	q = kzalloc(sizeof(*q) + sizeof(struct xe_lrc) * width, GFP_KERNEL);
+	q = kzalloc(sizeof(*q) + sizeof(struct xe_lrc *) * width, GFP_KERNEL);
 	if (!q)
 		return ERR_PTR(-ENOMEM);
 
@@ -84,9 +84,11 @@ static struct xe_exec_queue *__xe_exec_queue_create(struct xe_device *xe,
 	}
 
 	for (i = 0; i < width; ++i) {
-		err = xe_lrc_init(q->lrc + i, hwe, q, vm, SZ_16K);
-		if (err)
+		q->lrc[i] = xe_lrc_create(hwe, vm, SZ_16K);
+		if (IS_ERR(q->lrc[i])) {
+			err = PTR_ERR(q->lrc[i]);
 			goto err_lrc;
+		}
 	}
 
 	err = q->ops->init(q);
@@ -108,7 +110,7 @@ static struct xe_exec_queue *__xe_exec_queue_create(struct xe_device *xe,
 
 err_lrc:
 	for (i = i - 1; i >= 0; --i)
-		xe_lrc_finish(q->lrc + i);
+		xe_lrc_put(q->lrc[i]);
 	kfree(q);
 	return ERR_PTR(err);
 }
@@ -177,7 +179,7 @@ void xe_exec_queue_fini(struct xe_exec_queue *q)
 	int i;
 
 	for (i = 0; i < q->width; ++i)
-		xe_lrc_finish(q->lrc + i);
+		xe_lrc_put(q->lrc[i]);
 	if (!(q->flags & EXEC_QUEUE_FLAG_PERMANENT) && (q->flags & EXEC_QUEUE_FLAG_VM || !q->vm))
 		xe_device_mem_access_put(gt_to_xe(q->gt));
 	if (q->vm)
@@ -661,7 +663,7 @@ bool xe_exec_queue_is_lr(struct xe_exec_queue *q)
 
 static s32 xe_exec_queue_num_job_inflight(struct xe_exec_queue *q)
 {
-	return q->lrc->fence_ctx.next_seqno - xe_lrc_seqno(q->lrc) - 1;
+	return q->lrc[0]->fence_ctx.next_seqno - xe_lrc_seqno(q->lrc[0]) - 1;
 }
 
 /**
@@ -672,7 +674,7 @@ static s32 xe_exec_queue_num_job_inflight(struct xe_exec_queue *q)
  */
 bool xe_exec_queue_ring_full(struct xe_exec_queue *q)
 {
-	struct xe_lrc *lrc = q->lrc;
+	struct xe_lrc *lrc = q->lrc[0];
 	s32 max_job = lrc->ring.size / MAX_JOB_SIZE_BYTES;
 
 	return xe_exec_queue_num_job_inflight(q) >= max_job;
@@ -698,16 +700,16 @@ bool xe_exec_queue_is_idle(struct xe_exec_queue *q)
 		int i;
 
 		for (i = 0; i < q->width; ++i) {
-			if (xe_lrc_seqno(&q->lrc[i]) !=
-			    q->lrc[i].fence_ctx.next_seqno - 1)
+			if (xe_lrc_seqno(q->lrc[i]) !=
+			    q->lrc[i]->fence_ctx.next_seqno - 1)
 				return false;
 		}
 
 		return true;
 	}
 
-	return xe_lrc_seqno(&q->lrc[0]) ==
-		q->lrc[0].fence_ctx.next_seqno - 1;
+	return xe_lrc_seqno(q->lrc[0]) ==
+		q->lrc[0]->fence_ctx.next_seqno - 1;
 }
 
 void xe_exec_queue_kill(struct xe_exec_queue *q)

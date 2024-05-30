@@ -17,9 +17,20 @@ struct xe_vm;
 
 #define LRC_PPHWSP_SCRATCH_ADDR (0x34 * 4)
 
-int xe_lrc_init(struct xe_lrc *lrc, struct xe_hw_engine *hwe,
-		struct xe_exec_queue *q, struct xe_vm *vm, u32 ring_size);
-void xe_lrc_finish(struct xe_lrc *lrc);
+struct xe_lrc *xe_lrc_create(struct xe_hw_engine *hwe, struct xe_vm *vm,
+			     u32 ring_size);
+void xe_lrc_destroy(struct kref *ref);
+
+static inline struct xe_lrc *xe_lrc_get(struct xe_lrc *lrc)
+{
+	kref_get(&lrc->refcount);
+	return lrc;
+}
+
+static inline void xe_lrc_put(struct xe_lrc *lrc)
+{
+	kref_put(&lrc->refcount, xe_lrc_destroy);
+}
 
 size_t xe_lrc_size(struct xe_device *xe, enum xe_engine_class class);
 u32 xe_lrc_pphwsp_offset(struct xe_lrc *lrc);
