@@ -249,3 +249,37 @@ void amdgpu_coredump(struct amdgpu_device *adev, bool vram_lost,
 		      amdgpu_devcoredump_read, amdgpu_devcoredump_free);
 }
 #endif
+
+void amdgpu_reset_get_desc(struct amdgpu_reset_context *rst_ctxt, char *buf,
+			   size_t len)
+{
+	struct amdgpu_ring *ring;
+
+	if (!buf || !len)
+		return;
+
+	switch (rst_ctxt->src) {
+	case AMDGPU_RESET_SRC_JOB:
+		if (rst_ctxt->job) {
+			ring = amdgpu_job_ring(rst_ctxt->job);
+			snprintf(buf, len, "job hang on ring:%s", ring->name);
+		} else {
+			strscpy(buf, "job hang", len);
+		}
+		break;
+	case AMDGPU_RESET_SRC_RAS:
+		strscpy(buf, "RAS error", len);
+		break;
+	case AMDGPU_RESET_SRC_MES:
+		strscpy(buf, "MES hang", len);
+		break;
+	case AMDGPU_RESET_SRC_HWS:
+		strscpy(buf, "HWS hang", len);
+		break;
+	case AMDGPU_RESET_SRC_USER:
+		strscpy(buf, "user trigger", len);
+		break;
+	default:
+		strscpy(buf, "unknown", len);
+	}
+}
