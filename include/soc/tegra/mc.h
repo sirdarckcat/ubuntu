@@ -181,6 +181,7 @@ struct tegra_mc_soc {
 
 	u16 client_id_mask;
 	u8 num_channels;
+	const u32 cfg_channel_enable;
 
 	const struct tegra_smmu_soc *smmu;
 
