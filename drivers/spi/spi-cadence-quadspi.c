@@ -1808,7 +1808,6 @@ static int cqspi_exec_mem_op(struct spi_mem *mem, const struct spi_mem_op *op)
 	struct cqspi_st *cqspi = spi_master_get_devdata(mem->spi->master);
 	struct cqspi_flash_pdata *f_pdata;
 	int ret;
-	struct cqspi_st *cqspi = spi_master_get_devdata(mem->spi->master);
 	struct device *dev = &cqspi->pdev->dev;
 
 	if (refcount_read(&cqspi->inflight_ops) == 0)
@@ -2396,8 +2395,6 @@ static void cqspi_remove(struct platform_device *pdev)
 static int cqspi_runtime_suspend(struct device *dev)
 {
 	struct cqspi_st *cqspi = dev_get_drvdata(dev);
-
-	ret = spi_controller_suspend(host);
 	if (cqspi->clk_tuned && !cqspi->tuning_complete.done &&
 	    !wait_for_completion_timeout(&cqspi->tuning_complete,
 		msecs_to_jiffies(CQSPI_TUNING_TIMEOUT_MS))) {
