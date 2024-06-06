@@ -17,7 +17,7 @@ static irqreturn_t vfio_cdx_msihandler(int irq_no, void *arg)
 {
 	struct eventfd_ctx *trigger = arg;
 
-	eventfd_signal(trigger, 1);
+	eventfd_signal(trigger);
 	return IRQ_HANDLED;
 }
 
@@ -179,7 +179,7 @@ static int vfio_cdx_set_msi_trigger(struct vfio_cdx_device *vdev,
 		if (!vdev->cdx_irqs[i].trigger)
 			continue;
 		if (flags & VFIO_IRQ_SET_DATA_NONE)
-			eventfd_signal(vdev->cdx_irqs[i].trigger, 1);
+			eventfd_signal(vdev->cdx_irqs[i].trigger);
 	}
 
 	return 0;
