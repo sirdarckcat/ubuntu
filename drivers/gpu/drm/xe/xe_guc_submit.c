@@ -1706,11 +1706,15 @@ int xe_guc_sched_done_handler(struct xe_guc *guc, u32 *msg, u32 len)
 	trace_xe_exec_queue_scheduling_done(q);
 
 	if (exec_queue_pending_enable(q)) {
+		xe_gt_assert(guc_to_gt(guc), runnable_state == 1);
+
 		q->guc->resume_time = ktime_get();
 		clear_exec_queue_pending_enable(q);
 		smp_wmb();
 		wake_up_all(&guc->ct.wq);
 	} else {
+		xe_gt_assert(guc_to_gt(guc), runnable_state == 0);
+
 		clear_exec_queue_pending_disable(q);
 		if (q->guc->suspend_pending) {
 			suspend_fence_signal(q);
