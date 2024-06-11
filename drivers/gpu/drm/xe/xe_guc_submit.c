@@ -59,6 +59,7 @@ exec_queue_to_guc(struct xe_exec_queue *q)
 #define ENGINE_STATE_SUSPENDED		(1 << 5)
 #define EXEC_QUEUE_STATE_RESET		(1 << 6)
 #define ENGINE_STATE_KILLED		(1 << 7)
+#define EXEC_QUEUE_STATE_CHECK_TIMEOUT		(1 << 8)
 
 static bool exec_queue_registered(struct xe_exec_queue *q)
 {
@@ -173,6 +174,11 @@ static bool exec_queue_killed(struct xe_exec_queue *q)
 static void set_exec_queue_killed(struct xe_exec_queue *q)
 {
 	atomic_or(ENGINE_STATE_KILLED, &q->guc->state);
+}
+
+static bool exec_queue_check_timeout(struct xe_exec_queue *q)
+{
+	return atomic_read(&q->guc->state) & EXEC_QUEUE_STATE_CHECK_TIMEOUT;
 }
 
 static bool exec_queue_killed_or_banned(struct xe_exec_queue *q)
@@ -1678,6 +1684,38 @@ static void deregister_exec_queue(struct xe_guc *guc, struct xe_exec_queue *q)
 	xe_guc_ct_send_g2h_handler(&guc->ct, action, ARRAY_SIZE(action));
 }
 
+static void handle_sched_done(struct xe_guc *guc, struct xe_exec_queue *q,
+			      u32 runnable_state)
+{
+	trace_xe_exec_queue_scheduling_done(q);
+
+	if (exec_queue_pending_enable(q)) {
+		xe_gt_assert(guc_to_gt(guc), runnable_state == 1);
+
+		q->guc->resume_time = ktime_get();
+		clear_exec_queue_pending_enable(q);
+		smp_wmb();
+		wake_up_all(&guc->ct.wq);
+	} else {
+		bool check_timeout = exec_queue_check_timeout(q);
+
+		xe_gt_assert(guc_to_gt(guc), runnable_state == 0);
+		xe_gt_assert(guc_to_gt(guc), exec_queue_pending_disable(q));
+
+		clear_exec_queue_pending_disable(q);
+		if (q->guc->suspend_pending) {
+			suspend_fence_signal(q);
+		} else {
+			if (exec_queue_banned(q) || check_timeout) {
+				smp_wmb();
+				wake_up_all(&guc->ct.wq);
+			}
+			if (!check_timeout)
+				deregister_exec_queue(guc, q);
+		}
+	}
+}
+
 int xe_guc_sched_done_handler(struct xe_guc *guc, u32 *msg, u32 len)
 {
 	struct xe_device *xe = guc_to_xe(guc);
@@ -1703,29 +1741,7 @@ int xe_guc_sched_done_handler(struct xe_guc *guc, u32 *msg, u32 len)
 		return -EPROTO;
 	}
 
-	trace_xe_exec_queue_scheduling_done(q);
-
-	if (exec_queue_pending_enable(q)) {
-		xe_gt_assert(guc_to_gt(guc), runnable_state == 1);
-
-		q->guc->resume_time = ktime_get();
-		clear_exec_queue_pending_enable(q);
-		smp_wmb();
-		wake_up_all(&guc->ct.wq);
-	} else {
-		xe_gt_assert(guc_to_gt(guc), runnable_state == 0);
-
-		clear_exec_queue_pending_disable(q);
-		if (q->guc->suspend_pending) {
-			suspend_fence_signal(q);
-		} else {
-			if (exec_queue_banned(q)) {
-				smp_wmb();
-				wake_up_all(&guc->ct.wq);
-			}
-			deregister_exec_queue(guc, q);
-		}
-	}
+	handle_sched_done(guc, q, runnable_state);
 
 	return 0;
 }
