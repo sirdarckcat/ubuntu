@@ -29,8 +29,7 @@
 #define MLNX_PTM_GET_DDR_TTHROTTLE      0x8200010E
 #define MLNX_PTM_GET_DDR_TEMP_EVT_CTR   0x8200010F
 #define MLNX_PTM_GET_TEMP_ENVELOPE	0x82000110
-
-#define MLNX_POWER_ERROR		300
+#define MLNX_PTM_GET_TOTAL_POWER	0x82000111
 
 struct dentry *monitors;
 
@@ -117,15 +116,7 @@ DEFINE_SIMPLE_ATTRIBUTE(vr1_power_fops, vr1_power_show, NULL, "%llu\n");
 
 static int total_power_show(void *data, u64 *val)
 {
-	u64 v0, v1;
-
-	v0 = smc_call0(MLNX_PTM_GET_VR0_POWER);
-	if (v0 > MLNX_POWER_ERROR)
-		v0 = 0;
-	v1 = smc_call0(MLNX_PTM_GET_VR1_POWER);
-	if (v1 > MLNX_POWER_ERROR)
-		v1 = 0;
-	*val = (v0 + v1);
+	*val = smc_call0(MLNX_PTM_GET_TOTAL_POWER);
 
 	return 0;
 }
