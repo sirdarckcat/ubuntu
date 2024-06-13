@@ -1,6 +1,6 @@
-Name:    linux-gcp
-Version: 6.2.0
-Series:  23.04 (lunar)
+Name:    linux-gcp-6.8
+Version: 6.8.0
+Series:  24.04 (noble)
 Description:
     This is the source code for the Ubuntu linux kernel for the 23.04 series. This
     source tree is used to produce the flavours: gcp.

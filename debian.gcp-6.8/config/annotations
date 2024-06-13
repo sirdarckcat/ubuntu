@@ -1,0 +1,22 @@
+# Menu: HEADER
+# FORMAT: 4
+# ARCH: amd64 arm64
+# FLAVOUR: amd64-gcp arm64-gcp
+
+include "../../debian.gcp/config/annotations"
+include "../../debian.gcp-6.8/config/annotations-disable-rust"
+
+CONFIG_RUST_IS_AVAILABLE                        policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_RUST_IS_AVAILABLE                        note<'required to enable Rust support, LP: #1993183'>
+
+
+# ---- Annotations without notes ----
+
+CONFIG_AS_VERSION                               policy<{'amd64': '23800', 'arm64': '23800'}>
+CONFIG_CC_VERSION_TEXT                          policy<{'amd64': '"x86_64-linux-gnu-gcc-12 (Ubuntu 12.3.0-1ubuntu1~22.04) 12.3.0"', 'arm64': '"aarch64-linux-gnu-gcc-12 (Ubuntu 12.3.0-1ubuntu1~22.04) 12.3.0"'}>
+CONFIG_DEBUG_INFO_COMPRESSED_ZSTD               policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_GCC_VERSION                              policy<{'amd64': '120300', 'arm64': '120300'}>
+CONFIG_INIT_STACK_ALL_ZERO                      policy<{'amd64': 'n', 'arm64': 'n'}>
+CONFIG_INIT_STACK_NONE                          policy<{'amd64': 'y', 'arm64': 'y'}>
+CONFIG_LD_VERSION                               policy<{'amd64': '23800', 'arm64': '23800'}>
+CONFIG_SHADOW_CALL_STACK                        policy<{'arm64': 'n'}>
