@@ -13,6 +13,11 @@
 #include "xe_pm.h"
 #include "xe_macros.h"
 
+unsigned int xe_gt_eu_att_regs(struct xe_gt *gt)
+{
+	return (GRAPHICS_VERx100(gt_to_xe(gt)) >= 3000) ? 2u : 1u;
+}
+
 int xe_gt_foreach_dss_group_instance(struct xe_gt *gt,
 				     int (*fn)(struct xe_gt *gt,
 					       void *data,
@@ -59,18 +64,20 @@ int xe_gt_foreach_dss_group_instance(struct xe_gt *gt,
 static int read_first_attention_mcr(struct xe_gt *gt, void *data,
 				    u16 group, u16 instance, bool present)
 {
-	unsigned int row;
+	unsigned int reg, row;
 
 	if (!present)
 		return 0;
 
-	for (row = 0; row < 2; row++) {
-		u32 val;
+	for (reg = 0; reg < xe_gt_eu_att_regs(gt); reg++) {
+		for (row = 0; row < XE_GT_EU_ATT_ROWS; row++) {
+			u32 val;
 
-		val = xe_gt_mcr_unicast_read(gt, EU_ATT(row), group, instance);
+			val = xe_gt_mcr_unicast_read(gt, EU_ATT(reg, row), group, instance);
 
-		if (val)
-			return 1;
+			if (val)
+				return 1;
+		}
 	}
 
 	return 0;
@@ -94,7 +101,7 @@ int xe_gt_eu_attention_bitmap_size(struct xe_gt *gt)
 		  gt->fuse_topo.g_dss_mask, XE_MAX_DSS_FUSE_BITS);
 
 	return (find_last_bit(dss_mask, XE_MAX_DSS_FUSE_BITS) + 1) *
-		XE_GT_EU_ATT_ROWS * MAX_THREADS *
+		XE_GT_EU_ATT_ROWS * xe_gt_eu_att_regs(gt) * MAX_THREADS *
 		MAX_EUS_PER_ROW / 8;
 }
 
@@ -109,23 +116,25 @@ static int read_eu_attentions_mcr(struct xe_gt *gt, void *data,
 				  u16 group, u16 instance, bool present)
 {
 	struct attn_read_iter * const iter = data;
-	unsigned int row;
+	unsigned int reg, row;
 
-	for (row = 0; row < XE_GT_EU_ATT_ROWS; row++) {
-		u32 val;
+	for (reg = 0; reg < xe_gt_eu_att_regs(gt); reg++) {
+		for (row = 0; row < XE_GT_EU_ATT_ROWS; row++) {
+			u32 val;
 
-		if (iter->i >= iter->size)
-			return 0;
+			if (iter->i >= iter->size)
+				return 0;
 
-		XE_WARN_ON(iter->i + sizeof(val) > xe_gt_eu_attention_bitmap_size(gt));
+			XE_WARN_ON(iter->i + sizeof(val) > xe_gt_eu_attention_bitmap_size(gt));
 
-		if (present)
-			val = xe_gt_mcr_unicast_read(gt, EU_ATT(row), group, instance);
-		else
-			val = 0;
+			if (present)
+				val = xe_gt_mcr_unicast_read(gt, EU_ATT(reg, row), group, instance);
+			else
+				val = 0;
 
-		memcpy(&iter->bits[iter->i], &val, sizeof(val));
-		iter->i += sizeof(val);
+			memcpy(&iter->bits[iter->i], &val, sizeof(val));
+			iter->i += sizeof(val);
+		}
 	}
 
 	return 0;

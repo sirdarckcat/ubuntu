@@ -6,10 +6,24 @@
 #ifndef __XE_GT_DEBUG_
 #define __XE_GT_DEBUG_
 
-#include "xe_gt_types.h"
+#include <linux/bits.h>
+#include <linux/math.h>
+
+struct xe_gt;
 
 #define XE_GT_ATTENTION_TIMEOUT_MS 100
 #define XE_GT_EU_ATT_ROWS 2u
+
+struct xe_eu_attentions {
+#define XE_MAX_EUS 1024
+#define XE_MAX_THREADS 10
+
+	u8 att[DIV_ROUND_UP(XE_MAX_EUS * XE_MAX_THREADS, BITS_PER_BYTE)];
+	unsigned int size;
+	ktime_t ts;
+};
+
+unsigned int xe_gt_eu_att_regs(struct xe_gt *gt);
 
 int xe_gt_eu_threads_needing_attention(struct xe_gt *gt);
 int xe_gt_foreach_dss_group_instance(struct xe_gt *gt,
