@@ -1876,29 +1876,31 @@ static int check_attn_mcr(struct xe_gt *gt, void *data,
 {
 	struct ss_iter *iter = data;
 	struct xe_eudebug *d = iter->debugger;
-	unsigned int row;
+	unsigned int reg, row;
 
-	for (row = 0; row < XE_GT_EU_ATT_ROWS; row++) {
-		u32 val, cur = 0;
+	for (reg = 0; reg < xe_gt_eu_att_regs(gt); reg++) {
+		for (row = 0; row < XE_GT_EU_ATT_ROWS; row++) {
+			u32 val, cur = 0;
 
-		if (iter->i >= iter->size)
-			return 0;
+			if (iter->i >= iter->size)
+				return 0;
 
-		if (XE_WARN_ON((iter->i + sizeof(val)) >
-				(xe_gt_eu_attention_bitmap_size(gt))))
-			return -EIO;
+			if (XE_WARN_ON((iter->i + sizeof(val)) >
+					(xe_gt_eu_attention_bitmap_size(gt))))
+				return -EIO;
 
-		memcpy(&val, &iter->bits[iter->i], sizeof(val));
-		iter->i += sizeof(val);
+			memcpy(&val, &iter->bits[iter->i], sizeof(val));
+			iter->i += sizeof(val);
 
-		if (present)
-			cur = xe_gt_mcr_unicast_read(gt, EU_ATT(row), group, instance);
+			if (present)
+				cur = xe_gt_mcr_unicast_read(gt, EU_ATT(reg, row), group, instance);
 
-		if ((val | cur) != cur) {
-			eu_dbg(d,
-			       "WRONG CLEAR (%u:%u:%u) EU_ATT_CLR: 0x%08x; EU_ATT: 0x%08x\n",
-			       group, instance, row, val, cur);
-			return -EINVAL;
+			if ((val | cur) != cur) {
+				eu_dbg(d,
+				       "WRONG CLEAR (%u:%u:%u:%u) EU_ATT_CLR: 0x%08x; EU_ATT: 0x%08x\n",
+				       group, instance, reg, row, val, cur);
+				return -EINVAL;
+			}
 		}
 	}
 
@@ -1910,35 +1912,37 @@ static int clear_attn_mcr(struct xe_gt *gt, void *data,
 {
 	struct ss_iter *iter = data;
 	struct xe_eudebug *d = iter->debugger;
-	unsigned int row;
+	unsigned int reg, row;
 
-	for (row = 0; row < XE_GT_EU_ATT_ROWS; row++) {
-		u32 val;
+	for (reg = 0; reg < xe_gt_eu_att_regs(gt); reg++) {
+		for (row = 0; row < XE_GT_EU_ATT_ROWS; row++) {
+			u32 val;
 
-		if (iter->i >= iter->size)
-			return 0;
+			if (iter->i >= iter->size)
+				return 0;
 
-		if (XE_WARN_ON((iter->i + sizeof(val)) >
-				(xe_gt_eu_attention_bitmap_size(gt))))
-			return -EIO;
+			if (XE_WARN_ON((iter->i + sizeof(val)) >
+					(xe_gt_eu_attention_bitmap_size(gt))))
+				return -EIO;
 
-		memcpy(&val, &iter->bits[iter->i], sizeof(val));
-		iter->i += sizeof(val);
+			memcpy(&val, &iter->bits[iter->i], sizeof(val));
+			iter->i += sizeof(val);
 
-		if (!val)
-			continue;
+			if (!val)
+				continue;
 
-		if (present) {
-			xe_gt_mcr_unicast_write(gt, EU_ATT_CLR(row), val,
-						group, instance);
+			if (present) {
+				xe_gt_mcr_unicast_write(gt, EU_ATT_CLR(reg, row), val,
+							group, instance);
 
-			eu_dbg(d,
-			       "EU_ATT_CLR: (%u:%u:%u): 0x%08x\n",
-			       group, instance, row, val);
-		} else {
-			eu_warn(d,
-				"EU_ATT_CLR: (%u:%u:%u): 0x%08x to fused off dss\n",
-				group, instance, row, val);
+				eu_dbg(d,
+				       "EU_ATT_CLR: (%u:%u:%u:%u): 0x%08x\n",
+				       group, instance, reg, row, val);
+			} else {
+				eu_warn(d,
+					"EU_ATT_CLR: (%u:%u:%u:%u): 0x%08x to fused off dss\n",
+					group, instance, reg, row, val);
+			}
 		}
 	}
 
