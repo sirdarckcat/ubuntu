@@ -40,32 +40,14 @@ Build-Depends:
  curl <!stage1>,
  zstd <!stage1>,
  pahole [amd64 arm64 armhf ppc64el s390x riscv64] | dwarves (>= 1.21) [amd64 arm64 armhf ppc64el s390x riscv64] <!stage1>,
- clang-18 [amd64 arm64 armhf ppc64el s390x],
- rustc [amd64 arm64 armhf ppc64el s390x],
- rust-src [amd64 arm64 armhf ppc64el s390x],
- rustfmt [amd64 arm64 armhf ppc64el s390x],
- bindgen-0.65 [amd64 arm64 armhf ppc64el s390x],
- llvm [amd64],
- libstdc++-dev,
+ libstdc++-12-dev,
 Build-Depends-Indep:
  xmlto <!stage1>,
- docbook-utils <!stage1>,
- ghostscript <!stage1>,
- fig2dev <!stage1>,
  bzip2 <!stage1>,
  sharutils <!stage1>,
  asciidoc <!stage1>,
- python3-sphinx <!stage1>,
- python3-sphinx-rtd-theme <!stage1>,
- fontconfig <!stage1>,
  python3-docutils <!stage1>,
- imagemagick <!stage1>,
- graphviz <!stage1>,
- dvipng <!stage1>,
- fonts-noto-cjk <!stage1>,
- latexmk <!stage1>,
- librsvg2-bin <!stage1>,
-Vcs-Git: git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/=SERIES=
+Vcs-Git: git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/=SERIES= -b lowlatency-hwe-6.8
 XS-Testsuite: autopkgtest
 #XS-Testsuite-Depends: gcc-4.7 binutils
 
@@ -81,19 +63,6 @@ Description: Header files related to Linux kernel version PKGVER
  that want the latest kernel headers. Please read
  /usr/share/doc/SRCPKGNAME-headers-PKGVER-ABINUM/debian.README.gz for details
 
-Package: SRCPKGNAME-tools-common
-Build-Profiles: <!stage1>
-Architecture: all
-Multi-Arch: foreign
-Section: kernel
-Priority: optional
-Provides: bpftool
-Depends: ${misc:Depends}, lsb-release
-Description: Linux kernel version specific tools for version PKGVER
- This package provides the architecture independent parts for kernel
- version locked tools (such as perf and x86_energy_perf_policy) for
- version PKGVER.
-
 Package: SRCPKGNAME-tools-PKGVER-ABINUM
 Build-Profiles: <!stage1>
 Architecture: amd64 arm64
@@ -107,17 +76,6 @@ Description: Linux kernel version specific tools for version PKGVER-ABINUM
  =HUMAN=.
  You probably want to install linux-tools-PKGVER-ABINUM-<flavour>.
 
-Package: SRCPKGNAME-cloud-tools-common
-Build-Profiles: <!stage1>
-Architecture: all
-Multi-Arch: foreign
-Section: kernel
-Priority: optional
-Depends: ${misc:Depends}
-Description: Linux kernel version specific cloud tools for version PKGVER
- This package provides the architecture independent parts for kernel
- version locked tools for cloud tools for version PKGVER.
-
 Package: SRCPKGNAME-cloud-tools-PKGVER-ABINUM
 Build-Profiles: <!stage1>
 Architecture: amd64 arm64
@@ -129,14 +87,3 @@ Description: Linux kernel version specific cloud tools for version PKGVER-ABINUM
  version locked tools for cloud tools for version PKGVER-ABINUM on
  =HUMAN=.
  You probably want to install linux-cloud-tools-PKGVER-ABINUM-<flavour>.
-
-Package: SRCPKGNAME-tools-host
-Build-Profiles: <!stage1>
-Architecture: all
-Multi-Arch: foreign
-Section: kernel
-Priority: optional
-Depends: ${misc:Depends}, python3
-Description: Linux kernel VM host tools
- This package provides kernel tools useful for VM hosts.
-
