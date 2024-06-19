@@ -14,11 +14,32 @@ CONFIG_ARCH_ROCKCHIP                            note<'LP: #2044554'>
 CONFIG_ARM_SMMU_DISABLE_BYPASS_BY_DEFAULT       policy<{'arm64': '-'}>
 CONFIG_ARM_SMMU_DISABLE_BYPASS_BY_DEFAULT       note<'LP:1845820'>
 
+CONFIG_ARM_SMMU_V3_SVA                          policy<{'arm64': 'n'}>
+CONFIG_ARM_SMMU_V3_SVA                          note<'LP: 2069790'>
+
 CONFIG_BLK_DEV_RAM                              policy<{'arm64': 'y'}>
 CONFIG_BLK_DEV_RAM                              note<'LP #1593293'>
 
+CONFIG_COMMON_CLK_PROXO                         policy<{'arm64': 'y'}>
+CONFIG_COMMON_CLK_PROXO                         note<'LP: 2069790'>
+
+CONFIG_CRYPTO_DEV_ZYNQMP_SHA3                   policy<{'arm64': 'y'}>
+CONFIG_CRYPTO_DEV_ZYNQMP_SHA3                   note<'LP: 2069790'>
+
+CONFIG_DRM_PANFROST                             policy<{'arm64': 'y'}>
+CONFIG_DRM_PANFROST                             note<'LP: 2069790'>
+
+CONFIG_DRM_XLNX_HDMITX                          policy<{'arm64': 'y'}>
+CONFIG_DRM_XLNX_HDMITX                          note<'LP: 2069790'>
+
+CONFIG_DRM_ZYNQMP_DPSUB                         policy<{'arm64': 'y'}>
+CONFIG_DRM_ZYNQMP_DPSUB                         note<'LP: 2069790'>
+
 CONFIG_EXT3_FS                                  policy<{'arm64': 'y'}>
 CONFIG_EXT3_FS                                  note<'ext4 handling via EXT4_USE_FOR_EXT23'>
+
+CONFIG_GPIO_PCA9570                             policy<{'arm64': 'y'}>
+CONFIG_GPIO_PCA9570                             note<'LP: 2069790'>
 
 CONFIG_IPMMU_VMSA                               policy<{'arm64': '-'}>
 CONFIG_IPMMU_VMSA                               note<'LP: #2044554'>
@@ -44,14 +65,23 @@ CONFIG_MTD_OF_PARTS                             note<'boot essential on arm'>
 CONFIG_MTD_RAW_NAND                             policy<{'arm64': 'y'}>
 CONFIG_MTD_RAW_NAND                             note<'boot essential on arm'>
 
+CONFIG_NFSD                                     policy<{'arm64': 'y'}>
+CONFIG_NFSD                                     note<'LP: 2069790'>
+
 CONFIG_NR_CPUS                                  policy<{'arm64': '4'}>
 CONFIG_NR_CPUS                                  note<'LP:1864198'>
 
 CONFIG_PCI_MESON                                policy<{'arm64': 'n'}>
 CONFIG_PCI_MESON                                note<'LP: #2007745'>
 
+CONFIG_PHY_XILINX_HDMIPHY                       policy<{'arm64': 'y'}>
+CONFIG_PHY_XILINX_HDMIPHY                       note<'LP: 2069790'>
+
 CONFIG_REGULATOR_FIXED_VOLTAGE                  policy<{'arm64': 'y'}>
 CONFIG_REGULATOR_FIXED_VOLTAGE                  note<'boot essential on arm'>
+
+CONFIG_RPCSEC_GSS_KRB5                          policy<{'arm64': 'y'}>
+CONFIG_RPCSEC_GSS_KRB5                          note<'LP: 2069790'>
 
 CONFIG_SATA_AHCI_PLATFORM                       policy<{'arm64': 'y'}>
 CONFIG_SATA_AHCI_PLATFORM                       note<'boot essential on highbank'>
@@ -99,13 +129,19 @@ CONFIG_SPEAKUP                                  policy<{'arm64': '-'}>
 CONFIG_SPEAKUP                                  note<'LP: #1967702'>
 
 CONFIG_SUN6I_RTC_CCU                            policy<{'arm64': '-'}>
-CONFIG_SUN6I_RTC_CCU                            note<TODO: update note>
+CONFIG_SUN6I_RTC_CCU                            note<'TODO: update note'>
+
+CONFIG_SUNRPC_GSS                               policy<{'arm64': 'y'}>
+CONFIG_SUNRPC_GSS                               note<'LP: 2069790'>
 
 CONFIG_UBSAN                                    policy<{'arm64': 'n'}>
 CONFIG_UBSAN                                    note<'LP#1942215'>
 
 CONFIG_USB_OTG                                  policy<{'arm64': 'y'}>
 CONFIG_USB_OTG                                  note<'triggers breakage on x86 LP:1047527, LP:1411295'>
+
+CONFIG_XILINX_WINDOW_WATCHDOG                   policy<{'arm64': 'y'}>
+CONFIG_XILINX_WINDOW_WATCHDOG                   note<'LP: 2069790'>
 
 
 # ---- Annotations without notes ----
@@ -224,8 +260,6 @@ CONFIG_ARM_SMMU                                 policy<{'arm64': 'n'}>
 CONFIG_ARM_SMMU_LEGACY_DT_BINDINGS              policy<{'arm64': '-'}>
 CONFIG_ARM_SMMU_QCOM                            policy<{'arm64': '-'}>
 CONFIG_ARM_SMMU_QCOM_DEBUG                      policy<{'arm64': '-'}>
-CONFIG_ARM_SMMU_V3                              policy<{'arm64': 'n'}>
-CONFIG_ARM_SMMU_V3_SVA                          policy<{'arm64': '-'}>
 CONFIG_ARM_SUN8I_A33_MBUS_DEVFREQ               policy<{'arm64': '-'}>
 CONFIG_ARM_TEGRA124_CPUFREQ                     policy<{'arm64': '-'}>
 CONFIG_ARM_TEGRA186_CPUFREQ                     policy<{'arm64': '-'}>
@@ -528,7 +562,6 @@ CONFIG_COMMON_CLK_MT8365_VDEC                   policy<{'arm64': '-'}>
 CONFIG_COMMON_CLK_MT8365_VENC                   policy<{'arm64': '-'}>
 CONFIG_COMMON_CLK_MT8516                        policy<{'arm64': '-'}>
 CONFIG_COMMON_CLK_MT8516_AUDSYS                 policy<{'arm64': '-'}>
-CONFIG_COMMON_CLK_PROXO                         policy<{'arm64': 'n'}>
 CONFIG_COMMON_CLK_QCOM                          policy<{'arm64': '-'}>
 CONFIG_COMMON_CLK_ROCKCHIP                      policy<{'arm64': '-'}>
 CONFIG_COMMON_CLK_S4_PERIPHERALS                policy<{'arm64': '-'}>
@@ -695,6 +728,7 @@ CONFIG_DRM_RCAR_VSP                             policy<{'arm64': '-'}>
 CONFIG_DRM_RCAR_WRITEBACK                       policy<{'arm64': '-'}>
 CONFIG_DRM_ROCKCHIP                             policy<{'arm64': '-'}>
 CONFIG_DRM_RZG2L_MIPI_DSI                       policy<{'arm64': '-'}>
+CONFIG_DRM_SCHED                                policy<{'arm64': 'y'}>
 CONFIG_DRM_SHMOBILE                             policy<{'arm64': '-'}>
 CONFIG_DRM_SPRD                                 policy<{'arm64': '-'}>
 CONFIG_DRM_SUN4I                                policy<{'arm64': '-'}>
@@ -719,7 +753,6 @@ CONFIG_DRM_XLNX_BRIDGE_VTC                      policy<{'arm64': 'y'}>
 CONFIG_DRM_XLNX_DPTX                            policy<{'arm64': 'y'}>
 CONFIG_DRM_XLNX_DSI                             policy<{'arm64': 'y'}>
 CONFIG_DRM_XLNX_HDCP                            policy<{'arm64': 'y'}>
-CONFIG_DRM_XLNX_HDMITX                          policy<{'arm64': 'n'}>
 CONFIG_DRM_XLNX_MIXER                           policy<{'arm64': 'y'}>
 CONFIG_DRM_XLNX_PL_DISP                         policy<{'arm64': 'y'}>
 CONFIG_DRM_XLNX_SDI                             policy<{'arm64': 'y'}>
@@ -1438,7 +1471,6 @@ CONFIG_PHY_TEGRA_XUSB                           policy<{'arm64': '-'}>
 CONFIG_PHY_TI_GMII_SEL                          policy<{'arm64': '-'}>
 CONFIG_PHY_XGENE                                policy<{'arm64': '-'}>
 CONFIG_PHY_XILINX_DPGTQUAD                      policy<{'arm64': 'n'}>
-CONFIG_PHY_XILINX_HDMIPHY                       policy<{'arm64': 'n'}>
 CONFIG_PHY_XILINX_ZYNQMP                        policy<{'arm64': 'y'}>
 CONFIG_PINCTRL_AC5                              policy<{'arm64': '-'}>
 CONFIG_PINCTRL_AMLOGIC_C3                       policy<{'arm64': '-'}>
