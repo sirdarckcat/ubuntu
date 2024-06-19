@@ -16,6 +16,7 @@ do_tools_perf   = true
 do_tools_perf_jvmti = true
 do_tools_bpftool = true
 do_tools_host = false
+do_tools_rtla = true
 
 do_dtbs		= true
 do_zfs		= false
