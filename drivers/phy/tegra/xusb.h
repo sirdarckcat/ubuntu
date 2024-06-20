@@ -437,6 +437,7 @@ struct tegra_xusb_padctl_soc {
 	bool trk_hw_mode;
 	bool trk_update_on_idle;
 	bool supports_lp_cfg_en;
+	bool ignore_fuse;
 };
 
 struct tegra_xusb_padctl {
