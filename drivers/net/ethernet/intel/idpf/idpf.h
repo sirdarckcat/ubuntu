@@ -18,7 +18,6 @@ struct idpf_q_vec_rsrc;
 #include <linux/sctp.h>
 #include <linux/ethtool_netlink.h>
 #include <net/gro.h>
-#include <linux/dim.h>
 
 #include "virtchnl2.h"
 #include "idpf_txrx.h"
@@ -389,7 +388,7 @@ struct idpf_vport {
 	u16 num_txq_grp;
 	struct idpf_txq_group *txq_grps;
 	u32 txq_model;
-	struct idpf_queue **txqs;
+	struct idpf_tx_queue **txqs;
 	bool crc_enable;
 
 	u16 num_rxq;
