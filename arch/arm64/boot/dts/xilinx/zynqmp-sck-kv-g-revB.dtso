@@ -17,6 +17,17 @@
 /plugin/;
 
 &{/} {
+	compatible = "xlnx,zynqmp-sk-kv260-rev2",
+		     "xlnx,zynqmp-sk-kv260-rev1",
+		     "xlnx,zynqmp-sk-kv260-revB",
+		     "xlnx,zynqmp-sk-kv260", "xlnx,zynqmp";
+	model = "ZynqMP KV260 revB";
+
+	ina260-u14 {
+		compatible = "iio-hwmon";
+		io-channels = <&u14 0>, <&u14 1>, <&u14 2>;
+	};
+
 	si5332_0: si5332-0 { /* u17 */
 		compatible = "fixed-clock";
 		#clock-cells = <0>;
@@ -54,14 +65,6 @@
 	};
 };
 
-&{/} {
-	compatible = "xlnx,zynqmp-sk-kv260-rev2",
-		     "xlnx,zynqmp-sk-kv260-rev1",
-		     "xlnx,zynqmp-sk-kv260-revB",
-		     "xlnx,zynqmp-sk-kv260", "xlnx,zynqmp";
-	model = "ZynqMP KV260 revB";
-};
-
 &i2c1 { /* I2C_SCK C23/C24 - MIO from SOM */
 	#address-cells = <1>;
 	#size-cells = <0>;
@@ -77,8 +80,7 @@
 		label = "ina260-u14";
 		reg = <0x40>;
 	};
-	/* u14 - 0x40 - ina260 */
-	/* u43 - 0x2d - usb5744 */
+	/* u43 - 0x2d - USB hub */
 	/* u27 - 0xe0 - STDP4320 DP/HDMI splitter */
 };
 
@@ -326,6 +328,7 @@
 			slew-rate = <SLEW_RATE_SLOW>;
 			power-source = <IO_STANDARD_LVCMOS18>;
 			bias-disable;
+			output-enable;
 		};
 
 		conf-cd {
