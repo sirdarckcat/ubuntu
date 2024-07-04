@@ -2,7 +2,7 @@
 /*
  * NVIDIA Tegra xHCI host controller driver
  *
- * SPDX-FileCopyrightText: Copyright (c) 2014-2024, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * SPDX-FileCopyrightText: Copyright (c) 2014-2025, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * Copyright (C) 2014 Google, Inc.
  */
 
@@ -3449,7 +3449,7 @@ static const struct tegra_xusb_soc tegra234_soc = {
 	.has_pg_support = true,
 };
 
-static const struct tegra_xusb_soc tegra234_vf1_soc = {
+static const struct tegra_xusb_soc tegra_vf1_soc = {
 	.vf_id = 1,
 	.is_xhci_vf = true,
 	.phy_types = tegra194_phy_types,
@@ -3461,7 +3461,7 @@ static const struct tegra_xusb_soc tegra234_vf1_soc = {
 	.lpm_support = true,
 };
 
-static const struct tegra_xusb_soc tegra234_vf2_soc = {
+static const struct tegra_xusb_soc tegra_vf2_soc = {
 	.vf_id = 2,
 	.is_xhci_vf = true,
 	.phy_types = tegra194_phy_types,
@@ -3473,7 +3473,7 @@ static const struct tegra_xusb_soc tegra234_vf2_soc = {
 	.lpm_support = true,
 };
 
-static const struct tegra_xusb_soc tegra234_vf3_soc = {
+static const struct tegra_xusb_soc tegra_vf3_soc = {
 	.vf_id = 3,
 	.is_xhci_vf = true,
 	.phy_types = tegra194_phy_types,
@@ -3485,8 +3485,44 @@ static const struct tegra_xusb_soc tegra234_vf3_soc = {
 	.lpm_support = true,
 };
 
-static const struct tegra_xusb_soc tegra234_vf4_soc = {
+static const struct tegra_xusb_soc tegra_vf4_soc = {
 	.vf_id = 4,
+	.is_xhci_vf = true,
+	.phy_types = tegra194_phy_types,
+	.num_types = ARRAY_SIZE(tegra194_phy_types),
+	.ports = {
+		.usb3 = { .offset = 0, .count = 4, },
+		.usb2 = { .offset = 4, .count = 4, },
+	},
+	.lpm_support = true,
+};
+
+static const struct tegra_xusb_soc tegra_vf5_soc = {
+	.vf_id = 5,
+	.is_xhci_vf = true,
+	.phy_types = tegra194_phy_types,
+	.num_types = ARRAY_SIZE(tegra194_phy_types),
+	.ports = {
+		.usb3 = { .offset = 0, .count = 4, },
+		.usb2 = { .offset = 4, .count = 4, },
+	},
+	.lpm_support = true,
+};
+
+static const struct tegra_xusb_soc tegra_vf6_soc = {
+	.vf_id = 6,
+	.is_xhci_vf = true,
+	.phy_types = tegra194_phy_types,
+	.num_types = ARRAY_SIZE(tegra194_phy_types),
+	.ports = {
+		.usb3 = { .offset = 0, .count = 4, },
+		.usb2 = { .offset = 4, .count = 4, },
+	},
+	.lpm_support = true,
+};
+
+static const struct tegra_xusb_soc tegra_vf7_soc = {
+	.vf_id = 7,
 	.is_xhci_vf = true,
 	.phy_types = tegra194_phy_types,
 	.num_types = ARRAY_SIZE(tegra194_phy_types),
@@ -3531,11 +3567,18 @@ static const struct of_device_id tegra_xusb_of_match[] = {
 	{ .compatible = "nvidia,tegra186-xusb", .data = &tegra186_soc },
 	{ .compatible = "nvidia,tegra194-xusb", .data = &tegra194_soc },
 	{ .compatible = "nvidia,tegra234-xusb", .data = &tegra234_soc },
-	{ .compatible = "nvidia,tegra234-xusb-vf1", .data = &tegra234_vf1_soc },
-	{ .compatible = "nvidia,tegra234-xusb-vf2", .data = &tegra234_vf2_soc },
-	{ .compatible = "nvidia,tegra234-xusb-vf3", .data = &tegra234_vf3_soc },
-	{ .compatible = "nvidia,tegra234-xusb-vf4", .data = &tegra234_vf4_soc },
+	{ .compatible = "nvidia,tegra234-xusb-vf1", .data = &tegra_vf1_soc },
+	{ .compatible = "nvidia,tegra234-xusb-vf2", .data = &tegra_vf2_soc },
+	{ .compatible = "nvidia,tegra234-xusb-vf3", .data = &tegra_vf3_soc },
+	{ .compatible = "nvidia,tegra234-xusb-vf4", .data = &tegra_vf4_soc },
 	{ .compatible = "nvidia,tegra264-xusb", .data = &tegra264_soc },
+	{ .compatible = "nvidia,tegra264-xusb-vf1", .data = &tegra_vf1_soc },
+	{ .compatible = "nvidia,tegra264-xusb-vf2", .data = &tegra_vf2_soc },
+	{ .compatible = "nvidia,tegra264-xusb-vf3", .data = &tegra_vf3_soc },
+	{ .compatible = "nvidia,tegra264-xusb-vf4", .data = &tegra_vf4_soc },
+	{ .compatible = "nvidia,tegra264-xusb-vf5", .data = &tegra_vf5_soc },
+	{ .compatible = "nvidia,tegra264-xusb-vf6", .data = &tegra_vf6_soc },
+	{ .compatible = "nvidia,tegra264-xusb-vf7", .data = &tegra_vf7_soc },
 	{ },
 };
 MODULE_DEVICE_TABLE(of, tegra_xusb_of_match);
