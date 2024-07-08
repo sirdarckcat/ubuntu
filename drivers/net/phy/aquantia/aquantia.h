@@ -123,5 +123,5 @@ static inline int aqr_hwmon_probe(struct phy_device *phydev) { return 0; }
 #endif
 
 int aqr_firmware_load(struct phy_device *phydev);
-
+int aqr_wait_reset_complete(struct phy_device *phydev);
 #endif /* AQUANTIA_H */
