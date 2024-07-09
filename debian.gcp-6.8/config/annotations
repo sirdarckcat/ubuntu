@@ -5,6 +5,9 @@
 
 include "../../debian.gcp/config/annotations"
 
+CONFIG_RUST                                     policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_RUST                                     note<'TODO: update note'>
+
 
 # ---- Annotations without notes ----
 
@@ -13,3 +16,4 @@ CONFIG_CC_VERSION_TEXT                          policy<{'amd64': '"x86_64-linux-
 CONFIG_DEBUG_INFO_COMPRESSED_ZSTD               policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_GCC_VERSION                              policy<{'amd64': '120300', 'arm64': '120300'}>
 CONFIG_LD_VERSION                               policy<{'amd64': '23800', 'arm64': '23800'}>
+CONFIG_RUST_IS_AVAILABLE                        policy<{'amd64': '-', 'arm64': '-'}>
