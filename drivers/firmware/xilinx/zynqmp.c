@@ -2782,11 +2782,11 @@ static ssize_t config_reg_store(struct kobject *kobj,
 	unsigned long address, value, mask;
 	int ret;
 
-	kern_buff = kzalloc(count, GFP_KERNEL);
+	kern_buff = kzalloc(count + 1, GFP_KERNEL);
 	if (!kern_buff)
 		return -ENOMEM;
 
-	ret = strscpy(kern_buff, buf, count);
+	ret = strscpy(kern_buff, buf, count + 1);
 	if (ret < 0) {
 		ret = -EFAULT;
 		goto err;
