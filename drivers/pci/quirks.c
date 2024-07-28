@@ -5798,6 +5798,13 @@ static void quirk_nvidia_hda(struct pci_dev *gpu)
 	if (gpu->device < PCI_DEVICE_ID_NVIDIA_GEFORCE_320M)
 		return;
 
+	/*
+	 * Skip HDA enablement on Tegra PCI iGPU because HDA is
+	 * a platform device on Tegra SoCs.
+	 */
+	if (gpu->device == PCI_DEVICE_ID_NVIDIA_TEGRA_T264)
+		return;
+
 	/* Bit 25 at offset 0x488 enables the HDA controller */
 	pci_read_config_dword(gpu, 0x488, &val);
 	if (val & BIT(25))
