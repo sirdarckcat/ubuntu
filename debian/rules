@@ -49,6 +49,7 @@ ifneq ($(DEB_HOST_ARCH),$(DEB_BUILD_ARCH))
 	do_dkms_nvidia_server=false
 	do_dkms_vbox=false
 	do_dkms_wireguard=false
+	do_dkms_involflt=false
 endif
 
 # Are any of the kernel signing options enabled.
@@ -115,6 +116,7 @@ do_any_tools=$(sort $(filter-out false,$(do_linux_tools) $(do_cloud_tools)))
 dkms_zfs_linux_version=$(shell gawk '/^zfs-linux / { print $$2; }' $(DEBIAN)/dkms-versions)
 dkms_vbox_guest_version=$(shell gawk '/^virtualbox/ { print $$2; }' $(DEBIAN)/dkms-versions)
 dkms_wireguard_version=$(shell gawk '/^wireguard-linux-compat / { print $$2; }' $(DEBIAN)/dkms-versions)
+dkms_involflt_version=$(shell gawk '/^involflt / { print $$2; }' $(DEBIAN)/dkms-versions)
 
 # NVIDIA DKMS package gross series split into desktop and server.
 nvidia_desktop_series=$(shell sed -n -e 's/^nvidia-graphics-drivers-\([0-9][0-9]*\) .*/\1/p' $(DEBIAN)/dkms-versions)
