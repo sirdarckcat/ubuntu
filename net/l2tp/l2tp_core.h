@@ -104,6 +104,7 @@ struct l2tp_session {
 	enum l2tp_pwtype	pwtype;
 	struct l2tp_stats	stats;
 	struct hlist_node	global_hlist;	/* global hash list node */
+	struct work_struct	del_work;
 
 	/* Session receive handler for data packets.
 	 * Each pseudowire implementation should implement this callback in order to

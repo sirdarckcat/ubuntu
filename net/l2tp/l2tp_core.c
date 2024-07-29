@@ -1230,23 +1230,9 @@ static void l2tp_tunnel_closeall(struct l2tp_tunnel *tunnel)
 
 	spin_lock_bh(&tunnel->hlist_lock);
 	tunnel->acpt_newsess = false;
-	for (hash = 0; hash < L2TP_HASH_SIZE; hash++) {
-again:
-		hlist_for_each_entry_rcu(session, &tunnel->session_hlist[hash], hlist) {
-			hlist_del_init_rcu(&session->hlist);
-
-			spin_unlock_bh(&tunnel->hlist_lock);
+	for (hash = 0; hash < L2TP_HASH_SIZE; hash++)
+		hlist_for_each_entry(session, &tunnel->session_hlist[hash], hlist)
 			l2tp_session_delete(session);
-			spin_lock_bh(&tunnel->hlist_lock);
-
-			/* Now restart from the beginning of this hash
-			 * chain.  We always remove a session from the
-			 * list so we are guaranteed to make forward
-			 * progress.
-			 */
-			goto again;
-		}
-	}
 	spin_unlock_bh(&tunnel->hlist_lock);
 }
 
@@ -1585,18 +1571,31 @@ EXPORT_SYMBOL_GPL(l2tp_tunnel_delete);
 
 void l2tp_session_delete(struct l2tp_session *session)
 {
-	if (test_and_set_bit(0, &session->dead))
-		return;
+	if (!test_and_set_bit(0, &session->dead)) {
+		trace_delete_session(session);
+		l2tp_session_inc_refcount(session);
+		queue_work(l2tp_wq, &session->del_work);
+	}
+}
+EXPORT_SYMBOL_GPL(l2tp_session_delete);
 
-	trace_delete_session(session);
+/* Workqueue session deletion function */
+static void l2tp_session_del_work(struct work_struct *work)
+{
+	struct l2tp_session *session = container_of(work, struct l2tp_session,
+						    del_work);
+
 	l2tp_session_unhash(session);
 	l2tp_session_queue_purge(session);
 	if (session->session_close)
 		(*session->session_close)(session);
 
+	/* drop initial ref */
+	l2tp_session_dec_refcount(session);
+
+	/* drop workqueue ref */
 	l2tp_session_dec_refcount(session);
 }
-EXPORT_SYMBOL_GPL(l2tp_session_delete);
 
 /* We come here whenever a session's send_seq, cookie_len or
  * l2specific_type parameters are set.
@@ -1646,6 +1645,7 @@ struct l2tp_session *l2tp_session_create(int priv_size, struct l2tp_tunnel *tunn
 
 		INIT_HLIST_NODE(&session->hlist);
 		INIT_HLIST_NODE(&session->global_hlist);
+		INIT_WORK(&session->del_work, l2tp_session_del_work);
 
 		if (cfg) {
 			session->pwtype = cfg->pw_type;
@@ -1705,8 +1705,16 @@ static __net_exit void l2tp_exit_net(struct net *net)
 	}
 	rcu_read_unlock_bh();
 
-	if (l2tp_wq)
+	if (l2tp_wq) {
+		/* Run all TUNNEL_DELETE work items just queued. */
 		flush_workqueue(l2tp_wq);
+
+		/* Each TUNNEL_DELETE work item will queue a SESSION_DELETE
+		 * work item for each session in the tunnel. Flush the
+		 * workqueue again to process these.
+		 */
+		flush_workqueue(l2tp_wq);
+	}
 	rcu_barrier();
 
 	for (hash = 0; hash < L2TP_HASH_SIZE_2; hash++)
