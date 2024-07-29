@@ -181,7 +181,6 @@ static int ocores_pwm_probe(struct platform_device *pdev)
 	chip->dev = dev;
 	chip->ops = &ocores_pwm_ops;
 	chip->npwm = 8;
-	chip->of_pwm_n_cells = 3;
 
 	ddata->regs = devm_platform_ioremap_resource(pdev, 0);
 	if (IS_ERR(ddata->regs))
