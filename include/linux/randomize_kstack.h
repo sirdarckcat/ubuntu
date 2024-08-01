@@ -78,7 +78,7 @@ DECLARE_STATIC_KEY_MAYBE(CONFIG_RANDOMIZE_KSTACK_OFFSET_DEFAULT,
 	if (static_branch_maybe(CONFIG_RANDOMIZE_KSTACK_OFFSET_DEFAULT,	\
 				&randomize_kstack_offset)) {		\
 		u32 offset = current->kstack_offset;			\
-		offset = ror32(offset, 5) ^ (rand);			\
+		offset ^= (rand);					\
 		current->kstack_offset = offset;			\
 	}								\
 } while (0)
