@@ -3076,7 +3076,8 @@ static int xe_eudebug_vma_access(struct xe_vma *vma, u64 offset_in_vma,
 		return ret;
 	}
 
-	return -EINVAL;
+	return xe_vm_userptr_access(to_userptr_vma(vma), offset_in_vma,
+				    buf, bytes, write);
 }
 
 static int xe_eudebug_vm_access(struct xe_vm *vm, u64 offset,
