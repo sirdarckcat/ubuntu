@@ -688,6 +688,11 @@ enum ufshcd_quirks {
 	 * because it causes link startup to become unreliable.
 	 */
 	UFSHCD_QUIRK_PERFORM_LINK_STARTUP_ONCE		= 1 << 26,
+
+	/*
+	 * Enable this quirk to enable gear shift first
+	 */
+	UFSHCD_QUIRK_BROKEN_PWR_SEQUENCE		= 1 << 22,
 };
 
 enum ufshcd_caps {
