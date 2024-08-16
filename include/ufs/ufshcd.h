@@ -640,6 +640,11 @@ enum ufshcd_quirks {
 	 * thus need this quirk to skip related flow.
 	 */
 	UFSHCD_QUIRK_MCQ_BROKEN_RTC			= 1 << 21,
+
+	/*
+	 * Enable this quirk to enable gear shift first
+	 */
+	UFSHCD_QUIRK_BROKEN_PWR_SEQUENCE		= 1 << 22,
 };
 
 enum ufshcd_caps {
