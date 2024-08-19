@@ -26,7 +26,12 @@ fi
 SKIP_RULES_D=${SKIP_RULES_D:-}
 
 #
-# Update package and DTB settings from master
+# Update configs from master
+#
+rsync -avc --exclude 'annotations' --exclude 'config.flavour.realtime' --delete "${DEBIAN_MASTER}/config/" "${DEBIAN}/config"
+
+#
+# Update package and DTB settings from master.
 #
 if [ -z "${SKIP_RULES_D}" ] ; then
 	rsync -avc "${DEBIAN_MASTER}/rules.d/"*.mk "${DEBIAN}/rules.d/"
@@ -49,9 +54,3 @@ if [ -d "${DEBIAN}/modprobe.d/" ]; then
 fi
 
 cp -p "${DEBIAN_MASTER}/control.d/"*.inclusion-list "${DEBIAN}/control.d"
-
-cp -p "${DEBIAN_MASTER}/reconstruct" "${DEBIAN}/reconstruct"
-
-if [ -x "${DEBIAN}/scripts/helpers/local-mangle" ]; then
-	"./${DEBIAN}/scripts/helpers/local-mangle"
-fi
