@@ -1,7 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-only
-/*
- * Copyright (c) 2014-2016, NVIDIA CORPORATION.  All rights reserved.
- */
+// SPDX-FileCopyrightText: Copyright (c) 2014-2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 
 #include <soc/tegra/ivc.h>
 
@@ -92,7 +90,7 @@ static inline void tegra_ivc_flush(struct tegra_ivc *ivc, dma_addr_t phys)
 				   DMA_TO_DEVICE);
 }
 
-static inline bool tegra_ivc_empty(struct tegra_ivc *ivc, struct iosys_map *map)
+bool tegra_ivc_empty(struct tegra_ivc *ivc, struct iosys_map *map)
 {
 	/*
 	 * This function performs multiple checks on the same values with
@@ -117,6 +115,7 @@ static inline bool tegra_ivc_empty(struct tegra_ivc *ivc, struct iosys_map *map)
 
 	return tx == rx;
 }
+EXPORT_SYMBOL(tegra_ivc_empty);
 
 static inline bool tegra_ivc_full(struct tegra_ivc *ivc, struct iosys_map *map)
 {
@@ -621,6 +620,128 @@ static int tegra_ivc_check_params(unsigned long rx, unsigned long tx,
 
 	return 0;
 }
+
+int tegra_ivc_can_read(struct tegra_ivc *ivc)
+{
+	return tegra_ivc_check_read(ivc) == 0;
+}
+EXPORT_SYMBOL(tegra_ivc_can_read);
+
+int tegra_ivc_can_write(struct tegra_ivc *ivc)
+{
+	return tegra_ivc_check_write(ivc) == 0;
+}
+EXPORT_SYMBOL(tegra_ivc_can_write);
+
+int tegra_ivc_read(struct tegra_ivc *ivc, void __user *usr_buf, void *buf, size_t max_read)
+{
+	struct iosys_map map;
+	int err;
+
+	BUG_ON(buf && usr_buf);
+
+	/* get next frame to be read from IVC channel */
+	err = tegra_ivc_read_get_next_frame(ivc, &map);
+	if (err)
+		return err;
+
+	/* update the buffer with read data*/
+	if (buf) {
+		iosys_map_memcpy_from(buf, &map, 0, max_read);
+	} else if (usr_buf) {
+		// FIXME handle io address space
+		if (WARN_ON(map.is_iomem) || copy_to_user(usr_buf, map.vaddr, max_read))
+			return -EFAULT;
+	} else
+		BUG();
+
+	/* Advance to next read frame*/
+	if (tegra_ivc_read_advance(ivc) == 0)
+		return max_read;
+	else
+		return 0;
+}
+EXPORT_SYMBOL(tegra_ivc_read);
+
+int tegra_ivc_read_peek(struct tegra_ivc *ivc, void __user *usr_buf,
+				void *buf, size_t offset, size_t size)
+{
+	struct iosys_map map;
+	int err;
+
+	BUG_ON(buf && usr_buf);
+
+	/* get next frame to be read from IVC channel */
+	err = tegra_ivc_read_get_next_frame(ivc, &map);
+	if (err)
+		return err;
+
+	/* update the buffer with read data*/
+	if (buf) {
+		iosys_map_memcpy_from(buf, &map, offset, size);
+	} else if (usr_buf) {
+		// FIXME handle io address space
+		if (WARN_ON(map.is_iomem) || copy_to_user(usr_buf, map.vaddr + offset, size))
+			return -EFAULT;
+	} else
+		BUG();
+
+	return size;
+}
+EXPORT_SYMBOL(tegra_ivc_read_peek);
+
+int tegra_ivc_write(struct tegra_ivc *ivc, const void __user *usr_buf, const void *buf, size_t size)
+{
+	struct iosys_map map;
+	int err;
+
+	BUG_ON(buf && usr_buf);
+
+	/* get next frame to be written from IVC channel */
+	err = tegra_ivc_write_get_next_frame(ivc, &map);
+	if (err)
+		return err;
+
+	/* update the write frame with data buffer*/
+	if (buf) {
+		iosys_map_memcpy_to(&map, 0, buf, size);
+	} else if (usr_buf) {
+		// FIXME handle io address space
+		if (WARN_ON(map.is_iomem) || copy_from_user(map.vaddr, usr_buf, size))
+			return -EFAULT;
+	} else
+		BUG();
+
+	/* Advance to next write frame*/
+	if (tegra_ivc_write_advance(ivc) == 0)
+		return size;
+	else
+		return 0;
+}
+EXPORT_SYMBOL(tegra_ivc_write);
+
+int tegra_ivc_channel_sync(struct tegra_ivc *ivc)
+{
+	if ((ivc == NULL) || (ivc->num_frames == 0)) {
+		return -EINVAL;
+	} else {
+		u32 count;
+
+		count = tegra_ivc_header_read_field(&ivc->tx.map, tx.count);
+		ivc->tx.position = count % ivc->num_frames;
+		count = tegra_ivc_header_read_field(&ivc->rx.map, rx.count);
+		ivc->rx.position = count % ivc->num_frames;
+	}
+
+	return 0;
+}
+EXPORT_SYMBOL(tegra_ivc_channel_sync);
+
+uint32_t tegra_ivc_frames_available(struct tegra_ivc *ivc, struct iosys_map *map)
+{
+	return (ivc->num_frames - tegra_ivc_available(ivc, map));
+}
+EXPORT_SYMBOL(tegra_ivc_frames_available);
 
 static inline void iosys_map_copy(struct iosys_map *dst, const struct iosys_map *src)
 {
