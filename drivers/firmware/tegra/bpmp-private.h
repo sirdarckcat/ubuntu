@@ -1,7 +1,5 @@
-/* SPDX-License-Identifier: GPL-2.0 */
-/*
- * Copyright (c) 2018, NVIDIA CORPORATION.
- */
+/* SPDX-License-Identifier: GPL-2.0-only */
+/* SPDX-FileCopyrightText: Copyright (c) 2018-2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved. */
 
 #ifndef __FIRMWARE_TEGRA_BPMP_PRIVATE_H
 #define __FIRMWARE_TEGRA_BPMP_PRIVATE_H
@@ -31,5 +29,7 @@ extern const struct tegra_bpmp_ops tegra186_bpmp_ops;
 #if IS_ENABLED(CONFIG_ARCH_TEGRA_210_SOC)
 extern const struct tegra_bpmp_ops tegra210_bpmp_ops;
 #endif
-
+#if IS_ENABLED(CONFIG_TEGRA_HV_DRIVER)
+extern const struct tegra_bpmp_ops tegra194_bpmp_hv_ops;
+#endif
 #endif
