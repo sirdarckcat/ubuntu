@@ -8893,6 +8893,8 @@ static int ufshcd_device_init(struct ufs_hba *hba, bool init_dev_params)
 	schedule_delayed_work(&hba->ufs_rtc_update_work,
 			      msecs_to_jiffies(UFS_RTC_UPDATE_INTERVAL_MS));
 
+	hba->max_pwr_info.is_valid = false;
+
 	/* Gear up to HS gear if supported */
 	if (hba->max_pwr_info.is_valid) {
 		/*
