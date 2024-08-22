@@ -132,8 +132,8 @@ static inline int __paes_keyblob2pkey(struct key_blob *kb,
 		if (i > 0 && ret == -EAGAIN && in_task())
 			if (msleep_interruptible(1000))
 				return -EINTR;
-		ret = pkey_keyblob2pkey(kb->key, kb->keylen,
-					pk->protkey, &pk->len, &pk->type);
+		ret = pkey_key2protkey(kb->key, kb->keylen,
+				       pk->protkey, &pk->len, &pk->type);
 		if (ret == 0)
 			break;
 	}
