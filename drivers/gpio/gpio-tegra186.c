@@ -21,6 +21,7 @@
 #include <dt-bindings/gpio/tegra234-gpio.h>
 #include <dt-bindings/gpio/tegra241-gpio.h>
 #include <dt-bindings/gpio/tegra264-gpio.h>
+#include <dt-bindings/gpio/tegra256s-gpio.h>
 
 /* security registers */
 #define TEGRA186_GPIO_CTL_SCR 0x0c
@@ -1363,6 +1364,30 @@ static const struct tegra_gpio_soc tegra264_aon_soc = {
 	.has_gte = true,
 };
 
+#define TEGRA256S_MAIN_GPIO_PORT(_name, _bank, _port, _pins)	\
+	[TEGRA256S_MAIN_GPIO_PORT_##_name] = {			\
+		.name = #_name,					\
+		.bank = _bank,					\
+		.port = _port,					\
+		.pins = _pins,					\
+	}
+
+static const struct tegra_gpio_port tegra256s_main_ports[] = {
+	TEGRA256S_MAIN_GPIO_PORT(A, 0, 0, 8),
+	TEGRA256S_MAIN_GPIO_PORT(B, 0, 1, 8),
+	TEGRA256S_MAIN_GPIO_PORT(C, 0, 2, 8),
+	TEGRA256S_MAIN_GPIO_PORT(D, 0, 3, 8),
+};
+
+static const struct tegra_gpio_soc tegra256s_main_soc = {
+	.num_ports = ARRAY_SIZE(tegra256s_main_ports),
+	.ports = tegra256s_main_ports,
+	.name = "tegra256s-gpio-main",
+	.instance = 1,
+	.num_irqs_per_bank = 8,
+	.has_vm_support = true,
+};
+
 static const struct of_device_id tegra186_gpio_of_match[] = {
 	{
 		.compatible = "nvidia,tegra186-gpio",
@@ -1391,6 +1416,9 @@ static const struct of_device_id tegra186_gpio_of_match[] = {
 	}, {
 		.compatible = "nvidia,tegra264-gpio-aon",
 		.data = &tegra264_aon_soc
+	}, {
+		.compatible = "nvidia,tegra256s-gpio",
+		.data = &tegra256s_main_soc
 	}, {
 		/* sentinel */
 	}
