@@ -524,7 +524,8 @@ static bool btree_dirty_folio(struct address_space *mapping,
 		struct folio *folio)
 {
 	struct btrfs_fs_info *fs_info = inode_to_fs_info(mapping->host);
-	struct btrfs_subpage_info *spi = fs_info->subpage_info;
+	const unsigned int dirty_offset = fs_info->sectors_per_page *
+					  btrfs_bitmap_nr_dirty;
 	struct btrfs_subpage *subpage;
 	struct extent_buffer *eb;
 	int cur_bit = 0;
@@ -539,11 +540,11 @@ static bool btree_dirty_folio(struct address_space *mapping,
 		return filemap_dirty_folio(mapping, folio);
 	}
 
-	ASSERT(spi);
+	ASSERT(fs_info->sectors_per_page > 1);
 	subpage = folio_get_private(folio);
 
-	for (cur_bit = spi->dirty_offset;
-	     cur_bit < spi->dirty_offset + spi->bitmap_nr_bits;
+	for (cur_bit = dirty_offset;
+	     cur_bit < dirty_offset + fs_info->sectors_per_page;
 	     cur_bit++) {
 		unsigned long flags;
 		u64 cur;
@@ -1267,7 +1268,6 @@ void btrfs_free_fs_info(struct btrfs_fs_info *fs_info)
 	btrfs_extent_buffer_leak_debug_check(fs_info);
 	kfree(fs_info->super_copy);
 	kfree(fs_info->super_for_commit);
-	kfree(fs_info->subpage_info);
 	kvfree(fs_info);
 }
 
@@ -3301,6 +3301,7 @@ int __cold open_ctree(struct super_block *sb, struct btrfs_fs_devices *fs_device
 	fs_info->nodesize = nodesize;
 	fs_info->sectorsize = sectorsize;
 	fs_info->sectorsize_bits = ilog2(sectorsize);
+	fs_info->sectors_per_page = (PAGE_SIZE >> fs_info->sectorsize_bits);
 	fs_info->csums_per_leaf = BTRFS_MAX_ITEM_SIZE(fs_info) / fs_info->csum_size;
 	fs_info->stripesize = stripesize;
 
@@ -3325,20 +3326,10 @@ int __cold open_ctree(struct super_block *sb, struct btrfs_fs_devices *fs_device
 	 */
 	fs_info->max_inline = min_t(u64, fs_info->max_inline, fs_info->sectorsize);
 
-	if (sectorsize < PAGE_SIZE) {
-		struct btrfs_subpage_info *subpage_info;
-
+	if (sectorsize < PAGE_SIZE)
 		btrfs_warn(fs_info,
 		"read-write for sector size %u with page size %lu is experimental",
 			   sectorsize, PAGE_SIZE);
-		subpage_info = kzalloc(sizeof(*subpage_info), GFP_KERNEL);
-		if (!subpage_info) {
-			ret = -ENOMEM;
-			goto fail_alloc;
-		}
-		btrfs_init_subpage_info(subpage_info, sectorsize);
-		fs_info->subpage_info = subpage_info;
-	}
 
 	ret = btrfs_init_workqueues(fs_info);
 	if (ret)

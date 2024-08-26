@@ -1327,7 +1327,8 @@ static void find_next_dirty_byte(struct btrfs_fs_info *fs_info,
 {
 	struct folio *folio = page_folio(page);
 	struct btrfs_subpage *subpage = folio_get_private(folio);
-	struct btrfs_subpage_info *spi = fs_info->subpage_info;
+	const unsigned int dirty_offset = fs_info->sectors_per_page *
+					  btrfs_bitmap_nr_dirty;
 	u64 orig_start = *start;
 	/* Declare as unsigned long so we can use bitmap ops */
 	unsigned long flags;
@@ -1344,17 +1345,17 @@ static void find_next_dirty_byte(struct btrfs_fs_info *fs_info,
 		return;
 	}
 
-	range_start_bit = spi->dirty_offset +
+	range_start_bit = dirty_offset +
 			  (offset_in_page(orig_start) >> fs_info->sectorsize_bits);
 
 	/* We should have the page locked, but just in case */
 	spin_lock_irqsave(&subpage->lock, flags);
 	bitmap_next_set_region(subpage->bitmaps, &range_start_bit, &range_end_bit,
-			       spi->dirty_offset + spi->bitmap_nr_bits);
+			       dirty_offset + fs_info->sectors_per_page);
 	spin_unlock_irqrestore(&subpage->lock, flags);
 
-	range_start_bit -= spi->dirty_offset;
-	range_end_bit -= spi->dirty_offset;
+	range_start_bit -= dirty_offset;
+	range_end_bit -= dirty_offset;
 
 	*start = page_offset(page) + range_start_bit * fs_info->sectorsize;
 	*end = page_offset(page) + range_end_bit * fs_info->sectorsize;
@@ -1833,7 +1834,7 @@ static int submit_eb_subpage(struct page *page, struct writeback_control *wbc)
 	int sectors_per_node = fs_info->nodesize >> fs_info->sectorsize_bits;
 
 	/* Lock and write each dirty extent buffers in the range */
-	while (bit_start < fs_info->subpage_info->bitmap_nr_bits) {
+	while (bit_start < fs_info->sectors_per_page) {
 		struct btrfs_subpage *subpage = folio_get_private(folio);
 		struct extent_buffer *eb;
 		unsigned long flags;
@@ -1849,7 +1850,7 @@ static int submit_eb_subpage(struct page *page, struct writeback_control *wbc)
 			break;
 		}
 		spin_lock_irqsave(&subpage->lock, flags);
-		if (!test_bit(bit_start + fs_info->subpage_info->dirty_offset,
+		if (!test_bit(bit_start + btrfs_bitmap_nr_dirty * fs_info->sectors_per_page,
 			      subpage->bitmaps)) {
 			spin_unlock_irqrestore(&subpage->lock, flags);
 			spin_unlock(&page->mapping->i_private_lock);
