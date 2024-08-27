@@ -59,7 +59,7 @@ config MLXBF_BOOTCTL
 
 config MLXBF_LIVEFISH
 	tristate "Mellanox BlueField livefish firmware update driver"
-	depends on ARM64
+	depends on ARM64 && ACPI
 	help
 	 If you say yes to this option, support will added for the
 	 mlxbf-livefish driver.  This driver allows MFT tools to
