@@ -1244,7 +1244,7 @@ static inline void contiguous_readpages(struct page *pages[], int nr_pages,
 }
 
 /*
- * helper for __extent_writepage, doing all of the delayed allocation setup.
+ * helper for extent_writepage(), doing all of the delayed allocation setup.
  *
  * This returns 1 if btrfs_run_delalloc_range function did all the work required
  * to write the page (copy into inline extent).  In this case the IO has
@@ -1362,14 +1362,14 @@ static void find_next_dirty_byte(struct btrfs_fs_info *fs_info,
 }
 
 /*
- * helper for __extent_writepage.  This calls the writepage start hooks,
+ * Helper for extent_writepage().  This calls the writepage start hooks,
  * and does the loop to map the page into extents and bios.
  *
  * We return 1 if the IO is started and the page is unlocked,
  * 0 if all went well (page still locked)
  * < 0 if there were errors (page still locked)
  */
-static noinline_for_stack int __extent_writepage_io(struct btrfs_inode *inode,
+static noinline_for_stack int extent_writepage_io(struct btrfs_inode *inode,
 				 struct page *page,
 				 struct btrfs_bio_ctrl *bio_ctrl,
 				 loff_t i_size,
@@ -1494,7 +1494,7 @@ out_error:
  * Return 0 if everything goes well.
  * Return <0 for error.
  */
-static int __extent_writepage(struct page *page, struct btrfs_bio_ctrl *bio_ctrl)
+static int extent_writepage(struct page *page, struct btrfs_bio_ctrl *bio_ctrl)
 {
 	struct folio *folio = page_folio(page);
 	struct inode *inode = page->mapping->host;
@@ -1505,7 +1505,7 @@ static int __extent_writepage(struct page *page, struct btrfs_bio_ctrl *bio_ctrl
 	loff_t i_size = i_size_read(inode);
 	unsigned long end_index = i_size >> PAGE_SHIFT;
 
-	trace___extent_writepage(page, inode, bio_ctrl->wbc);
+	trace_extent_writepage(page, inode, bio_ctrl->wbc);
 
 	WARN_ON(!PageLocked(page));
 
@@ -1530,7 +1530,7 @@ static int __extent_writepage(struct page *page, struct btrfs_bio_ctrl *bio_ctrl
 	if (ret)
 		goto done;
 
-	ret = __extent_writepage_io(BTRFS_I(inode), page, bio_ctrl, i_size, &nr);
+	ret = extent_writepage_io(BTRFS_I(inode), page, bio_ctrl, i_size, &nr);
 	if (ret == 1)
 		return 0;
 
@@ -2208,7 +2208,7 @@ retry:
 				continue;
 			}
 
-			ret = __extent_writepage(&folio->page, bio_ctrl);
+			ret = extent_writepage(&folio->page, bio_ctrl);
 			if (ret < 0) {
 				done = 1;
 				break;
@@ -2287,8 +2287,8 @@ void extent_write_locked_range(struct inode *inode, struct page *locked_page,
 		if (pages_dirty && page != locked_page)
 			ASSERT(PageDirty(page));
 
-		ret = __extent_writepage_io(BTRFS_I(inode), page, &bio_ctrl,
-					    i_size, &nr);
+		ret = extent_writepage_io(BTRFS_I(inode), page, &bio_ctrl,
+					  i_size, &nr);
 		if (ret == 1)
 			goto next_page;
 
