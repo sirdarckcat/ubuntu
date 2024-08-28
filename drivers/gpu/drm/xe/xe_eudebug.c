@@ -1463,6 +1463,17 @@ static u32 engine_status_xe2(const struct xe_hw_engine * const hwe,
 	return (rcu_debug1 >> shift) & RCU_DEBUG_1_ENGINE_STATUS;
 }
 
+static u32 engine_status_xe3(const struct xe_hw_engine * const hwe,
+			     u32 rcu_debug1)
+{
+	const unsigned int first = 6;
+	const unsigned int incr = 4;
+	const unsigned int i = rcu_debug1_engine_index(hwe);
+	const unsigned int shift = first + (i * incr);
+
+	return (rcu_debug1 >> shift) & RCU_DEBUG_1_ENGINE_STATUS;
+}
+
 static u32 engine_status(const struct xe_hw_engine * const hwe,
 			 u32 rcu_debug1)
 {
@@ -1472,6 +1483,8 @@ static u32 engine_status(const struct xe_hw_engine * const hwe,
 		status = engine_status_xe1(hwe, rcu_debug1);
 	else if (GRAPHICS_VER(gt_to_xe(hwe->gt)) < 30)
 		status = engine_status_xe2(hwe, rcu_debug1);
+	else if (GRAPHICS_VER(gt_to_xe(hwe->gt)) < 35)
+		status = engine_status_xe3(hwe, rcu_debug1);
 	else
 		XE_WARN_ON(GRAPHICS_VER(gt_to_xe(hwe->gt)));
 
