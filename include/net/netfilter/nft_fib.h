@@ -51,9 +51,7 @@ static inline int nft_fib_l3mdev_master_ifindex_rcu(const struct nft_pktinfo *pk
 int nft_fib_dump(struct sk_buff *skb, const struct nft_expr *expr, bool reset);
 int nft_fib_init(const struct nft_ctx *ctx, const struct nft_expr *expr,
 		 const struct nlattr * const tb[]);
-int nft_fib_validate(const struct nft_ctx *ctx, const struct nft_expr *expr,
-		     const struct nft_data **data);
-
+int nft_fib_validate(const struct nft_ctx *ctx, const struct nft_expr *expr);
 
 void nft_fib4_eval_type(const struct nft_expr *expr, struct nft_regs *regs,
 			const struct nft_pktinfo *pkt);
