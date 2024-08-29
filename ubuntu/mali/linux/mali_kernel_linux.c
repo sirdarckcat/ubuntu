@@ -635,11 +635,11 @@ static int mali_probe(struct platform_device *pdev)
 	if (IS_ERR(clk_gpu))
 		return PTR_ERR(clk_gpu);
 
-	clk_gpu_pp0 = devm_clk_get(&pdev->dev, "gpu_pp0");
+	clk_gpu_pp0 = devm_clk_get(&pdev->dev, "core");
 	if (IS_ERR(clk_gpu_pp0))
 		return PTR_ERR(clk_gpu_pp0);
 
-	clk_gpu_pp1 = devm_clk_get(&pdev->dev, "gpu_pp1");
+	clk_gpu_pp1 = devm_clk_get(&pdev->dev, "bus");
 	if (IS_ERR(clk_gpu_pp1))
 		return PTR_ERR(clk_gpu_pp1);
 #endif
