@@ -467,7 +467,7 @@ static int tegra186_gpio_add_pin_ranges(struct gpio_chip *chip)
 	if (!gpio->soc->pinmux || gpio->soc->num_pin_ranges == 0)
 		return 0;
 
-	np = of_find_compatible_node(NULL, NULL, gpio->soc->pinmux);
+	np = of_parse_phandle(chip->parent->of_node, "pinctrl-node", 0);
 	if (!np)
 		return -ENODEV;
 
