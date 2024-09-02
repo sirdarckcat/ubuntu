@@ -121,6 +121,13 @@ struct btrfs_bio_ctrl {
 	 * inside the same inode.
 	 */
 	u64 last_em_start;
+
+	/*
+	 * The sectors of the page which are going to be submitted by
+	 * extent_writepage_io().
+	 * This is to avoid touching ranges covered by compression/inline.
+	 */
+	unsigned long submit_bitmap;
 };
 
 static void submit_one_bio(struct btrfs_bio_ctrl *bio_ctrl)
@@ -1254,14 +1261,31 @@ static inline void contiguous_readpages(struct page *pages[], int nr_pages,
  * This returns < 0 if there were errors (page still locked)
  */
 static noinline_for_stack int writepage_delalloc(struct btrfs_inode *inode,
-		struct page *page, struct writeback_control *wbc)
+		struct page *page, struct btrfs_bio_ctrl *bio_ctrl)
 {
+	struct btrfs_fs_info *fs_info = inode_to_fs_info(&inode->vfs_inode);
+	struct writeback_control *wbc = bio_ctrl->wbc;
 	const u64 page_start = page_offset(page);
 	const u64 page_end = page_start + PAGE_SIZE - 1;
 	u64 delalloc_start = page_start;
 	u64 delalloc_end = page_end;
 	u64 delalloc_to_write = 0;
 	int ret = 0;
+
+	/* Save the dirty bitmap as our submission bitmap will be a subset of it. */
+	if (btrfs_is_subpage(fs_info, inode->vfs_inode.i_mapping)) {
+		struct btrfs_subpage *subpage = folio_get_private(page_folio(page));
+		unsigned long flags;
+
+		ASSERT(fs_info->sectors_per_page > 1);
+		spin_lock_irqsave(&subpage->lock, flags);
+		bio_ctrl->submit_bitmap = bitmap_read(subpage->bitmaps,
+				fs_info->sectors_per_page * btrfs_bitmap_nr_dirty,
+				fs_info->sectors_per_page);
+		spin_unlock_irqrestore(&subpage->lock, flags);
+	} else {
+		bio_ctrl->submit_bitmap = 1;
+	}
 
 	while (delalloc_start < page_end) {
 		delalloc_end = page_end;
@@ -1276,6 +1300,22 @@ static noinline_for_stack int writepage_delalloc(struct btrfs_inode *inode,
 		if (ret < 0)
 			return ret;
 
+		/*
+		 * We have some ranges that's going to be submitted asynchronously
+		 * (compression or inline).  These range have their own control
+		 * on when to unlock the pages.  We should not touch them
+		 * anymore, so clear the range from the submission bitmap.
+		 */
+		if (ret > 0) {
+			unsigned int start_bit = (delalloc_start - page_start) >>
+						 fs_info->sectorsize_bits;
+			unsigned int end_bit = (min(page_end + 1, delalloc_end + 1) -
+						page_start) >> fs_info->sectorsize_bits;
+
+			bitmap_clear(&bio_ctrl->submit_bitmap, start_bit,
+				     end_bit - start_bit);
+		}
+
 		delalloc_start = delalloc_end + 1;
 	}
 
@@ -1287,10 +1327,10 @@ static noinline_for_stack int writepage_delalloc(struct btrfs_inode *inode,
 		DIV_ROUND_UP(delalloc_end + 1 - page_start, PAGE_SIZE);
 
 	/*
-	 * If btrfs_run_dealloc_range() already started I/O and unlocked
-	 * the pages, we just need to account for them here.
+	 * If all ranges are submitted asynchronously, we just need to account
+	 * for them here.
 	 */
-	if (ret == 1) {
+	if (bitmap_empty(&bio_ctrl->submit_bitmap, fs_info->sectors_per_page)) {
 		wbc->nr_to_write -= delalloc_to_write;
 		return 1;
 	}
@@ -1524,7 +1564,7 @@ static int extent_writepage(struct page *page, struct btrfs_bio_ctrl *bio_ctrl)
 	if (ret < 0)
 		goto done;
 
-	ret = writepage_delalloc(BTRFS_I(inode), page, bio_ctrl->wbc);
+	ret = writepage_delalloc(BTRFS_I(inode), page, bio_ctrl);
 	if (ret == 1)
 		return 0;
 	if (ret)
