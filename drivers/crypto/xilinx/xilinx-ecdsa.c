@@ -8,7 +8,7 @@
 #include <crypto/engine.h>
 #include <crypto/internal/akcipher.h>
 #include <crypto/internal/ecc.h>
-#include "../../../crypto/ecdsasignature.asn1.h"
+#include <crypto/ecdsa.h>
 #include <linux/asn1_decoder.h>
 #include <linux/crypto.h>
 #include <linux/device.h>
@@ -17,6 +17,7 @@
 #include <linux/kernel.h>
 #include <linux/of_device.h>
 #include <linux/platform_device.h>
+#include "xilinx_ecdsasig.asn1.h"
 
 /* PLM supports 32-bit addresses only */
 #define VERSAL_DMA_BIT_MASK			32U
@@ -71,12 +72,6 @@ struct xilinx_ecdsa_tfm_ctx {
 	char *pub_kbuf;
 };
 
-struct xilinx_ecdsa_sign_ctx {
-	const struct ecc_curve *curve;
-	u64 r[ECC_MAX_DIGITS];
-	u64 s[ECC_MAX_DIGITS];
-};
-
 struct xilinx_ecdsa_req_ctx {
 	enum xilinx_akcipher_op op;
 };
@@ -84,6 +79,24 @@ struct xilinx_ecdsa_req_ctx {
 static int xilinx_ecdsa_sign(struct akcipher_request *req)
 {
 	return 0;
+}
+
+int xilinx_ecdsa_get_signature_r(void *context, size_t hdrlen, unsigned char tag,
+				 const void *value, size_t vlen)
+{
+	struct ecdsa_signature_ctx *sig = context;
+
+	return ecdsa_get_signature_rs(sig->r, hdrlen, tag, value, vlen,
+				      sig->curve->g.ndigits);
+}
+
+int xilinx_ecdsa_get_signature_s(void *context, size_t hdrlen, unsigned char tag,
+			  const void *value, size_t vlen)
+{
+	struct ecdsa_signature_ctx *sig = context;
+
+	return ecdsa_get_signature_rs(sig->s, hdrlen, tag, value, vlen,
+				      sig->curve->g.ndigits);
 }
 
 static int xilinx_ecdsa_verify(struct akcipher_request *req)
@@ -98,7 +111,7 @@ static int xilinx_ecdsa_verify(struct akcipher_request *req)
 	unsigned char *buffer;
 	ssize_t diff;
 	int ret;
-	struct xilinx_ecdsa_sign_ctx sig_ctx = {
+	struct ecdsa_signature_ctx sig_ctx = {
 		.curve = ctx->curve,
 	};
 
@@ -111,7 +124,7 @@ static int xilinx_ecdsa_verify(struct akcipher_request *req)
 					    req->src_len + req->dst_len),
 			   buffer, req->src_len + req->dst_len, 0);
 
-	ret = asn1_ber_decoder(&ecdsasignature_decoder, &sig_ctx,
+	ret = asn1_ber_decoder(&xilinx_ecdsasig_decoder, &sig_ctx,
 			       buffer, req->src_len);
 	if (ret < 0)
 		goto error;
