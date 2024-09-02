@@ -326,8 +326,7 @@ static int tegra186_emc_probe(struct platform_device *pdev)
 
 	emc->clk = devm_clk_get(&pdev->dev, "emc");
 	if (IS_ERR(emc->clk)) {
-		err = PTR_ERR(emc->clk);
-		dev_err(&pdev->dev, "failed to get EMC clock: %d\n", err);
+		err = dev_err_probe(&pdev->dev, PTR_ERR(emc->clk), "failed to get EMC clock\n");
 		goto put_bpmp;
 	}
 
