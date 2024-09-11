@@ -104,6 +104,8 @@
 
 #define INTEL_FAM6_SAPPHIRERAPIDS_X	0x8F
 
+#define INTEL_FAM6_EMERALDRAPIDS_X	0xCF
+
 /* "Small Core" Processors (Atom) */
 
 #define INTEL_FAM6_ATOM_BONNELL		0x1C /* Diamondville, Pineview */
