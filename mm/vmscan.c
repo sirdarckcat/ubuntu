@@ -4102,8 +4102,8 @@ bool lru_gen_look_around(struct page_vma_mapped_walk *pvmw)
 		if (!folio)
 			continue;
 
-		if (!ptep_clear_young_notify(vma, addr, pte + i))
-			continue;
+		if (!ptep_clear_flush_young(vma, addr, pte + i))
+			VM_WARN_ON_ONCE(true);
 
 		young++;
 
