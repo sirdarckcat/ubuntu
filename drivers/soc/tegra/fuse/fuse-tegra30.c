@@ -110,7 +110,6 @@ const struct tegra_fuse_soc tegra30_fuse_soc = {
 	.init = tegra30_fuse_init,
 	.speedo_init = tegra30_init_speedo_data,
 	.info = &tegra30_fuse_info,
-	.soc_attr_group = &tegra_soc_attr_group,
 	.clk_suspend_on = false,
 };
 #endif
@@ -248,7 +247,6 @@ const struct tegra_fuse_soc tegra114_fuse_soc = {
 	.num_lookups = ARRAY_SIZE(tegra114_fuse_lookups),
 	.cells = tegra114_fuse_cells,
 	.num_cells = ARRAY_SIZE(tegra114_fuse_cells),
-	.soc_attr_group = &tegra_soc_attr_group,
 	.clk_suspend_on = false,
 };
 #endif
@@ -408,7 +406,6 @@ const struct tegra_fuse_soc tegra124_fuse_soc = {
 	.num_lookups = ARRAY_SIZE(tegra124_fuse_lookups),
 	.cells = tegra124_fuse_cells,
 	.num_cells = ARRAY_SIZE(tegra124_fuse_cells),
-	.soc_attr_group = &tegra_soc_attr_group,
 	.clk_suspend_on = true,
 };
 #endif
@@ -579,7 +576,6 @@ const struct tegra_fuse_soc tegra210_fuse_soc = {
 	.cells = tegra210_fuse_cells,
 	.num_cells = ARRAY_SIZE(tegra210_fuse_cells),
 	.num_lookups = ARRAY_SIZE(tegra210_fuse_lookups),
-	.soc_attr_group = &tegra_soc_attr_group,
 	.clk_suspend_on = false,
 };
 #endif
@@ -638,7 +634,6 @@ const struct tegra_fuse_soc tegra186_fuse_soc = {
 	.num_cells = ARRAY_SIZE(tegra186_fuse_cells),
 	.keepouts = tegra186_fuse_keepouts,
 	.num_keepouts = ARRAY_SIZE(tegra186_fuse_keepouts),
-	.soc_attr_group = &tegra_soc_attr_group,
 	.clk_suspend_on = false,
 };
 #endif
@@ -731,7 +726,6 @@ const struct tegra_fuse_soc tegra194_fuse_soc = {
 	.num_cells = ARRAY_SIZE(tegra194_fuse_cells),
 	.keepouts = tegra194_fuse_keepouts,
 	.num_keepouts = ARRAY_SIZE(tegra194_fuse_keepouts),
-	.soc_attr_group = &tegra194_soc_attr_group,
 	.clk_suspend_on = false,
 };
 #endif
@@ -801,7 +795,6 @@ const struct tegra_fuse_soc tegra234_fuse_soc = {
 	.num_cells = ARRAY_SIZE(tegra234_fuse_cells),
 	.keepouts = tegra234_fuse_keepouts,
 	.num_keepouts = ARRAY_SIZE(tegra234_fuse_keepouts),
-	.soc_attr_group = &tegra194_soc_attr_group,
 	.clk_suspend_on = false,
 };
 #endif
