@@ -21,6 +21,10 @@
 #include <asm/errno.h>
 #include <asm/smp_plat.h>
 
+#ifdef CONFIG_HOTPLUG_CPU
+#include <misc/nv_ist.h>
+#endif
+
 static int __init cpu_psci_cpu_init(unsigned int cpu)
 {
 	return 0;
@@ -67,14 +71,18 @@ static int cpu_psci_cpu_disable(unsigned int cpu)
 
 static void cpu_psci_cpu_die(unsigned int cpu)
 {
-	/*
-	 * There are no known implementations of PSCI actually using the
-	 * power state field, pass a sensible default for now.
-	 */
-	u32 state = PSCI_POWER_STATE_TYPE_POWER_DOWN <<
-		    PSCI_0_2_POWER_STATE_TYPE_SHIFT;
+	if (is_ist_enabled(cpu)) {
+		cpu_enter_ist(cpu);
+	} else {
+		/*
+		* There are no known implementations of PSCI actually using the
+		* power state field, pass a sensible default for now.
+		*/
+		u32 state = PSCI_POWER_STATE_TYPE_POWER_DOWN <<
+				PSCI_0_2_POWER_STATE_TYPE_SHIFT;
 
-	psci_ops.cpu_off(state);
+		psci_ops.cpu_off(state);
+	}
 }
 
 static int cpu_psci_cpu_kill(unsigned int cpu)
