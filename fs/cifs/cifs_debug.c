@@ -452,9 +452,9 @@ skip_rdma:
 		seq_printf(m, "\n\n\tSessions: ");
 		i = 0;
 		list_for_each_entry(ses, &server->smb_ses_list, smb_ses_list) {
-			spin_lock(&GlobalMid_Lock);
-			if (ses->ses_status == CifsExiting) {
-				spin_unlock(&GlobalMid_Lock);
+			spin_lock(&ses->ses_lock);
+			if (ses->ses_status == SES_EXITING) {
+				spin_unlock(&ses->ses_lock);
 				continue;
 			}
 			i++;
@@ -477,7 +477,7 @@ skip_rdma:
 				ses->ses_count, ses->serverOS, ses->serverNOS,
 				ses->capabilities, ses->ses_status);
 			}
-			spin_unlock(&GlobalMid_Lock);
+			spin_unlock(&ses->ses_lock);
 
 			seq_printf(m, "\n\tSecurity type: %s ",
 				get_security_type_str(server->ops->select_sectype(server, ses->sectype)));
