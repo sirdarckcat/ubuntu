@@ -10,3 +10,6 @@ obj-$(CONFIG_SOC_TEGRA_PMC) += tegra264-pmc.o
 obj-$(CONFIG_SOC_TEGRA20_VOLTAGE_COUPLER) += regulators-tegra20.o
 obj-$(CONFIG_SOC_TEGRA30_VOLTAGE_COUPLER) += regulators-tegra30.o
 obj-$(CONFIG_ARCH_TEGRA_186_SOC) += ari-tegra186.o
+ifeq ($(CONFIG_TEGRA_LINUX_SAFETY),y)
+obj-$(CONFIG_SOC_TEGRA_MSSNVLINK) += mssnvlink.o
+endif
