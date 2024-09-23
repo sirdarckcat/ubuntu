@@ -1,4 +1,4 @@
-Name:    linux
+Name:    linux-realtime
 Version: 6.11.0
 Series:  24.10 (oracular)
 Description:
