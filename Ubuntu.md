@@ -1,4 +1,4 @@
-Name:    linux
+Name:    linux-realtime
 Version: 6.17.0
 Series:  25.10 (questing)
 Description:
