@@ -4,6 +4,9 @@
 #include <linux/dma-buf.h>
 #include <linux/pci-p2pdma.h>
 #include <linux/dma-resv.h>
+#include <linux/module.h>
+#include <uapi/linux/vfio.h>
+#include <linux/vfio_pci_core.h>
 
 #include "vfio_pci_priv.h"
 
@@ -81,7 +84,7 @@ vfio_pci_dma_buf_map(struct dma_buf_attachment *attachment,
 	 */
 	dma_addr = dma_map_resource(
 		attachment->dev,
-		pci_resource_start(priv->vdev->pdev, priv->index) +
+		pci_bus_address(priv->vdev->pdev, priv->index) +
 			priv->offset,
 		priv->dmabuf->size, dir, DMA_ATTR_SKIP_CPU_SYNC);
 	ret = dma_mapping_error(attachment->dev, dma_addr);
