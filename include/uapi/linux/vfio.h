@@ -1002,6 +1002,23 @@ struct vfio_device_feature {
  */
 #define VFIO_DEVICE_FEATURE_PCI_VF_TOKEN	(0)
 
+/**
+ * VFIO_DEVICE_P2P_DMA_BUF - _IORW(VFIO_TYPE, VFIO_BASE + 22,
+ *				   struct vfio_device_p2p_dma_buf)
+ *
+ * Set the region index, open flags, offset and length to create a dma_buf
+ * for p2p dma.
+ *
+ * Return 0 on success, -errno on failure.
+ */
+struct vfio_device_p2p_dma_buf {
+	__u32 region_index;
+	__u32 open_flags;
+	__u32 offset;
+	__u64 length;
+};
+#define VFIO_DEVICE_P2P_DMA_BUF	_IO(VFIO_TYPE, VFIO_BASE + 22)
+
 /* -------- API for Type1 VFIO IOMMU -------- */
 
 /**
