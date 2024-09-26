@@ -2,6 +2,7 @@ Source: SRCPKGNAME
 Section: devel
 Priority: optional
 Maintainer: Ubuntu Kernel Team <kernel-team@lists.ubuntu.com>
+Rules-Requires-Root: no
 Standards-Version: 3.9.4.0
 Build-Depends:
  debhelper-compat (= 10),
@@ -14,15 +15,16 @@ Build-Depends:
  libiberty-dev <!stage1>,
  default-jdk-headless <!stage1>,
  java-common <!stage1>,
- rsync <!stage1>,
+ rsync [!i386] <!stage1>,
  libdw-dev <!stage1>,
  libpci-dev <!stage1>,
  pkg-config <!stage1>,
  python3 <!stage1>,
  python3-dev <!stage1>,
+ python3-setuptools,
  flex <!stage1>,
  bison <!stage1>,
- libunwind8-dev [amd64] <!stage1>,
+ libunwind8-dev [amd64 arm64 armhf ppc64el] <!stage1>,
  liblzma-dev <!stage1>,
  openssl <!stage1>,
  libssl-dev <!stage1>,
@@ -34,12 +36,19 @@ Build-Depends:
  automake <!stage1>,
  libtool <!stage1>,
  uuid-dev <!stage1>,
+ libnuma-dev [amd64 arm64 ppc64el s390x] <!stage1>,
+ libtraceevent-dev [amd64 arm64 armhf ppc64el s390x riscv64] <!stage1>,
+ libtracefs-dev [amd64 arm64 armhf ppc64el s390x riscv64] <!stage1>,
  libnuma-dev [amd64] <!stage1>,
  dkms <!stage1>,
  curl <!stage1>,
  zstd <!stage1>,
  pahole [amd64 arm64 armhf ppc64el s390x riscv64] | dwarves (>= 1.21) [amd64 arm64 armhf ppc64el s390x riscv64] <!stage1>,
- clang-18 [amd64 arm64 armhf ppc64el s390x],
+ clang-18 [amd64 arm64 armhf ppc64el riscv64 s390x],
+ rustc [amd64 arm64 armhf ppc64el riscv64 s390x],
+ rust-src [amd64 arm64 armhf ppc64el riscv64 s390x],
+ rustfmt [amd64 arm64 armhf ppc64el riscv64 s390x],
+ bindgen [amd64 arm64 armhf ppc64el riscv64 s390x],
  rustc [amd64 arm64 armhf ppc64el s390x],
  rust-src [amd64 arm64 armhf ppc64el s390x],
  rustfmt [amd64 arm64 armhf ppc64el s390x],
