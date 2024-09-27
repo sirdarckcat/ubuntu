@@ -154,7 +154,8 @@ cifs_nlink_fattr_to_inode(struct inode *inode, struct cifs_fattr *fattr)
 
 /* populate an inode with info from a cifs_fattr struct */
 void
-cifs_fattr_to_inode(struct inode *inode, struct cifs_fattr *fattr)
+cifs_fattr_to_inode(struct inode *inode, struct cifs_fattr *fattr,
+		    bool from_readdir)
 {
 	struct cifsInodeInfo *cifs_i = CIFS_I(inode);
 	struct cifs_sb_info *cifs_sb = CIFS_SB(inode->i_sb);
@@ -196,7 +197,7 @@ cifs_fattr_to_inode(struct inode *inode, struct cifs_fattr *fattr)
 	 * Can't safely change the file size here if the client is writing to
 	 * it due to potential races.
 	 */
-	if (is_size_safe_to_change(cifs_i, fattr->cf_eof)) {
+	if (is_size_safe_to_change(cifs_i, fattr->cf_eof, from_readdir)) {
 		i_size_write(inode, fattr->cf_eof);
 
 		/*
@@ -357,7 +358,7 @@ cifs_get_file_info_unix(struct file *filp)
 		rc = 0;
 	}
 
-	cifs_fattr_to_inode(inode, &fattr);
+	cifs_fattr_to_inode(inode, &fattr, false);
 	free_xid(xid);
 	return rc;
 }
@@ -427,7 +428,7 @@ int cifs_get_inode_info_unix(struct inode **pinode,
 			goto cgiiu_exit;
 		}
 
-		cifs_fattr_to_inode(*pinode, &fattr);
+		cifs_fattr_to_inode(*pinode, &fattr, false);
 	}
 
 cgiiu_exit:
@@ -707,7 +708,7 @@ cifs_get_file_info(struct file *filp)
 	 */
 	fattr.cf_uniqueid = CIFS_I(inode)->uniqueid;
 	fattr.cf_flags |= CIFS_FATTR_NEED_REVAL;
-	cifs_fattr_to_inode(inode, &fattr);
+	cifs_fattr_to_inode(inode, &fattr, false);
 cgfi_exit:
 	free_xid(xid);
 	return rc;
@@ -950,7 +951,7 @@ cifs_get_inode_info(struct inode **inode, const char *full_path,
 			goto cgii_exit;
 		}
 
-		cifs_fattr_to_inode(*inode, &fattr);
+		cifs_fattr_to_inode(*inode, &fattr, false);
 	}
 
 cgii_exit:
@@ -1048,7 +1049,8 @@ retry_iget5_locked:
 			}
 		}
 
-		cifs_fattr_to_inode(inode, fattr);
+		/* can't fail - see cifs_find_inode() */
+		cifs_fattr_to_inode(inode, fattr, false);
 		if (sb->s_flags & SB_NOATIME)
 			inode->i_flags |= S_NOATIME | S_NOCMTIME;
 		if (inode->i_state & I_NEW) {
