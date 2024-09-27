@@ -119,7 +119,7 @@ retry:
 			if (CIFS_I(inode)->uniqueid == fattr->cf_uniqueid &&
 			    (inode->i_mode & S_IFMT) ==
 			    (fattr->cf_mode & S_IFMT)) {
-				cifs_fattr_to_inode(inode, fattr);
+				cifs_fattr_to_inode(inode, fattr, true);
 				dput(dentry);
 				return;
 			}
