@@ -493,19 +493,21 @@ static int posix_cpu_timer_del(struct k_itimer *timer)
 		 */
 		WARN_ON_ONCE(ctmr->head || timerqueue_node_queued(&ctmr->node));
 	} else {
-		if (timer->it.cpu.firing)
+		if (timer->it.cpu.firing) {
 			ret = TIMER_RETRY;
-		else
+		} else {
 			disarm_timer(timer, p);
-
+		}
 		unlock_task_sighand(p, &flags);
 	}
 
 out:
 	rcu_read_unlock();
-	if (!ret)
-		put_pid(ctmr->pid);
 
+	if (!ret) {
+		put_pid(ctmr->pid);
+		timer->it_status = POSIX_TIMER_DISARMED;
+	}
 	return ret;
 }
 
@@ -559,6 +561,7 @@ static void arm_timer(struct k_itimer *timer, struct task_struct *p)
 	struct cpu_timer *ctmr = &timer->it.cpu;
 	u64 newexp = cpu_timer_getexpires(ctmr);
 
+	timer->it_status = POSIX_TIMER_ARMED;
 	if (!cpu_timer_enqueue(&base->tqhead, ctmr))
 		return;
 
@@ -583,6 +586,8 @@ static void arm_timer(struct k_itimer *timer, struct task_struct *p)
 static void cpu_timer_fire(struct k_itimer *timer)
 {
 	struct cpu_timer *ctmr = &timer->it.cpu;
+
+	timer->it_status = POSIX_TIMER_DISARMED;
 
 	if ((timer->it_sigev_notify & ~SIGEV_THREAD_ID) == SIGEV_NONE) {
 		/*
@@ -673,6 +678,7 @@ static int posix_cpu_timer_set(struct k_itimer *timer, int timer_flags,
 		ret = TIMER_RETRY;
 	} else {
 		cpu_timer_dequeue(ctmr);
+		timer->it_status = POSIX_TIMER_DISARMED;
 	}
 
 	/*
