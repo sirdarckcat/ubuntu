@@ -129,16 +129,33 @@ static inline void __xe_res_sg_next(struct xe_res_cursor *cur)
 {
 	struct scatterlist *sgl = cur->sgl;
 	u64 start = cur->start;
+	unsigned int len;
 
-	while (start >= sg_dma_len(sgl)) {
-		start -= sg_dma_len(sgl);
+	while (true) {
+		len = (cur->mem_type == XE_PL_SYSTEM) ? sgl->length : sg_dma_len(sgl);
+		if (start < len)
+			break;
+		start -= len;
 		sgl = sg_next(sgl);
 		XE_WARN_ON(!sgl);
 	}
-
 	cur->start = start;
-	cur->size = sg_dma_len(sgl) - start;
+	cur->size = len - start;
 	cur->sgl = sgl;
+}
+
+static inline void __xe_res_first_sg(const struct sg_table *sg,
+				   u64 start, u64 size,
+				   struct xe_res_cursor *cur, u32 mem_type)
+{
+	XE_WARN_ON(!sg);
+	cur->node = NULL;
+	cur->start = start;
+	cur->remaining = size;
+	cur->size = 0;
+	cur->sgl = sg->sgl;
+	cur->mem_type = mem_type;
+	__xe_res_sg_next(cur);
 }
 
 /**
@@ -155,14 +172,24 @@ static inline void xe_res_first_sg(const struct sg_table *sg,
 				   u64 start, u64 size,
 				   struct xe_res_cursor *cur)
 {
-	XE_WARN_ON(!sg);
-	cur->node = NULL;
-	cur->start = start;
-	cur->remaining = size;
-	cur->size = 0;
-	cur->sgl = sg->sgl;
-	cur->mem_type = XE_PL_TT;
-	__xe_res_sg_next(cur);
+	__xe_res_first_sg(sg, start, size, cur, XE_PL_TT);
+}
+
+/**
+ * xe_res_first_sg_system - initialize a xe_res_cursor for iterate system memory pages
+ *
+ * @sg: scatter gather table to walk
+ * @start: Start of the range
+ * @size: Size of the range
+ * @cur: cursor object to initialize
+ *
+ * Start walking over the range of allocations between @start and @size
+ */
+static inline void xe_res_first_sg_system(const struct sg_table *sg,
+				   u64 start, u64 size,
+				   struct xe_res_cursor *cur)
+{
+	__xe_res_first_sg(sg, start, size, cur, XE_PL_SYSTEM);
 }
 
 /**
