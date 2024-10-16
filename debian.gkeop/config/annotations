@@ -32,6 +32,12 @@ CONFIG_LOAD_UEFI_KEYS                           note<'LP: #1942319'>
 CONFIG_LOOPBACK_TARGET                          policy<{'amd64': 'm'}>
 CONFIG_LOOPBACK_TARGET                          note<'Specifically requested by GKE. Must ensure tcm_loop.ko is in default module list'>
 
+CONFIG_LRU_GEN                                  policy<{'amd64': 'n'}>
+CONFIG_LRU_GEN                                  note<'Requested by GKE, LP: #2084716'>
+
+CONFIG_LRU_GEN_ENABLED                          policy<{'amd64': '-'}>
+CONFIG_LRU_GEN_ENABLED                          note<'Requested by GKE, LP: #2084716'>
+
 CONFIG_MODVERSIONS                              policy<{'amd64': 'y'}>
 CONFIG_MODVERSIONS                              note<'LP: #1898716'>
 
@@ -72,6 +78,8 @@ CONFIG_HP_ACCEL                                 policy<{'amd64': '-'}>
 CONFIG_HP_BIOSCFG                               policy<{'amd64': '-'}>
 CONFIG_HP_WMI                                   policy<{'amd64': '-'}>
 CONFIG_LEDS_AAEON                               policy<{'amd64': '-'}>
+CONFIG_LRU_GEN_STATS                            policy<{'amd64': '-'}>
+CONFIG_LRU_GEN_WALKS_MMU                        policy<{'amd64': '-'}>
 CONFIG_MFD_AAEON                                policy<{'amd64': '-'}>
 CONFIG_PREEMPT_VOLUNTARY                        policy<{'amd64': 'n'}>
 CONFIG_RTC_DRV_PCF85263                         policy<{'amd64': '-'}>
