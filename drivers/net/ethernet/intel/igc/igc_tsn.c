@@ -61,7 +61,7 @@ void igc_tsn_adjust_txtime_offset(struct igc_adapter *adapter)
 	struct igc_hw *hw = &adapter->hw;
 	u16 txoffset;
 
-	if (!igc_tsn_is_tx_mode_in_tsn(adapter))
+	if (!is_any_launchtime(adapter))
 		return;
 
 	switch (adapter->link_speed) {
