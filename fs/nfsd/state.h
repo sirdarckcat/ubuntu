@@ -112,6 +112,8 @@ struct nfs4_stid {
 #define SC_STATUS_CLOSED	BIT(0)
 /* For a deleg stateid kept around only to process free_stateid's: */
 #define SC_STATUS_REVOKED	BIT(1)
+#define SC_STATUS_FREEABLE	BIT(3)
+#define SC_STATUS_FREED		BIT(4)
 	unsigned short		sc_status;
 
 	struct list_head	sc_cp_list;
