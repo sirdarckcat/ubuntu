@@ -490,6 +490,7 @@ void do_secure_storage_access(struct pt_regs *regs)
 	unsigned long addr = get_fault_address(regs);
 	struct vm_area_struct *vma;
 	struct mm_struct *mm;
+	enum fault_type type;
 	struct page *page;
 	struct gmap *gmap;
 	int rc;
@@ -516,18 +517,25 @@ void do_secure_storage_access(struct pt_regs *regs)
 		 */
 		panic("Unexpected PGM 0x3d with TEID bit 61=0");
 	}
-	switch (get_fault_type(regs)) {
-	case GMAP_FAULT:
+	type = get_fault_type(regs);
+	if (type == KERNEL_FAULT) {
+		page = phys_to_page(addr);
+		if (unlikely(!try_get_page(page)))
+			return;
+		rc = arch_make_page_accessible(page);
+		put_page(page);
+		if (rc)
+			BUG();
+	} else {
 		mm = current->mm;
-		gmap = (struct gmap *)S390_lowcore.gmap;
-		mmap_read_lock(mm);
-		addr = __gmap_translate(gmap, addr);
-		mmap_read_unlock(mm);
-		if (IS_ERR_VALUE(addr))
-			return handle_fault_error_nolock(regs, SEGV_MAPERR);
-		fallthrough;
-	case USER_FAULT:
-		mm = current->mm;
+		if (type == GMAP_FAULT) {
+			gmap = (struct gmap *)S390_lowcore.gmap;
+			mmap_read_lock(mm);
+			addr = __gmap_translate(gmap, addr);
+			mmap_read_unlock(mm);
+			if (IS_ERR_VALUE(addr))
+				return handle_fault_error_nolock(regs, SEGV_MAPERR);
+		}
 		mmap_read_lock(mm);
 		vma = find_vma(mm, addr);
 		if (!vma)
@@ -535,24 +543,12 @@ void do_secure_storage_access(struct pt_regs *regs)
 		page = follow_page(vma, addr, FOLL_WRITE | FOLL_GET);
 		if (IS_ERR_OR_NULL(page)) {
 			mmap_read_unlock(mm);
-			break;
+			return;
 		}
 		if (arch_make_page_accessible(page))
 			send_sig(SIGSEGV, current, 0);
 		put_page(page);
 		mmap_read_unlock(mm);
-		break;
-	case KERNEL_FAULT:
-		page = phys_to_page(addr);
-		if (unlikely(!try_get_page(page)))
-			break;
-		rc = arch_make_page_accessible(page);
-		put_page(page);
-		if (rc)
-			BUG();
-		break;
-	default:
-		unreachable();
 	}
 }
 NOKPROBE_SYMBOL(do_secure_storage_access);
