@@ -14,11 +14,6 @@
 #include <asm/pgtable-bits.h>
 #include <asm/string.h>
 
-/*
- * Change "struct page" to physical address.
- */
-#define page_to_phys(page)	((phys_addr_t)page_to_pfn(page) << PAGE_SHIFT)
-
 extern void __init __iomem *early_ioremap(u64 phys_addr, unsigned long size);
 extern void __init early_iounmap(void __iomem *addr, unsigned long size);
 
