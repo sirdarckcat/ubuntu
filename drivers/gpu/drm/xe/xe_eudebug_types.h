@@ -202,4 +202,30 @@ struct xe_eudebug_event_exec_queue {
 	u64 lrc_handle[] __counted_by(width);
 };
 
+struct xe_eudebug_event_exec_queue_placements {
+	/** @base: base event */
+	struct xe_eudebug_event base;
+
+	/** @client_handle: client for the engine create/destroy */
+	u64 client_handle;
+
+	/** @vm_handle: vm handle for the engine create/destroy */
+	u64 vm_handle;
+
+	/** @exec_queue_handle: engine handle */
+	u64 exec_queue_handle;
+
+	/** @engine_handle: engine class */
+	u64 lrc_handle;
+
+	/** @num_placements: all possible placements for given lrc */
+	u32 num_placements;
+
+	/** @pad: padding */
+	u32 pad;
+
+	/** @instances: num_placements sized array containing drm_xe_engine_class_instance*/
+	u64 instances[]; __counted_by(num_placements);
+};
+
 #endif
