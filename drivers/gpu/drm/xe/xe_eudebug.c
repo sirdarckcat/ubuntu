@@ -717,7 +717,7 @@ static struct xe_eudebug_event *
 xe_eudebug_create_event(struct xe_eudebug *d, u16 type, u64 seqno, u16 flags,
 			u32 len)
 {
-	const u16 max_event = DRM_XE_EUDEBUG_EVENT_EXEC_QUEUE;
+	const u16 max_event = DRM_XE_EUDEBUG_EVENT_EXEC_QUEUE_PLACEMENTS;
 	const u16 known_flags =
 		DRM_XE_EUDEBUG_EVENT_CREATE |
 		DRM_XE_EUDEBUG_EVENT_DESTROY |
@@ -752,7 +752,7 @@ static long xe_eudebug_read_event(struct xe_eudebug *d,
 		u64_to_user_ptr(arg);
 	struct drm_xe_eudebug_event user_event;
 	struct xe_eudebug_event *event;
-	const unsigned int max_event = DRM_XE_EUDEBUG_EVENT_EXEC_QUEUE;
+	const unsigned int max_event = DRM_XE_EUDEBUG_EVENT_EXEC_QUEUE_PLACEMENTS;
 	long ret = 0;
 
 	if (XE_IOCTL_DBG(xe, copy_from_user(&user_event, user_orig, sizeof(user_event))))
@@ -1206,12 +1206,88 @@ static int send_exec_queue_event(struct xe_eudebug *d, u32 flags,
 	return xe_eudebug_queue_event(d, event);
 }
 
-static int exec_queue_create_event(struct xe_eudebug *d,
-				   struct xe_file *xef, struct xe_exec_queue *q)
+static int send_exec_queue_placements_event(struct xe_eudebug *d,
+					    u64 client_handle, u64 vm_handle,
+					    u64 exec_queue_handle, u64 lrc_handle,
+					    u32 num_placements, u64 *instances,
+					    u64 seqno)
+{
+	struct xe_eudebug_event_exec_queue_placements *e;
+	const u32 sz = struct_size(e, instances, num_placements);
+	struct xe_eudebug_event *event;
+
+	event = xe_eudebug_create_event(d,
+					DRM_XE_EUDEBUG_EVENT_EXEC_QUEUE_PLACEMENTS,
+					seqno, DRM_XE_EUDEBUG_EVENT_CREATE, sz);
+	if (!event)
+		return -ENOMEM;
+
+	e = cast_event(e, event);
+
+	write_member(struct drm_xe_eudebug_event_exec_queue_placements, e, client_handle,
+		     client_handle);
+	write_member(struct drm_xe_eudebug_event_exec_queue_placements, e, vm_handle, vm_handle);
+	write_member(struct drm_xe_eudebug_event_exec_queue_placements, e, exec_queue_handle,
+		     exec_queue_handle);
+	write_member(struct drm_xe_eudebug_event_exec_queue_placements, e, lrc_handle, lrc_handle);
+	write_member(struct drm_xe_eudebug_event_exec_queue_placements, e, num_placements,
+		     num_placements);
+
+	memcpy(e->instances, instances, num_placements * sizeof(*instances));
+
+	return xe_eudebug_queue_event(d, event);
+}
+
+static int send_exec_queue_placements_events(struct xe_eudebug *d, struct xe_exec_queue *q,
+					     u64 client_handle, u64 vm_handle,
+					     u64 exec_queue_handle, u64 *lrc_handles)
+{
+
+	struct drm_xe_engine_class_instance eci[XE_HW_ENGINE_MAX_INSTANCE] = {};
+	unsigned long mask = q->logical_mask;
+	u32 num_placements = 0;
+	int ret, i, j;
+	u64 seqno;
+
+	for_each_set_bit(i, &mask, sizeof(q->logical_mask) * 8) {
+		if (XE_WARN_ON(num_placements == XE_HW_ENGINE_MAX_INSTANCE))
+			break;
+
+		eci[num_placements].engine_class = xe_to_user_engine_class[q->class];
+		eci[num_placements].engine_instance = i;
+		eci[num_placements++].gt_id = q->gt->info.id;
+	}
+
+	ret = 0;
+	for (i = 0; i < q->width; i++) {
+		seqno = atomic_long_inc_return(&d->events.seqno);
+
+		ret = send_exec_queue_placements_event(d, client_handle, vm_handle,
+						       exec_queue_handle, lrc_handles[i],
+						       num_placements, (u64 *)eci, seqno);
+		if (ret)
+			return ret;
+
+		/*
+		 * Parallel submissions must be logically contiguous,
+		 * so the next placement is just q->logical_mask >> 1
+		 */
+		for (j = 0; j < num_placements; j++) {
+			eci[j].engine_instance++;
+			XE_WARN_ON(eci[j].engine_instance >= XE_HW_ENGINE_MAX_INSTANCE);
+		}
+	}
+
+	return ret;
+}
+
+static int exec_queue_create_events(struct xe_eudebug *d,
+				    struct xe_file *xef, struct xe_exec_queue *q)
 {
 	int h_c, h_vm, h_queue;
 	u64 h_lrc[XE_HW_ENGINE_MAX_INSTANCE], seqno;
 	int i;
+	int ret = 0;
 
 	if (!xe_exec_queue_is_lr(q))
 		return 0;
@@ -1252,9 +1328,14 @@ static int exec_queue_create_event(struct xe_eudebug *d,
 	 * we disconnect
 	 */
 
-	return send_exec_queue_event(d, DRM_XE_EUDEBUG_EVENT_CREATE,
-				     h_c, h_vm, h_queue, q->class,
-				     q->width, h_lrc, seqno);
+	ret = send_exec_queue_event(d, DRM_XE_EUDEBUG_EVENT_CREATE,
+				  h_c, h_vm, h_queue, q->class,
+				  q->width, h_lrc, seqno);
+
+	if (ret)
+		return ret;
+
+	return send_exec_queue_placements_events(d, q, h_c, h_vm, h_queue, h_lrc);
 }
 
 static int exec_queue_destroy_event(struct xe_eudebug *d,
@@ -1317,7 +1398,7 @@ void xe_eudebug_exec_queue_create(struct xe_file *xef, struct xe_exec_queue *q)
 	if (!d)
 		return;
 
-	xe_eudebug_event_put(d, exec_queue_create_event(d, xef, q));
+	xe_eudebug_event_put(d, exec_queue_create_events(d, xef, q));
 }
 
 void xe_eudebug_exec_queue_destroy(struct xe_file *xef, struct xe_exec_queue *q)
@@ -1355,7 +1436,7 @@ static int discover_client(struct xe_eudebug *d, struct xe_file *xef)
 		if (!exec_queue_class_is_tracked(q->class))
 			continue;
 
-		err = exec_queue_create_event(d, xef, q);
+		err = exec_queue_create_events(d, xef, q);
 		if (err)
 			break;
 	}
