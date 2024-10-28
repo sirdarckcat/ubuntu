@@ -380,7 +380,7 @@ CONFIG_LOGO_LINUX_CLUT224                       policy<{'arm64': 'y'}> note<'Req
 CONFIG_LOGO_LINUX_MONO                          policy<{'arm64': 'n'}> note<'Required for Pi (not in master)'>
 CONFIG_LOGO_LINUX_VGA16                         policy<{'arm64': 'n'}> note<'Required for Pi (not in master)'>
 CONFIG_LOG_BUF_SHIFT                            policy<{'arm64': '17'}> note<'Different from master'>
-CONFIG_LSM                                      policy<{'arm64': '"yama,integrity,apparmor"'}> note<'Required for Pi (different from master)'>
+CONFIG_LSM                                      policy<{'arm64': '"landlock,yama,integrity,apparmor"'}> note<'Required for Pi (different from master)'>
 CONFIG_MAGIC_SYSRQ_DEFAULT_ENABLE               policy<{'arm64': '0x1'}> note<'Required for Pi (different from master)'>
 CONFIG_MAX5432                                  policy<{'arm64': 'n'}> note<'Different from master'>
 CONFIG_MCTP                                     policy<{'arm64': 'n'}> note<'Different from master'>
