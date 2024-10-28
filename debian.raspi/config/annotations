@@ -153,7 +153,6 @@ CONFIG_COMMON_CLK_SI5341                        policy<{'arm64': 'n'}> note<'Dif
 CONFIG_COMMON_CLK_XGENE                         policy<{'arm64': 'n'}> note<'Not supported on Pi (different from master)'>
 CONFIG_COMMON_CLK_XLNX_CLKWZRD                  policy<{'arm64': 'n'}> note<'Different from master'>
 CONFIG_CONNECTOR                                policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
-CONFIG_CRASH_DUMP                               policy<{'arm64': '-'}> note<'Master note override'>
 CONFIG_CRC8                                     policy<{'arm64': 'm'}> note<'Different from master'>
 CONFIG_CRYPTO_CTS                               policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
 CONFIG_CRYPTO_DEV_ATMEL_ECC                     policy<{'arm64': 'n'}> note<'Different from master'>
@@ -321,7 +320,6 @@ CONFIG_IMA_APPRAISE_MODSIG                      policy<{'arm64': 'n'}> note<'Dif
 CONFIG_IMA_ARCH_POLICY                          policy<{'arm64': 'n'}> note<'LP: #1982090 (different from master)'>
 CONFIG_IMA_DEFAULT_HASH_SHA1                    policy<{'arm64': 'y'}> note<'Different from master'>
 CONFIG_IMA_DEFAULT_HASH_SHA256                  policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_IMA_KEXEC                                policy<{'arm64': '-'}> note<'Master note override'>
 CONFIG_INDIRECT_PIO                             policy<{'arm64': 'n'}> note<'Different from master'>
 CONFIG_INFINIBAND_EFA                           policy<{'arm64': 'n'}> note<'Different from master'>
 CONFIG_INFINIBAND_HNS                           policy<{'arm64': 'n'}> note<'Different from master'>
@@ -351,7 +349,6 @@ CONFIG_JFFS2_SUMMARY                            policy<{'arm64': 'y'}> note<'Req
 CONFIG_JOYSTICK_RPISENSE                        policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
 CONFIG_KARMA_PARTITION                          policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
 CONFIG_KERNEL_ZSTD                              policy<{'arm64': '-'}> note<'Master note override'>
-CONFIG_KEXEC_FILE                               policy<{'arm64': 'n'}> note<'Not supported on Pi (different from master)'>
 CONFIG_KEYBOARD_ATKBD                           policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
 CONFIG_KEYS_REQUEST_CACHE                       policy<{'arm64': 'n'}> note<'Different from master'>
 CONFIG_KFENCE                                   policy<{'arm64': 'n'}> note<'Different from master'>
@@ -954,7 +951,6 @@ CONFIG_APPLE_SART                               policy<{'arm64': '-'}>
 CONFIG_APPLE_WATCHDOG                           policy<{'arm64': '-'}>
 CONFIG_ARCH_FORCE_MAX_ORDER                     policy<{'arm64': '10'}>
 CONFIG_ARCH_HAS_ACPI_TABLE_UPGRADE              policy<{'arm64': '-'}>
-CONFIG_ARCH_HAS_GENERIC_CRASHKERNEL_RESERVATION policy<{'arm64': '-'}>
 CONFIG_ARCH_LAYERSCAPE                          policy<{'arm64': '-'}>
 CONFIG_ARCH_MXC                                 policy<{'arm64': '-'}>
 CONFIG_ARCH_R8A774A1                            policy<{'arm64': '-'}>
@@ -983,7 +979,6 @@ CONFIG_ARCH_RCAR_GEN3                           policy<{'arm64': '-'}>
 CONFIG_ARCH_RCAR_GEN4                           policy<{'arm64': '-'}>
 CONFIG_ARCH_RZG2L                               policy<{'arm64': '-'}>
 CONFIG_ARCH_S32                                 policy<{'arm64': '-'}>
-CONFIG_ARCH_SELECTS_KEXEC_FILE                  policy<{'arm64': '-'}>
 CONFIG_ARCH_SUPPORTS_ACPI                       policy<{'arm64': '-'}>
 CONFIG_ARCH_SUPPORTS_KEXEC                      policy<{'arm64': '-'}>
 CONFIG_ARCH_TEGRA_132_SOC                       policy<{'arm64': '-'}>
@@ -1417,7 +1412,6 @@ CONFIG_CPUMASK_OFFSTACK                         policy<{'arm64': '-'}>
 CONFIG_CPU_HOTPLUG_STATE_CONTROL                policy<{'arm64': '-'}>
 CONFIG_CPU_IDLE_MULTIPLE_DRIVERS                policy<{'arm64': '-'}>
 CONFIG_CPU_IDLE_THERMAL                         policy<{'arm64': '-'}>
-CONFIG_CRASH_RESERVE                            policy<{'arm64': '-'}>
 CONFIG_CROS_EC                                  policy<{'arm64': '-'}>
 CONFIG_CROS_EC_CHARDEV                          policy<{'arm64': '-'}>
 CONFIG_CROS_EC_DEBUGFS                          policy<{'arm64': '-'}>
@@ -1861,7 +1855,6 @@ CONFIG_GPIO_ZYNQMP_MODEPIN                      policy<{'arm64': '-'}>
 CONFIG_HAMACHI                                  policy<{'arm64': '-'}>
 CONFIG_HAPPYMEAL                                policy<{'arm64': '-'}>
 CONFIG_HAVE_ACPI_APEI                           policy<{'arm64': '-'}>
-CONFIG_HAVE_IMA_KEXEC                           policy<{'arm64': '-'}>
 CONFIG_HAVE_KERNEL_GZIP                         policy<{'arm64': '-'}>
 CONFIG_HAVE_KERNEL_LZ4                          policy<{'arm64': '-'}>
 CONFIG_HAVE_KERNEL_LZMA                         policy<{'arm64': '-'}>
@@ -2118,9 +2111,7 @@ CONFIG_KERNEL_LZMA                              policy<{'arm64': '-'}>
 CONFIG_KERNEL_LZO                               policy<{'arm64': '-'}>
 CONFIG_KERNEL_XZ                                policy<{'arm64': '-'}>
 CONFIG_KEXEC                                    policy<{'arm64': '-'}>
-CONFIG_KEXEC_CORE                               policy<{'arm64': '-'}>
 CONFIG_KEXEC_IMAGE_VERIFY_SIG                   policy<{'arm64': '-'}>
-CONFIG_KEXEC_SIG                                policy<{'arm64': '-'}>
 CONFIG_KEYBOARD_ADP5520                         policy<{'arm64': '-'}>
 CONFIG_KEYBOARD_CROS_EC                         policy<{'arm64': '-'}>
 CONFIG_KEYBOARD_IMX                             policy<{'arm64': '-'}>
@@ -2793,8 +2784,6 @@ CONFIG_POWER_RESET_SC27XX                       policy<{'arm64': '-'}>
 CONFIG_POWER_RESET_VEXPRESS                     policy<{'arm64': '-'}>
 CONFIG_PREEMPTIRQ_TRACEPOINTS                   policy<{'arm64': 'y'}>
 CONFIG_PROC_EVENTS                              policy<{'arm64': '-'}>
-CONFIG_PROC_VMCORE                              policy<{'arm64': '-'}>
-CONFIG_PROC_VMCORE_DEVICE_DUMP                  policy<{'arm64': '-'}>
 CONFIG_PRU_REMOTEPROC                           policy<{'arm64': '-'}>
 CONFIG_PTP_1588_CLOCK_QORIQ                     policy<{'arm64': '-'}>
 CONFIG_PVPANIC_MMIO                             policy<{'arm64': '-'}>
@@ -3837,7 +3826,6 @@ CONFIG_TRACER_SNAPSHOT_PER_CPU_SWAP             policy<{'arm64': 'y'}>
 CONFIG_TRACE_GPU_MEM                            policy<{'arm64': '-'}>
 CONFIG_TRACE_IRQFLAGS                           policy<{'arm64': 'y'}>
 CONFIG_TRACE_IRQFLAGS_NMI                       policy<{'arm64': 'y'}>
-CONFIG_TRANS_TABLE                              policy<{'arm64': '-'}>
 CONFIG_TULIP                                    policy<{'arm64': '-'}>
 CONFIG_TULIP_MMIO                               policy<{'arm64': '-'}>
 CONFIG_TULIP_MWI                                policy<{'arm64': '-'}>
