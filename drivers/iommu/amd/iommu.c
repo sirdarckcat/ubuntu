@@ -1500,9 +1500,11 @@ static int device_flush_dte(struct iommu_dev_data *dev_data)
 static void __domain_flush_pages(struct protection_domain *domain,
 				 u64 address, size_t size)
 {
+	struct pdom_iommu_info *pdom_iommu_info;
 	struct iommu_dev_data *dev_data;
 	struct iommu_cmd cmd;
-	int ret = 0, i;
+	int ret = 0;
+	unsigned long i;
 	ioasid_t pasid = IOMMU_NO_PASID;
 	bool gn = false;
 
@@ -1511,15 +1513,12 @@ static void __domain_flush_pages(struct protection_domain *domain,
 
 	build_inv_iommu_pages(&cmd, address, size, domain->id, pasid, gn);
 
-	for (i = 0; i < amd_iommu_get_num_iommus(); ++i) {
-		if (!domain->dev_iommu[i])
-			continue;
-
+	xa_for_each(&domain->iommu_array, i, pdom_iommu_info) {
 		/*
 		 * Devices of this domain are behind this IOMMU
 		 * We need a TLB flush
 		 */
-		ret |= iommu_queue_command(amd_iommus[i], &cmd);
+		ret |= iommu_queue_command(pdom_iommu_info->iommu, &cmd);
 	}
 
 	list_for_each_entry(dev_data, &domain->dev_list, list) {
@@ -1592,18 +1591,15 @@ static void amd_iommu_domain_flush_all(struct protection_domain *domain)
 
 void amd_iommu_domain_flush_complete(struct protection_domain *domain)
 {
-	int i;
+	struct pdom_iommu_info *pdom_iommu_info;
+	unsigned long i;
 
-	for (i = 0; i < amd_iommu_get_num_iommus(); ++i) {
-		if (domain && !domain->dev_iommu[i])
-			continue;
-
-		/*
-		 * Devices of this domain are behind this IOMMU
-		 * We need to wait for completion of all commands.
-		 */
-		iommu_completion_wait(amd_iommus[i]);
-	}
+	/*
+	 * Devices of this domain are behind this IOMMU
+	 * We need to wait for completion of all commands.
+	 */
+	xa_for_each(&domain->iommu_array, i, pdom_iommu_info)
+		iommu_completion_wait(pdom_iommu_info->iommu);
 }
 
 /* Flush the not present cache if it exists */
@@ -1843,15 +1839,60 @@ static void clear_dte_entry(struct amd_iommu *iommu, u16 devid)
 	amd_iommu_apply_erratum_63(iommu, devid);
 }
 
-static void do_attach(struct iommu_dev_data *dev_data,
-		      struct protection_domain *domain)
+static int pdom_attach_iommu(struct amd_iommu *iommu,
+			     struct protection_domain *pdom)
+{
+	struct pdom_iommu_info *pdom_iommu_info, *curr;
+
+	pdom_iommu_info = xa_load(&pdom->iommu_array, iommu->index);
+	if (pdom_iommu_info) {
+		pdom_iommu_info->refcnt++;
+		return 0;
+	}
+
+	pdom_iommu_info = kzalloc(sizeof(*pdom_iommu_info), GFP_ATOMIC);
+	if (!pdom_iommu_info)
+		return -ENOMEM;
+
+	pdom_iommu_info->iommu = iommu;
+	pdom_iommu_info->refcnt = 1;
+
+	curr = xa_cmpxchg(&pdom->iommu_array, iommu->index,
+			  NULL, pdom_iommu_info, GFP_ATOMIC);
+	if (curr) {
+		kfree(pdom_iommu_info);
+		return -ENOSPC;
+	}
+
+	return 0;
+}
+
+static void pdom_detach_iommu(struct amd_iommu *iommu,
+			      struct protection_domain *pdom)
+{
+	struct pdom_iommu_info *pdom_iommu_info;
+
+	pdom_iommu_info = xa_load(&pdom->iommu_array, iommu->index);
+	if (!pdom_iommu_info)
+		return;
+
+	pdom_iommu_info->refcnt--;
+	if (pdom_iommu_info->refcnt == 0) {
+		xa_erase(&pdom->iommu_array, iommu->index);
+		kfree(pdom_iommu_info);
+	}
+}
+
+static int do_attach(struct iommu_dev_data *dev_data,
+		     struct protection_domain *domain)
 {
 	struct amd_iommu *iommu;
 	bool ats;
+	int ret = 0;
 
 	iommu = rlookup_amd_iommu(dev_data->dev);
 	if (!iommu)
-		return;
+		return -EINVAL;
 	ats   = dev_data->ats_enabled;
 
 	/* Update data structures */
@@ -1863,7 +1904,12 @@ static void do_attach(struct iommu_dev_data *dev_data,
 		domain->nid = dev_to_node(dev_data->dev);
 
 	/* Do reference counting */
-	domain->dev_iommu[iommu->index] += 1;
+	ret = pdom_attach_iommu(iommu, domain);
+	if (ret) {
+		dev_data->domain = NULL;
+		list_del(&dev_data->list);
+		return ret;
+	}
 
 	/* Update device table */
 	set_dte_entry(iommu, dev_data->devid, domain,
@@ -1871,6 +1917,8 @@ static void do_attach(struct iommu_dev_data *dev_data,
 	clone_aliases(iommu, dev_data->dev);
 
 	device_flush_dte(dev_data);
+
+	return ret;
 }
 
 static void do_detach(struct iommu_dev_data *dev_data)
@@ -1895,7 +1943,7 @@ static void do_detach(struct iommu_dev_data *dev_data)
 	amd_iommu_domain_flush_all(domain);
 
 	/* decrease reference counters - needs to happen after the flushes */
-	domain->dev_iommu[iommu->index] -= 1;
+	pdom_detach_iommu(iommu, domain);
 }
 
 /*
@@ -1923,7 +1971,9 @@ static int attach_device(struct device *dev,
 	if (dev_is_pci(dev))
 		pdev_enable_caps(to_pci_dev(dev));
 
-	do_attach(dev_data, domain);
+	ret = do_attach(dev_data, domain);
+	if (ret && dev_is_pci(dev))
+		pdev_disable_caps(to_pci_dev(dev));
 
 out:
 	spin_unlock(&dev_data->lock);
@@ -2131,6 +2181,7 @@ static struct protection_domain *protection_domain_alloc(unsigned int type)
 
 	spin_lock_init(&domain->lock);
 	INIT_LIST_HEAD(&domain->dev_list);
+	xa_init(&domain->iommu_array);
 	domain->nid = NUMA_NO_NODE;
 
 	switch (type) {
@@ -2667,9 +2718,11 @@ const struct iommu_ops amd_iommu_ops = {
 static int __flush_pasid(struct protection_domain *domain, u32 pasid,
 			 u64 address, size_t size)
 {
+	struct pdom_iommu_info *pdom_iommu_info;
 	struct iommu_dev_data *dev_data;
 	struct iommu_cmd cmd;
-	int i, ret;
+	unsigned long i;
+	int ret;
 
 	if (!(domain->flags & PD_IOMMUV2_MASK))
 		return -EINVAL;
@@ -2680,11 +2733,8 @@ static int __flush_pasid(struct protection_domain *domain, u32 pasid,
 	 * IOMMU TLB needs to be flushed before Device TLB to
 	 * prevent device TLB refill from IOMMU TLB
 	 */
-	for (i = 0; i < amd_iommu_get_num_iommus(); ++i) {
-		if (domain->dev_iommu[i] == 0)
-			continue;
-
-		ret = iommu_queue_command(amd_iommus[i], &cmd);
+	xa_for_each(&domain->iommu_array, i, pdom_iommu_info) {
+		ret = iommu_queue_command(pdom_iommu_info->iommu, &cmd);
 		if (ret != 0)
 			goto out;
 	}
