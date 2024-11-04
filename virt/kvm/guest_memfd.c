@@ -207,15 +207,19 @@ static int kvm_gmem_release(struct inode *inode, struct file *file)
 	 * dereferencing the slot for existing bindings needs to be protected
 	 * against memslot updates, specifically so that unbind doesn't race
 	 * and free the memslot (kvm_gmem_get_file() will return NULL).
+	 *
+	 * Since .release is called only when the reference count is zero,
+	 * after which file_ref_get() and get_file_active() fail,
+	 * kvm_gmem_get_pfn() cannot be using the file concurrently.
+	 * file_ref_put() provides a full barrier, and get_file_active() the
+	 * matching acquire barrier.
 	 */
 	mutex_lock(&kvm->slots_lock);
 
 	filemap_invalidate_lock(inode->i_mapping);
 
 	xa_for_each(&gmem->bindings, index, slot)
-		rcu_assign_pointer(slot->gmem.file, NULL);
-
-	synchronize_rcu();
+		WRITE_ONCE(slot->gmem.file, NULL);
 
 	/*
 	 * All in-flight operations are gone and new bindings can be created.
@@ -244,8 +248,7 @@ static inline struct file *kvm_gmem_get_file(struct kvm_memory_slot *slot)
 	/*
 	 * Do not return slot->gmem.file if it has already been closed;
 	 * there might be some time between the last fput() and when
-	 * kvm_gmem_release() clears slot->gmem.file, and you do not
-	 * want to spin in the meanwhile.
+	 * kvm_gmem_release() clears slot->gmem.file.
 	 */
 	return get_file_active(&slot->gmem.file);
 }
@@ -437,11 +440,11 @@ int kvm_gmem_bind(struct kvm *kvm, struct kvm_memory_slot *slot,
 	}
 
 	/*
-	 * No synchronize_rcu() needed, any in-flight readers are guaranteed to
-	 * be see either a NULL file or this new file, no need for them to go
-	 * away.
+	 * memslots of flag KVM_MEM_GUEST_MEMFD are immutable to change, so
+	 * kvm_gmem_bind() must occur on a new memslot.  Because the memslot
+	 * is not visible yet, kvm_gmem_get_pfn() is guaranteed to see the file.
 	 */
-	rcu_assign_pointer(slot->gmem.file, file);
+	WRITE_ONCE(slot->gmem.file, file);
 	slot->gmem.pgoff = start;
 
 	xa_store_range(&gmem->bindings, start, end - 1, slot, GFP_KERNEL);
@@ -477,8 +480,12 @@ void kvm_gmem_unbind(struct kvm_memory_slot *slot)
 
 	filemap_invalidate_lock(file->f_mapping);
 	xa_store_range(&gmem->bindings, start, end - 1, NULL, GFP_KERNEL);
-	rcu_assign_pointer(slot->gmem.file, NULL);
-	synchronize_rcu();
+
+	/*
+	 * synchronize_srcu(&kvm->srcu) ensured that kvm_gmem_get_pfn()
+	 * cannot see this memslot.
+	 */
+	WRITE_ONCE(slot->gmem.file, NULL);
 	filemap_invalidate_unlock(file->f_mapping);
 
 	fput(file);
