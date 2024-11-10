@@ -1012,11 +1012,10 @@ endif
 # Ensure compilers do not transform certain loops into calls to wcslen()
 KBUILD_CFLAGS += -fno-builtin-wcslen
 
-# Ensure compilers do not transform certain loops into calls to wcslen()
-KBUILD_CFLAGS += -fno-builtin-wcslen
-
-# change __FILE__ to the relative path from the srctree
+# change __FILE__ to the relative path to the source directory
+ifdef building_out_of_srctree
 KBUILD_CPPFLAGS += $(call cc-option,-fmacro-prefix-map=$(srctree)/=)
+endif
 
 # include additional Makefiles when needed
 include-y			:= scripts/Makefile.extrawarn
