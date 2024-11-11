@@ -12,6 +12,7 @@ struct drm_device;
 struct drm_file;
 struct xe_device;
 struct xe_file;
+struct xe_gt;
 struct xe_vm;
 struct xe_vma;
 struct xe_exec_queue;
@@ -19,6 +20,7 @@ struct xe_hw_engine;
 struct xe_user_fence;
 struct xe_debug_metadata;
 struct drm_gpuva_ops;
+struct xe_eudebug_pagefault;
 
 #if IS_ENABLED(CONFIG_DRM_XE_EUDEBUG)
 
@@ -53,6 +55,13 @@ void xe_eudebug_put(struct xe_eudebug *d);
 
 void xe_eudebug_debug_metadata_create(struct xe_file *xef, struct xe_debug_metadata *m);
 void xe_eudebug_debug_metadata_destroy(struct xe_file *xef, struct xe_debug_metadata *m);
+
+struct xe_eudebug_pagefault *xe_eudebug_pagefault_create(struct xe_gt *gt, struct xe_vm *vm,
+							 u64 page_addr, u8 fault_type,
+							 u8 fault_level, u8 access_type);
+void xe_eudebug_pagefault_process(struct xe_gt *gt, struct xe_eudebug_pagefault *pf);
+void xe_eudebug_pagefault_destroy(struct xe_gt *gt, struct xe_vm *vm,
+				  struct xe_eudebug_pagefault *pf, bool send_event);
 
 #else
 
@@ -93,6 +102,25 @@ static inline void xe_eudebug_debug_metadata_create(struct xe_file *xef,
 
 static inline void xe_eudebug_debug_metadata_destroy(struct xe_file *xef,
 						     struct xe_debug_metadata *m)
+{
+}
+
+static inline struct xe_eudebug_pagefault *
+xe_eudebug_pagefault_create(struct xe_gt *gt, struct xe_vm *vm, u64 page_addr,
+			    u8 fault_type, u8 fault_level, u8 access_type)
+{
+	return NULL;
+}
+
+static inline void
+xe_eudebug_pagefault_process(struct xe_gt *gt, struct xe_eudebug_pagefault *pf)
+{
+}
+
+static inline void xe_eudebug_pagefault_destroy(struct xe_gt *gt,
+						struct xe_vm *vm,
+						struct xe_eudebug_pagefault *pf,
+						bool send_event)
 {
 }
 
