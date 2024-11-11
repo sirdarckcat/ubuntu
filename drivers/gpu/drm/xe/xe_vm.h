@@ -392,4 +392,7 @@ static inline void xe_vma_userptr_force_invalidate(struct xe_userptr_vma *uvma)
 {
 }
 #endif
+
+struct xe_vma *xe_vm_create_null_vma(struct xe_vm *vm, u64 addr);
+
 #endif
