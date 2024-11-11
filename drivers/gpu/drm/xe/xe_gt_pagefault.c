@@ -13,6 +13,7 @@
 
 #include "abi/guc_actions_abi.h"
 #include "xe_bo.h"
+#include "xe_eudebug.h"
 #include "xe_gt.h"
 #include "xe_gt_tlb_invalidation.h"
 #include "xe_guc.h"
@@ -199,12 +200,16 @@ static struct xe_vm *asid_to_vm(struct xe_device *xe, u32 asid)
 	return vm;
 }
 
-static int handle_pagefault(struct xe_gt *gt, struct pagefault *pf)
+static int handle_pagefault_start(struct xe_gt *gt, struct pagefault *pf,
+		struct xe_vm **pf_vm,
+		struct xe_eudebug_pagefault **eudebug_pf_out)
 {
-	struct xe_device *xe = gt_to_xe(gt);
+	struct xe_eudebug_pagefault *eudebug_pf;
 	struct xe_tile *tile = gt_to_tile(gt);
-	struct xe_vm *vm;
+	struct xe_device *xe = gt_to_xe(gt);
+	bool  destroy_eudebug_pf = false;
 	struct xe_vma *vma = NULL;
+	struct xe_vm *vm;
 	int err;
 
 	/* SW isn't expected to handle TRTT faults */
@@ -214,6 +219,10 @@ static int handle_pagefault(struct xe_gt *gt, struct pagefault *pf)
 	vm = asid_to_vm(xe, pf->asid);
 	if (IS_ERR(vm))
 		return PTR_ERR(vm);
+
+	eudebug_pf = xe_eudebug_pagefault_create(gt, vm, pf->page_addr,
+			pf->fault_type, pf->fault_level,
+			pf->access_type);
 
 	/*
 	 * TODO: Change to read lock? Using write lock for simplicity.
@@ -227,8 +236,26 @@ static int handle_pagefault(struct xe_gt *gt, struct pagefault *pf)
 
 	vma = xe_gt_pagefault_lookup_vma(vm, pf->page_addr);
 	if (!vma) {
-		err = -EINVAL;
-		goto unlock_vm;
+		if (eudebug_pf)
+			vma = xe_vm_create_null_vma(vm, pf->page_addr);
+
+		if (IS_ERR_OR_NULL(vma)) {
+			err = -EINVAL;
+			if (eudebug_pf)
+				destroy_eudebug_pf = true;
+
+			goto unlock_vm;
+		}
+	} else {
+		/*
+		 * When creating an instance of eudebug_pagefault, there was
+		 * no vma containing the ppgtt address where the pagefault occurred,
+		 * but when reacquiring vm->lock, there is.
+		 * During not aquiring the vm->lock from this context,
+		 * but vma corresponding to the address where the pagefault occurred
+		 * in another context has allocated.*/
+		if (eudebug_pf)
+			destroy_eudebug_pf = true;
 	}
 
 	err = handle_vma_pagefault(tile, pf, vma);
@@ -237,9 +264,42 @@ unlock_vm:
 	if (!err)
 		vm->usm.last_fault_vma = vma;
 	up_write(&vm->lock);
-	xe_vm_put(vm);
+
+	if (destroy_eudebug_pf) {
+		xe_eudebug_pagefault_destroy(gt, vm, eudebug_pf, false);
+		*eudebug_pf_out = NULL;
+	} else {
+		*eudebug_pf_out = eudebug_pf;
+	}
+
+	/* while the lifetime of the eudebug pagefault instance, keep the VM instance.*/
+	if (!*eudebug_pf_out) {
+		xe_vm_put(vm);
+		*pf_vm = NULL;
+	}
+	else {
+		*pf_vm = vm;
+	}
 
 	return err;
+}
+
+static void handle_pagefault_end(struct xe_gt *gt, struct xe_vm *vm,
+				 struct xe_eudebug_pagefault *eudebug_pf)
+{
+	/* if there no eudebug_pagefault then return */
+	if (!eudebug_pf)
+		return;
+
+	xe_eudebug_pagefault_process(gt, eudebug_pf);
+
+	/*
+	 * TODO: Remove VMA added to handle eudebug pagefault
+	 */
+
+	xe_eudebug_pagefault_destroy(gt, vm, eudebug_pf, true);
+
+	xe_vm_put(vm);
 }
 
 static int send_pagefault_reply(struct xe_guc *guc,
@@ -367,7 +427,10 @@ static void pf_queue_work_func(struct work_struct *w)
 	threshold = jiffies + msecs_to_jiffies(USM_QUEUE_MAX_RUNTIME_MS);
 
 	while (get_pagefault(pf_queue, &pf)) {
-		ret = handle_pagefault(gt, &pf);
+		struct xe_eudebug_pagefault *eudebug_pf = NULL;
+		struct xe_vm *vm = NULL;
+
+		ret = handle_pagefault_start(gt, &pf, &vm, &eudebug_pf);
 		if (unlikely(ret)) {
 			print_pagefault(xe, &pf);
 			pf.fault_unsuccessful = 1;
@@ -385,7 +448,12 @@ static void pf_queue_work_func(struct work_struct *w)
 			FIELD_PREP(PFR_ENG_CLASS, pf.engine_class) |
 			FIELD_PREP(PFR_PDATA, pf.pdata);
 
-		send_pagefault_reply(&gt->uc.guc, &reply);
+		ret = send_pagefault_reply(&gt->uc.guc, &reply);
+		if (unlikely(ret)) {
+			drm_dbg(&xe->drm, "GuC Pagefault reply failed: %d\n", ret);
+		}
+
+		handle_pagefault_end(gt, vm, eudebug_pf);
 
 		if (time_after(jiffies, threshold) &&
 		    pf_queue->tail != pf_queue->head) {
