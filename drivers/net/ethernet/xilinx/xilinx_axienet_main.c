@@ -747,8 +747,7 @@ static inline int axienet_check_tx_bd_space(struct axienet_local *lp,
 
 	/* Ensure we see all descriptor updates from device or TX IRQ path */
 	rmb();
-	cur_p = &lp->tx_bd_v[(READ_ONCE(lp->tx_bd_tail) + num_frag) %
-			     lp->tx_bd_num];
+	cur_p = &lp->tx_bd_v[(lp->tx_bd_tail + num_frag) % lp->tx_bd_num];
 	if (cur_p->cntrl)
 		return NETDEV_TX_BUSY;
 	return 0;
@@ -809,15 +808,12 @@ axienet_start_xmit(struct sk_buff *skb, struct net_device *ndev)
 	u32 csum_index_off;
 	skb_frag_t *frag;
 	dma_addr_t tail_p, phys;
-	u32 orig_tail_ptr, new_tail_ptr;
 	struct axienet_local *lp = netdev_priv(ndev);
 	struct axidma_bd *cur_p;
-
-	orig_tail_ptr = lp->tx_bd_tail;
-	new_tail_ptr = orig_tail_ptr;
+	u32 orig_tail_ptr = lp->tx_bd_tail;
 
 	num_frag = skb_shinfo(skb)->nr_frags;
-	cur_p = &lp->tx_bd_v[orig_tail_ptr];
+	cur_p = &lp->tx_bd_v[lp->tx_bd_tail];
 
 	if (axienet_check_tx_bd_space(lp, num_frag + 1)) {
 		/* Should not happen as last start_xmit call should have
@@ -858,9 +854,9 @@ axienet_start_xmit(struct sk_buff *skb, struct net_device *ndev)
 	cur_p->cntrl = skb_headlen(skb) | XAXIDMA_BD_CTRL_TXSOF_MASK;
 
 	for (ii = 0; ii < num_frag; ii++) {
-		if (++new_tail_ptr >= lp->tx_bd_num)
-			new_tail_ptr = 0;
-		cur_p = &lp->tx_bd_v[new_tail_ptr];
+		if (++lp->tx_bd_tail >= lp->tx_bd_num)
+			lp->tx_bd_tail = 0;
+		cur_p = &lp->tx_bd_v[lp->tx_bd_tail];
 		frag = &skb_shinfo(skb)->frags[ii];
 		phys = dma_map_single(lp->dev,
 				      skb_frag_address(frag),
@@ -873,6 +869,8 @@ axienet_start_xmit(struct sk_buff *skb, struct net_device *ndev)
 			axienet_free_tx_chain(lp, orig_tail_ptr, ii + 1,
 					      NULL);
 			dev_kfree_skb_any(skb);
+			lp->tx_bd_tail = orig_tail_ptr;
+
 			return NETDEV_TX_OK;
 		}
 		desc_set_phys_addr(lp, phys, cur_p);
@@ -882,13 +880,11 @@ axienet_start_xmit(struct sk_buff *skb, struct net_device *ndev)
 	cur_p->cntrl |= XAXIDMA_BD_CTRL_TXEOF_MASK;
 	cur_p->skb = skb;
 
-	tail_p = lp->tx_bd_p + sizeof(*lp->tx_bd_v) * new_tail_ptr;
-	if (++new_tail_ptr >= lp->tx_bd_num)
-		new_tail_ptr = 0;
-	WRITE_ONCE(lp->tx_bd_tail, new_tail_ptr);
-
+	tail_p = lp->tx_bd_p + sizeof(*lp->tx_bd_v) * lp->tx_bd_tail;
 	/* Start the transfer */
 	axienet_dma_out_addr(lp, XAXIDMA_TX_TDESC_OFFSET, tail_p);
+	if (++lp->tx_bd_tail >= lp->tx_bd_num)
+		lp->tx_bd_tail = 0;
 
 	/* Stop queue if next transmit may not have space */
 	if (axienet_check_tx_bd_space(lp, MAX_SKB_FRAGS + 1)) {
