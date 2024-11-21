@@ -713,11 +713,8 @@ static int xiic_start_xfer(struct xiic_i2c *i2c, struct i2c_msg *msgs, int num)
 	mutex_lock(&i2c->lock);
 
 	ret = xiic_busy(i2c);
-	if (ret) {
-		dev_err(i2c->adap.dev.parent,
-			"cannot start a transfer while busy\n");
+	if (ret)
 		goto out;
-	}
 
 	i2c->tx_msg = msgs;
 	i2c->rx_msg = NULL;
@@ -747,8 +744,10 @@ static int xiic_xfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int num)
 		return err;
 
 	err = xiic_start_xfer(i2c, msgs, num);
-	if (err < 0)
+	if (err < 0) {
+		dev_err(adap->dev.parent, "Error xiic_start_xfer\n");
 		goto out;
+	}
 
 	err = wait_for_completion_timeout(&i2c->completion, XIIC_XFER_TIMEOUT);
 	mutex_lock(&i2c->lock);
