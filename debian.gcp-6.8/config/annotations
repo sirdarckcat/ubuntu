@@ -1,0 +1,15 @@
+# Menu: HEADER
+# FORMAT: 4
+# ARCH: amd64 arm64
+# FLAVOUR: amd64-gcp-6.8 arm64-gcp-6.8
+
+include "../../debian.gcp/config/annotations"
+
+
+# ---- Annotations without notes ----
+
+CONFIG_AS_VERSION                               policy<{'amd64': '23800', 'arm64': '23800'}>
+CONFIG_CC_VERSION_TEXT                          policy<{'amd64': '"x86_64-linux-gnu-gcc-12 (Ubuntu 12.3.0-1ubuntu1~22.04) 12.3.0"', 'arm64': '"aarch64-linux-gnu-gcc-12 (Ubuntu 12.3.0-1ubuntu1~22.04) 12.3.0"'}>
+CONFIG_DEBUG_INFO_COMPRESSED_ZSTD               policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_GCC_VERSION                              policy<{'amd64': '120300', 'arm64': '120300'}>
+CONFIG_LD_VERSION                               policy<{'amd64': '23800', 'arm64': '23800'}>
