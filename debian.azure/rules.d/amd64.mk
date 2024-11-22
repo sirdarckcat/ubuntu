@@ -19,4 +19,3 @@ do_tools_hyperv	= true
 do_extras_package = true
 do_zfs		= true
 disable_d_i=true
-do_source_package = false
