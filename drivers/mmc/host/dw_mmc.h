@@ -547,6 +547,7 @@ struct dw_mci_slot {
  * @set_ios: handle bus specific extensions.
  * @parse_dt: parse implementation specific device tree properties.
  * @execute_tuning: implementation specific tuning procedure.
+ * @hw_reset: implementation specific HW reset.
  *
  * Provide controller implementation specific extensions. The usage of this
  * data structure is fully optional and usage of each member in this structure
@@ -563,5 +564,6 @@ struct dw_mci_drv_data {
 						struct mmc_ios *ios);
 	int		(*switch_voltage)(struct mmc_host *mmc,
 					  struct mmc_ios *ios);
+	void		(*hw_reset)(struct dw_mci *host);
 };
 #endif /* _DW_MMC_H_ */
