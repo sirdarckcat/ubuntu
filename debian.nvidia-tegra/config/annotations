@@ -90,6 +90,12 @@ CONFIG_PREEMPT_RT                               note<'must be enabled in the rea
 CONFIG_PSTORE_BLK                               policy<{'arm64': 'y'}>
 CONFIG_PSTORE_BLK                               note<'LP: #2120190'>
 
+CONFIG_PSTORE_CONSOLE                           policy<{'arm64': 'y'}>
+CONFIG_PSTORE_CONSOLE                           note<'LP: #2120190'>
+
+CONFIG_PSTORE_RAM                               policy<{'arm64': 'm'}>
+CONFIG_PSTORE_RAM                               note<'LP: #2120190'>
+
 CONFIG_R8169                                    policy<{'arm64': 'n'}>
 CONFIG_R8169                                    note<'LP: 2080908'>
 
@@ -141,6 +147,7 @@ CONFIG_NUMA_BALANCING                           policy<{'arm64': '-', 'arm64-nvi
 CONFIG_PREEMPT_BUILD                            policy<{'arm64': '-', 'arm64-nvidia-tegra': 'y'}>
 CONFIG_PREEMPT_NONE                             policy<{'arm64': 'n', 'arm64-nvidia-tegra': 'y'}>
 CONFIG_PREEMPT_NONE_BUILD                       policy<{'arm64-nvidia-tegra': '-'}>
+CONFIG_PSTORE_BLK_CONSOLE_SIZE                  policy<{'arm64': '64'}>
 CONFIG_PSTORE_ZONE                              policy<{'arm64': 'y'}>
 CONFIG_QUEUED_RWLOCKS                           policy<{'arm64': '-', 'arm64-nvidia-tegra': 'y'}>
 CONFIG_R8169_LEDS                               policy<{'arm64': '-'}>
