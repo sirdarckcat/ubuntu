@@ -919,7 +919,7 @@ static struct xe_eudebug_event *
 xe_eudebug_create_event(struct xe_eudebug *d, u16 type, u64 seqno, u16 flags,
 			u32 len)
 {
-	const u16 max_event = PRELIM_DRM_XE_EUDEBUG_EVENT_PAGEFAULT;
+	const u16 max_event = PRELIM_DRM_XE_EUDEBUG_EVENT_EXEC_QUEUE_PLACEMENTS;
 	const u16 known_flags =
 		PRELIM_DRM_XE_EUDEBUG_EVENT_CREATE |
 		PRELIM_DRM_XE_EUDEBUG_EVENT_DESTROY |
