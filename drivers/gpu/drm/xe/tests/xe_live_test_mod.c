@@ -17,7 +17,7 @@ kunit_test_suite(xe_dma_buf_test_suite);
 kunit_test_suite(xe_migrate_test_suite);
 kunit_test_suite(xe_mocs_test_suite);
 
-#if IS_ENABLED(CONFIG_DRM_XE_EUDEBUG)
+#if IS_ENABLED(CONFIG_PRELIM_DRM_XE_EUDEBUG)
 extern struct kunit_suite xe_eudebug_test_suite;
 kunit_test_suite(xe_eudebug_test_suite);
 #endif
