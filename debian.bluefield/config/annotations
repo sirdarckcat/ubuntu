@@ -5,6 +5,9 @@
 
 include "../../debian.master/config/annotations"
 
+CONFIG_BT_HS                                    policy<{'arm64': '-'}>
+CONFIG_BT_HS                                    note<'https://www.intel.com/content/www/us/en/security-center/advisory/intel-sa-00435.html'>
+
 CONFIG_DVB_DUMMY_FE                             policy<{'arm64': '-'}>
 CONFIG_DVB_DUMMY_FE                             note<'expert use only'>
 
@@ -177,7 +180,6 @@ CONFIG_BT_HCIUART_RTL                           policy<{'arm64': '-'}>
 CONFIG_BT_HCIUART_SERDEV                        policy<{'arm64': '-'}>
 CONFIG_BT_HCIVHCI                               policy<{'arm64': '-'}>
 CONFIG_BT_HIDP                                  policy<{'arm64': '-'}>
-CONFIG_BT_HS                                    policy<{'arm64': '-'}>
 CONFIG_BT_INTEL                                 policy<{'arm64': '-'}>
 CONFIG_BT_LE                                    policy<{'arm64': '-'}>
 CONFIG_BT_LEDS                                  policy<{'arm64': '-'}>
