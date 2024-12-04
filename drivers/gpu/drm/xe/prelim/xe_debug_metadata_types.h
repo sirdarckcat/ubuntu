@@ -8,7 +8,7 @@
 
 #include <linux/kref.h>
 
-struct xe_debug_metadata {
+struct prelim_xe_debug_metadata {
 	/** @type: type of given metadata */
 	u64 type;
 

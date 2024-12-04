@@ -16,7 +16,7 @@
 #include "xe_assert.h"
 #include "xe_bo.h"
 #include "xe_device.h"
-#include "xe_eudebug.h"
+#include "prelim/xe_eudebug.h"
 #include "xe_execlist.h"
 #include "xe_force_wake.h"
 #include "xe_gsc.h"

@@ -21,7 +21,7 @@ struct xe_user_fence {
 	u64 value;
 	int signalled;
 
-#if IS_ENABLED(CONFIG_DRM_XE_EUDEBUG)
+#if IS_ENABLED(CONFIG_PRELIM_DRM_XE_EUDEBUG)
 	struct {
 		spinlock_t lock;
 		struct xe_eudebug *debugger;
