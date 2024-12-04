@@ -12,19 +12,19 @@ struct drm_device;
 struct drm_file;
 struct xe_file;
 
-#if IS_ENABLED(CONFIG_DRM_XE_EUDEBUG)
+#if IS_ENABLED(CONFIG_PRELIM_DRM_XE_EUDEBUG)
 
 #include "xe_debug_metadata_types.h"
 #include "xe_vm_types.h"
 
-struct xe_debug_metadata *xe_debug_metadata_get(struct xe_file *xef, u32 id);
-void xe_debug_metadata_put(struct xe_debug_metadata *mdata);
+struct prelim_xe_debug_metadata *prelim_xe_debug_metadata_get(struct xe_file *xef, u32 id);
+void prelim_xe_debug_metadata_put(struct prelim_xe_debug_metadata *mdata);
 
-int xe_debug_metadata_create_ioctl(struct drm_device *dev,
+int prelim_xe_debug_metadata_create_ioctl(struct drm_device *dev,
 				   void *data,
 				   struct drm_file *file);
 
-int xe_debug_metadata_destroy_ioctl(struct drm_device *dev,
+int prelim_xe_debug_metadata_destroy_ioctl(struct drm_device *dev,
 				    void *data,
 				    struct drm_file *file);
 
@@ -47,22 +47,22 @@ int vm_bind_op_ext_attach_debug(struct xe_device *xe,
 
 #include <linux/errno.h>
 
-struct xe_debug_metadata;
+struct prelim_xe_debug_metadata;
 struct xe_device;
 struct xe_eudebug_vma_metadata;
 struct drm_gpuva_ops;
 
-static inline struct xe_debug_metadata *xe_debug_metadata_get(struct xe_file *xef, u32 id) { return NULL; }
-static inline void xe_debug_metadata_put(struct xe_debug_metadata *mdata) { }
+static inline struct prelim_xe_debug_metadata *prelim_xe_debug_metadata_get(struct xe_file *xef, u32 id) { return NULL; }
+static inline void prelim_xe_debug_metadata_put(struct prelim_xe_debug_metadata *mdata) { }
 
-static inline int xe_debug_metadata_create_ioctl(struct drm_device *dev,
+static inline int prelim_xe_debug_metadata_create_ioctl(struct drm_device *dev,
 						 void *data,
 						 struct drm_file *file)
 {
 	return -EOPNOTSUPP;
 }
 
-static inline int xe_debug_metadata_destroy_ioctl(struct drm_device *dev,
+static inline int prelim_xe_debug_metadata_destroy_ioctl(struct drm_device *dev,
 						  void *data,
 						  struct drm_file *file)
 {

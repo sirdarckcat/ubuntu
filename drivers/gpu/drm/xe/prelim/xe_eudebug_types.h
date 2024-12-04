@@ -4,6 +4,7 @@
  */
 
 #ifndef __XE_EUDEBUG_TYPES_H_
+#define __XE_EUDEBUG_TYPES_H_
 
 #include <linux/completion.h>
 #include <linux/kfifo.h>

@@ -15,7 +15,7 @@
 #include <uapi/drm/xe_drm.h>
 
 #include "xe_device_types.h"
-#include "xe_eudebug.h"
+#include "prelim/xe_eudebug.h"
 #include "xe_exec_queue.h"
 #include "xe_macros.h"
 #include "xe_sched_job_types.h"
@@ -27,7 +27,7 @@ static void user_fence_destroy(struct kref *kref)
 
 	mmdrop(ufence->mm);
 
-	xe_eudebug_ufence_fini(ufence);
+	prelim_xe_eudebug_ufence_fini(ufence);
 
 	kfree(ufence);
 }
@@ -66,7 +66,7 @@ static struct xe_user_fence *user_fence_create(struct xe_device *xe,
 	ufence->mm = current->mm;
 	mmgrab(ufence->mm);
 
-	xe_eudebug_ufence_init(ufence, xef, vm);
+	prelim_xe_eudebug_ufence_init(ufence, xef, vm);
 
 	return ufence;
 }
@@ -97,10 +97,10 @@ static void user_fence_worker(struct work_struct *w)
 	 * Wake up waiters only after updating the ufence state, allowing the UMD
 	 * to safely reuse the same ufence without encountering -EBUSY errors.
 	 */
-	WRITE_ONiCE(ufence->signalled, 1);
+	WRITE_ONCE(ufence->signalled, 1);
 
 	/* Lets see if debugger wants to track this */
-	ret = xe_eudebug_vm_bind_ufence(ufence);
+	ret = prelim_xe_eudebug_vm_bind_ufence(ufence);
 	if (ret)
 		xe_sync_ufence_signal(ufence);
 

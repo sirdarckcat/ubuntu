@@ -9,7 +9,7 @@
 #include <uapi/drm/xe_drm.h>
 
 #include "xe_device.h"
-#include "xe_eudebug.h"
+#include "prelim/xe_eudebug.h"
 #include "xe_macros.h"
 #include "xe_vm.h"
 
@@ -77,8 +77,8 @@ int vm_bind_op_ext_attach_debug(struct xe_device *xe,
 				u32 operation, u64 extension)
 {
 	u64 __user *address = u64_to_user_ptr(extension);
-	struct drm_xe_vm_bind_op_ext_attach_debug ext;
-	struct xe_debug_metadata *mdata;
+	struct prelim_drm_xe_vm_bind_op_ext_attach_debug ext;
+	struct prelim_xe_debug_metadata *mdata;
 	struct drm_gpuva_op *__op;
 	int err;
 
@@ -94,12 +94,12 @@ int vm_bind_op_ext_attach_debug(struct xe_device *xe,
 	if (XE_IOCTL_DBG(xe, ext.flags))
 		return -EINVAL;
 
-	mdata = xe_debug_metadata_get(xef, (u32)ext.metadata_id);
+	mdata = prelim_xe_debug_metadata_get(xef, (u32)ext.metadata_id);
 	if (XE_IOCTL_DBG(xe, !mdata))
 		return -ENOENT;
 
 	/* care about metadata existence only on the time of attach */
-	xe_debug_metadata_put(mdata);
+	prelim_xe_debug_metadata_put(mdata);
 
 	if (!ops)
 		return 0;
@@ -119,22 +119,22 @@ int vm_bind_op_ext_attach_debug(struct xe_device *xe,
 	return 0;
 }
 
-static void xe_debug_metadata_release(struct kref *ref)
+static void prelim_xe_debug_metadata_release(struct kref *ref)
 {
-	struct xe_debug_metadata *mdata = container_of(ref, struct xe_debug_metadata, refcount);
+	struct prelim_xe_debug_metadata *mdata = container_of(ref, struct prelim_xe_debug_metadata, refcount);
 
 	kvfree(mdata->ptr);
 	kfree(mdata);
 }
 
-void xe_debug_metadata_put(struct xe_debug_metadata *mdata)
+void prelim_xe_debug_metadata_put(struct prelim_xe_debug_metadata *mdata)
 {
-	kref_put(&mdata->refcount, xe_debug_metadata_release);
+	kref_put(&mdata->refcount, prelim_xe_debug_metadata_release);
 }
 
-struct xe_debug_metadata *xe_debug_metadata_get(struct xe_file *xef, u32 id)
+struct prelim_xe_debug_metadata *prelim_xe_debug_metadata_get(struct xe_file *xef, u32 id)
 {
-	struct xe_debug_metadata *mdata;
+	struct prelim_xe_debug_metadata *mdata;
 
 	mutex_lock(&xef->eudebug.metadata.lock);
 	mdata = xa_load(&xef->eudebug.metadata.xa, id);
@@ -145,21 +145,21 @@ struct xe_debug_metadata *xe_debug_metadata_get(struct xe_file *xef, u32 id)
 	return mdata;
 }
 
-int xe_debug_metadata_create_ioctl(struct drm_device *dev,
+int prelim_xe_debug_metadata_create_ioctl(struct drm_device *dev,
 				   void *data,
 				   struct drm_file *file)
 {
 	struct xe_device *xe = to_xe_device(dev);
 	struct xe_file *xef = to_xe_file(file);
-	struct drm_xe_debug_metadata_create *args = data;
-	struct xe_debug_metadata *mdata;
+	struct prelim_drm_xe_debug_metadata_create *args = data;
+	struct prelim_xe_debug_metadata *mdata;
 	int err;
 	u32 id;
 
 	if (XE_IOCTL_DBG(xe, args->extensions))
 		return -EINVAL;
 
-	if (XE_IOCTL_DBG(xe, args->type >= WORK_IN_PROGRESS_DRM_XE_DEBUG_METADATA_NUM))
+	if (XE_IOCTL_DBG(xe, args->type >= PRELIM_WORK_IN_PROGRESS_DRM_XE_DEBUG_METADATA_NUM))
 		return -EINVAL;
 
 	if (XE_IOCTL_DBG(xe, !args->user_addr || !args->len))
@@ -198,23 +198,23 @@ int xe_debug_metadata_create_ioctl(struct drm_device *dev,
 
 	args->metadata_id = id;
 
-	xe_eudebug_debug_metadata_create(xef, mdata);
+	prelim_xe_eudebug_debug_metadata_create(xef, mdata);
 
 	return 0;
 
 put_mdata:
-	xe_debug_metadata_put(mdata);
+	prelim_xe_debug_metadata_put(mdata);
 	return err;
 }
 
-int xe_debug_metadata_destroy_ioctl(struct drm_device *dev,
+int prelim_xe_debug_metadata_destroy_ioctl(struct drm_device *dev,
 				    void *data,
 				    struct drm_file *file)
 {
 	struct xe_device *xe = to_xe_device(dev);
 	struct xe_file *xef = to_xe_file(file);
-	struct drm_xe_debug_metadata_destroy * const args = data;
-	struct xe_debug_metadata *mdata;
+	struct prelim_drm_xe_debug_metadata_destroy * const args = data;
+	struct prelim_xe_debug_metadata *mdata;
 
 	if (XE_IOCTL_DBG(xe, args->extensions))
 		return -EINVAL;
@@ -225,9 +225,9 @@ int xe_debug_metadata_destroy_ioctl(struct drm_device *dev,
 	if (XE_IOCTL_DBG(xe, !mdata))
 		return -ENOENT;
 
-	xe_eudebug_debug_metadata_destroy(xef, mdata);
+	prelim_xe_eudebug_debug_metadata_destroy(xef, mdata);
 
-	xe_debug_metadata_put(mdata);
+	prelim_xe_debug_metadata_put(mdata);
 
 	return 0;
 }

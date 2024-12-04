@@ -102,9 +102,6 @@ extern "C" {
 #define DRM_XE_EXEC			0x09
 #define DRM_XE_WAIT_USER_FENCE		0x0a
 #define DRM_XE_OBSERVATION		0x0b
-#define DRM_XE_EUDEBUG_CONNECT		0x0c
-#define DRM_XE_DEBUG_METADATA_CREATE	0x0d
-#define DRM_XE_DEBUG_METADATA_DESTROY	0x0e
 /* Must be kept compact -- no holes */
 
 #define DRM_IOCTL_XE_DEVICE_QUERY		DRM_IOWR(DRM_COMMAND_BASE + DRM_XE_DEVICE_QUERY, struct drm_xe_device_query)
@@ -119,9 +116,6 @@ extern "C" {
 #define DRM_IOCTL_XE_EXEC			DRM_IOW(DRM_COMMAND_BASE + DRM_XE_EXEC, struct drm_xe_exec)
 #define DRM_IOCTL_XE_WAIT_USER_FENCE		DRM_IOWR(DRM_COMMAND_BASE + DRM_XE_WAIT_USER_FENCE, struct drm_xe_wait_user_fence)
 #define DRM_IOCTL_XE_OBSERVATION		DRM_IOW(DRM_COMMAND_BASE + DRM_XE_OBSERVATION, struct drm_xe_observation_param)
-#define DRM_IOCTL_XE_EUDEBUG_CONNECT		DRM_IOWR(DRM_COMMAND_BASE + DRM_XE_EUDEBUG_CONNECT, struct drm_xe_eudebug_connect)
-#define DRM_IOCTL_XE_DEBUG_METADATA_CREATE	 DRM_IOWR(DRM_COMMAND_BASE + DRM_XE_DEBUG_METADATA_CREATE, struct drm_xe_debug_metadata_create)
-#define DRM_IOCTL_XE_DEBUG_METADATA_DESTROY	 DRM_IOW(DRM_COMMAND_BASE + DRM_XE_DEBUG_METADATA_DESTROY, struct drm_xe_debug_metadata_destroy)
 
 /**
  * DOC: Xe IOCTL Extensions
@@ -888,23 +882,6 @@ struct drm_xe_vm_destroy {
 	__u64 reserved[2];
 };
 
-struct drm_xe_vm_bind_op_ext_attach_debug {
-	/** @base: base user extension */
-	struct drm_xe_user_extension base;
-
-	/** @id: Debug object id from create metadata */
-	__u64 metadata_id;
-
-	/** @flags: Flags */
-	__u64 flags;
-
-	/** @cookie: Cookie */
-	__u64 cookie;
-
-	/** @reserved: Reserved */
-	__u64 reserved;
-};
-
 /**
  * struct drm_xe_vm_bind_op - run bind operations
  *
@@ -931,7 +908,6 @@ struct drm_xe_vm_bind_op_ext_attach_debug {
  */
 
 struct drm_xe_vm_bind_op {
-#define XE_VM_BIND_OP_EXTENSIONS_ATTACH_DEBUG 0
 	/** @extensions: Pointer to the first extension struct, if any */
 	__u64 extensions;
 
@@ -1134,8 +1110,6 @@ struct drm_xe_exec_queue_create {
 #define DRM_XE_EXEC_QUEUE_EXTENSION_SET_PROPERTY		0
 #define   DRM_XE_EXEC_QUEUE_SET_PROPERTY_PRIORITY		0
 #define   DRM_XE_EXEC_QUEUE_SET_PROPERTY_TIMESLICE		1
-#define   DRM_XE_EXEC_QUEUE_SET_PROPERTY_EUDEBUG		2
-#define     DRM_XE_EXEC_QUEUE_EUDEBUG_FLAG_ENABLE		(1 << 0)
 	/** @extensions: Pointer to the first extension struct, if any */
 	__u64 extensions;
 
@@ -1754,72 +1728,6 @@ struct drm_xe_oa_stream_info {
 	__u64 reserved[3];
 };
 
-/*
- * Debugger ABI (ioctl and events) Version History:
- * 0 - No debugger available
- * 1 - Initial version
- */
-#define DRM_XE_EUDEBUG_VERSION 1
-
-struct drm_xe_eudebug_connect {
-	/** @extensions: Pointer to the first extension struct, if any */
-	__u64 extensions;
-
-	__u64 pid; /* input: Target process ID */
-	__u32 flags; /* MBZ */
-
-	__u32 version; /* output: current ABI (ioctl / events) version */
-};
-
-/*
- * struct drm_xe_debug_metadata_create - Create debug metadata
- *
- * Add a region of user memory to be marked as debug metadata.
- * When the debugger attaches, the metadata regions will be delivered
- * for debugger. Debugger can then map these regions to help decode
- * the program state.
- *
- * Returns handle to created metadata entry.
- */
-struct drm_xe_debug_metadata_create {
-	/** @extensions: Pointer to the first extension struct, if any */
-	__u64 extensions;
-
-#define DRM_XE_DEBUG_METADATA_ELF_BINARY     0
-#define DRM_XE_DEBUG_METADATA_PROGRAM_MODULE 1
-#define WORK_IN_PROGRESS_DRM_XE_DEBUG_METADATA_MODULE_AREA 2
-#define WORK_IN_PROGRESS_DRM_XE_DEBUG_METADATA_SBA_AREA 3
-#define WORK_IN_PROGRESS_DRM_XE_DEBUG_METADATA_SIP_AREA 4
-#define WORK_IN_PROGRESS_DRM_XE_DEBUG_METADATA_NUM (1 + \
-	  WORK_IN_PROGRESS_DRM_XE_DEBUG_METADATA_SIP_AREA)
-
-	/** @type: Type of metadata */
-	__u64 type;
-
-	/** @user_addr: pointer to start of the metadata */
-	__u64 user_addr;
-
-	/** @len: length, in bytes of the medata */
-	__u64 len;
-
-	/** @metadata_id: created metadata handle (out) */
-	__u32 metadata_id;
-};
-
-/**
- * struct drm_xe_debug_metadata_destroy - Destroy debug metadata
- *
- * Destroy debug metadata.
- */
-struct drm_xe_debug_metadata_destroy {
-	/** @extensions: Pointer to the first extension struct, if any */
-	__u64 extensions;
-
-	/** @metadata_id: metadata handle to destroy */
-	__u32 metadata_id;
-};
-
-#include "xe_drm_eudebug.h"
 #include "xe_drm_prelim.h"
 
 #if defined(__cplusplus)
