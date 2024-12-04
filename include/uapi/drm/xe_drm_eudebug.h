@@ -38,6 +38,7 @@ struct drm_xe_eudebug_event {
 #define DRM_XE_EUDEBUG_EVENT_VM_BIND_UFENCE	9
 #define DRM_XE_EUDEBUG_EVENT_METADATA		10
 #define DRM_XE_EUDEBUG_EVENT_VM_BIND_OP_METADATA 11
+#define DRM_XE_EUDEBUG_EVENT_PAGEFAULT		12
 
 	__u16 flags;
 #define DRM_XE_EUDEBUG_EVENT_CREATE		(1 << 0)
@@ -234,6 +235,18 @@ struct drm_xe_eudebug_event_vm_bind_op_metadata {
 
 	__u64 metadata_handle;
 	__u64 metadata_cookie;
+};
+
+struct drm_xe_eudebug_event_pagefault {
+	struct drm_xe_eudebug_event base;
+
+	__u64 client_handle;
+	__u64 exec_queue_handle;
+	__u64 lrc_handle;
+	__u32 flags;
+	__u32 bitmask_size;
+	__u64 pagefault_address;
+	__u8 bitmask[];
 };
 
 #if defined(__cplusplus)

@@ -16,6 +16,8 @@
 
 #include <uapi/drm/xe_drm.h>
 
+#include "xe_gt_debug.h"
+
 struct xe_device;
 struct task_struct;
 struct xe_eudebug;
@@ -161,6 +163,16 @@ struct xe_eudebug {
 
 	/** @ops operations for eu_control */
 	struct xe_eudebug_eu_control_ops *ops;
+
+	/** @pf_lock: guards access to pagefaults list*/
+	struct mutex pf_lock;
+	/** @pagefaults: xe_eudebug_pagefault list for pagefault event queuing */
+	struct list_head pagefaults;
+	/**
+	 * @pf_fence: fence on operations of eus (eu thread control and attention)
+	 * when page faults are being handled, protected by @eu_lock.
+	 */
+	struct dma_fence __rcu *pf_fence;
 };
 
 /**
@@ -349,6 +361,88 @@ struct xe_eudebug_event_vm_bind_op_metadata {
 
 	u64 metadata_handle;
 	u64 metadata_cookie;
+};
+
+/**
+ * struct xe_eudebug_event_pagefault - Internal event for EU Pagefault
+ */
+struct xe_eudebug_event_pagefault {
+	/** @base: base event */
+	struct xe_eudebug_event base;
+
+	/** @client_handle: client for the Pagefault */
+	u64 client_handle;
+
+	/** @exec_queue_handle: handle of exec_queue which raised Pagefault */
+	u64 exec_queue_handle;
+
+	/** @lrc_handle: lrc handle of the workload which raised Pagefault */
+	u64 lrc_handle;
+
+	/** @flags: eu Pagefault event flags, currently MBZ */
+	u32 flags;
+
+	/**
+	 * @bitmask_size: sum of size before/after/resolved att bits.
+	 * It has three times the size of xe_eudebug_event_eu_attention.bitmask_size.
+	 */
+	u32 bitmask_size;
+
+	/** @pagefault_address: The ppgtt address where the Pagefault occurred */
+	u64 pagefault_address;
+
+	/**
+	 * @bitmask: Bitmask of thread attentions starting from natural,
+	 * hardware order of DSS=0, eu=0, 8 attention bits per eu.
+	 * The order of the bitmask array is before, after, resolved.
+	 */
+	u8 bitmask[];
+};
+
+/**
+ * struct xe_eudebug_pagefault - eudebug structure for queuing pagefault
+ */
+struct xe_eudebug_pagefault {
+	/** @list: link into the xe_eudebug.pagefaults */
+	struct list_head list;
+	/** @q: exec_queue which raised pagefault */
+	struct xe_exec_queue *q;
+	/** @lrc_idx: lrc index of the workload which raised pagefault */
+	int lrc_idx;
+
+	/* pagefault raw partial data passed from guc*/
+	struct {
+		/** @addr: ppgtt address where the pagefault occurred */
+		u64 addr;
+		int type;
+		int level;
+		int access;
+	} fault;
+
+	struct {
+		/** @before: state of attention bits before page fault WA processing*/
+		struct xe_eu_attentions before;
+		/**
+		 * @after: status of attention bits during page fault WA processing.
+		 * It includes eu threads where attention bits are turned on for
+		 * reasons other than page fault WA (breakpoint, interrupt, etc.).
+		 */
+		struct xe_eu_attentions after;
+		/**
+		 * @resolved: state of the attention bits after page fault WA.
+		 * It includes the eu thread that caused the page fault.
+		 * To determine the eu thread that caused the page fault,
+		 * do XOR attentions.after and attentions.resolved.
+		 */
+		struct xe_eu_attentions resolved;
+	} attentions;
+
+	/**
+	 * @deferred_resolved: to update attentions.resolved again when attention
+	 * bits are ready if the eu thread fails to turn on attention bits within
+	 * a certain time after page fault WA processing.
+	 */
+	bool deferred_resolved;
 };
 
 #endif
