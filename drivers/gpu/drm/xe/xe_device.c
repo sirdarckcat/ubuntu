@@ -27,11 +27,11 @@
 #include "xe_debugfs.h"
 #include "xe_devcoredump.h"
 #include "xe_device_sysfs.h"
-#include "xe_debug_metadata.h"
+#include "prelim/xe_debug_metadata.h"
+#include "prelim/xe_eudebug.h"
 #include "xe_dma_buf.h"
 #include "xe_drm_client.h"
 #include "xe_drv.h"
-#include "xe_eudebug.h"
 #include "xe_exec.h"
 #include "xe_exec_queue.h"
 #include "xe_force_wake.h"
@@ -112,7 +112,7 @@ static int xe_file_open(struct drm_device *dev, struct drm_file *file)
 		put_task_struct(task);
 	}
 
-	xe_eudebug_file_open(xef);
+	prelim_xe_eudebug_file_open(xef);
 
 	return 0;
 }
@@ -167,7 +167,7 @@ static void xe_file_close(struct drm_device *dev, struct drm_file *file)
 
 	xe_pm_runtime_get(xe);
 
-	xe_eudebug_file_close(xef);
+	prelim_xe_eudebug_file_close(xef);
 
 	/*
 	 * No need for exec_queue.lock here as there is no contention for it
@@ -215,10 +215,10 @@ static const struct drm_ioctl_desc xe_ioctls[] = {
 	DRM_IOCTL_DEF_DRV(XE_WAIT_USER_FENCE, xe_wait_user_fence_ioctl,
 			  DRM_RENDER_ALLOW),
 	DRM_IOCTL_DEF_DRV(XE_OBSERVATION, xe_observation_ioctl, DRM_RENDER_ALLOW),
-	DRM_IOCTL_DEF_DRV(XE_EUDEBUG_CONNECT, xe_eudebug_connect_ioctl, DRM_RENDER_ALLOW),
-	DRM_IOCTL_DEF_DRV(XE_DEBUG_METADATA_CREATE, xe_debug_metadata_create_ioctl,
+	PRELIM_DRM_IOCTL_DEF_DRV(XE_EUDEBUG_CONNECT, prelim_xe_eudebug_connect_ioctl, DRM_RENDER_ALLOW),
+	PRELIM_DRM_IOCTL_DEF_DRV(XE_DEBUG_METADATA_CREATE, prelim_xe_debug_metadata_create_ioctl,
 			  DRM_RENDER_ALLOW),
-	DRM_IOCTL_DEF_DRV(XE_DEBUG_METADATA_DESTROY, xe_debug_metadata_destroy_ioctl,
+	PRELIM_DRM_IOCTL_DEF_DRV(XE_DEBUG_METADATA_DESTROY, prelim_xe_debug_metadata_destroy_ioctl,
 			  DRM_RENDER_ALLOW),
 };
 
@@ -420,7 +420,7 @@ static void xe_device_destroy(struct drm_device *dev, void *dummy)
 {
 	struct xe_device *xe = to_xe_device(dev);
 
-	xe_eudebug_fini(xe);
+	prelim_xe_eudebug_fini(xe);
 
 	xe_bo_dev_fini(&xe->bo_device);
 
@@ -756,7 +756,7 @@ int xe_device_probe_early(struct xe_device *xe)
 
 	sriov_update_device_info(xe);
 
-	xe_eudebug_init(xe);
+	prelim_xe_eudebug_init(xe);
 
 	err = xe_pcode_probe_early(xe);
 	if (err || xe_survivability_mode_is_requested(xe)) {

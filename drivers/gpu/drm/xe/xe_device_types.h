@@ -13,7 +13,7 @@
 #include <drm/ttm/ttm_device.h>
 
 #include "xe_devcoredump_types.h"
-#include "xe_eudebug_types.h"
+#include "prelim/xe_eudebug_types.h"
 #include "xe_heci_gsc.h"
 #include "xe_lmtt_types.h"
 #include "xe_memirq_types.h"
@@ -380,7 +380,7 @@ struct xe_device {
 		struct workqueue_struct *wq;
 	} sriov;
 
-#if IS_ENABLED(CONFIG_DRM_XE_EUDEBUG)
+#if IS_ENABLED(CONFIG_PRELIM_DRM_XE_EUDEBUG)
 	/** @clients: eudebug clients info */
 	struct {
 		/** @clients.lock: Protects client list */
@@ -587,7 +587,7 @@ struct xe_device {
 	atomic64_t global_total_pages;
 #endif
 
-#if IS_ENABLED(CONFIG_DRM_XE_EUDEBUG)
+#if IS_ENABLED(CONFIG_PRELIM_DRM_XE_EUDEBUG)
 	/** @debugger connection list and globals for device */
 	struct {
 		/** @lock: protects the list of connections */
@@ -711,7 +711,7 @@ struct xe_file {
 	/** @refcount: ref count of this xe file */
 	struct kref refcount;
 
-#if IS_ENABLED(CONFIG_DRM_XE_EUDEBUG)
+#if IS_ENABLED(CONFIG_PRELIM_DRM_XE_EUDEBUG)
 	struct {
 		/** @client_link: list entry in xe_device.clients.list */
 		struct list_head client_link;
