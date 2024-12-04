@@ -78,7 +78,7 @@ struct xe_userptr {
 };
 
 
-#if IS_ENABLED(CONFIG_DRM_XE_EUDEBUG)
+#if IS_ENABLED(CONFIG_PRELIM_DRM_XE_EUDEBUG)
 struct xe_eudebug_vma_metadata {
 	struct list_head list;
 };
@@ -349,7 +349,7 @@ struct xe_vm {
 	/** @xef: XE file handle for tracking this VM's drm client */
 	struct xe_file *xef;
 
-#if IS_ENABLED(CONFIG_DRM_XE_EUDEBUG)
+#if IS_ENABLED(CONFIG_PRELIM_DRM_XE_EUDEBUG)
 	struct {
 		/** @lock: Lock for eudebug_bind members */
 		spinlock_t lock;
