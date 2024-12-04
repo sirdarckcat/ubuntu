@@ -44,6 +44,9 @@ CONFIG_BLK_DEV_THROTTLING                       note<'CGROUP disk consumption co
 CONFIG_BPF_UNPRIV_DEFAULT_OFF                   policy<{'riscv64': 'y'}>
 CONFIG_BPF_UNPRIV_DEFAULT_OFF                   note<'security reason'>
 
+CONFIG_BT_HS                                    policy<{'riscv64': 'n'}>
+CONFIG_BT_HS                                    note<'https://www.intel.com/content/www/us/en/security-center/advisory/intel-sa-00435.html'>
+
 CONFIG_CHR_DEV_SG                               policy<{'riscv64': 'y'}>
 CONFIG_CHR_DEV_SG                               note<'not autoloadable'>
 
@@ -1258,7 +1261,6 @@ CONFIG_BT_HCIUART_RTL                           policy<{'riscv64': 'y'}>
 CONFIG_BT_HCIUART_SERDEV                        policy<{'riscv64': 'y'}>
 CONFIG_BT_HCIVHCI                               policy<{'riscv64': 'm'}>
 CONFIG_BT_HIDP                                  policy<{'riscv64': 'm'}>
-CONFIG_BT_HS                                    policy<{'riscv64': 'y'}>
 CONFIG_BT_INTEL                                 policy<{'riscv64': 'm'}>
 CONFIG_BT_LE                                    policy<{'riscv64': 'y'}>
 CONFIG_BT_LEDS                                  policy<{'riscv64': 'y'}>
