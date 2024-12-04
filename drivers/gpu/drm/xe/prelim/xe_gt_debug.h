@@ -11,7 +11,7 @@
 
 struct xe_gt;
 
-#define XE_GT_ATTENTION_TIMEOUT_MS 100
+#define PRELIM_XE_GT_ATTENTION_TIMEOUT_MS 100
 #define XE_GT_EU_ATT_ROWS 2u
 
 struct xe_eu_attentions {
@@ -25,8 +25,8 @@ struct xe_eu_attentions {
 
 unsigned int xe_gt_eu_att_regs(struct xe_gt *gt);
 
-int xe_gt_eu_threads_needing_attention(struct xe_gt *gt);
-int xe_gt_foreach_dss_group_instance(struct xe_gt *gt,
+int prelim_xe_gt_eu_threads_needing_attention(struct xe_gt *gt);
+int prelim_xe_gt_foreach_dss_group_instance(struct xe_gt *gt,
 				     int (*fn)(struct xe_gt *gt,
 					       void *data,
 					       u16 group,
@@ -34,11 +34,11 @@ int xe_gt_foreach_dss_group_instance(struct xe_gt *gt,
 					       bool present),
 				     void *data);
 
-int xe_gt_eu_attention_bitmap_size(struct xe_gt *gt);
-int xe_gt_eu_attention_bitmap(struct xe_gt *gt, u8 *bits,
+int prelim_xe_gt_eu_attention_bitmap_size(struct xe_gt *gt);
+int prelim_xe_gt_eu_attention_bitmap(struct xe_gt *gt, u8 *bits,
 			      unsigned int bitmap_size);
 
-void xe_gt_eu_attentions_read(struct xe_gt *gt,
+void prelim_xe_gt_eu_attentions_read(struct xe_gt *gt,
 			      struct xe_eu_attentions *a,
 			      const unsigned int settle_time_ms);
 
