@@ -209,7 +209,7 @@ int xe_is_injection_active(void);
 #define LNL_FLUSH_WORK(wrk__) \
 	flush_work(wrk__)
 
-#if IS_ENABLED(CONFIG_DRM_XE_EUDEBUG)
+#if IS_ENABLED(CONFIG_PRELIM_DRM_XE_EUDEBUG)
 static inline int xe_eudebug_needs_lock(const unsigned int cmd)
 {
 	const unsigned int xe_cmd = DRM_IOCTL_NR(cmd) - DRM_COMMAND_BASE;
@@ -220,9 +220,9 @@ static inline int xe_eudebug_needs_lock(const unsigned int cmd)
 	case DRM_XE_VM_BIND:
 	case DRM_XE_EXEC_QUEUE_CREATE:
 	case DRM_XE_EXEC_QUEUE_DESTROY:
-	case DRM_XE_EUDEBUG_CONNECT:
-	case DRM_XE_DEBUG_METADATA_CREATE:
-	case DRM_XE_DEBUG_METADATA_DESTROY:
+	case PRELIM_DRM_XE_EUDEBUG_CONNECT:
+	case PRELIM_DRM_XE_DEBUG_METADATA_CREATE:
+	case PRELIM_DRM_XE_DEBUG_METADATA_DESTROY:
 		return 1;
 	}
 
@@ -242,6 +242,6 @@ static inline void xe_eudebug_discovery_unlock(struct xe_device *xe, unsigned in
 #else
 static inline void xe_eudebug_discovery_lock(struct xe_device *xe, unsigned int cmd) { }
 static inline void xe_eudebug_discovery_unlock(struct xe_device *xe, unsigned int cmd) { }
-#endif /* CONFIG_DRM_XE_EUDEBUG */
+#endif /* CONFIG_PRELIM_DRM_XE_EUDEBUG */
 
 #endif
