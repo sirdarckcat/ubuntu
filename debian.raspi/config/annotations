@@ -25,6 +25,9 @@ CONFIG_BLK_DEV_NVME                             policy<{'arm64': 'y', 'armhf': '
 CONFIG_BPF_LIRC_MODE2                           policy<{'arm64': 'n', 'armhf': 'n'}> note<'required for raspi (not in master annotations)'>
 CONFIG_BRCM_CHAR_DRIVERS                        policy<{'arm64': 'y', 'armhf': 'y'}> note<'required for raspi (not in master annotations)'>
 CONFIG_BRCM_TRACING                             policy<{'arm64': 'n', 'armhf': 'n'}> note<'LP: #1893905'>
+CONFIG_BT_HS                                    policy<{'arm64': 'n', 'armhf': 'n'}>
+CONFIG_BT_HS                                    note<'https://www.intel.com/content/www/us/en/security-center/advisory/intel-sa-00435.html'>
+
 CONFIG_CGROUP_HUGETLB                           policy<{'arm64': 'y', 'armhf': 'y'}> note<'LP: #1933627'>
 CONFIG_CMA_SIZE_MBYTES                          policy<{'arm64': '5', 'armhf': '5'}> note<'override master annotations'>
 CONFIG_CMDLINE_EXTEND                           policy<{'arm64': '-', 'armhf': 'n'}> note<'required for raspi (not in master annotations)'>
@@ -1194,7 +1197,6 @@ CONFIG_BT_HCIUART_RTL                           policy<{'arm64': 'y', 'armhf': '
 CONFIG_BT_HCIUART_SERDEV                        policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_BT_HCIVHCI                               policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_BT_HIDP                                  policy<{'arm64': 'm', 'armhf': 'm'}>
-CONFIG_BT_HS                                    policy<{'arm64': 'n', 'armhf': 'n'}>
 CONFIG_BT_INTEL                                 policy<{'arm64': 'm', 'armhf': 'm'}>
 CONFIG_BT_LE                                    policy<{'arm64': 'y', 'armhf': 'y'}>
 CONFIG_BT_LEDS                                  policy<{'arm64': 'y', 'armhf': 'y'}>
