@@ -25,4 +25,3 @@ do_odm_drivers  = false
 
 do_dtbs		= true
 do_zfs      = false
-do_uefi_signed = false
