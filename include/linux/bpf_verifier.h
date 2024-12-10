@@ -636,6 +636,7 @@ struct bpf_subprog_info {
 	bool is_async_cb: 1;
 	bool is_exception_cb: 1;
 	bool args_cached: 1;
+	bool changes_pkt_data: 1;
 
 	enum priv_stack_mode priv_stack_mode;
 	u8 arg_cnt;
