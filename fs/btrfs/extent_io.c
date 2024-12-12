@@ -1251,14 +1251,19 @@ static inline void contiguous_readpages(struct page *pages[], int nr_pages,
 }
 
 /*
- * helper for extent_writepage(), doing all of the delayed allocation setup.
+ * Do all of the delayed allocation setup.
  *
- * This returns 1 if btrfs_run_delalloc_range function did all the work required
- * to write the page (copy into inline extent).  In this case the IO has
- * been started and the page is already unlocked.
+ * Return >0 if all the dirty blocks are submitted async (compression) or inlined.
+ * The @page should no longer be touched (treat it as already unlocked).
  *
- * This returns 0 if all went well (page still locked)
- * This returns < 0 if there were errors (page still locked)
+ * Return 0 if there is still dirty block that needs to be submitted through
+ * extent_writepage_io().
+ * bio_ctrl->submit_bitmap will indicate which blocks of the page should be
+ * submitted, and @page is still kept locked.
+ *
+ * Return <0 if there is any error hit.
+ * Any allocated ordered extent range covering this page will be marked
+ * finished (IOERR), and @page is still kept locked.
  */
 static noinline_for_stack int writepage_delalloc(struct btrfs_inode *inode,
 		struct page *page, struct btrfs_bio_ctrl *bio_ctrl)
@@ -1267,10 +1272,21 @@ static noinline_for_stack int writepage_delalloc(struct btrfs_inode *inode,
 	struct writeback_control *wbc = bio_ctrl->wbc;
 	const u64 page_start = page_offset(page);
 	const u64 page_end = page_start + PAGE_SIZE - 1;
+	/*
+	 * The range end (exclusive) of the last successfully finished delalloc
+	 * range.
+	 * Any range covered by ordered extent must either be manually marked
+	 * finished (error handling), or has IO submitted (and finish the
+	 * ordered extent normally).
+	 *
+	 * This records the end of ordered extent cleanup if we hit an error.
+	 */
+	u64 last_finished_delalloc_end = page_start;
 	u64 delalloc_start = page_start;
 	u64 delalloc_end = page_end;
 	u64 delalloc_to_write = 0;
 	int ret = 0;
+	int bit;
 
 	/* Save the dirty bitmap as our submission bitmap will be a subset of it. */
 	if (btrfs_is_subpage(fs_info, inode->vfs_inode.i_mapping)) {
@@ -1295,10 +1311,18 @@ static noinline_for_stack int writepage_delalloc(struct btrfs_inode *inode,
 			continue;
 		}
 
+		/*
+		 * Some delalloc range may be created by previous pages.
+		 * Thus we still need to clean up this range during error
+		 * handling.
+		 */
+		last_finished_delalloc_end = delalloc_start;
+		/* No errors hit so far, run the current delalloc range. */
 		ret = btrfs_run_delalloc_range(inode, page, delalloc_start,
 					       delalloc_end, wbc);
 		if (ret < 0)
-			return ret;
+			break;
+		last_finished_delalloc_end = delalloc_end + 1;
 
 		/*
 		 * We have some ranges that's going to be submitted asynchronously
@@ -1317,6 +1341,22 @@ static noinline_for_stack int writepage_delalloc(struct btrfs_inode *inode,
 		}
 
 		delalloc_start = delalloc_end + 1;
+	}
+	/*
+	 * It's possible we had some ordered extents created before we hit
+	 * an error, cleanup non-async successfully created delalloc ranges.
+	 */
+	if (unlikely(ret < 0)) {
+		unsigned int bitmap_size = min(
+				(last_finished_delalloc_end - page_start) >>
+				fs_info->sectorsize_bits,
+				fs_info->sectors_per_page);
+
+		for_each_set_bit(bit, &bio_ctrl->submit_bitmap, bitmap_size)
+			btrfs_mark_ordered_io_finished(inode, page,
+				page_start + (bit << fs_info->sectorsize_bits),
+				fs_info->sectorsize, false);
+		return ret;
 	}
 
 	/*
@@ -1576,17 +1616,18 @@ static int extent_writepage(struct page *page, struct btrfs_bio_ctrl *bio_ctrl)
 
 	bio_ctrl->wbc->nr_to_write--;
 
+	if (ret)
+		btrfs_mark_ordered_io_finished(inode, page,
+					       page_start, PAGE_SIZE, !ret);
+
 done:
 	if (nr == 0) {
 		/* make sure the mapping tag for page dirty gets cleared */
 		set_page_writeback(page);
 		end_page_writeback(page);
 	}
-	if (ret) {
-		btrfs_mark_ordered_io_finished(inode, page,
-					       page_start, PAGE_SIZE, !ret);
+	if (ret < 0)
 		mapping_set_error(page->mapping, ret);
-	}
 	unlock_page(page);
 	ASSERT(ret <= 0);
 	return ret;
