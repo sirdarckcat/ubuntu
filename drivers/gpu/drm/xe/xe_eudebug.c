@@ -3023,6 +3023,27 @@ static int xe_eudebug_vma_access(struct xe_vma *vma,
 		xe_bo_put(bo);
 
 		return ret;
+	} else if (xe_vma_is_userptr(vma)) {
+		struct xe_userptr *userptr = &to_userptr_vma(vma)->userptr;
+		struct xe_vm *vm = xe_vma_vm(vma);
+		struct mm_struct *mm = NULL;
+		int ret;
+
+		down_read(&vm->userptr.notifier_lock);
+		if (mmget_not_zero(userptr->notifier.mm))
+			mm = userptr->notifier.mm;
+		up_read(&vm->userptr.notifier_lock);
+
+		if (!mm)
+			return -EFAULT;
+
+		ret = access_remote_vm(mm,
+				       xe_vma_userptr(vma) + offset_in_vma,
+				       buf, bytes,
+				       write ? FOLL_WRITE : 0);
+		mmput(mm);
+
+		return ret;
 	}
 
 	return -EINVAL;
