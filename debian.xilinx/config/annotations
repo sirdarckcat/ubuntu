@@ -89,6 +89,9 @@ CONFIG_RPCSEC_GSS_KRB5                          note<'LP: 2069790'>
 CONFIG_SATA_AHCI_PLATFORM                       policy<{'arm64': 'y'}>
 CONFIG_SATA_AHCI_PLATFORM                       note<'boot essential on highbank'>
 
+CONFIG_SCSI_UFS_AMD_VERSAL2                     policy<{'arm64': 'm'}>
+CONFIG_SCSI_UFS_AMD_VERSAL2                     note<'LP: #2092435, xilinx is y but master kernel has m for dependency'>
+
 CONFIG_SERIAL_SH_SCI                            policy<{'arm64': '-'}>
 CONFIG_SERIAL_SH_SCI                            note<'LP: #2022361'>
 
