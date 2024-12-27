@@ -143,6 +143,12 @@ CONFIG_SUNRPC_GSS                               note<'LP: 2069790'>
 CONFIG_UBSAN                                    policy<{'arm64': 'n'}>
 CONFIG_UBSAN                                    note<'LP#1942215'>
 
+CONFIG_USB_ONBOARD_DEV                          policy<{'arm64': 'y'}>
+CONFIG_USB_ONBOARD_DEV                          note<'LP: #2092435'>
+
+CONFIG_USB_ONBOARD_HUB                          policy<{'arm64': '-'}>
+CONFIG_USB_ONBOARD_HUB                          note<'LP: #2092435, xilinx downstream rename to DEV'>
+
 CONFIG_USB_OTG                                  policy<{'arm64': 'y'}>
 CONFIG_USB_OTG                                  note<'triggers breakage on x86 LP:1047527, LP:1411295'>
 
