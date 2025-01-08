@@ -88,7 +88,7 @@ static inline void pud_free(struct mm_struct *mm, pud_t *pud)
 #define __pud_free_tlb(tlb, pud, addr)					\
 do {									\
 	if (pgtable_l4_enabled) {					\
-		pagetable_pud_dtor(virt_to_ptdesc(pud));		\
+		pagetable_dtor(virt_to_ptdesc(pud));			\
 		tlb_remove_page_ptdesc((tlb), virt_to_ptdesc(pud));	\
 	}								\
 } while (0)
@@ -147,7 +147,7 @@ static inline pgd_t *pgd_alloc(struct mm_struct *mm)
 
 #define __pmd_free_tlb(tlb, pmd, addr)				\
 do {								\
-	pagetable_pmd_dtor(virt_to_ptdesc(pmd));		\
+	pagetable_dtor(virt_to_ptdesc(pmd));			\
 	tlb_remove_page_ptdesc((tlb), virt_to_ptdesc(pmd));	\
 } while (0)
 
@@ -155,7 +155,7 @@ do {								\
 
 #define __pte_free_tlb(tlb, pte, buf)			\
 do {							\
-	pagetable_pte_dtor(page_ptdesc(pte));		\
+	pagetable_dtor(page_ptdesc(pte));		\
 	tlb_remove_page_ptdesc((tlb), page_ptdesc(pte));\
 } while (0)
 #endif /* CONFIG_MMU */
