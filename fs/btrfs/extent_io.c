@@ -1537,15 +1537,15 @@ out_error:
 static int extent_writepage(struct page *page, struct btrfs_bio_ctrl *bio_ctrl)
 {
 	struct folio *folio = page_folio(page);
-	struct inode *inode = page->mapping->host;
+	struct btrfs_inode *inode = BTRFS_I(page->mapping->host);
 	const u64 page_start = page_offset(page);
 	int ret;
 	int nr = 0;
 	size_t pg_offset;
-	loff_t i_size = i_size_read(inode);
+	loff_t i_size = i_size_read(&inode->vfs_inode);
 	unsigned long end_index = i_size >> PAGE_SHIFT;
 
-	trace_extent_writepage(page, inode, bio_ctrl->wbc);
+	trace_extent_writepage(page, &inode->vfs_inode, bio_ctrl->wbc);
 
 	WARN_ON(!PageLocked(page));
 
@@ -1564,13 +1564,13 @@ static int extent_writepage(struct page *page, struct btrfs_bio_ctrl *bio_ctrl)
 	if (ret < 0)
 		goto done;
 
-	ret = writepage_delalloc(BTRFS_I(inode), page, bio_ctrl);
+	ret = writepage_delalloc(inode, page, bio_ctrl);
 	if (ret == 1)
 		return 0;
 	if (ret)
 		goto done;
 
-	ret = extent_writepage_io(BTRFS_I(inode), page, bio_ctrl, i_size, &nr);
+	ret = extent_writepage_io(inode, page, bio_ctrl, i_size, &nr);
 	if (ret == 1)
 		return 0;
 
@@ -1583,8 +1583,8 @@ done:
 		end_page_writeback(page);
 	}
 	if (ret) {
-		btrfs_mark_ordered_io_finished(BTRFS_I(inode), page, page_start,
-					       PAGE_SIZE, !ret);
+		btrfs_mark_ordered_io_finished(inode, page,
+					       page_start, PAGE_SIZE, !ret);
 		mapping_set_error(page->mapping, ret);
 	}
 	unlock_page(page);
