@@ -83,11 +83,17 @@ CONFIG_CORESIGHT_TPDM                           note<'{Required for Grace enable
 CONFIG_CORESIGHT_TRBE                           policy<{'arm64': 'm'}>
 CONFIG_CORESIGHT_TRBE                           note<'{Required for Grace enablement}'>
 
+CONFIG_DMA_MAP_BENCHMARK                        policy<{'amd64': 'y', 'arm64': 'y'}>
+CONFIG_DMA_MAP_BENCHMARK                        note<'TODO: update note'>
+
 CONFIG_EFI_CAPSULE_LOADER                       policy<{'amd64': 'm', 'arm64': 'y'}>
 CONFIG_EFI_CAPSULE_LOADER                       note<'LP: #2067111'>
 
 CONFIG_ETM4X_IMPDEF_FEATURE                     policy<{'arm64': 'n'}>
 CONFIG_ETM4X_IMPDEF_FEATURE                     note<'{Required for Grace enablement}'>
+
+CONFIG_HYPERV_BALLOON                           policy<{'amd64': 'm', 'arm64': 'm'}>
+CONFIG_HYPERV_BALLOON                           note<'TODO: update note'>
 
 CONFIG_PID_IN_CONTEXTIDR                        policy<{'arm64': 'y'}>
 CONFIG_PID_IN_CONTEXTIDR                        note<'{Required for Grace enablement}'>
