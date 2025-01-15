@@ -1,9 +1,15 @@
 # Menu: HEADER
 # FORMAT: 4
-# ARCH: amd64 arm64
-# FLAVOUR: amd64-azure-nvidia arm64-azure-nvidia
+# ARCH: arm64
+# FLAVOUR: arm64-azure-nvidia
 
 include "../../debian.azure/config/annotations"
+
+CONFIG_ARCH_MMAP_RND_BITS                       policy<{'arm64': '29'}>
+CONFIG_ARCH_MMAP_RND_BITS                       note<'{Required for Azure Grace enablement}'>
+
+CONFIG_ARM64_64K_PAGES                          policy<{'arm64': 'y'}>
+CONFIG_ARM64_64K_PAGES                          note<'{Required for Azure Grace enablement}'>
 
 CONFIG_ARM64_CONTPTE                            policy<{'arm64': 'y'}>
 CONFIG_ARM64_CONTPTE                            note<'LP: #2059316'>
@@ -83,17 +89,17 @@ CONFIG_CORESIGHT_TPDM                           note<'{Required for Grace enable
 CONFIG_CORESIGHT_TRBE                           policy<{'arm64': 'm'}>
 CONFIG_CORESIGHT_TRBE                           note<'{Required for Grace enablement}'>
 
-CONFIG_DMA_MAP_BENCHMARK                        policy<{'amd64': 'y', 'arm64': 'y'}>
-CONFIG_DMA_MAP_BENCHMARK                        note<'TODO: update note'>
+CONFIG_DMA_MAP_BENCHMARK                        policy<{'arm64': 'y'}>
+CONFIG_DMA_MAP_BENCHMARK                        note<'{Required for Azure Grace enablement}'>
 
-CONFIG_EFI_CAPSULE_LOADER                       policy<{'amd64': 'm', 'arm64': 'y'}>
+CONFIG_EFI_CAPSULE_LOADER                       policy<{'arm64': 'y'}>
 CONFIG_EFI_CAPSULE_LOADER                       note<'LP: #2067111'>
 
 CONFIG_ETM4X_IMPDEF_FEATURE                     policy<{'arm64': 'n'}>
 CONFIG_ETM4X_IMPDEF_FEATURE                     note<'{Required for Grace enablement}'>
 
-CONFIG_HYPERV_BALLOON                           policy<{'amd64': 'm', 'arm64': 'm'}>
-CONFIG_HYPERV_BALLOON                           note<'TODO: update note'>
+CONFIG_HYPERV_BALLOON                           policy<{'arm64': 'm'}>
+CONFIG_HYPERV_BALLOON                           note<'{Required for Azure Grace enablement}'>
 
 CONFIG_PID_IN_CONTEXTIDR                        policy<{'arm64': 'y'}>
 CONFIG_PID_IN_CONTEXTIDR                        note<'{Required for Grace enablement}'>
@@ -104,3 +110,28 @@ CONFIG_SAMPLE_CORESIGHT_SYSCFG                  note<'{Required for Grace enable
 CONFIG_ULTRASOC_SMB                             policy<{'arm64': 'n'}>
 CONFIG_ULTRASOC_SMB                             note<'{Required for Grace enablement}'>
 
+
+# ---- Annotations without notes ----
+
+CONFIG_ARCH_MMAP_RND_BITS_MAX                   policy<{'arm64': '29'}>
+CONFIG_ARCH_MMAP_RND_BITS_MIN                   policy<{'arm64': '14'}>
+CONFIG_ARCH_MMAP_RND_COMPAT_BITS_MIN            policy<{'arm64': '7'}>
+CONFIG_ARCH_WANTS_THP_SWAP                      policy<{'arm64': '-'}>
+CONFIG_ARCH_WANT_HUGE_PMD_SHARE                 policy<{'arm64': '-'}>
+CONFIG_ARM64_4K_PAGES                           policy<{'arm64': 'n'}>
+CONFIG_ARM64_CONT_PMD_SHIFT                     policy<{'arm64': '5'}>
+CONFIG_ARM64_CONT_PTE_SHIFT                     policy<{'arm64': '5'}>
+CONFIG_ARM64_PAGE_SHIFT                         policy<{'arm64': '16'}>
+CONFIG_ARM64_PA_BITS_52                         policy<{'arm64': 'n'}>
+CONFIG_ARM64_VA_BITS_39                         policy<{'arm64': '-'}>
+CONFIG_ARM64_VA_BITS_42                         policy<{'arm64': 'n'}>
+CONFIG_ARM64_VA_BITS_52                         policy<{'arm64': 'n'}>
+CONFIG_INFINIBAND_VMWARE_PVRDMA                 policy<{'arm64': '-'}>
+CONFIG_MESON_SECURE_PM_DOMAINS                  policy<{'arm64': '-'}>
+CONFIG_MESON_SM                                 policy<{'arm64': '-'}>
+CONFIG_NTFS_RW                                  policy<{'arm64': '-'}>
+CONFIG_NVMEM_MESON_EFUSE                        policy<{'arm64': '-'}>
+CONFIG_PAGE_SIZE_LESS_THAN_64KB                 policy<{'arm64': '-'}>
+CONFIG_PGTABLE_LEVELS                           policy<{'arm64': '3'}>
+CONFIG_THP_SWAP                                 policy<{'arm64': '-'}>
+CONFIG_VMXNET3                                  policy<{'arm64': '-'}>
