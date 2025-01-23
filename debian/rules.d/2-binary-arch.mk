@@ -69,7 +69,8 @@ endif
 	find $(builddir)/build-$* -name vmlinux -o -name \*.ko -exec dwarfdump -i {} \; | \
 		grep -E 'DW_AT_(call|decl)_file' | sed -n 's|.*\s/|/|p' | sort -u > \
 		$(builddir)/build-$*/sources.list
-	test -s $(builddir)/build-$*/sources.list
+	# LP: #2095578 remove this check for non-debug kernel to build
+	#test -s $(builddir)/build-$*/sources.list
 
 	@touch $@
 
