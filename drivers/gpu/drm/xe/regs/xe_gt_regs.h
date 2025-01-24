@@ -238,6 +238,7 @@
 
 #define GDRST					XE_REG(0x941c)
 #define   GRDOM_GUC				REG_BIT(3)
+#define   GRDOM_RENDER				REG_BIT(1)
 #define   GRDOM_FULL				REG_BIT(0)
 
 #define MISCCPCTL				XE_REG(0x9424)
