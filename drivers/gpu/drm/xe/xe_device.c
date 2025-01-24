@@ -51,6 +51,7 @@
 #include "xe_pat.h"
 #include "xe_pcode.h"
 #include "xe_pm.h"
+#include "xe_pmu.h"
 #include "xe_query.h"
 #include "xe_sriov.h"
 #include "xe_tile.h"
@@ -793,6 +794,8 @@ int xe_device_probe(struct xe_device *xe)
 	err = xe_device_sysfs_init(xe);
 	if (err)
 		goto err_fini_display;
+
+	xe_pmu_register(&xe->pmu);
 
 	xe_debugfs_register(xe);
 
