@@ -436,9 +436,9 @@ retry:
 
 	if (fn && msg->function == fn) {
 		if (repc) {
-			if (msg->length < sizeof(*msg) + repc) {
-				nvkm_error(subdev, "msg len %d < %zd\n",
-					   msg->length, sizeof(*msg) + repc);
+			if (msg->length < repc) {
+				nvkm_error(subdev, "msg len %d < %d\n",
+					   msg->length, repc);
 				r535_gsp_msg_dump(gsp, msg, NV_DBG_ERROR);
 				r535_gsp_msg_done(gsp, msg);
 				return ERR_PTR(-EIO);
@@ -875,6 +875,7 @@ r535_gsp_rpc_push(struct nvkm_gsp *gsp, void *argv, bool wait, u32 repc)
 	mutex_lock(&gsp->cmdq.mutex);
 	if (rpc_size > max_rpc_size) {
 		const u32 fn = rpc->function;
+		u32 remain_rpc_size = rpc_size;
 
 		/* Adjust length, and send initial RPC. */
 		rpc->length = sizeof(*rpc) + max_rpc_size;
@@ -885,11 +886,11 @@ r535_gsp_rpc_push(struct nvkm_gsp *gsp, void *argv, bool wait, u32 repc)
 			goto done;
 
 		argv += max_rpc_size;
-		rpc_size -= max_rpc_size;
+		remain_rpc_size -= max_rpc_size;
 
 		/* Remaining chunks sent as CONTINUATION_RECORD RPCs. */
-		while (rpc_size) {
-			u32 size = min(rpc_size, max_rpc_size);
+		while (remain_rpc_size) {
+			u32 size = min(remain_rpc_size, max_rpc_size);
 			void *next;
 
 			next = r535_gsp_rpc_get(gsp, NV_VGPU_MSG_FUNCTION_CONTINUATION_RECORD, size);
@@ -905,18 +906,21 @@ r535_gsp_rpc_push(struct nvkm_gsp *gsp, void *argv, bool wait, u32 repc)
 				goto done;
 
 			argv += size;
-			rpc_size -= size;
+			remain_rpc_size -= size;
 		}
 
 		/* Wait for reply. */
-		if (wait) {
-			rpc = r535_gsp_msg_recv(gsp, fn, repc);
-			if (!IS_ERR_OR_NULL(rpc))
+		rpc = r535_gsp_msg_recv(gsp, fn,
+					repc ? rpc_size + sizeof(*rpc) : 0);
+		if (!IS_ERR_OR_NULL(rpc)) {
+			if (wait) {
 				repv = rpc->data;
-			else
-				repv = rpc;
+			} else {
+				nvkm_gsp_rpc_done(gsp, rpc);
+				repv = NULL;
+			}
 		} else {
-			repv = NULL;
+			repv = wait ? rpc : NULL;
 		}
 	} else {
 		repv = r535_gsp_rpc_send(gsp, argv, wait, repc);
