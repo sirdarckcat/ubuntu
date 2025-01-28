@@ -307,7 +307,7 @@ static void padata_reorder(struct padata_priv *padata)
 		struct padata_serial_queue *squeue;
 		int cb_cpu;
 
-		cpu = cpumask_next_wrap_old(cpu, pd->cpumask.pcpu, -1, false);
+		cpu = cpumask_next_wrap(cpu, pd->cpumask.pcpu);
 		processed++;
 
 		cb_cpu = padata->cb_cpu;
