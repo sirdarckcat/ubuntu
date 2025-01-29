@@ -177,6 +177,21 @@ struct xe_eudebug {
 };
 
 /**
+ * enum xe_eudebug_state - eudebug capability state
+ *
+ * @XE_EUDEBUG_NOT_AVAILABLE: eudebug feature not available
+ * @XE_EUDEBUG_NOT_SUPPORTED: eudebug feature support off
+ * @XE_EUDEBUG_SUPPORTED: eudebug feature supported but disabled
+ * @XE_EUDEBUG_ENABLED: eudebug enabled
+ */
+enum xe_eudebug_state {
+	XE_EUDEBUG_NOT_AVAILABLE = 1,
+	XE_EUDEBUG_NOT_SUPPORTED,
+	XE_EUDEBUG_SUPPORTED,
+	XE_EUDEBUG_ENABLED,
+};
+
+/**
  * struct xe_eudebug_event - Internal base event struct for eudebug
  */
 struct xe_eudebug_event {

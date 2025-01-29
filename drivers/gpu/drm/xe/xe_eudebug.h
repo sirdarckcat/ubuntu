@@ -28,6 +28,10 @@ int xe_eudebug_connect_ioctl(struct drm_device *dev,
 			     void *data,
 			     struct drm_file *file);
 
+void xe_eudebug_support_enable(struct xe_device *xe);
+int xe_eudebug_support_disable(struct xe_device *xe);
+bool xe_eudebug_is_enabled(struct xe_device *xe);
+
 void xe_eudebug_init(struct xe_device *xe);
 void xe_eudebug_fini(struct xe_device *xe);
 
@@ -68,6 +72,10 @@ void xe_eudebug_pagefault_destroy(struct xe_gt *gt, struct xe_vm *vm,
 static inline int xe_eudebug_connect_ioctl(struct drm_device *dev,
 					   void *data,
 					   struct drm_file *file) { return 0; }
+
+static inline void xe_eudebug_support_enable(struct xe_device *xe) { }
+static inline int xe_eudebug_support_disable(struct xe_device *xe) { return 0; }
+static inline bool xe_eudebug_is_enabled(struct xe_device *xe) { return false; }
 
 static inline void xe_eudebug_init(struct xe_device *xe) { }
 static inline void xe_eudebug_fini(struct xe_device *xe) { }

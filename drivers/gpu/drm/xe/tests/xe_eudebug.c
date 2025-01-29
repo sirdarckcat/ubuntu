@@ -138,7 +138,13 @@ static void check_regs(struct xe_device *xe, bool enable_eudebug)
 static int toggle_reg_value(struct xe_device *xe)
 {
 	struct kunit *test = kunit_get_current_test();
-	bool enable_eudebug = xe->eudebug.enable;
+	bool enable_eudebug = xe->eudebug.state == XE_EUDEBUG_ENABLED;
+
+	if (IS_SRIOV_VF(xe))
+		kunit_skip(test, "eudebug not available in SR-IOV VF mode\n");
+
+	if (xe->eudebug.state == XE_EUDEBUG_NOT_SUPPORTED)
+		kunit_skip(test, "eudebug not supported\n");
 
 	kunit_printk(KERN_DEBUG, test, "Test eudebug WAs for graphics version: %u\n",
 		     GRAPHICS_VERx100(xe));
