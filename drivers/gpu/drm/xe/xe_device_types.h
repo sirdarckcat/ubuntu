@@ -14,6 +14,7 @@
 #include <drm/ttm/ttm_device.h>
 
 #include "xe_devcoredump_types.h"
+#include "xe_eudebug_types.h"
 #include "xe_heci_gsc.h"
 #include "xe_lmtt_types.h"
 #include "xe_memirq_types.h"
@@ -660,8 +661,8 @@ struct xe_device {
 		/** discovery_lock: used for discovery to block xe ioctls */
 		struct rw_semaphore discovery_lock;
 
-		/** @enable: is the debugging functionality enabled */
-		bool enable;
+		/** @state: debugging functionality state */
+		enum xe_eudebug_state state;
 
 		/** @attention_scan: attention scan worker */
 		struct delayed_work attention_scan;
