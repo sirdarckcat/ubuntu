@@ -494,8 +494,6 @@ struct xe_device *xe_device_create(struct pci_dev *pdev,
 	if (err)
 		goto err;
 
-	xe_eudebug_init(xe);
-
 	xe->preempt_fence_wq = alloc_ordered_workqueue("xe-preempt-fence-wq",
 						       WQ_MEM_RECLAIM);
 	xe->ordered_wq = alloc_ordered_workqueue("xe-ordered-wq", 0);
@@ -749,6 +747,8 @@ int xe_device_probe_early(struct xe_device *xe)
 	xe_sriov_probe_early(xe);
 
 	sriov_update_device_info(xe);
+
+	xe_eudebug_init(xe);
 
 	err = xe_pcode_probe_early(xe);
 	if (err || xe_survivability_mode_is_requested(xe)) {

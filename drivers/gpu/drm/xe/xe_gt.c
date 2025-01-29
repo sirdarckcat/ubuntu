@@ -22,6 +22,7 @@
 #include "xe_bb.h"
 #include "xe_bo.h"
 #include "xe_device.h"
+#include "xe_eudebug.h"
 #include "xe_eu_stall.h"
 #include "xe_exec_queue.h"
 #include "xe_execlist.h"
@@ -755,7 +756,7 @@ static int do_gt_reset(struct xe_gt *gt)
 
 	xe_gsc_wa_14015076503(gt, true);
 
-	if (xe->eudebug.enable)
+	if (xe_eudebug_is_enabled(xe))
 		do_render_reset(gt);
 
 	xe_mmio_write32(&gt->mmio, GDRST, GRDOM_FULL);

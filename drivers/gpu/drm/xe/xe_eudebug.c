@@ -2340,10 +2340,48 @@ int xe_eudebug_connect_ioctl(struct drm_device *dev,
 
 	lockdep_assert_held(&xe->eudebug.discovery_lock);
 
-	if (!xe->eudebug.enable)
+	if (!xe_eudebug_is_enabled(xe))
 		return -ENODEV;
 
 	return xe_eudebug_connect(xe, param);
+}
+
+bool xe_eudebug_is_enabled(struct xe_device *xe)
+{
+	if (XE_WARN_ON(!xe->eudebug.state))
+		return false;
+
+	return xe->eudebug.state == XE_EUDEBUG_ENABLED;
+}
+
+static int __xe_eudebug_toggle_support(struct xe_device *xe, bool enable)
+{
+	down_write(&xe->eudebug.discovery_lock);
+	if (XE_WARN_ON(xe->eudebug.state <= XE_EUDEBUG_NOT_AVAILABLE)) {
+		up_write(&xe->eudebug.discovery_lock);
+		return -EINVAL;
+	}
+
+	if (!enable && xe_eudebug_is_enabled(xe)) {
+		up_write(&xe->eudebug.discovery_lock);
+		return -EPERM;
+	}
+
+	xe->eudebug.state = enable ? XE_EUDEBUG_SUPPORTED : XE_EUDEBUG_NOT_SUPPORTED;
+
+	up_write(&xe->eudebug.discovery_lock);
+
+	return 0;
+}
+
+void xe_eudebug_support_enable(struct xe_device *xe)
+{
+	__xe_eudebug_toggle_support(xe, true);
+}
+
+int xe_eudebug_support_disable(struct xe_device *xe)
+{
+	return __xe_eudebug_toggle_support(xe, false);
 }
 
 static void add_sr_entry(struct xe_hw_engine *hwe,
@@ -2401,12 +2439,17 @@ static int xe_eudebug_enable(struct xe_device *xe, bool enable)
 	 */
 	down_write(&xe->eudebug.discovery_lock);
 
+	if (xe->eudebug.state == XE_EUDEBUG_NOT_SUPPORTED) {
+		up_write(&xe->eudebug.discovery_lock);
+		return -EPERM;
+	}
+
 	if (!enable && !list_empty(&xe->eudebug.list)) {
 		up_write(&xe->eudebug.discovery_lock);
 		return -EBUSY;
 	}
 
-	if (enable == xe->eudebug.enable) {
+	if (enable == xe_eudebug_is_enabled(xe)) {
 		up_write(&xe->eudebug.discovery_lock);
 		return 0;
 	}
@@ -2423,7 +2466,7 @@ static int xe_eudebug_enable(struct xe_device *xe, bool enable)
 		flush_work(&gt->reset.worker);
 	}
 
-	xe->eudebug.enable = enable;
+	xe->eudebug.state = enable ? XE_EUDEBUG_ENABLED : XE_EUDEBUG_SUPPORTED;
 	up_write(&xe->eudebug.discovery_lock);
 
 	if (enable)
@@ -2438,7 +2481,7 @@ static ssize_t enable_eudebug_show(struct device *dev, struct device_attribute *
 {
 	struct xe_device *xe = pdev_to_xe_device(to_pci_dev(dev));
 
-	return sysfs_emit(buf, "%u\n", xe->eudebug.enable);
+	return sysfs_emit(buf, "%u\n", xe_eudebug_is_enabled(xe));
 }
 
 static ssize_t enable_eudebug_store(struct device *dev, struct device_attribute *attr,
@@ -2480,6 +2523,12 @@ void xe_eudebug_init(struct xe_device *xe)
 	INIT_LIST_HEAD(&xe->clients.list);
 	init_rwsem(&xe->eudebug.discovery_lock);
 	INIT_DELAYED_WORK(&xe->eudebug.attention_scan, attention_scan_fn);
+	xe->eudebug.state = XE_EUDEBUG_NOT_AVAILABLE;
+
+	if (IS_SRIOV_VF(xe)) {
+		drm_info(&xe->drm, "eudebug not available in SR-IOV VF mode\n");
+		return;
+	}
 
 	xe->eudebug.ordered_wq = alloc_ordered_workqueue("xe-eudebug-ordered-wq", 0);
 	if (!xe->eudebug.ordered_wq) {
@@ -2488,10 +2537,13 @@ void xe_eudebug_init(struct xe_device *xe)
 	}
 
 	ret = sysfs_create_file(&xe->drm.dev->kobj, &dev_attr_enable_eudebug.attr);
-	if (ret)
+	if (ret) {
 		drm_warn(&xe->drm, "eudebug sysfs init failed: %d, debugger unavailable\n", ret);
-	else
-		devm_add_action_or_reset(dev, xe_eudebug_sysfs_fini, xe);
+		return;
+	}
+
+	devm_add_action_or_reset(dev, xe_eudebug_sysfs_fini, xe);
+	xe->eudebug.state = XE_EUDEBUG_SUPPORTED;
 }
 
 void xe_eudebug_fini(struct xe_device *xe)
