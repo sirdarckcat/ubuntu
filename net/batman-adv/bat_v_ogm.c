@@ -45,7 +45,7 @@
 
 /**
  * batadv_v_ogm_orig_get() - retrieve and possibly create an originator node
- * @bat_priv: the bat priv with all the soft interface information
+ * @bat_priv: the bat priv with all the mesh interface information
  * @addr: the address of the originator
  *
  * Return: the orig_node corresponding to the specified address. If such an
@@ -96,7 +96,7 @@ static void batadv_v_ogm_start_queue_timer(struct batadv_hard_iface *hard_iface)
 
 /**
  * batadv_v_ogm_start_timer() - restart the OGM sending timer
- * @bat_priv: the bat priv with all the soft interface information
+ * @bat_priv: the bat priv with all the mesh interface information
  */
 static void batadv_v_ogm_start_timer(struct batadv_priv *bat_priv)
 {
@@ -243,7 +243,7 @@ static void batadv_v_ogm_queue_on_if(struct batadv_priv *bat_priv,
 				     struct sk_buff *skb,
 				     struct batadv_hard_iface *hard_iface)
 {
-	if (hard_iface->soft_iface != bat_priv->soft_iface) {
+	if (hard_iface->mesh_iface != bat_priv->mesh_iface) {
 		kfree_skb(skb);
 		return;
 	}
@@ -263,10 +263,10 @@ static void batadv_v_ogm_queue_on_if(struct batadv_priv *bat_priv,
 }
 
 /**
- * batadv_v_ogm_send_softif() - periodic worker broadcasting the own OGM
- * @bat_priv: the bat priv with all the soft interface information
+ * batadv_v_ogm_send_meshif() - periodic worker broadcasting the own OGM
+ * @bat_priv: the bat priv with all the mesh interface information
  */
-static void batadv_v_ogm_send_softif(struct batadv_priv *bat_priv)
+static void batadv_v_ogm_send_meshif(struct batadv_priv *bat_priv)
 {
 	struct batadv_hard_iface *hard_iface;
 	struct batadv_ogm2_packet *ogm_packet;
@@ -311,7 +311,7 @@ static void batadv_v_ogm_send_softif(struct batadv_priv *bat_priv)
 	/* broadcast on every interface */
 	rcu_read_lock();
 	list_for_each_entry_rcu(hard_iface, &batadv_hardif_list, list) {
-		if (hard_iface->soft_iface != bat_priv->soft_iface)
+		if (hard_iface->mesh_iface != bat_priv->mesh_iface)
 			continue;
 
 		if (!kref_get_unless_zero(&hard_iface->refcount))
@@ -382,7 +382,7 @@ static void batadv_v_ogm_send(struct work_struct *work)
 	bat_priv = container_of(bat_v, struct batadv_priv, bat_v);
 
 	mutex_lock(&bat_priv->bat_v.ogm_buff_mutex);
-	batadv_v_ogm_send_softif(bat_priv);
+	batadv_v_ogm_send_meshif(bat_priv);
 	mutex_unlock(&bat_priv->bat_v.ogm_buff_mutex);
 }
 
@@ -419,7 +419,7 @@ void batadv_v_ogm_aggr_work(struct work_struct *work)
  */
 int batadv_v_ogm_iface_enable(struct batadv_hard_iface *hard_iface)
 {
-	struct batadv_priv *bat_priv = netdev_priv(hard_iface->soft_iface);
+	struct batadv_priv *bat_priv = netdev_priv(hard_iface->mesh_iface);
 
 	batadv_v_ogm_start_queue_timer(hard_iface);
 	batadv_v_ogm_start_timer(bat_priv);
@@ -446,7 +446,7 @@ void batadv_v_ogm_iface_disable(struct batadv_hard_iface *hard_iface)
  */
 void batadv_v_ogm_primary_iface_set(struct batadv_hard_iface *primary_iface)
 {
-	struct batadv_priv *bat_priv = netdev_priv(primary_iface->soft_iface);
+	struct batadv_priv *bat_priv = netdev_priv(primary_iface->mesh_iface);
 	struct batadv_ogm2_packet *ogm_packet;
 
 	mutex_lock(&bat_priv->bat_v.ogm_buff_mutex);
@@ -463,7 +463,7 @@ unlock:
 /**
  * batadv_v_forward_penalty() - apply a penalty to the throughput metric
  *  forwarded with B.A.T.M.A.N. V OGMs
- * @bat_priv: the bat priv with all the soft interface information
+ * @bat_priv: the bat priv with all the mesh interface information
  * @if_incoming: the interface where the OGM has been received
  * @if_outgoing: the interface where the OGM has to be forwarded to
  * @throughput: the current throughput
@@ -516,7 +516,7 @@ static u32 batadv_v_forward_penalty(struct batadv_priv *bat_priv,
 /**
  * batadv_v_ogm_forward() - check conditions and forward an OGM to the given
  *  outgoing interface
- * @bat_priv: the bat priv with all the soft interface information
+ * @bat_priv: the bat priv with all the mesh interface information
  * @ogm_received: previously received OGM to be forwarded
  * @orig_node: the originator which has been updated
  * @neigh_node: the neigh_node through with the OGM has been received
@@ -603,7 +603,7 @@ out:
 
 /**
  * batadv_v_ogm_metric_update() - update route metric based on OGM
- * @bat_priv: the bat priv with all the soft interface information
+ * @bat_priv: the bat priv with all the mesh interface information
  * @ogm2: OGM2 structure
  * @orig_node: Originator structure for which the OGM has been received
  * @neigh_node: the neigh_node through with the OGM has been received
@@ -686,7 +686,7 @@ out:
 
 /**
  * batadv_v_ogm_route_update() - update routes based on OGM
- * @bat_priv: the bat priv with all the soft interface information
+ * @bat_priv: the bat priv with all the mesh interface information
  * @ethhdr: the Ethernet header of the OGM2
  * @ogm2: OGM2 structure
  * @orig_node: Originator structure for which the OGM has been received
@@ -781,7 +781,7 @@ out:
 
 /**
  * batadv_v_ogm_process_per_outif() - process a batman v OGM for an outgoing if
- * @bat_priv: the bat priv with all the soft interface information
+ * @bat_priv: the bat priv with all the mesh interface information
  * @ethhdr: the Ethernet header of the OGM2
  * @ogm2: OGM2 structure
  * @orig_node: Originator structure for which the OGM has been received
@@ -862,7 +862,7 @@ batadv_v_ogm_aggr_packet(int buff_pos, int packet_len,
 static void batadv_v_ogm_process(const struct sk_buff *skb, int ogm_offset,
 				 struct batadv_hard_iface *if_incoming)
 {
-	struct batadv_priv *bat_priv = netdev_priv(if_incoming->soft_iface);
+	struct batadv_priv *bat_priv = netdev_priv(if_incoming->mesh_iface);
 	struct ethhdr *ethhdr;
 	struct batadv_orig_node *orig_node = NULL;
 	struct batadv_hardif_neigh_node *hardif_neigh = NULL;
@@ -936,7 +936,7 @@ static void batadv_v_ogm_process(const struct sk_buff *skb, int ogm_offset,
 		if (hard_iface->if_status != BATADV_IF_ACTIVE)
 			continue;
 
-		if (hard_iface->soft_iface != bat_priv->soft_iface)
+		if (hard_iface->mesh_iface != bat_priv->mesh_iface)
 			continue;
 
 		if (!kref_get_unless_zero(&hard_iface->refcount))
@@ -995,7 +995,7 @@ out:
 int batadv_v_ogm_packet_recv(struct sk_buff *skb,
 			     struct batadv_hard_iface *if_incoming)
 {
-	struct batadv_priv *bat_priv = netdev_priv(if_incoming->soft_iface);
+	struct batadv_priv *bat_priv = netdev_priv(if_incoming->mesh_iface);
 	struct batadv_ogm2_packet *ogm_packet;
 	struct ethhdr *ethhdr;
 	int ogm_offset;
@@ -1046,7 +1046,7 @@ free_skb:
 
 /**
  * batadv_v_ogm_init() - initialise the OGM2 engine
- * @bat_priv: the bat priv with all the soft interface information
+ * @bat_priv: the bat priv with all the mesh interface information
  *
  * Return: 0 on success or a negative error code in case of failure
  */
@@ -1081,7 +1081,7 @@ int batadv_v_ogm_init(struct batadv_priv *bat_priv)
 
 /**
  * batadv_v_ogm_free() - free OGM private resources
- * @bat_priv: the bat priv with all the soft interface information
+ * @bat_priv: the bat priv with all the mesh interface information
  */
 void batadv_v_ogm_free(struct batadv_priv *bat_priv)
 {
