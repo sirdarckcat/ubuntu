@@ -217,6 +217,7 @@ struct mana_ib_query_adapter_caps_req {
 }; /*HW Data */
 
 enum mana_ib_adapter_features {
+	MANA_IB_FEATURE_CLIENT_ERROR_CQE_SUPPORT = BIT(4),
 	MANA_IB_FEATURE_DEV_COUNTERS_SUPPORT = BIT(5),
 };
 
@@ -242,6 +243,10 @@ struct mana_ib_query_adapter_caps_resp {
 	u32 max_inline_data_size;
 	u64 feature_flags;
 }; /* HW Data */
+
+enum mana_ib_adapter_features_request {
+	MANA_IB_FEATURE_CLIENT_ERROR_CQE_REQUEST = BIT(1),
+}; /*HW Data */
 
 struct mana_rnic_create_adapter_req {
 	struct gdma_req_hdr hdr;
