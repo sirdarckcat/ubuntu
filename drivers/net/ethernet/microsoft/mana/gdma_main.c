@@ -349,7 +349,7 @@ void mana_gd_wq_ring_doorbell(struct gdma_context *gc, struct gdma_queue *queue)
 	mana_gd_ring_doorbell(gc, queue->gdma_dev->doorbell, queue->type,
 			      queue->id, queue->head * GDMA_WQE_BU_SIZE, 0);
 }
-EXPORT_SYMBOL_NS(mana_gd_wq_ring_doorbell, "NET_MANA");
+EXPORT_SYMBOL_NS(mana_gd_wq_ring_doorbell, NET_MANA);
 
 void mana_gd_ring_cq(struct gdma_queue *cq, u8 arm_bit)
 {
@@ -362,7 +362,7 @@ void mana_gd_ring_cq(struct gdma_queue *cq, u8 arm_bit)
 	mana_gd_ring_doorbell(gc, cq->gdma_dev->doorbell, cq->type, cq->id,
 			      head, arm_bit);
 }
-EXPORT_SYMBOL_NS(mana_gd_ring_cq, "NET_MANA");
+EXPORT_SYMBOL_NS(mana_gd_ring_cq, NET_MANA);
 
 #define MANA_SERVICE_PERIOD 10
 
@@ -988,7 +988,7 @@ free_q:
 	kfree(queue);
 	return err;
 }
-EXPORT_SYMBOL_NS(mana_gd_create_mana_wq_cq, "NET_MANA");
+EXPORT_SYMBOL_NS(mana_gd_create_mana_wq_cq, NET_MANA);
 
 void mana_gd_destroy_queue(struct gdma_context *gc, struct gdma_queue *queue)
 {
@@ -1270,7 +1270,7 @@ int mana_gd_post_work_request(struct gdma_queue *wq,
 
 	return 0;
 }
-EXPORT_SYMBOL_NS(mana_gd_post_work_request, "NET_MANA");
+EXPORT_SYMBOL_NS(mana_gd_post_work_request, NET_MANA);
 
 int mana_gd_post_and_ring(struct gdma_queue *queue,
 			  const struct gdma_wqe_request *wqe_req,
@@ -1344,7 +1344,7 @@ int mana_gd_poll_cq(struct gdma_queue *cq, struct gdma_comp *comp, int num_cqe)
 
 	return cqe_idx;
 }
-EXPORT_SYMBOL_NS(mana_gd_poll_cq, "NET_MANA");
+EXPORT_SYMBOL_NS(mana_gd_poll_cq, NET_MANA);
 
 static irqreturn_t mana_gd_intr(int irq, void *arg)
 {
