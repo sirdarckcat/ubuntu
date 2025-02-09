@@ -1228,11 +1228,12 @@ static void nfsd4_cb_prepare(struct rpc_task *task, void *calldata)
 	rpc_call_start(task);
 }
 
+/* Returns true if CB_COMPOUND processing should continue */
 static bool nfsd4_cb_sequence_done(struct rpc_task *task, struct nfsd4_callback *cb)
 {
 	struct nfs4_client *clp = cb->cb_clp;
 	struct nfsd4_session *session = clp->cl_cb_session;
-	bool ret = true;
+	bool ret = false;
 
 	if (!clp->cl_minorversion) {
 		/*
@@ -1245,13 +1246,13 @@ static bool nfsd4_cb_sequence_done(struct rpc_task *task, struct nfsd4_callback 
 		 * handle that case here.
 		 */
 		if (RPC_SIGNALLED(task))
-			goto need_restart;
+			goto requeue;
 
 		return true;
 	}
 
 	if (!cb->cb_holds_slot)
-		goto need_restart;
+		goto requeue;
 
 	switch (cb->cb_seq_status) {
 	case 0:
@@ -1263,6 +1264,7 @@ static bool nfsd4_cb_sequence_done(struct rpc_task *task, struct nfsd4_callback 
 		 * (sequence ID, cached reply) MUST NOT change.
 		 */
 		++session->se_cb_seq_nr;
+		ret = true;
 		break;
 	case -ESERVERFAULT:
 		++session->se_cb_seq_nr;
@@ -1270,13 +1272,11 @@ static bool nfsd4_cb_sequence_done(struct rpc_task *task, struct nfsd4_callback 
 	case 1:
 	case -NFS4ERR_BADSESSION:
 		nfsd4_mark_cb_fault(cb->cb_clp, cb->cb_seq_status);
-		ret = false;
 		break;
 	case -NFS4ERR_DELAY:
 		cb->cb_seq_status = 1;
 		if (!rpc_restart_call(task))
 			goto out;
-
 		rpc_delay(task, 2 * HZ);
 		return false;
 	case -NFS4ERR_BADSLOT:
@@ -1298,14 +1298,13 @@ static bool nfsd4_cb_sequence_done(struct rpc_task *task, struct nfsd4_callback 
 		clp->cl_cb_session->se_cb_seq_nr);
 
 	if (RPC_SIGNALLED(task))
-		goto need_restart;
+		goto requeue;
 out:
 	return ret;
 retry_nowait:
-	if (rpc_restart_call_prepare(task))
-		ret = false;
+	rpc_restart_call_prepare(task);
 	goto out;
-need_restart:
+requeue:
 	if (!test_bit(NFSD4_CLIENT_CB_KILL, &clp->cl_flags)) {
 		task->tk_status = 0;
 		cb->cb_need_restart = true;
