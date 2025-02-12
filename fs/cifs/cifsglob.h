@@ -157,6 +157,7 @@ enum upcall_target_enum {
 	UPTARGET_MOUNT, /* upcall to the mount namespace */
 	UPTARGET_APP, /* upcall to the application namespace which did the mount */
 };
+
 struct session_key {
 	unsigned int len;
 	char *response;
