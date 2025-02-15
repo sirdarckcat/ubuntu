@@ -1,8 +1,8 @@
 build_arch	= riscv
 defconfig	= defconfig
 flavours	= generic
-build_image	= Image
-kernel_file	= arch/$(build_arch)/boot/Image
+build_image	= vmlinuz.efi
+kernel_file	= arch/$(build_arch)/boot/vmlinuz.efi
 install_file	= vmlinuz
 
 vdso		= vdso_install
