@@ -5,10 +5,28 @@
 
 include "../../debian.master/config/annotations"
 
+CONFIG_EFI_ZBOOT                                policy<{'riscv64': 'y'}>
+CONFIG_EFI_ZBOOT                                note<'LP: #2002226'>
+
+CONFIG_KERNEL_ZSTD                              policy<{'riscv64': 'y'}>
+CONFIG_KERNEL_ZSTD                              note<'LP: #193172'>
+
 
 # ---- Annotations without notes ----
 
 CONFIG_DRM_PANEL_SITRONIX_ST7701S               policy<{'riscv64': 'm'}>
+CONFIG_HAVE_KERNEL_BZIP2                        policy<{'riscv64': '-'}>
+CONFIG_HAVE_KERNEL_LZ4                          policy<{'riscv64': '-'}>
+CONFIG_HAVE_KERNEL_LZMA                         policy<{'riscv64': '-'}>
+CONFIG_HAVE_KERNEL_LZO                          policy<{'riscv64': '-'}>
+CONFIG_HAVE_KERNEL_UNCOMPRESSED                 policy<{'riscv64': '-'}>
+CONFIG_HAVE_KERNEL_XZ                           policy<{'riscv64': '-'}>
+CONFIG_KERNEL_BZIP2                             policy<{'riscv64': '-'}>
+CONFIG_KERNEL_LZ4                               policy<{'riscv64': '-'}>
+CONFIG_KERNEL_LZMA                              policy<{'riscv64': '-'}>
+CONFIG_KERNEL_LZO                               policy<{'riscv64': '-'}>
+CONFIG_KERNEL_UNCOMPRESSED                      policy<{'riscv64': '-'}>
+CONFIG_KERNEL_XZ                                policy<{'riscv64': '-'}>
 CONFIG_PWM_OCORES                               policy<{'riscv64': 'm'}>
 CONFIG_PWM_SUN20I                               policy<{'riscv64': 'y'}>
 CONFIG_SND_SUN20I_CODEC                         policy<{'riscv64': 'm'}>
