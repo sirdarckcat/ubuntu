@@ -3,8 +3,8 @@
  * SPDX-FileCopyrightText: Copyright (c) 2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  */
 
-#ifndef _TEGRA_HV_SYSMGR_H
-#define _TEGRA_HV_SYSMGR_H
+#ifndef TEGRA_HV_SYSMGR_H
+#define TEGRA_HV_SYSMGR_H
 
 #include <linux/types.h>
 
@@ -211,4 +211,4 @@ enum vm_state {
 
 /** @} */
 
-#endif /* _TEGRA_HV_SYSMGR_H */
+#endif /* TEGRA_HV_SYSMGR_H */
