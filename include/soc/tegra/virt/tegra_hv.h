@@ -3,8 +3,8 @@
  * SPDX-FileCopyrightText: Copyright (c) 2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  */
 
-#ifndef __TEGRA_HV_H__
-#define __TEGRA_HV_H__
+#ifndef TEGRA_HV_H
+#define TEGRA_HV_H
 
 /**
  * @defgroup hypervisor_ivc_framework Hypervisor IVC Framework
@@ -81,4 +81,4 @@ int tegra_hv_get_vmid(void);
 
 /** @} */
 
-#endif /* __TEGRA_HV_H__ */
+#endif /* TEGRA_HV_H */
