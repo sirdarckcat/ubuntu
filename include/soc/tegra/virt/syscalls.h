@@ -3,8 +3,8 @@
  * SPDX-FileCopyrightText: Copyright (c) 2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  */
 
-#ifndef __TEGRA_SYSCALLS_H__
-#define __TEGRA_SYSCALLS_H__
+#ifndef TEGRA_SYSCALLS_H
+#define TEGRA_SYSCALLS_H
 
 #include <soc/tegra/virt/tegra_hv_sysmgr.h>
 
@@ -1100,4 +1100,4 @@ NO_SANITIZE_ADDRESS static inline long int hyp_lcpu0_mpidr(void)
 
 /** @} */
 
-#endif /* __TEGRA_SYSCALLS_H__ */
+#endif /* TEGRA_SYSCALLS_H */
