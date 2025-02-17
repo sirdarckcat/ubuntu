@@ -3,8 +3,8 @@
  * SPDX-FileCopyrightText: Copyright (c) 2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  */
 
-#ifndef __TEGRA_HV_IVC_H
-#define __TEGRA_HV_IVC_H
+#ifndef TEGRA_HV_IVC_H
+#define TEGRA_HV_IVC_H
 
 #include <linux/of.h>
 #include <linux/version.h>
@@ -749,4 +749,4 @@ void tegra_hv_ivc_notify(struct tegra_hv_ivc_cookie *ivck);
 
 /** @} */
 
-#endif /* __TEGRA_HV_IVC_H */
+#endif /* TEGRA_HV_IVC_H */
