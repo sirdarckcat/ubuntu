@@ -2345,23 +2345,21 @@ static int setup_tdparams_eptp_controls(struct kvm_cpuid2 *cpuid,
 					struct td_params *td_params)
 {
 	const struct kvm_cpuid_entry2 *entry;
-	int max_pa = 36;
+	int guest_pa;
 
 	entry = kvm_find_cpuid_entry2(cpuid->entries, cpuid->nent, 0x80000008, 0);
-	if (entry)
-		max_pa = entry->eax & 0xff;
+	if (!entry)
+		return -EINVAL;
+	guest_pa = (entry->eax >> 16) & 0xff;
+
+	if (guest_pa != 48 && guest_pa != 52)
+		return -EINVAL;
+
+	if (guest_pa == 52 && !cpu_has_vmx_ept_5levels())
+		return -EINVAL;
 
 	td_params->eptp_controls = VMX_EPTP_MT_WB;
-	/*
-	 * No CPU supports 4-level && max_pa > 48.
-	 * "5-level paging and 5-level EPT" section 4.1 4-level EPT
-	 * "4-level EPT is limited to translating 48-bit guest-physical
-	 *  addresses."
-	 * cpu_has_vmx_ept_5levels() check is just in case.
-	 */
-	if (!cpu_has_vmx_ept_5levels() && max_pa > 48)
-		return -EINVAL;
-	if (cpu_has_vmx_ept_5levels() && max_pa > 48) {
+	if (guest_pa == 52) {
 		td_params->eptp_controls |= VMX_EPTP_PWL_5;
 		td_params->exec_controls |= TDX_EXEC_CONTROL_MAX_GPAW;
 	} else {
@@ -2406,6 +2404,8 @@ static void setup_tdparams_cpuids(struct kvm *kvm, struct kvm_cpuid2 *cpuid,
 		value->ecx = entry->ecx & c->ecx;
 		value->edx = entry->edx & c->edx;
 
+		if (c->leaf == 0x80000008)
+			value->eax &= 0xff00ffff;
 		/* Remember the setting to check for KVM_SET_CPUID2. */
 		kvm_tdx->cpuid[kvm_tdx->cpuid_nent] = *entry;
 		kvm_tdx->cpuid_nent++;
