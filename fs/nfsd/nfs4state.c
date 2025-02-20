@@ -5042,6 +5042,10 @@ static const struct nfsd4_callback_ops nfsd4_cb_recall_ops = {
 static void nfsd_break_one_deleg(struct nfs4_delegation *dp)
 {
 	bool queued;
+
+	if (test_and_set_bit(NFSD4_CALLBACK_RUNNING, &dp->dl_recall.cb_flags))
+		return;
+
 	/*
 	 * We're assuming the state code never drops its reference
 	 * without first removing the lease.  Since we're in this lease
@@ -6519,7 +6523,9 @@ deleg_reaper(struct nfsd_net *nn)
 		clp->cl_ra->ra_keep = 0;
 		clp->cl_ra->ra_bmval[0] = BIT(RCA4_TYPE_MASK_RDATA_DLG);
 		trace_nfsd_cb_recall_any(clp->cl_ra);
-		nfsd4_run_cb(&clp->cl_ra->ra_cb);
+		if (!test_and_set_bit(NFSD4_CALLBACK_RUNNING,
+				      &clp->cl_ra->ra_cb.cb_flags))
+			WARN_ON_ONCE(!nfsd4_run_cb(&clp->cl_ra->ra_cb));
 	}
 }
 
@@ -7437,7 +7443,9 @@ nfsd4_lm_notify(struct file_lock *fl)
 
 	if (queue) {
 		trace_nfsd_cb_notify_lock(lo, nbl);
-		nfsd4_run_cb(&nbl->nbl_cb);
+		if (!test_and_set_bit(NFSD4_CALLBACK_RUNNING,
+				      &nbl->nbl_cb.cb_flags))
+			WARN_ON_ONCE(!nfsd4_run_cb(&nbl->nbl_cb));
 	}
 }
 

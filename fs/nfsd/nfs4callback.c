@@ -985,16 +985,6 @@ static bool nfsd4_queue_cb(struct nfsd4_callback *cb)
 	return queue_work(callback_wq, &cb->cb_work);
 }
 
-static void nfsd4_requeue_cb(struct rpc_task *task, struct nfsd4_callback *cb)
-{
-	struct nfs4_client *clp = cb->cb_clp;
-
-	if (!test_bit(NFSD4_CLIENT_CB_KILL, &clp->cl_flags)) {
-		task->tk_status = 0;
-		cb->cb_need_restart = true;
-	}
-}
-
 static void nfsd41_cb_inflight_begin(struct nfs4_client *clp)
 {
 	atomic_inc(&clp->cl_cb_inflight);
@@ -1212,6 +1202,7 @@ static void nfsd41_destroy_cb(struct nfsd4_callback *cb)
 	struct nfs4_client *clp = cb->cb_clp;
 
 	nfsd41_cb_release_slot(cb);
+	clear_bit(NFSD4_CALLBACK_RUNNING, &cb->cb_flags);
 	if (cb->cb_ops && cb->cb_ops->release)
 		cb->cb_ops->release(cb);
 	nfsd41_cb_inflight_end(clp);
@@ -1241,7 +1232,8 @@ static void nfsd4_cb_prepare(struct rpc_task *task, void *calldata)
 /* Returns true if CB_COMPOUND processing should continue */
 static bool nfsd4_cb_sequence_done(struct rpc_task *task, struct nfsd4_callback *cb)
 {
-	struct nfsd4_session *session = cb->cb_clp->cl_cb_session;
+	struct nfs4_client *clp = cb->cb_clp;
+	struct nfsd4_session *session = clp->cl_cb_session;
 	bool ret = false;
 
 	if (!cb->cb_holds_slot)
@@ -1273,13 +1265,6 @@ static bool nfsd4_cb_sequence_done(struct rpc_task *task, struct nfsd4_callback 
 		rpc_delay(task, 2 * HZ);
 		return false;
 	case -NFS4ERR_BADSLOT:
-		/*
-		 * BADSLOT means that the client and server are out of sync
-		 * as to the backchannel parameters. Mark the backchannel faulty
-		 * and restart the RPC, but leak the slot so no one uses it.
-		 */
-		nfsd4_mark_cb_fault(cb->cb_clp);
-		cb->cb_held_slot = -1;
 		goto retry_nowait;
 	case -NFS4ERR_SEQ_MISORDERED:
 		if (session->se_cb_seq_nr != 1) {
@@ -1294,8 +1279,6 @@ static bool nfsd4_cb_sequence_done(struct rpc_task *task, struct nfsd4_callback 
 	}
 
 	nfsd41_cb_release_slot(cb);
-	dprintk("%s: freed slot, new seqid=%d\n", __func__,
-		session->se_cb_seq_nr);
 	return ret;
 retry_nowait:
 	/*
@@ -1307,7 +1290,10 @@ retry_nowait:
 			return false;
 	}
 requeue:
-	nfsd4_requeue_cb(task, cb);
+	if (!test_bit(NFSD4_CLIENT_CB_KILL, &clp->cl_flags)) {
+		task->tk_status = 0;
+		cb->cb_need_restart = true;
+	}
 	return false;
 }
 
@@ -1326,8 +1312,11 @@ static void nfsd4_cb_done(struct rpc_task *task, void *calldata)
 		 * the submission code will error out, so we don't need to
 		 * handle that case here.
 		 */
-		if (RPC_SIGNALLED(task))
-			nfsd4_requeue_cb(task, cb);
+		if (RPC_SIGNALLED(task) &&
+		    !test_bit(NFSD4_CLIENT_CB_KILL, &clp->cl_flags)) {
+			task->tk_status = 0;
+			cb->cb_need_restart = true;
+		}
 	} else if (!nfsd4_cb_sequence_done(task, cb)) {
 		return;
 	}
@@ -1523,6 +1512,7 @@ void nfsd4_init_cb(struct nfsd4_callback *cb, struct nfs4_client *clp,
 	cb->cb_msg.rpc_proc = &nfs4_cb_procedures[op];
 	cb->cb_msg.rpc_argp = cb;
 	cb->cb_msg.rpc_resp = cb;
+	cb->cb_flags = 0;
 	cb->cb_ops = ops;
 	INIT_WORK(&cb->cb_work, nfsd4_run_cb_work);
 	cb->cb_seq_status = 1;

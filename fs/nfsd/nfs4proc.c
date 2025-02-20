@@ -1750,7 +1750,8 @@ static void nfsd4_send_cb_offload(struct nfsd4_copy *copy, __be32 nfserr)
 		      NFSPROC4_CLNT_CB_OFFLOAD);
 	trace_nfsd_cb_offload(copy->cp_clp, &cbo->co_res.cb_stateid,
 			      &cbo->co_fh, copy->cp_count, nfserr);
-	nfsd4_run_cb(&cbo->co_cb);
+	if (!test_and_set_bit(NFSD4_CALLBACK_RUNNING, &cbo->co_cb.cb_flags))
+		WARN_ON_ONCE(!nfsd4_run_cb(&cbo->co_cb));
 }
 
 /**
