@@ -1292,7 +1292,7 @@ retry_nowait:
 requeue:
 	if (!test_bit(NFSD4_CLIENT_CB_KILL, &clp->cl_flags)) {
 		task->tk_status = 0;
-		cb->cb_need_restart = true;
+		set_bit(NFSD4_CALLBACK_REQUEUE, &cb->cb_flags);
 	}
 	return false;
 }
@@ -1315,7 +1315,7 @@ static void nfsd4_cb_done(struct rpc_task *task, void *calldata)
 		if (RPC_SIGNALLED(task) &&
 		    !test_bit(NFSD4_CLIENT_CB_KILL, &clp->cl_flags)) {
 			task->tk_status = 0;
-			cb->cb_need_restart = true;
+			set_bit(NFSD4_CALLBACK_REQUEUE, &cb->cb_flags);
 		}
 	} else if (!nfsd4_cb_sequence_done(task, cb)) {
 		return;
@@ -1348,7 +1348,7 @@ static void nfsd4_cb_release(void *calldata)
 {
 	struct nfsd4_callback *cb = calldata;
 
-	if (cb->cb_need_restart)
+	if (test_bit(NFSD4_CALLBACK_REQUEUE, &cb->cb_flags))
 		nfsd4_queue_cb(cb);
 	else
 		nfsd41_destroy_cb(cb);
@@ -1470,9 +1470,7 @@ nfsd4_run_cb_work(struct work_struct *work)
 	struct rpc_clnt *clnt;
 	int flags;
 
-	if (cb->cb_need_restart) {
-		cb->cb_need_restart = false;
-	} else {
+	if (!test_and_clear_bit(NFSD4_CALLBACK_REQUEUE, &cb->cb_flags)) {
 		if (cb->cb_ops && cb->cb_ops->prepare)
 			cb->cb_ops->prepare(cb);
 	}
@@ -1517,7 +1515,6 @@ void nfsd4_init_cb(struct nfsd4_callback *cb, struct nfs4_client *clp,
 	INIT_WORK(&cb->cb_work, nfsd4_run_cb_work);
 	cb->cb_seq_status = 1;
 	cb->cb_status = 0;
-	cb->cb_need_restart = false;
 	cb->cb_holds_slot = false;
 }
 
