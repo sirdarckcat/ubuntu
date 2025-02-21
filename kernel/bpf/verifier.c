@@ -7010,11 +7010,12 @@ static int check_mem_access(struct bpf_verifier_env *env, int insn_idx, u32 regn
 		if (!err && value_regno >= 0 && (t == BPF_READ || rdonly_mem))
 			mark_reg_unknown(env, regs, value_regno);
 	} else if (reg->type == PTR_TO_CTX) {
-		bool is_retval = false;
+		struct bpf_insn_access_aux info = {
+			.reg_type = SCALAR_VALUE,
+			.is_ldsx = is_ldsx,
+			.log = &env->log,
+		};
 		struct bpf_retval_range range;
-		enum bpf_reg_type reg_type = SCALAR_VALUE;
-		struct btf *btf = NULL;
-		u32 btf_id = 0;
 
 		if (t == BPF_WRITE && value_regno >= 0 &&
 		    is_pointer_value(env, value_regno)) {
@@ -7026,8 +7027,9 @@ static int check_mem_access(struct bpf_verifier_env *env, int insn_idx, u32 regn
 		if (err < 0)
 			return err;
 
-		err = check_ctx_access(env, insn_idx, off, size, t, &reg_type, &btf,
-				       &btf_id, &is_retval, is_ldsx);
+		err = check_ctx_access(env, insn_idx, off, size, t, &info.reg_type,
+				       &info.btf, &info.btf_id, &info.is_retval,
+				       info.is_ldsx);
 		if (err)
 			verbose_linfo(env, insn_idx, "; ");
 		if (!err && t == BPF_READ && value_regno >= 0) {
@@ -7035,8 +7037,8 @@ static int check_mem_access(struct bpf_verifier_env *env, int insn_idx, u32 regn
 			 * PTR_TO_PACKET[_META,_END]. In the latter
 			 * case, we know the offset is zero.
 			 */
-			if (reg_type == SCALAR_VALUE) {
-				if (is_retval && get_func_retval_range(env->prog, &range)) {
+			if (info.reg_type == SCALAR_VALUE) {
+				if (info.is_retval && get_func_retval_range(env->prog, &range)) {
 					err = __mark_reg_s32_range(env, regs, value_regno,
 								   range.minval, range.maxval);
 					if (err)
@@ -7047,7 +7049,7 @@ static int check_mem_access(struct bpf_verifier_env *env, int insn_idx, u32 regn
 			} else {
 				mark_reg_known_zero(env, regs,
 						    value_regno);
-				if (type_may_be_null(reg_type))
+				if (type_may_be_null(info.reg_type))
 					regs[value_regno].id = ++env->id_gen;
 				/* A load of ctx field could have different
 				 * actual load size with the one encoded in the
@@ -7055,12 +7057,12 @@ static int check_mem_access(struct bpf_verifier_env *env, int insn_idx, u32 regn
 				 * a sub-register.
 				 */
 				regs[value_regno].subreg_def = DEF_NOT_SUBREG;
-				if (base_type(reg_type) == PTR_TO_BTF_ID) {
-					regs[value_regno].btf = btf;
-					regs[value_regno].btf_id = btf_id;
+				if (base_type(info.reg_type) == PTR_TO_BTF_ID) {
+					regs[value_regno].btf = info.btf;
+					regs[value_regno].btf_id = info.btf_id;
 				}
 			}
-			regs[value_regno].type = reg_type;
+			regs[value_regno].type = info.reg_type;
 		}
 
 	} else if (reg->type == PTR_TO_STACK) {
