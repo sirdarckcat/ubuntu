@@ -5649,18 +5649,10 @@ static int check_packet_access(struct bpf_verifier_env *env, u32 regno, int off,
 
 /* check access to 'struct bpf_context' fields.  Supports fixed offsets only */
 static int check_ctx_access(struct bpf_verifier_env *env, int insn_idx, int off, int size,
-			    enum bpf_access_type t, enum bpf_reg_type *reg_type,
-			    struct btf **btf, u32 *btf_id, bool *is_retval, bool is_ldsx)
+			    enum bpf_access_type t, struct bpf_insn_access_aux *info)
 {
-	struct bpf_insn_access_aux info = {
-		.reg_type = *reg_type,
-		.log = &env->log,
-		.is_retval = false,
-		.is_ldsx = is_ldsx,
-	};
-
 	if (env->ops->is_valid_access &&
-	    env->ops->is_valid_access(off, size, t, env->prog, &info)) {
+	    env->ops->is_valid_access(off, size, t, env->prog, info)) {
 		/* A non zero info.ctx_field_size indicates that this field is a
 		 * candidate for later verifier transformation to load the whole
 		 * field and then apply a mask when accessed with a narrower
@@ -5668,15 +5660,8 @@ static int check_ctx_access(struct bpf_verifier_env *env, int insn_idx, int off,
 		 * will only allow for whole field access and rejects any other
 		 * type of narrower access.
 		 */
-		*reg_type = info.reg_type;
-		*is_retval = info.is_retval;
-
-		if (base_type(*reg_type) == PTR_TO_BTF_ID) {
-			*btf = info.btf;
-			*btf_id = info.btf_id;
-		} else {
-			env->insn_aux_data[insn_idx].ctx_field_size = info.ctx_field_size;
-		}
+		if (base_type(info->reg_type) != PTR_TO_BTF_ID)
+			env->insn_aux_data[insn_idx].ctx_field_size = info->ctx_field_size;
 		/* remember the offset of last byte accessed in ctx */
 		if (env->prog->aux->max_ctx_offset < off + size)
 			env->prog->aux->max_ctx_offset = off + size;
@@ -7027,9 +7012,7 @@ static int check_mem_access(struct bpf_verifier_env *env, int insn_idx, u32 regn
 		if (err < 0)
 			return err;
 
-		err = check_ctx_access(env, insn_idx, off, size, t, &info.reg_type,
-				       &info.btf, &info.btf_id, &info.is_retval,
-				       info.is_ldsx);
+		err = check_ctx_access(env, insn_idx, off, size, t, &info);
 		if (err)
 			verbose_linfo(env, insn_idx, "; ");
 		if (!err && t == BPF_READ && value_regno >= 0) {
