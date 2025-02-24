@@ -6,6 +6,7 @@
 
 include "../../debian.master/config/annotations"
 
+CONFIG_ACPI                                     policy<{'arm64': 'n'}> note<'Different from master (LP: #2053147)'>
 CONFIG_ACPI_CUSTOM_METHOD                       policy<{'arm64': '-'}> note<'Master note override'>
 CONFIG_AD525X_DPOT_I2C                          policy<{'arm64': 'n'}> note<'Different from master'>
 CONFIG_ADF4371                                  policy<{'arm64': 'n'}> note<'Different from master'>
@@ -225,9 +226,9 @@ CONFIG_DW_AXI_DMAC                              policy<{'arm64': 'y'}> note<'Nee
 CONFIG_DW_I3C_MASTER                            policy<{'arm64': 'n'}> note<'Different from master'>
 CONFIG_ECRYPT_FS                                policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
 CONFIG_EDAC_XGENE                               policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_EFI                                      policy<{'arm64': 'n'}> note<'Not supported on Pi (different from master)'>
-CONFIG_EFIVAR_FS                                policy<{'arm64': '-'}> note<'Master note override'>
-CONFIG_EFI_ZBOOT                                policy<{'arm64': '-'}> note<'Master note override'>
+CONFIG_EFIVAR_FS                                policy<{'arm64': 'm'}> note<'Different from master (LP: #2053147)'>
+CONFIG_EFI_COCO_SECRET                          policy<{'arm64': 'n'}> note<'Different from master (LP: #2053147)'>
+CONFIG_EFI_ZBOOT                                policy<{'arm64': 'n'}> note<'Different from master (LP: #2053147)'>
 CONFIG_ENA_ETHERNET                             policy<{'arm64': 'n'}> note<'Different from master'>
 CONFIG_ENERGY_MODEL                             policy<{'arm64': 'n'}> note<'Different from master'>
 CONFIG_EROFS_FS_SECURITY                        policy<{'arm64': 'n'}> note<'Required for Pi (different from master)'>
@@ -240,7 +241,7 @@ CONFIG_FAT_DEFAULT_IOCHARSET                    policy<{'arm64': '"ascii"'}> not
 CONFIG_FB_ASILIANT                              policy<{'arm64': 'n'}> note<'Different from master'>
 CONFIG_FB_ATY                                   policy<{'arm64': 'n'}> note<'Different from master'>
 CONFIG_FB_BCM2708                               policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_FB_EFI                                   policy<{'arm64': '-'}> note<'Not supported on Pi (different from master)'>
+CONFIG_FB_EFI                                   policy<{'arm64': 'n'}> note<'Different from master (LP: #2053147)'>
 CONFIG_FB_IMSTT                                 policy<{'arm64': 'n'}> note<'Different from master'>
 CONFIG_FB_RPISENSE                              policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
 CONFIG_FB_SIMPLE                                policy<{'arm64': 'y'}> note<'LP: #1976147 (different from master)'>
@@ -321,6 +322,7 @@ CONFIG_IMA_ARCH_POLICY                          policy<{'arm64': 'n'}> note<'LP:
 CONFIG_IMA_DEFAULT_HASH_SHA1                    policy<{'arm64': 'y'}> note<'Different from master'>
 CONFIG_IMA_DEFAULT_HASH_SHA256                  policy<{'arm64': 'n'}> note<'Different from master'>
 CONFIG_IMA_KEXEC                                policy<{'arm64': '-'}> note<'Master note override'>
+CONFIG_IMA_SECURE_AND_OR_TRUSTED_BOOT           policy<{'arm64': 'n'}> note<'Different from master (LP: #2053147)'>
 CONFIG_INDIRECT_PIO                             policy<{'arm64': 'n'}> note<'Different from master'>
 CONFIG_INFINIBAND_EFA                           policy<{'arm64': 'n'}> note<'Different from master'>
 CONFIG_INFINIBAND_HNS                           policy<{'arm64': 'n'}> note<'Different from master'>
@@ -375,6 +377,7 @@ CONFIG_LEGACY_PTY_COUNT                         policy<{'arm64': '256'}> note<'D
 CONFIG_LEGACY_TIOCSTI                           policy<{'arm64': 'y'}> note<'Different from master'>
 CONFIG_LIBNVDIMM                                policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
 CONFIG_LIQUIDIO_VF                              policy<{'arm64': 'n'}> note<'Different from master'>
+CONFIG_LOCK_DOWN_IN_SECURE_BOOT                 policy<{'arm64': 'n'}> note<'Different from master (LP: #2053147)'>
 CONFIG_LOGO                                     policy<{'arm64': 'y'}> note<'Required for Pi (different from master)'>
 CONFIG_LOGO_LINUX_CLUT224                       policy<{'arm64': 'y'}> note<'Required for Pi (not in master)'>
 CONFIG_LOGO_LINUX_MONO                          policy<{'arm64': 'n'}> note<'Required for Pi (not in master)'>
@@ -582,6 +585,7 @@ CONFIG_REGULATOR_SY8106A                        policy<{'arm64': 'n'}> note<'Dif
 CONFIG_REGULATOR_SY8824X                        policy<{'arm64': 'n'}> note<'Different from master'>
 CONFIG_REGULATOR_TWL4030                        policy<{'arm64': '-'}> note<'Master note override'>
 CONFIG_REMOTEPROC                               policy<{'arm64': 'n'}> note<'Not supported on Pi (different from master)'>
+CONFIG_RESET_ATTACK_MITIGATION                  policy<{'arm64': 'n'}> note<'Different from master (LP: #2053147)'>
 CONFIG_RESET_BRCMSTB                            policy<{'arm64': 'm'}> note<'Required for Pi (not in master)'>
 CONFIG_RESET_BRCMSTB_RESCAL                     policy<{'arm64': 'm'}> note<'Required for Pi (not in master)'>
 CONFIG_RESET_RASPBERRYPI                        policy<{'arm64': 'y'}> note<'Required for Pi (not in master)'>
@@ -591,7 +595,7 @@ CONFIG_RPI_AXIPERF                              policy<{'arm64': 'm'}> note<'Add
 CONFIG_RPI_POE_POWER                            policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
 CONFIG_RTC_DRV_BD70528                          policy<{'arm64': 'n'}> note<'Different from master'>
 CONFIG_RTC_DRV_BRCMSTB                          policy<{'arm64': 'm'}> note<'Required for Pi (not in master)'>
-CONFIG_RTC_DRV_EFI                              policy<{'arm64': '-'}> note<'Master note override'>
+CONFIG_RTC_DRV_EFI                              policy<{'arm64': 'm'}> note<'Different from master (LP: #2053147)'>
 CONFIG_RTC_DRV_ISL12026                         policy<{'arm64': 'n'}> note<'Different from master'>
 CONFIG_RTC_DRV_RPI                              policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
 CONFIG_RTC_DRV_TWL4030                          policy<{'arm64': '-'}> note<'Master note override'>
@@ -708,7 +712,7 @@ CONFIG_SURFACE_PLATFORMS                        policy<{'arm64': 'n'}> note<'Req
 CONFIG_SUSPEND                                  policy<{'arm64': 'n'}> note<'Required for Pi (different from master)'>
 CONFIG_SWIOTLB_DYNAMIC                          policy<{'arm64': 'n'}> note<'Disabled for Pi (prevent vc4 compile error)'>
 CONFIG_SW_SYNC                                  policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
-CONFIG_SYSFB_SIMPLEFB                           policy<{'arm64': '-'}> note<'Not supported on Pi (different from master)'>
+CONFIG_SYSFB_SIMPLEFB                           policy<{'arm64': 'n'}> note<'Different from master (LP: #2053147)'>
 CONFIG_SYSV68_PARTITION                         policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
 CONFIG_TCG_TIS                                  policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
 CONFIG_TCG_TIS_CORE                             policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
@@ -871,7 +875,6 @@ CONFIG_8139TOO_PIO                              policy<{'arm64': '-'}>
 CONFIG_8139TOO_TUNE_TWISTER                     policy<{'arm64': '-'}>
 CONFIG_8139_OLD_RX_RESET                        policy<{'arm64': '-'}>
 CONFIG_A64FX_DIAG                               policy<{'arm64': '-'}>
-CONFIG_ACPI                                     policy<{'arm64': '-'}>
 CONFIG_ACPI_AC                                  policy<{'arm64': '-'}>
 CONFIG_ACPI_AGDI                                policy<{'arm64': '-'}>
 CONFIG_ACPI_ALS                                 policy<{'arm64': '-'}>
@@ -975,14 +978,12 @@ CONFIG_ARCH_RCAR_GEN3                           policy<{'arm64': '-'}>
 CONFIG_ARCH_RZG2L                               policy<{'arm64': '-'}>
 CONFIG_ARCH_S32                                 policy<{'arm64': '-'}>
 CONFIG_ARCH_SELECTS_KEXEC_FILE                  policy<{'arm64': '-'}>
-CONFIG_ARCH_SUPPORTS_ACPI                       policy<{'arm64': '-'}>
 CONFIG_ARCH_SUPPORTS_KEXEC                      policy<{'arm64': '-'}>
 CONFIG_ARCH_TEGRA_132_SOC                       policy<{'arm64': '-'}>
 CONFIG_ARCH_TEGRA_186_SOC                       policy<{'arm64': '-'}>
 CONFIG_ARCH_TEGRA_194_SOC                       policy<{'arm64': '-'}>
 CONFIG_ARCH_TEGRA_210_SOC                       policy<{'arm64': '-'}>
 CONFIG_ARCH_TEGRA_234_SOC                       policy<{'arm64': '-'}>
-CONFIG_ARCH_USE_MEMREMAP_PROT                   policy<{'arm64': '-'}>
 CONFIG_ARC_EMAC_CORE                            policy<{'arm64': '-'}>
 CONFIG_ARM64_ACPI_PARKING_PROTOCOL              policy<{'arm64': '-'}>
 CONFIG_ARMADA_37XX_CLK                          policy<{'arm64': '-'}>
@@ -1504,7 +1505,6 @@ CONFIG_DA_MON_EVENTS                            policy<{'arm64': '-'}>
 CONFIG_DA_MON_EVENTS_ID                         policy<{'arm64': '-'}>
 CONFIG_DE2104X                                  policy<{'arm64': '-'}>
 CONFIG_DE2104X_DSL                              policy<{'arm64': '-'}>
-CONFIG_DEBUG_EFI                                policy<{'arm64': '-'}>
 CONFIG_DEBUG_KERNEL_DC                          policy<{'arm64': '-'}>
 CONFIG_DEFXX                                    policy<{'arm64': '-'}>
 CONFIG_DEVFREQ_EVENT_ROCKCHIP_DFI               policy<{'arm64': '-'}>
@@ -1521,9 +1521,6 @@ CONFIG_DMA_ACPI                                 policy<{'arm64': '-'}>
 CONFIG_DMA_BOUNCE_UNALIGNED_KMALLOC             policy<{'arm64': '-'}>
 CONFIG_DMA_NUMA_CMA                             policy<{'arm64': '-'}>
 CONFIG_DMA_SUN6I                                policy<{'arm64': '-'}>
-CONFIG_DMI                                      policy<{'arm64': '-'}>
-CONFIG_DMIID                                    policy<{'arm64': '-'}>
-CONFIG_DMI_SYSFS                                policy<{'arm64': '-'}>
 CONFIG_DM_INIT                                  policy<{'arm64': '-'}>
 CONFIG_DPAA2_CONSOLE                            policy<{'arm64': '-'}>
 CONFIG_DPAA_ERRATUM_A050385                     policy<{'arm64': '-'}>
@@ -1671,23 +1668,8 @@ CONFIG_EDAC_QCOM                                policy<{'arm64': '-'}>
 CONFIG_EDAC_SYNOPSYS                            policy<{'arm64': '-'}>
 CONFIG_EDAC_VERSAL                              policy<{'arm64': '-'}>
 CONFIG_EDAC_ZYNQMP                              policy<{'arm64': '-'}>
-CONFIG_EFI_ARMSTUB_DTB_LOADER                   policy<{'arm64': '-'}>
-CONFIG_EFI_BOOTLOADER_CONTROL                   policy<{'arm64': '-'}>
-CONFIG_EFI_CAPSULE_LOADER                       policy<{'arm64': '-'}>
-CONFIG_EFI_COCO_SECRET                          policy<{'arm64': '-'}>
 CONFIG_EFI_CUSTOM_SSDT_OVERLAYS                 policy<{'arm64': '-'}>
-CONFIG_EFI_DISABLE_PCI_DMA                      policy<{'arm64': '-'}>
-CONFIG_EFI_DISABLE_RUNTIME                      policy<{'arm64': '-'}>
-CONFIG_EFI_EARLYCON                             policy<{'arm64': '-'}>
-CONFIG_EFI_ESRT                                 policy<{'arm64': '-'}>
-CONFIG_EFI_GENERIC_STUB                         policy<{'arm64': '-'}>
-CONFIG_EFI_PARAMS_FROM_FDT                      policy<{'arm64': '-'}>
-CONFIG_EFI_RUNTIME_WRAPPERS                     policy<{'arm64': '-'}>
 CONFIG_EFI_SOFT_RESERVE                         policy<{'arm64': '-'}>
-CONFIG_EFI_STUB                                 policy<{'arm64': '-'}>
-CONFIG_EFI_TEST                                 policy<{'arm64': '-'}>
-CONFIG_EFI_VARS_PSTORE                          policy<{'arm64': '-'}>
-CONFIG_EFI_VARS_PSTORE_DEFAULT_DISABLE          policy<{'arm64': '-'}>
 CONFIG_EINT_MTK                                 policy<{'arm64': '-'}>
 CONFIG_EMAC_ROCKCHIP                            policy<{'arm64': '-'}>
 CONFIG_ENIC                                     policy<{'arm64': '-'}>
@@ -1932,7 +1914,6 @@ CONFIG_IIO_SCMI                                 policy<{'arm64': '-'}>
 CONFIG_IIO_STM32_LPTIMER_TRIGGER                policy<{'arm64': '-'}>
 CONFIG_IIO_STM32_TIMER_TRIGGER                  policy<{'arm64': '-'}>
 CONFIG_IMA_DEFAULT_HASH                         policy<{'arm64': '"sha1"'}>
-CONFIG_IMA_SECURE_AND_OR_TRUSTED_BOOT           policy<{'arm64': '-'}>
 CONFIG_IMX2_WDT                                 policy<{'arm64': '-'}>
 CONFIG_IMX7D_ADC                                policy<{'arm64': '-'}>
 CONFIG_IMX7ULP_WDT                              policy<{'arm64': '-'}>
@@ -2107,7 +2088,6 @@ CONFIG_LEDS_SUN50I_A100                         policy<{'arm64': '-'}>
 CONFIG_LEDS_WM831X_STATUS                       policy<{'arm64': '-'}>
 CONFIG_LEDS_WM8350                              policy<{'arm64': '-'}>
 CONFIG_LOAD_UEFI_KEYS                           policy<{'arm64': '-'}>
-CONFIG_LOCK_DOWN_IN_SECURE_BOOT                 policy<{'arm64': '-'}>
 CONFIG_LP8788_ADC                               policy<{'arm64': '-'}>
 CONFIG_LS_EXTIRQ                                policy<{'arm64': '-'}>
 CONFIG_LS_SCFG_MSI                              policy<{'arm64': '-'}>
@@ -2414,7 +2394,6 @@ CONFIG_PCI_J721E_HOST                           policy<{'arm64': '-'}>
 CONFIG_PCI_KEYSTONE                             policy<{'arm64': '-'}>
 CONFIG_PCI_KEYSTONE_EP                          policy<{'arm64': '-'}>
 CONFIG_PCI_KEYSTONE_HOST                        policy<{'arm64': '-'}>
-CONFIG_PCI_LABEL                                policy<{'arm64': '-'}>
 CONFIG_PCI_LAYERSCAPE                           policy<{'arm64': '-'}>
 CONFIG_PCI_LAYERSCAPE_EP                        policy<{'arm64': '-'}>
 CONFIG_PCI_P2PDMA                               policy<{'arm64': '-'}>
@@ -2927,7 +2906,6 @@ CONFIG_RENESAS_RZN1WDT                          policy<{'arm64': '-'}>
 CONFIG_RENESAS_USB_DMAC                         policy<{'arm64': '-'}>
 CONFIG_RENESAS_WDT                              policy<{'arm64': '-'}>
 CONFIG_RESET_A10SR                              policy<{'arm64': '-'}>
-CONFIG_RESET_ATTACK_MITIGATION                  policy<{'arm64': '-'}>
 CONFIG_RESET_BERLIN                             policy<{'arm64': '-'}>
 CONFIG_RESET_HISI                               policy<{'arm64': '-'}>
 CONFIG_RESET_IMX7                               policy<{'arm64': '-'}>
@@ -3745,7 +3723,6 @@ CONFIG_TYPEC_QCOM_PMIC                          policy<{'arm64': '-'}>
 CONFIG_UCC                                      policy<{'arm64': '-'}>
 CONFIG_UCC_FAST                                 policy<{'arm64': '-'}>
 CONFIG_UCC_SLOW                                 policy<{'arm64': '-'}>
-CONFIG_UCS2_STRING                              policy<{'arm64': '-'}>
 CONFIG_UCSI_ACPI                                policy<{'arm64': '-'}>
 CONFIG_UEFI_CPER                                policy<{'arm64': '-'}>
 CONFIG_UEFI_CPER_ARM                            policy<{'arm64': '-'}>
