@@ -514,8 +514,8 @@ static void tegra_i2c_bus_unlock(struct i2c_adapter *adapter,
 {
 	struct tegra_i2c_dev *i2c_dev = i2c_get_adapdata(adapter);
 
-	rt_mutex_unlock(&adapter->bus_lock);
 	tegra_i2c_mutex_unlock(i2c_dev);
+	rt_mutex_unlock(&adapter->bus_lock);
 }
 
 static const struct i2c_lock_operations tegra_i2c_lock_ops = {
