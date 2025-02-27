@@ -508,12 +508,34 @@ r535_gsp_rpc_poll(struct nvkm_gsp *gsp, u32 fn)
 }
 
 static void *
-r535_gsp_rpc_send(struct nvkm_gsp *gsp, void *argv, bool wait, u32 repc)
+r535_gsp_rpc_handle_reply(struct nvkm_gsp *gsp, u32 fn,
+			  enum nvkm_gsp_rpc_reply_policy policy,
+			  u32 gsp_rpc_len)
 {
-	struct nvfw_gsp_rpc *rpc = container_of(argv, typeof(*rpc), data);
-	struct nvfw_gsp_rpc *msg;
-	u32 fn = rpc->function;
+	struct nvfw_gsp_rpc *reply;
 	void *repv = NULL;
+
+	switch (policy) {
+	case NVKM_GSP_RPC_REPLY_NOWAIT:
+		break;
+	case NVKM_GSP_RPC_REPLY_RECV:
+		reply = r535_gsp_msg_recv(gsp, fn, gsp_rpc_len);
+		if (!IS_ERR_OR_NULL(reply))
+			repv = reply->data;
+		else
+			repv = reply;
+		break;
+	}
+
+	return repv;
+}
+
+static void *
+r535_gsp_rpc_send(struct nvkm_gsp *gsp, void *payload,
+		  enum nvkm_gsp_rpc_reply_policy policy, u32 gsp_rpc_len)
+{
+	struct nvfw_gsp_rpc *rpc = container_of(payload, typeof(*rpc), data);
+	u32 fn = rpc->function;
 	int ret;
 
 	if (gsp->subdev.debug >= NV_DBG_TRACE) {
@@ -527,15 +549,7 @@ r535_gsp_rpc_send(struct nvkm_gsp *gsp, void *argv, bool wait, u32 repc)
 	if (ret)
 		return ERR_PTR(ret);
 
-	if (wait) {
-		msg = r535_gsp_msg_recv(gsp, fn, repc);
-		if (!IS_ERR_OR_NULL(msg))
-			repv = msg->data;
-		else
-			repv = msg;
-	}
-
-	return repv;
+	return r535_gsp_rpc_handle_reply(gsp, fn, policy, gsp_rpc_len);
 }
 
 static void
@@ -719,7 +733,7 @@ r535_gsp_rpc_rm_free(struct nvkm_gsp_object *object)
 	rpc->params.hRoot = client->object.handle;
 	rpc->params.hObjectParent = 0;
 	rpc->params.hObjectOld = object->handle;
-	return nvkm_gsp_rpc_wr(gsp, rpc, true);
+	return nvkm_gsp_rpc_wr(gsp, rpc, NVKM_GSP_RPC_REPLY_RECV);
 }
 
 static void
@@ -737,7 +751,7 @@ r535_gsp_rpc_rm_alloc_push(struct nvkm_gsp_object *object, void *argv, u32 repc)
 	struct nvkm_gsp *gsp = object->client->gsp;
 	void *ret;
 
-	rpc = nvkm_gsp_rpc_push(gsp, rpc, true, sizeof(*rpc) + repc);
+	rpc = nvkm_gsp_rpc_push(gsp, rpc, NVKM_GSP_RPC_REPLY_RECV, sizeof(*rpc) + repc);
 	if (IS_ERR_OR_NULL(rpc))
 		return rpc;
 
@@ -794,7 +808,7 @@ r535_gsp_rpc_rm_ctrl_push(struct nvkm_gsp_object *object, void **argv, u32 repc)
 	struct nvkm_gsp *gsp = object->client->gsp;
 	int ret = 0;
 
-	rpc = nvkm_gsp_rpc_push(gsp, rpc, true, repc);
+	rpc = nvkm_gsp_rpc_push(gsp, rpc, NVKM_GSP_RPC_REPLY_RECV, repc);
 	if (IS_ERR_OR_NULL(rpc)) {
 		*argv = NULL;
 		return PTR_ERR(rpc);
@@ -864,34 +878,36 @@ r535_gsp_rpc_get(struct nvkm_gsp *gsp, u32 fn, u32 argc)
 }
 
 static void *
-r535_gsp_rpc_push(struct nvkm_gsp *gsp, void *argv, bool wait, u32 repc)
+r535_gsp_rpc_push(struct nvkm_gsp *gsp, void *payload,
+		  enum nvkm_gsp_rpc_reply_policy policy, u32 gsp_rpc_len)
 {
-	struct nvfw_gsp_rpc *rpc = container_of(argv, typeof(*rpc), data);
-	struct r535_gsp_msg *cmd = container_of((void *)rpc, typeof(*cmd), data);
+	struct nvfw_gsp_rpc *rpc = container_of(payload, typeof(*rpc), data);
+	struct r535_gsp_msg *msg = container_of((void *)rpc, typeof(*msg), data);
 	const u32 max_msg_size = (16 * 0x1000) - sizeof(struct r535_gsp_msg);
-	const u32 max_rpc_size = max_msg_size - sizeof(*rpc);
-	u32 rpc_size = rpc->length - sizeof(*rpc);
+	const u32 max_payload_size = max_msg_size - sizeof(*rpc);
+	u32 payload_size = rpc->length - sizeof(*rpc);
 	void *repv;
 
 	mutex_lock(&gsp->cmdq.mutex);
-	if (rpc_size > max_rpc_size) {
+	if (payload_size > max_payload_size) {
 		const u32 fn = rpc->function;
-		u32 remain_rpc_size = rpc_size;
+		u32 remain_payload_size = payload_size;
 
 		/* Adjust length, and send initial RPC. */
-		rpc->length = sizeof(*rpc) + max_rpc_size;
-		cmd->checksum = rpc->length;
+		rpc->length = sizeof(*rpc) + max_payload_size;
+		msg->checksum = rpc->length;
 
-		repv = r535_gsp_rpc_send(gsp, argv, false, 0);
+		repv = r535_gsp_rpc_send(gsp, payload, NVKM_GSP_RPC_REPLY_NOWAIT, 0);
 		if (IS_ERR(repv))
 			goto done;
 
-		argv += max_rpc_size;
-		remain_rpc_size -= max_rpc_size;
+		payload += max_payload_size;
+		remain_payload_size -= max_payload_size;
 
 		/* Remaining chunks sent as CONTINUATION_RECORD RPCs. */
-		while (remain_rpc_size) {
-			u32 size = min(remain_rpc_size, max_rpc_size);
+		while (remain_payload_size) {
+			u32 size = min(remain_payload_size,
+				       max_payload_size);
 			void *next;
 
 			next = r535_gsp_rpc_get(gsp, NV_VGPU_MSG_FUNCTION_CONTINUATION_RECORD, size);
@@ -900,31 +916,21 @@ r535_gsp_rpc_push(struct nvkm_gsp *gsp, void *argv, bool wait, u32 repc)
 				goto done;
 			}
 
-			memcpy(next, argv, size);
+			memcpy(next, payload, size);
 
-			repv = r535_gsp_rpc_send(gsp, next, false, 0);
+			repv = r535_gsp_rpc_send(gsp, next, NVKM_GSP_RPC_REPLY_NOWAIT, 0);
 			if (IS_ERR(repv))
 				goto done;
 
-			argv += size;
-			remain_rpc_size -= size;
+			payload += size;
+			remain_payload_size -= size;
 		}
 
 		/* Wait for reply. */
-		rpc = r535_gsp_msg_recv(gsp, fn,
-					repc ? rpc_size + sizeof(*rpc) : 0);
-		if (!IS_ERR_OR_NULL(rpc)) {
-			if (wait) {
-				repv = rpc->data;
-			} else {
-				nvkm_gsp_rpc_done(gsp, rpc);
-				repv = NULL;
-			}
-		} else {
-			repv = wait ? rpc : NULL;
-		}
+		repv = r535_gsp_rpc_handle_reply(gsp, fn, policy, gsp_rpc_len ?
+						 payload_size + sizeof(*rpc) : 0);
 	} else {
-		repv = r535_gsp_rpc_send(gsp, argv, wait, repc);
+		repv = r535_gsp_rpc_send(gsp, payload, policy, gsp_rpc_len);
 	}
 
 done:
@@ -1225,7 +1231,7 @@ r535_gsp_rpc_unloading_guest_driver(struct nvkm_gsp *gsp, bool suspend)
 		rpc->newLevel = NV2080_CTRL_GPU_SET_POWER_STATE_GPU_LEVEL_0;
 	}
 
-	return nvkm_gsp_rpc_wr(gsp, rpc, true);
+	return nvkm_gsp_rpc_wr(gsp, rpc, NVKM_GSP_RPC_REPLY_RECV);
 }
 
 /* dword only */
@@ -1274,7 +1280,7 @@ r535_gsp_rpc_set_registry(struct nvkm_gsp *gsp)
 	}
 	rpc->size = str_offset;
 
-	return nvkm_gsp_rpc_wr(gsp, rpc, false);
+	return nvkm_gsp_rpc_wr(gsp, rpc, NVKM_GSP_RPC_REPLY_NOWAIT);
 }
 
 #if defined(CONFIG_ACPI) && defined(CONFIG_X86)
@@ -1487,7 +1493,7 @@ r535_gsp_rpc_set_system_info(struct nvkm_gsp *gsp)
 	info->pciConfigMirrorSize = 0x001000;
 	r535_gsp_acpi_info(gsp, &info->acpiMethodData);
 
-	return nvkm_gsp_rpc_wr(gsp, info, false);
+	return nvkm_gsp_rpc_wr(gsp, info, NVKM_GSP_RPC_REPLY_NOWAIT);
 }
 
 static int
