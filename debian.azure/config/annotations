@@ -53,6 +53,15 @@ CONFIG_DVB_DUMMY_FE                             note<'expert use only'>
 CONFIG_EDAC_DECODE_MCE                          policy<{'amd64': 'y'}>
 CONFIG_EDAC_DECODE_MCE                          note<'LP:#1793386'>
 
+CONFIG_EROFS_FS_ZIP                             policy<{'amd64': 'y', 'arm64': 'y'}>
+CONFIG_EROFS_FS_ZIP                             note<'LP: #2098178'>
+
+CONFIG_EROFS_FS_ZIP_DEFLATE                     policy<{'amd64': 'y', 'arm64': 'y'}>
+CONFIG_EROFS_FS_ZIP_DEFLATE                     note<'LP: #2098178'>
+
+CONFIG_EROFS_FS_ZIP_LZMA                        policy<{'amd64': 'y', 'arm64': 'y'}>
+CONFIG_EROFS_FS_ZIP_LZMA                        note<'LP: #2098178'>
+
 CONFIG_FUJITSU_ES                               policy<{'amd64': 'n', 'arm64': 'n'}>
 CONFIG_FUJITSU_ES                               note<'modules reduction'>
 
@@ -1408,11 +1417,6 @@ CONFIG_ENCX24J600                               policy<{'amd64': 'n', 'arm64': '
 CONFIG_ENVELOPE_DETECTOR                        policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_EPIC100                                  policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_EROFS_FS_ONDEMAND                        policy<{'amd64': 'y', 'arm64': 'y'}>
-CONFIG_EROFS_FS_PCPU_KTHREAD                    policy<{'amd64': '-', 'arm64': 'y'}>
-CONFIG_EROFS_FS_PCPU_KTHREAD_HIPRI              policy<{'amd64': '-', 'arm64': 'n'}>
-CONFIG_EROFS_FS_ZIP                             policy<{'amd64': 'n', 'arm64': 'y'}>
-CONFIG_EROFS_FS_ZIP_DEFLATE                     policy<{'amd64': '-', 'arm64': 'y'}>
-CONFIG_EROFS_FS_ZIP_LZMA                        policy<{'amd64': '-', 'arm64': 'y'}>
 CONFIG_EXTCON_ADC_JACK                          policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_EXTCON_INTEL_CHT_WC                      policy<{'amd64': '-'}>
 CONFIG_EXTCON_USBC_CROS_EC                      policy<{'amd64': '-', 'arm64': '-'}>
