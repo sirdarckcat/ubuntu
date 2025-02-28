@@ -2063,6 +2063,8 @@ enum netdev_stat_type {
  *
  *	@threaded:	napi threaded mode is enabled
  *
+ *	@netns_immutable: interface can't change network namespaces
+ *
  *	@net_notifier_list:	List of per-net netdev notifier block
  *				that follow this device when it is moved
  *				to another network namespace.
@@ -2450,6 +2452,7 @@ struct net_device {
 	bool			proto_down;
 	unsigned		wol_enabled:1;
 	unsigned		threaded:1;
+	unsigned		netns_immutable:1;
 
 	struct list_head	net_notifier_list;
 
