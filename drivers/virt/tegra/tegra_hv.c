@@ -19,6 +19,7 @@
 #include <linux/of_platform.h>
 #include <linux/platform_device.h>
 #include <linux/of_irq.h>
+#include <linux/overflow.h>
 
 #include <soc/tegra/virt/syscalls.h>
 #include <soc/tegra/virt/hv-ivc.h>
@@ -88,6 +89,9 @@ struct tegra_hv_data {
 	int guestid;
 
 	struct guest_ivc_info *guest_ivc_info;
+
+	/* set irq to each ivc queue */
+	uint32_t *interrupts_arr;
 
 	/* ivc_devs is indexed by queue id */
 	struct hv_ivc *ivc_devs;
@@ -397,6 +401,8 @@ static void tegra_hv_cleanup(struct tegra_hv_data *hvd)
 		class_destroy(hvd->hv_class);
 		hvd->hv_class = NULL;
 	}
+
+	kfree(hvd->interrupts_arr);
 }
 
 static ssize_t vmid_show(const struct class *class,
@@ -458,11 +464,10 @@ static CLASS_ATTR_WO(update_vm_op);
 
 static int tegra_hv_setup(struct tegra_hv_data *hvd)
 {
-	const int intr_property_size = 3;
+	const uint32_t intr_property_size = 3u;
 	uint64_t info_page;
-	uint32_t i;
+	uint32_t i, result;
 	int ret;
-	uint32_t *interrupts_arr;
 	uint64_t ivcsize = 0;
 	uint64_t mpsize = 0;
 
@@ -584,9 +589,9 @@ static int tegra_hv_setup(struct tegra_hv_data *hvd)
 	}
 
 	/* Do not free this, of_add_property does not copy the structure */
-	interrupts_arr = kmalloc(hvd->info->nr_queues * sizeof(uint32_t)
+	hvd->interrupts_arr = kmalloc(hvd->info->nr_queues * sizeof(uint32_t)
 			* intr_property_size, GFP_KERNEL);
-	if (interrupts_arr == NULL) {
+	if (hvd->interrupts_arr == NULL) {
 		ERR("failed to allocate array for interrupts property\n");
 		return -ENOMEM;
 	}
@@ -601,21 +606,27 @@ static int tegra_hv_setup(struct tegra_hv_data *hvd)
 				&ivc_info_queue_array(hvd->info)[i];
 		if (qd->id > hvd->max_qid)
 			hvd->max_qid = qd->id;
+
+		if (check_mul_overflow(i, intr_property_size, &result)) {
+			ERR("%s: operation got overflown.\n", __func__);
+			return -EAGAIN;
+		}
+
 		/* 0 => SPI */
-		interrupts_arr[(i * intr_property_size)] = (__force uint32_t)cpu_to_be32(0);
-		interrupts_arr[(i * intr_property_size) + 1] =
+		hvd->interrupts_arr[result] = (__force uint32_t)cpu_to_be32(0);
+		hvd->interrupts_arr[result + 1] =
 			(__force uint32_t)cpu_to_be32(qd->irq - 32); /* Id in SPI namespace */
 		/* 0x1 == low-to-high edge */
-		interrupts_arr[(i * intr_property_size) + 2] = (__force uint32_t)cpu_to_be32(0x1);
+		hvd->interrupts_arr[result + 2] = (__force uint32_t)cpu_to_be32(0x1);
 	}
 
 	interrupts_prop.length =
 		hvd->info->nr_queues * sizeof(uint32_t) * intr_property_size;
-	interrupts_prop.value = interrupts_arr;
+	interrupts_prop.value = hvd->interrupts_arr;
 
 	if (of_add_property(hvd->dev, &interrupts_prop)) {
 		ERR("failed to add interrupts property\n");
-		kfree(interrupts_arr);
+		kfree(hvd->interrupts_arr);
 		return -EACCES;
 	}
 
@@ -663,7 +674,11 @@ static int tegra_hv_setup(struct tegra_hv_data *hvd)
 		ivmk->size = mpd->size;
 		ivmk->peer_vmid = mpd->peer_vmid;
 
-		mpsize += mpd->size;
+		if (check_add_overflow(mpsize, mpd->size, &mpsize)) {
+			ERR("%s: operation got overflown.\n", __func__);
+			return -EAGAIN;
+		}
+
 		BUG_ON(mpsize < mpd->size);
 
 		INFO("added mempool %u: ipa=%llx size=%llx peer=%u\n",
