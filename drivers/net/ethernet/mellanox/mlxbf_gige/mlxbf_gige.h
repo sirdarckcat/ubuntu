@@ -130,7 +130,13 @@ struct mlxbf_gige {
 	u8 hw_version;
 	struct mlxbf_gige_mdio_gw *mdio_gw;
 	int prev_speed;
+	struct timer_list media_timer;
+	struct work_struct phy_task;
+	u8 aneg_timeout;
 };
+
+/* BF2 autoneg takes 3-10 secs, set timeout to 50% over max */
+#define MLXBF_GIGE_ANEG_TIMEOUT 15
 
 /* Rx Work Queue Element definitions */
 #define MLXBF_GIGE_RX_WQE_SZ                   8
