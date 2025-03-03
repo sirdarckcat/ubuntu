@@ -5,6 +5,8 @@
  * Copyright (C) 2020-2021 NVIDIA CORPORATION & AFFILIATES
  */
 
+#define DEBUG
+
 #include <linux/acpi.h>
 #include <linux/device.h>
 #include <linux/dma-mapping.h>
@@ -17,6 +19,7 @@
 #include <linux/platform_device.h>
 #include <linux/rtnetlink.h>
 #include <linux/skbuff.h>
+#include <linux/timer.h>
 
 #include "mlxbf_gige.h"
 #include "mlxbf_gige_regs.h"
@@ -128,11 +131,43 @@ static int mlxbf_gige_clean_port(struct mlxbf_gige *priv)
 	return err;
 }
 
+static void mlxbf_gige_phy_task(struct work_struct *work)
+{
+	struct mlxbf_gige *priv = container_of(work, struct mlxbf_gige, phy_task);
+	struct phy_device *phydev = priv->netdev->phydev;
+	int aneg_done;
+
+	aneg_done = phy_aneg_done(phydev);
+
+	if (aneg_done == 0) {
+		dev_dbg(priv->dev, "phy_task: autoneg pending, timeout=%d\n", priv->aneg_timeout);
+		if (priv->aneg_timeout--) {
+			/* Start timer to check again in one second */
+			priv->media_timer.expires = jiffies + HZ;
+			add_timer(&priv->media_timer);
+		} else {
+			/* Upon timeout, restart autoneg once */
+			dev_dbg(priv->dev, "phy_task: restarting autoneg, status=0x%x\n",
+				phy_restart_aneg(phydev));
+		}
+	} else if (aneg_done < 0) {
+		dev_dbg(priv->dev, "phy_task: autoneg failed\n");
+	} else {
+		dev_dbg(priv->dev, "phy_task: autoneg succeeded\n");
+	}
+}
+
+static void mlxbf_gige_phy_timer(struct timer_list *t)
+{
+	struct mlxbf_gige *priv = from_timer(priv, t, media_timer);
+
+	schedule_work(&priv->phy_task);
+}
+
 static int mlxbf_gige_open(struct net_device *netdev)
 {
 	struct mlxbf_gige *priv = netdev_priv(netdev);
 	struct phy_device *phydev = netdev->phydev;
-	u8 timeout = 10;
 	u64 control;
 	u64 int_en;
 	int err;
@@ -162,15 +197,10 @@ static int mlxbf_gige_open(struct net_device *netdev)
 		 * to complete autonegotiation and so the link remains down.
 		 * The software workaround is to restart autonegotiation.
 		 */
-		while (timeout) {
-			if (phy_aneg_done(phydev))
-				break;
-			msleep(1000);
-			timeout--;
-		};
-
-		if (timeout == 0)
-			phy_restart_aneg(phydev);
+		priv->aneg_timeout = MLXBF_GIGE_ANEG_TIMEOUT;
+		timer_setup(&priv->media_timer, mlxbf_gige_phy_timer, 0);
+		priv->media_timer.expires = jiffies + HZ;
+		add_timer(&priv->media_timer);
 	}
 
 	err = mlxbf_gige_tx_init(priv);
@@ -232,6 +262,11 @@ static int mlxbf_gige_stop(struct net_device *netdev)
 {
 	struct mlxbf_gige *priv = netdev_priv(netdev);
 	u64 control;
+
+	if (priv->hw_version == MLXBF_GIGE_VERSION_BF2) {
+		del_timer_sync(&priv->media_timer);
+		cancel_work_sync(&priv->phy_task);
+	}
 
 	control = readq(priv->base + MLXBF_GIGE_CONTROL);
 	control &= ~MLXBF_GIGE_CONTROL_PORT_EN;
@@ -459,6 +494,10 @@ static int mlxbf_gige_probe(struct platform_device *pdev)
 	priv->base = base;
 	priv->llu_base = llu_base;
 	priv->plu_base = plu_base;
+
+	if (priv->hw_version == MLXBF_GIGE_VERSION_BF2) {
+		INIT_WORK(&priv->phy_task, mlxbf_gige_phy_task);
+	}
 
 	priv->rx_q_entries = MLXBF_GIGE_DEFAULT_RXQ_SZ;
 	priv->tx_q_entries = MLXBF_GIGE_DEFAULT_TXQ_SZ;
