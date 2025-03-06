@@ -225,7 +225,8 @@ static inline gfn_t kvm_gfn_for_root(struct kvm *kvm, struct kvm_mmu_page *root,
 		return kvm_gfn_to_shared(kvm, gfn);
 }
 
-static inline bool kvm_mmu_page_ad_need_write_protect(struct kvm_mmu_page *sp)
+static inline bool kvm_mmu_page_ad_need_write_protect(struct kvm *kvm,
+                                                     struct kvm_mmu_page *sp)
 {
 	/*
 	 * When using the EPT page-modification log, the GPAs in the CPU dirty
