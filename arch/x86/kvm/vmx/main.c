@@ -1155,7 +1155,6 @@ struct kvm_x86_ops vt_x86_ops __initdata = {
 
 	.sched_in = vt_sched_in,
 
-	.cpu_dirty_log_size = PML_ENTITY_NUM,
 	.update_cpu_dirty_logging = vt_update_cpu_dirty_logging,
 
 	.nested_ops = &vmx_nested_ops,
