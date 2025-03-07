@@ -29,7 +29,7 @@ CONFIG_NUMA_BALANCING_DEFAULT_ENABLED           note<'LP:1557690'>
 CONFIG_OSNOISE_TRACER                           policy<{'amd64': 'y', 'arm64': 'y'}>
 CONFIG_OSNOISE_TRACER                           note<'LP: #1961588'>
 
-CONFIG_PREEMPT_DYNAMIC                          policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_PREEMPT_DYNAMIC                          policy<{'amd64': 'n', 'arm64': 'n'}>
 CONFIG_PREEMPT_DYNAMIC                          note<'LP: #2051342'>
 
 CONFIG_PREEMPT_RT                               policy<{'amd64': 'y', 'arm64': 'y'}>
@@ -41,7 +41,7 @@ CONFIG_RCU_LAZY                                 note<'LP: #2051342'>
 CONFIG_RCU_LAZY_DEFAULT_OFF                     policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_RCU_LAZY_DEFAULT_OFF                     note<'LP: #2051342'>
 
-CONFIG_RUST                                     policy<{'amd64': '-'}>
+CONFIG_RUST                                     policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_RUST                                     note<'Disable Rust for realtime'>
 
 CONFIG_TIMERLAT_TRACER                          policy<{'amd64': 'y', 'arm64': 'y'}>
@@ -54,17 +54,18 @@ CONFIG_WQ_POWER_EFFICIENT_DEFAULT               note<'LP: #1961588'>
 # ---- Annotations without notes ----
 
 CONFIG_ARCH_ENABLE_THP_MIGRATION                policy<{'amd64': '-', 'arm64': '-'}>
-CONFIG_ARCH_SUPPORTS_RT                         policy<{'amd64': 'y', 'arm64': 'y'}>
+CONFIG_ARCH_SUPPORTS_HUGE_PFNMAP                policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_ARCH_SUPPORTS_PMD_PFNMAP                 policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_ARCH_SUPPORTS_PUD_PFNMAP                 policy<{'amd64': '-'}>
 CONFIG_ARCH_WANT_PMD_MKWRITE                    policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_ARM64_ERRATUM_834220                     policy<{'arm64': '-'}>
-CONFIG_AX88796B_RUST_PHY                        policy<{'amd64': '-'}>
-CONFIG_BINDGEN_VERSION_TEXT                     policy<{'amd64': '-'}>
-CONFIG_BLK_DEV_RUST_NULL                        policy<{'amd64': '-'}>
-CONFIG_CC_VERSION_TEXT                          policy<{'amd64': '"x86_64-linux-gnu-gcc-14 (Ubuntu 14.2.0-4ubuntu2) 14.2.0"', 'arm64': '"aarch64-linux-gnu-gcc-14 (Ubuntu 14.2.0-4ubuntu2) 14.2.0"'}>
+CONFIG_AX88796B_RUST_PHY                        policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_BINDGEN_VERSION_TEXT                     policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_BLK_DEV_RUST_NULL                        policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_CLK_QCM2290_GPUCC                        policy<{'arm64': 'n'}>
 CONFIG_COMMON_CLK_C3_PERIPHERALS                policy<{'arm64': 'y'}>
 CONFIG_COMPACT_UNEVICTABLE_DEFAULT              policy<{'amd64': '0', 'arm64': '0'}>
-CONFIG_CZNIC_PLATFORMS                          policy<{'amd64': 'n', 'arm64': 'n'}>
+CONFIG_CZNIC_PLATFORMS                          policy<{'amd64': '-', 'arm64': 'n'}>
 CONFIG_DEBUG_MUTEXES                            policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_DEBUG_RWSEMS                             policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_DEV_DAX                                  policy<{'amd64': '-', 'arm64': '-'}>
@@ -75,6 +76,7 @@ CONFIG_DRM_MGAG200_DISABLE_WRITECOMBINE         policy<{'amd64': 'n', 'arm64': '
 CONFIG_DRM_PANEL_HIMAX_HX83102                  policy<{'arm64': 'n'}>
 CONFIG_DRM_PANEL_ILITEK_ILI9806E                policy<{'arm64': 'n'}>
 CONFIG_DRM_PANEL_LINCOLNTECH_LCD197             policy<{'arm64': 'n'}>
+CONFIG_DRM_PANIC_SCREEN_QR_CODE                 policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_DRM_STM_LVDS                             policy<{'arm64': 'n'}>
 CONFIG_EC_LENOVO_YOGA_C630                      policy<{'arm64': 'n'}>
 CONFIG_FS_DAX_PMD                               policy<{'amd64': '-', 'arm64': '-'}>
@@ -89,9 +91,11 @@ CONFIG_HAVE_KVM_MSI                             policy<{'amd64': 'y', 'arm64': '
 CONFIG_HAVE_KVM_READONLY_MEM                    policy<{'amd64': 'y', 'arm64': '-'}>
 CONFIG_HAVE_KVM_VCPU_RUN_PID_CHANGE             policy<{'arm64': '-'}>
 CONFIG_HAVE_PAGE_SIZE_4KB                       policy<{'amd64': 'y', 'arm64': 'y'}>
-CONFIG_HAVE_PREEMPT_AUTO                        policy<{'amd64': 'y'}>
+CONFIG_HAVE_PREEMPT_AUTO                        policy<{'amd64': '-'}>
 CONFIG_HAVE_SCHED_AVG_IRQ                       policy<{'amd64': 'y', 'arm64': 'y'}>
+CONFIG_HUGETLB_PMD_PAGE_TABLE_SHARING           policy<{'amd64': 'y', 'arm64': 'y'}>
 CONFIG_IRQ_BYPASS_MANAGER                       policy<{'amd64': 'y', 'arm64': 'm'}>
+CONFIG_IR_GPIO_TX                               policy<{'arm64': '-'}>
 CONFIG_KVM_COMMON                               policy<{'amd64': 'y', 'arm64': '-'}>
 CONFIG_KVM_GENERIC_DIRTYLOG_READ_PROTECT        policy<{'amd64': 'y', 'arm64': '-'}>
 CONFIG_KVM_GENERIC_HARDWARE_ENABLING            policy<{'amd64': 'y', 'arm64': '-'}>
@@ -106,24 +110,26 @@ CONFIG_NUMA_BALANCING                           policy<{'amd64': '-', 'arm64': '
 CONFIG_NVHE_EL2_DEBUG                           policy<{'arm64': '-'}>
 CONFIG_PAGE_SHIFT                               policy<{'amd64': '12', 'arm64': '12'}>
 CONFIG_PAGE_SIZE_4KB                            policy<{'amd64': 'y', 'arm64': 'y'}>
-CONFIG_PREEMPT_AUTO                             policy<{'amd64': 'n'}>
-CONFIG_PREEMPT_BUILD                            policy<{'amd64': 'y', 'arm64': '-'}>
-CONFIG_PREEMPT_BUILD_AUTO                       policy<{'amd64': 'y'}>
+CONFIG_PREEMPT                                  policy<{'amd64': 'y', 'arm64': 'y'}>
+CONFIG_PREEMPT_AUTO                             policy<{'amd64': '-'}>
+CONFIG_PREEMPT_BUILD_AUTO                       policy<{'amd64': '-'}>
+CONFIG_PREEMPT_NONE                             policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_PREEMPT_NOTIFIERS                        policy<{'amd64': 'y', 'arm64': '-'}>
-CONFIG_PREEMPT_VOLUNTARY                        policy<{'amd64': 'n', 'arm64': 'n'}>
+CONFIG_PREEMPT_VOLUNTARY                        policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_PTDUMP_STAGE2_DEBUGFS                    policy<{'arm64': '-'}>
 CONFIG_QUEUED_RWLOCKS                           policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_RCU_BOOST                                policy<{'amd64': 'y', 'arm64': 'y'}>
 CONFIG_RCU_BOOST_DELAY                          policy<{'amd64': '500', 'arm64': '500'}>
 CONFIG_RCU_NOCB_CPU_CB_BOOST                    policy<{'amd64': 'y', 'arm64': 'y'}>
 CONFIG_READ_ONLY_THP_FOR_FS                     policy<{'amd64': '-', 'arm64': '-'}>
-CONFIG_RUSTC_VERSION_TEXT                       policy<{'amd64': '-'}>
-CONFIG_RUST_BUILD_ASSERT_ALLOW                  policy<{'amd64': '-'}>
-CONFIG_RUST_DEBUG_ASSERTIONS                    policy<{'amd64': '-'}>
-CONFIG_RUST_FW_LOADER_ABSTRACTIONS              policy<{'amd64': '-'}>
+CONFIG_RUSTC_VERSION_TEXT                       policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_RUST_BUILD_ASSERT_ALLOW                  policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_RUST_DEBUG_ASSERTIONS                    policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_RUST_FW_LOADER_ABSTRACTIONS              policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_RUST_IS_AVAILABLE                        policy<{'amd64': '-', 'arm64': '-'}>
-CONFIG_RUST_OVERFLOW_CHECKS                     policy<{'amd64': '-'}>
-CONFIG_RUST_PHYLIB_ABSTRACTIONS                 policy<{'amd64': '-'}>
-CONFIG_SAMPLES_RUST                             policy<{'amd64': '-'}>
+CONFIG_RUST_OVERFLOW_CHECKS                     policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_RUST_PHYLIB_ABSTRACTIONS                 policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_SAMPLES_RUST                             policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_SOFTIRQ_ON_OWN_STACK                     policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_SOFTLOCKUP_DETECTOR_INTR_STORM           policy<{'amd64': 'n', 'arm64': 'n'}>
 CONFIG_TEE_STMM_EFI                             policy<{'arm64': 'n'}>
@@ -133,4 +139,3 @@ CONFIG_TRANSPARENT_HUGEPAGE                     policy<{'amd64': '-', 'arm64': '
 CONFIG_TRANSPARENT_HUGEPAGE_ALWAYS              policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_TRANSPARENT_HUGEPAGE_MADVISE             policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_TRANSPARENT_HUGEPAGE_NEVER               policy<{'amd64': '-', 'arm64': '-'}>
-CONFIG_UNINLINE_SPIN_UNLOCK                     policy<{'amd64': 'y', 'arm64': '-'}>
