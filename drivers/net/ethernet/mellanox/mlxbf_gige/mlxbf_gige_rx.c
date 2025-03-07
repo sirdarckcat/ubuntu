@@ -281,6 +281,9 @@ static bool mlxbf_gige_rx_packet(struct mlxbf_gige *priv, int *rx_pkts)
 		netdev->stats.rx_packets++;
 		netdev->stats.rx_bytes += datalen;
 
+		if (netif_msg_rx_status(priv))
+			mlxbf_gige_dump_rx_tx("rx_packet", priv);
+
 		skb = priv->rx_skb[rx_pi_rem];
 
 		/* Alloc another RX SKB for this same index */
@@ -300,8 +303,12 @@ static bool mlxbf_gige_rx_packet(struct mlxbf_gige *priv, int *rx_pkts)
 
 		*rx_wqe_addr = rx_buf_dma;
 	} else if (rx_cqe & MLXBF_GIGE_RX_CQE_PKT_STATUS_MAC_ERR) {
+		if (netif_msg_rx_err(priv))
+			mlxbf_gige_dump_rx_tx("rx_mac_error", priv);
 		priv->stats.rx_mac_errors++;
 	} else if (rx_cqe & MLXBF_GIGE_RX_CQE_PKT_STATUS_TRUNCATED) {
+		if (netif_msg_rx_err(priv))
+			mlxbf_gige_dump_rx_tx("rx_truncate_error", priv);
 		priv->stats.rx_truncate_errors++;
 	}
 
