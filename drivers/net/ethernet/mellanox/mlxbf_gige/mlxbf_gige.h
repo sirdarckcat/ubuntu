@@ -130,6 +130,7 @@ struct mlxbf_gige {
 	u8 hw_version;
 	struct mlxbf_gige_mdio_gw *mdio_gw;
 	int prev_speed;
+	u32 msg_enable;
 	struct timer_list media_timer;
 	struct work_struct phy_task;
 	u8 aneg_timeout;
@@ -211,5 +212,6 @@ void mlxbf_gige_free_irqs(struct mlxbf_gige *priv);
 int mlxbf_gige_poll(struct napi_struct *napi, int budget);
 extern const struct ethtool_ops mlxbf_gige_ethtool_ops;
 void mlxbf_gige_update_tx_wqe_next(struct mlxbf_gige *priv);
+void mlxbf_gige_dump_rx_tx(const char *str, struct mlxbf_gige *priv);
 
 #endif /* !defined(__MLXBF_GIGE_H__) */
