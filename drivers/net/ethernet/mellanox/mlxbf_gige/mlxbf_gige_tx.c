@@ -132,8 +132,11 @@ bool mlxbf_gige_handle_tx_complete(struct mlxbf_gige *priv)
 	u16 tx_ci;
 
 	tx_status = readq(priv->base + MLXBF_GIGE_TX_STATUS);
-	if (tx_status & MLXBF_GIGE_TX_STATUS_DATA_FIFO_FULL)
+	if (tx_status & MLXBF_GIGE_TX_STATUS_DATA_FIFO_FULL) {
+		if (netif_msg_tx_err(priv))
+			mlxbf_gige_dump_rx_tx("tx_fifo_full", priv);
 		priv->stats.tx_fifo_full++;
+	}
 	tx_ci = readq(priv->base + MLXBF_GIGE_TX_CONSUMER_INDEX);
 	stats = &priv->netdev->stats;
 
@@ -163,6 +166,9 @@ bool mlxbf_gige_handle_tx_complete(struct mlxbf_gige *priv)
 		/* Ensure completion of updates across all cores */
 		mb();
 	}
+
+	if (netif_msg_tx_done(priv))
+		mlxbf_gige_dump_rx_tx("handle_tx_complete", priv);
 
 	/* Since the TX ring was likely just drained, check if TX queue
 	 * had previously been stopped and now that there are TX buffers
@@ -203,6 +209,8 @@ netdev_tx_t mlxbf_gige_start_xmit(struct sk_buff *skb,
 	if (skb->len > MLXBF_GIGE_DEFAULT_BUF_SZ || skb_linearize(skb)) {
 		dev_kfree_skb(skb);
 		netdev->stats.tx_dropped++;
+		if (netif_msg_tx_err(priv))
+			mlxbf_gige_dump_rx_tx("skb_linearize fail", priv);
 		return NETDEV_TX_OK;
 	}
 
@@ -221,6 +229,8 @@ netdev_tx_t mlxbf_gige_start_xmit(struct sk_buff *skb,
 			/* Free original skb, could not alloc new aligned SKB */
 			dev_kfree_skb(skb);
 			netdev->stats.tx_dropped++;
+			if (netif_msg_tx_err(priv))
+				mlxbf_gige_dump_rx_tx("alloc_skb fail", priv);
 			return NETDEV_TX_OK;
 		}
 
@@ -235,6 +245,8 @@ netdev_tx_t mlxbf_gige_start_xmit(struct sk_buff *skb,
 		if (dma_mapping_error(priv->dev, tx_buf_dma)) {
 			dev_kfree_skb(skb);
 			netdev->stats.tx_dropped++;
+			if (netif_msg_tx_err(priv))
+				mlxbf_gige_dump_rx_tx("dma_mapping_error", priv);
 			return NETDEV_TX_OK;
 		}
 	}
@@ -255,6 +267,9 @@ netdev_tx_t mlxbf_gige_start_xmit(struct sk_buff *skb,
 
 	/* Write entire 2nd word of TX WQE */
 	*(tx_wqe_addr + 1) = word2;
+
+	if (netif_msg_tx_queued(priv))
+		mlxbf_gige_dump_rx_tx("start_xmit", priv);
 
 	spin_lock_irqsave(&priv->lock, flags);
 	priv->tx_skb[priv->tx_pi % priv->tx_q_entries] = tx_skb;
