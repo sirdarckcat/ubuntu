@@ -193,6 +193,18 @@ static void mlxbf_gige_get_pause_stats(struct net_device *netdev,
 	}
 }
 
+static u32 mlxbf_gige_get_msglevel(struct net_device *netdev)
+{
+	struct mlxbf_gige *priv = netdev_priv(netdev);
+	return priv->msg_enable;
+}
+
+static void mlxbf_gige_set_msglevel(struct net_device *netdev, u32 data)
+{
+	struct mlxbf_gige *priv = netdev_priv(netdev);
+	priv->msg_enable = data;
+}
+
 const struct ethtool_ops mlxbf_gige_ethtool_ops = {
 	.get_link		= ethtool_op_get_link,
 	.get_ringparam		= mlxbf_gige_get_ringparam,
@@ -207,4 +219,6 @@ const struct ethtool_ops mlxbf_gige_ethtool_ops = {
 	.get_pause_stats	= mlxbf_gige_get_pause_stats,
 	.get_link_ksettings	= phy_ethtool_get_link_ksettings,
 	.set_link_ksettings	= phy_ethtool_set_link_ksettings,
+	.get_msglevel		= mlxbf_gige_get_msglevel,
+	.set_msglevel		= mlxbf_gige_set_msglevel,
 };
