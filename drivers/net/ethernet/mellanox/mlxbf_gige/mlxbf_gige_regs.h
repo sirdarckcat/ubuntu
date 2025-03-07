@@ -75,6 +75,7 @@
 #define MLXBF_GIGE_RX_DMA                             0x0580
 #define MLXBF_GIGE_RX_DMA_EN                          BIT(0)
 #define MLXBF_GIGE_RX_CQE_PACKET_CI                   0x05b0
+#define MLXBF_GIGE_RX_FIFO_FULLNESS                   0x05d8
 #define MLXBF_GIGE_MAC_CFG                            0x05e8
 
 /* NOTE: MLXBF_GIGE_MAC_CFG is the last defined register offset,
