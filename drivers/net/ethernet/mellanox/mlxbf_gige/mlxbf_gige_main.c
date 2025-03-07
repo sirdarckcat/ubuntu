@@ -24,6 +24,15 @@
 #include "mlxbf_gige.h"
 #include "mlxbf_gige_regs.h"
 
+#define MLXBF_GIGE_DEF_MSG_ENABLE  \
+	(NETIF_MSG_IFUP          | \
+	 NETIF_MSG_LINK          | \
+	 NETIF_MSG_TX_ERR        | \
+	 NETIF_MSG_RX_ERR)
+static int mlxbf_gige_debug = -1;
+module_param(mlxbf_gige_debug, int, 0);
+MODULE_PARM_DESC(mlxbf_gige_debug, "Debug level (0=none,...,16=all)");
+
 /* Allocate SKB whose payload pointer aligns with the Bluefield
  * hardware DMA limitation, i.e. DMA operation can't cross
  * a 4KB boundary.  A maximum packet size of 2KB is assumed in the
@@ -135,25 +144,29 @@ static void mlxbf_gige_phy_task(struct work_struct *work)
 {
 	struct mlxbf_gige *priv = container_of(work, struct mlxbf_gige, phy_task);
 	struct phy_device *phydev = priv->netdev->phydev;
-	int aneg_done;
+	int aneg_done, aneg_restart;
 
 	aneg_done = phy_aneg_done(phydev);
 
 	if (aneg_done == 0) {
-		dev_dbg(priv->dev, "phy_task: autoneg pending, timeout=%d\n", priv->aneg_timeout);
+		if (netif_msg_link(priv))
+			dev_dbg(priv->dev, "phy_task: autoneg pending, timeout=%d\n", priv->aneg_timeout);
 		if (priv->aneg_timeout--) {
 			/* Start timer to check again in one second */
 			priv->media_timer.expires = jiffies + HZ;
 			add_timer(&priv->media_timer);
 		} else {
 			/* Upon timeout, restart autoneg once */
-			dev_dbg(priv->dev, "phy_task: restarting autoneg, status=0x%x\n",
-				phy_restart_aneg(phydev));
+			aneg_restart = phy_restart_aneg(phydev);
+			if (netif_msg_link(priv))
+				dev_dbg(priv->dev, "phy_task: restarting autoneg, status=0x%x\n", aneg_restart);
 		}
 	} else if (aneg_done < 0) {
-		dev_dbg(priv->dev, "phy_task: autoneg failed\n");
+		if (netif_msg_link(priv))
+			dev_dbg(priv->dev, "phy_task: autoneg failed\n");
 	} else {
-		dev_dbg(priv->dev, "phy_task: autoneg succeeded\n");
+		if (netif_msg_link(priv))
+			dev_dbg(priv->dev, "phy_task: autoneg succeeded\n");
 	}
 }
 
@@ -162,6 +175,20 @@ static void mlxbf_gige_phy_timer(struct timer_list *t)
 	struct mlxbf_gige *priv = from_timer(priv, t, media_timer);
 
 	schedule_work(&priv->phy_task);
+}
+
+void mlxbf_gige_dump_rx_tx(const char *str, struct mlxbf_gige *priv)
+{
+	dev_dbg(priv->dev, "%s tx_ci=0x%llx tx_pi=0x%llx rx_ci=0x%llx rx_pi=0x%llx int_mask=0x%llx\n", str,
+		readq(priv->base + MLXBF_GIGE_TX_CONSUMER_INDEX),
+		readq(priv->base + MLXBF_GIGE_TX_PRODUCER_INDEX),
+		readq(priv->base + MLXBF_GIGE_RX_CQE_PACKET_CI),
+		readq(priv->base + MLXBF_GIGE_RX_WQE_PI),
+		readq(priv->base + MLXBF_GIGE_INT_MASK));
+
+	dev_dbg(priv->dev, "  din_drop=0x%llx rx_dma=0x%llx rx_fifo=0x%llx rx_polarity=%d\n",
+		readq(priv->base + MLXBF_GIGE_RX_DIN_DROP_COUNTER), readq(priv->base + MLXBF_GIGE_RX_DMA),
+		readq(priv->base + MLXBF_GIGE_RX_FIFO_FULLNESS), priv->valid_polarity);
 }
 
 static int mlxbf_gige_open(struct net_device *netdev)
@@ -190,7 +217,13 @@ static int mlxbf_gige_open(struct net_device *netdev)
 	 */
 	priv->valid_polarity = 0;
 
+	if (netif_msg_ifup(priv))
+		mlxbf_gige_dump_rx_tx("open: start state", priv);
+
 	phy_start(phydev);
+
+	if (netif_msg_ifup(priv))
+		mlxbf_gige_dump_rx_tx("open: after phy_start", priv);
 
 	if (priv->hw_version == MLXBF_GIGE_VERSION_BF2) {
 		/* On BlueField-2 systems, the KSZ9031 PHY hardware could fail
@@ -208,15 +241,25 @@ static int mlxbf_gige_open(struct net_device *netdev)
 		dev_err(priv->dev, "open: tx_init failed, err=0x%x\n", err);
 		goto phy_deinit;
 	}
+
+	if (netif_msg_ifup(priv))
+		mlxbf_gige_dump_rx_tx("open: after tx_init", priv);
+
 	err = mlxbf_gige_rx_init(priv);
 	if (err) {
 		dev_err(priv->dev, "open: rx_init failed, err=0x%x\n", err);
 		goto tx_deinit;
 	}
 
+	if (netif_msg_ifup(priv))
+		mlxbf_gige_dump_rx_tx("open: after rx_init", priv);
+
 	netif_napi_add(netdev, &priv->napi, mlxbf_gige_poll, NAPI_POLL_WEIGHT);
 	napi_enable(&priv->napi);
 	netif_start_queue(netdev);
+
+	if (netif_msg_ifup(priv))
+		mlxbf_gige_dump_rx_tx("open: after napi", priv);
 
 	err = mlxbf_gige_request_irqs(priv);
 	if (err) {
@@ -241,6 +284,9 @@ static int mlxbf_gige_open(struct net_device *netdev)
 	mb();
 
 	writeq(int_en, priv->base + MLXBF_GIGE_INT_EN);
+
+	if (netif_msg_ifup(priv))
+		mlxbf_gige_dump_rx_tx("open: end state", priv);
 
 	return 0;
 
@@ -494,6 +540,7 @@ static int mlxbf_gige_probe(struct platform_device *pdev)
 	priv->base = base;
 	priv->llu_base = llu_base;
 	priv->plu_base = plu_base;
+	priv->msg_enable = netif_msg_init(mlxbf_gige_debug, MLXBF_GIGE_DEF_MSG_ENABLE);
 
 	if (priv->hw_version == MLXBF_GIGE_VERSION_BF2) {
 		INIT_WORK(&priv->phy_task, mlxbf_gige_phy_task);
