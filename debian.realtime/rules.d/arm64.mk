@@ -1,6 +1,6 @@
-human_arch	= ARMv8
 build_arch	= arm64
 defconfig	= defconfig
+flavours	= realtime
 build_image	= Image.gz
 kernel_file	= arch/$(build_arch)/boot/Image.gz
 install_file	= vmlinuz
@@ -19,4 +19,3 @@ do_tools_bpftool = true
 do_tools_rtla = true
 
 do_dtbs		= true
-flavours	= realtime
