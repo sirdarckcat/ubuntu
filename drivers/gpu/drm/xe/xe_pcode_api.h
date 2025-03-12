@@ -54,6 +54,9 @@
 #define   LINK_DOWNGRADE               REG_GENMASK(1, 0)
 #define     DOWNGRADE_CAPABLE          2
 
+#define   FAN_SPEED_CONTROL			0x7D
+#define     FSC_READ_NUM_FANS			0x4
+
 struct pcode_err_decode {
 	int errno;
 	const char *str;
