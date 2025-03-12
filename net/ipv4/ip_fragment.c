@@ -480,20 +480,20 @@ int ip_defrag(struct net *net, struct sk_buff *skb, u32 user)
 	rcu_read_lock();
 	dev = skb->dev ? : skb_dst_dev_rcu(skb);
 	vif = l3mdev_master_ifindex_rcu(dev);
-	rcu_read_unlock();
-
 	qp = ip_find(net, ip_hdr(skb), user, vif);
 	if (qp) {
-		int ret, refs = 1;
+		int ret, refs = 0;
 
 		spin_lock(&qp->q.lock);
 
 		ret = ip_frag_queue(qp, skb, &refs);
 
 		spin_unlock(&qp->q.lock);
+		rcu_read_unlock();
 		inet_frag_putn(&qp->q, refs);
 		return ret;
 	}
+	rcu_read_unlock();
 
 	__IP_INC_STATS(net, IPSTATS_MIB_REASMFAILS);
 	kfree_skb(skb);
