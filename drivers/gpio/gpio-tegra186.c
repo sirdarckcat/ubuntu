@@ -15,6 +15,8 @@
 #include <linux/platform_device.h>
 #include <linux/seq_file.h>
 #include <asm/delay.h>
+#include <linux/delay.h>
+#include <soc/tegra/virt/hv-ivc.h>
 
 #include <dt-bindings/gpio/tegra186-gpio.h>
 #include <dt-bindings/gpio/tegra194-gpio.h>
@@ -425,6 +427,9 @@ static int tegra186_gpio_add_pin_ranges(struct gpio_chip *chip)
 	struct device_node *np;
 	unsigned int i, j;
 	int err;
+
+	if (is_tegra_hypervisor_mode())
+		return 0;
 
 	if (!gpio->soc->pinmux || gpio->soc->num_pin_ranges == 0)
 		return 0;
