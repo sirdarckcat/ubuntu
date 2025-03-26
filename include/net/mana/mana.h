@@ -91,10 +91,9 @@ struct mana_txq {
 
 /* skb data and frags dma mappings */
 struct mana_skb_head {
-	/* GSO pkts may have 2 SGEs for the linear part*/
-	dma_addr_t dma_handle[MAX_SKB_FRAGS + 2];
+	dma_addr_t dma_handle[MAX_SKB_FRAGS + 1];
 
-	u32 size[MAX_SKB_FRAGS + 2];
+	u32 size[MAX_SKB_FRAGS + 1];
 };
 
 #define MANA_HEADROOM sizeof(struct mana_skb_head)
