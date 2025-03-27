@@ -510,6 +510,14 @@ static void __init ms_hyperv_init_platform(void)
 
 			if (!ms_hyperv.paravisor_present) {
 				/*
+				 * Mark the Hyper-V TSC page feature as disabled
+				 * in a TDX VM without paravisor so that the
+				 * Invariant TSC, which is a better clocksource
+				 * anyway, is used instead.
+				 */
+				ms_hyperv.features &= ~HV_MSR_REFERENCE_TSC_AVAILABLE;
+
+				/*
 				 * The Invariant TSC is expected to be available
 				 * in a TDX VM without paravisor, but if not,
 				 * print a warning message. The slower Hyper-V MSR-based
