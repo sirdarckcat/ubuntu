@@ -17,7 +17,6 @@
 #include <linux/vdso_datastore.h>
 
 #include <asm/pvclock.h>
-#include <asm/mshyperv.h>
 #include <asm/vgtod.h>
 #include <asm/proto.h>
 #include <asm/vdso.h>
@@ -110,13 +109,9 @@ static vm_fault_t vvar_vclock_fault(const struct vm_special_mapping *sm,
 	case VDSO_PAGE_HVCLOCK_OFFSET:
 	{
 		unsigned long pfn = hv_get_tsc_pfn();
-		if (pfn && vclock_was_used(VDSO_CLOCKMODE_HVCLOCK)) {
-			if (ms_hyperv.paravisor_present)
-				return vmf_insert_pfn(vma, vmf->address, pfn);
-			else
-				return vmf_insert_pfn_prot(vma, vmf->address,
-					pfn, pgprot_decrypted(vma->vm_page_prot));
-		}
+
+		if (pfn && vclock_was_used(VDSO_CLOCKMODE_HVCLOCK))
+			return vmf_insert_pfn(vma, vmf->address, pfn);
 		break;
 	}
 #endif /* CONFIG_HYPERV_TIMER */
