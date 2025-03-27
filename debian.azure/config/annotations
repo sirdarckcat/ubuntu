@@ -185,7 +185,7 @@ CONFIG_RCU_LAZY_DEFAULT_OFF                     note<'Lazy RCUs are disabled in 
 CONFIG_REGULATOR_TWL4030                        policy<{'amd64': 'n', 'arm64': 'n'}>
 CONFIG_REGULATOR_TWL4030                        note<'Unnecessary for Azure'>
 
-CONFIG_RUST                                     policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_RUST                                     policy<{'amd64': 'n', 'arm64': 'n'}>
 CONFIG_RUST                                     note<'TODO: update note'>
 
 CONFIG_SAMPLE_TRACE_PRINTK                      policy<{'amd64': '-', 'arm64': 'm'}>
@@ -676,7 +676,7 @@ CONFIG_ATLAS_EZO_SENSOR                         policy<{'amd64': '-', 'arm64': '
 CONFIG_ATLAS_PH_SENSOR                          policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_ATMEL                                    policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_AW96103                                  policy<{'amd64': '-', 'arm64': 'm'}>
-CONFIG_AX88796B_RUST_PHY                        policy<{'amd64': '-'}>
+CONFIG_AX88796B_RUST_PHY                        policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_AXP20X_ADC                               policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_AXP20X_POWER                             policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_AXP288_ADC                               policy<{'amd64': '-', 'arm64': 'm'}>
@@ -782,12 +782,12 @@ CONFIG_BGMAC_PLATFORM                           policy<{'arm64': 'y'}>
 CONFIG_BH1745                                   policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_BH1750                                   policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_BH1780                                   policy<{'amd64': '-', 'arm64': 'm'}>
-CONFIG_BINDGEN_VERSION_TEXT                     policy<{'amd64': '-'}>
+CONFIG_BINDGEN_VERSION_TEXT                     policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_BLK_DEV_3W_XXXX_RAID                     policy<{'amd64': 'n', 'arm64': 'm'}>
 CONFIG_BLK_DEV_FD_RAWCMD                        policy<{'amd64': '-'}>
 CONFIG_BLK_DEV_NULL_BLK                         policy<{'amd64': 'n', 'arm64': 'm'}>
 CONFIG_BLK_DEV_PCIESSD_MTIP32XX                 policy<{'amd64': 'n', 'arm64': 'm'}>
-CONFIG_BLK_DEV_RUST_NULL                        policy<{'amd64': '-'}>
+CONFIG_BLK_DEV_RUST_NULL                        policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_BLK_DEV_SX8                              policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_BMA220                                   policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_BMA400                                   policy<{'amd64': '-', 'arm64': 'm'}>
@@ -1241,7 +1241,7 @@ CONFIG_DRM_NOUVEAU_SVM                          policy<{'amd64': '-', 'arm64': '
 CONFIG_DRM_PANEL_HIMAX_HX83102                  policy<{'arm64': 'm'}>
 CONFIG_DRM_PANEL_ILITEK_ILI9806E                policy<{'arm64': 'm'}>
 CONFIG_DRM_PANEL_LINCOLNTECH_LCD197             policy<{'arm64': 'm'}>
-CONFIG_DRM_PANIC_SCREEN_QR_CODE                 policy<{'amd64': '-'}>
+CONFIG_DRM_PANIC_SCREEN_QR_CODE                 policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_DRM_PRIVACY_SCREEN                       policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_DRM_STM_LVDS                             policy<{'arm64': 'm'}>
 CONFIG_DRM_UDL                                  policy<{'amd64': 'n', 'arm64': 'm'}>
@@ -3264,14 +3264,14 @@ CONFIG_RTW89_DEBUG                              policy<{'amd64': '-', 'arm64': '
 CONFIG_RTW89_DEBUGFS                            policy<{'amd64': '-', 'arm64': 'y'}>
 CONFIG_RTW89_DEBUGMSG                           policy<{'amd64': '-', 'arm64': 'y'}>
 CONFIG_RTW89_PCI                                policy<{'amd64': '-', 'arm64': 'm'}>
-CONFIG_RUSTC_VERSION_TEXT                       policy<{'amd64': '-'}>
-CONFIG_RUST_BUILD_ASSERT_ALLOW                  policy<{'amd64': '-'}>
-CONFIG_RUST_DEBUG_ASSERTIONS                    policy<{'amd64': '-'}>
-CONFIG_RUST_FW_LOADER_ABSTRACTIONS              policy<{'amd64': '-'}>
-CONFIG_RUST_OVERFLOW_CHECKS                     policy<{'amd64': '-'}>
-CONFIG_RUST_PHYLIB_ABSTRACTIONS                 policy<{'amd64': '-'}>
+CONFIG_RUSTC_VERSION_TEXT                       policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_RUST_BUILD_ASSERT_ALLOW                  policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_RUST_DEBUG_ASSERTIONS                    policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_RUST_FW_LOADER_ABSTRACTIONS              policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_RUST_OVERFLOW_CHECKS                     policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_RUST_PHYLIB_ABSTRACTIONS                 policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_SAMPLES                                  policy<{'amd64': 'n', 'arm64': 'y'}>
-CONFIG_SAMPLES_RUST                             policy<{'amd64': '-'}>
+CONFIG_SAMPLES_RUST                             policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_SAMPLE_AUXDISPLAY                        policy<{'amd64': '-', 'arm64': 'n'}>
 CONFIG_SAMPLE_CONFIGFS                          policy<{'amd64': '-', 'arm64': 'n'}>
 CONFIG_SAMPLE_FPROBE                            policy<{'amd64': '-', 'arm64': 'm'}>
