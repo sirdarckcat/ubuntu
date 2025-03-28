@@ -592,6 +592,7 @@ CONFIG_RTC_DRV_EFI                              policy<{'arm64': 'm'}> note<'Dif
 CONFIG_RTC_DRV_ISL12026                         policy<{'arm64': 'n'}> note<'Different from master'>
 CONFIG_RTC_DRV_RPI                              policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
 CONFIG_RTC_DRV_TWL4030                          policy<{'arm64': '-'}> note<'Master note override'>
+CONFIG_RUST                                     policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
 CONFIG_RV                                       policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
 CONFIG_SAMPLES                                  policy<{'arm64': 'n'}> note<'Different from master'>
 CONFIG_SAMPLE_TRACE_PRINTK                      policy<{'arm64': '-'}> note<'Master note override'>
@@ -1058,6 +1059,7 @@ CONFIG_ATH10K_SNOC                              policy<{'arm64': '-'}>
 CONFIG_ATH11K_AHB                               policy<{'arm64': '-'}>
 CONFIG_ATH11K_SPECTRAL                          policy<{'arm64': '-'}>
 CONFIG_ATH9K_PCI_NO_EEPROM                      policy<{'arm64': '-'}>
+CONFIG_AX88796B_RUST_PHY                        policy<{'arm64': '-'}>
 CONFIG_AXI_DMAC                                 policy<{'arm64': '-'}>
 CONFIG_BACKLIGHT_88PM860X                       policy<{'arm64': '-'}>
 CONFIG_BACKLIGHT_AAT2870                        policy<{'arm64': '-'}>
@@ -1080,6 +1082,8 @@ CONFIG_BATTERY_TWL4030_MADC                     policy<{'arm64': '-'}>
 CONFIG_BCM_NET_PHYLIB                           policy<{'arm64': 'y'}>
 CONFIG_BCM_NET_PHYPTP                           policy<{'arm64': 'y'}>
 CONFIG_BERLIN2_ADC                              policy<{'arm64': '-'}>
+CONFIG_BINDGEN_VERSION_TEXT                     policy<{'arm64': '-'}>
+CONFIG_BLK_DEV_RUST_NULL                        policy<{'arm64': '-'}>
 CONFIG_BLK_RQ_ALLOC_TIME                        policy<{'arm64': '-'}>
 CONFIG_BNA                                      policy<{'arm64': '-'}>
 CONFIG_BPFILTER_UMH                             policy<{'arm64': '-'}>
@@ -1636,6 +1640,7 @@ CONFIG_DRM_NOUVEAU_SVM                          policy<{'arm64': '-'}>
 CONFIG_DRM_PANEL_BACKLIGHT_QUIRKS               policy<{'arm64': '-'}>
 CONFIG_DRM_PANEL_SAMSUNG_S6E63M0_DSI            policy<{'arm64': '-'}>
 CONFIG_DRM_PANEL_SAMSUNG_S6E63M0_SPI            policy<{'arm64': '-'}>
+CONFIG_DRM_PANIC_SCREEN_QR_CODE                 policy<{'arm64': '-'}>
 CONFIG_DRM_PRIVACY_SCREEN                       policy<{'arm64': '-'}>
 CONFIG_DRM_RCAR_CMM                             policy<{'arm64': '-'}>
 CONFIG_DRM_RCAR_DU                              policy<{'arm64': '-'}>
@@ -3142,6 +3147,12 @@ CONFIG_RTC_DRV_WM8350                           policy<{'arm64': '-'}>
 CONFIG_RTC_DRV_XGENE                            policy<{'arm64': '-'}>
 CONFIG_RTD119X_WATCHDOG                         policy<{'arm64': '-'}>
 CONFIG_RTSN                                     policy<{'arm64': '-'}>
+CONFIG_RUSTC_VERSION_TEXT                       policy<{'arm64': '-'}>
+CONFIG_RUST_BUILD_ASSERT_ALLOW                  policy<{'arm64': '-'}>
+CONFIG_RUST_DEBUG_ASSERTIONS                    policy<{'arm64': '-'}>
+CONFIG_RUST_FW_LOADER_ABSTRACTIONS              policy<{'arm64': '-'}>
+CONFIG_RUST_OVERFLOW_CHECKS                     policy<{'arm64': '-'}>
+CONFIG_RUST_PHYLIB_ABSTRACTIONS                 policy<{'arm64': '-'}>
 CONFIG_RV_MON_WWNR                              policy<{'arm64': '-'}>
 CONFIG_RV_REACTORS                              policy<{'arm64': '-'}>
 CONFIG_RV_REACT_PANIC                           policy<{'arm64': '-'}>
