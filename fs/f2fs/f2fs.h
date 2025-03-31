@@ -2856,16 +2856,23 @@ static inline struct page *f2fs_pagecache_get_page(
 	return pagecache_get_page(mapping, index, fgp_flags, gfp_mask);
 }
 
+static inline void f2fs_folio_put(struct folio *folio, bool unlock)
+{
+	if (!folio)
+		return;
+
+	if (unlock) {
+		f2fs_bug_on(F2FS_P_SB(&folio->page), !folio_test_locked(folio));
+		folio_unlock(folio);
+	}
+	folio_put(folio);
+}
+
 static inline void f2fs_put_page(struct page *page, int unlock)
 {
 	if (!page)
 		return;
-
-	if (unlock) {
-		f2fs_bug_on(F2FS_P_SB(page), !PageLocked(page));
-		unlock_page(page);
-	}
-	put_page(page);
+	f2fs_folio_put(page_folio(page), unlock);
 }
 
 static inline void f2fs_put_dnode(struct dnode_of_data *dn)
@@ -3850,7 +3857,7 @@ static inline bool f2fs_need_rand_seg(struct f2fs_sb_info *sbi)
 void f2fs_stop_checkpoint(struct f2fs_sb_info *sbi, bool end_io,
 							unsigned char reason);
 void f2fs_flush_ckpt_thread(struct f2fs_sb_info *sbi);
-struct page *f2fs_grab_meta_page(struct f2fs_sb_info *sbi, pgoff_t index);
+struct folio *f2fs_grab_meta_folio(struct f2fs_sb_info *sbi, pgoff_t index);
 struct page *f2fs_get_meta_page(struct f2fs_sb_info *sbi, pgoff_t index);
 struct page *f2fs_get_meta_page_retry(struct f2fs_sb_info *sbi, pgoff_t index);
 struct page *f2fs_get_tmp_page(struct f2fs_sb_info *sbi, pgoff_t index);

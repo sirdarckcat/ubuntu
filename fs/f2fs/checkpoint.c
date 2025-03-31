@@ -36,9 +36,9 @@ void f2fs_stop_checkpoint(struct f2fs_sb_info *sbi, bool end_io,
 }
 
 /*
- * We guarantee no failure on the returned page.
+ * We guarantee no failure on the returned folio.
  */
-struct page *f2fs_grab_meta_page(struct f2fs_sb_info *sbi, pgoff_t index)
+struct folio *f2fs_grab_meta_folio(struct f2fs_sb_info *sbi, pgoff_t index)
 {
 	struct address_space *mapping = META_MAPPING(sbi);
 	struct page *page;
@@ -51,7 +51,7 @@ repeat:
 	f2fs_wait_on_page_writeback(page, META, true, true);
 	if (!PageUptodate(page))
 		SetPageUptodate(page);
-	return page;
+	return page_folio(page);
 }
 
 static struct page *__get_meta_page(struct f2fs_sb_info *sbi, pgoff_t index,
@@ -1394,30 +1394,28 @@ static void commit_checkpoint(struct f2fs_sb_info *sbi,
 	};
 
 	/*
-	 * filemap_get_folios_tag and lock_page again will take
+	 * filemap_get_folios_tag and folio_lock again will take
 	 * some extra time. Therefore, f2fs_update_meta_pages and
 	 * f2fs_sync_meta_pages are combined in this function.
 	 */
-	struct page *page = f2fs_grab_meta_page(sbi, blk_addr);
+	struct folio *folio = f2fs_grab_meta_folio(sbi, blk_addr);
 	int err;
 
-	f2fs_wait_on_page_writeback(page, META, true, true);
+	memcpy(folio_address(folio), src, PAGE_SIZE);
 
-	memcpy(page_address(page), src, PAGE_SIZE);
-
-	set_page_dirty(page);
-	if (unlikely(!clear_page_dirty_for_io(page)))
+	folio_mark_dirty(folio);
+	if (unlikely(!folio_clear_dirty_for_io(folio)))
 		f2fs_bug_on(sbi, 1);
 
 	/* writeout cp pack 2 page */
-	err = __f2fs_write_meta_page(page, &wbc, FS_CP_META_IO);
+	err = __f2fs_write_meta_page(&folio->page, &wbc, FS_CP_META_IO);
 	if (unlikely(err && f2fs_cp_error(sbi))) {
-		f2fs_put_page(page, 1);
+		f2fs_folio_put(folio, true);
 		return;
 	}
 
 	f2fs_bug_on(sbi, err);
-	f2fs_put_page(page, 0);
+	f2fs_folio_put(folio, false);
 
 	/* submit checkpoint (with barrier if NOBARRIER is not set) */
 	f2fs_submit_merged_write(sbi, META_FLUSH);
