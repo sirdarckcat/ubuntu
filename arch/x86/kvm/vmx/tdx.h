@@ -10,6 +10,7 @@
 
 struct kvm_tdx {
 	struct kvm kvm;
+	struct misc_cg *misc_cg;
 
 	unsigned long tdr_pa;
 	unsigned long *tdcs_pa;
