@@ -1733,3 +1733,9 @@ void tdx_reset_memory(void)
 	 */
 	tdmrs_reset_pamt_all(&tdx_tdmr_list);
 }
+
+u32 tdx_get_nr_guest_keyids(void)
+{
+       return tdx_nr_guest_keyids;
+}
+EXPORT_SYMBOL_GPL(tdx_get_nr_guest_keyids);
