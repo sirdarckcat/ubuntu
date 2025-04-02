@@ -3,6 +3,7 @@
 #include <linux/mmu_context.h>
 
 #include <asm/fpu/xcr.h>
+#include <linux/misc_cgroup.h>
 #include <asm/tdx.h>
 
 #include "capabilities.h"
@@ -190,6 +191,9 @@ static inline void tdx_hkid_free(struct kvm_tdx *kvm_tdx)
 	tdx_guest_keyid_free(kvm_tdx->hkid);
 	kvm_tdx->hkid = -1;
 	atomic_dec(&nr_configured_hkid);
+	misc_cg_uncharge(MISC_CG_RES_TDX, kvm_tdx->misc_cg, 1);
+	put_misc_cg(kvm_tdx->misc_cg);
+	kvm_tdx->misc_cg = NULL;
 }
 
 static inline bool is_hkid_assigned(struct kvm_tdx *kvm_tdx)
@@ -2532,6 +2536,11 @@ static int __tdx_td_init(struct kvm *kvm, struct td_params *td_params,
 	if (ret < 0)
 		return ret;
 	kvm_tdx->hkid = ret;
+	kvm_tdx->misc_cg = get_current_misc_cg();
+	ret = misc_cg_try_charge(MISC_CG_RES_TDX, kvm_tdx->misc_cg, 1);
+	if (ret)
+		goto free_hkid;
+
 	atomic_inc(&nr_configured_hkid);
 
 	va = __get_free_page(GFP_KERNEL_ACCOUNT);
@@ -3432,6 +3441,11 @@ int __init tdx_hardware_setup(struct kvm_x86_ops *x86_ops)
 	x86_ops->zap_private_spte = tdx_sept_zap_private_spte;
 	x86_ops->unzap_private_spte = tdx_sept_unzap_private_spte;
 
+        if (misc_cg_set_capacity(MISC_CG_RES_TDX, tdx_get_nr_guest_keyids())) {
+                r = -EINVAL;
+                goto out;
+        }
+
 	return 0;
 
 out:
@@ -3443,6 +3457,7 @@ out:
 
 void tdx_hardware_unsetup(void)
 {
+	misc_cg_set_capacity(MISC_CG_RES_TDX, 0);
 	kfree(tdx_info);
 	kfree(tdx_mng_key_config_lock);
 }
