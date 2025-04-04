@@ -154,7 +154,7 @@ int tdx_sys_metadata_field_read(u64 field_id, u64 *data);
 static inline void tdx_init(void) { }
 static inline int tdx_cpu_enable(void) { return -ENODEV; }
 static inline int tdx_enable(void)  { return -ENODEV; }
-static u32 tdx_get_nr_guest_keyids(void) { return 0; }
+static inline u32 tdx_get_nr_guest_keyids(void) { return 0; }
 static inline const char *tdx_dump_mce_info(struct mce *m) { return NULL; }
 static inline void tdx_reset_memory(void) { }
 
