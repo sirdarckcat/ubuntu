@@ -3280,8 +3280,8 @@ static void free_log_tree(struct btrfs_trans_handle *trans,
 		}
 	}
 
-	extent_io_tree_release(&log->dirty_log_pages);
-	extent_io_tree_release(&log->log_csum_range);
+	btrfs_extent_io_tree_release(&log->dirty_log_pages);
+	btrfs_extent_io_tree_release(&log->log_csum_range);
 
 	btrfs_put_root(log);
 }
