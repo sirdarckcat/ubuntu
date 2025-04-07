@@ -721,8 +721,10 @@ static int do_gt_reset(struct xe_gt *gt)
 
 	xe_gsc_wa_14015076503(gt, true);
 
+#if IS_ENABLED(CONFIG_PRELIM_DRM_XE_EUDEBUG)
 	if (xe->eudebug.enable)
 		do_render_reset(gt);
+#endif
 
 	xe_mmio_write32(&gt->mmio, GDRST, GRDOM_FULL);
 	err = xe_mmio_wait32(&gt->mmio, GDRST, GRDOM_FULL, 0, 5000, NULL, false);
