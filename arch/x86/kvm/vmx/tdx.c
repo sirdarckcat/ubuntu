@@ -39,7 +39,7 @@
 #define pr_tdx_error_3(__fn, __err, __rcx, __rdx, __r8)	\
 	__pr_tdx_error_N(#__fn, __err, "rcx 0x%llx, rdx 0x%llx, r8 0x%llx\n", __rcx, __rdx, __r8)
 
-bool enable_tdx __ro_after_init;
+bool enable_tdx __ro_after_init = 1;
 module_param_named(tdx, enable_tdx, bool, 0444);
 
 #define TDX_SHARED_BIT_PWL_5 gpa_to_gfn(BIT_ULL(51))
