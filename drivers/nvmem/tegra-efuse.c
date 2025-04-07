@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
- * Copyright (c) 2013-2023, NVIDIA CORPORATION.  All rights reserved.
+ * Copyright (c) 2013-2025, NVIDIA CORPORATION.  All rights reserved.
  */
 
 #include <linux/device.h>
@@ -405,11 +405,16 @@ static const struct tegra_efuse_soc tegra264_efuse_soc = {
 	.num_lookups = ARRAY_SIZE(tegra264_efuse_lookups),
 	.keepouts = tegra264_efuse_keepouts,
 	.num_keepouts = ARRAY_SIZE(tegra264_efuse_keepouts),
-	.size = 0x1f094,
+	.size = 0x1f054,
+};
+
+static const struct tegra_efuse_soc tegra264_efuse_ecid_soc = {
+	.size = 0x40,
 };
 
 static const struct of_device_id tegra_efuse_of_match[] = {
 	{ .compatible = "nvidia,tegra264-efuse", .data = &tegra264_efuse_soc },
+	{ .compatible = "nvidia,tegra264-efuse-ecid", .data = &tegra264_efuse_ecid_soc },
 	{ /* Sentinel */ }
 };
 MODULE_DEVICE_TABLE(of, tegra_efuse_of_match);
