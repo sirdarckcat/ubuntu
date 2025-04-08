@@ -265,6 +265,8 @@
 #define USB2_BIAS_PAD_CTL1_TRK_DONE_RESET_TIMER_FIELD_START	19
 #define USB2_BIAS_PAD_CTL1_TRK_DONE_RESET_TIMER_FIELD_WIDTH	7
 
+#define TEGRA_UTMI_PAD_MAX 4
+
 #define TEGRA186_LANE(_name, _offset, _shift, _mask, _type)		\
 	{								\
 		.name = _name,						\
