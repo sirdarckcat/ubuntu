@@ -675,7 +675,6 @@ static void ep_done_scan(struct eventpoll *ep,
 	__pm_relax(ep->ws);
 
 	if (!list_empty(&ep->rdllist)) {
-		smp_mb();
 		if (waitqueue_active(&ep->wq))
 			wake_up(&ep->wq);
 	}
@@ -1167,7 +1166,6 @@ static int ep_poll_callback(wait_queue_entry_t *wait, unsigned mode, int sync, v
 	 * Wake up ( if active ) both the eventpoll wait list and the ->poll()
 	 * wait list.
 	 */
-	smp_mb();
 	if (waitqueue_active(&ep->wq)) {
 		if ((epi->event.events & EPOLLEXCLUSIVE) &&
 					!(pollflags & POLLFREE)) {
@@ -1540,7 +1538,6 @@ static int ep_insert(struct eventpoll *ep, const struct epoll_event *event,
 		ep_pm_stay_awake(epi);
 
 		/* Notify waiting tasks that events are available */
-		smp_mb();
 		if (waitqueue_active(&ep->wq))
 			wake_up(&ep->wq);
 		if (waitqueue_active(&ep->poll_wait))
@@ -1617,7 +1614,6 @@ static int ep_modify(struct eventpoll *ep, struct epitem *epi,
 			ep_pm_stay_awake(epi);
 
 			/* Notify waiting tasks that events are available */
-			smp_mb();
 			if (waitqueue_active(&ep->wq))
 				wake_up(&ep->wq);
 			if (waitqueue_active(&ep->poll_wait))
@@ -1872,11 +1868,8 @@ static int ep_poll(struct eventpoll *ep, struct epoll_event __user *events,
 		 * important.
 		 */
 		eavail = ep_events_available(ep);
-		if (!eavail) {
-			spin_lock(&ep->wq.lock);
+		if (!eavail)
 			__add_wait_queue_exclusive(&ep->wq, &wait);
-			spin_unlock(&ep->wq.lock);
-		}
 
 		spin_unlock_irq(&ep->lock);
 
@@ -1903,9 +1896,7 @@ static int ep_poll(struct eventpoll *ep, struct epoll_event __user *events,
 			 */
 			if (timed_out)
 				eavail = list_empty(&wait.entry);
-			spin_lock(&ep->wq.lock);
 			__remove_wait_queue(&ep->wq, &wait);
-			spin_unlock(&ep->wq.lock);
 			spin_unlock_irq(&ep->lock);
 		}
 	}
