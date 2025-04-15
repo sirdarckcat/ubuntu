@@ -12,6 +12,13 @@
 
 #define IVC_INFO_PAGE_SIZE 65536
 
+/** @brief Maximum Guest VM count */
+#define MAX_NUM_GUESTS		16U
+/** @brief The maximum number of IVC queues supported by the PCT. */
+#define PCT_MAX_NUM_IVC_QUEUES	512U
+/** @brief The maximum number of mempools supported by the PCT. */
+#define PCT_MAX_NUM_MEMPOOLS	120U
+
 const struct ivc_info_page *tegra_hv_get_ivc_info(void);
 int tegra_hv_get_vmid(void);
 
