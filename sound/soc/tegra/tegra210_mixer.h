@@ -1,8 +1,8 @@
-/* SPDX-License-Identifier: GPL-2.0-only */
-/*
- * tegra210_mixer.h - Definitions for Tegra210 MIXER driver
+/* SPDX-License-Identifier: GPL-2.0-only
+ * SPDX-FileCopyrightText: Copyright (c) 2021-2025 NVIDIA CORPORATION & AFFILIATES.
+ * All rights reserved.
  *
- * Copyright (c) 2021, NVIDIA CORPORATION.  All rights reserved.
+ * tegra210_mixer.h - Definitions for Tegra210 MIXER driver
  *
  */
 
@@ -79,12 +79,26 @@
 #define TEGRA210_MIXER_RX_LIMIT		(TEGRA210_MIXER_RX_MAX * TEGRA210_MIXER_REG_STRIDE)
 #define TEGRA210_MIXER_TX_MAX		5
 #define TEGRA210_MIXER_TX_LIMIT		(TEGRA210_MIXER_RX_LIMIT + (TEGRA210_MIXER_TX_MAX * TEGRA210_MIXER_REG_STRIDE))
+#define TEGRA210_MIXER_SAMPLE_COUNT_SHIFT	24
+#define TEGRA210_MIXER_SAMPLE_COUNT_ENABLE	BIT(TEGRA210_MIXER_SAMPLE_COUNT_SHIFT)
 
 #define REG_CFG_DONE_TRIGGER	0xf
 #define VAL_CFG_DONE_TRIGGER	0x1
 
 #define NUM_GAIN_POLY_COEFFS 9
-#define NUM_DURATION_PARMS 4
+
+#define TEGRA210_MIXER_PRESCALAR	6
+#define TEGRA210_MIXER_FADE_IDLE	(-1)
+#define TEGRA210_MIXER_FADE_ACTIVE	0
+#define TEGRA210_MIXER_FADE_COMPLETE	1
+
+enum {
+	DURATION_N1_ID,
+	DURATION_N2_ID,
+	DURATION_N3_ID,
+	DURATION_INV_N3_ID,
+	NUM_DURATION_PARMS,
+};
 
 struct tegra210_mixer_gain_params {
 	int poly_coeff[NUM_GAIN_POLY_COEFFS];
@@ -94,6 +108,8 @@ struct tegra210_mixer_gain_params {
 
 struct tegra210_mixer {
 	int gain_value[TEGRA210_MIXER_RX_MAX];
+	u32 duration[TEGRA210_MIXER_RX_MAX];
+	bool in_fade[TEGRA210_MIXER_RX_MAX];
 	struct regmap *regmap;
 };
 
