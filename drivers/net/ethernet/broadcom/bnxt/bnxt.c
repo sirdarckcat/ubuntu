@@ -1037,9 +1037,9 @@ static struct sk_buff *bnxt_rx_multi_page_skb(struct bnxt *bp,
 		return NULL;
 	}
 	dma_addr -= bp->rx_dma_offset;
-	dma_sync_single_for_cpu(&bp->pdev->dev, dma_addr, BNXT_RX_PAGE_SIZE,
+	dma_sync_single_for_cpu(&bp->pdev->dev, dma_addr, rxr->rx_page_size,
 				bp->rx_dir);
-	skb = napi_build_skb(data_ptr - bp->rx_offset, BNXT_RX_PAGE_SIZE);
+	skb = napi_build_skb(data_ptr - bp->rx_offset, rxr->rx_page_size);
 	if (!skb) {
 		page_pool_recycle_direct(rxr->page_pool, page);
 		return NULL;
@@ -3936,6 +3936,8 @@ static void bnxt_init_ring_struct(struct bnxt *bp)
 		rxr = bnapi->rx_ring;
 		if (!rxr)
 			goto skip_rx;
+
+		rxr->rx_page_size = BNXT_RX_PAGE_SIZE;
 
 		ring = &rxr->rx_ring_struct;
 		rmem = &ring->ring_mem;
