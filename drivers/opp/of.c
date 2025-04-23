@@ -1377,8 +1377,8 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_of_get_sharing_cpus);
 int of_get_required_opp_performance_state(struct device_node *np, int index)
 {
 	struct device_node *required_np __free(device_node);
-	struct opp_table *opp_table;
-	struct dev_pm_opp *opp;
+	struct opp_table *opp_table __free(put_opp_table) = NULL;
+	struct dev_pm_opp *opp __free(put_opp) = NULL;
 	int pstate = -EINVAL;
 
 	required_np = of_parse_required_opp(np, index);
@@ -1406,11 +1406,8 @@ int of_get_required_opp_performance_state(struct device_node *np, int index)
 		} else {
 			pstate = opp->level;
 		}
-		dev_pm_opp_put(opp);
-
 	}
 
-	dev_pm_opp_put_opp_table(opp_table);
 	return pstate;
 }
 EXPORT_SYMBOL_GPL(of_get_required_opp_performance_state);
@@ -1476,7 +1473,7 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_get_of_node);
 static int __maybe_unused
 _get_dt_power(struct device *dev, unsigned long *uW, unsigned long *kHz)
 {
-	struct dev_pm_opp *opp;
+	struct dev_pm_opp *opp __free(put_opp);
 	unsigned long opp_freq, opp_power;
 
 	/* Find the right frequency and related OPP */
@@ -1486,7 +1483,6 @@ _get_dt_power(struct device *dev, unsigned long *uW, unsigned long *kHz)
 		return -EINVAL;
 
 	opp_power = dev_pm_opp_get_power(opp);
-	dev_pm_opp_put(opp);
 	if (!opp_power)
 		return -EINVAL;
 
@@ -1511,8 +1507,8 @@ _get_dt_power(struct device *dev, unsigned long *uW, unsigned long *kHz)
 static int __maybe_unused _get_power(struct device *dev, unsigned long *uW,
 				     unsigned long *kHz)
 {
+	struct dev_pm_opp *opp __free(put_opp) = NULL;
 	struct device_node *np __free(device_node);
-	struct dev_pm_opp *opp;
 	unsigned long mV, Hz;
 	u32 cap;
 	u64 tmp;
@@ -1532,7 +1528,6 @@ static int __maybe_unused _get_power(struct device *dev, unsigned long *uW,
 		return -EINVAL;
 
 	mV = dev_pm_opp_get_voltage(opp) / 1000;
-	dev_pm_opp_put(opp);
 	if (!mV)
 		return -EINVAL;
 
@@ -1548,20 +1543,15 @@ static int __maybe_unused _get_power(struct device *dev, unsigned long *uW,
 
 static bool _of_has_opp_microwatt_property(struct device *dev)
 {
-	unsigned long power, freq = 0;
-	struct dev_pm_opp *opp;
+	struct dev_pm_opp *opp __free(put_opp);
+	unsigned long freq = 0;
 
 	/* Check if at least one OPP has needed property */
 	opp = dev_pm_opp_find_freq_ceil(dev, &freq);
 	if (IS_ERR(opp))
 		return false;
 
-	power = dev_pm_opp_get_power(opp);
-	dev_pm_opp_put(opp);
-	if (!power)
-		return false;
-
-	return true;
+	return !!dev_pm_opp_get_power(opp);
 }
 
 /**
