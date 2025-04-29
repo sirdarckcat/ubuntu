@@ -600,6 +600,8 @@ struct mana_port_context {
 	u16 port_idx;
 
 	u32 speed;
+	/*HTB class parameters*/
+	u16 classid;
 
 	bool port_is_up;
 	bool port_st_save; /* Saved port state */
@@ -661,6 +663,8 @@ int mana_bpf(struct net_device *ndev, struct netdev_bpf *bpf);
 void mana_query_gf_stats(struct mana_port_context *apc);
 void mana_query_phy_stats(struct mana_port_context *apc);
 int mana_query_link_cfg(struct mana_port_context *apc);
+int mana_set_bw_clamp(struct mana_port_context *apc, u32 speed,
+		      int enable_clamping);
 int mana_pre_alloc_rxbufs(struct mana_port_context *apc, int mtu, int num_queues);
 void mana_pre_dealloc_rxbufs(struct mana_port_context *apc);
 
@@ -692,6 +696,7 @@ enum mana_command_code {
 	MANA_QUERY_VPORT_CONFIG	= 0x20008,
 	MANA_QUERY_PHY_STAT     = 0x2000c,
 	MANA_QUERY_LINK_CONFIG	= 0x2000A,
+	MANA_SET_BW_CLAMP	= 0x2000B,
 
 	/* Privileged commands for the PF mode */
 	MANA_REGISTER_FILTER	= 0x28000,
@@ -711,6 +716,20 @@ struct mana_query_link_config_resp {
 	u32 link_speed_mbps;
 	u8 qos_unconfigured;
 	u8 reserved[3];
+}; /* HW DATA */
+
+/* Set Bandwidth Clamp*/
+struct mana_set_bw_clamp_req {
+	struct gdma_req_hdr hdr;
+	mana_handle_t vport;
+	enum TRI_STATE enable_clamping;
+	u32 link_speed_mbps;
+}; /* HW DATA */
+
+struct mana_set_bw_clamp_resp {
+	struct gdma_resp_hdr hdr;
+	u8 qos_unconfigured;
+	u8 reserved[7];
 }; /* HW DATA */
 
 /* Query Device Configuration */
