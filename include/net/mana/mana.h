@@ -599,6 +599,8 @@ struct mana_port_context {
 
 	u16 port_idx;
 
+	u32 speed;
+
 	bool port_is_up;
 	bool port_st_save; /* Saved port state */
 
@@ -658,6 +660,7 @@ void mana_chn_setxdp(struct mana_port_context *apc, struct bpf_prog *prog);
 int mana_bpf(struct net_device *ndev, struct netdev_bpf *bpf);
 void mana_query_gf_stats(struct mana_port_context *apc);
 void mana_query_phy_stats(struct mana_port_context *apc);
+int mana_query_link_cfg(struct mana_port_context *apc);
 int mana_pre_alloc_rxbufs(struct mana_port_context *apc, int mtu, int num_queues);
 void mana_pre_dealloc_rxbufs(struct mana_port_context *apc);
 
@@ -688,6 +691,7 @@ enum mana_command_code {
 	MANA_CONFIG_VPORT_RX	= 0x20007,
 	MANA_QUERY_VPORT_CONFIG	= 0x20008,
 	MANA_QUERY_PHY_STAT     = 0x2000c,
+	MANA_QUERY_LINK_CONFIG	= 0x2000A,
 
 	/* Privileged commands for the PF mode */
 	MANA_REGISTER_FILTER	= 0x28000,
@@ -695,6 +699,19 @@ enum mana_command_code {
 	MANA_REGISTER_HW_PORT	= 0x28003,
 	MANA_DEREGISTER_HW_PORT	= 0x28004,
 };
+
+/* Query Link Configuration*/
+struct mana_query_link_config_req {
+	struct gdma_req_hdr hdr;
+	mana_handle_t vport;
+}; /* HW DATA */
+
+struct mana_query_link_config_resp {
+	struct gdma_resp_hdr hdr;
+	u32 link_speed_mbps;
+	u8 qos_unconfigured;
+	u8 reserved[3];
+}; /* HW DATA */
 
 /* Query Device Configuration */
 struct mana_query_device_cfg_req {
