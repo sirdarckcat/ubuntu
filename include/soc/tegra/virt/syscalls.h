@@ -19,13 +19,18 @@
 #define HVC_NR_GUEST_RESET		10
 #define HVC_NR_SYSINFO_IPA		13
 #define HVC_NR_READ_VM_INFO		16
-#define HVC_NR_TRACE_GET_EVENT_MASK		0x8003U
-#define HVC_NR_TRACE_SET_EVENT_MASK		0x8004U
+#define HVC_NR_TRACE_GET_EVENT_DATA		0x8003U
+#define HVC_NR_TRACE_SET_EVENT_DATA		0x8004U
 
 #define GUEST_PRIMARY		0
 #define GUEST_IVC_SERVER	0
 #define MAX_NVLOG_PRODUCERS	32U
 #define HVC_NR_CPU_FREQ		0xC6000022
+
+#define TRACE_SET_EVENT_MASK		0x0U
+#define TRACE_GET_EVENT_MASK		0x1U
+#define TRACE_SET_PROFILER_FREQ	 	0x2U
+#define TRACE_GET_PROFILER_FREQ	 	0x3U
 
 #define NGUESTS_MAX 16
 
@@ -525,9 +530,8 @@ static __attribute__((always_inline)) inline void hyp_call44(uint16_t id, uint64
 __attribute__((no_sanitize_address))
 static inline int hyp_trace_get_mask(uint64_t *value)
 {
-	uint64_t args[4] = { *value, 0U, 0U, 0U };
-
-	hyp_call44(HVC_NR_TRACE_GET_EVENT_MASK, args);
+	uint64_t args[4] = { TRACE_GET_EVENT_MASK, 0U, 0U, 0U };
+	hyp_call44(HVC_NR_TRACE_GET_EVENT_DATA, args);
 	if (args[0] == 0U)
 		*value = args[1];
 
@@ -535,11 +539,29 @@ static inline int hyp_trace_get_mask(uint64_t *value)
 }
 
 __attribute__((no_sanitize_address))
-static inline int hyp_trace_set_mask(uint64_t type, uint64_t value)
+static inline int hyp_trace_set_mask(uint64_t mask)
 {
-	uint64_t args[4] = { type, value, 0U, 0U };
+	uint64_t args[4] = { TRACE_SET_EVENT_MASK, mask, 0U, 0U};
+	hyp_call44(HVC_NR_TRACE_SET_EVENT_DATA, args);
+	return (int) args[0];
+}
 
-	hyp_call44(HVC_NR_TRACE_SET_EVENT_MASK, args);
+__attribute__((no_sanitize_address))
+static inline int hyp_trace_get_profiler_freq(uint64_t *freq)
+{
+	uint64_t args[4] = { TRACE_GET_PROFILER_FREQ, 0U, 0U, 0U };
+	hyp_call44(HVC_NR_TRACE_GET_EVENT_DATA, args);
+	if (args[0] == 0U)
+		*freq = args[1];
+
+	return (int) args[0];
+}
+
+__attribute__((no_sanitize_address))
+static inline int hyp_trace_set_profiler_freq(uint64_t freq)
+{
+	uint64_t args[4] = { TRACE_SET_PROFILER_FREQ, freq, 0U, 0U};
+	hyp_call44(HVC_NR_TRACE_SET_EVENT_DATA, args);
 	return (int) args[0];
 }
 
