@@ -113,6 +113,7 @@ enum {
 	Opt_domain, Opt_srcaddr, Opt_iocharset,
 	Opt_netbiosname, Opt_servern,
 	Opt_ver, Opt_vers, Opt_sec, Opt_cache,
+	Opt_upcall_target,
 
 	/* Mount options to be ignored */
 	Opt_ignore,
@@ -247,6 +248,7 @@ static const match_table_t cifs_mount_option_tokens = {
 	{ Opt_vers, "vers=%s" },
 	{ Opt_sec, "sec=%s" },
 	{ Opt_cache, "cache=%s" },
+	{ Opt_upcall_target, "upcall_target=%s" },
 
 	{ Opt_ignore, "cred" },
 	{ Opt_ignore, "credentials" },
@@ -296,6 +298,18 @@ static const match_table_t cifs_secflavor_tokens = {
 	{ Opt_sec_none, "none" },
 
 	{ Opt_sec_err, NULL }
+};
+
+enum {
+	Opt_upcall_target_mount,
+	Opt_upcall_target_application,
+	Opt_upcall_target_err
+};
+
+static const match_table_t cifs_upcall_target_tokens = {
+	{ Opt_upcall_target_mount, "mount" },
+	{ Opt_upcall_target_application, "app" },
+	{ Opt_upcall_target_err, NULL }
 };
 
 /* cache flavors */
@@ -1471,6 +1485,29 @@ static int cifs_parse_security_flavors(char *value,
 }
 
 static int
+cifs_parse_upcall_target(char *value, struct smb_vol *volume_info)
+{
+	substring_t args[MAX_OPT_ARGS];
+
+	volume_info->upcall_target = UPTARGET_UNSPECIFIED;
+
+	switch (match_token(value, cifs_upcall_target_tokens, args)) {
+	case Opt_upcall_target_mount:
+		volume_info->upcall_target = UPTARGET_MOUNT;
+		break;
+	case Opt_upcall_target_application:
+		volume_info->upcall_target = UPTARGET_APP;
+		break;
+
+	default:
+		cifs_dbg(VFS, "bad upcall target: %s\n", value);
+		return 1;
+	}
+
+	return 0;
+}
+
+static int
 cifs_parse_cache_flavor(char *value, struct smb_vol *vol)
 {
 	substring_t args[MAX_OPT_ARGS];
@@ -2427,6 +2464,14 @@ cifs_parse_mount_options(const char *mountdata, const char *devname,
 			if (cifs_parse_security_flavors(string, vol) != 0)
 				goto cifs_parse_mount_err;
 			break;
+		case Opt_upcall_target:
+			string = match_strdup(args);
+			if (string == NULL)
+				goto out_nomem;
+
+			if (cifs_parse_upcall_target(string, vol) != 0)
+				goto cifs_parse_mount_err;
+			break;
 		case Opt_cache:
 			string = match_strdup(args);
 			if (string == NULL)
@@ -2489,6 +2534,11 @@ cifs_parse_mount_options(const char *mountdata, const char *devname,
 			pr_err("Unable to determine destination address.\n");
 			goto cifs_parse_mount_err;
 		}
+	}
+
+	if (vol->multiuser && vol->upcall_target == UPTARGET_MOUNT) {
+		cifs_dbg(VFS, "multiuser mount option not supported with upcalltarget set as 'mount'\n");
+		goto cifs_parse_mount_err;
 	}
 
 	/* set the port that we got earlier */
@@ -3325,6 +3375,26 @@ cifs_get_smb_ses(struct TCP_Server_Info *server, struct smb_vol *volume_info)
 
 	ses->sectype = volume_info->sectype;
 	ses->sign = volume_info->sign;
+
+	/*
+	 *Explicitly marking upcall_target mount option for easier handling
+	 * by cifs_spnego.c and eventually cifs.upcall.c
+	 */
+
+	switch (volume_info->upcall_target) {
+	case UPTARGET_UNSPECIFIED: /* default to app */
+	case UPTARGET_APP:
+	        ses->upcall_target = UPTARGET_APP;
+	        break;
+	case UPTARGET_MOUNT:
+	        ses->upcall_target = UPTARGET_MOUNT;
+	        break;
+	default:
+	        // should never happen
+	        ses->upcall_target = UPTARGET_APP;
+	        break;
+	}
+
 	mutex_lock(&ses->session_mutex);
 	rc = cifs_negotiate_protocol(xid, ses);
 	if (!rc)
