@@ -39,8 +39,14 @@ CONFIG_CRYPTO_USER_API_SKCIPHER                 note<'LP: #2120190'>
 CONFIG_DMATEST                                  policy<{'arm64': 'm'}>
 CONFIG_DMATEST                                  note<'LP: #2060337'>
 
+CONFIG_DRM_SIMPLEDRM                            policy<{'arm64': 'n'}>
+CONFIG_DRM_SIMPLEDRM                            note<'LP: #2120190, disable for CONFIG_FB_SIMPLE'>
+
 CONFIG_EXFAT_FS                                 policy<{'arm64': 'y'}>
 CONFIG_EXFAT_FS                                 note<'LP: #2120190'>
+
+CONFIG_FB_SIMPLE                                policy<{'arm64': 'y'}>
+CONFIG_FB_SIMPLE                                note<'LP: #2120190'>
 
 CONFIG_FRAME_WARN                               policy<{'arm64': '2048'}>
 CONFIG_FRAME_WARN                               note<'LP: #2109728'>
@@ -219,6 +225,7 @@ CONFIG_COMPACT_UNEVICTABLE_DEFAULT              policy<{'arm64': '0', 'arm64-nvi
 CONFIG_CRYPTO_DEV_TEGRA                         policy<{'arm64': 'm'}>
 CONFIG_CRYPTO_SUPPORT_TEGRA_TESTS               policy<{'arm64': 'y'}>
 CONFIG_DEBUG_MUTEXES                            policy<{'arm64': '-', 'arm64-nvidia-tegra': 'n'}>
+CONFIG_DRM_GEM_SHMEM_HELPER                     policy<{'arm64': 'm'}>
 CONFIG_LEDS_TRIGGER_CPU                         policy<{'arm64': '-', 'arm64-nvidia-tegra': 'n'}>
 CONFIG_MMC_CQHCI                                policy<{'arm64': 'y'}>
 CONFIG_NUMA_BALANCING                           policy<{'arm64': '-', 'arm64-nvidia-tegra': 'n'}>
