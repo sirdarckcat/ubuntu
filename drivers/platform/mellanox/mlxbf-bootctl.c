@@ -625,7 +625,7 @@ static ssize_t large_icm_show(struct device *dev,
 	if (res.a0)
 		return -EPERM;
 
-	return snprintf(buf, PAGE_SIZE, "0x%lx", res.a1);
+	return sysfs_emit(buf, "0x%lx", res.a1);
 }
 
 static ssize_t large_icm_store(struct device *dev,
@@ -743,7 +743,7 @@ static ssize_t opn_show(struct device *dev,
 	}
 	mutex_unlock(&mfg_ops_lock);
 
-	return snprintf(buf, PAGE_SIZE, "%s", (char *)opn_data);
+	return sysfs_emit(buf, "%s", (char *)opn_data);
 }
 
 static ssize_t opn_store(struct device *dev,
@@ -794,7 +794,7 @@ static ssize_t sku_show(struct device *dev,
 	}
 	mutex_unlock(&mfg_ops_lock);
 
-	return snprintf(buf, PAGE_SIZE, "%s", (char *)sku_data);
+	return sysfs_emit(buf, "%s", (char *)sku_data);
 }
 
 static ssize_t sku_store(struct device *dev,
@@ -845,7 +845,7 @@ static ssize_t modl_show(struct device *dev,
 	}
 	mutex_unlock(&mfg_ops_lock);
 
-	return snprintf(buf, PAGE_SIZE, "%s", (char *)modl_data);
+	return sysfs_emit(buf, "%s", (char *)modl_data);
 }
 
 static ssize_t modl_store(struct device *dev,
@@ -896,7 +896,7 @@ static ssize_t sn_show(struct device *dev,
 	}
 	mutex_unlock(&mfg_ops_lock);
 
-	return snprintf(buf, PAGE_SIZE, "%s", (char *)sn_data);
+	return sysfs_emit(buf, "%s", (char *)sn_data);
 }
 
 static ssize_t sn_store(struct device *dev,
@@ -947,7 +947,7 @@ static ssize_t uuid_show(struct device *dev,
 	}
 	mutex_unlock(&mfg_ops_lock);
 
-	return snprintf(buf, PAGE_SIZE, "%s", (char *)uuid_data);
+	return sysfs_emit(buf, "%s", (char *)uuid_data);
 }
 
 static ssize_t uuid_store(struct device *dev,
@@ -998,7 +998,7 @@ static ssize_t rev_show(struct device *dev,
 	}
 	mutex_unlock(&mfg_ops_lock);
 
-	return snprintf(buf, PAGE_SIZE, "%s", (char *)rev_data);
+	return sysfs_emit(buf, "%s", (char *)rev_data);
 }
 
 static ssize_t rev_store(struct device *dev,
