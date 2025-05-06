@@ -19,20 +19,14 @@
 
 #include <linux/devm-helpers.h>
 
-#define DRV_VERSION "1.2"
+#define DRV_VERSION "1.1"
 
 struct pwr_mlxbf {
-	struct work_struct reboot_work;
-	struct work_struct shutdown_work;
+	struct work_struct send_work;
 	const char *hid;
 };
 
-static void pwr_mlxbf_reboot_work(struct work_struct *work)
-{
-	acpi_bus_generate_netlink_event("button/reboot.*", "Reboot Button", 0x80, 1);
-}
-
-static void pwr_mlxbf_shutdown_work(struct work_struct *work)
+static void pwr_mlxbf_send_work(struct work_struct *work)
 {
 	acpi_bus_generate_netlink_event("button/power.*", "Power Button", 0x80, 1);
 }
@@ -44,10 +38,10 @@ static irqreturn_t pwr_mlxbf_irq(int irq, void *ptr)
 	struct pwr_mlxbf *priv = ptr;
 
 	if (!strncmp(priv->hid, rst_pwr_hid, 8))
-		schedule_work(&priv->reboot_work);
+		emergency_restart();
 
 	if (!strncmp(priv->hid, low_pwr_hid, 8))
-		schedule_work(&priv->shutdown_work);
+		schedule_work(&priv->send_work);
 
 	return IRQ_HANDLED;
 }
@@ -75,11 +69,7 @@ static int pwr_mlxbf_probe(struct platform_device *pdev)
 	if (irq < 0)
 		return dev_err_probe(dev, irq, "Error getting %s irq.\n", priv->hid);
 
-	err = devm_work_autocancel(dev, &priv->shutdown_work, pwr_mlxbf_shutdown_work);
-	if (err)
-		return err;
-
-	err = devm_work_autocancel(dev, &priv->reboot_work, pwr_mlxbf_reboot_work);
+	err = devm_work_autocancel(dev, &priv->send_work, pwr_mlxbf_send_work);
 	if (err)
 		return err;
 
