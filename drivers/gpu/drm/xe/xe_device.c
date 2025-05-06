@@ -26,6 +26,7 @@
 #include "xe_debugfs.h"
 #include "xe_devcoredump.h"
 #include "prelim/xe_debug_metadata.h"
+#include "xe_device_sysfs.h"
 #include "xe_dma_buf.h"
 #include "xe_drm_client.h"
 #include "xe_drv.h"
@@ -788,6 +789,10 @@ int xe_device_probe(struct xe_device *xe)
 	xe_display_register(xe);
 
 	xe_oa_register(xe);
+
+	err = xe_device_sysfs_init(xe);
+	if (err)
+		goto err_fini_display;
 
 	xe_debugfs_register(xe);
 
