@@ -785,6 +785,13 @@ static inline void *iosys_map_get_vaddr(const struct iosys_map *map)
 	return map->vaddr;
 }
 
+void tegra_ivc_clean_queue_data(struct tegra_ivc *ivc)
+{
+	iosys_map_memset(&ivc->rx.map, sizeof(struct tegra_ivc_header), 0, ivc->num_frames * ivc->frame_size);
+	iosys_map_memset(&ivc->tx.map, sizeof(struct tegra_ivc_header), 0, ivc->num_frames * ivc->frame_size);
+}
+EXPORT_SYMBOL(tegra_ivc_clean_queue_data);
+
 int tegra_ivc_init(struct tegra_ivc *ivc, struct device *peer, const struct iosys_map *rx,
 		   dma_addr_t rx_phys, const struct iosys_map *tx, dma_addr_t tx_phys,
 		   unsigned int num_frames, size_t frame_size,
