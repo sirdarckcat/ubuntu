@@ -945,6 +945,7 @@ int tegra_hv_ivc_unreserve(struct tegra_hv_ivc_cookie *ivck)
 			ivc_release_irq(ivc);
 		ivc->cookie_ops = NULL;
 		ivc->reserved = 0;
+		tegra_ivc_clean_queue_data(&ivc->ivc);
 		ret = 0;
 	} else {
 		ret = -EINVAL;
