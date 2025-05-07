@@ -58,6 +58,15 @@ int tegra_ivc_channel_sync(struct tegra_ivc *ivc);
 uint32_t tegra_ivc_frames_available(struct tegra_ivc *ivc, struct iosys_map *map);
 
 /**
+ * tegra_ivc_clean_queue_data - Zeroed out the IVC queue data
+ * @ivc		pointer of the IVC channel
+ *
+ * Zeroed out the IVC queue data .
+ *
+ */
+void tegra_ivc_clean_queue_data(struct tegra_ivc *ivc);
+
+/**
  * tegra_ivc_can_read - Checks whether we can read from ivc channel
  * @ivc		pointer of the IVC channel
  *
