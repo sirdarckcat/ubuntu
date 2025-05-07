@@ -172,6 +172,7 @@
 #define I2C_SW_MUTEX_ID				9
 
 #define I2C_MASTER_RESET_CNTRL			0x0a8
+#define I2C_FAIRNESS_ARBITRATION		0x0e8
 
 /* configuration load timeout in microseconds */
 #define I2C_CONFIG_LOAD_TIMEOUT			1000000
@@ -248,6 +249,7 @@ enum msg_end_type {
  * @has_interface_timing_reg: Has interface timing register to program the tuned
  *		timing settings.
  * @has_mutex: Has Mutex register for mutual exclusion with other firmwares or VM.
+ * @has_fairarb_reg: Fairness Arbitration register to support MCTP protocol
  */
 struct tegra_i2c_hw_feature {
 	bool has_continue_xfer_support;
@@ -279,6 +281,7 @@ struct tegra_i2c_hw_feature {
 	bool has_interface_timing_reg;
 	bool has_hs_mode_support;
 	bool has_mutex;
+	bool has_fairarb_reg;
 };
 
 /**
@@ -959,6 +962,10 @@ static int tegra_i2c_init(struct tegra_i2c_dev *i2c_dev)
 
 	if (IS_VI(i2c_dev))
 		tegra_i2c_vi_init(i2c_dev);
+
+	/* Disable fairness arbitration */
+	if (i2c_dev->hw->has_fairarb_reg)
+		i2c_writel(i2c_dev, 0, I2C_FAIRNESS_ARBITRATION);
 
 	if (i2c_dev->prod_list)
 		tegra_i2c_config_prod_settings(i2c_dev);
@@ -1831,6 +1838,7 @@ static const struct tegra_i2c_hw_feature tegra20_i2c_hw = {
 	.setup_hold_time_hs_mode = 0x0,
 	.has_interface_timing_reg = false,
 	.has_mutex = false,
+	.has_fairarb_reg = false,
 };
 
 static const struct tegra_i2c_hw_feature tegra30_i2c_hw = {
@@ -1860,6 +1868,7 @@ static const struct tegra_i2c_hw_feature tegra30_i2c_hw = {
 	.setup_hold_time_hs_mode = 0x0,
 	.has_interface_timing_reg = false,
 	.has_mutex = false,
+	.has_fairarb_reg = false,
 };
 
 static const struct tegra_i2c_hw_feature tegra114_i2c_hw = {
@@ -1889,6 +1898,7 @@ static const struct tegra_i2c_hw_feature tegra114_i2c_hw = {
 	.setup_hold_time_hs_mode = 0x0,
 	.has_interface_timing_reg = false,
 	.has_mutex = false,
+	.has_fairarb_reg = false,
 };
 
 static const struct tegra_i2c_hw_feature tegra124_i2c_hw = {
@@ -1918,6 +1928,7 @@ static const struct tegra_i2c_hw_feature tegra124_i2c_hw = {
 	.setup_hold_time_hs_mode = 0x0,
 	.has_interface_timing_reg = true,
 	.has_mutex = false,
+	.has_fairarb_reg = false,
 };
 
 static const struct tegra_i2c_hw_feature tegra210_i2c_hw = {
@@ -1947,6 +1958,7 @@ static const struct tegra_i2c_hw_feature tegra210_i2c_hw = {
 	.setup_hold_time_hs_mode = 0,
 	.has_interface_timing_reg = true,
 	.has_mutex = false,
+	.has_fairarb_reg = false,
 };
 
 static const struct tegra_i2c_hw_feature tegra186_i2c_hw = {
@@ -1976,6 +1988,7 @@ static const struct tegra_i2c_hw_feature tegra186_i2c_hw = {
 	.setup_hold_time_hs_mode = 0,
 	.has_interface_timing_reg = true,
 	.has_mutex = false,
+	.has_fairarb_reg = false,
 };
 
 static const struct tegra_i2c_hw_feature tegra194_i2c_hw = {
@@ -2008,6 +2021,7 @@ static const struct tegra_i2c_hw_feature tegra194_i2c_hw = {
 	.has_interface_timing_reg = true,
 	.has_hs_mode_support = true,
 	.has_mutex = false,
+	.has_fairarb_reg = false,
 };
 
 static const struct tegra_i2c_hw_feature tegra264_i2c_hw = {
@@ -2039,6 +2053,7 @@ static const struct tegra_i2c_hw_feature tegra264_i2c_hw = {
 	.has_interface_timing_reg = true,
 	.has_hs_mode_support = true,
 	.has_mutex = true,
+	.has_fairarb_reg = true,
 };
 
 static const struct tegra_i2c_hw_feature tegra256_i2c_hw = {
@@ -2067,6 +2082,9 @@ static const struct tegra_i2c_hw_feature tegra256_i2c_hw = {
 	.setup_hold_time_fastplus_mode = 0x04020202,
 	.setup_hold_time_hs_mode = 0x090909,
 	.has_interface_timing_reg = true,
+	.has_hs_mode_support = true,
+	.has_mutex = false,
+	.has_fairarb_reg = true,
 };
 
 static const struct of_device_id tegra_i2c_of_match[] = {
