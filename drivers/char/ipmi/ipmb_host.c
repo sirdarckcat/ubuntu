@@ -582,22 +582,11 @@ static void ipmb_request_events(void *data)
 {
 }
 
-static void ipmb_set_run_to_completion(void *data,
-				bool run_to_completion)
-{
-}
-
-static void ipmb_poll(void *data)
-{
-}
-
 static struct ipmi_smi_handlers ipmb_smi_handlers = {
 	.owner			= THIS_MODULE,
 	.start_processing	= ipmb_start_processing,
 	.sender			= ipmb_sender,
 	.request_events		= ipmb_request_events,
-	.set_run_to_completion	= ipmb_set_run_to_completion,
-	.poll			= ipmb_poll,
 };
 
 static bool is_ipmb_response(u8 netfn_rq_lun, size_t msg_len)
