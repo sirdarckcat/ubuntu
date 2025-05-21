@@ -45,6 +45,7 @@
 #include <asm/reboot.h>
 #include <asm/fpu/api.h>
 #include <asm/virt.h>
+#include <asm/hypervisor.h>
 
 #include <trace/events/ipi.h>
 
@@ -3707,6 +3708,14 @@ static int svm_handle_exit(struct kvm_vcpu *vcpu, fastpath_t exit_fastpath)
 	struct vcpu_svm *svm = to_svm(vcpu);
 	struct kvm_run *kvm_run = vcpu->run;
 
+	/* SEV-ES guests must use the CR write traps to track CR registers. */
+	if (!is_sev_es_guest(vcpu)) {
+		if (!svm_is_intercept(svm, INTERCEPT_CR0_WRITE))
+			vcpu->arch.cr0 = svm->vmcb->save.cr0;
+		if (npt_enabled && !svm_is_intercept(svm, INTERCEPT_CR3_WRITE))
+			vcpu->arch.cr3 = svm->vmcb->save.cr3;
+	}
+
 	if (unlikely(exit_fastpath == EXIT_FASTPATH_EXIT_USERSPACE))
 		return 0;
 
@@ -4674,6 +4683,33 @@ static void svm_load_mmu_pgd(struct kvm_vcpu *vcpu, hpa_t root_hpa,
 		cr3 = root_hpa;
 	}
 
+#if IS_ENABLED(CONFIG_HYPERV)
+	/*
+	 * Workaround an issue in Hyper-V hypervisor where 'reserved' bits are treated
+	 * as MBZ failing VMRUN.
+	 */
+	if (hypervisor_is_type(X86_HYPER_MS_HYPERV) && likely(npt_enabled)) {
+		unsigned long cr3_unmod = cr3;
+
+		/*
+		 * Bits MAXPHYADDR:63 are MBZ but bits 32:MAXPHYADDR-1 are just 'reserved'
+		 * in !long mode.
+		 */
+		if (!is_long_mode(vcpu))
+			cr3 &= ~rsvd_bits(32, cpuid_maxphyaddr(vcpu) - 1);
+
+		if (!kvm_is_cr4_bit_set(vcpu, X86_CR4_PCIDE))
+			cr3 &= ~X86_CR3_PCID_MASK;
+
+		if (cr3 != cr3_unmod && !svm_is_intercept(svm, INTERCEPT_CR3_READ)) {
+			svm_set_intercept(svm, INTERCEPT_CR3_READ);
+			svm_set_intercept(svm, INTERCEPT_CR3_WRITE);
+		} else if (cr3 == cr3_unmod && svm_is_intercept(svm, INTERCEPT_CR3_READ)) {
+			svm_clr_intercept(svm, INTERCEPT_CR3_READ);
+			svm_clr_intercept(svm, INTERCEPT_CR3_WRITE);
+		}
+	}
+#endif
 	svm->vmcb->save.cr3 = cr3;
 	vmcb_mark_dirty(svm->vmcb, VMCB_CR);
 }
