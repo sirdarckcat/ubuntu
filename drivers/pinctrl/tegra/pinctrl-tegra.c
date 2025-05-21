@@ -2,7 +2,7 @@
 /*
  * Driver for the NVIDIA Tegra pinmux
  *
- * Copyright (c) 2011-2024, NVIDIA CORPORATION.  All rights reserved.
+ * Copyright (c) 2011-2025, NVIDIA CORPORATION.  All rights reserved.
  *
  * Derived from code:
  * Copyright (C) 2010 Google, Inc.
@@ -22,6 +22,7 @@
 #include <linux/pinctrl/pinconf.h>
 #include <linux/pinctrl/pinctrl.h>
 #include <linux/pinctrl/pinmux.h>
+#include <soc/tegra/virt/hv-ivc.h>
 
 #include "../core.h"
 #include "../pinctrl-utils.h"
@@ -751,30 +752,43 @@ static void tegra_pinctrl_clear_parked_bits(struct tegra_pmx *pmx)
 	}
 }
 
-static size_t tegra_pinctrl_get_bank_size(struct device *dev,
-					  unsigned int bank_id)
-{
-	struct platform_device *pdev = to_platform_device(dev);
-	struct resource *res;
-
-	res = platform_get_resource(pdev, IORESOURCE_MEM, bank_id);
-
-	return resource_size(res) / 4;
-}
-
 static int tegra_pinctrl_suspend(struct device *dev)
 {
 	struct tegra_pmx *pmx = dev_get_drvdata(dev);
 	u32 *backup_regs = pmx->backup_regs;
-	u32 __iomem *regs;
-	size_t bank_size;
-	unsigned int i, k;
+	unsigned int i;
+	const struct tegra_pingroup *g;
+	u32 val;
 
-	for (i = 0; i < pmx->nbanks; i++) {
-		bank_size = tegra_pinctrl_get_bank_size(dev, i);
-		regs = pmx->regs[i];
-		for (k = 0; k < bank_size; k++)
-			*backup_regs++ = readl_relaxed(regs++);
+	if (is_tegra_hypervisor_mode())
+		return 0;
+	/* Save all register values for each pingroup */
+	for (i = 0; i < pmx->soc->ngroups; i++) {
+		g = &pmx->soc->groups[i];
+
+		/* Save mux register which includes all pin configurations */
+		if (g->mux_reg >= 0) {
+			val = pmx_readl(pmx, g->mux_bank, g->mux_reg);
+			*backup_regs++ = val;
+		}
+
+		/* Save pull-up/pull-down register */
+		if (g->pupd_reg >= 0) {
+			val = pmx_readl(pmx, g->pupd_bank, g->pupd_reg);
+			*backup_regs++ = val;
+		}
+
+		/* Save drive strength register */
+		if (g->drv_reg >= 0) {
+			val = pmx_readl(pmx, g->drv_bank, g->drv_reg);
+			*backup_regs++ = val;
+		}
+
+		/* Save tristate register */
+		if (g->tri_reg >= 0) {
+			val = pmx_readl(pmx, g->tri_bank, g->tri_reg);
+			*backup_regs++ = val;
+		}
 	}
 
 	return pinctrl_force_sleep(pmx->pctl);
@@ -784,21 +798,47 @@ static int tegra_pinctrl_resume(struct device *dev)
 {
 	struct tegra_pmx *pmx = dev_get_drvdata(dev);
 	u32 *backup_regs = pmx->backup_regs;
-	u32 __iomem *regs;
-	size_t bank_size;
-	unsigned int i, k;
+	unsigned int i;
+	const struct tegra_pingroup *g;
+	u32 val;
 
-	for (i = 0; i < pmx->nbanks; i++) {
-		bank_size = tegra_pinctrl_get_bank_size(dev, i);
-		regs = pmx->regs[i];
-		for (k = 0; k < bank_size; k++)
-			writel_relaxed(*backup_regs++, regs++);
+	if (is_tegra_hypervisor_mode())
+		return 0;
+	/* Restore all register values for each pingroup */
+	for (i = 0; i < pmx->soc->ngroups; i++) {
+		g = &pmx->soc->groups[i];
+
+		/* Restore mux register which includes all pin configurations */
+		if (g->mux_reg >= 0) {
+			val = *backup_regs++;
+			pmx_writel(pmx, val, g->mux_bank, g->mux_reg);
+		}
+
+		/* Restore pull-up/pull-down register */
+		if (g->pupd_reg >= 0) {
+			val = *backup_regs++;
+			pmx_writel(pmx, val, g->pupd_bank, g->pupd_reg);
+		}
+
+		/* Restore drive strength register */
+		if (g->drv_reg >= 0) {
+			val = *backup_regs++;
+			pmx_writel(pmx, val, g->drv_bank, g->drv_reg);
+		}
+
+		/* Restore tristate register */
+		if (g->tri_reg >= 0) {
+			val = *backup_regs++;
+			pmx_writel(pmx, val, g->tri_bank, g->tri_reg);
+		}
 	}
 
-	/* flush all the prior writes */
-	readl_relaxed(pmx->regs[0]);
-	/* wait for pinctrl register read to complete */
-	rmb();
+	/* Clear any parked bits that might have been set during suspend */
+	tegra_pinctrl_clear_parked_bits(pmx);
+
+	/* Ensure all writes are completed */
+	readl(pmx->regs[0]);
+
 	return 0;
 }
 
@@ -841,6 +881,25 @@ int tegra_pinctrl_probe(struct platform_device *pdev,
 					     pmx->soc->ngroups, sizeof(*pmx->pingroup_configs),
 					     GFP_KERNEL);
 	if (!pmx->pingroup_configs)
+		return -ENOMEM;
+
+	/* Calculate total number of registers we need to save */
+	for (i = 0; i < pmx->soc->ngroups; i++) {
+		const struct tegra_pingroup *g = &pmx->soc->groups[i];
+
+		if (g->mux_reg >= 0)
+			backup_regs_size += sizeof(u32);
+		if (g->pupd_reg >= 0)
+			backup_regs_size += sizeof(u32);
+		if (g->drv_reg >= 0)
+			backup_regs_size += sizeof(u32);
+		if (g->tri_reg >= 0)
+			backup_regs_size += sizeof(u32);
+	}
+
+	/* Allocate backup memory based on actual number of registers needed */
+	pmx->backup_regs = devm_kzalloc(&pdev->dev, backup_regs_size, GFP_KERNEL);
+	if (!pmx->backup_regs)
 		return -ENOMEM;
 
 	/*
@@ -901,18 +960,12 @@ int tegra_pinctrl_probe(struct platform_device *pdev,
 		res = platform_get_resource(pdev, IORESOURCE_MEM, i);
 		if (!res)
 			break;
-		backup_regs_size += resource_size(res);
 	}
 	pmx->nbanks = i;
 
 	pmx->regs = devm_kcalloc(&pdev->dev, pmx->nbanks, sizeof(*pmx->regs),
 				 GFP_KERNEL);
 	if (!pmx->regs)
-		return -ENOMEM;
-
-	pmx->backup_regs = devm_kzalloc(&pdev->dev, backup_regs_size,
-					GFP_KERNEL);
-	if (!pmx->backup_regs)
 		return -ENOMEM;
 
 	for (i = 0; i < pmx->nbanks; i++) {
