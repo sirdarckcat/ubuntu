@@ -1,7 +1,8 @@
 # Menu: HEADER
 # FORMAT: 4
 # ARCH: amd64 arm64
-# FLAVOUR: amd64-aws arm64-aws
+# FLAVOUR: amd64-aws arm64-aws arm64-aws-64k
+# FLAVOUR_DEP: {'amd64-aws': 'amd64-generic', 'arm64-aws': 'arm64-generic', 'arm64-aws-64k': 'arm64-generic-64k'}
 
 include "../../debian.master/config/annotations"
 
@@ -148,9 +149,9 @@ CONFIG_ADXRS290                                 policy<{'amd64': 'n', 'arm64': '
 CONFIG_AHCI_TEGRA                               policy<{'arm64': '-'}>
 CONFIG_ARCH_BCM4908                             policy<{'arm64': 'n'}>
 CONFIG_ARCH_KEEMBAY                             policy<{'arm64': 'n'}>
-CONFIG_ARCH_MMAP_RND_BITS_MAX                   policy<{'amd64': '32', 'arm64': '33'}>
-CONFIG_ARCH_MMAP_RND_BITS_MIN                   policy<{'amd64': '28', 'arm64': '18'}>
-CONFIG_ARCH_MMAP_RND_COMPAT_BITS_MIN            policy<{'amd64': '8', 'arm64': '11'}>
+CONFIG_ARCH_MMAP_RND_BITS_MAX                   policy<{'amd64': '32', 'arm64': '33', 'arm64-aws-64k': '29'}>
+CONFIG_ARCH_MMAP_RND_BITS_MIN                   policy<{'amd64': '28', 'arm64': '18', 'arm64-aws-64k': '14'}>
+CONFIG_ARCH_MMAP_RND_COMPAT_BITS_MIN            policy<{'amd64': '8', 'arm64': '11', 'arm64-aws-64k': '7'}>
 CONFIG_ARCH_SPARX5                              policy<{'arm64': 'n'}>
 CONFIG_ARCH_TEGRA                               policy<{'arm64': 'n'}>
 CONFIG_ARCH_TEGRA_132_SOC                       policy<{'arm64': '-'}>
@@ -159,13 +160,12 @@ CONFIG_ARCH_TEGRA_194_SOC                       policy<{'arm64': '-'}>
 CONFIG_ARCH_TEGRA_210_SOC                       policy<{'arm64': '-'}>
 CONFIG_ARCH_TEGRA_234_SOC                       policy<{'arm64': '-'}>
 CONFIG_ARCH_VISCONTI                            policy<{'arm64': 'n'}>
-CONFIG_ARCH_WANT_HUGE_PMD_SHARE                 policy<{'amd64': 'y', 'arm64': 'y'}>
-CONFIG_ARM64_4K_PAGES                           policy<{'arm64': 'y'}>
-CONFIG_ARM64_64K_PAGES                          policy<{'arm64': 'n'}>
-CONFIG_ARM64_CONT_PMD_SHIFT                     policy<{'arm64': '4'}>
-CONFIG_ARM64_CONT_PTE_SHIFT                     policy<{'arm64': '4'}>
-CONFIG_ARM64_PAGE_SHIFT                         policy<{'arm64': '12'}>
-CONFIG_ARM64_VA_BITS_39                         policy<{'arm64': 'n'}>
+CONFIG_ARCH_WANT_HUGE_PMD_SHARE                 policy<{'amd64': 'y', 'arm64': 'y', 'arm64-aws-64k': '-'}>
+CONFIG_ARM64_4K_PAGES                           policy<{'arm64': 'y', 'arm64-aws-64k': 'n'}>
+CONFIG_ARM64_CONT_PMD_SHIFT                     policy<{'arm64': '4', 'arm64-aws-64k': '5'}>
+CONFIG_ARM64_CONT_PTE_SHIFT                     policy<{'arm64': '4', 'arm64-aws-64k': '5'}>
+CONFIG_ARM64_PAGE_SHIFT                         policy<{'arm64': '12', 'arm64-aws-64k': '16'}>
+CONFIG_ARM64_VA_BITS_39                         policy<{'arm64': 'n', 'arm64-aws-64k': '-'}>
 CONFIG_ARM_GIC_PM                               policy<{'arm64': '-'}>
 CONFIG_ARM_TEGRA124_CPUFREQ                     policy<{'arm64': '-'}>
 CONFIG_ARM_TEGRA186_CPUFREQ                     policy<{'arm64': '-'}>
@@ -293,7 +293,7 @@ CONFIG_DWMAC_VISCONTI                           policy<{'arm64': '-'}>
 CONFIG_EXTCON_USBC_TUSB320                      policy<{'amd64': 'n', 'arm64': 'n'}>
 CONFIG_FB_ARMCLCD                               policy<{'arm64': 'y'}>
 CONFIG_FB_HYPERV                                policy<{'amd64': 'n', 'arm64': 'n'}>
-CONFIG_FORCE_MAX_ZONEORDER                      policy<{'arm64': '13'}>
+CONFIG_FORCE_MAX_ZONEORDER                      policy<{'arm64': '13', 'arm64-aws-64k': '14'}>
 CONFIG_GADGET_UAC1                              policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_GADGET_UAC1_LEGACY                       policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_GPIO_AAEON                               policy<{'amd64': '-'}>
@@ -316,7 +316,7 @@ CONFIG_HSU_DMA                                  policy<{'amd64': 'm'}>
 CONFIG_I2C_LJCA                                 policy<{'amd64': '-'}>
 CONFIG_I2C_TEGRA                                policy<{'arm64': '-'}>
 CONFIG_I2C_TEGRA_BPMP                           policy<{'arm64': '-'}>
-CONFIG_INFINIBAND_VMWARE_PVRDMA                 policy<{'amd64': 'm', 'arm64': 'm'}>
+CONFIG_INFINIBAND_VMWARE_PVRDMA                 policy<{'amd64': 'm', 'arm64': 'm', 'arm64-aws-64k': '-'}>
 CONFIG_INPUT_ARIZONA_HAPTICS                    policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_INPUT_DA7280_HAPTICS                     policy<{'amd64': 'n', 'arm64': 'n'}>
 CONFIG_INPUT_XEN_KBDDEV_FRONTEND                policy<{'amd64': 'n', 'arm64': 'n'}>
@@ -346,9 +346,9 @@ CONFIG_LEDS_RT8515                              policy<{'amd64': 'n', 'arm64': '
 CONFIG_MANDATORY_FILE_LOCKING                   policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_MEDIATEK_MT6360_ADC                      policy<{'amd64': 'n', 'arm64': 'n'}>
 CONFIG_MEDIA_ALTERA_CI                          policy<{'amd64': '-', 'arm64': '-'}>
-CONFIG_MESON_EFUSE                              policy<{'arm64': 'm'}>
-CONFIG_MESON_SECURE_PM_DOMAINS                  policy<{'arm64': 'y'}>
-CONFIG_MESON_SM                                 policy<{'arm64': 'y'}>
+CONFIG_MESON_EFUSE                              policy<{'arm64': 'm', 'arm64-aws-64k': '-'}>
+CONFIG_MESON_SECURE_PM_DOMAINS                  policy<{'arm64': 'y', 'arm64-aws-64k': '-'}>
+CONFIG_MESON_SM                                 policy<{'arm64': 'y', 'arm64-aws-64k': '-'}>
 CONFIG_MFD_AAEON                                policy<{'amd64': '-'}>
 CONFIG_MFD_KHADAS_MCU                           policy<{'arm64': 'n'}>
 CONFIG_MFD_LJCA                                 policy<{'amd64': 'n', 'arm64': 'n'}>
@@ -375,7 +375,7 @@ CONFIG_PCIE_TEGRA194_EP                         policy<{'arm64': '-'}>
 CONFIG_PCIE_TEGRA194_HOST                       policy<{'arm64': '-'}>
 CONFIG_PCIE_VISCONTI_HOST                       policy<{'arm64': '-'}>
 CONFIG_PCI_TEGRA                                policy<{'arm64': '-'}>
-CONFIG_PGTABLE_LEVELS                           policy<{'amd64': '5', 'arm64': '4'}>
+CONFIG_PGTABLE_LEVELS                           policy<{'amd64': '5', 'arm64': '4', 'arm64-aws-64k': '3'}>
 CONFIG_PHY_INTEL_KEEMBAY_EMMC                   policy<{'arm64': '-'}>
 CONFIG_PHY_INTEL_KEEMBAY_USB                    policy<{'arm64': '-'}>
 CONFIG_PHY_SPARX5_SERDES                        policy<{'amd64': '-', 'arm64': '-'}>
@@ -1259,7 +1259,7 @@ CONFIG_VIDEO_ZORAN_LML33                        policy<{'amd64': '-', 'arm64': '
 CONFIG_VIDEO_ZORAN_LML33R10                     policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_VIDEO_ZORAN_ZR36060                      policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_VISCONTI_WATCHDOG                        policy<{'arm64': '-'}>
-CONFIG_VMXNET3                                  policy<{'amd64': 'm', 'arm64': 'm'}>
+CONFIG_VMXNET3                                  policy<{'amd64': 'm', 'arm64': 'm', 'arm64-aws-64k': '-'}>
 CONFIG_WILC1000                                 policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_WILC1000_HW_OOB_INTR                     policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_WILC1000_SDIO                            policy<{'amd64': '-', 'arm64': '-'}>
