@@ -3,7 +3,10 @@
 # ARCH: riscv64
 # FLAVOUR: riscv64-generic
 
-include "../../debian.riscv/config/annotations"
+include "../../debian.master/config/annotations"
+
+CONFIG_SUN8I_DE2_CCU                            policy<{'riscv64': 'y'}>
+CONFIG_SUN8I_DE2_CCU                            note<'This could be a module, but is not autoloaded'>
 
 
 # ---- Annotations without notes ----
@@ -13,9 +16,16 @@ CONFIG_AS_HAS_ULEB128                           policy<{'riscv64': '-'}>
 CONFIG_AS_VERSION                               policy<{'riscv64': '23800'}>
 CONFIG_CC_VERSION_TEXT                          policy<{'riscv64': '"riscv64-linux-gnu-gcc-12 (Ubuntu 12.3.0-1ubuntu1~22.04) 12.3.0"'}>
 CONFIG_DEBUG_INFO_COMPRESSED_ZSTD               policy<{'riscv64': '-'}>
+CONFIG_DRM_PANEL_SITRONIX_ST7701S               policy<{'riscv64': 'm'}>
 CONFIG_GCC_ASM_GOTO_OUTPUT_WORKAROUND           policy<{'riscv64': 'y'}>
 CONFIG_GCC_VERSION                              policy<{'riscv64': '120300'}>
 CONFIG_LD_VERSION                               policy<{'riscv64': '23800'}>
+CONFIG_PCIE_PLDA_HOST                           policy<{'riscv64': 'y'}>
+CONFIG_PCIE_STARFIVE_HOST                       policy<{'riscv64': 'y'}>
+CONFIG_PWM_OCORES                               policy<{'riscv64': 'm'}>
+CONFIG_PWM_SUN20I                               policy<{'riscv64': 'y'}>
+CONFIG_REGULATOR_SUN20I                         policy<{'riscv64': 'y'}>
 CONFIG_RISCV_ISA_ZBB                            policy<{'riscv64': '-'}>
 CONFIG_RUST_IS_AVAILABLE                        policy<{'riscv64': '-'}>
+CONFIG_SND_SUN20I_CODEC                         policy<{'riscv64': 'm'}>
 CONFIG_TOOLCHAIN_HAS_ZBB                        policy<{'riscv64': '-'}>
