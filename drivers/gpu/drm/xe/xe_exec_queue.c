@@ -120,16 +120,8 @@ struct xe_exec_queue *xe_exec_queue_create(struct xe_device *xe, struct xe_vm *v
 					   struct xe_hw_engine *hwe, u32 flags)
 {
 	struct xe_exec_queue *q;
-	int err;
 
-	if (vm) {
-		err = xe_vm_lock(vm, true);
-		if (err)
-			return ERR_PTR(err);
-	}
 	q = __xe_exec_queue_create(xe, vm, logical_mask, width, hwe, flags);
-	if (vm)
-		xe_vm_unlock(vm);
 
 	return q;
 }
