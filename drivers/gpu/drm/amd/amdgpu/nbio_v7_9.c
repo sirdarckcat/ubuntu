@@ -32,9 +32,6 @@
 
 #define NPS_MODE_MASK 0x000000FFL
 
-/* Core 0 Port 0 counter */
-#define smnPCIEP_NAK_COUNTER 0x1A340218
-
 #define smnPCIE_PERF_CNTL_TXCLK3		0x1A38021c
 #define smnPCIE_PERF_CNTL_TXCLK7		0x1A380888
 #define smnPCIE_PERF_COUNT_CNTL			0x1A380200
@@ -468,22 +465,6 @@ static void nbio_v7_9_init_registers(struct amdgpu_device *adev)
 	}
 }
 
-static u64 nbio_v7_9_get_pcie_replay_count(struct amdgpu_device *adev)
-{
-	u32 val, nak_r, nak_g;
-
-	if (adev->flags & AMD_IS_APU)
-		return 0;
-
-	/* Get the number of NAKs received and generated */
-	val = RREG32_PCIE(smnPCIEP_NAK_COUNTER);
-	nak_r = val & 0xFFFF;
-	nak_g = val >> 16;
-
-	/* Add the total number of NAKs, i.e the number of replays */
-	return (nak_r + nak_g);
-}
-
 static void nbio_v7_9_get_pcie_usage(struct amdgpu_device *adev, uint64_t *count0,
 				     uint64_t *count1)
 {
@@ -560,7 +541,6 @@ const struct amdgpu_nbio_funcs nbio_v7_9_funcs = {
 	.get_compute_partition_mode = nbio_v7_9_get_compute_partition_mode,
 	.get_memory_partition_mode = nbio_v7_9_get_memory_partition_mode,
 	.init_registers = nbio_v7_9_init_registers,
-	.get_pcie_replay_count = nbio_v7_9_get_pcie_replay_count,
 	.get_pcie_usage = nbio_v7_9_get_pcie_usage,
 };
 
