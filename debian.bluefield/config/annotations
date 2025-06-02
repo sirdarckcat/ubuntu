@@ -1,12 +1,24 @@
 # Menu: HEADER
 # FORMAT: 4
 # ARCH: arm64
-# FLAVOUR: arm64-bluefield
+# FLAVOUR: arm64-bluefield arm64-bluefield-64k
 
 include "../../debian.master/config/annotations"
 
+CONFIG_ARCH_MMAP_RND_BITS                       policy<{'arm64': '33', 'arm64-bluefield-64k': '29'}>
+CONFIG_ARCH_MMAP_RND_BITS                       note<'LP: #1983357'>
+
+CONFIG_ARCH_MMAP_RND_COMPAT_BITS                policy<{'arm64': '16', 'arm64-bluefield-64k': '-'}>
+CONFIG_ARCH_MMAP_RND_COMPAT_BITS                note<'LP: #1983357'>
+
+CONFIG_ARMV8_DEPRECATED                         policy<{'arm64': 'y', 'arm64-bluefield-64k': '-'}>
+CONFIG_ARMV8_DEPRECATED                         note<'LP: #1545542'>
+
 CONFIG_BT_HS                                    policy<{'arm64': '-'}>
 CONFIG_BT_HS                                    note<'https://www.intel.com/content/www/us/en/security-center/advisory/intel-sa-00435.html'>
+
+CONFIG_CP15_BARRIER_EMULATION                   policy<{'arm64': 'y', 'arm64-bluefield-64k': '-'}>
+CONFIG_CP15_BARRIER_EMULATION                   note<'LP: #1545542'>
 
 CONFIG_DVB_DUMMY_FE                             policy<{'arm64': '-'}>
 CONFIG_DVB_DUMMY_FE                             note<'expert use only'>
@@ -28,6 +40,9 @@ CONFIG_PCI_MESON                                note<'LP: #2007745'>
 
 CONFIG_PREEMPT_NONE                             policy<{'arm64': 'y'}>
 CONFIG_PREEMPT_NONE                             note<'LP:1543165'>
+
+CONFIG_SETEND_EMULATION                         policy<{'arm64': 'y', 'arm64-bluefield-64k': '-'}>
+CONFIG_SETEND_EMULATION                         note<'LP: #1545542'>
 
 CONFIG_SND                                      policy<{'arm64': '-'}>
 CONFIG_SND                                      note<'not autoloadable on omap'>
@@ -71,6 +86,9 @@ CONFIG_SOUND                                    note<'not autoloadable on omap'>
 CONFIG_SOUND_OSS_CORE_PRECLAIM                  policy<{'arm64': '-'}>
 CONFIG_SOUND_OSS_CORE_PRECLAIM                  note<'LP#1105230 LP#1385510'>
 
+CONFIG_SWP_EMULATION                            policy<{'arm64': 'y', 'arm64-bluefield-64k': '-'}>
+CONFIG_SWP_EMULATION                            note<'LP: #1965303'>
+
 CONFIG_VIDEO_VIMC                               policy<{'arm64': '-'}>
 CONFIG_VIDEO_VIMC                               note<'LP#1831482'>
 
@@ -97,11 +115,31 @@ CONFIG_AMD8111_ETH                              policy<{'arm64': '-'}>
 CONFIG_AMD_XGBE                                 policy<{'arm64': '-'}>
 CONFIG_AMD_XGBE_DCB                             policy<{'arm64': '-'}>
 CONFIG_AQTION                                   policy<{'arm64': '-'}>
+CONFIG_ARCH_MMAP_RND_BITS_MAX                   policy<{'arm64': '33', 'arm64-bluefield-64k': '29'}>
+CONFIG_ARCH_MMAP_RND_BITS_MIN                   policy<{'arm64': '18', 'arm64-bluefield-64k': '14'}>
+CONFIG_ARCH_MMAP_RND_COMPAT_BITS_MIN            policy<{'arm64': '11', 'arm64-bluefield-64k': '7'}>
+CONFIG_ARCH_WANTS_THP_SWAP                      policy<{'arm64': 'y', 'arm64-bluefield-64k': '-'}>
+CONFIG_ARCH_WANT_COMPAT_IPC_PARSE_VERSION       policy<{'arm64': 'y', 'arm64-bluefield-64k': '-'}>
+CONFIG_ARCH_WANT_HUGE_PMD_SHARE                 policy<{'arm64': 'y', 'arm64-bluefield-64k': '-'}>
 CONFIG_ARC_EMAC_CORE                            policy<{'arm64': '-'}>
+CONFIG_ARM64_4K_PAGES                           policy<{'arm64': 'y', 'arm64-bluefield-64k': 'n'}>
+CONFIG_ARM64_64K_PAGES                          policy<{'arm64': 'n', 'arm64-bluefield-64k': 'y'}>
+CONFIG_ARM64_CONT_PMD_SHIFT                     policy<{'arm64': '4', 'arm64-bluefield-64k': '5'}>
+CONFIG_ARM64_CONT_PTE_SHIFT                     policy<{'arm64': '4', 'arm64-bluefield-64k': '5'}>
+CONFIG_ARM64_ERRATUM_1418040                    policy<{'arm64': 'y', 'arm64-bluefield-64k': '-'}>
+CONFIG_ARM64_ERRATUM_1742098                    policy<{'arm64': 'y', 'arm64-bluefield-64k': '-'}>
+CONFIG_ARM64_ERRATUM_845719                     policy<{'arm64': 'y', 'arm64-bluefield-64k': '-'}>
+CONFIG_ARM64_PAGE_SHIFT                         policy<{'arm64': '12', 'arm64-bluefield-64k': '16'}>
+CONFIG_ARM64_PA_BITS_52                         policy<{'arm64-bluefield-64k': 'n'}>
+CONFIG_ARM64_VA_BITS_39                         policy<{'arm64': 'n', 'arm64-bluefield-64k': '-'}>
+CONFIG_ARM64_VA_BITS_42                         policy<{'arm64-bluefield-64k': 'n'}>
+CONFIG_ARM64_VA_BITS_52                         policy<{'arm64-bluefield-64k': 'n'}>
+CONFIG_ARM_SMMU_QCOM_DEBUG                      policy<{'arm64': 'y', 'arm64-bluefield-64k': 'n'}>
 CONFIG_ATL1                                     policy<{'arm64': '-'}>
 CONFIG_ATL1C                                    policy<{'arm64': '-'}>
 CONFIG_ATL1E                                    policy<{'arm64': '-'}>
 CONFIG_ATL2                                     policy<{'arm64': '-'}>
+CONFIG_AUDIT_COMPAT_GENERIC                     policy<{'arm64': 'y', 'arm64-bluefield-64k': '-'}>
 CONFIG_B44                                      policy<{'arm64': 'n'}>
 CONFIG_B44_PCI                                  policy<{'arm64': '-'}>
 CONFIG_B44_PCICORE_AUTOSELECT                   policy<{'arm64': '-'}>
@@ -198,6 +236,12 @@ CONFIG_CHELSIO_T4VF                             policy<{'arm64': 'n'}>
 CONFIG_CHELSIO_T4_DCB                           policy<{'arm64': 'n'}>
 CONFIG_CHELSIO_T4_FCOE                          policy<{'arm64': '-'}>
 CONFIG_CHELSIO_TLS_DEVICE                       policy<{'arm64': '-'}>
+CONFIG_COMPAT                                   policy<{'arm64': 'y', 'arm64-bluefield-64k': 'n'}>
+CONFIG_COMPAT_32BIT_TIME                        policy<{'arm64': 'y', 'arm64-bluefield-64k': 'n'}>
+CONFIG_COMPAT_ALIGNMENT_FIXUPS                  policy<{'arm64': 'n', 'arm64-bluefield-64k': '-'}>
+CONFIG_COMPAT_BINFMT_ELF                        policy<{'arm64': 'y', 'arm64-bluefield-64k': '-'}>
+CONFIG_COMPAT_NETLINK_MESSAGES                  policy<{'arm64': 'y', 'arm64-bluefield-64k': '-'}>
+CONFIG_COMPAT_OLD_SIGACTION                     policy<{'arm64': 'y', 'arm64-bluefield-64k': '-'}>
 CONFIG_CRYPTO_DEV_OCTEONTX2_CPT                 policy<{'arm64': '-'}>
 CONFIG_CXD2880_SPI_DRV                          policy<{'arm64': '-'}>
 CONFIG_CYPRESS_FIRMWARE                         policy<{'arm64': '-'}>
@@ -477,6 +521,8 @@ CONFIG_GREYBUS_AUDIO_APB_CODEC                  policy<{'arm64': '-'}>
 CONFIG_GVE                                      policy<{'arm64': '-'}>
 CONFIG_HAMACHI                                  policy<{'arm64': '-'}>
 CONFIG_HAPPYMEAL                                policy<{'arm64': '-'}>
+CONFIG_HAVE_ARCH_MMAP_RND_COMPAT_BITS           policy<{'arm64': 'y', 'arm64-bluefield-64k': '-'}>
+CONFIG_HAVE_UID16                               policy<{'arm64': 'y', 'arm64-bluefield-64k': '-'}>
 CONFIG_HI13X1_GMAC                              policy<{'arm64': '-'}>
 CONFIG_HI6421V600_IRQ                           policy<{'arm64': 'n'}>
 CONFIG_HID_NVIDIA_SHIELD                        policy<{'arm64': '-'}>
@@ -517,6 +563,7 @@ CONFIG_INFINIBAND_HNS_HIP06                     policy<{'arm64': '-'}>
 CONFIG_INFINIBAND_HNS_HIP08                     policy<{'arm64': '-'}>
 CONFIG_INFINIBAND_IRDMA                         policy<{'arm64': '-'}>
 CONFIG_INFINIBAND_QEDR                          policy<{'arm64': '-'}>
+CONFIG_INFINIBAND_VMWARE_PVRDMA                 policy<{'arm64': 'm', 'arm64-bluefield-64k': '-'}>
 CONFIG_INPUT_ARIZONA_HAPTICS                    policy<{'arm64': '-'}>
 CONFIG_INTEL_MEI                                policy<{'arm64': '-'}>
 CONFIG_INTEL_MEI_VSC                            policy<{'arm64': '-'}>
@@ -540,6 +587,7 @@ CONFIG_KS8842                                   policy<{'arm64': '-'}>
 CONFIG_KS8851                                   policy<{'arm64': '-'}>
 CONFIG_KS8851_MLL                               policy<{'arm64': '-'}>
 CONFIG_KSZ884X_PCI                              policy<{'arm64': '-'}>
+CONFIG_KUSER_HELPERS                            policy<{'arm64': 'y', 'arm64-bluefield-64k': '-'}>
 CONFIG_LAN743X                                  policy<{'arm64': '-'}>
 CONFIG_LAN966X_DCB                              policy<{'arm64': '-'}>
 CONFIG_LAN966X_SWITCH                           policy<{'arm64': '-'}>
@@ -610,6 +658,8 @@ CONFIG_MEDIA_TUNER_XC4000                       policy<{'arm64': '-'}>
 CONFIG_MEDIA_TUNER_XC5000                       policy<{'arm64': '-'}>
 CONFIG_MEDIA_USB_SUPPORT                        policy<{'arm64': '-'}>
 CONFIG_MESON_EFUSE                              policy<{'arm64': '-'}>
+CONFIG_MESON_SECURE_PM_DOMAINS                  policy<{'arm64': 'y', 'arm64-bluefield-64k': '-'}>
+CONFIG_MESON_SM                                 policy<{'arm64': 'y', 'arm64-bluefield-64k': '-'}>
 CONFIG_MFD_LJCA                                 policy<{'arm64': '-'}>
 CONFIG_MICROSOFT_MANA                           policy<{'arm64': '-'}>
 CONFIG_MII                                      policy<{'arm64': 'm'}>
@@ -673,6 +723,7 @@ CONFIG_NATSEMI                                  policy<{'arm64': '-'}>
 CONFIG_NDC_DIS_DYNAMIC_CACHING                  policy<{'arm64': '-'}>
 CONFIG_NE2K_PCI                                 policy<{'arm64': '-'}>
 CONFIG_NETDEVSIM                                policy<{'arm64': 'n'}>
+CONFIG_NETFILTER_XTABLES_COMPAT                 policy<{'arm64': 'y', 'arm64-bluefield-64k': '-'}>
 CONFIG_NETXEN_NIC                               policy<{'arm64': '-'}>
 CONFIG_NET_DSA                                  policy<{'arm64': 'n'}>
 CONFIG_NET_DSA_AR9331                           policy<{'arm64': '-'}>
@@ -822,16 +873,21 @@ CONFIG_NF_DEFRAG_IPV6                           policy<{'arm64': 'y'}>
 CONFIG_NIU                                      policy<{'arm64': '-'}>
 CONFIG_NI_XGE_MANAGEMENT_ENET                   policy<{'arm64': '-'}>
 CONFIG_NS83820                                  policy<{'arm64': '-'}>
+CONFIG_NTFS_RW                                  policy<{'arm64': 'n', 'arm64-bluefield-64k': '-'}>
 CONFIG_NVIDIA_SHIELD_FF                         policy<{'arm64': '-'}>
+CONFIG_NVMEM_MESON_EFUSE                        policy<{'arm64': 'm', 'arm64-bluefield-64k': '-'}>
 CONFIG_OBJAGG                                   policy<{'arm64': '-'}>
 CONFIG_OCTEONTX2_AF                             policy<{'arm64': '-'}>
 CONFIG_OCTEONTX2_MBOX                           policy<{'arm64': '-'}>
 CONFIG_OCTEONTX2_PF                             policy<{'arm64': '-'}>
 CONFIG_OCTEONTX2_VF                             policy<{'arm64': '-'}>
 CONFIG_OCTEON_EP                                policy<{'arm64': '-'}>
+CONFIG_OLD_SIGSUSPEND3                          policy<{'arm64': 'y', 'arm64-bluefield-64k': '-'}>
 CONFIG_OPTEE_SHM_NUM_PRIV_PAGES                 policy<{'arm64': '-'}>
 CONFIG_OWL_EMAC                                 policy<{'arm64': '-'}>
+CONFIG_PAGE_SIZE_LESS_THAN_64KB                 policy<{'arm64': 'y', 'arm64-bluefield-64k': '-'}>
 CONFIG_PARMAN                                   policy<{'arm64': '-'}>
+CONFIG_PATA_PARPORT_COMM                        policy<{'arm64': 'n', 'arm64-bluefield-64k': 'm'}>
 CONFIG_PCMCIA_XIRCOM                            policy<{'arm64': '-'}>
 CONFIG_PCNET32                                  policy<{'arm64': '-'}>
 CONFIG_PCS_LYNX                                 policy<{'arm64': '-'}>
@@ -839,6 +895,7 @@ CONFIG_PCS_MTK_LYNXI                            policy<{'arm64': '-'}>
 CONFIG_PDS_CORE                                 policy<{'arm64': '-'}>
 CONFIG_PDS_VDPA                                 policy<{'arm64': '-'}>
 CONFIG_PDS_VFIO_PCI                             policy<{'arm64': '-'}>
+CONFIG_PGTABLE_LEVELS                           policy<{'arm64': '4', 'arm64-bluefield-64k': '3'}>
 CONFIG_PHANTOM                                  policy<{'arm64': 'n'}>
 CONFIG_PHYLINK                                  policy<{'arm64': 'm'}>
 CONFIG_PHY_TI_GMII_SEL                          policy<{'arm64': '-'}>
@@ -1663,11 +1720,13 @@ CONFIG_SUNGEM                                   policy<{'arm64': '-'}>
 CONFIG_SUNGEM_PHY                               policy<{'arm64': '-'}>
 CONFIG_SXGBE_ETH                                policy<{'arm64': '-'}>
 CONFIG_SYSTEMPORT                               policy<{'arm64': 'n'}>
-CONFIG_TEE_STMM_EFI                             policy<{'arm64': 'n'}>
+CONFIG_SYSVIPC_COMPAT                           policy<{'arm64': 'y', 'arm64-bluefield-64k': '-'}>
+CONFIG_TEE_STMM_EFI                             policy<{'arm64': 'n', 'arm64-bluefield-64k': 'm'}>
 CONFIG_TEGRA_VDE                                policy<{'arm64': '-'}>
 CONFIG_TEHUTI                                   policy<{'arm64': '-'}>
 CONFIG_TEST_OBJAGG                              policy<{'arm64': '-'}>
 CONFIG_TEST_PARMAN                              policy<{'arm64': '-'}>
+CONFIG_THP_SWAP                                 policy<{'arm64': 'y', 'arm64-bluefield-64k': '-'}>
 CONFIG_THUNDER_NIC_BGX                          policy<{'arm64': '-'}>
 CONFIG_THUNDER_NIC_PF                           policy<{'arm64': '-'}>
 CONFIG_THUNDER_NIC_RGX                          policy<{'arm64': '-'}>
@@ -1700,6 +1759,7 @@ CONFIG_TULIP_MWI                                policy<{'arm64': '-'}>
 CONFIG_TULIP_NAPI                               policy<{'arm64': '-'}>
 CONFIG_TYPHOON                                  policy<{'arm64': '-'}>
 CONFIG_UCB1400_CORE                             policy<{'arm64': '-'}>
+CONFIG_UID16                                    policy<{'arm64': 'y', 'arm64-bluefield-64k': '-'}>
 CONFIG_ULI526X                                  policy<{'arm64': '-'}>
 CONFIG_USB_AIRSPY                               policy<{'arm64': '-'}>
 CONFIG_USB_AUDIO                                policy<{'arm64': '-'}>
@@ -2134,6 +2194,7 @@ CONFIG_VIDEO_ZORAN_LML33                        policy<{'arm64': '-'}>
 CONFIG_VIDEO_ZORAN_LML33R10                     policy<{'arm64': '-'}>
 CONFIG_VIDEO_ZORAN_ZR36060                      policy<{'arm64': '-'}>
 CONFIG_VISL_DEBUGFS                             policy<{'arm64': '-'}>
+CONFIG_VMXNET3                                  policy<{'arm64': 'm', 'arm64-bluefield-64k': '-'}>
 CONFIG_VORTEX                                   policy<{'arm64': '-'}>
 CONFIG_VXGE                                     policy<{'arm64': '-'}>
 CONFIG_VXGE_DEBUG_TRACE_ALL                     policy<{'arm64': '-'}>
