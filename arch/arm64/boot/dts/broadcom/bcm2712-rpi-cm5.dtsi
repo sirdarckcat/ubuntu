@@ -76,17 +76,11 @@
 	};
 
 	sd_io_1v8_reg: sd_io_1v8_reg {
-		compatible = "regulator-gpio";
+		compatible = "regulator-fixed";
 		regulator-name = "vdd-sd-io";
 		regulator-min-microvolt = <1800000>;
-		regulator-max-microvolt = <3300000>;
-		regulator-boot-on;
+		regulator-max-microvolt = <1800000>;
 		regulator-always-on;
-		regulator-settling-time-us = <5000>;
-		gpios = <&gio_aon 3 GPIO_ACTIVE_HIGH>;
-		states = <1800000 0x1
-			  3300000 0x0>;
-		status = "okay";
 	};
 
 	sd_vcc_reg: sd_vcc_reg {
