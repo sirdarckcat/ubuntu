@@ -368,6 +368,7 @@ static const struct gmdid_map graphics_ip_map[] = {
 	{ 1271, &graphics_xelpg },
 	{ 1274, &graphics_xelpg },	/* Xe_LPG+ */
 	{ 2001, &graphics_xe2 },
+	{ 2002, &graphics_xe2 },
 	{ 2004, &graphics_xe2 },
 	{ 3000, &graphics_xe2 },
 	{ 3001, &graphics_xe2 },
