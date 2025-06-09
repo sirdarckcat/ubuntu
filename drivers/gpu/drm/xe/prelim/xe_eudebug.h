@@ -34,7 +34,6 @@ int prelim_xe_eudebug_support_disable(struct xe_device *xe);
 bool prelim_xe_eudebug_is_enabled(struct xe_device *xe);
 
 void prelim_xe_eudebug_init(struct xe_device *xe);
-void prelim_xe_eudebug_fini(struct xe_device *xe);
 
 void prelim_xe_eudebug_file_open(struct xe_file *xef);
 void prelim_xe_eudebug_file_close(struct xe_file *xef);
@@ -79,7 +78,6 @@ static inline int prelim_xe_eudebug_support_disable(struct xe_device *xe) { retu
 static inline bool prelim_xe_eudebug_is_enabled(struct xe_device *xe) { return false; }
 
 static inline void prelim_xe_eudebug_init(struct xe_device *xe) { }
-static inline void prelim_xe_eudebug_fini(struct xe_device *xe) { }
 
 static inline void prelim_xe_eudebug_file_open(struct xe_file *xef) { }
 static inline void prelim_xe_eudebug_file_close(struct xe_file *xef) { }

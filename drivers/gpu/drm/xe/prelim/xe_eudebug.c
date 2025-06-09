@@ -2504,16 +2504,27 @@ static ssize_t prelim_enable_eudebug_store(struct device *dev, struct device_att
 
 static DEVICE_ATTR_RW(prelim_enable_eudebug);
 
-static void xe_eudebug_sysfs_fini(void *arg)
+static void prelim_xe_eudebug_sysfs_fini(struct drm_device *dev, void *__unused)
 {
-	struct xe_device *xe = arg;
+	struct xe_device *xe = to_xe_device(dev);
 
 	sysfs_remove_file(&xe->drm.dev->kobj, &dev_attr_prelim_enable_eudebug.attr);
 }
 
+static void prelim_xe_eudebug_fini(struct drm_device *dev, void *__unused)
+{
+	struct xe_device *xe = to_xe_device(dev);
+
+	attention_scan_cancel(xe);
+	xe_assert(xe, list_empty_careful(&xe->eudebug.list));
+
+	if (xe->eudebug.ordered_wq)
+		destroy_workqueue(xe->eudebug.ordered_wq);
+}
+
+
 void prelim_xe_eudebug_init(struct xe_device *xe)
 {
-	struct device *dev = xe->drm.dev;
 	int ret;
 
 	spin_lock_init(&xe->eudebug.lock);
@@ -2536,23 +2547,26 @@ void prelim_xe_eudebug_init(struct xe_device *xe)
 		return;
 	}
 
+	ret = drmm_add_action_or_reset(&xe->drm, prelim_xe_eudebug_fini, NULL);
+	if (ret) {
+		drm_warn(&xe->drm, "eudebug initialization failed: %d, debugger unavailable\n", ret);
+		return;
+	}
+
+
 	ret = sysfs_create_file(&xe->drm.dev->kobj, &dev_attr_prelim_enable_eudebug.attr);
 	if (ret) {
 		drm_warn(&xe->drm, "eudebug sysfs init failed: %d, debugger unavailable\n", ret);
 		return;
 	}
 
-	devm_add_action_or_reset(dev, xe_eudebug_sysfs_fini, xe);
+	ret = drmm_add_action_or_reset(&xe->drm, prelim_xe_eudebug_sysfs_fini, NULL);
+	if (ret) {
+		drm_warn(&xe->drm, "eudebug sysfs post-init failed: %d, debugger unavailable\n", ret);
+		return;
+	}
+
 	xe->eudebug.state = XE_EUDEBUG_SUPPORTED;
-}
-
-void prelim_xe_eudebug_fini(struct xe_device *xe)
-{
-	attention_scan_cancel(xe);
-	xe_assert(xe, list_empty_careful(&xe->eudebug.list));
-
-	if (xe->eudebug.ordered_wq)
-		destroy_workqueue(xe->eudebug.ordered_wq);
 }
 
 static int send_open_event(struct xe_eudebug *d, u32 flags, const u64 handle,

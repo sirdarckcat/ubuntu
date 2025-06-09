@@ -422,8 +422,6 @@ static void xe_device_destroy(struct drm_device *dev, void *dummy)
 {
 	struct xe_device *xe = to_xe_device(dev);
 
-	prelim_xe_eudebug_fini(xe);
-
 	xe_bo_dev_fini(&xe->bo_device);
 
 	if (xe->preempt_fence_wq)
