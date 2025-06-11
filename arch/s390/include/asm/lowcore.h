@@ -215,6 +215,9 @@ struct lowcore {
 
 #define S390_lowcore (*((struct lowcore *) 0))
 
+/* Lowcore has a fixed address on this kernel. */
+#define get_lowcore() (&S390_lowcore)
+
 extern struct lowcore *lowcore_ptr[];
 
 static inline void set_prefix(__u32 address)
