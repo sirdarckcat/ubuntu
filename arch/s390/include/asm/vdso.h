@@ -4,7 +4,7 @@
 
 #include <vdso/datapage.h>
 
-#ifndef __ASSEMBLY__
+#ifndef __ASSEMBLER__
 
 #include <generated/vdso64-offsets.h>
 #ifdef CONFIG_COMPAT
@@ -22,7 +22,7 @@ extern struct vdso_data *vdso_data;
 
 int vdso_getcpu_init(void);
 
-#endif /* __ASSEMBLY__ */
+#endif /* __ASSEMBLER__ */
 
 /* Default link address for the vDSO */
 #define VDSO_LBASE	0

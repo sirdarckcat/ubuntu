@@ -6,7 +6,7 @@
 
 #define IPL_START	0x200
 
-#ifndef __ASSEMBLY__
+#ifndef __ASSEMBLER__
 
 #include <asm/physmem_info.h>
 
@@ -98,5 +98,5 @@ static inline bool intersects(unsigned long addr0, unsigned long size0,
 {
 	return addr0 + size0 > addr1 && addr1 + size1 > addr0;
 }
-#endif /* __ASSEMBLY__ */
+#endif /* __ASSEMBLER__ */
 #endif /* BOOT_BOOT_H */
