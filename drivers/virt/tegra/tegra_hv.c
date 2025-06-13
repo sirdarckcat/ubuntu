@@ -324,8 +324,6 @@ static int tegra_hv_add_ivc(struct tegra_hv_data *hvd,
 			return -EINVAL;
 	}
 
-	INFO("adding ivc%u: rx_base=%lx tx_base = %lx size=%x irq = %d (%lu)\n",
-			qd->id, (uintptr_t)rx_map.vaddr, (uintptr_t)tx_map.vaddr, qd->size, ivc->irq, d->hwirq);
 	ret = tegra_ivc_init(&ivc->ivc, NULL, &rx_map, 0, &tx_map, 0, qd->nframes,
 			qd->frame_size, ivc_raise_irq, ivc);
 	if (ret != 0) {
@@ -536,9 +534,6 @@ static int tegra_hv_setup(struct tegra_hv_data *hvd)
 	ivc_notify.trap_region_base_ipa = hvd->info->trap_region_base_ipa;
 	ivc_notify.trap_region_size = hvd->info->trap_region_size;
 	if (ivc_notify.trap_region_size != 0UL) {
-		INFO("trap_region_base_ipa %lx: trap_region_size=%llx\n",
-			ivc_notify.trap_region_base_ipa,
-			ivc_notify.trap_region_size);
 		if (WARN_ON(ivc_notify.trap_region_base_ipa == 0UL))
 			return -EINVAL;
 		if (WARN_ON(ivc_notify.trap_region_base_va != 0UL))
@@ -562,9 +557,6 @@ static int tegra_hv_setup(struct tegra_hv_data *hvd)
 	ivc_notify.msi_region_base_ipa = hvd->info->msi_region_base_ipa;
 	ivc_notify.msi_region_size = hvd->info->msi_region_size;
 	if (ivc_notify.msi_region_size != 0UL) {
-		INFO("msi_region_base_ipa %lx: msi_region_size=%llx\n",
-			ivc_notify.msi_region_base_ipa,
-			ivc_notify.msi_region_size);
 		if (WARN_ON(ivc_notify.msi_region_base_ipa == 0UL))
 			return -EINVAL;
 		if (WARN_ON(ivc_notify.msi_region_base_va != 0UL))
@@ -693,9 +685,6 @@ static int tegra_hv_setup(struct tegra_hv_data *hvd)
 		}
 
 		BUG_ON(mpsize < mpd->size);
-
-		INFO("added mempool %u: ipa=%llx size=%llx peer=%u\n",
-				mpd->id, mpd->pa, mpd->size, mpd->peer_vmid);
 	}
 
 	INFO("Memory usage: ivc:0x%llx mempool=0x%llx\n", ivcsize, mpsize);
