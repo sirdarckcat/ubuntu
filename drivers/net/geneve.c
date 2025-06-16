@@ -1008,7 +1008,7 @@ static int geneve6_xmit_skb(struct sk_buff *skb, struct net_device *dev,
 	udp_tunnel6_xmit_skb(dst, gs6->sock->sk, skb, dev,
 			     &saddr, &key->u.ipv6.dst, prio, ttl,
 			     info->key.label, sport, geneve->cfg.info.key.tp_dst,
-			     !(info->key.tun_flags & TUNNEL_CSUM));
+			     !(info->key.tun_flags & TUNNEL_CSUM), 0);
 	return 0;
 }
 #endif
