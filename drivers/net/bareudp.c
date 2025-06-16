@@ -430,7 +430,7 @@ static int bareudp6_xmit_skb(struct sk_buff *skb, struct net_device *dev,
 	udp_tunnel6_xmit_skb(dst, sock->sk, skb, dev,
 			     &saddr, &daddr, prio, ttl,
 			     info->key.label, sport, bareudp->port,
-			     !(info->key.tun_flags & TUNNEL_CSUM));
+			     !(info->key.tun_flags & TUNNEL_CSUM), 0);
 	return 0;
 
 free_dst:
