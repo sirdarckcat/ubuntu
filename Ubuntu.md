@@ -1,8 +1,8 @@
 Name:    linux-gcp
 Version: 6.14.0
-Series:  25.04 (plucky)
+Series:  25.10 (questing)
 Description:
-    This is the source code for the Ubuntu linux kernel for the 25.04 series. This
-    source tree is used to produce the flavours: gcp.
+    This is the source code for the Ubuntu linux kernel for the 25.10 series. This
+    source tree is used to produce the flavours: gcp, gcp-64k.
     This kernel is configured to support the widest range of desktop, laptop and
     server configurations.
