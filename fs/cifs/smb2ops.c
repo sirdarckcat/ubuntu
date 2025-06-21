@@ -4753,9 +4753,9 @@ decrypt_raw_data(struct TCP_Server_Info *server, char *buf,
 			return rc;
 		}
 	} else {
-		rc = smb3_crypto_aead_allocate(server);
-		if (unlikely(rc))
-			return rc;
+		if (unlikely(!server->secmech.ccmaesdecrypt))
+			return -EIO;
+
 		tfm = server->secmech.ccmaesdecrypt;
 	}
 
