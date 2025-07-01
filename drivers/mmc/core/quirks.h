@@ -34,6 +34,16 @@ static const struct mmc_fixup __maybe_unused mmc_sd_fixups[] = {
 		   MMC_QUIRK_BROKEN_SD_CACHE | MMC_QUIRK_BROKEN_SD_POWEROFF_NOTIFY,
 		   EXT_CSD_REV_ANY),
 
+	/*
+	 * SanDisk Extreme Pro SR64G card has power management issues:
+	 * - Timeout during power off notify operations (error -110)
+	 * - Communication errors during cache enable (error -84)
+	 * - Runtime resume failures (error -84)
+	 * Skip power off notify and cache operations to prevent errors.
+	 */
+	MMC_FIXUP("SR64G", CID_MANFID_SANDISK, CID_OEMID_ANY, add_quirk_sd,
+		  MMC_QUIRK_BROKEN_SD_POWEROFF_NOTIFY | MMC_QUIRK_BROKEN_SD_CACHE),
+
 	END_FIXUP
 };
 
