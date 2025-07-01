@@ -179,16 +179,16 @@ static void mlxbf_gige_phy_timer(struct timer_list *t)
 
 void mlxbf_gige_dump_rx_tx(const char *str, struct mlxbf_gige *priv)
 {
-	dev_dbg(priv->dev, "%s tx_ci=0x%llx tx_pi=0x%llx rx_ci=0x%llx rx_pi=0x%llx int_mask=0x%llx\n", str,
-		readq(priv->base + MLXBF_GIGE_TX_CONSUMER_INDEX),
-		readq(priv->base + MLXBF_GIGE_TX_PRODUCER_INDEX),
-		readq(priv->base + MLXBF_GIGE_RX_CQE_PACKET_CI),
-		readq(priv->base + MLXBF_GIGE_RX_WQE_PI),
-		readq(priv->base + MLXBF_GIGE_INT_MASK));
+	dev_dbg_ratelimited(priv->dev, "%s tx_ci=0x%llx tx_pi=0x%llx rx_ci=0x%llx rx_pi=0x%llx int_mask=0x%llx\n", str,
+			    readq(priv->base + MLXBF_GIGE_TX_CONSUMER_INDEX),
+			    readq(priv->base + MLXBF_GIGE_TX_PRODUCER_INDEX),
+			    readq(priv->base + MLXBF_GIGE_RX_CQE_PACKET_CI),
+			    readq(priv->base + MLXBF_GIGE_RX_WQE_PI),
+			    readq(priv->base + MLXBF_GIGE_INT_MASK));
 
-	dev_dbg(priv->dev, "  din_drop=0x%llx rx_dma=0x%llx rx_fifo=0x%llx rx_polarity=%d\n",
-		readq(priv->base + MLXBF_GIGE_RX_DIN_DROP_COUNTER), readq(priv->base + MLXBF_GIGE_RX_DMA),
-		readq(priv->base + MLXBF_GIGE_RX_FIFO_FULLNESS), priv->valid_polarity);
+	dev_dbg_ratelimited(priv->dev, "  din_drop=0x%llx rx_dma=0x%llx rx_fifo=0x%llx rx_polarity=%d\n",
+			    readq(priv->base + MLXBF_GIGE_RX_DIN_DROP_COUNTER), readq(priv->base + MLXBF_GIGE_RX_DMA),
+			    readq(priv->base + MLXBF_GIGE_RX_FIFO_FULLNESS), priv->valid_polarity);
 }
 
 static int mlxbf_gige_open(struct net_device *netdev)
