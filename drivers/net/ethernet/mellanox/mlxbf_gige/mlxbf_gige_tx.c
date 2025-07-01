@@ -132,11 +132,8 @@ bool mlxbf_gige_handle_tx_complete(struct mlxbf_gige *priv)
 	u16 tx_ci;
 
 	tx_status = readq(priv->base + MLXBF_GIGE_TX_STATUS);
-	if (tx_status & MLXBF_GIGE_TX_STATUS_DATA_FIFO_FULL) {
-		if (netif_msg_tx_err(priv))
-			mlxbf_gige_dump_rx_tx("tx_fifo_full", priv);
+	if (tx_status & MLXBF_GIGE_TX_STATUS_DATA_FIFO_FULL)
 		priv->stats.tx_fifo_full++;
-	}
 	tx_ci = readq(priv->base + MLXBF_GIGE_TX_CONSUMER_INDEX);
 	stats = &priv->netdev->stats;
 
