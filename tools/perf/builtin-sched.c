@@ -1595,6 +1595,7 @@ static int map_switch_event(struct perf_sched *sched, struct evsel *evsel,
 	bool new_cpu = false;
 	const char *color = PERF_COLOR_NORMAL;
 	char stimestamp[32];
+	int ret = -1;
 
 	BUG_ON(this_cpu.cpu >= MAX_CPUS || this_cpu.cpu < 0);
 
@@ -1624,15 +1625,17 @@ static int map_switch_event(struct perf_sched *sched, struct evsel *evsel,
 
 	sched_in = map__findnew_thread(sched, machine, -1, next_pid);
 	if (sched_in == NULL)
-		return -1;
+		goto out;
 
 	tr = thread__get_runtime(sched_in);
-	if (tr == NULL) {
-		thread__put(sched_in);
-		return -1;
-	}
+	if (tr == NULL)
+		goto out;
+
+	thread__put(sched->curr_thread[this_cpu.cpu]);
 
 	sched->curr_thread[this_cpu.cpu] = thread__get(sched_in);
+
+	ret = 0;
 
 	printf("  ");
 
@@ -1720,7 +1723,7 @@ out:
 
 	thread__put(sched_in);
 
-	return 0;
+	return ret;
 }
 
 static int process_sched_switch_event(struct perf_tool *tool,
@@ -3414,6 +3417,8 @@ out_free_cpus_switch_event:
 	free_cpus_switch_event(sched);
 
 out_free_curr_thread:
+	for (int i = 0; i < MAX_CPUS; i++)
+		thread__put(sched->curr_thread[i]);
 	zfree(&sched->curr_thread);
 	return rc;
 }
