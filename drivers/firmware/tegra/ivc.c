@@ -638,7 +638,7 @@ int tegra_ivc_read(struct tegra_ivc *ivc, void __user *usr_buf, void *buf, size_
 	struct iosys_map map;
 	int err;
 
-	BUG_ON(buf && usr_buf);
+	WARN_ON_ONCE(buf && usr_buf);
 
 	/* get next frame to be read from IVC channel */
 	err = tegra_ivc_read_get_next_frame(ivc, &map);
@@ -653,7 +653,7 @@ int tegra_ivc_read(struct tegra_ivc *ivc, void __user *usr_buf, void *buf, size_
 		if (WARN_ON(map.is_iomem) || copy_to_user(usr_buf, map.vaddr, max_read))
 			return -EFAULT;
 	} else
-		BUG();
+		WARN_ON_ONCE(1);
 
 	/* Advance to next read frame*/
 	if (tegra_ivc_read_advance(ivc) == 0)
@@ -669,7 +669,7 @@ int tegra_ivc_read_peek(struct tegra_ivc *ivc, void __user *usr_buf,
 	struct iosys_map map;
 	int err;
 
-	BUG_ON(buf && usr_buf);
+	WARN_ON_ONCE(buf && usr_buf);
 
 	/* get next frame to be read from IVC channel */
 	err = tegra_ivc_read_get_next_frame(ivc, &map);
@@ -684,7 +684,7 @@ int tegra_ivc_read_peek(struct tegra_ivc *ivc, void __user *usr_buf,
 		if (WARN_ON(map.is_iomem) || copy_to_user(usr_buf, map.vaddr + offset, size))
 			return -EFAULT;
 	} else
-		BUG();
+		WARN_ON_ONCE(1);
 
 	return size;
 }
@@ -710,7 +710,7 @@ int tegra_ivc_write(struct tegra_ivc *ivc, const void __user *usr_buf, const voi
 		if (WARN_ON(map.is_iomem) || copy_from_user(map.vaddr, usr_buf, size))
 			return -EFAULT;
 	} else
-		BUG();
+		WARN_ON_ONCE(1);
 
 	/* Advance to next write frame*/
 	if (tegra_ivc_write_advance(ivc) == 0)
