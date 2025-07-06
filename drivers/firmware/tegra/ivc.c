@@ -649,6 +649,12 @@ int tegra_ivc_read(struct tegra_ivc *ivc, void __user *usr_buf, void *buf, size_
 	if (buf) {
 		iosys_map_memcpy_from(buf, &map, 0, max_read);
 	} else if (usr_buf) {
+		/* Validate user buffer */
+		if (!access_ok(usr_buf, max_read)) {
+			pr_err("IVC read failed: invalid user buffer\n");
+			return -EFAULT;
+		}
+
 		// FIXME handle io address space
 		if (WARN_ON(map.is_iomem) || copy_to_user(usr_buf, map.vaddr, max_read))
 			return -EFAULT;
@@ -676,6 +682,11 @@ int tegra_ivc_read_peek(struct tegra_ivc *ivc, void __user *usr_buf,
 	if (err)
 		return err;
 
+	/* Ensure offset + size does not exceed buffer bounds */
+	if (offset + size > ivc->frame_size) {
+		return -EINVAL;
+	}
+
 	/* update the buffer with read data*/
 	if (buf) {
 		iosys_map_memcpy_from(buf, &map, offset, size);
@@ -701,6 +712,11 @@ int tegra_ivc_write(struct tegra_ivc *ivc, const void __user *usr_buf, const voi
 	err = tegra_ivc_write_get_next_frame(ivc, &map);
 	if (err)
 		return err;
+
+	/* Ensure size does not exceed buffer bounds */
+	if (size > ivc->frame_size) {
+		return -EINVAL;
+	}
 
 	/* update the write frame with data buffer*/
 	if (buf) {
