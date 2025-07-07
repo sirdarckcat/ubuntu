@@ -521,7 +521,7 @@ mt7996_mcu_rx_all_sta_info_event(struct mt7996_dev *dev, struct sk_buff *skb)
 		switch (le16_to_cpu(res->tag)) {
 		case UNI_ALL_STA_TXRX_RATE:
 			wlan_idx = le16_to_cpu(res->rate[i].wlan_idx);
-			wcid = rcu_dereference(dev->mt76.wcid[wlan_idx]);
+			wcid = mt76_wcid_ptr(dev, wlan_idx);
 
 			if (!wcid)
 				break;
@@ -531,7 +531,7 @@ mt7996_mcu_rx_all_sta_info_event(struct mt7996_dev *dev, struct sk_buff *skb)
 			break;
 		case UNI_ALL_STA_TXRX_ADM_STAT:
 			wlan_idx = le16_to_cpu(res->adm_stat[i].wlan_idx);
-			wcid = rcu_dereference(dev->mt76.wcid[wlan_idx]);
+			wcid = mt76_wcid_ptr(dev, wlan_idx);
 
 			if (!wcid)
 				break;
@@ -545,7 +545,7 @@ mt7996_mcu_rx_all_sta_info_event(struct mt7996_dev *dev, struct sk_buff *skb)
 			break;
 		case UNI_ALL_STA_TXRX_MSDU_COUNT:
 			wlan_idx = le16_to_cpu(res->msdu_cnt[i].wlan_idx);
-			wcid = rcu_dereference(dev->mt76.wcid[wlan_idx]);
+			wcid = mt76_wcid_ptr(dev, wlan_idx);
 
 			if (!wcid)
 				break;
@@ -642,10 +642,7 @@ mt7996_mcu_wed_rro_event(struct mt7996_dev *dev, struct sk_buff *skb)
 
 			e = (void *)skb->data;
 			idx = le16_to_cpu(e->wlan_id);
-			if (idx >= ARRAY_SIZE(dev->mt76.wcid))
-				break;
-
-			wcid = rcu_dereference(dev->mt76.wcid[idx]);
+			wcid = mt76_wcid_ptr(dev, idx);
 			if (!wcid || !wcid->sta)
 				break;
 
