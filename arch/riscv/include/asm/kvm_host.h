@@ -302,6 +302,8 @@ static inline bool kvm_arch_pmi_in_guest(struct kvm_vcpu *vcpu)
 }
 
 static inline void kvm_arch_sync_events(struct kvm *kvm) {}
+static inline void kvm_arch_vcpu_blocking(struct kvm_vcpu *vcpu) {}
+static inline void kvm_arch_vcpu_unblocking(struct kvm_vcpu *vcpu) {}
 
 #define KVM_RISCV_GSTAGE_TLB_MIN_ORDER		12
 
