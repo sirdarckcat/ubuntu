@@ -1349,6 +1349,26 @@ err_handle:
 	raid_end_bio_io(r1_bio);
 }
 
+static void raid1_start_write_behind(struct mddev *mddev, struct r1bio *r1_bio,
+				     struct bio *bio)
+{
+	unsigned long max_write_behind = mddev->bitmap_info.max_write_behind;
+	struct bitmap *bitmap = mddev->bitmap;
+
+	/* behind write rely on bitmap, see md_bitmap_start_behind_write() */
+	if (!bitmap)
+		return;
+
+	/* Don't do behind IO if reader is waiting, or there are too many. */
+	if (!waitqueue_active(&bitmap->behind_wait) &&
+	    atomic_read(&bitmap->behind_writes) < max_write_behind)
+		alloc_behind_master_bio(r1_bio, bio);
+
+	if (test_bit(R1BIO_BehindIO, &r1_bio->state))
+		md_bitmap_start_behind_write(mddev);
+
+}
+
 static void raid1_write_request(struct mddev *mddev, struct bio *bio,
 				int max_write_sectors)
 {
@@ -1528,19 +1548,8 @@ static void raid1_write_request(struct mddev *mddev, struct bio *bio,
 			continue;
 
 		if (first_clone) {
-			/* do behind I/O ?
-			 * Not if there are too many, or cannot
-			 * allocate memory, or a reader on WriteMostly
-			 * is waiting for behind writes to flush */
-			if (bitmap && write_behind &&
-			    (atomic_read(&bitmap->behind_writes)
-			     < mddev->bitmap_info.max_write_behind) &&
-			    !waitqueue_active(&bitmap->behind_wait)) {
-				alloc_behind_master_bio(r1_bio, bio);
-			}
-
-			if (test_bit(R1BIO_BehindIO, &r1_bio->state))
-				md_bitmap_start_behind_write(mddev);
+			if (write_behind)
+				raid1_start_write_behind(mddev, r1_bio, bio);
 			first_clone = 0;
 		}
 
