@@ -1133,6 +1133,13 @@ int tcf_action_init(struct net *net, struct tcf_proto *tp, struct nlattr *nla,
 			err = PTR_ERR(act);
 			goto err;
 		}
+
+		/* Defensive check: ensure 'actions' is valid */
+		if (!actions) {
+			err = -EINVAL;
+			goto err;
+		}
+
 		sz += tcf_action_fill_size(act);
 		/* Start from index 0 */
 		actions[i - 1] = act;
