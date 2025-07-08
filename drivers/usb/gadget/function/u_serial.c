@@ -5,7 +5,6 @@
  * Copyright (C) 2003 Al Borchers (alborchers@steinerpoint.com)
  * Copyright (C) 2008 David Brownell
  * Copyright (C) 2008 by Nokia Corporation
- * Copyright (c) 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  *
  * This code also borrows from usbserial.c, which is
  * Copyright (C) 1999 - 2002 Greg Kroah-Hartman (greg@kroah.com)
@@ -292,11 +291,7 @@ __acquires(&port->port_lock)
 			break;
 	}
 
-	/* race with close() */
-	if (!port->port.tty)
-		return -ESHUTDOWN;
-
-	if (do_tty_wake)
+	if (do_tty_wake && port->port.tty)
 		tty_wakeup(port->port.tty);
 	return status;
 }
@@ -349,7 +344,7 @@ __acquires(&port->port_lock)
 		if (!port->port_usb)
 			break;
 	}
-	return port->port.tty ? port->read_started : 0;
+	return port->read_started;
 }
 
 /*
@@ -575,11 +570,10 @@ static int gs_start_io(struct gs_port *port)
 	started = gs_start_rx(port);
 
 	if (started) {
-		status = gs_start_tx(port);
+		gs_start_tx(port);
 		/* Unblock any pending writes into our circular buffer, in case
 		 * we didn't in gs_start_tx() */
-		if (!status)
-			tty_wakeup(port->port.tty);
+		tty_wakeup(port->port.tty);
 	} else {
 		/* Free reqs only if we are still connected */
 		if (port->port_usb) {
@@ -652,9 +646,9 @@ static int gs_open(struct tty_struct *tty, struct file *file)
 			struct gserial	*gser = port->port_usb;
 
 			pr_debug("gs_open: start ttyGS%d\n", port->port_num);
-			status = gs_start_io(port);
+			gs_start_io(port);
 
-			if (!status && gser->connect)
+			if (gser->connect)
 				gser->connect(gser);
 		} else {
 			pr_debug("delay start of ttyGS%d\n", port->port_num);
@@ -1357,8 +1351,8 @@ int gserial_connect(struct gserial *gser, u8 port_num)
 	 */
 	if (port->port.count) {
 		pr_debug("gserial_connect: start ttyGS%d\n", port->port_num);
-		status = gs_start_io(port);
-		if (!status && gser->connect)
+		gs_start_io(port);
+		if (gser->connect)
 			gser->connect(gser);
 	} else {
 		if (gser->disconnect)
@@ -1459,7 +1453,6 @@ void gserial_resume(struct gserial *gser)
 {
 	struct gs_port *port;
 	unsigned long	flags;
-	int		status = 0;
 
 	spin_lock_irqsave(&serial_port_lock, flags);
 	port = gser->ioport;
@@ -1478,8 +1471,8 @@ void gserial_resume(struct gserial *gser)
 	}
 
 	pr_debug("delayed start ttyGS%d\n", port->port_num);
-	status = gs_start_io(port);
-	if (!status && gser->connect)
+	gs_start_io(port);
+	if (gser->connect)
 		gser->connect(gser);
 	port->start_delayed = false;
 	spin_unlock_irqrestore(&port->port_lock, flags);
