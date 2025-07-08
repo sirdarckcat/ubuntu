@@ -75,7 +75,7 @@ AllocMidQEntry(const struct smb_hdr *smb_buffer, struct TCP_Server_Info *server)
 	return temp;
 }
 
-void _cifs_mid_q_entry_release(struct kref *refcount)
+static void _cifs_mid_q_entry_release(struct kref *refcount)
 {
 	struct mid_q_entry *midEntry =
 			container_of(refcount, struct mid_q_entry, refcount);
@@ -153,6 +153,13 @@ void _cifs_mid_q_entry_release(struct kref *refcount)
 	put_task_struct(midEntry->creator);
 
 	mempool_free(midEntry, cifs_mid_poolp);
+}
+
+void cifs_mid_q_entry_release(struct mid_q_entry *midEntry)
+{
+	spin_lock(&GlobalMid_Lock);
+	kref_put(&midEntry->refcount, _cifs_mid_q_entry_release);
+	spin_unlock(&GlobalMid_Lock);
 }
 
 void DeleteMidQEntry(struct mid_q_entry *midEntry)
