@@ -24,34 +24,35 @@ struct nft_lookup {
 	struct nft_set_binding		binding;
 };
 
-static bool __nft_set_do_lookup(const struct net *net, const struct nft_set *set,
-		    const u32 *key, const struct nft_set_ext **ext)
+static const struct nft_set_ext *
+__nft_set_do_lookup(const struct net *net, const struct nft_set *set,
+		    const u32 *key)
 {
 #ifdef CONFIG_MITIGATION_RETPOLINE
 	if (set->ops == &nft_set_hash_fast_type.ops)
-		return nft_hash_lookup_fast(net, set, key, ext);
+		return nft_hash_lookup_fast(net, set, key);
 	if (set->ops == &nft_set_hash_type.ops)
-		return nft_hash_lookup(net, set, key, ext);
+		return nft_hash_lookup(net, set, key);
 
 	if (set->ops == &nft_set_rhash_type.ops)
-		return nft_rhash_lookup(net, set, key, ext);
+		return nft_rhash_lookup(net, set, key);
 
 	if (set->ops == &nft_set_bitmap_type.ops)
-		return nft_bitmap_lookup(net, set, key, ext);
+		return nft_bitmap_lookup(net, set, key);
 
 	if (set->ops == &nft_set_pipapo_type.ops)
-		return nft_pipapo_lookup(net, set, key, ext);
+		return nft_pipapo_lookup(net, set, key);
 #if defined(CONFIG_X86_64) && !defined(CONFIG_UML)
 	if (set->ops == &nft_set_pipapo_avx2_type.ops)
-		return nft_pipapo_avx2_lookup(net, set, key, ext);
+		return nft_pipapo_avx2_lookup(net, set, key);
 #endif
 
 	if (set->ops == &nft_set_rbtree_type.ops)
-		return nft_rbtree_lookup(net, set, key, ext);
+		return nft_rbtree_lookup(net, set, key);
 
 	WARN_ON_ONCE(1);
 #endif
-	return set->ops->lookup(net, set, key, ext);
+	return set->ops->lookup(net, set, key);
 }
 
 static unsigned int nft_base_seq(const struct net *net)
@@ -65,17 +66,18 @@ static bool nft_lookup_should_retry(const struct net *net, unsigned int seq)
 	return unlikely(seq != nft_base_seq(net));
 }
 
-bool nft_set_do_lookup(const struct net *net, const struct nft_set *set,
-		  const u32 *key, const struct nft_set_ext **ext)
+const struct nft_set_ext *
+nft_set_do_lookup(const struct net *net, const struct nft_set *set,
+		  const u32 *key)
 {
-	bool ret;
+	const struct nft_set_ext *ext;
 	unsigned int base_seq;
 
 	do {
 		base_seq = nft_base_seq(net);
 
-		ret = __nft_set_do_lookup(net, set, key, ext);
-		if (ret)
+		ext = __nft_set_do_lookup(net, set, key);
+		if (ext)
 			break;
 		/* No match?  There is a small chance that lookup was
 		 * performed in the old generation, but nf_tables_commit()
@@ -86,7 +88,7 @@ bool nft_set_do_lookup(const struct net *net, const struct nft_set *set,
 		 */
 	} while (nft_lookup_should_retry(net, base_seq));
 
-	return ret;
+	return ext;
 }
 EXPORT_SYMBOL_GPL(nft_set_do_lookup);
 
@@ -96,12 +98,12 @@ void nft_lookup_eval(const struct nft_expr *expr,
 {
 	const struct nft_lookup *priv = nft_expr_priv(expr);
 	const struct nft_set *set = priv->set;
-	const struct nft_set_ext *ext = NULL;
 	const struct net *net = nft_net(pkt);
+	const struct nft_set_ext *ext;
 	bool found;
 
-	found =	nft_set_do_lookup(net, set, &regs->data[priv->sreg], &ext) ^
-				  priv->invert;
+	ext = nft_set_do_lookup(net, set, &regs->data[priv->sreg]);
+	found = !!ext ^ priv->invert;
 	if (!found) {
 		ext = nft_set_catchall_lookup(net, set);
 		if (!ext) {
