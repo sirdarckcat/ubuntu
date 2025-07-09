@@ -1205,15 +1205,20 @@ static bool mlxbf_pmc_event_supported(const char *blk)
 }
 
 /* Get the event number given the name */
-static int mlxbf_pmc_get_event_num(const char *blk, const char *evt)
+static int mlxbf_pmc_get_event_num(const char *blk, char *evt)
 {
 	const struct mlxbf_pmc_events *events;
+	int len = strlen(evt);
 	unsigned int i;
 	size_t size;
 
 	events = mlxbf_pmc_event_list(blk, &size);
 	if (!events)
 		return -EINVAL;
+
+	/* skip the newline if present */
+	if (evt[len - 1] == '\n')
+		evt[len - 1] = '\0';
 
 	for (i = 0; i < size; ++i) {
 		if (!strcmp(evt, events[i].evt_name))
@@ -1682,7 +1687,7 @@ static ssize_t mlxbf_pmc_counter_show(struct device *dev,
 			return -EINVAL;
 	} else if (pmc->block[blk_num].type == MLXBF_PMC_TYPE_REGISTER) {
 		offset = mlxbf_pmc_get_event_num(pmc->block_name[blk_num],
-						 attr->attr.name);
+						 (char *)attr->attr.name);
 		if (offset < 0)
 			return -EINVAL;
 		if (mlxbf_pmc_read_reg(blk_num, offset, &value))
@@ -1731,7 +1736,7 @@ static ssize_t mlxbf_pmc_counter_store(struct device *dev,
 			return err;
 	} else if (pmc->block[blk_num].type == MLXBF_PMC_TYPE_REGISTER) {
 		offset = mlxbf_pmc_get_event_num(pmc->block_name[blk_num],
-						 attr->attr.name);
+						 (char *)attr->attr.name);
 		if (offset < 0)
 			return -EINVAL;
 		err = mlxbf_pmc_write_reg(blk_num, offset, data);
@@ -1900,6 +1905,9 @@ static ssize_t mlxbf_pmc_enable_store(struct device *dev,
 	err = kstrtobool(buf, &en);
 	if (err < 0)
 		return err;
+
+	if (en != 0 && en != 1)
+		return -EINVAL;
 
 	if (pmc->block[blk_num].type == MLXBF_PMC_TYPE_CRSPACE) {
 		err = mlxbf_pmc_readl(pmc->block[blk_num].mmio_base +
