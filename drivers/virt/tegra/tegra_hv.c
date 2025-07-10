@@ -103,6 +103,8 @@ struct tegra_hv_data {
 	struct class *hv_class;
 
 	struct device_node *dev;
+
+	uint32_t vcpu_affinity;
 };
 
 /*
@@ -460,6 +462,70 @@ static ssize_t update_vm_op_store(const struct class *class,
 }
 static CLASS_ATTR_WO(update_vm_op);
 
+static long async_err_diagnostics(void *ptr)
+{
+	int32_t ret = 0;
+
+	/*
+	* Virtualization_System will check SMMU, CBB, and MC errors and report to
+	* FSI if any errors are seen. This will be indirectly observed by User code
+	* running on FSI.
+	*/
+	if (!hyp_smmu_diagnostic()) {
+		ERR("hyp_smmu_diagnostic failed\n");
+		ret = -1;
+		goto fail;
+	}
+
+	if (!hyp_cbb_err_diagnostic()) {
+		ERR("hyp_cbb_err_diagnostic failed\n");
+		ret = -1;
+		goto fail;
+	}
+
+	if (!hyp_mc_err_diagnostic()) {
+		ERR("hyp_mc_err_diagnostic failed\n");
+		ret = -1;
+		goto fail;
+	}
+
+fail:
+	return ret;
+}
+
+static ssize_t async_err_diagnostics_store(const struct class *class,
+	const struct class_attribute *attr, const char *buf, size_t len)
+{
+	struct tegra_hv_data *hvd = get_hvd();
+	int val = 0;
+	ssize_t ret = 0;
+
+	ret = kstrtoint(buf, 10, &val);
+	if (ret < 0) {
+		pr_err("%s: Failed to convert string to uint %ld\n", __func__, ret);
+		ret = -EINVAL;
+		goto fail;
+	}
+
+	if (val != 1) {
+		pr_err("%s: Unsupported value, %d\n", __func__, val);
+		ret = -EINVAL;
+		goto fail;
+	}
+
+	if (!cpu_online(hvd->vcpu_affinity)) {
+		pr_warn("CPU %u is not online\n", hvd->vcpu_affinity);
+		ret = -EINVAL;
+		goto fail;
+	}
+
+	ret = work_on_cpu(hvd->vcpu_affinity, async_err_diagnostics, NULL);
+fail:
+	ret = ret ? ret : len;
+	return ret;
+}
+static CLASS_ATTR_WO(async_err_diagnostics);
+
 static int tegra_hv_setup(struct tegra_hv_data *hvd)
 {
 	const uint32_t intr_property_size = 3u;
@@ -500,6 +566,12 @@ static int tegra_hv_setup(struct tegra_hv_data *hvd)
 			ERR("failed to create update_vm_op file: %d\n", ret);
 			return ret;
 		}
+	}
+
+	ret = class_create_file(hvd->hv_class, &class_attr_async_err_diagnostics);
+	if (ret != 0) {
+		ERR("failed to create async_err_diagnostics file: %d\n", ret);
+		return ret;
 	}
 
 	ret = hyp_read_ivc_info(&info_page);
@@ -1015,9 +1087,20 @@ void tegra_hv_ivc_channel_reset(struct tegra_hv_ivc_cookie *ivck)
 }
 EXPORT_SYMBOL(tegra_hv_ivc_channel_reset);
 
+static long int read_mpidr(void *data)
+{
+	uint64_t mpidr;
+	__asm volatile("MRS %0, MPIDR_EL1 " : "=r"(mpidr) :: "memory");
+	return mpidr;
+}
+
 static int tegra_hv_probe(struct platform_device *pdev)
 {
 	struct tegra_hv_data *hvd;
+	long int lcpu0_mpidr;
+	long int mpidr = 0UL;
+	uint32_t num_vcpus = num_present_cpus();
+	uint32_t idx;
 	int ret;
 
 	if (!is_tegra_hypervisor_mode())
@@ -1028,6 +1111,20 @@ static int tegra_hv_probe(struct platform_device *pdev)
 		ERR("failed to allocate hvd\n");
 		return -ENOMEM;
 	}
+
+	hvd->vcpu_affinity = num_vcpus;
+	lcpu0_mpidr = hyp_lcpu0_mpidr();
+	for (idx = 0; idx < num_vcpus; idx++) {
+		mpidr = work_on_cpu(idx, read_mpidr, NULL);
+		if (mpidr == lcpu0_mpidr) {
+			hvd->vcpu_affinity = idx;
+			break;
+		}
+	}
+
+	if (hvd->vcpu_affinity >= num_vcpus)
+		INFO("%s: cpu affinity (%d) > online cpus (%d)\n", __func__,
+						hvd->vcpu_affinity, num_online_cpus());
 
 	ret = tegra_hv_setup(hvd);
 	if (ret != 0) {
