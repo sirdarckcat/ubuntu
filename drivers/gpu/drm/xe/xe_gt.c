@@ -507,13 +507,13 @@ int xe_gt_init(struct xe_gt *gt)
 	if (err)
 		return err;
 
-	err = xe_gt_pagefault_init(gt);
-	if (err)
-		return err;
-
 	xe_gt_sysfs_init(gt);
 
 	err = gt_fw_domain_init(gt);
+	if (err)
+		return err;
+
+	err = xe_gt_pagefault_init(gt);
 	if (err)
 		return err;
 
