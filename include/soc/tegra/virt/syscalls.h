@@ -18,9 +18,13 @@
 #define HVC_NR_READ_HYP_INFO		9
 #define HVC_NR_GUEST_RESET		10
 #define HVC_NR_SYSINFO_IPA		13
+#define HVC_NR_LCPU0_MPIDR		15
 #define HVC_NR_READ_VM_INFO		16
-#define HVC_NR_TRACE_GET_EVENT_DATA		0x8003U
-#define HVC_NR_TRACE_SET_EVENT_DATA		0x8004U
+#define HVC_NR_TRACE_GET_EVENT_DATA	0x8003U
+#define HVC_NR_TRACE_SET_EVENT_DATA	0x8004U
+#define HVC_NR_SMMU_DIAG		0x8009U
+#define HVC_NR_CBB_DIAG			0x8133U
+#define HVC_NR_MC_DIAG			0x8134U
 
 #define GUEST_PRIMARY		0
 #define GUEST_IVC_SERVER	0
@@ -577,6 +581,42 @@ static inline int hyp_trace_set_profiler_freq(uint64_t freq)
 	uint64_t args[4] = { TRACE_SET_PROFILER_FREQ, freq, 0U, 0U};
 	hyp_call44(HVC_NR_TRACE_SET_EVENT_DATA, args);
 	return (int) args[0];
+}
+
+__attribute__((no_sanitize_address))
+static inline bool hyp_smmu_diagnostic(void)
+{
+	uint64_t args[4] = { 0U, 0U, 0U, 0U };
+	hyp_call44(HVC_NR_SMMU_DIAG, args);
+
+	return (args[0] == 0U);
+}
+
+__attribute__((no_sanitize_address))
+static inline bool hyp_cbb_err_diagnostic(void)
+{
+	uint64_t args[4] = { 0U, 0U, 0U, 0U };
+	hyp_call44(HVC_NR_CBB_DIAG, args);
+
+	return (args[0] == 0U);
+}
+
+__attribute__((no_sanitize_address))
+static inline bool hyp_mc_err_diagnostic(void)
+{
+	uint64_t args[4] = { 0U, 0U, 0U, 0U };
+	hyp_call44(HVC_NR_MC_DIAG, args);
+
+	return (args[0] == 0U);
+}
+
+__attribute__((no_sanitize_address))
+static inline long int hyp_lcpu0_mpidr(void)
+{
+	uint64_t args[4] = { 0U, 0U, 0U, 0U };
+	hyp_call44(HVC_NR_LCPU0_MPIDR, args);
+
+	return args[0];
 }
 
 #undef _X3_X17
