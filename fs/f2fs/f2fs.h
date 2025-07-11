@@ -1259,7 +1259,7 @@ struct f2fs_bio_info {
 struct f2fs_dev_info {
 	struct bdev_handle *bdev_handle;
 	struct block_device *bdev;
-	char path[MAX_PATH_LEN];
+	char path[MAX_PATH_LEN + 1];
 	unsigned int total_segments;
 	block_t start_blk;
 	block_t end_blk;
