@@ -24,6 +24,7 @@
 #include "xe_late_bind_fw.h"
 #include "xe_pcode.h"
 #include "xe_pxp.h"
+#include "xe_sriov_vf_ccs.h"
 #include "xe_trace.h"
 #include "xe_vm.h"
 #include "xe_wa.h"
@@ -598,6 +599,9 @@ int xe_pm_runtime_resume(struct xe_device *xe)
 	}
 
 	xe_pxp_pm_resume(xe->pxp);
+
+	if (IS_SRIOV_VF(xe))
+		xe_sriov_vf_ccs_register_context(xe);
 
 	if (xe->d3cold.allowed)
 		xe_late_bind_fw_load(&xe->late_bind);
