@@ -13,6 +13,7 @@
 #include "../kvm_cache_regs.h"
 #include "vmcs.h"
 #include "vmx_ops.h"
+#include "../x86.h"
 #include "../cpuid.h"
 #include "run_flags.h"
 

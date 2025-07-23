@@ -50,6 +50,7 @@
 #include <asm/vmx.h>
 
 #include "capabilities.h"
+#include "x86.h"
 #include "cpuid.h"
 #include "hyperv.h"
 #include "kvm_onhyperv.h"
@@ -64,7 +65,6 @@
 #include "vmcs.h"
 #include "vmcs12.h"
 #include "vmx.h"
-#include "x86.h"
 #include "smm.h"
 #include "vmx_onhyperv.h"
 #include "posted_intr.h"

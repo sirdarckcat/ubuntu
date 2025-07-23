@@ -18,6 +18,7 @@
 #include <linux/kvm_host.h>
 #include <asm/mtrr.h>
 
+#include "x86.h"
 #include "cpuid.h"
 #include "mmu.h"
 

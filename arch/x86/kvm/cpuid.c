@@ -22,6 +22,7 @@
 #include <asm/fpu/xstate.h>
 #include <asm/sgx.h>
 #include <asm/cpuid.h>
+#include "x86.h"
 #include "cpuid.h"
 #include "lapic.h"
 #include "mmu.h"
