@@ -16,7 +16,6 @@ do_tools_perf   = true
 do_tools_perf_jvmti = true
 do_tools_perf_python = true
 do_tools_bpftool = true
-do_tools_host = false
 do_tools_rtla = true
 
 do_dtbs		= true
@@ -25,6 +24,5 @@ do_dkms_wireguard = false
 do_dkms_nvidia = false
 
 disable_d_i = true
-do_source_package = false
 do_common_headers_indep = false
 do_libc_dev_package = false
