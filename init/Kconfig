@@ -263,6 +263,14 @@ config HAVE_KERNEL_ZSTD
 config HAVE_KERNEL_UNCOMPRESSED
 	bool
 
+config KERNEL_BUILD_WITH_PROD_DEFCONFIG
+	bool "Enable flags if kernel is build with tegra production defconfig"
+	default n
+	help
+	  This config is used to findout whether the kernel is build
+	  with the prod defconfig or not.
+	  Say Yes if it is build with tegra prod defconfig else N.
+
 choice
 	prompt "Kernel compression mode"
 	default KERNEL_GZIP
