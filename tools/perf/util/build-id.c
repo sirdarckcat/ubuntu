@@ -924,7 +924,7 @@ static int dso__cache_build_id(struct dso *dso, struct machine *machine,
 	char *allocated_name = NULL;
 	int ret = 0;
 
-	if (!dso->has_build_id)
+	if (!dso->has_build_id || !dso->hit)
 		return 0;
 
 	if (dso__is_kcore(dso)) {
