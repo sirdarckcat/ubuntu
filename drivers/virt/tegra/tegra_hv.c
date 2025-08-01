@@ -174,11 +174,14 @@ EXPORT_SYMBOL(tegra_hv_get_ivc_info);
 int tegra_hv_get_vmid(void)
 {
 	struct tegra_hv_data *hvd = get_hvd();
+	int ret = 0;
 
-	if (IS_ERR(hvd))
-		return -1;
+	if (IS_ERR(hvd) || hvd->guestid >= NGUESTS_MAX)
+		ret = -EINVAL;
 	else
-		return hvd->guestid;
+		ret = hvd->guestid;
+
+	return ret;
 }
 EXPORT_SYMBOL(tegra_hv_get_vmid);
 
@@ -411,6 +414,10 @@ static ssize_t vmid_show(const struct class *class,
 	struct tegra_hv_data *hvd = get_hvd();
 
 	BUG_ON(!hvd);
+
+	if (hvd->guestid >= NGUESTS_MAX)
+		hvd->guestid = -EINVAL;
+
 	return snprintf(buf, PAGE_SIZE, "%d\n", hvd->guestid);
 }
 static CLASS_ATTR_RO(vmid);
@@ -545,6 +552,11 @@ static int tegra_hv_setup(struct tegra_hv_data *hvd)
 	if (ret != 0) {
 		ERR("Failed to read guest id\n");
 		return -ENODEV;
+	}
+
+	if (hvd->guestid >= NGUESTS_MAX) {
+		ERR("Failed to read valid guest id\n");
+		return -EINVAL;
 	}
 
 	hvd->hv_class = class_create("tegra_hv");
