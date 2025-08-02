@@ -92,5 +92,5 @@ void xe_exec_queue_update_run_ticks(struct xe_exec_queue *q);
 
 int xe_exec_queue_is_debuggable(struct xe_exec_queue *q);
 
-void xe_exec_queue_contexts_hwsp_rebase(struct xe_exec_queue *q);
+void xe_exec_queue_contexts_hwsp_rebase(struct xe_exec_queue *q, void *scratch);
 #endif
