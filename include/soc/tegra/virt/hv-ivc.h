@@ -135,6 +135,17 @@ int tegra_hv_ivc_can_read(struct tegra_hv_ivc_cookie *ivck);
 int tegra_hv_ivc_can_write(struct tegra_hv_ivc_cookie *ivck);
 
 /**
+ * ivc_hv_ivc_tx_empty - Test whether the tx queue is empty
+ * @ivck	IVC cookie of the queue
+ *
+ * Test whether the tx queue is completely empty
+ *
+ * Returns 1 if the queue is empty, zero otherwise
+ */
+int tegra_hv_ivc_tx_empty(struct tegra_hv_ivc_cookie *ivck);
+
+#ifndef CONFIG_KERNEL_BUILD_WITH_PROD_DEFCONFIG
+/**
  * tegra_ivc_tx_frames_available - gets number of free entries in tx queue
  * @ivc/@ivck	IVC channel or cookie
  *
@@ -144,16 +155,6 @@ int tegra_hv_ivc_can_write(struct tegra_hv_ivc_cookie *ivck);
  *
  */
 uint32_t tegra_hv_ivc_tx_frames_available(struct tegra_hv_ivc_cookie *ivck);
-
-/**
- * ivc_hv_ivc_tx_empty - Test whether the tx queue is empty
- * @ivck	IVC cookie of the queue
- *
- * Test whether the tx queue is completely empty
- *
- * Returns 1 if the queue is empty, zero otherwise
- */
-int tegra_hv_ivc_tx_empty(struct tegra_hv_ivc_cookie *ivck);
 
 /**
  * ivc_hv_ivc_loopback - Sets (or clears) loopback mode
@@ -187,6 +188,7 @@ int tegra_hv_ivc_dump(struct tegra_hv_ivc_cookie *ivck);
  */
 int tegra_hv_ivc_read_peek(struct tegra_hv_ivc_cookie *ivck,
 		void *buf, int off, int count);
+#endif
 
 /**
  * ivc_hv_ivc_read_get_next_frame - Peek at the next frame to receive
