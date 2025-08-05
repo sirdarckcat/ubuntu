@@ -32,6 +32,10 @@
 struct address_space;
 struct mem_cgroup;
 
+typedef struct {
+	unsigned long f;
+} memdesc_flags_t;
+
 /*
  * Each physical page in the system has a struct page associated with
  * it to keep track of whatever it is we are using the page for at the
