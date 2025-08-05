@@ -55,6 +55,7 @@ struct mana_ib_dev {
 	struct ib_device ib_dev;
 	struct gdma_dev *gdma_dev;
 	struct mana_ib_adapter_caps adapter_caps;
+	netdevice_tracker dev_tracker;
 };
 
 struct mana_ib_wq {
