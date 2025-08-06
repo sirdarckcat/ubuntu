@@ -1464,7 +1464,7 @@ static int m_can_start(struct net_device *dev)
 	if (ret)
 		return ret;
 
-	cdev->can.state = CAN_STATE_ERROR_ACTIVE;
+	cdev->can.state = m_can_state_get_by_psr(cdev);
 
 	m_can_enable_all_interrupts(cdev);
 
