@@ -113,15 +113,8 @@
  *   returned from the 2nd syscall yet, TIF_FOREIGN_FPSTATE is still set so
  *   whatever is in the FPSIMD registers is not saved to memory, but discarded.
  */
-struct fpsimd_last_state_struct {
-	struct user_fpsimd_state *st;
-	void *sve_state;
-	unsigned int sve_vl;
-	enum fp_type *fp_type;
-	enum fp_type to_save;
-};
 
-static DEFINE_PER_CPU(struct fpsimd_last_state_struct, fpsimd_last_state);
+static DEFINE_PER_CPU(struct cpu_fp_state, fpsimd_last_state);
 
 /* Default VL for tasks that don't set it explicitly: */
 static int __sve_default_vl = -1;
@@ -328,7 +321,7 @@ static void task_fpsimd_load(void)
  */
 static void fpsimd_save(void)
 {
-	struct fpsimd_last_state_struct const *last =
+	struct cpu_fp_state const *last =
 		this_cpu_ptr(&fpsimd_last_state);
 	/* set by fpsimd_bind_task_to_cpu() or fpsimd_bind_state_to_cpu() */
 	bool save_sve_regs = false;
@@ -1161,8 +1154,7 @@ void fpsimd_signal_preserve_current_state(void)
  */
 static void fpsimd_bind_task_to_cpu(void)
 {
-	struct fpsimd_last_state_struct *last =
-		this_cpu_ptr(&fpsimd_last_state);
+	struct cpu_fp_state *last = this_cpu_ptr(&fpsimd_last_state);
 
 	WARN_ON(!system_supports_fpsimd());
 	last->st = &current->thread.uw.fpsimd_state;
@@ -1183,21 +1175,14 @@ static void fpsimd_bind_task_to_cpu(void)
 	}
 }
 
-void fpsimd_bind_state_to_cpu(struct user_fpsimd_state *st, void *sve_state,
-			      unsigned int sve_vl, enum fp_type *type,
-			      enum fp_type to_save)
-{
-	struct fpsimd_last_state_struct *last =
-		this_cpu_ptr(&fpsimd_last_state);
+void fpsimd_bind_state_to_cpu(struct cpu_fp_state *state)
+ {
+	struct cpu_fp_state *last = this_cpu_ptr(&fpsimd_last_state);
 
 	WARN_ON(!system_supports_fpsimd());
 	WARN_ON(!in_softirq() && !irqs_disabled());
 
-	last->st = st;
-	last->sve_state = sve_state;
-	last->sve_vl = sve_vl;
-	last->fp_type = type;
-	last->to_save = to_save;
+	*last = *state;
 }
 
 /*
