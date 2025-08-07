@@ -345,6 +345,11 @@ static ssize_t hsmp_metric_tbl_read(struct file *filp, struct kobject *kobj,
 	struct hsmp_message msg = { 0 };
 	int ret;
 
+	if (!sock->metric_tbl_addr) {
+		dev_err(plat_dev.dev, "Metrics table address not available\n");
+		return -ENOMEM;
+	}
+
 	/* Do not support lseek(), reads entire metric table */
 	if (count < bin_attr->size) {
 		dev_err(plat_dev.dev, "Wrong buffer size\n");
