@@ -218,6 +218,9 @@ int xe_pm_resume(struct xe_device *xe)
 
 	xe_late_bind_fw_load(&xe->late_bind);
 
+	if (IS_SRIOV_VF(xe))
+		xe_sriov_vf_ccs_register_context(xe);
+
 	drm_dbg(&xe->drm, "Device resumed\n");
 	return 0;
 err:
