@@ -25,4 +25,3 @@ do_dkms_nvidia = false
 
 disable_d_i = true
 do_common_headers_indep = false
-do_libc_dev_package = false
