@@ -926,6 +926,11 @@ void tegra_hv_ivc_notify(struct tegra_hv_ivc_cookie *ivck)
 		return;
 
 	ivc = cookie_to_ivc_dev(ivck);
+	if (!ivc->reserved) {
+		pr_err("%s: Error ivc queue is not reserved\n", __func__);
+		return;
+	}
+
 	if (WARN_ON(!ivc->cookie.notify_va))
 		return;
 	*ivc->cookie.notify_va = ivc->qd->raise_irq;
@@ -987,7 +992,16 @@ EXPORT_SYMBOL(tegra_hv_ivc_unreserve);
 int tegra_hv_ivc_write(struct tegra_hv_ivc_cookie *ivck, const void *buf,
 		int size)
 {
-	struct hv_ivc *ivc = cookie_to_ivc_dev(ivck);
+	struct hv_ivc *ivc;
+
+	if (ivck == NULL)
+		return -EINVAL;
+
+	ivc = cookie_to_ivc_dev(ivck);
+	if (!ivc->reserved) {
+		pr_err("%s: Error ivc queue is not reserved\n", __func__);
+		return -EPERM;
+	}
 
 	return tegra_ivc_write(&ivc->ivc, NULL, buf, size);
 }
@@ -996,7 +1010,16 @@ EXPORT_SYMBOL(tegra_hv_ivc_write);
 int tegra_hv_ivc_write_user(struct tegra_hv_ivc_cookie *ivck, const void __user *buf,
 		int size)
 {
-	struct hv_ivc *ivc = cookie_to_ivc_dev(ivck);
+	struct hv_ivc *ivc;
+
+	if (ivck == NULL)
+		return -EINVAL;
+
+	ivc = cookie_to_ivc_dev(ivck);
+	if (!ivc->reserved) {
+		pr_err("%s: Error ivc queue is not reserved\n", __func__);
+		return -EPERM;
+	}
 
 	return tegra_ivc_write(&ivc->ivc, buf, NULL, size);
 }
@@ -1004,7 +1027,16 @@ EXPORT_SYMBOL(tegra_hv_ivc_write_user);
 
 int tegra_hv_ivc_read(struct tegra_hv_ivc_cookie *ivck, void *buf, int size)
 {
-	struct hv_ivc *ivc = cookie_to_ivc_dev(ivck);
+	struct hv_ivc *ivc;
+
+	if (ivck == NULL)
+		return -EINVAL;
+
+	ivc = cookie_to_ivc_dev(ivck);
+	if (!ivc->reserved) {
+		pr_err("%s: Error ivc queue is not reserved\n", __func__);
+		return -EPERM;
+	}
 
 	return tegra_ivc_read(&ivc->ivc, NULL, buf, size);
 }
@@ -1012,7 +1044,16 @@ EXPORT_SYMBOL(tegra_hv_ivc_read);
 
 int tegra_hv_ivc_read_user(struct tegra_hv_ivc_cookie *ivck, void __user *buf, int size)
 {
-	struct hv_ivc *ivc = cookie_to_ivc_dev(ivck);
+	struct hv_ivc *ivc;
+
+	if (ivck == NULL)
+		return -EINVAL;
+
+	ivc = cookie_to_ivc_dev(ivck);
+	if (!ivc->reserved) {
+		pr_err("%s: Error ivc queue is not reserved\n", __func__);
+		return -EPERM;
+	}
 
 	return tegra_ivc_read(&ivc->ivc, buf, NULL, size);
 }
@@ -1020,7 +1061,16 @@ EXPORT_SYMBOL(tegra_hv_ivc_read_user);
 
 int tegra_hv_ivc_can_read(struct tegra_hv_ivc_cookie *ivck)
 {
-	struct hv_ivc *ivc = cookie_to_ivc_dev(ivck);
+	struct hv_ivc *ivc;
+
+	if (ivck == NULL)
+		return -EINVAL;
+
+	ivc = cookie_to_ivc_dev(ivck);
+	if (!ivc->reserved) {
+		pr_err("%s: Error ivc queue is not reserved\n", __func__);
+		return -EPERM;
+	}
 
 	return tegra_ivc_can_read(&ivc->ivc);
 }
@@ -1028,7 +1078,16 @@ EXPORT_SYMBOL(tegra_hv_ivc_can_read);
 
 int tegra_hv_ivc_can_write(struct tegra_hv_ivc_cookie *ivck)
 {
-	struct hv_ivc *ivc = cookie_to_ivc_dev(ivck);
+	struct hv_ivc *ivc;
+
+	if (ivck == NULL)
+		return -EINVAL;
+
+	ivc = cookie_to_ivc_dev(ivck);
+	if (!ivc->reserved) {
+		pr_err("%s: Error ivc queue is not reserved\n", __func__);
+		return -EPERM;
+	}
 
 	return tegra_ivc_can_write(&ivc->ivc);
 }
@@ -1036,7 +1095,16 @@ EXPORT_SYMBOL(tegra_hv_ivc_can_write);
 
 int tegra_hv_ivc_tx_empty(struct tegra_hv_ivc_cookie *ivck)
 {
-	struct hv_ivc *ivc = cookie_to_ivc_dev(ivck);
+	struct hv_ivc *ivc;
+
+	if (ivck == NULL)
+		return -EINVAL;
+
+	ivc = cookie_to_ivc_dev(ivck);
+	if (!ivc->reserved) {
+		pr_err("%s: Error ivc queue is not reserved\n", __func__);
+		return -EPERM;
+	}
 
 	return tegra_ivc_empty(&ivc->ivc, &ivc->ivc.tx.map);
 }
@@ -1045,7 +1113,16 @@ EXPORT_SYMBOL(tegra_hv_ivc_tx_empty);
 #ifndef CONFIG_KERNEL_BUILD_WITH_PROD_DEFCONFIG
 uint32_t tegra_hv_ivc_tx_frames_available(struct tegra_hv_ivc_cookie *ivck)
 {
-	struct hv_ivc *ivc = cookie_to_ivc_dev(ivck);
+	struct hv_ivc *ivc;
+
+	if (ivck == NULL)
+		return -EINVAL;
+
+	ivc = cookie_to_ivc_dev(ivck);
+	if (!ivc->reserved) {
+		pr_err("%s: Error ivc queue is not reserved\n", __func__);
+		return 0;
+	}
 
 	return tegra_ivc_frames_available(&ivc->ivc, &ivc->ivc.tx.map);
 }
@@ -1053,7 +1130,16 @@ EXPORT_SYMBOL(tegra_hv_ivc_tx_frames_available);
 
 int tegra_hv_ivc_dump(struct tegra_hv_ivc_cookie *ivck)
 {
-	struct hv_ivc *ivc = cookie_to_ivc_dev(ivck);
+	struct hv_ivc *ivc;
+
+	if (ivck == NULL)
+		return -EINVAL;
+
+	ivc = cookie_to_ivc_dev(ivck);
+	if (!ivc->reserved) {
+		pr_err("%s: Error ivc queue is not reserved\n", __func__);
+		return -EPERM;
+	}
 
 	return ivc_dump(ivc);
 }
@@ -1062,9 +1148,18 @@ EXPORT_SYMBOL(tegra_hv_ivc_dump);
 
 void *tegra_hv_ivc_read_get_next_frame(struct tegra_hv_ivc_cookie *ivck)
 {
-	struct hv_ivc *ivc = cookie_to_ivc_dev(ivck);
+	struct hv_ivc *ivc;
 	struct iosys_map map;
 	int err;
+
+	if (ivck == NULL)
+		return ERR_PTR(-EINVAL);
+
+	ivc = cookie_to_ivc_dev(ivck);
+	if (!ivc->reserved) {
+		pr_err("%s: Error ivc queue is not reserved\n", __func__);
+		return ERR_PTR(-EPERM);
+	}
 
 	err = tegra_ivc_read_get_next_frame(&ivc->ivc, &map);
 	if (err)
@@ -1075,9 +1170,18 @@ EXPORT_SYMBOL(tegra_hv_ivc_read_get_next_frame);
 
 void *tegra_hv_ivc_write_get_next_frame(struct tegra_hv_ivc_cookie *ivck)
 {
-	struct hv_ivc *ivc = cookie_to_ivc_dev(ivck);
+	struct hv_ivc *ivc;
 	struct iosys_map map;
 	int err;
+
+	if (ivck == NULL)
+		return ERR_PTR(-EINVAL);
+
+	ivc = cookie_to_ivc_dev(ivck);
+	if (!ivc->reserved) {
+		pr_err("%s: Error ivc queue is not reserved\n", __func__);
+		return ERR_PTR(-EPERM);
+	}
 
 	err = tegra_ivc_write_get_next_frame(&ivc->ivc, &map);
 	if (err)
@@ -1089,7 +1193,16 @@ EXPORT_SYMBOL(tegra_hv_ivc_write_get_next_frame);
 
 int tegra_hv_ivc_write_advance(struct tegra_hv_ivc_cookie *ivck)
 {
-	struct hv_ivc *ivc = cookie_to_ivc_dev(ivck);
+	struct hv_ivc *ivc;
+
+	if (ivck == NULL)
+		return -EINVAL;
+
+	ivc = cookie_to_ivc_dev(ivck);
+	if (!ivc->reserved) {
+		pr_err("%s: Error ivc queue is not reserved\n", __func__);
+		return -EPERM;
+	}
 
 	return tegra_ivc_write_advance(&ivc->ivc);
 }
@@ -1097,7 +1210,16 @@ EXPORT_SYMBOL(tegra_hv_ivc_write_advance);
 
 int tegra_hv_ivc_read_advance(struct tegra_hv_ivc_cookie *ivck)
 {
-	struct hv_ivc *ivc = cookie_to_ivc_dev(ivck);
+	struct hv_ivc *ivc;
+
+	if (ivck == NULL)
+		return -EINVAL;
+
+	ivc = cookie_to_ivc_dev(ivck);
+	if (!ivc->reserved) {
+		pr_err("%s: Error ivc queue is not reserved\n", __func__);
+		return -EPERM;
+	}
 
 	return tegra_ivc_read_advance(&ivc->ivc);
 }
@@ -1178,7 +1300,16 @@ EXPORT_SYMBOL(tegra_hv_mempool_unreserve);
 
 int tegra_hv_ivc_channel_notified(struct tegra_hv_ivc_cookie *ivck)
 {
-	struct hv_ivc *ivc = cookie_to_ivc_dev(ivck);
+	struct hv_ivc *ivc;
+
+	if (ivck == NULL)
+		return -EINVAL;
+
+	ivc = cookie_to_ivc_dev(ivck);
+	if (!ivc->reserved) {
+		pr_err("%s: Error ivc queue is not reserved\n", __func__);
+		return -EPERM;
+	}
 
 	return tegra_ivc_notified(&ivc->ivc);
 }
@@ -1186,7 +1317,16 @@ EXPORT_SYMBOL(tegra_hv_ivc_channel_notified);
 
 void tegra_hv_ivc_channel_reset(struct tegra_hv_ivc_cookie *ivck)
 {
-	struct hv_ivc *ivc = cookie_to_ivc_dev(ivck);
+	struct hv_ivc *ivc;
+
+	if (ivck == NULL)
+		return;
+
+	ivc = cookie_to_ivc_dev(ivck);
+	if (!ivc->reserved) {
+		pr_err("%s: Error ivc queue is not reserved\n", __func__);
+		return;
+	}
 
 	if (ivc->cookie_ops) {
 		ERR("reset unsupported with callbacks");
