@@ -1891,6 +1891,7 @@ static void rtw89_vif_rx_stats_iter(void *data, u8 *mac,
 	struct ieee80211_hdr *hdr = (struct ieee80211_hdr *)skb->data;
 	struct rtw89_rx_phy_ppdu *phy_ppdu = iter_data->phy_ppdu;
 	const u8 *bssid = iter_data->bssid;
+	const u8 *target_bssid;
 
 	if (rtwdev->scanning &&
 	    (ieee80211_is_beacon(hdr->frame_control) ||
@@ -1905,7 +1906,10 @@ static void rtw89_vif_rx_stats_iter(void *data, u8 *mac,
 		return;
 	}
 
-	if (!ether_addr_equal(vif->bss_conf.bssid, bssid))
+	target_bssid = ieee80211_is_beacon(hdr->frame_control) &&
+		       vif->bss_conf.nontransmitted ?
+		       vif->bss_conf.transmitter_bssid : vif->bss_conf.bssid;
+	if (!ether_addr_equal(target_bssid, bssid))
 		return;
 
 	if (ieee80211_is_beacon(hdr->frame_control)) {
