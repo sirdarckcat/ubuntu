@@ -85,6 +85,7 @@ struct arm_smmu_ctx_desc quiet_cd = { 0 };
 static struct arm_smmu_option_prop arm_smmu_options[] = {
 	{ ARM_SMMU_OPT_SKIP_PREFETCH, "hisilicon,broken-prefetch-cmd" },
 	{ ARM_SMMU_OPT_PAGE0_REGS_ONLY, "cavium,cn9900-broken-page1-regspace"},
+	{ ARM_SMMU_OPT_TLBI_TWICE, "nvidia,tegra264-tlbi-race-fix"},
 	{ 0, NULL},
 };
 
@@ -1043,6 +1044,8 @@ static void arm_smmu_sync_cd(struct arm_smmu_master *master,
 	}
 
 	arm_smmu_cmdq_batch_submit(smmu, &cmds);
+	if (smmu->options & ARM_SMMU_OPT_TLBI_TWICE)
+		arm_smmu_cmdq_batch_submit(smmu, &cmds);
 }
 
 static int arm_smmu_alloc_cd_leaf_table(struct arm_smmu_device *smmu,
@@ -1297,6 +1300,8 @@ static void arm_smmu_sync_ste_for_sid(struct arm_smmu_device *smmu, u32 sid)
 	};
 
 	arm_smmu_cmdq_issue_cmd_with_sync(smmu, &cmd);
+	if (smmu->options & ARM_SMMU_OPT_TLBI_TWICE)
+		arm_smmu_cmdq_issue_cmd_with_sync(smmu, &cmd);
 }
 
 static void arm_smmu_write_strtab_ent(struct arm_smmu_master *master, u32 sid,
@@ -1929,6 +1934,15 @@ static void arm_smmu_tlb_inv_context(void *cookie)
 		arm_smmu_cmdq_issue_cmd_with_sync(smmu, &cmd);
 	}
 	arm_smmu_atc_inv_domain(smmu_domain, IOMMU_NO_PASID, 0, 0);
+	if (smmu_domain->smmu->options & ARM_SMMU_OPT_TLBI_TWICE) {
+		if (smmu_domain->stage == ARM_SMMU_DOMAIN_S1) {
+			arm_smmu_tlb_inv_asid(smmu, smmu_domain->cd.asid);
+		} else {
+			cmd.opcode	= CMDQ_OP_TLBI_S12_VMALL;
+			cmd.tlbi.vmid	= smmu_domain->s2_cfg.vmid;
+			arm_smmu_cmdq_issue_cmd_with_sync(smmu, &cmd);
+		}
+	}
 }
 
 static void __arm_smmu_tlb_inv_range(struct arm_smmu_cmdq_ent *cmd,
@@ -2027,6 +2041,9 @@ static void arm_smmu_tlb_inv_range_domain(unsigned long iova, size_t size,
 	 * zapped an entire table.
 	 */
 	arm_smmu_atc_inv_domain(smmu_domain, IOMMU_NO_PASID, iova, size);
+
+	if (smmu_domain->smmu->options & ARM_SMMU_OPT_TLBI_TWICE)
+		__arm_smmu_tlb_inv_range(&cmd, iova, size, granule, smmu_domain);
 }
 
 void arm_smmu_tlb_inv_range_asid(unsigned long iova, size_t size, int asid,
@@ -3406,15 +3423,21 @@ static int arm_smmu_device_reset(struct arm_smmu_device *smmu, bool bypass)
 	/* Invalidate any cached configuration */
 	cmd.opcode = CMDQ_OP_CFGI_ALL;
 	arm_smmu_cmdq_issue_cmd_with_sync(smmu, &cmd);
+	if (smmu->options & ARM_SMMU_OPT_TLBI_TWICE)
+		arm_smmu_cmdq_issue_cmd_with_sync(smmu, &cmd);
 
 	/* Invalidate any stale TLB entries */
 	if (smmu->features & ARM_SMMU_FEAT_HYP) {
 		cmd.opcode = CMDQ_OP_TLBI_EL2_ALL;
 		arm_smmu_cmdq_issue_cmd_with_sync(smmu, &cmd);
+		if (smmu->options & ARM_SMMU_OPT_TLBI_TWICE)
+			arm_smmu_cmdq_issue_cmd_with_sync(smmu, &cmd);
 	}
 
 	cmd.opcode = CMDQ_OP_TLBI_NSNH_ALL;
 	arm_smmu_cmdq_issue_cmd_with_sync(smmu, &cmd);
+	if (smmu->options & ARM_SMMU_OPT_TLBI_TWICE)
+		arm_smmu_cmdq_issue_cmd_with_sync(smmu, &cmd);
 
 	/* Event queue */
 	writeq_relaxed(smmu->evtq.q.q_base, smmu->base + ARM_SMMU_EVTQ_BASE);
@@ -4133,9 +4156,13 @@ static int __maybe_unused arm_smmu_runtime_suspend(struct device *dev)
 
 	cmd.opcode = CMDQ_OP_CFGI_ALL;
 	arm_smmu_cmdq_issue_cmd_with_sync(smmu, &cmd);
+	if (smmu->options & ARM_SMMU_OPT_TLBI_TWICE)
+		arm_smmu_cmdq_issue_cmd_with_sync(smmu, &cmd);
 
 	cmd.opcode = CMDQ_OP_TLBI_NSNH_ALL;
 	arm_smmu_cmdq_issue_cmd_with_sync(smmu, &cmd);
+	if (smmu->options & ARM_SMMU_OPT_TLBI_TWICE)
+		arm_smmu_cmdq_issue_cmd_with_sync(smmu, &cmd);
 
 	dev_dbg(dev, "Disabling\n");
 	arm_smmu_device_disable(smmu);
