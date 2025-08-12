@@ -101,6 +101,8 @@ arm_smmu_share_asid(struct mm_struct *mm, u16 asid)
 
 	/* Invalidate TLB entries previously associated with that context */
 	arm_smmu_tlb_inv_asid(smmu, asid);
+	if (smmu_domain->smmu->options & ARM_SMMU_OPT_TLBI_TWICE)
+		arm_smmu_tlb_inv_asid(smmu, asid);
 
 	xa_erase(&arm_smmu_asid_xa, asid);
 	return NULL;
@@ -248,6 +250,19 @@ static void arm_smmu_mm_arch_invalidate_secondary_tlbs(struct mmu_notifier *mn,
 
 	arm_smmu_atc_inv_domain(smmu_domain, mm_get_enqcmd_pasid(mm), start,
 				size);
+
+	if (smmu_domain->smmu->options & ARM_SMMU_OPT_TLBI_TWICE) {
+		if (!(smmu_domain->smmu->features & ARM_SMMU_FEAT_BTM)) {
+			if (!size)
+				arm_smmu_tlb_inv_asid(smmu_domain->smmu,
+						      smmu_mn->cd->asid);
+			else
+				arm_smmu_tlb_inv_range_asid(start, size,
+							    smmu_mn->cd->asid,
+							    PAGE_SIZE, false,
+							    smmu_domain);
+		}
+	}
 }
 
 static void arm_smmu_mm_release(struct mmu_notifier *mn, struct mm_struct *mm)
@@ -270,6 +285,8 @@ static void arm_smmu_mm_release(struct mmu_notifier *mn, struct mm_struct *mm)
 
 	arm_smmu_tlb_inv_asid(smmu_domain->smmu, smmu_mn->cd->asid);
 	arm_smmu_atc_inv_domain(smmu_domain, mm_get_enqcmd_pasid(mm), 0, 0);
+	if (smmu_domain->smmu->options & ARM_SMMU_OPT_TLBI_TWICE)
+		arm_smmu_tlb_inv_asid(smmu_domain->smmu, smmu_mn->cd->asid);
 
 	smmu_mn->cleared = true;
 	mutex_unlock(&sva_lock);
@@ -350,6 +367,8 @@ static void arm_smmu_mmu_notifier_put(struct arm_smmu_mmu_notifier *smmu_mn)
 		arm_smmu_tlb_inv_asid(smmu_domain->smmu, cd->asid);
 		arm_smmu_atc_inv_domain(smmu_domain, mm_get_enqcmd_pasid(mm), 0,
 					0);
+		if (smmu_domain->smmu->options & ARM_SMMU_OPT_TLBI_TWICE)
+			arm_smmu_tlb_inv_asid(smmu_domain->smmu, cd->asid);
 	}
 
 	/* Frees smmu_mn */
