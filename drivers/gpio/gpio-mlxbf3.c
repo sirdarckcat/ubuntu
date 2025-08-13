@@ -243,7 +243,7 @@ static int mlxbf3_gpio_probe(struct platform_device *pdev)
 	gc->add_pin_ranges = mlxbf3_gpio_add_pin_ranges;
 	gc->init_valid_mask = mlxbf3_gpio_init_valid_mask;
 
-	irq = platform_get_irq(pdev, 0);
+	irq = platform_get_irq_optional(pdev, 0);
 	if (irq >= 0) {
 		girq = &gs->gc.irq;
 		girq->chip = &gpio_mlxbf3_irqchip;
