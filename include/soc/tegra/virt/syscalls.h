@@ -377,6 +377,20 @@ static inline int hyp_guest_reset(unsigned int id, struct hyp_sys_state_info *ou
 }
 
 __attribute__((no_sanitize_address))
+static inline int hyp_guest_enter_vm_op(unsigned int const id, unsigned int const vm_op)
+{
+	register uint64_t r0 asm("x0") = id;
+	register uint64_t r1 asm("x1") = vm_op;
+
+	asm volatile("hvc %2"
+		: "+r"(r0), "+r"(r1)
+		: "i"(HVC_NR_GUEST_RESET)
+		: "x2", _X3_X17);
+
+	return (int)r0;
+}
+
+__attribute__((no_sanitize_address))
 static inline uint64_t hyp_sysinfo_ipa(void)
 {
 	register uint64_t r0 asm("x0");
