@@ -29,6 +29,11 @@
 #define INFO(...) pr_info("tegra_hv: " __VA_ARGS__)
 #define DRV_NAME	"tegra_hv"
 
+/* NVDVMS VM operation constants */
+#define NVDVMS_VM_OP_MIN 300U
+#define NVDVMS_VM_OP_MAX 363U
+#define ENABLE_PM_SERVER_DT_NODE "enable_pm_server"
+
 struct tegra_hv_data;
 
 static struct property interrupts_prop = {
@@ -404,6 +409,53 @@ static ssize_t vmid_show(const struct class *class,
 }
 static CLASS_ATTR_RO(vmid);
 
+static bool is_device_node_present(const char *node_name)
+{
+	struct device_node *node;
+	bool node_present = false;
+
+	node = of_find_node_by_name(NULL, node_name);
+	if (node) {
+		node_present = true;
+		of_node_put(node);
+		INFO("Found %s node in device tree\n", node_name);
+	} else {
+		INFO("No %s node found in device tree\n", node_name);
+	}
+
+	return node_present;
+}
+
+
+static ssize_t update_vm_op_store(const struct class *class,
+		const struct class_attribute *attr, const char *buf, size_t count)
+{
+	unsigned int state;
+	int ret;
+
+	/* Parse unsigned int from user input */
+	ret = kstrtouint(buf, 0, &state);
+	if (ret < 0)
+		return ret;
+
+	/* Validate state is within VM operation boundaries */
+	if (state < NVDVMS_VM_OP_MIN || state > NVDVMS_VM_OP_MAX) {
+		pr_err("tegra_hv: Invalid VM_OP state %u\n", state);
+		return -EINVAL;
+	}
+
+	/* Trigger HVC to update VM_OP transition completion */
+	ret = hyp_guest_enter_vm_op(GUEST_ENTER_VM_OP_CMD, state);
+	if (ret < 0) {
+		pr_err("tegra_hv: VM_OP transition update failed\n");
+		return ret;
+	}
+
+	pr_info("tegra_hv: VM_OP transition updated: %u\n", state);
+	return count;
+}
+static CLASS_ATTR_WO(update_vm_op);
+
 static int tegra_hv_setup(struct tegra_hv_data *hvd)
 {
 	const int intr_property_size = 3;
@@ -436,6 +488,15 @@ static int tegra_hv_setup(struct tegra_hv_data *hvd)
 	if (ret != 0) {
 		ERR("failed to create vmid file: %d\n", ret);
 		return ret;
+	}
+
+	/* Create sysfs entry only if enable_pm_server DT node is present */
+	if (is_device_node_present(ENABLE_PM_SERVER_DT_NODE)) {
+		ret = class_create_file(hvd->hv_class, &class_attr_update_vm_op);
+		if (ret != 0) {
+			ERR("failed to create update_vm_op file: %d\n", ret);
+			return ret;
+		}
 	}
 
 	ret = hyp_read_ivc_info(&info_page);
