@@ -52,6 +52,27 @@ struct smbdirect_socket {
 			SMBDIRECT_EXPECT_DATA_TRANSFER = 3,
 		} expected;
 	} recv_io;
+
+	/*
+	 * The state for RDMA read/write requests on the server
+	 */
+	struct {
+		/*
+		 * The credit state for the send side
+		 */
+		struct {
+			/*
+			 * The maximum number of rw credits
+			 */
+			size_t max;
+			/*
+			 * The number of pages per credit
+			 */
+			size_t num_pages;
+			atomic_t count;
+			wait_queue_head_t wait_queue;
+		} credits;
+	} rw_io;
 };
 
 static __always_inline void smbdirect_socket_init(struct smbdirect_socket *sc)
@@ -70,6 +91,9 @@ static __always_inline void smbdirect_socket_init(struct smbdirect_socket *sc)
 	INIT_LIST_HEAD(&sc->recv_io.reassembly.list);
 	spin_lock_init(&sc->recv_io.reassembly.lock);
 	init_waitqueue_head(&sc->recv_io.reassembly.wait_queue);
+
+	atomic_set(&sc->rw_io.credits.count, 0);
+	init_waitqueue_head(&sc->rw_io.credits.wait_queue);
 }
 
 struct smbdirect_send_io {
