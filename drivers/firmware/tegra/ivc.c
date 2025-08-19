@@ -674,6 +674,7 @@ int tegra_ivc_read_peek(struct tegra_ivc *ivc, void __user *usr_buf,
 {
 	struct iosys_map map;
 	int err;
+	size_t result;
 
 	WARN_ON_ONCE(buf && usr_buf);
 
@@ -683,9 +684,13 @@ int tegra_ivc_read_peek(struct tegra_ivc *ivc, void __user *usr_buf,
 		return err;
 
 	/* Ensure offset + size does not exceed buffer bounds */
-	if (offset + size > ivc->frame_size) {
+	if (check_add_overflow(offset, size, &result)) {
+		pr_err("%s: operation got overflown.\n", __func__);
 		return -EINVAL;
 	}
+
+	if (result > ivc->frame_size)
+		return -EINVAL;
 
 	/* update the buffer with read data*/
 	if (buf) {
