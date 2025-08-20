@@ -47,7 +47,7 @@ CONFIG_PREEMPT_DYNAMIC                          note<'LP: #2051342'>
 CONFIG_PREEMPT_NONE                             policy<{'amd64': 'y', 'arm64': 'y'}>
 CONFIG_PREEMPT_NONE                             note<'LP: #1543165'>
 
-CONFIG_RUST                                     policy<{'amd64': 'n', 'arm64': 'n'}>
+CONFIG_RUST                                     policy<{'amd64': '-', 'arm64': 'n'}>
 CONFIG_RUST                                     note<'TODO: update note'>
 
 CONFIG_SERIAL_AMBA_PL011                        policy<{'arm64': 'y'}>
@@ -114,6 +114,7 @@ CONFIG_AX88796B_RUST_PHY                        policy<{'amd64': '-', 'arm64': '
 CONFIG_BATTERY_LENOVO_YOGA_C630                 policy<{'arm64': 'm'}>
 CONFIG_BATTERY_SAMSUNG_SDI                      policy<{'amd64': 'n', 'arm64': 'y'}>
 CONFIG_BCM2711_THERMAL                          policy<{'arm64': 'm'}>
+CONFIG_BCM2712_MIP                              policy<{'arm64': 'm'}>
 CONFIG_BCM2835_MBOX                             policy<{'arm64': 'y'}>
 CONFIG_BCM2835_POWER                            policy<{'arm64': 'y'}>
 CONFIG_BCM2835_THERMAL                          policy<{'arm64': 'm'}>
@@ -161,15 +162,15 @@ CONFIG_COMEDI_TESTS_NI_ROUTES                   policy<{'amd64': 'n', 'arm64': '
 CONFIG_COMMON_CLK_C3_PERIPHERALS                policy<{'arm64-oracle': 'm', 'arm64-oracle-64k': 'y'}>
 CONFIG_COMMON_CLK_IPROC                         policy<{'arm64': 'y'}>
 CONFIG_CONSTRUCTORS                             policy<{'amd64': '-'}>
+CONFIG_CPUFREQ_DT_RUST                          policy<{'arm64': '-'}>
 CONFIG_CRYPTO_DEV_BCM_SPU                       policy<{'arm64': 'm'}>
 CONFIG_CRYPTO_GF128MUL                          policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_CS_DSP                                   policy<{'amd64': '-', 'arm64': '-'}>
-CONFIG_CZNIC_PLATFORMS                          policy<{'amd64': '-', 'arm64': 'y'}>
-CONFIG_DA_MON_EVENTS                            policy<{'amd64': '-', 'arm64': '-'}>
-CONFIG_DA_MON_EVENTS_ID                         policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_DA_MON_EVENTS_IMPLICIT                   policy<{'amd64': 'y', 'arm64': 'y'}>
 CONFIG_DEBUG_PREEMPT                            policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_DMA_BCM2835                              policy<{'arm64': 'y'}>
 CONFIG_DRM_NOMODESET                            policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_DRM_NOVA                                 policy<{'arm64': '-'}>
 CONFIG_DRM_PANEL_HIMAX_HX83102                  policy<{'arm64': 'm'}>
 CONFIG_DRM_PANEL_ILITEK_ILI9806E                policy<{'arm64': 'm'}>
 CONFIG_DRM_PANEL_LINCOLNTECH_LCD197             policy<{'arm64': 'm'}>
@@ -239,6 +240,7 @@ CONFIG_MLX5_EN_MACSEC                           policy<{'amd64': '-', 'arm64': '
 CONFIG_MMC_BCM2835                              policy<{'arm64': 'm'}>
 CONFIG_MMC_SDHCI_BRCMSTB                        policy<{'arm64': 'm'}>
 CONFIG_MMC_SDHCI_IPROC                          policy<{'arm64': 'm'}>
+CONFIG_MSHV_ROOT                                policy<{'amd64': 'm', 'arm64-oracle': 'm'}>
 CONFIG_MTD_BRCM_U_BOOT                          policy<{'arm64': 'm'}>
 CONFIG_MTD_OF_PARTS_BCM4908                     policy<{'arm64': 'y'}>
 CONFIG_MTD_OF_PARTS_LINKSYS_NS                  policy<{'arm64': 'y'}>
@@ -299,6 +301,10 @@ CONFIG_RUST_DEBUG_ASSERTIONS                    policy<{'amd64': '-', 'arm64': '
 CONFIG_RUST_FW_LOADER_ABSTRACTIONS              policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_RUST_OVERFLOW_CHECKS                     policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_RUST_PHYLIB_ABSTRACTIONS                 policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_RV_MON_SCHED                             policy<{'amd64': 'y', 'arm64': 'y'}>
+CONFIG_RV_MON_SCO                               policy<{'amd64': 'y', 'arm64': 'y'}>
+CONFIG_RV_MON_SNROC                             policy<{'amd64': 'y', 'arm64': 'y'}>
+CONFIG_RV_MON_TSS                               policy<{'amd64': 'y', 'arm64': 'y'}>
 CONFIG_RV_MON_WWNR                              policy<{'amd64': 'n', 'arm64': 'n'}>
 CONFIG_SAMPLES_RUST                             policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_SCSI_UFS_HWMON                           policy<{'amd64': 'n', 'arm64': 'y'}>
@@ -349,6 +355,7 @@ CONFIG_TEST_LIST_SORT                           policy<{'amd64': '-', 'arm64': '
 CONFIG_TEST_SIPHASH                             policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_TEST_SORT                                policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_THP_SWAP                                 policy<{'amd64': 'y', 'arm64': 'y', 'arm64-oracle-64k': '-'}>
+CONFIG_TOUCHSCREEN_APPLE_Z2                     policy<{'arm64': 'n'}>
 CONFIG_TOUCHSCREEN_IPROC                        policy<{'arm64': 'm'}>
 CONFIG_TOUCHSCREEN_RASPBERRYPI_FW               policy<{'arm64': 'm'}>
 CONFIG_TRACE_MMIO_ACCESS                        policy<{'arm64': 'n'}>
