@@ -131,6 +131,7 @@ allocate_of_node:
 	of_entry->np = np;
 	list_add_tail(&of_entry->list, &mfd_of_node_list);
 
+	of_node_get(np);
 	pdev->dev.of_node = np;
 	pdev->dev.fwnode = &np->fwnode;
 #endif
