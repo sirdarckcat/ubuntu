@@ -17,7 +17,6 @@ do_tools_perf_jvmti	= true
 do_tools_bpftool	= false
 do_tools_x86		= true
 do_tools_hyperv		= false
-do_extras_package	= true
 do_tools_acpidbg	= true
 do_zfs			= true
 disable_d_i		= true
