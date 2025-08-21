@@ -1491,7 +1491,7 @@ struct cifs_readdata {
 	struct kvec			iov[2];
 	struct TCP_Server_Info		*server;
 #ifdef CONFIG_CIFS_SMB_DIRECT
-	struct smbd_mr			*mr;
+	struct smbdirect_mr_io		*mr;
 #endif
 	struct cifs_credits		credits;
 };
