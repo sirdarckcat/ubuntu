@@ -2986,8 +2986,12 @@ static ssize_t cifs_write_back_from_locked_folio(struct address_space *mapping,
 			int max_pages = INT_MAX;
 
 #ifdef CONFIG_CIFS_SMB_DIRECT
-			if (server->smbd_conn)
-				max_pages = server->smbd_conn->max_frmr_depth;
+			if (server->smbd_conn) {
+				const struct smbdirect_socket_parameters *sp =
+					smbd_get_parameters(server->smbd_conn);
+
+				max_pages = sp->max_frmr_depth;
+			}
 #endif
 			max_pages -= folio_nr_pages(folio);
 
@@ -3612,8 +3616,12 @@ cifs_write_from_iter(loff_t fpos, size_t len, struct iov_iter *from,
 	xid = get_xid();
 
 #ifdef CONFIG_CIFS_SMB_DIRECT
-	if (server->smbd_conn)
-		max_segs = server->smbd_conn->max_frmr_depth;
+	if (server->smbd_conn) {
+		const struct smbdirect_socket_parameters *sp =
+			smbd_get_parameters(server->smbd_conn);
+
+		max_segs = sp->max_frmr_depth;
+	}
 #endif
 
 	do {
@@ -4151,8 +4159,12 @@ cifs_send_async_read(loff_t fpos, size_t len, struct cifsFileInfo *open_file,
 	server = cifs_pick_channel(tlink_tcon(open_file->tlink)->ses);
 
 #ifdef CONFIG_CIFS_SMB_DIRECT
-	if (server->smbd_conn)
-		max_segs = server->smbd_conn->max_frmr_depth;
+	if (server->smbd_conn) {
+		const struct smbdirect_socket_parameters *sp =
+			smbd_get_parameters(server->smbd_conn);
+
+		max_segs = sp->max_frmr_depth;
+	}
 #endif
 
 	if (cifs_sb->mnt_cifs_flags & CIFS_MOUNT_RWPIDFORWARD)

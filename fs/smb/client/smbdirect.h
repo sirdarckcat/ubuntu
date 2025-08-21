@@ -80,8 +80,6 @@ struct smbd_connection {
 	/* Memory registrations */
 	/* Maximum number of RDMA read/write outstanding on this connection */
 	int responder_resources;
-	/* Maximum number of pages in a single RDMA write/read on this connection */
-	int max_frmr_depth;
 	/*
 	 * If payload is less than or equal to the threshold,
 	 * use RDMA send/recv to send upper layer I/O.

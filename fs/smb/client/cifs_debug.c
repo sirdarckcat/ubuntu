@@ -416,7 +416,7 @@ static int cifs_debug_data_proc_show(struct seq_file *m, void *v)
 		seq_printf(m, "\nMR responder_resources: %x "
 			"max_frmr_depth: %x mr_type: %x",
 			server->smbd_conn->responder_resources,
-			server->smbd_conn->max_frmr_depth,
+			sp->max_frmr_depth,
 			server->smbd_conn->mr_type);
 		seq_printf(m, "\nMR mr_ready_count: %x mr_used_count: %x",
 			atomic_read(&server->smbd_conn->mr_ready_count),

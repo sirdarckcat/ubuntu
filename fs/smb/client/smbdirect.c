@@ -404,8 +404,8 @@ static bool process_negotiation_response(
 
 	sp->max_read_write_size = min_t(u32,
 			le32_to_cpu(packet->max_readwrite_size),
-			info->max_frmr_depth * PAGE_SIZE);
-	info->max_frmr_depth = sp->max_read_write_size / PAGE_SIZE;
+			sp->max_frmr_depth * PAGE_SIZE);
+	sp->max_frmr_depth = sp->max_read_write_size / PAGE_SIZE;
 
 	sc->recv_io.expected = SMBDIRECT_EXPECT_DATA_TRANSFER;
 	return true;
@@ -676,6 +676,7 @@ static int smbd_ia_open(
 		struct sockaddr *dstaddr, int port)
 {
 	struct smbdirect_socket *sc = &info->socket;
+	struct smbdirect_socket_parameters *sp = &sc->parameters;
 	int rc;
 
 	sc->rdma.cm_id = smbd_create_id(info, dstaddr, port);
@@ -693,8 +694,8 @@ static int smbd_ia_open(
 		rc = -EPROTONOSUPPORT;
 		goto out2;
 	}
-	info->max_frmr_depth = min_t(int,
-		smbd_max_frmr_depth,
+	sp->max_frmr_depth = min_t(u32,
+		sp->max_frmr_depth,
 		sc->ib.dev->attrs.max_fast_reg_page_list_len);
 	info->mr_type = IB_MR_TYPE_MEM_REG;
 	if (sc->ib.dev->attrs.kernel_cap_flags & IBK_SG_GAPS_REG)
@@ -1567,6 +1568,8 @@ static struct smbd_connection *_smbd_get_connection(
 	sc = &info->socket;
 	sp = &sc->parameters;
 
+	sp->max_frmr_depth = smbd_max_frmr_depth;
+
 	sc->status = SMBDIRECT_SOCKET_CONNECTING;
 	rc = smbd_ia_open(info, dstaddr, port);
 	if (rc) {
@@ -2129,6 +2132,7 @@ static void smbd_mr_recovery_work(struct work_struct *work)
 	struct smbd_connection *info =
 		container_of(work, struct smbd_connection, mr_recovery_work);
 	struct smbdirect_socket *sc = &info->socket;
+	struct smbdirect_socket_parameters *sp = &sc->parameters;
 	struct smbdirect_mr_io *smbdirect_mr;
 	int rc;
 
@@ -2147,11 +2151,11 @@ static void smbd_mr_recovery_work(struct work_struct *work)
 
 			smbdirect_mr->mr = ib_alloc_mr(
 				sc->ib.pd, info->mr_type,
-				info->max_frmr_depth);
+				sp->max_frmr_depth);
 			if (IS_ERR(smbdirect_mr->mr)) {
 				log_rdma_mr(ERR, "ib_alloc_mr failed mr_type=%x max_frmr_depth=%x\n",
 					    info->mr_type,
-					    info->max_frmr_depth);
+					    sp->max_frmr_depth);
 				smbd_disconnect_rdma_connection(info);
 				continue;
 			}
@@ -2199,6 +2203,7 @@ static void destroy_mr_list(struct smbd_connection *info)
 static int allocate_mr_list(struct smbd_connection *info)
 {
 	struct smbdirect_socket *sc = &info->socket;
+	struct smbdirect_socket_parameters *sp = &sc->parameters;
 	int i;
 	struct smbdirect_mr_io *smbdirect_mr, *tmp;
 
@@ -2215,13 +2220,13 @@ static int allocate_mr_list(struct smbd_connection *info)
 		if (!smbdirect_mr)
 			goto cleanup_entries;
 		smbdirect_mr->mr = ib_alloc_mr(sc->ib.pd, info->mr_type,
-					info->max_frmr_depth);
+					sp->max_frmr_depth);
 		if (IS_ERR(smbdirect_mr->mr)) {
 			log_rdma_mr(ERR, "ib_alloc_mr failed mr_type=%x max_frmr_depth=%x\n",
-				    info->mr_type, info->max_frmr_depth);
+				    info->mr_type, sp->max_frmr_depth);
 			goto out;
 		}
-		smbdirect_mr->sgt.sgl = kcalloc(info->max_frmr_depth,
+		smbdirect_mr->sgt.sgl = kcalloc(sp->max_frmr_depth,
 						sizeof(struct scatterlist),
 						GFP_KERNEL);
 		if (!smbdirect_mr->sgt.sgl) {
@@ -2326,15 +2331,16 @@ struct smbdirect_mr_io *smbd_register_mr(struct smbd_connection *info,
 				 bool writing, bool need_invalidate)
 {
 	struct smbdirect_socket *sc = &info->socket;
+	struct smbdirect_socket_parameters *sp = &sc->parameters;
 	struct smbdirect_mr_io *smbdirect_mr;
 	int rc, num_pages;
 	enum dma_data_direction dir;
 	struct ib_reg_wr *reg_wr;
 
-	num_pages = iov_iter_npages(iter, info->max_frmr_depth + 1);
-	if (num_pages > info->max_frmr_depth) {
+	num_pages = iov_iter_npages(iter, sp->max_frmr_depth + 1);
+	if (num_pages > sp->max_frmr_depth) {
 		log_rdma_mr(ERR, "num_pages=%d max_frmr_depth=%d\n",
-			num_pages, info->max_frmr_depth);
+			num_pages, sp->max_frmr_depth);
 		WARN_ON_ONCE(1);
 		return NULL;
 	}
@@ -2352,8 +2358,8 @@ struct smbdirect_mr_io *smbd_register_mr(struct smbd_connection *info,
 	smbdirect_mr->sgt.orig_nents = 0;
 
 	log_rdma_mr(INFO, "num_pages=0x%x count=0x%zx depth=%u\n",
-		    num_pages, iov_iter_count(iter), info->max_frmr_depth);
-	smbd_iter_to_mr(info, iter, &smbdirect_mr->sgt, info->max_frmr_depth);
+		    num_pages, iov_iter_count(iter), sp->max_frmr_depth);
+	smbd_iter_to_mr(info, iter, &smbdirect_mr->sgt, sp->max_frmr_depth);
 
 	rc = ib_dma_map_sg(sc->ib.dev, smbdirect_mr->sgt.sgl,
 			   smbdirect_mr->sgt.nents, dir);
