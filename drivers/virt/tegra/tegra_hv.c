@@ -781,6 +781,11 @@ static int tegra_hv_setup(struct tegra_hv_data *hvd)
 	for (i = 0; i < hvd->info->nr_queues; i++) {
 		const struct tegra_hv_queue_data *qd =
 				&ivc_info_queue_array(hvd->info)[i];
+		/* Validate qd->id before using as offset to satisfy MISRA C 2012 Directive 4.14 */
+		if (qd->id > hvd->max_qid) {
+			ERR("Invalid queue ID %u > max_qid %u\n", qd->id, hvd->max_qid);
+			return -EINVAL;
+		}
 		ret = tegra_hv_add_ivc(hvd, qd, i);
 		if (ret != 0) {
 			ERR("failed to add queue #%u\n", qd->id);
@@ -1210,7 +1215,10 @@ static int tegra_hv_probe(struct platform_device *pdev)
 
 	ret = tegra_hv_setup(hvd);
 	if (ret != 0) {
-		tegra_hv_cleanup(hvd);
+		/* Validate hvd->info before cleanup to satisfy MISRA C 2012 Directive 4.14 */
+		if (hvd->info && hvd->info->nr_areas <= MAX_NUM_GUESTS) {
+			tegra_hv_cleanup(hvd);
+		}
 		kfree(hvd);
 		return ret;
 	}
