@@ -787,6 +787,14 @@ static inline void *iosys_map_get_vaddr(const struct iosys_map *map)
 
 void tegra_ivc_clean_queue_data(struct tegra_ivc *ivc)
 {
+	size_t result;
+
+	/* Check for overflow in multiplication to satisfy CERT INT08-C */
+	if (check_mul_overflow(ivc->num_frames, ivc->frame_size, &result)) {
+		pr_err("%s: overflow in num_frames * frame_size calculation\n", __func__);
+		return;
+	}
+
 	iosys_map_memset(&ivc->rx.map, sizeof(struct tegra_ivc_header), 0, ivc->num_frames * ivc->frame_size);
 	iosys_map_memset(&ivc->tx.map, sizeof(struct tegra_ivc_header), 0, ivc->num_frames * ivc->frame_size);
 }
