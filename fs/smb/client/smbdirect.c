@@ -190,8 +190,11 @@ static void smbd_disconnect_rdma_work(struct work_struct *work)
 	}
 }
 
-static void smbd_disconnect_rdma_connection(struct smbd_connection *info)
+static void smbd_disconnect_rdma_connection(struct smbdirect_socket *sc)
 {
+	struct smbd_connection *info =
+		container_of(sc, struct smbd_connection, socket);
+
 	queue_work(info->workqueue, &info->disconnect_work);
 }
 
@@ -263,6 +266,7 @@ static void
 smbd_qp_async_error_upcall(struct ib_event *event, void *context)
 {
 	struct smbd_connection *info = context;
+	struct smbdirect_socket *sc = &info->socket;
 
 	log_rdma_event(ERR, "%s on device %s info %p\n",
 		ib_event_msg(event->event), event->device->name, info);
@@ -270,7 +274,7 @@ smbd_qp_async_error_upcall(struct ib_event *event, void *context)
 	switch (event->event) {
 	case IB_EVENT_CQ_ERR:
 	case IB_EVENT_QP_FATAL:
-		smbd_disconnect_rdma_connection(info);
+		smbd_disconnect_rdma_connection(sc);
 		break;
 
 	default:
@@ -310,7 +314,7 @@ static void send_done(struct ib_cq *cq, struct ib_wc *wc)
 		log_rdma_send(ERR, "wc->status=%d wc->opcode=%d\n",
 			wc->status, wc->opcode);
 		mempool_free(request, info->request_mempool);
-		smbd_disconnect_rdma_connection(info);
+		smbd_disconnect_rdma_connection(sc);
 		return;
 	}
 
@@ -583,7 +587,7 @@ static void recv_done(struct ib_cq *cq, struct ib_wc *wc)
 	WARN_ON_ONCE(sc->recv_io.expected != SMBDIRECT_EXPECT_DATA_TRANSFER);
 error:
 	put_receive_buffer(info, response);
-	smbd_disconnect_rdma_connection(info);
+	smbd_disconnect_rdma_connection(sc);
 }
 
 static struct rdma_cm_id *smbd_create_id(
@@ -789,7 +793,7 @@ static int smbd_post_send_negotiate_req(struct smbd_connection *info)
 	ib_dma_unmap_single(sc->ib.dev, request->sge[0].addr,
 		request->sge[0].length, DMA_TO_DEVICE);
 
-	smbd_disconnect_rdma_connection(info);
+	smbd_disconnect_rdma_connection(sc);
 
 dma_mapping_failed:
 	mempool_free(request, info->request_mempool);
@@ -866,7 +870,7 @@ static int smbd_post_send(struct smbd_connection *info,
 	rc = ib_post_send(sc->ib.qp, &send_wr, NULL);
 	if (rc) {
 		log_rdma_send(ERR, "ib_post_send failed rc=%d\n", rc);
-		smbd_disconnect_rdma_connection(info);
+		smbd_disconnect_rdma_connection(sc);
 		rc = -EAGAIN;
 	} else
 		/* Reset timer for idle connection after packet is sent */
@@ -1106,7 +1110,7 @@ static int smbd_post_recv(
 		ib_dma_unmap_single(sc->ib.dev, response->sge.addr,
 				    response->sge.length, DMA_FROM_DEVICE);
 		response->sge.length = 0;
-		smbd_disconnect_rdma_connection(info);
+		smbd_disconnect_rdma_connection(sc);
 		log_rdma_recv(ERR, "ib_post_recv failed rc=%d\n", rc);
 	}
 
@@ -1320,7 +1324,7 @@ static void idle_connection_timer(struct work_struct *work)
 		log_keep_alive(ERR,
 			"error status info->keep_alive_requested=%d\n",
 			info->keep_alive_requested);
-		smbd_disconnect_rdma_connection(info);
+		smbd_disconnect_rdma_connection(sc);
 		return;
 	}
 
@@ -2109,12 +2113,10 @@ static void register_mr_done(struct ib_cq *cq, struct ib_wc *wc)
 	struct smbdirect_mr_io *mr =
 		container_of(wc->wr_cqe, struct smbdirect_mr_io, cqe);
 	struct smbdirect_socket *sc = mr->socket;
-	struct smbd_connection *info =
-		container_of(sc, struct smbd_connection, socket);
 
 	if (wc->status) {
 		log_rdma_mr(ERR, "status=%d\n", wc->status);
-		smbd_disconnect_rdma_connection(info);
+		smbd_disconnect_rdma_connection(sc);
 	}
 }
 
@@ -2145,7 +2147,7 @@ static void smbd_mr_recovery_work(struct work_struct *work)
 				log_rdma_mr(ERR,
 					"ib_dereg_mr failed rc=%x\n",
 					rc);
-				smbd_disconnect_rdma_connection(info);
+				smbd_disconnect_rdma_connection(sc);
 				continue;
 			}
 
@@ -2156,7 +2158,7 @@ static void smbd_mr_recovery_work(struct work_struct *work)
 				log_rdma_mr(ERR, "ib_alloc_mr failed mr_type=%x max_frmr_depth=%x\n",
 					    info->mr_type,
 					    sp->max_frmr_depth);
-				smbd_disconnect_rdma_connection(info);
+				smbd_disconnect_rdma_connection(sc);
 				continue;
 			}
 		} else
@@ -2414,7 +2416,7 @@ dma_map_error:
 	if (atomic_dec_and_test(&info->mr_used_count))
 		wake_up(&info->wait_for_mr_cleanup);
 
-	smbd_disconnect_rdma_connection(info);
+	smbd_disconnect_rdma_connection(sc);
 
 	return NULL;
 }
@@ -2462,7 +2464,7 @@ int smbd_deregister_mr(struct smbdirect_mr_io *smbdirect_mr)
 		rc = ib_post_send(sc->ib.qp, wr, NULL);
 		if (rc) {
 			log_rdma_mr(ERR, "ib_post_send failed rc=%x\n", rc);
-			smbd_disconnect_rdma_connection(info);
+			smbd_disconnect_rdma_connection(sc);
 			goto done;
 		}
 		wait_for_completion(&smbdirect_mr->invalidate_done);
