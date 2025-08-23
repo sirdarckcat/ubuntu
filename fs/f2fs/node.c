@@ -782,7 +782,7 @@ int f2fs_get_dnode_of_data(struct dnode_of_data *dn, pgoff_t index, int mode)
 	npage[0] = dn->inode_page;
 
 	if (!npage[0]) {
-		npage[0] = f2fs_get_node_page(sbi, nids[0]);
+		npage[0] = f2fs_get_node_page(sbi, nids[0], NODE_TYPE_REGULAR);
 		if (IS_ERR(npage[0]))
 			return PTR_ERR(npage[0]);
 	}
@@ -848,7 +848,8 @@ int f2fs_get_dnode_of_data(struct dnode_of_data *dn, pgoff_t index, int mode)
 		}
 
 		if (!done) {
-			npage[i] = f2fs_get_node_page(sbi, nids[i]);
+			npage[i] = f2fs_get_node_page(sbi, nids[i],
+						NODE_TYPE_NON_INODE);
 			if (IS_ERR(npage[i])) {
 				err = PTR_ERR(npage[i]);
 				f2fs_put_page(npage[0], 0);
@@ -966,7 +967,7 @@ static int truncate_dnode(struct dnode_of_data *dn)
 		return 1;
 
 	/* get direct node */
-	page = f2fs_get_node_page(sbi, dn->nid);
+	page = f2fs_get_node_page(sbi, dn->nid, NODE_TYPE_NON_INODE);
 	if (PTR_ERR(page) == -ENOENT)
 		return 1;
 	else if (IS_ERR(page))
@@ -1010,7 +1011,8 @@ static int truncate_nodes(struct dnode_of_data *dn, unsigned int nofs,
 
 	trace_f2fs_truncate_nodes_enter(dn->inode, dn->nid, dn->data_blkaddr);
 
-	page = f2fs_get_node_page(F2FS_I_SB(dn->inode), dn->nid);
+	page = f2fs_get_node_page(F2FS_I_SB(dn->inode), dn->nid,
+						NODE_TYPE_NON_INODE);
 	if (IS_ERR(page)) {
 		trace_f2fs_truncate_nodes_exit(dn->inode, PTR_ERR(page));
 		return PTR_ERR(page);
@@ -1088,7 +1090,8 @@ static int truncate_partial_nodes(struct dnode_of_data *dn,
 	/* get indirect nodes in the path */
 	for (i = 0; i < idx + 1; i++) {
 		/* reference count'll be increased */
-		pages[i] = f2fs_get_node_page(F2FS_I_SB(dn->inode), nid[i]);
+		pages[i] = f2fs_get_node_page(F2FS_I_SB(dn->inode), nid[i],
+							NODE_TYPE_NON_INODE);
 		if (IS_ERR(pages[i])) {
 			err = PTR_ERR(pages[i]);
 			idx = i - 1;
@@ -1161,7 +1164,7 @@ int f2fs_truncate_inode_blocks(struct inode *inode, pgoff_t from)
 		return level;
 	}
 
-	page = f2fs_get_node_page(sbi, inode->i_ino);
+	page = f2fs_get_node_page(sbi, inode->i_ino, NODE_TYPE_REGULAR);
 	if (IS_ERR(page)) {
 		trace_f2fs_truncate_inode_blocks_exit(inode, PTR_ERR(page));
 		return PTR_ERR(page);
@@ -1262,7 +1265,7 @@ int f2fs_truncate_xattr_node(struct inode *inode)
 	if (!nid)
 		return 0;
 
-	npage = f2fs_get_node_page(sbi, nid);
+	npage = f2fs_get_node_page(sbi, nid, NODE_TYPE_REGULAR);
 	if (IS_ERR(npage))
 		return PTR_ERR(npage);
 
@@ -1472,7 +1475,8 @@ void f2fs_ra_node_page(struct f2fs_sb_info *sbi, nid_t nid)
 }
 
 static struct page *__get_node_page(struct f2fs_sb_info *sbi, pgoff_t nid,
-					struct page *parent, int start)
+					struct page *parent, int start,
+					enum node_type ntype)
 {
 	struct page *page;
 	int err;
@@ -1514,7 +1518,8 @@ repeat:
 		goto out_err;
 	}
 page_hit:
-	if (likely(nid == nid_of_node(page)))
+	if (likely(nid == nid_of_node(page) &&
+			!(ntype == NODE_TYPE_NON_INODE && IS_INODE(page))))
 		return page;
 
 	f2fs_warn(sbi, "inconsistent node block, nid:%lu, node_footer[nid:%u,ino:%u,ofs:%u,cpver:%llu,blkaddr:%u]",
@@ -1534,9 +1539,10 @@ out_put_err:
 	return ERR_PTR(err);
 }
 
-struct page *f2fs_get_node_page(struct f2fs_sb_info *sbi, pgoff_t nid)
+struct page *f2fs_get_node_page(struct f2fs_sb_info *sbi, pgoff_t nid,
+						enum node_type node_type)
 {
-	return __get_node_page(sbi, nid, NULL, 0);
+	return __get_node_page(sbi, nid, NULL, 0, node_type);
 }
 
 struct page *f2fs_get_node_page_ra(struct page *parent, int start)
@@ -1544,7 +1550,7 @@ struct page *f2fs_get_node_page_ra(struct page *parent, int start)
 	struct f2fs_sb_info *sbi = F2FS_P_SB(parent);
 	nid_t nid = get_nid(parent, start, false);
 
-	return __get_node_page(sbi, nid, parent, start);
+	return __get_node_page(sbi, nid, parent, start, NODE_TYPE_REGULAR);
 }
 
 static void flush_inline_data(struct f2fs_sb_info *sbi, nid_t ino)
@@ -2741,7 +2747,8 @@ int f2fs_recover_inline_xattr(struct inode *inode, struct page *page)
 	struct page *ipage;
 	struct f2fs_inode *ri;
 
-	ipage = f2fs_get_node_page(F2FS_I_SB(inode), inode->i_ino);
+	ipage = f2fs_get_node_page(F2FS_I_SB(inode), inode->i_ino,
+						NODE_TYPE_REGULAR);
 	if (IS_ERR(ipage))
 		return PTR_ERR(ipage);
 

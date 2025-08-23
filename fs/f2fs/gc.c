@@ -1062,7 +1062,7 @@ next_step:
 		}
 
 		/* phase == 2 */
-		node_page = f2fs_get_node_page(sbi, nid);
+		node_page = f2fs_get_node_page(sbi, nid, NODE_TYPE_REGULAR);
 		if (IS_ERR(node_page))
 			continue;
 
@@ -1136,7 +1136,7 @@ static bool is_alive(struct f2fs_sb_info *sbi, struct f2fs_summary *sum,
 	nid = le32_to_cpu(sum->nid);
 	ofs_in_node = le16_to_cpu(sum->ofs_in_node);
 
-	node_page = f2fs_get_node_page(sbi, nid);
+	node_page = f2fs_get_node_page(sbi, nid, NODE_TYPE_REGULAR);
 	if (IS_ERR(node_page))
 		return false;
 
