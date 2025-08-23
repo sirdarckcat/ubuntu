@@ -594,7 +594,8 @@ struct page *f2fs_init_inode_metadata(struct inode *inode, struct inode *dir,
 				goto put_error;
 		}
 	} else {
-		page = f2fs_get_node_page(F2FS_I_SB(dir), inode->i_ino);
+		page = f2fs_get_node_page(F2FS_I_SB(dir), inode->i_ino,
+						NODE_TYPE_REGULAR);
 		if (IS_ERR(page))
 			return page;
 	}

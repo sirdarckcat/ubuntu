@@ -20,6 +20,7 @@
 #include <linux/security.h>
 #include <linux/posix_acl_xattr.h>
 #include "f2fs.h"
+#include "node.h"
 #include "xattr.h"
 #include "segment.h"
 
@@ -283,7 +284,7 @@ static int read_inline_xattr(struct inode *inode, struct page *ipage,
 	if (ipage) {
 		inline_addr = inline_xattr_addr(inode, ipage);
 	} else {
-		page = f2fs_get_node_page(sbi, inode->i_ino);
+		page = f2fs_get_node_page(sbi, inode->i_ino, NODE_TYPE_REGULAR);
 		if (IS_ERR(page))
 			return PTR_ERR(page);
 
@@ -304,7 +305,7 @@ static int read_xattr_block(struct inode *inode, void *txattr_addr)
 	void *xattr_addr;
 
 	/* The inode already has an extended attribute block. */
-	xpage = f2fs_get_node_page(sbi, xnid);
+	xpage = f2fs_get_node_page(sbi, xnid, NODE_TYPE_REGULAR);
 	if (IS_ERR(xpage))
 		return PTR_ERR(xpage);
 
@@ -450,7 +451,8 @@ static inline int write_all_xattrs(struct inode *inode, __u32 hsize,
 		if (ipage) {
 			inline_addr = inline_xattr_addr(inode, ipage);
 		} else {
-			in_page = f2fs_get_node_page(sbi, inode->i_ino);
+			in_page = f2fs_get_node_page(sbi, inode->i_ino,
+						NODE_TYPE_REGULAR);
 			if (IS_ERR(in_page)) {
 				f2fs_alloc_nid_failed(sbi, new_nid);
 				return PTR_ERR(in_page);
@@ -476,7 +478,8 @@ static inline int write_all_xattrs(struct inode *inode, __u32 hsize,
 
 	/* write to xattr node block */
 	if (F2FS_I(inode)->i_xattr_nid) {
-		xpage = f2fs_get_node_page(sbi, F2FS_I(inode)->i_xattr_nid);
+		xpage = f2fs_get_node_page(sbi, F2FS_I(inode)->i_xattr_nid,
+						NODE_TYPE_REGULAR);
 		if (IS_ERR(xpage)) {
 			err = PTR_ERR(xpage);
 			f2fs_alloc_nid_failed(sbi, new_nid);
