@@ -4672,8 +4672,6 @@ static int pci_acs_ctrl_isolated(u16 acs_flags)
 		PCI_ACS_SV | PCI_ACS_RR | PCI_ACS_CR | PCI_ACS_UF);
 }
 
-static int pci_quirk_mf_endpoint_acs(struct pci_dev *dev, u16 acs_flags);
-
 /*
  * AMD has indicated that the devices below do not support peer-to-peer
  * in any system where they are found in the southbridge with an AMD
@@ -4716,7 +4714,10 @@ static int pci_quirk_amd_sb_acs(struct pci_dev *dev, u16 acs_flags)
 
 	acpi_put_table(header);
 
-	return pci_quirk_mf_endpoint_acs(dev, acs_flags);
+	/* Filter out flags not applicable to multifunction */
+	acs_flags &= (PCI_ACS_RR | PCI_ACS_CR | PCI_ACS_EC | PCI_ACS_DT);
+
+	return pci_acs_ctrl_enabled(acs_flags, PCI_ACS_RR | PCI_ACS_CR);
 #else
 	return -ENODEV;
 #endif
