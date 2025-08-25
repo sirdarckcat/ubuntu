@@ -1063,14 +1063,44 @@ EXPORT_SYMBOL(tegra_hv_mempool_reserve);
 
 int tegra_hv_mempool_unreserve(struct tegra_hv_ivm_cookie *ivmk)
 {
-	int reserved;
-	struct hv_mempool *mempool = container_of(ivmk, struct hv_mempool,
-			ivmk);
+	int reserved = 0;
+	void *vaddr = NULL;
+	struct hv_mempool *mempool;
+
+	if (ivmk == NULL) {
+		ERR("error: ivmk is NULL\n");
+		return -EINVAL;
+	}
+
+	mempool = container_of(ivmk, struct hv_mempool, ivmk);
+	/* Validate mempool structure */
+	if (mempool == NULL || mempool->mpd == NULL) {
+		ERR("error: invalid mempool structure\n");
+		return -EINVAL;
+	}
+
+	/* Validate cookie consistency */
+	if (ivmk->size != mempool->mpd->size || mempool->mpd->pa != ivmk->ipa) {
+		ERR("error: invalid ivmk cookie\n");
+		return -EINVAL;
+	}
+
+	/* Get VA for the IPA */
+	vaddr = memremap(ivmk->ipa, ivmk->size, MEMREMAP_WB);
+	if (vaddr == NULL) {
+		ERR("error: failed to map memory\n");
+		return -ENOMEM;
+	}
 
 	mutex_lock(&mempool->lock);
+	/* clear mempool memory before unreserving mempool */
+	memset(vaddr, 0, ivmk->size);
 	reserved = mempool->reserved;
 	mempool->reserved = 0;
 	mutex_unlock(&mempool->lock);
+
+	/* Clean up mapped memory */
+	memunmap(vaddr);
 
 	return reserved ? 0 : -EINVAL;
 }
