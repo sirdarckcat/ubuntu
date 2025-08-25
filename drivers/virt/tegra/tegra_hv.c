@@ -678,7 +678,7 @@ static int tegra_hv_setup(struct tegra_hv_data *hvd)
 	}
 
 	/* Do not free this, of_add_property does not copy the structure */
-	hvd->interrupts_arr = kmalloc(hvd->info->nr_queues * sizeof(uint32_t)
+	hvd->interrupts_arr = kzalloc(hvd->info->nr_queues * sizeof(uint32_t)
 			* intr_property_size, GFP_KERNEL);
 	if (hvd->interrupts_arr == NULL) {
 		ERR("failed to allocate array for interrupts property\n");
