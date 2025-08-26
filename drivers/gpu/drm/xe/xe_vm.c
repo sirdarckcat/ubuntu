@@ -30,7 +30,6 @@
 #include "prelim/xe_eudebug.h"
 #include "xe_exec_queue.h"
 #include "xe_gt_pagefault.h"
-#include "xe_gt_tlb_inval.h"
 #include "xe_migrate.h"
 #include "xe_pat.h"
 #include "xe_pm.h"
@@ -40,6 +39,8 @@
 #include "xe_res_cursor.h"
 #include "xe_svm.h"
 #include "xe_sync.h"
+#include "xe_tile.h"
+#include "xe_tlb_inval.h"
 #include "xe_trace_bo.h"
 #include "xe_wa.h"
 #include "xe_hmm.h"
@@ -1961,7 +1962,7 @@ static void xe_vm_close(struct xe_vm *vm)
 					xe_pt_clear(xe, vm->pt_root[id]);
 
 			for_each_gt(gt, xe, id)
-				xe_gt_tlb_inval_vm(gt, vm);
+				xe_tlb_inval_vm(&gt->tlb_inval, vm);
 		}
 	}
 
@@ -4087,7 +4088,7 @@ void xe_vm_unlock(struct xe_vm *vm)
 int xe_vm_range_tilemask_tlb_inval(struct xe_vm *vm, u64 start,
 				   u64 end, u8 tile_mask)
 {
-	struct xe_gt_tlb_inval_fence
+	struct xe_tlb_inval_fence
 		fence[XE_MAX_TILES_PER_DEVICE * XE_MAX_GT_PER_TILE];
 	struct xe_tile *tile;
 	u32 fence_id = 0;
@@ -4101,11 +4102,12 @@ int xe_vm_range_tilemask_tlb_inval(struct xe_vm *vm, u64 start,
 		if (!(tile_mask & BIT(id)))
 			continue;
 
-		xe_gt_tlb_inval_fence_init(tile->primary_gt,
-					   &fence[fence_id], true);
+		xe_tlb_inval_fence_init(&tile->primary_gt->tlb_inval,
+					&fence[fence_id], true);
 
-		err = xe_gt_tlb_inval_range(tile->primary_gt, &fence[fence_id],
-					    start, end, vm->usm.asid);
+		err = xe_tlb_inval_range(&tile->primary_gt->tlb_inval,
+					 &fence[fence_id], start, end,
+					 vm->usm.asid);
 		if (err)
 			goto wait;
 		++fence_id;
@@ -4113,11 +4115,12 @@ int xe_vm_range_tilemask_tlb_inval(struct xe_vm *vm, u64 start,
 		if (!tile->media_gt)
 			continue;
 
-		xe_gt_tlb_inval_fence_init(tile->media_gt,
-					   &fence[fence_id], true);
+		xe_tlb_inval_fence_init(&tile->media_gt->tlb_inval,
+					&fence[fence_id], true);
 
-		err = xe_gt_tlb_inval_range(tile->media_gt, &fence[fence_id],
-					    start, end, vm->usm.asid);
+		err = xe_tlb_inval_range(&tile->media_gt->tlb_inval,
+					 &fence[fence_id], start, end,
+					 vm->usm.asid);
 		if (err)
 			goto wait;
 		++fence_id;
@@ -4125,7 +4128,7 @@ int xe_vm_range_tilemask_tlb_inval(struct xe_vm *vm, u64 start,
 
 wait:
 	for (id = 0; id < fence_id; ++id)
-		xe_gt_tlb_inval_fence_wait(&fence[id]);
+		xe_tlb_inval_fence_wait(&fence[id]);
 
 	return err;
 }
