@@ -1899,7 +1899,7 @@ static int ipmr_prepare_xmit(struct net *net, struct mr_table *mrt,
 		return -1;
 	}
 
-	encap += LL_RESERVED_SPACE(rt->dst.dev) + rt->dst.header_len;
+	encap += LL_RESERVED_SPACE(dst_dev_rcu(&rt->dst)) + rt->dst.header_len;
 
 	if (skb_cow(skb, encap)) {
 		ip_rt_put(rt);
@@ -1952,7 +1952,7 @@ static void ipmr_queue_fwd_xmit(struct net *net, struct mr_table *mrt,
 	 * result in receiving multiple packets.
 	 */
 	NF_HOOK(NFPROTO_IPV4, NF_INET_FORWARD,
-		net, NULL, skb, skb->dev, rt->dst.dev,
+		net, NULL, skb, skb->dev, dst_dev_rcu(&rt->dst),
 		ipmr_forward_finish);
 	return;
 
