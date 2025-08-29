@@ -14,7 +14,7 @@ CONFIG_ACPI_HOTPLUG_MEMORY                      note<'LP:#1671203'>
 CONFIG_ACPI_NFIT                                policy<{'amd64': 'y', 'arm64': 'y'}>
 CONFIG_ACPI_NFIT                                note<'LP:#1715755'>
 
-CONFIG_ARM_SDE_INTERFACE                        policy<{'arm64': '-'}>
+CONFIG_ARM_SDE_INTERFACE                        policy<{'arm64': 'n'}>
 CONFIG_ARM_SDE_INTERFACE                        note<'LP: #1990162'>
 
 CONFIG_ATARI_PARTITION                          policy<{'amd64': 'n', 'arm64': 'n'}>
@@ -844,6 +844,7 @@ CONFIG_CB710_DEBUG                              policy<{'amd64': '-', 'arm64': '
 CONFIG_CB710_DEBUG_ASSUMPTIONS                  policy<{'amd64': '-', 'arm64': 'y'}>
 CONFIG_CC10001_ADC                              policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_CCS811                                   policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_CC_VERSION_TEXT                          policy<{'amd64': '"x86_64-linux-gnu-gcc (Ubuntu 11.4.0-1ubuntu1~22.04.2) 11.4.0"', 'arm64': '"aarch64-linux-gnu-gcc (Ubuntu 11.4.0-1ubuntu1~22.04) 11.4.0"'}>
 CONFIG_CEC_CH7322                               policy<{'amd64': 'n', 'arm64': 'n'}>
 CONFIG_CEC_CROS_EC                              policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_CFG80211_WEXT_EXPORT                     policy<{'amd64': '-', 'arm64': '-'}>
