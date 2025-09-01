@@ -41,6 +41,7 @@
 #include <linux/anon_inodes.h>
 #include <linux/sched/signal.h>
 #include <linux/sched/task.h>
+#include <linux/kmemleak.h>
 #include <linux/idr.h>
 #include <net/sock.h>
 #include <uapi/linux/pidfd.h>
@@ -181,6 +182,7 @@ struct pid *alloc_pid(struct pid_namespace *ns, pid_t *set_tid,
 		return ERR_PTR(-EINVAL);
 
 	pid = kmem_cache_alloc(ns->pid_cachep, GFP_KERNEL);
+	kmemleak_not_leak(pid);
 	if (!pid)
 		return ERR_PTR(retval);
 
