@@ -29,13 +29,15 @@
 /**
  * @brief          Query IVC meta data from hypervisor
  *
- * @retval         ptr to ivc_info_page structure having ivc meta data info
+ * @retval         ptr To ivc_info_page structure having ivc meta data info
  *                 shared by hypervisor
  *
- * @pre            Tegra hypervisor driver should have been initialized.
- *                 This API should be invoked on virtual/hypervisor environment only.
+ * @pre
+ *                 - Tegra hypervisor driver should have been initialized.
+ *                 - This API should be invoked on virtual/hypervisor environment only.
  *
- * @post           IVC meta data will be retuned to client
+ * @post
+ *                 - IVC meta data will be retuned to client
  *
  * @usage
  *                 - Allowed context for the API call
@@ -54,12 +56,14 @@ const struct ivc_info_page *tegra_hv_get_ivc_info(void);
 /**
  * @brief          Query vmid of the GOS VM from hypervisor
  *
- * @retval         vmid on success else -ve value
+ * @retval         vmid On success else -ve value
  *
- * @pre            Tegra hypervisor driver should have been initialized.
- *                 This API should be invoked on virtual/hypervisor environment only.
+ * @pre
+ *                 - Tegra hypervisor driver should have been initialized.
+ *                 - This API should be invoked on virtual/hypervisor environment only.
  *
- * @post           Guest VM ID will be returned.
+ * @post
+ *                 - Guest VM ID will be returned.
  *
  * @usage
  *                 - Allowed context for the API call
