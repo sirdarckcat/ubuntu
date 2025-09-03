@@ -414,17 +414,19 @@ struct hyp_server_page {
 /**
  * @brief          Obtain the ID of the current VM.
  *
- * @param[in,out]  gid pointer to an int location.
+ * @param[in,out]  gid Pointer to an int location.
  *                 Index of current VM in struct guest_conf [] arrary (a.k.a PCT VM Index)
  *                 is updated in the provided location on successful @return from this API.
- * @retval         0 if successful.
- * @retval         -1 if the input pointer (gid) points to NULL.
+ * @retval         0 If successful.
+ * @retval         -1 If the input pointer (gid) points to NULL.
  *
  * @invariant      Pointer gid shall point to a vaild location.
  *
- * @pre            This API should be invoked on virtual/hypervisor environment only.
+ * @pre
+ *                 - This API should be invoked on virtual/hypervisor environment only.
  *
- * @post           Guest VM ID will be returned.
+ * @post
+ *                 - Guest VM ID will be returned.
  *
  * @usage
  *                 - Allowed context for the API call

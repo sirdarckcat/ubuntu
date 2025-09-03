@@ -49,17 +49,19 @@ struct tegra_hv_ivm_cookie {
 };
 
 /**
- * @brief          checks whether platform supports virtualization or not
+ * @brief          Checks whether platform supports virtualization or not
  *
- * @retval         true if platform supports virtualization else false.
+ * @retval         true If platform supports virtualization else false.
  *
- * @pre            Tegra hypervisor driver should have been initialized.
+ * @pre
+ *                 - Tegra hypervisor driver should have been initialized.
  *
- * @post           Client can take runtime decision in driver if client
- *                 driver support native and virtualized environment.
+ * @post
+ *                 - Client can take runtime decision in driver if client
+ *                 - Driver support native and virtualized environment.
  *
- * @usage          Call this function to check if OS is running in native environment
- *                 or in virtualized environment.
+ * @usage
+ *                 - Call this function to check if OS is running in native environment or in virtualized environment.
  *                 - Allowed context for the API call
  *                   - Interrupt handler: Yes
  *                   - Signal handler: N/A
@@ -80,16 +82,18 @@ bool is_tegra_hypervisor_mode(void);
  * @param[in]      id Id number of the queue to use.
  * @param[in]      ops Ops structure or NULL (deprecated)
  *
- * @retval         ptr ivc queue cookie pointer or else errors.
+ * @retval         ptr IVC queue cookie pointer or else errors.
  *
- * @pre            Tegra hypervisor driver should have been initialized.
- *                 This API should be invoked on virtual/hypervisor environment only.
+ * @pre
+ *                 - Tegra hypervisor driver should have been initialized.
+ *                 - This API should be invoked on virtual/hypervisor environment only.
  *
- * @post           After reserving IVC queue client can perform
- *                 I/O operation on the IVC queue.
+ * @post
+ *                 - After reserving IVC queue client can perform I/O operation on the IVC queue.
  *
- * @usage          reserve ivc queue before performing I/O operations.
- *                 driver should have been probed successfully.
+ * @usage
+ *                 - Reserve ivc queue before performing I/O operations.
+ *                 - Driver should have been probed successfully.
  *                 - Allowed context for the API call
  *                   - Interrupt handler: Yes
  *                   - Signal handler: N/A
@@ -109,16 +113,18 @@ struct tegra_hv_ivc_cookie *tegra_hv_ivc_reserve(
  * @brief          Unreserve an IVC queue used
  * @param[in]      ivck IVC cookie of the queue
  *
- * @retval         0 on success and an error code otherwise
+ * @retval         0 On success and an error code otherwise
  *
- * @pre            Tegra hypervisor driver should have been initialized.
- *                 This API should be invoked on virtual/hypervisor environment only.
+ * @pre
+ *                 - Tegra hypervisor driver should have been initialized.
+ *                 - This API should be invoked on virtual/hypervisor environment only.
  *
- * @post           After unreserving IVC queue client can not perform
- *                 I/O operation on the IVC queue.
+ * @post
+ *                 - After unreserving IVC queue client can not perform I/O operation on the IVC queue.
  *
- * @usage          unreserve ivc queue after performing I/O operations.
- *                 driver should have been probed successfully.
+ * @usage
+ *                 - Unreserve ivc queue after performing I/O operations.
+ *                 - Driver should have been probed successfully.
  *                 - Allowed context for the API call
  *                   - Interrupt handler: Yes
  *                   - Signal handler: N/A
@@ -138,18 +144,21 @@ int tegra_hv_ivc_unreserve(struct tegra_hv_ivc_cookie *ivck);
  * @param[in]      buf Pointer to the data to write
  * @param[in]      size Size of the data to write
  *
- * @retval         size on success and an error code otherwise
+ * @retval         size On success and an error code otherwise
  *
- * @pre            Tegra hypervisor driver should have been initialized.
- *                 This API should be invoked on virtual/hypervisor environment only.
- *                 IVC should have been reserved before performing any ivc operations.
+ * @pre
+ *                 - Tegra hypervisor driver should have been initialized.
+ *                 - This API should be invoked on virtual/hypervisor environment only.
+ *                 - IVC should have been reserved before performing any ivc operations.
  *
- * @post           data will be written on the ivc queue successfully.
+ * @post
+ *                 - Data will be written on the ivc queue successfully.
  *
- * @usage          use this API to send data to peer end.
- *                 ivc should have been reserved before using this API.
- *                 never use this API after unreserving ivc queue.
- *                 driver should have been probed successfully.
+ * @usage
+ *                 - Use this API to send data to peer end.
+ *                 - IVC should have been reserved before using this API.
+ *                 - Never use this API after unreserving ivc queue.
+ *                 - Driver should have been probed successfully.
  *                 - Allowed context for the API call
  *                   - Interrupt handler: Yes
  *                   - Signal handler: N/A
@@ -173,16 +182,19 @@ int tegra_hv_ivc_write(struct tegra_hv_ivc_cookie *ivck, const void *buf,
  * @retval         size Returns size on success and an error code otherwise
  *
  *
- * @pre            Tegra hypervisor driver should have been initialized.
- *                 This API should be invoked on virtual/hypervisor environment only.
- *                 IVC should have been reserved before performing any ivc operations.
+ * @pre
+ *                 - Tegra hypervisor driver should have been initialized.
+ *                 - This API should be invoked on virtual/hypervisor environment only.
+ *                 - IVC should have been reserved before performing any ivc operations.
  *
- * @post           data will be written on the ivc queue successfully from userspace buffer.
+ * @post
+ *                 - Data will be written on the ivc queue successfully from userspace buffer.
  *
- * @usage          use this API to send data to peer end.
- *                 ivc should have been reserved before using this API.
- *                 never use this API after unreserving ivc queue.
- *                 driver should have been probed successfully.
+ * @usage
+ *                 - Use this API to send data to peer end.
+ *                 - IVC should have been reserved before using this API.
+ *                 - Never use this API after unreserving ivc queue.
+ *                 - Driver should have been probed successfully.
  *                 - Allowed context for the API call
  *                   - Interrupt handler: Yes
  *                   - Signal handler: N/A
@@ -201,20 +213,23 @@ int tegra_hv_ivc_write_user(struct tegra_hv_ivc_cookie *ivck, const void __user 
  * @brief          Reads a number of bytes (as a single frame) from the queue.
  * @param[in]      ivck IVC cookie of the queue
  * @param[in,out]  buf Pointer to the data to read
- * @param[in]      size max size of the data to read
+ * @param[in]      size Max size of the data to read
  *
  * @retval         size Returns size on success and an error code otherwise
  *
- * @pre            Tegra hypervisor driver should have been initialized.
- *                 This API should be invoked on virtual/hypervisor environment only.
- *                 IVC should have been reserved before performing any ivc operations.
+ * @pre
+ *                 - Tegra hypervisor driver should have been initialized.
+ *                 - This API should be invoked on virtual/hypervisor environment only.
+ *                 - IVC should have been reserved before performing any ivc operations.
  *
- * @post           data will be read from the ivc queue successfully.
+ * @post
+ *                 - Data will be read from the ivc queue successfully.
  *
- * @usage          use this API to receive data from peer end.
- *                 ivc should have been reserved before using this API.
- *                 never use this API after unreserving ivc queue.
- *                 driver should have been probed successfully.
+ * @usage
+ *                 - Use this API to receive data from peer end.
+ *                 - IVC should have been reserved before using this API.
+ *                 - Never use this API after unreserving ivc queue.
+ *                 - Driver should have been probed successfully.
  *                 - Allowed context for the API call
  *                   - Interrupt handler: Yes
  *                   - Signal handler: N/A
@@ -232,20 +247,23 @@ int tegra_hv_ivc_read(struct tegra_hv_ivc_cookie *ivck, void *buf, int size);
  * @brief          Reads a number of bytes (as a single frame) from the queue.
  * @param[in]      ivck IVC cookie of the queue
  * @param[in,out]  buf Pointer to the userspace data to read
- * @param[in]      size max size of the data to read
+ * @param[in]      size Max size of the data to read
  *
  * @retval         size Returns size on success and an error code otherwise
  *
- * @pre            Tegra hypervisor driver should have been initialized.
- *                 This API should be invoked on virtual/hypervisor environment only.
- *                 IVC should have been reserved before performing any ivc operations.
+ * @pre
+ *                 - Tegra hypervisor driver should have been initialized.
+ *                 - This API should be invoked on virtual/hypervisor environment only.
+ *                 - IVC should have been reserved before performing any ivc operations.
  *
- * @post           data will be read from the ivc queue successfully into userspace buffer.
+ * @post
+ *                 - Data will be read from the ivc queue successfully into userspace buffer.
  *
- * @usage          use this API to receive data from peer end.
- *                 ivc should have been reserved before using this API.
- *                 never use this API after unreserving ivc queue.
- *                 driver should have been probed successfully.
+ * @usage
+ *                 - Use this API to receive data from peer end.
+ *                 - IVC should have been reserved before using this API.
+ *                 - Never use this API after unreserving ivc queue.
+ *                 - Driver should have been probed successfully.
  *                 - Allowed context for the API call
  *                   - Interrupt handler: Yes
  *                   - Signal handler: N/A
@@ -260,21 +278,24 @@ int tegra_hv_ivc_read(struct tegra_hv_ivc_cookie *ivck, void *buf, int size);
 int tegra_hv_ivc_read_user(struct tegra_hv_ivc_cookie *ivck, void __user *buf, int size);
 
 /**
- * @brief          Test whether data are available
+ * @brief          Check whether data are available
  * @param[in]      ivck IVC cookie of the queue
  *
- * @retval         1 if data are available in the rx queue, 0 if not
+ * @retval         1 If data are available in the rx queue, 0 if not
  *
- * @pre            Tegra hypervisor driver should have been initialized.
- *                 This API should be invoked on virtual/hypervisor environment only.
- *                 IVC should have been reserved before performing any ivc operations.
+ * @pre
+ *                 - Tegra hypervisor driver should have been initialized.
+ *                 - This API should be invoked on virtual/hypervisor environment only.
+ *                 - IVC should have been reserved before performing any ivc operations.
  *
- * @post           client take decision to read data if data is present
+ * @post
+ *                 - Client take decision to read data if data is present
  *
- * @usage          use this API if client want to check if response has been received peer end.
- *                 ivc should have been reserved before using this API.
- *                 never use this API after unreserving ivc queue.
- *                 driver should have been probed successfully.
+ * @usage
+ *                 - Use this API if client want to check if response has been received peer end.
+ *                 - IVC should have been reserved before using this API.
+ *                 - Never use this API after unreserving ivc queue.
+ *                 - Driver should have been probed successfully.
  *                 - Allowed context for the API call
  *                   - Interrupt handler: Yes
  *                   - Signal handler: N/A
@@ -289,21 +310,24 @@ int tegra_hv_ivc_read_user(struct tegra_hv_ivc_cookie *ivck, void __user *buf, i
 int tegra_hv_ivc_can_read(struct tegra_hv_ivc_cookie *ivck);
 
 /**
- * @brief          Test whether data can be written
+ * @brief          Check whether data can be written
  * @param[in]      ivck IVC cookie of the queue
  *
- * @retval         1 if data are can be written to the tx queue, 0 if not
+ * @retval         1 If data are can be written to the tx queue, 0 if not
  *
- * @pre            Tegra hypervisor driver should have been initialized.
- *                 This API should be invoked on virtual/hypervisor environment only.
- *                 IVC should have been reserved before performing any ivc operations.
+ * @pre
+ *                 - Tegra hypervisor driver should have been initialized.
+ *                 - This API should be invoked on virtual/hypervisor environment only.
+ *                 - IVC should have been reserved before performing any ivc operations.
  *
- * @post           client take decision to write data if write slot is free.
+ * @post
+ *                 - Client take decision to write data if write slot is free.
  *
- * @usage          use this API if client want to check if write slot is present or not.
- *                 ivc should have been reserved before using this API.
- *                 never use this API after unreserving ivc queue.
- *                 driver should have been probed successfully.
+ * @usage
+ *                 - Use this API if client want to check if write slot is present or not.
+ *                 - IVC should have been reserved before using this API.
+ *                 - Never use this API after unreserving ivc queue.
+ *                 - Driver should have been probed successfully.
  *                 - Allowed context for the API call
  *                   - Interrupt handler: Yes
  *                   - Signal handler: N/A
@@ -321,18 +345,21 @@ int tegra_hv_ivc_can_write(struct tegra_hv_ivc_cookie *ivck);
  * @brief          Test whether the tx queue is empty
  * @param[in]      ivck IVC cookie of the queue
  *
- * @retval         1 if the queue is empty, zero otherwise
+ * @retval         1 If the queue is empty, zero otherwise
  *
- * @pre            Tegra hypervisor driver should have been initialized.
- *                 This API should be invoked on virtual/hypervisor environment only.
- *                 IVC should have been reserved before performing any ivc operations.
+ * @pre
+ *                 - Tegra hypervisor driver should have been initialized.
+ *                 - This API should be invoked on virtual/hypervisor environment only.
+ *                 - IVC should have been reserved before performing any ivc operations.
  *
- * @post           client will know whether tx queue is empty or not.
+ * @post
+ *                 - Client will know whether tx queue is empty or not.
  *
- * @usage          use this API if tx queue is empty or not.
- *                 ivc should have been reserved before using this API.
- *                 never use this API after unreserving ivc queue.
- *                 driver should have been probed successfully.
+ * @usage
+ *                 - Use this API if tx queue is empty or not.
+ *                 - IVC should have been reserved before using this API.
+ *                 - Never use this API after unreserving ivc queue.
+ *                 - Driver should have been probed successfully.
  *                 - Allowed context for the API call
  *                   - Interrupt handler: Yes
  *                   - Signal handler: N/A
@@ -348,7 +375,7 @@ int tegra_hv_ivc_tx_empty(struct tegra_hv_ivc_cookie *ivck);
 
 #ifndef CONFIG_KERNEL_BUILD_WITH_PROD_DEFCONFIG
 /*
- * @brief          gets number of free entries in tx queue
+ * @brief          Gets number of free entries in tx queue
  *                 Returns the number of unused entries in the tx queue. Assuming the caller
  *                 does not write any additional frames, this number may increase from the
  *                 value returned as the receiver consumes frames.
@@ -356,9 +383,11 @@ int tegra_hv_ivc_tx_empty(struct tegra_hv_ivc_cookie *ivck);
  *
  * @retval         num Number ot frames available.
  *
- * @pre            Tegra hypervisor driver should have been initialized.
- *                 This API should be invoked on virtual/hypervisor environment only.
- *                 IVC should have been reserved before performing any ivc operations.
+ * @pre
+ *                 - Tegra hypervisor driver should have been initialized.
+ *                 - This API should be invoked on virtual/hypervisor environment only.
+ *                 - IVC should have been reserved before performing any ivc operations.
+ * @usage
  *                 - Allowed context for the API call
  *                   - Interrupt handler: Yes
  *                   - Signal handler: N/A
@@ -376,11 +405,12 @@ uint32_t tegra_hv_ivc_tx_frames_available(struct tegra_hv_ivc_cookie *ivck);
  * @brief          Dump ivc info in dmesg logs
  * @param[in]      ivck IVC cookie of the queue
  *
- * @retval         0 on success, a negative error code otherwise
+ * @retval         0 On success, a negative error code otherwise
  *
- * @pre            Tegra hypervisor driver should have been initialized.
- *                 This API should be invoked on virtual/hypervisor environment only.
- *                 IVC should have been reserved before performing any ivc operations.
+ * @pre
+ *                 - Tegra hypervisor driver should have been initialized.
+ *                 - This API should be invoked on virtual/hypervisor environment only.
+ *                 - IVC should have been reserved before performing any ivc operations.
  * @usage
  *                 - Allowed context for the API call
  *                   - Interrupt handler: Yes
@@ -398,23 +428,25 @@ int tegra_hv_ivc_dump(struct tegra_hv_ivc_cookie *ivck);
 
 /**
  * @brief          Peek at the next frame to receive
- *                 Peek at the next frame to be received, without removing it from
- *                 the queue.
+ *                 Peek at the next frame to be received, without removing it from the queue.
  *
  * @param[in]      ivck IVC cookie of the queue
  *
  * @retval         ptr Returns a pointer to the frame, or an error encoded pointer.
  *
- * @pre            Tegra hypervisor driver should have been initialized.
- *                 This API should be invoked on virtual/hypervisor environment only.
- *                 IVC should have been reserved before performing any ivc operations.
+ * @pre
+ *                 - Tegra hypervisor driver should have been initialized.
+ *                 - This API should be invoked on virtual/hypervisor environment only.
+ *                 - IVC should have been reserved before performing any ivc operations.
  *
- * @post           after peeking next frame we can check the content of frames.
+ * @post
+ *                 - After peeking next frame we can check the content of frames.
  *
- * @usage          if client want to check next frame without removing it from queue.
- *                 ivc should have been reserved before using this API.
- *                 never use this API after unreserving ivc queue.
- *                 driver should have been probed successfully.
+ * @usage
+ *                 - If client want to check next frame without removing it from queue.
+ *                 - IVC should have been reserved before using this API.
+ *                 - Never use this API after unreserving ivc queue.
+ *                 - Driver should have been probed successfully.
  *                 - Allowed context for the API call
  *                   - Interrupt handler: Yes
  *                   - Signal handler: N/A
@@ -432,18 +464,21 @@ void *tegra_hv_ivc_read_get_next_frame(struct tegra_hv_ivc_cookie *ivck);
  * @brief          Advance the read queue
  * @param[in]      ivck IVC cookie of the queue
  *
- * @retval         0, or a negative error value if failed.
+ * @retval         0, Or a negative error value if failed.
  *
- * @pre            Tegra hypervisor driver should have been initialized.
- *                 This API should be invoked on virtual/hypervisor environment only.
- *                 IVC should have been reserved before performing any ivc operations.
+ * @pre
+ *                 - Tegra hypervisor driver should have been initialized.
+ *                 - This API should be invoked on virtual/hypervisor environment only.
+ *                 - IVC should have been reserved before performing any ivc operations.
  *
- * @post           internal ivc counters point to next read frame.
+ * @post
+ *                 - Internal ivc counters point to next read frame.
  *
- * @usage          use this API if client wants to advance to next read frame
- *                 ivc should have been reserved before using this API.
- *                 never use this API after unreserving ivc queue.
- *                 driver should have been probed successfully.
+ * @usage
+ *                 - Use this API if client wants to advance to next read frame
+ *                 - IVC should have been reserved before using this API.
+ *                 - Never use this API after unreserving ivc queue.
+ *                 - Driver should have been probed successfully.
  *                 - Allowed context for the API call
  *                   - Interrupt handler: Yes
  *                   - Signal handler: N/A
@@ -464,16 +499,19 @@ int tegra_hv_ivc_read_advance(struct tegra_hv_ivc_cookie *ivck);
  *
  * @retval         ptr Returns a pointer to the frame, or an error encoded pointer.
  *
- * @pre            Tegra hypervisor driver should have been initialized.
- *                 This API should be invoked on virtual/hypervisor environment only.
- *                 IVC should have been reserved before performing any ivc operations.
+ * @pre
+ *                 - Tegra hypervisor driver should have been initialized.
+ *                 - This API should be invoked on virtual/hypervisor environment only.
+ *                 - IVC should have been reserved before performing any ivc operations.
  *
- * @post           client can write data to frame after getting it without advacing tx frame counter.
+ * @post
+ *                 - Client can write data to frame after getting it without advacing tx frame counter.
  *
- * @usage          if client want to send data to peer end without removing it from queue.
- *                 ivc should have been reserved before using this API.
- *                 never use this API after unreserving ivc queue.
- *                 driver should have been probed successfully.
+ * @usage
+ *                 - If client want to send data to peer end without removing it from queue.
+ *                 - IVC should have been reserved before using this API.
+ *                 - Never use this API after unreserving ivc queue.
+ *                 - Driver should have been probed successfully.
  *                 - Allowed context for the API call
  *                   - Interrupt handler: Yes
  *                   - Signal handler: N/A
@@ -491,18 +529,21 @@ void *tegra_hv_ivc_write_get_next_frame(struct tegra_hv_ivc_cookie *ivck);
  * @brief          Advance the write queue
  * @param[in]      ivck IVC cookie of the queue
  *
- * @retval         0 on success or a negative error value if failed.
+ * @retval         0 On success or a negative error value if failed.
  *
- * @pre            Tegra hypervisor driver should have been initialized.
- *                 This API should be invoked on virtual/hypervisor environment only.
- *                 IVC should have been reserved before performing any ivc operations.
+ * @pre
+ *                 - Tegra hypervisor driver should have been initialized.
+ *                 - This API should be invoked on virtual/hypervisor environment only.
+ *                 - IVC should have been reserved before performing any ivc operations.
  *
- * @post           internal ivc counters point to next write frame.
+ * @post
+ *                 - Internal ivc counters point to next write frame.
  *
- * @usage          use this API if client wants to advance to next write frame
- *                 ivc should have been reserved before using this API.
- *                 never use this API after unreserving ivc queue.
- *                 driver should have been probed successfully.
+ * @usage
+ *                 - Use this API if client wants to advance to next write frame
+ *                 - IVC should have been reserved before using this API.
+ *                 - Never use this API after unreserving ivc queue.
+ *                 - Driver should have been probed successfully.
  *                 - Allowed context for the API call
  *                   - Interrupt handler: Yes
  *                   - Signal handler: N/A
@@ -517,17 +558,20 @@ void *tegra_hv_ivc_write_get_next_frame(struct tegra_hv_ivc_cookie *ivck);
 int tegra_hv_ivc_write_advance(struct tegra_hv_ivc_cookie *ivck);
 
 /**
- * @brief          reserve a mempool for use
+ * @brief          Reserve a mempool for use
  * @param[in]      id Id of the requested mempool.
  *
  * @retval         ivck Returns a cookie representing the mempool on success, otherwise an ERR_PTR.
  *
- * @pre            Tegra hypervisor driver should have been initialized.
- *                 This API should be invoked on virtual/hypervisor environment only.
+ * @pre
+ *                 - Tegra hypervisor driver should have been initialized.
+ *                 - This API should be invoked on virtual/hypervisor environment only.
  *
- * @post           reserved mempool will be available for I/O operations.
+ * @post
+ *                 - Reserved mempool will be available for I/O operations.
  *
- * @usage          mempool will be available for data transfer with peer end.
+ * @usage
+ *                 - Mempool will be available for data transfer with peer end.
  *                 - Allowed context for the API call
  *                   - Interrupt handler: Yes
  *                   - Signal handler: N/A
@@ -542,17 +586,20 @@ int tegra_hv_ivc_write_advance(struct tegra_hv_ivc_cookie *ivck);
 struct tegra_hv_ivm_cookie *tegra_hv_mempool_reserve(unsigned int id);
 
 /**
- * @brief          release a reserved mempool
+ * @brief          Release a reserved mempool
  * @param[in]      ivck IVC cookie of the queue
  *
- * @retval         ret 0 on success or a negative error code otherwise.
+ * @retval         ret 0 On success or a negative error code otherwise.
  *
- * @pre            Tegra hypervisor driver should have been initialized.
- *                 This API should be invoked on virtual/hypervisor environment only.
+ * @pre
+ *                 - Tegra hypervisor driver should have been initialized.
+ *                 - This API should be invoked on virtual/hypervisor environment only.
  *
- * @post           unreserved mempool will not be available for I/O operations.
+ * @post
+ *                 - Unreserved mempool will not be available for I/O operations.
  *
- * @usage          mempool will not be available for data transfer available for data transfer.
+ * @usage
+ *                 - Mempool will not be available for data transfer available for data transfer.
  *                 - Allowed context for the API call
  *                   - Interrupt handler: Yes
  *                   - Signal handler: N/A
@@ -572,19 +619,22 @@ int tegra_hv_mempool_unreserve(struct tegra_hv_ivm_cookie *ivck);
  *                 callback invocation) for the tegra_hv_- version).
  * @param[in]      ivck IVC cookie of the queue
  *
- * @retval         0 if the channel is ready for communication, or -EAGAIN if a channel
+ * @retval         0 If the channel is ready for communication, or -EAGAIN if a channel
  *                 reset is in progress.
  *
- * @pre            Tegra hypervisor driver should have been initialized.
- *                 This API should be invoked on virtual/hypervisor environment only.
- *                 IVC should have been reserved before performing any ivc operations.
+ * @pre
+ *                 - Tegra hypervisor driver should have been initialized.
+ *                 - This API should be invoked on virtual/hypervisor environment only.
+ *                 - IVC should have been reserved before performing any ivc operations.
  *
- * @post           IVC channel will be establised with peer end and will be ready for communication
+ * @post
+ *                 - IVC channel will be establised with peer end and will be ready for communication
  *
- * @usage          use this APi to establish connection with peer end for communication
- *                 ivc should have been reserved before using this API.
- *                 never use this API after unreserving ivc queue.
- *                 driver should have been probed successfully.
+ * @usage
+ *                 - Use this APi to establish connection with peer end for communication
+ *                 - IVC should have been reserved before using this API.
+ *                 - Never use this API after unreserving ivc queue.
+ *                 - Driver should have been probed successfully.
  *                 - Allowed context for the API call
  *                   - Interrupt handler: Yes
  *                   - Signal handler: N/A
@@ -607,16 +657,19 @@ int tegra_hv_ivc_channel_notified(struct tegra_hv_ivc_cookie *ivck);
  *
  * @retval         None
  *
- * @pre            Tegra hypervisor driver should have been initialized.
- *                 This API should be invoked on virtual/hypervisor environment only.
- *                 IVC should have been reserved before performing any ivc operations.
+ * @pre
+ *                 - Tegra hypervisor driver should have been initialized.
+ *                 - This API should be invoked on virtual/hypervisor environment only.
+ *                 - IVC should have been reserved before performing any ivc operations.
  *
- * @post           channel will be in reseted state.
+ * @post
+ *                 - Channel will be in reseted state.
  *
- * @usage          before establishing connection reset ivc channel first after reserving ivc queue.
- *                 ivc should have been reserved before using this API.
- *                 never use this API after unreserving ivc queue.
- *                 driver should have been probed successfully.
+ * @usage
+ *                 - Before establishing connection reset ivc channel first after reserving ivc queue.
+ *                 - IVC should have been reserved before using this API.
+ *                 - Never use this API after unreserving ivc queue.
+ *                 - Driver should have been probed successfully.
  *                 - Allowed context for the API call
  *                   - Interrupt handler: Yes
  *                   - Signal handler: N/A
@@ -636,16 +689,19 @@ void tegra_hv_ivc_channel_reset(struct tegra_hv_ivc_cookie *ivck);
  * @param[out]     pa IPA of shared area
  * @param[out]     size Size of the shared area
  *
- * @retval         0 on success & -EINVAL on failure.
+ * @retval         0 On success & -EINVAL on failure.
  *
- * @pre            Tegra hypervisor driver should have been initialized.
- *                 This API should be invoked on virtual/hypervisor environment only.
- *                 IVC should have been reserved before performing any ivc operations.
+ * @pre
+ *                 - Tegra hypervisor driver should have been initialized.
+ *                 - This API should be invoked on virtual/hypervisor environment only.
+ *                 - IVC should have been reserved before performing any ivc operations.
  *
- * @post           IPA address and size of ivc queue will be available to client.
+ * @post
+ *                 - IPA address and size of ivc queue will be available to client.
  *
- * @usage          when client want to mmap ivc memory to userspace via mmap API.
- *                 driver should have been probed successfully.
+ * @usage
+ *                 - When client want to mmap ivc memory to userspace via mmap API.
+ *                 - Driver should have been probed successfully.
  *                 - Allowed context for the API call
  *                   - Interrupt handler: Yes
  *                   - Signal handler: N/A
@@ -666,16 +722,19 @@ int tegra_hv_ivc_get_info(struct tegra_hv_ivc_cookie *ivck, uint64_t *pa,
  *
  * @retval         None
  *
- * @pre            Tegra hypervisor driver should have been initialized.
- *                 This API should be invoked on virtual/hypervisor environment only.
- *                 IVC should have been reserved before performing any ivc operations.
+ * @pre
+ *                 - Tegra hypervisor driver should have been initialized.
+ *                 - This API should be invoked on virtual/hypervisor environment only.
+ *                 - IVC should have been reserved before performing any ivc operations.
  *
- * @post           remote guest will be notified
+ * @post
+ *                 - Remote guest will be notified
  *
- * @usage          use when want to notify the peer end after writing or reading data to ivc queue
- *                 ivc should have been reserved before using this API.
- *                 never use this API after unreserving ivc queue.
- *                 driver should have been probed successfully.
+ * @usage
+ *                 - Use when want to notify the peer end after writing or reading data to ivc queue
+ *                 - IVC should have been reserved before using this API.
+ *                 - Never use this API after unreserving ivc queue.
+ *                 - Driver should have been probed successfully.
  *                 - Allowed context for the API call
  *                   - Interrupt handler: Yes
  *                   - Signal handler: N/A
