@@ -12,6 +12,10 @@
 #include <linux/mailbox_client.h>
 #include <linux/tegra-epl.h>
 #include <linux/pm.h>
+#include <linux/kthread.h>
+#include <linux/delay.h>
+#include <linux/mutex.h>
+#include <linux/atomic.h>
 
 /* Timeout in milliseconds */
 #define TIMEOUT		5U
@@ -93,6 +97,13 @@ static uint32_t handshake_retry_count;
 
 static bool enable_deinit_notify;
 
+/* Periodic alive packet thread */
+static struct task_struct *alive_packet_thread;
+static atomic_t alive_packet_thread_running = ATOMIC_INIT(0);
+
+/* Mutex to protect shared state variables */
+static DEFINE_MUTEX(epl_state_mutex);
+
 /* Helper function to SoC TSC timestamp */
 static inline uint32_t epl_get_current_timestamp(void)
 {
@@ -119,6 +130,46 @@ static inline uint64_t epl_ticks_to_ns(uint64_t ticks)
 		/* Safe to perform multiplication - no overflow possible */
 		return ticks * timestamp_resolution_ns;
 	}
+}
+
+/* Periodic alive packet thread function */
+static int epl_periodic_alive_packet_thread(void *data)
+{
+	const uint32_t alive_packet_data[] = {0x44415441, 0x48414B45, 0x414E4453, 0x45504C48};
+
+	if (!pdev_local) {
+		pr_err("EPL: Periodic alive packet thread started without valid device\n");
+		return -ENODEV;
+	}
+
+	dev_info(&pdev_local->dev, "EPL: Periodic alive packet thread started\n");
+
+	while (!kthread_should_stop()) {
+		bool should_send = false;
+		struct mbox_chan *chan = NULL;
+
+		/* Protect access to shared state variables */
+		mutex_lock(&epl_state_mutex);
+		if (hs_state == HANDSHAKE_DONE && epl_hsp_v && epl_hsp_v->tx.chan) {
+			should_send = true;
+			chan = epl_hsp_v->tx.chan;
+		}
+		mutex_unlock(&epl_state_mutex);
+
+		if (should_send && chan) {
+			int ret = mbox_send_message(chan, (void *)alive_packet_data);
+			if (ret < 0) {
+				dev_dbg(&pdev_local->dev, "EPL: Periodic alive packet failed: %d\n", ret);
+				/* Don't interfere with handshake state - just log the failure */
+			}
+		}
+
+		/* Sleep for 10ms */
+		msleep(10);
+	}
+
+	dev_info(&pdev_local->dev, "EPL: Periodic alive packet thread stopped\n");
+	return 0;
 }
 
 static void tegra_hsp_tx_empty_notify(struct mbox_client *cl,
@@ -257,14 +308,22 @@ int epl_report_error(struct epl_error_report_frame error_report)
 	int ret = -EINVAL;
 	uint64_t current_timestamp_64;
 	uint64_t reported_timestamp_64;
+	struct mbox_chan *chan = NULL;
 
-	/* Validate input parameters (DOS_ASU_143) */
-	if (epl_hsp_v == NULL || hs_state != HANDSHAKE_DONE)
+	/* Protect access to shared state variables */
+	mutex_lock(&epl_state_mutex);
+	if (epl_hsp_v == NULL || hs_state != HANDSHAKE_DONE) {
+		mutex_unlock(&epl_state_mutex);
 		return -ENODEV;
+	}
 
-	/* Validate HSP channel (DOS_ASU_143) */
-	if (!epl_hsp_v->tx.chan)
+	/* Validate HSP channel */
+	if (!epl_hsp_v->tx.chan) {
+		mutex_unlock(&epl_state_mutex);
 		return -ENODEV;
+	}
+	chan = epl_hsp_v->tx.chan;
+	mutex_unlock(&epl_state_mutex);
 
 	/* Validate reporter_id is not zero (DOS_ASU_143) */
 	if (error_report.reporter_id == 0) {
@@ -296,7 +355,7 @@ int epl_report_error(struct epl_error_report_frame error_report)
 		}
 	}
 
-	ret = mbox_send_message(epl_hsp_v->tx.chan, (void *)&error_report);
+	ret = mbox_send_message(chan, (void *)&error_report);
 
 	return ret < 0 ? ret : 0;
 }
@@ -306,6 +365,7 @@ static int epl_client_fsi_pm_notify(u32 state)
 {
 	int ret;
 	u32 pdata[4];
+	struct mbox_chan *chan = NULL;
 
 	/* Validate state parameter */
 	if (state > EPS_DOS_UNKNOWN)
@@ -316,8 +376,15 @@ static int epl_client_fsi_pm_notify(u32 state)
 	pdata[2] = state;
 	pdata[3] = PM_STATE_UNI_CODE;
 
-	if (hs_state == HANDSHAKE_DONE && epl_hsp_v && epl_hsp_v->tx.chan)
-		ret = mbox_send_message(epl_hsp_v->tx.chan, (void *) pdata);
+	/* Protect access to shared state variables */
+	mutex_lock(&epl_state_mutex);
+	if (hs_state == HANDSHAKE_DONE && epl_hsp_v && epl_hsp_v->tx.chan) {
+		chan = epl_hsp_v->tx.chan;
+	}
+	mutex_unlock(&epl_state_mutex);
+
+	if (chan)
+		ret = mbox_send_message(chan, (void *) pdata);
 	else
 		ret = -ENODEV;
 
@@ -327,34 +394,82 @@ static int epl_client_fsi_pm_notify(u32 state)
 static int epl_client_fsi_handshake(void *arg)
 {
 	uint8_t count = 0;
+	struct mbox_chan *chan = NULL;
 
+	/* Protect access to shared state variables */
+	mutex_lock(&epl_state_mutex);
 	if (epl_hsp_v && epl_hsp_v->tx.chan) {
+		chan = epl_hsp_v->tx.chan;
+	}
+	mutex_unlock(&epl_state_mutex);
+
+	if (chan) {
 		int ret;
 		const uint32_t handshake_data[] = {0x45504C48, 0x414E4453, 0x48414B45,
 			0x44415441};
 
 		do {
-			ret = mbox_send_message(epl_hsp_v->tx.chan, (void *) handshake_data);
+			ret = mbox_send_message(chan, (void *) handshake_data);
 
 			if (ret < 0) {
+				mutex_lock(&epl_state_mutex);
 				hs_state = HANDSHAKE_FAILED;
+				mutex_unlock(&epl_state_mutex);
 				count++;
 			} else {
+				mutex_lock(&epl_state_mutex);
 				hs_state = HANDSHAKE_DONE;
+				mutex_unlock(&epl_state_mutex);
 				break;
 			}
 		} while (count < handshake_retry_count);
 	} else {
+		mutex_lock(&epl_state_mutex);
 		hs_state = HANDSHAKE_FAILED;
+		mutex_unlock(&epl_state_mutex);
 		dev_warn(&pdev_local->dev, "epl_client: handshake failed - no valid HSP channel\n");
 	}
 
+	mutex_lock(&epl_state_mutex);
 	if (hs_state == HANDSHAKE_FAILED)
 		dev_warn(&pdev_local->dev, "epl_client: handshake with FSI failed\n");
 	else
 		dev_info(&pdev_local->dev, "epl_client: handshake done with FSI, try %u\n", count);
+	mutex_unlock(&epl_state_mutex);
 
 	return 0;
+}
+
+/* Start periodic alive packet thread */
+static int epl_start_periodic_alive_packet(void)
+{
+	if (atomic_read(&alive_packet_thread_running)) {
+		dev_dbg(&pdev_local->dev, "EPL: Periodic alive packet thread already running\n");
+		return 0;
+	}
+
+	alive_packet_thread = kthread_run(epl_periodic_alive_packet_thread, NULL, "epl-alive-packet");
+	if (IS_ERR(alive_packet_thread)) {
+		dev_err(&pdev_local->dev, "EPL: Failed to create periodic alive packet thread\n");
+		return PTR_ERR(alive_packet_thread);
+	}
+
+	atomic_set(&alive_packet_thread_running, 1);
+	return 0;
+}
+
+/* Stop periodic alive packet thread */
+static void epl_stop_periodic_alive_packet(void)
+{
+	if (!atomic_read(&alive_packet_thread_running))
+		return;
+
+	atomic_set(&alive_packet_thread_running, 0);
+	if (alive_packet_thread) {
+		kthread_stop(alive_packet_thread);
+		alive_packet_thread = NULL;
+	}
+	dev_info(&pdev_local->dev, "EPL: Periodic alive packet thread stopped\n");
 }
 
 static int __maybe_unused epl_client_suspend(struct device *dev)
@@ -363,12 +478,19 @@ static int __maybe_unused epl_client_suspend(struct device *dev)
 
 	dev_dbg(dev, "tegra-epl: suspend called\n");
 
+	/* Stop periodic alive packet thread during suspend */
+	epl_stop_periodic_alive_packet();
+
 	if (enable_deinit_notify) {
 		ret = epl_client_fsi_pm_notify(EPS_DOS_SUSPEND);
 		if (ret < 0)
 			dev_warn(dev, "tegra-epl: suspend notification failed: %d\n", ret);
 	}
+
+	/* Protect access to shared state variables */
+	mutex_lock(&epl_state_mutex);
 	hs_state = HANDSHAKE_PENDING;
+	mutex_unlock(&epl_state_mutex);
 
 	return ret;
 }
@@ -376,6 +498,7 @@ static int __maybe_unused epl_client_suspend(struct device *dev)
 static int __maybe_unused epl_client_resume(struct device *dev)
 {
 	int ret;
+	bool handshake_done = false;
 
 	dev_dbg(dev, "tegra-epl: resume called\n");
 
@@ -385,11 +508,23 @@ static int __maybe_unused epl_client_resume(struct device *dev)
 		return ret;
 	}
 
+	/* Check handshake state with proper synchronization */
+	mutex_lock(&epl_state_mutex);
+	handshake_done = (hs_state == HANDSHAKE_DONE);
+	mutex_unlock(&epl_state_mutex);
+
 	/* Only send PM notify if handshake was successful */
-	if (hs_state == HANDSHAKE_DONE) {
+	if (handshake_done) {
 		ret = epl_client_fsi_pm_notify(EPS_DOS_RESUME);
 		if (ret < 0)
 			dev_warn(dev, "tegra-epl: resume notification failed: %d\n", ret);
+
+		/* Restart periodic alive packet thread after successful resume handshake */
+		ret = epl_start_periodic_alive_packet();
+		if (ret < 0) {
+			dev_warn(dev, "tegra-epl: failed to restart periodic alive packet thread: %d\n", ret);
+			/* Don't fail resume for this, just log warning */
+		}
 	} else {
 		dev_warn(dev, "tegra-epl: skipping resume notification - handshake not successful\n");
 	}
@@ -460,7 +595,10 @@ static int epl_client_probe(struct platform_device *pdev)
 	char name[32] = "client-misc-sw-generic-err";
 	bool is_misc_ec_mapped = false;
 
+	/* Initialize handshake state with proper synchronization */
+	mutex_lock(&epl_state_mutex);
 	hs_state = HANDSHAKE_PENDING;
+	mutex_unlock(&epl_state_mutex);
 
 	ret = epl_register_device();
 	if (ret < 0) {
@@ -548,11 +686,21 @@ static int epl_client_probe(struct platform_device *pdev)
 		}
 
 		/* Only send PM notify if handshake was successful */
+		mutex_lock(&epl_state_mutex);
 		if (hs_state == HANDSHAKE_DONE) {
+			mutex_unlock(&epl_state_mutex);
 			ret = epl_client_fsi_pm_notify(EPS_DOS_INIT);
 			if (ret < 0)
 				dev_warn(dev, "tegra-epl: init notification failed: %d\n", ret);
+
+			/* Start periodic alive packet thread after successful initial handshake */
+			ret = epl_start_periodic_alive_packet();
+			if (ret < 0) {
+				dev_warn(dev, "tegra-epl: failed to start periodic alive packet thread: %d\n", ret);
+				/* Don't fail probe for this, just log warning */
+			}
 		} else {
+			mutex_unlock(&epl_state_mutex);
 			dev_warn(dev, "tegra-epl: skipping init notification - handshake not successful\n");
 		}
 	}
@@ -566,19 +714,28 @@ static void epl_client_shutdown(struct platform_device *pdev)
 
 	dev_dbg(&pdev->dev, "tegra-epl: shutdown called\n");
 
+	/* Stop periodic alive packet thread during shutdown */
+	epl_stop_periodic_alive_packet();
+
 	if (enable_deinit_notify) {
 		ret = epl_client_fsi_pm_notify(EPS_DOS_DEINIT);
 		if (ret < 0)
 			dev_err(&pdev->dev, "Unable to send notification to fsi: %d\n", ret);
 	}
 
+	/* Reset handshake state with proper synchronization */
+	mutex_lock(&epl_state_mutex);
 	hs_state = HANDSHAKE_PENDING;
+	mutex_unlock(&epl_state_mutex);
 
 	epl_unregister_device();
 }
 
 static int epl_client_remove(struct platform_device *pdev)
 {
+	/* Stop periodic alive packet thread during remove */
+	epl_stop_periodic_alive_packet();
+
 	epl_unregister_device();
 	return 0;
 }
