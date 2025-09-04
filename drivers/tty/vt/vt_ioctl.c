@@ -925,7 +925,9 @@ int vt_ioctl(struct tty_struct *tty,
 			if (vc) {
 				vc->vc_resize_user = 1;
 				/* FIXME: review v tty lock */
-				vc_resize(vc_cons[i].d, cc, ll);
+				ret = vc_resize(vc_cons[i].d, cc, ll);
+				if (ret)
+					return ret;
 			}
 		}
 		console_unlock();
