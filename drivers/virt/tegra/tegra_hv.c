@@ -533,9 +533,65 @@ fail:
 }
 static CLASS_ATTR_WO(async_err_diagnostics);
 
+/*
+ * Safe validation for tainted data from ioremap_cache
+ * Returns validated ivc_info_page pointer or NULL on failure
+ * Fixes tainted_data_downcast and parm_assign violations
+ */
+static struct ivc_info_page *validate_ivc_info_page(void __iomem *mapped_mem, size_t size)
+{
+	struct ivc_info_page *info;
+	uint32_t nr_queues, nr_areas, nr_mempools;
+
+	if (!mapped_mem || size < sizeof(struct ivc_info_page)) {
+		ERR("validate_ivc_info_page: Invalid parameters\n");
+		return NULL;
+	}
+
+	/* Temporary access to validate header fields - still tainted at this point */
+	info = (struct ivc_info_page *)mapped_mem;
+
+	/* Read and validate critical fields that determine memory layout */
+	nr_queues = info->nr_queues;
+	nr_areas = info->nr_areas;
+	nr_mempools = info->nr_mempools;
+
+	/* Validate nr_queues against known safe bounds */
+	if (nr_queues == 0U || nr_queues > PCT_MAX_NUM_IVC_QUEUES) {
+		ERR("validate_ivc_info_page: Invalid nr_queues: %u\n", nr_queues);
+		return NULL;
+	}
+
+	/* Validate nr_areas against known safe bounds */
+	if (nr_areas > MAX_NUM_GUESTS) {
+		ERR("validate_ivc_info_page: Invalid nr_areas: %u\n", nr_areas);
+		return NULL;
+	}
+
+	/* Validate nr_mempools against known safe bounds */
+	if (nr_mempools > PCT_MAX_NUM_MEMPOOLS) {
+		ERR("validate_ivc_info_page: Invalid nr_mempools: %u\n", nr_mempools);
+		return NULL;
+	}
+
+	/* Additional validation for other critical fields */
+	if (info->trap_region_size > 0 && info->trap_region_base_ipa == 0) {
+		ERR("validate_ivc_info_page: Invalid trap region configuration\n");
+		return NULL;
+	}
+
+	if (info->msi_region_size > 0 && info->msi_region_base_ipa == 0) {
+		ERR("validate_ivc_info_page: Invalid MSI region configuration\n");
+		return NULL;
+	}
+
+	return info;
+}
+
 static int tegra_hv_setup(struct tegra_hv_data *hvd)
 {
 	const uint32_t intr_property_size = 3u;
+	void __iomem *mapped_mem;
 	uint64_t info_page;
 	uint32_t i, result;
 	int ret;
@@ -592,23 +648,17 @@ static int tegra_hv_setup(struct tegra_hv_data *hvd)
 		return ret;
 	}
 
-	hvd->info = (__force struct ivc_info_page *)ioremap_cache(info_page,
-			IVC_INFO_PAGE_SIZE);
-	if (hvd->info == NULL) {
+	mapped_mem = ioremap_cache(info_page, IVC_INFO_PAGE_SIZE);
+	if (mapped_mem == NULL) {
 		ERR("failed to map IVC info page (%llx)\n", info_page);
 		return -ENOMEM;
 	}
 
-	if ((hvd->info->nr_queues == 0U) || (hvd->info->nr_queues > PCT_MAX_NUM_IVC_QUEUES)) {
-		ERR("Invalid nr_queues: %u\n", hvd->info->nr_queues);
-		return -EINVAL;
-	}
-	if (hvd->info->nr_areas > MAX_NUM_GUESTS) {
-		ERR("Invalid nr_areas: %u\n", hvd->info->nr_areas);
-		return -EINVAL;
-	}
-	if (hvd->info->nr_mempools > PCT_MAX_NUM_MEMPOOLS) {
-		ERR("Invalid nr_mempools: %u\n", hvd->info->nr_mempools);
+	/* Validate tainted data before assignment - fixes tainted_data_downcast and parm_assign */
+	hvd->info = validate_ivc_info_page(mapped_mem, IVC_INFO_PAGE_SIZE);
+	if (hvd->info == NULL) {
+		ERR("IVC info page validation failed\n");
+		iounmap(mapped_mem);
 		return -EINVAL;
 	}
 
