@@ -101,6 +101,12 @@ CONFIG_ETM4X_IMPDEF_FEATURE                     note<'{Required for Grace enable
 CONFIG_HYPERV_BALLOON                           policy<{'arm64': 'm'}>
 CONFIG_HYPERV_BALLOON                           note<'{Required for Azure Grace enablement}'>
 
+CONFIG_IOMMU_DEFAULT_DMA_LAZY                   policy<{'arm64': 'y'}>
+CONFIG_IOMMU_DEFAULT_DMA_LAZY                   note<'Nvidia CPU SMMU supports passthrough and lazy IOMMU mode so set lazy mode as default for better performance'>
+
+CONFIG_IOMMU_DEFAULT_DMA_STRICT                 policy<{'arm64': 'n'}>
+CONFIG_IOMMU_DEFAULT_DMA_STRICT                 note<'Nvidia CPU SMMU supports passthrough and lazy IOMMU mode so set lazy mode as default for better performance'>
+
 CONFIG_PID_IN_CONTEXTIDR                        policy<{'arm64': 'y'}>
 CONFIG_PID_IN_CONTEXTIDR                        note<'{Required for Grace enablement}'>
 
