@@ -771,7 +771,9 @@ static int tegra_hv_setup(struct tegra_hv_data *hvd)
 		BUG_ON(mpsize < mpd->size);
 	}
 
+#ifndef CONFIG_KERNEL_BUILD_WITH_PROD_DEFCONFIG
 	INFO("Memory usage: ivc:0x%llx mempool=0x%llx\n", ivcsize, mpsize);
+#endif
 
 	return 0;
 }
