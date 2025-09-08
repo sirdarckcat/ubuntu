@@ -95,12 +95,12 @@ static int xe_pf_begin(struct drm_exec *exec, struct xe_vma *vma,
 		}
 
 		/* Migrate to VRAM, move should invalidate the VMA first */
-		err = xe_bo_migrate(bo, vram->placement);
+		err = xe_bo_migrate(bo, vram->placement, exec);
 		if (err)
 			return err;
 	} else if (bo) {
 		/* Create backing store if needed */
-		err = xe_bo_validate(bo, vm, true);
+		err = xe_bo_validate(bo, vm, true, exec);
 		if (err)
 			return err;
 	}
@@ -151,7 +151,9 @@ retry_userptr:
 
 		/* Bind VMA only to the GT that has faulted */
 		trace_xe_vma_pf_bind(vma);
+		xe_vm_set_validation_exec(vm, &exec);
 		fence = xe_vma_rebind(vm, vma, BIT(tile->id));
+		xe_vm_set_validation_exec(vm, NULL);
 		if (IS_ERR(fence)) {
 			err = PTR_ERR(fence);
 			if (xe_vm_validate_should_retry(&exec, err, &end))
