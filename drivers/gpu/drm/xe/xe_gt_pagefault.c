@@ -95,7 +95,7 @@ static int xe_pf_begin(struct drm_exec *exec, struct xe_vma *vma,
 		}
 
 		/* Migrate to VRAM, move should invalidate the VMA first */
-		err = xe_bo_migrate(bo, vram->placement, exec);
+		err = xe_bo_migrate(bo, vram->placement, NULL, exec);
 		if (err)
 			return err;
 	} else if (bo) {
