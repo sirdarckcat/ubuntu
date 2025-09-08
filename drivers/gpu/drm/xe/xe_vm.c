@@ -398,7 +398,7 @@ static int xe_gpuvm_validate(struct drm_gpuvm_bo *vm_bo, struct drm_exec *exec)
 	if (!try_wait_for_completion(&vm->xe->pm_block))
 		return -EAGAIN;
 
-	ret = xe_bo_validate(gem_to_xe_bo(vm_bo->obj), vm, false);
+	ret = xe_bo_validate(gem_to_xe_bo(vm_bo->obj), vm, false, exec);
 	if (ret)
 		return ret;
 
@@ -565,7 +565,9 @@ retry:
 	if (err)
 		goto out_unlock;
 
+	xe_vm_set_validation_exec(vm, &exec);
 	err = xe_vm_rebind(vm, true);
+	xe_vm_set_validation_exec(vm, NULL);
 	if (err)
 		goto out_unlock;
 
@@ -2968,7 +2970,7 @@ static int vma_lock_and_validate(struct drm_exec *exec, struct xe_vma *vma,
 		if (!err && validate)
 			err = xe_bo_validate(bo, vm,
 					     !xe_vm_in_preempt_fence_mode(vm) &&
-					     res_evict);
+					     res_evict, exec);
 	}
 
 	return err;
@@ -3102,7 +3104,8 @@ static int op_lock_and_prep(struct drm_exec *exec, struct xe_vm *vm,
 					    res_evict, false);
 		if (!err && !xe_vma_has_no_bo(vma))
 			err = xe_bo_migrate(xe_vma_bo(vma),
-					    region_to_mem_type[region]);
+					    region_to_mem_type[region],
+					    exec);
 		break;
 	}
 	default:
@@ -3436,7 +3439,9 @@ static struct dma_fence *vm_bind_ioctl_ops_execute(struct xe_vm *vm,
 			goto unlock;
 		}
 
+		xe_vm_set_validation_exec(vm, &exec);
 		fence = ops_execute(vm, vops);
+		xe_vm_set_validation_exec(vm, NULL);
 		if (IS_ERR(fence)) {
 			if (PTR_ERR(fence) == -ENODATA)
 				vm_bind_ioctl_ops_fini(vm, vops, NULL);
@@ -4024,10 +4029,18 @@ release_vm_lock:
  */
 int xe_vm_lock(struct xe_vm *vm, bool intr)
 {
-	if (intr)
-		return dma_resv_lock_interruptible(xe_vm_resv(vm), NULL);
+	struct drm_exec *exec = XE_VALIDATION_UNIMPLEMENTED;
+	int ret;
 
-	return dma_resv_lock(xe_vm_resv(vm), NULL);
+	if (intr)
+		ret = dma_resv_lock_interruptible(xe_vm_resv(vm), NULL);
+	else
+		ret = dma_resv_lock(xe_vm_resv(vm), NULL);
+
+	if (!ret)
+		xe_vm_set_validation_exec(vm, exec);
+
+	return ret;
 }
 
 /**
@@ -4038,6 +4051,7 @@ int xe_vm_lock(struct xe_vm *vm, bool intr)
  */
 void xe_vm_unlock(struct xe_vm *vm)
 {
+	xe_vm_set_validation_exec(vm, NULL);
 	dma_resv_unlock(xe_vm_resv(vm));
 }
 
