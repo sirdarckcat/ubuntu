@@ -158,7 +158,6 @@ CONFIG_COMMON_CLK_XLNX_CLKWZRD                  policy<{'arm64': 'n'}> note<'Dif
 CONFIG_CONNECTOR                                policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
 CONFIG_CRC8                                     policy<{'arm64': 'm'}> note<'Different from master'>
 CONFIG_CRYPTO_AEAD                              policy<{'arm64': 'm'}> note<'Required for Pi (different from master)'>
-CONFIG_CRYPTO_CTS                               policy<{'arm64': 'y'}> note<'TODO: update note'>
 CONFIG_CRYPTO_DEV_ATMEL_ECC                     policy<{'arm64': 'n'}> note<'Different from master'>
 CONFIG_CRYPTO_DEV_ATMEL_SHA204A                 policy<{'arm64': 'n'}> note<'Different from master'>
 CONFIG_CRYPTO_DEV_CCP                           policy<{'arm64': 'n'}> note<'Not supported on Pi (different from master)'>
@@ -173,7 +172,6 @@ CONFIG_CRYPTO_NULL2                             policy<{'arm64': '-'}> note<'TOD
 CONFIG_CRYPTO_SEQIV                             policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
 CONFIG_CRYPTO_SHA512_ARM64                      policy<{'arm64': '-'}> note<'TODO: update note'>
 CONFIG_CRYPTO_SHA512_ARM64_CE                   policy<{'arm64': '-'}> note<'TODO: update note'>
-CONFIG_CRYPTO_XTS                               policy<{'arm64': 'y'}> note<'TODO: update note'>
 CONFIG_CXL_BUS                                  policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
 CONFIG_DAX                                      policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
 CONFIG_DEBUG_MEMORY_INIT                        policy<{'arm64': 'y'}> note<'Required for Pi (different from master)'>
@@ -429,7 +427,6 @@ CONFIG_MFD_RASPBERRYPI_POE_HAT                  policy<{'arm64': 'm'}> note<'Add
 CONFIG_MFD_RC5T583                              policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
 CONFIG_MFD_ROHM_BD718XX                         policy<{'arm64': 'n'}> note<'Different from master'>
 CONFIG_MFD_RP1                                  policy<{'arm64': 'y'}> note<'Added by rpi-6.6.y patchset (needs to be built-in)'>
-CONFIG_MFD_SEC_CORE                             policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
 CONFIG_MFD_STPMIC1                              policy<{'arm64': 'n'}> note<'Different from master'>
 CONFIG_MFD_TC3589X                              policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
 CONFIG_MFD_TPS65090                             policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
@@ -474,7 +471,6 @@ CONFIG_MUX_ADGS1408                             policy<{'arm64': 'n'}> note<'Dif
 CONFIG_MUX_GPIO                                 policy<{'arm64': 'n'}> note<'Different from master'>
 CONFIG_MUX_MMIO                                 policy<{'arm64': 'n'}> note<'Different from master'>
 CONFIG_MV_XOR_V2                                policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_NETFILTER_XT_TARGET_NOTRACK              policy<{'arm64': 'm'}> note<'Required for Pi (different from master)'>
 CONFIG_NET_DROP_MONITOR                         policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
 CONFIG_NET_DSA_MICROCHIP_KSZ9477_I2C            policy<{'arm64': 'n'}> note<'Different from master'>
 CONFIG_NET_DSA_SJA1105_TAS                      policy<{'arm64': 'n'}> note<'Different from master'>
@@ -535,7 +531,6 @@ CONFIG_PCI_MESON                                policy<{'arm64': 'n'}> note<'Not
 CONFIG_PCI_XGENE                                policy<{'arm64': 'n'}> note<'Different from master'>
 CONFIG_PCS_LYNX                                 policy<{'arm64': 'm'}> note<'Required for Pi (different from master)'>
 CONFIG_PECI                                     policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_PHYLINK                                  policy<{'arm64': 'y'}> note<'TODO: update note'>
 CONFIG_PHY_BRCM_SATA                            policy<{'arm64': 'm'}> note<'Required for Pi (not in master)'>
 CONFIG_PHY_BRCM_USB                             policy<{'arm64': 'm'}> note<'Required for Pi (not in master)'>
 CONFIG_PHY_CADENCE_DPHY                         policy<{'arm64': 'n'}> note<'Different from master'>
@@ -550,7 +545,6 @@ CONFIG_PINCTRL_MICROCHIP_SGPIO                  policy<{'arm64': 'm'}> note<'Not
 CONFIG_PINCTRL_OCELOT                           policy<{'arm64': 'n'}> note<'Different from master'>
 CONFIG_PINCTRL_PALMAS                           policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
 CONFIG_PINCTRL_RP1                              policy<{'arm64': 'y'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_PINCTRL_SINGLE                           policy<{'arm64': 'y'}> note<'TODO: update note'>
 CONFIG_PINCTRL_STMFX                            policy<{'arm64': 'n'}> note<'Different from master'>
 CONFIG_PINCTRL_SX150X                           policy<{'arm64': 'n'}> note<'Not supported on Pi (different from master)'>
 CONFIG_PL320_MBOX                               policy<{'arm64': 'n'}> note<'Not supported on Pi (different from master)'>
@@ -594,7 +588,6 @@ CONFIG_REGULATOR_FIXED_VOLTAGE                  policy<{'arm64': 'y'}> note<'Req
 CONFIG_REGULATOR_GPIO                           policy<{'arm64': 'y'}> note<'Required for Pi (different from master)'>
 CONFIG_REGULATOR_LP87565                        policy<{'arm64': 'n'}> note<'Different from master'>
 CONFIG_REGULATOR_MCP16502                       policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_REGULATOR_RASPBERRYPI_TOUCHSCREEN_V2     policy<{'arm64': 'm'}> note<'Added by rpi-6.8.y patchset'>
 CONFIG_REGULATOR_SY8106A                        policy<{'arm64': 'n'}> note<'Different from master'>
 CONFIG_REGULATOR_SY8824X                        policy<{'arm64': 'n'}> note<'Different from master'>
 CONFIG_REGULATOR_TWL4030                        policy<{'arm64': '-'}> note<'Master note override'>
@@ -710,7 +703,6 @@ CONFIG_SND_SOC_AD193X_I2C                       policy<{'arm64': 'm'}> note<'Add
 CONFIG_SND_SOC_AD193X_SPI                       policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
 CONFIG_SND_SOC_ADAU1977                         policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
 CONFIG_SND_SOC_ADAU1977_I2C                     policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_SND_SOC_ARIZONA                          policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
 CONFIG_SND_SOC_CPCAP                            policy<{'arm64': 'n'}> note<'Different from master'>
 CONFIG_SND_SOC_CX2072X                          policy<{'arm64': 'n'}> note<'Different from master'>
 CONFIG_SND_SOC_I_SABRE_CODEC                    policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
@@ -901,7 +893,6 @@ CONFIG_XILINX_XADC                              policy<{'arm64': 'n'}> note<'Dif
 CONFIG_XILINX_ZYNQMP_DMA                        policy<{'arm64': 'n'}> note<'Different from master'>
 CONFIG_XILLYBUS_PCIE                            policy<{'arm64': 'n'}> note<'Different from master'>
 CONFIG_ZERO_CALL_USED_REGS                      policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_ZSMALLOC                                 policy<{'arm64': 'y'}> note<'TODO: update note'>
 
 # ---- Annotations without notes ----
 
