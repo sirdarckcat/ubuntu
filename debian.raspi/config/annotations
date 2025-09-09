@@ -732,9 +732,7 @@ CONFIG_TCG_TIS_SPI                              policy<{'arm64': 'm'}> note<'Req
 CONFIG_TEST_DIV64                               policy<{'arm64': 'm'}> note<'Required for Pi (different from master)'>
 CONFIG_THERMAL_MMIO                             policy<{'arm64': 'n'}> note<'Different from master'>
 CONFIG_TIMERLAT_TRACER                          policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
-CONFIG_TOUCHSCREEN_APPLE_Z2                     policy<{'arm64': '-'}>
-CONFIG_TOUCHSCREEN_APPLE_Z2                     note<'TODO: update note'>
-
+CONFIG_TOUCHSCREEN_APPLE_Z2                     policy<{'arm64': '-'}> note<'Not available on Pi (master note override)'>
 CONFIG_TOUCHSCREEN_RASPBERRYPI_FW               policy<{'arm64': 'm'}> note<'Required for Pi (not in master)'>
 CONFIG_TUN                                      policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
 CONFIG_TWL4030_CORE                             policy<{'arm64': 'n'}> note<'Not supported on Pi (different from master)'>
