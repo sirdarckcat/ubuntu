@@ -440,7 +440,7 @@ CONFIG_MICROCHIP_PHY                            policy<{'arm64': 'y'}> note<'Dif
 CONFIG_MIPI_I3C_HCI                             policy<{'arm64': 'n'}> note<'Required for Pi (different from master)'>
 CONFIG_MMC_ALCOR                                policy<{'arm64': 'n'}> note<'Different from master'>
 CONFIG_MMC_ARMMMCI                              policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
-CONFIG_MMC_BCM2835                              policy<{'arm64': 'y'}> note<'Required for Pi (not in master)'>
+CONFIG_MMC_BCM2835                              policy<{'arm64': 'y'}> note<'Needs to be built-in for Pi (LP: #2106230)'>
 CONFIG_MMC_BCM2835_DMA                          policy<{'arm64': 'y'}> note<'Added by rpi-6.6.y patchset'>
 CONFIG_MMC_BCM2835_MMC                          policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
 CONFIG_MMC_BCM2835_PIO_DMA_BARRIER              policy<{'arm64': '2'}> note<'Added by rpi-6.6.y patchset'>
