@@ -15,6 +15,7 @@
 #include <linux/hwmon.h>
 #include <linux/platform_device.h>
 #include <linux/string.h>
+#include <linux/string_helpers.h>
 #include <uapi/linux/psci.h>
 
 #define MLXBF_PMC_WRITE_REG_32 0x82000009
@@ -1775,6 +1776,27 @@ static ssize_t mlxbf_pmc_event_show(struct device *dev,
 	return sysfs_emit(buf, "0x%llx: %s\n", evt_num, evt_name);
 }
 
+/*
+ * Returns duplicate string in which the @old characters are replaced by @new.
+ * Based on kstrdup_and_replace added in newer kernels.
+ */
+static char *mlxbf_pmc_dup_and_replace(const char *src, size_t str_len,
+				       char old, char new, gfp_t gfp)
+{
+	char *dst;
+
+	/* str_len does not include NUL terminator */
+	dst = kmalloc(str_len + 1, gfp);
+	if (!dst)
+		return NULL;
+
+	memcpy(dst, src, str_len);
+	dst[str_len] = '\0';
+
+	strreplace(dst, old, new);
+	return dst;
+}
+
 /* Store function for "event" sysfs files */
 static ssize_t mlxbf_pmc_event_store(struct device *dev,
 				     struct device_attribute *attr,
@@ -1784,6 +1806,7 @@ static ssize_t mlxbf_pmc_event_store(struct device *dev,
 		attr, struct mlxbf_pmc_attribute, dev_attr);
 	unsigned int blk_num, cnt_num;
 	bool is_l3 = false;
+	char *evt_name;
 	int evt_num;
 	int err;
 
@@ -1791,8 +1814,14 @@ static ssize_t mlxbf_pmc_event_store(struct device *dev,
 	cnt_num = attr_event->index;
 
 	if (isalpha(buf[0])) {
+		/* Remove the trailing newline character if present */
+		evt_name = mlxbf_pmc_dup_and_replace(buf, count, '\n', '\0', GFP_KERNEL);
+		if (!evt_name)
+			return -ENOMEM;
+
 		evt_num = mlxbf_pmc_get_event_num(pmc->block_name[blk_num],
-						  buf);
+						  evt_name);
+		kfree(evt_name);
 		if (evt_num < 0)
 			return -EINVAL;
 	} else {
