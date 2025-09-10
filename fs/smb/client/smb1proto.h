@@ -38,6 +38,8 @@ void reset_cifs_unix_caps(unsigned int xid, struct cifs_tcon *tcon,
 /*
  * smb1transport.c
  */
+bool cifs_check_trans2(struct mid_q_entry *mid, struct TCP_Server_Info *server,
+		       char *buf, int malformed);
 
 #endif /* CONFIG_CIFS_ALLOW_INSECURE_LEGACY */
 #endif /* _SMB1PROTO_H */
