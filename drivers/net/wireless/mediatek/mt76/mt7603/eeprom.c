@@ -181,7 +181,5 @@ int mt7603_eeprom_init(struct mt7603_dev *dev)
 	    is_mt7688(dev))
 		dev->mphy.antenna_mask = 1;
 
-	mt76_eeprom_override(&dev->mphy);
-
-	return 0;
+	return mt76_eeprom_override(&dev->mphy);
 }
