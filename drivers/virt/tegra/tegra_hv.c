@@ -989,17 +989,6 @@ int tegra_hv_ivc_read_user(struct tegra_hv_ivc_cookie *ivck, void __user *buf, i
 }
 EXPORT_SYMBOL(tegra_hv_ivc_read_user);
 
-#ifndef CONFIG_KERNEL_BUILD_WITH_PROD_DEFCONFIG
-int tegra_hv_ivc_read_peek(struct tegra_hv_ivc_cookie *ivck, void *buf,
-			   int off, int count)
-{
-	struct hv_ivc *ivc = cookie_to_ivc_dev(ivck);
-
-	return tegra_ivc_read_peek(&ivc->ivc, NULL, buf, off, count);
-}
-EXPORT_SYMBOL(tegra_hv_ivc_read_peek);
-#endif
-
 int tegra_hv_ivc_can_read(struct tegra_hv_ivc_cookie *ivck)
 {
 	struct hv_ivc *ivc = cookie_to_ivc_dev(ivck);
