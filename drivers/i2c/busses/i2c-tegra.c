@@ -602,7 +602,7 @@ static int tegra_i2c_init_dma(struct tegra_i2c_dev *i2c_dev)
 	u32 *dma_buf;
 	int err;
 
-	if (IS_VI(i2c_dev) || !of_property_read_bool(i2c_dev->dev->of_node, "dmas"))
+	if (IS_VI(i2c_dev) || !of_property_present(i2c_dev->dev->of_node, "dmas"))
 		return 0;
 
 	if (i2c_dev->hw->has_apb_dma) {
