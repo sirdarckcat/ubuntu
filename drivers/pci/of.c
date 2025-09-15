@@ -645,7 +645,7 @@ int devm_of_pci_bridge_init(struct device *dev, struct pci_host_bridge *bridge)
 		return 0;
 
 	/* Detect IOMMU and make sure ACS will be enabled */
-	if (of_property_read_bool(node, "iommu-map"))
+	if (of_property_present(node, "iommu-map"))
 		pci_request_acs();
 
 	bridge->swizzle_irq = pci_common_swizzle;
