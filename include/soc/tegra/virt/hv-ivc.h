@@ -57,15 +57,14 @@ struct tegra_hv_ivm_cookie {
  *                 - Tegra hypervisor driver should have been initialized.
  *
  * @post
- *                 - Client can take runtime decision in driver if client
- *                 - Driver support native and virtualized environment.
+ *                 - Client can take runtime decision in driver if OS is running in native environment or in virtualized environment.
  *
  * @usage
  *                 - Call this function to check if OS is running in native environment or in virtualized environment.
  *                 - Allowed context for the API call
  *                   - Interrupt handler: Yes
  *                   - Signal handler: N/A
- *                   - Thread-safe: No
+ *                   - Thread-safe: Yes
  *                   - Async/Sync: Sync
  *                   - Re-entrant: No
  *                 - API Group
@@ -93,7 +92,7 @@ bool is_tegra_hypervisor_mode(void);
  *
  * @usage
  *                 - Reserve ivc queue before performing I/O operations.
- *                 - Driver should have been probed successfully.
+ *                 - Tegra HV driver should have been probed successfully.
  *                 - Allowed context for the API call
  *                   - Interrupt handler: Yes
  *                   - Signal handler: N/A
@@ -124,7 +123,7 @@ struct tegra_hv_ivc_cookie *tegra_hv_ivc_reserve(
  *
  * @usage
  *                 - Unreserve ivc queue after performing I/O operations.
- *                 - Driver should have been probed successfully.
+ *                 - Tegra HV driver should have been probed successfully.
  *                 - Allowed context for the API call
  *                   - Interrupt handler: Yes
  *                   - Signal handler: N/A
@@ -158,7 +157,7 @@ int tegra_hv_ivc_unreserve(struct tegra_hv_ivc_cookie *ivck);
  *                 - Use this API to send data to peer end.
  *                 - IVC should have been reserved before using this API.
  *                 - Never use this API after unreserving ivc queue.
- *                 - Driver should have been probed successfully.
+ *                 - Tegra HV driver should have been probed successfully.
  *                 - Allowed context for the API call
  *                   - Interrupt handler: Yes
  *                   - Signal handler: N/A
@@ -194,7 +193,7 @@ int tegra_hv_ivc_write(struct tegra_hv_ivc_cookie *ivck, const void *buf,
  *                 - Use this API to send data to peer end.
  *                 - IVC should have been reserved before using this API.
  *                 - Never use this API after unreserving ivc queue.
- *                 - Driver should have been probed successfully.
+ *                 - Tegra HV driver should have been probed successfully.
  *                 - Allowed context for the API call
  *                   - Interrupt handler: Yes
  *                   - Signal handler: N/A
@@ -229,7 +228,7 @@ int tegra_hv_ivc_write_user(struct tegra_hv_ivc_cookie *ivck, const void __user 
  *                 - Use this API to receive data from peer end.
  *                 - IVC should have been reserved before using this API.
  *                 - Never use this API after unreserving ivc queue.
- *                 - Driver should have been probed successfully.
+ *                 - Tegra HV driver should have been probed successfully.
  *                 - Allowed context for the API call
  *                   - Interrupt handler: Yes
  *                   - Signal handler: N/A
@@ -263,7 +262,7 @@ int tegra_hv_ivc_read(struct tegra_hv_ivc_cookie *ivck, void *buf, int size);
  *                 - Use this API to receive data from peer end.
  *                 - IVC should have been reserved before using this API.
  *                 - Never use this API after unreserving ivc queue.
- *                 - Driver should have been probed successfully.
+ *                 - Tegra HV driver should have been probed successfully.
  *                 - Allowed context for the API call
  *                   - Interrupt handler: Yes
  *                   - Signal handler: N/A
@@ -278,7 +277,7 @@ int tegra_hv_ivc_read(struct tegra_hv_ivc_cookie *ivck, void *buf, int size);
 int tegra_hv_ivc_read_user(struct tegra_hv_ivc_cookie *ivck, void __user *buf, int size);
 
 /**
- * @brief          Check whether data are available
+ * @brief          Check whether data is available to read.
  * @param[in]      ivck IVC cookie of the queue
  *
  * @retval         1 If data are available in the rx queue, 0 if not
@@ -295,7 +294,7 @@ int tegra_hv_ivc_read_user(struct tegra_hv_ivc_cookie *ivck, void __user *buf, i
  *                 - Use this API if client want to check if response has been received peer end.
  *                 - IVC should have been reserved before using this API.
  *                 - Never use this API after unreserving ivc queue.
- *                 - Driver should have been probed successfully.
+ *                 - Tegra HV driver should have been probed successfully.
  *                 - Allowed context for the API call
  *                   - Interrupt handler: Yes
  *                   - Signal handler: N/A
@@ -327,7 +326,7 @@ int tegra_hv_ivc_can_read(struct tegra_hv_ivc_cookie *ivck);
  *                 - Use this API if client want to check if write slot is present or not.
  *                 - IVC should have been reserved before using this API.
  *                 - Never use this API after unreserving ivc queue.
- *                 - Driver should have been probed successfully.
+ *                 - Tegra HV driver should have been probed successfully.
  *                 - Allowed context for the API call
  *                   - Interrupt handler: Yes
  *                   - Signal handler: N/A
@@ -359,7 +358,7 @@ int tegra_hv_ivc_can_write(struct tegra_hv_ivc_cookie *ivck);
  *                 - Use this API if tx queue is empty or not.
  *                 - IVC should have been reserved before using this API.
  *                 - Never use this API after unreserving ivc queue.
- *                 - Driver should have been probed successfully.
+ *                 - Tegra HV driver should have been probed successfully.
  *                 - Allowed context for the API call
  *                   - Interrupt handler: Yes
  *                   - Signal handler: N/A
@@ -427,7 +426,7 @@ int tegra_hv_ivc_dump(struct tegra_hv_ivc_cookie *ivck);
 #endif
 
 /**
- * @brief          Peek at the next frame to receive
+ * @brief          Peek at the next frame to receive.
  *                 Peek at the next frame to be received, without removing it from the queue.
  *
  * @param[in]      ivck IVC cookie of the queue
@@ -446,7 +445,7 @@ int tegra_hv_ivc_dump(struct tegra_hv_ivc_cookie *ivck);
  *                 - If client want to check next frame without removing it from queue.
  *                 - IVC should have been reserved before using this API.
  *                 - Never use this API after unreserving ivc queue.
- *                 - Driver should have been probed successfully.
+ *                 - Tegra HV driver should have been probed successfully.
  *                 - Allowed context for the API call
  *                   - Interrupt handler: Yes
  *                   - Signal handler: N/A
@@ -478,7 +477,7 @@ void *tegra_hv_ivc_read_get_next_frame(struct tegra_hv_ivc_cookie *ivck);
  *                 - Use this API if client wants to advance to next read frame
  *                 - IVC should have been reserved before using this API.
  *                 - Never use this API after unreserving ivc queue.
- *                 - Driver should have been probed successfully.
+ *                 - Tegra HV driver should have been probed successfully.
  *                 - Allowed context for the API call
  *                   - Interrupt handler: Yes
  *                   - Signal handler: N/A
@@ -511,7 +510,7 @@ int tegra_hv_ivc_read_advance(struct tegra_hv_ivc_cookie *ivck);
  *                 - If client want to send data to peer end without removing it from queue.
  *                 - IVC should have been reserved before using this API.
  *                 - Never use this API after unreserving ivc queue.
- *                 - Driver should have been probed successfully.
+ *                 - Tegra HV driver should have been probed successfully.
  *                 - Allowed context for the API call
  *                   - Interrupt handler: Yes
  *                   - Signal handler: N/A
@@ -543,7 +542,7 @@ void *tegra_hv_ivc_write_get_next_frame(struct tegra_hv_ivc_cookie *ivck);
  *                 - Use this API if client wants to advance to next write frame
  *                 - IVC should have been reserved before using this API.
  *                 - Never use this API after unreserving ivc queue.
- *                 - Driver should have been probed successfully.
+ *                 - Tegra HV driver should have been probed successfully.
  *                 - Allowed context for the API call
  *                   - Interrupt handler: Yes
  *                   - Signal handler: N/A
@@ -614,7 +613,7 @@ struct tegra_hv_ivm_cookie *tegra_hv_mempool_reserve(unsigned int id);
 int tegra_hv_mempool_unreserve(struct tegra_hv_ivm_cookie *ivck);
 
 /**
- * @brief          handle internal messages
+ * @brief          Handle internal messages.
  *                 This function must be called following every notification (interrupt or
  *                 callback invocation) for the tegra_hv_- version).
  * @param[in]      ivck IVC cookie of the queue
@@ -634,7 +633,7 @@ int tegra_hv_mempool_unreserve(struct tegra_hv_ivm_cookie *ivck);
  *                 - Use this APi to establish connection with peer end for communication
  *                 - IVC should have been reserved before using this API.
  *                 - Never use this API after unreserving ivc queue.
- *                 - Driver should have been probed successfully.
+ *                 - Tegra HV driver should have been probed successfully.
  *                 - Allowed context for the API call
  *                   - Interrupt handler: Yes
  *                   - Signal handler: N/A
@@ -649,7 +648,7 @@ int tegra_hv_mempool_unreserve(struct tegra_hv_ivm_cookie *ivck);
 int tegra_hv_ivc_channel_notified(struct tegra_hv_ivc_cookie *ivck);
 
 /**
- * @brief          initiates a reset of the shared memory state
+ * @brief          Initiates a reset of the shared memory state.
  *                 This function must be called after a channel is reserved before it is used
  *                 for communication. The channel will be ready for use when a subsequent call
  *                 to ivc_channel_notified() returns 0.
@@ -669,7 +668,7 @@ int tegra_hv_ivc_channel_notified(struct tegra_hv_ivc_cookie *ivck);
  *                 - Before establishing connection reset ivc channel first after reserving ivc queue.
  *                 - IVC should have been reserved before using this API.
  *                 - Never use this API after unreserving ivc queue.
- *                 - Driver should have been probed successfully.
+ *                 - Tegra HV driver should have been probed successfully.
  *                 - Allowed context for the API call
  *                   - Interrupt handler: Yes
  *                   - Signal handler: N/A
@@ -701,7 +700,7 @@ void tegra_hv_ivc_channel_reset(struct tegra_hv_ivc_cookie *ivck);
  *
  * @usage
  *                 - When client want to mmap ivc memory to userspace via mmap API.
- *                 - Driver should have been probed successfully.
+ *                 - Tegra HV driver should have been probed successfully.
  *                 - Allowed context for the API call
  *                   - Interrupt handler: Yes
  *                   - Signal handler: N/A
@@ -734,7 +733,7 @@ int tegra_hv_ivc_get_info(struct tegra_hv_ivc_cookie *ivck, uint64_t *pa,
  *                 - Use when want to notify the peer end after writing or reading data to ivc queue
  *                 - IVC should have been reserved before using this API.
  *                 - Never use this API after unreserving ivc queue.
- *                 - Driver should have been probed successfully.
+ *                 - Tegra HV driver should have been probed successfully.
  *                 - Allowed context for the API call
  *                   - Interrupt handler: Yes
  *                   - Signal handler: N/A
