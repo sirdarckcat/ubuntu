@@ -42,7 +42,7 @@
  * @usage
  *                 - Allowed context for the API call
  *                   - Interrupt handler: Yes
- *                   - Signal handler: Yes
+ *                   - Signal handler: N/A
  *                   - Thread-safe: No
  *                   - Async/Sync: Sync
  *                   - Re-entrant: No
@@ -68,7 +68,7 @@ const struct ivc_info_page *tegra_hv_get_ivc_info(void);
  * @usage
  *                 - Allowed context for the API call
  *                   - Interrupt handler: Yes
- *                   - Signal handler: Yes
+ *                   - Signal handler: N/A
  *                   - Thread-safe: No
  *                   - Async/Sync: Sync
  *                   - Re-entrant: No
