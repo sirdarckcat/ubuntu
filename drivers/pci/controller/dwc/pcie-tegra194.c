@@ -467,7 +467,7 @@ static void tegra_pcie_icc_set(struct tegra_pcie_dw *pcie)
 	if (speed >= ARRAY_SIZE(pcie_gen_freq))
 		speed = 0;
 
-	if (!pcie->core_clk_m)
+	if ((speed > 0) && (speed <= 4) && !pcie->is_safety_platform)
 		clk_set_rate(pcie->core_clk, pcie_gen_freq[speed - 1]);
 }
 
@@ -756,7 +756,6 @@ static irqreturn_t tegra_pcie_rp_irq_thread(int irq, void *arg)
 	struct dw_pcie_rp *pp;
 	struct pci_bus *bus;
 	struct epl_error_report_frame error_report;
-	u16 speed;
 	int ret;
 
 	if (atomic_dec_and_test(&pcie->report_epl_error)) {
@@ -781,11 +780,7 @@ static irqreturn_t tegra_pcie_rp_irq_thread(int irq, void *arg)
 	if (pcie->link_status_change || pcie->link_speed_change) {
 		pcie->link_status_change = false;
 		pcie->link_speed_change = false;
-		speed = dw_pcie_readw_dbi(pci,
-					  pcie->pcie_cap_base + PCI_EXP_LNKSTA);
-		speed &= PCI_EXP_LNKSTA_CLS;
-		if ((speed > 0) && (speed <= 4) && !pcie->is_safety_platform)
-			clk_set_rate(pcie->core_clk, pcie_gen_freq[speed - 1]);
+		tegra_pcie_icc_set(pcie);
 	}
 
 	return IRQ_HANDLED;
