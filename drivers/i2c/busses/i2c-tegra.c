@@ -801,6 +801,21 @@ static void tegra_i2c_set_clk_params(struct tegra_i2c_dev *i2c_dev)
 
 	switch (t->bus_freq_hz) {
 	default:
+		/*
+		 * When HS mode is supported, the non-hs timing registers will be used for the
+		 * master code byte for transition to HS mode. As per the spec, the 8 bit master
+		 * code should be sent at max 400kHz. Therefore, limit the bus speed to fast mode.
+		 * Whereas when HS mode is not supported, allow the highest speed mode capable.
+		 */
+		if (i2c_dev->hw->has_hs_mode_support) {
+			tlow = i2c_dev->hw->tlow_hs_mode;
+			thigh = i2c_dev->hw->thigh_hs_mode;
+			tsu_thd = i2c_dev->hw->setup_hold_time_hs_mode;
+			non_hs_mode = i2c_dev->hw->clk_divisor_hs_mode;
+			break;
+		}
+		fallthrough;
+
 	case I2C_MAX_FAST_MODE_FREQ + 1 ... I2C_MAX_FAST_MODE_PLUS_FREQ:
 		/* Fast-plus mode */
 		tlow = i2c_dev->hw->tlow_fastplus_mode;
