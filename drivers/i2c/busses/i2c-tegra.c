@@ -233,12 +233,16 @@ enum msg_end_type {
  * @has_apb_dma: Support of APBDMA on corresponding Tegra chip.
  * @tlow_std_mode: Low period of the clock in standard mode.
  * @thigh_std_mode: High period of the clock in standard mode.
- * @tlow_fast_fastplus_mode: Low period of the clock in fast/fast-plus modes.
- * @thigh_fast_fastplus_mode: High period of the clock in fast/fast-plus modes.
+ * @tlow_fast_mode: Low period of the clock in fast mode.
+ * @thigh_fast_mode: High period of the clock in fast mode.
+ * @tlow_fastplus_mode: Low period of the clock in fast-plus mode.
+ * @thigh_fastplus_mode: High period of the clock in fast-plus mode.
  * @setup_hold_time_std_mode: Setup and hold time for start and stop conditions
  *		in standard mode.
- * @setup_hold_time_fast_fast_plus_mode: Setup and hold time for start and stop
- *		conditions in fast/fast-plus modes.
+ * @setup_hold_time_fast_mode: Setup and hold time for start and stop
+ *		conditions in fast mode.
+ * @setup_hold_time_fastplus_mode: Setup and hold time for start and stop
+ *		conditions in fast-plus mode.
  * @setup_hold_time_hs_mode: Setup and hold time for start and stop conditions
  *		in HS mode.
  * @has_interface_timing_reg: Has interface timing register to program the tuned
@@ -262,12 +266,15 @@ struct tegra_i2c_hw_feature {
 	bool has_apb_dma;
 	u32 tlow_std_mode;
 	u32 thigh_std_mode;
-	u32 tlow_fast_fastplus_mode;
-	u32 thigh_fast_fastplus_mode;
+	u32 tlow_fast_mode;
+	u32 thigh_fast_mode;
+	u32 tlow_fastplus_mode;
+	u32 thigh_fastplus_mode;
 	u32 tlow_hs_mode;
 	u32 thigh_hs_mode;
 	u32 setup_hold_time_std_mode;
-	u32 setup_hold_time_fast_fast_plus_mode;
+	u32 setup_hold_time_fast_mode;
+	u32 setup_hold_time_fastplus_mode;
 	u32 setup_hold_time_hs_mode;
 	bool has_interface_timing_reg;
 	bool has_hs_mode_support;
@@ -793,16 +800,21 @@ static void tegra_i2c_set_clk_params(struct tegra_i2c_dev *i2c_dev)
 	struct i2c_timings *t = &i2c_dev->timings;
 
 	switch (t->bus_freq_hz) {
-	case I2C_MAX_STANDARD_MODE_FREQ + 1 ... I2C_MAX_FAST_MODE_PLUS_FREQ:
 	default:
-		tlow = i2c_dev->hw->tlow_fast_fastplus_mode;
-		thigh = i2c_dev->hw->thigh_fast_fastplus_mode;
-		tsu_thd = i2c_dev->hw->setup_hold_time_fast_fast_plus_mode;
+	case I2C_MAX_FAST_MODE_FREQ + 1 ... I2C_MAX_FAST_MODE_PLUS_FREQ:
+		/* Fast-plus mode */
+		tlow = i2c_dev->hw->tlow_fastplus_mode;
+		thigh = i2c_dev->hw->thigh_fastplus_mode;
+		tsu_thd = i2c_dev->hw->setup_hold_time_fastplus_mode;
+		non_hs_mode = i2c_dev->hw->clk_divisor_fast_plus_mode;
+		break;
 
-		if (t->bus_freq_hz > I2C_MAX_FAST_MODE_FREQ)
-			non_hs_mode = i2c_dev->hw->clk_divisor_fast_plus_mode;
-		else
-			non_hs_mode = i2c_dev->hw->clk_divisor_fast_mode;
+	case I2C_MAX_STANDARD_MODE_FREQ + 1 ... I2C_MAX_FAST_MODE_FREQ:
+		/* Fast mode */
+		tlow = i2c_dev->hw->tlow_fast_mode;
+		thigh = i2c_dev->hw->thigh_fast_mode;
+		tsu_thd = i2c_dev->hw->setup_hold_time_fast_mode;
+		non_hs_mode = i2c_dev->hw->clk_divisor_fast_mode;
 		break;
 
 	case 0 ... I2C_MAX_STANDARD_MODE_FREQ:
@@ -1794,10 +1806,13 @@ static const struct tegra_i2c_hw_feature tegra20_i2c_hw = {
 	.has_apb_dma = true,
 	.tlow_std_mode = 0x4,
 	.thigh_std_mode = 0x2,
-	.tlow_fast_fastplus_mode = 0x4,
-	.thigh_fast_fastplus_mode = 0x2,
+	.tlow_fast_mode = 0x4,
+	.thigh_fast_mode = 0x2,
+	.tlow_fastplus_mode = 0x4,
+	.thigh_fastplus_mode = 0x2,
 	.setup_hold_time_std_mode = 0x0,
-	.setup_hold_time_fast_fast_plus_mode = 0x0,
+	.setup_hold_time_fast_mode = 0x0,
+	.setup_hold_time_fastplus_mode = 0x0,
 	.setup_hold_time_hs_mode = 0x0,
 	.has_interface_timing_reg = false,
 	.has_mutex = false,
@@ -1820,10 +1835,13 @@ static const struct tegra_i2c_hw_feature tegra30_i2c_hw = {
 	.has_apb_dma = true,
 	.tlow_std_mode = 0x4,
 	.thigh_std_mode = 0x2,
-	.tlow_fast_fastplus_mode = 0x4,
-	.thigh_fast_fastplus_mode = 0x2,
+	.tlow_fast_mode = 0x4,
+	.thigh_fast_mode = 0x2,
+	.tlow_fastplus_mode = 0x4,
+	.thigh_fastplus_mode = 0x2,
 	.setup_hold_time_std_mode = 0x0,
-	.setup_hold_time_fast_fast_plus_mode = 0x0,
+	.setup_hold_time_fast_mode = 0x0,
+	.setup_hold_time_fastplus_mode = 0x0,
 	.setup_hold_time_hs_mode = 0x0,
 	.has_interface_timing_reg = false,
 	.has_mutex = false,
@@ -1846,10 +1864,13 @@ static const struct tegra_i2c_hw_feature tegra114_i2c_hw = {
 	.has_apb_dma = true,
 	.tlow_std_mode = 0x4,
 	.thigh_std_mode = 0x2,
-	.tlow_fast_fastplus_mode = 0x4,
-	.thigh_fast_fastplus_mode = 0x2,
+	.tlow_fast_mode = 0x4,
+	.thigh_fast_mode = 0x2,
+	.tlow_fastplus_mode = 0x4,
+	.thigh_fastplus_mode = 0x2,
 	.setup_hold_time_std_mode = 0x0,
-	.setup_hold_time_fast_fast_plus_mode = 0x0,
+	.setup_hold_time_fast_mode = 0x0,
+	.setup_hold_time_fastplus_mode = 0x0,
 	.setup_hold_time_hs_mode = 0x0,
 	.has_interface_timing_reg = false,
 	.has_mutex = false,
@@ -1872,10 +1893,13 @@ static const struct tegra_i2c_hw_feature tegra124_i2c_hw = {
 	.has_apb_dma = true,
 	.tlow_std_mode = 0x4,
 	.thigh_std_mode = 0x2,
-	.tlow_fast_fastplus_mode = 0x4,
-	.thigh_fast_fastplus_mode = 0x2,
+	.tlow_fast_mode = 0x4,
+	.thigh_fast_mode = 0x2,
+	.tlow_fastplus_mode = 0x4,
+	.thigh_fastplus_mode = 0x2,
 	.setup_hold_time_std_mode = 0x0,
-	.setup_hold_time_fast_fast_plus_mode = 0x0,
+	.setup_hold_time_fast_mode = 0x0,
+	.setup_hold_time_fastplus_mode = 0x0,
 	.setup_hold_time_hs_mode = 0x0,
 	.has_interface_timing_reg = true,
 	.has_mutex = false,
@@ -1898,10 +1922,13 @@ static const struct tegra_i2c_hw_feature tegra210_i2c_hw = {
 	.has_apb_dma = true,
 	.tlow_std_mode = 0x4,
 	.thigh_std_mode = 0x2,
-	.tlow_fast_fastplus_mode = 0x4,
-	.thigh_fast_fastplus_mode = 0x2,
+	.tlow_fast_mode = 0x4,
+	.thigh_fast_mode = 0x2,
+	.tlow_fastplus_mode = 0x4,
+	.thigh_fastplus_mode = 0x2,
 	.setup_hold_time_std_mode = 0,
-	.setup_hold_time_fast_fast_plus_mode = 0,
+	.setup_hold_time_fast_mode = 0,
+	.setup_hold_time_fastplus_mode = 0,
 	.setup_hold_time_hs_mode = 0,
 	.has_interface_timing_reg = true,
 	.has_mutex = false,
@@ -1924,10 +1951,13 @@ static const struct tegra_i2c_hw_feature tegra186_i2c_hw = {
 	.has_apb_dma = false,
 	.tlow_std_mode = 0x4,
 	.thigh_std_mode = 0x3,
-	.tlow_fast_fastplus_mode = 0x4,
-	.thigh_fast_fastplus_mode = 0x2,
+	.tlow_fast_mode = 0x4,
+	.thigh_fast_mode = 0x2,
+	.tlow_fastplus_mode = 0x4,
+	.thigh_fastplus_mode = 0x2,
 	.setup_hold_time_std_mode = 0,
-	.setup_hold_time_fast_fast_plus_mode = 0,
+	.setup_hold_time_fast_mode = 0,
+	.setup_hold_time_fastplus_mode = 0,
 	.setup_hold_time_hs_mode = 0,
 	.has_interface_timing_reg = true,
 	.has_mutex = false,
@@ -1950,12 +1980,15 @@ static const struct tegra_i2c_hw_feature tegra194_i2c_hw = {
 	.has_apb_dma = false,
 	.tlow_std_mode = 0x8,
 	.thigh_std_mode = 0x7,
-	.tlow_fast_fastplus_mode = 0x2,
-	.thigh_fast_fastplus_mode = 0x2,
+	.tlow_fast_mode = 0x2,
+	.thigh_fast_mode = 0x2,
+	.tlow_fastplus_mode = 0x2,
+	.thigh_fastplus_mode = 0x2,
 	.tlow_hs_mode = 0x8,
 	.thigh_hs_mode = 0x3,
 	.setup_hold_time_std_mode = 0x08080808,
-	.setup_hold_time_fast_fast_plus_mode = 0x02020202,
+	.setup_hold_time_fast_mode = 0x02020202,
+	.setup_hold_time_fastplus_mode = 0x02020202,
 	.setup_hold_time_hs_mode = 0x090909,
 	.has_interface_timing_reg = true,
 	.has_hs_mode_support = true,
@@ -1978,12 +2011,15 @@ static const struct tegra_i2c_hw_feature tegra264_i2c_hw = {
 	.has_apb_dma = false,
 	.tlow_std_mode = 0x8,
 	.thigh_std_mode = 0x7,
-	.tlow_fast_fastplus_mode = 0x2,
-	.thigh_fast_fastplus_mode = 0x2,
+	.tlow_fast_mode = 0x2,
+	.thigh_fast_mode = 0x2,
+	.tlow_fastplus_mode = 0x2,
+	.thigh_fastplus_mode = 0x2,
 	.tlow_hs_mode = 0x4,
 	.thigh_hs_mode = 0x2,
 	.setup_hold_time_std_mode = 0x08080808,
-	.setup_hold_time_fast_fast_plus_mode = 0x02020202,
+	.setup_hold_time_fast_mode = 0x02020202,
+	.setup_hold_time_fastplus_mode = 0x02020202,
 	.setup_hold_time_hs_mode = 0x090909,
 	.has_interface_timing_reg = true,
 	.has_hs_mode_support = true,
@@ -2007,10 +2043,13 @@ static const struct tegra_i2c_hw_feature tegra256_i2c_hw = {
 	.has_apb_dma = false,
 	.tlow_std_mode = 0x8,
 	.thigh_std_mode = 0x7,
-	.tlow_fast_fastplus_mode = 0x3,
-	.thigh_fast_fastplus_mode = 0x3,
+	.tlow_fast_mode = 0x3,
+	.thigh_fast_mode = 0x3,
+	.tlow_fastplus_mode = 0x3,
+	.thigh_fastplus_mode = 0x3,
 	.setup_hold_time_std_mode = 0x08080808,
-	.setup_hold_time_fast_fast_plus_mode = 0x02020202,
+	.setup_hold_time_fast_mode = 0x02020202,
+	.setup_hold_time_fastplus_mode = 0x02020202,
 	.setup_hold_time_hs_mode = 0x090909,
 	.has_interface_timing_reg = true,
 };
