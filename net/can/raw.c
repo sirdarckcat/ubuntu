@@ -878,7 +878,7 @@ static int raw_sendmsg(struct socket *sock, struct msghdr *msg, size_t size)
 		goto free_skb;
 
 	err = -EINVAL;
-	if (raw_bad_txframe(ro, skb, dev->mtu))
+	if (raw_bad_txframe(ro, skb, READ_ONCE(dev->mtu)))
 		goto free_skb;
 
 	sockcm_init(&sockc, sk);
