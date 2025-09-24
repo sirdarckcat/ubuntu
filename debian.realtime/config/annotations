@@ -62,23 +62,30 @@ CONFIG_ARM64_ERRATUM_834220                     policy<{'arm64': '-'}>
 CONFIG_AX88796B_RUST_PHY                        policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_BINDGEN_VERSION_TEXT                     policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_BLK_DEV_RUST_NULL                        policy<{'amd64': '-', 'arm64': '-'}>
-CONFIG_CC_VERSION_TEXT                          policy<{'amd64': '"x86_64-linux-gnu-gcc-14 (Ubuntu 14.2.0-19ubuntu1) 14.2.0"', 'arm64': '"aarch64-linux-gnu-gcc-14 (Ubuntu 14.2.0-19ubuntu1) 14.2.0"'}>
+CONFIG_BRIDGE_EBT_BROUTE                        policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_BRIDGE_EBT_T_FILTER                      policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_BRIDGE_EBT_T_NAT                         policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_BRIDGE_NF_EBTABLES_LEGACY                policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_CC_VERSION_TEXT                          policy<{'amd64': '"x86_64-linux-gnu-gcc (Ubuntu 15.2.0-4ubuntu4) 15.2.0"', 'arm64': '"aarch64-linux-gnu-gcc (Ubuntu 15.2.0-4ubuntu4) 15.2.0"'}>
 CONFIG_CLK_QCM2290_GPUCC                        policy<{'arm64': 'n'}>
 CONFIG_COMMON_CLK_C3_PERIPHERALS                policy<{'arm64': 'y'}>
 CONFIG_COMPACT_UNEVICTABLE_DEFAULT              policy<{'amd64': '0', 'arm64': '0'}>
-CONFIG_CZNIC_PLATFORMS                          policy<{'amd64': '-', 'arm64': 'n'}>
+CONFIG_CPUFREQ_DT_RUST                          policy<{'arm64': '-'}>
 CONFIG_DEBUG_MUTEXES                            policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_DEBUG_RWSEMS                             policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_DETECT_HUNG_TASK_BLOCKER                 policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_DEV_DAX                                  policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_DEV_DAX_CXL                              policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_DEV_DAX_KMEM                             policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_DEV_DAX_PMEM                             policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_DRM_MGAG200_DISABLE_WRITECOMBINE         policy<{'amd64': 'n', 'arm64': 'n'}>
+CONFIG_DRM_NOVA                                 policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_DRM_PANEL_HIMAX_HX83102                  policy<{'arm64': 'n'}>
 CONFIG_DRM_PANEL_ILITEK_ILI9806E                policy<{'arm64': 'n'}>
 CONFIG_DRM_PANEL_LINCOLNTECH_LCD197             policy<{'arm64': 'n'}>
 CONFIG_DRM_PANIC_SCREEN_QR_CODE                 policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_DRM_STM_LVDS                             policy<{'arm64': 'n'}>
+CONFIG_DRM_XE_PAGEMAP                           policy<{'amd64': 'y', 'arm64': 'y'}>
 CONFIG_EC_LENOVO_YOGA_C630                      policy<{'arm64': 'n'}>
 CONFIG_FS_DAX_PMD                               policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_GUEST_PERF_EVENTS                        policy<{'amd64': 'y', 'arm64': '-'}>
@@ -86,7 +93,7 @@ CONFIG_HAVE_KVM_CPU_RELAX_INTERCEPT             policy<{'amd64': 'y', 'arm64': '
 CONFIG_HAVE_KVM_DIRTY_RING                      policy<{'amd64': 'y', 'arm64': '-'}>
 CONFIG_HAVE_KVM_DIRTY_RING_ACQ_REL              policy<{'amd64': 'y', 'arm64': '-'}>
 CONFIG_HAVE_KVM_IRQCHIP                         policy<{'amd64': 'y', 'arm64': '-'}>
-CONFIG_HAVE_KVM_IRQ_BYPASS                      policy<{'amd64': 'y', 'arm64': '-'}>
+CONFIG_HAVE_KVM_IRQ_BYPASS                      policy<{'amd64': 'm', 'arm64': '-'}>
 CONFIG_HAVE_KVM_IRQ_ROUTING                     policy<{'amd64': 'y', 'arm64': '-'}>
 CONFIG_HAVE_KVM_MSI                             policy<{'amd64': 'y', 'arm64': '-'}>
 CONFIG_HAVE_KVM_READONLY_MEM                    policy<{'amd64': 'y', 'arm64': '-'}>
@@ -95,7 +102,27 @@ CONFIG_HAVE_PAGE_SIZE_4KB                       policy<{'amd64': 'y', 'arm64': '
 CONFIG_HAVE_PREEMPT_AUTO                        policy<{'amd64': '-'}>
 CONFIG_HAVE_SCHED_AVG_IRQ                       policy<{'amd64': 'y', 'arm64': 'y'}>
 CONFIG_HUGETLB_PMD_PAGE_TABLE_SHARING           policy<{'amd64': 'y', 'arm64': 'y'}>
-CONFIG_IRQ_BYPASS_MANAGER                       policy<{'amd64': 'y', 'arm64': 'm'}>
+CONFIG_IP6_NF_FILTER                            policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_IP6_NF_IPTABLES_LEGACY                   policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_IP6_NF_MANGLE                            policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_IP6_NF_NAT                               policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_IP6_NF_RAW                               policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_IP6_NF_SECURITY                          policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_IP6_NF_TARGET_HL                         policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_IP6_NF_TARGET_MASQUERADE                 policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_IP_NF_ARPFILTER                          policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_IP_NF_ARPTABLES                          policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_IP_NF_FILTER                             policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_IP_NF_IPTABLES_LEGACY                    policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_IP_NF_MANGLE                             policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_IP_NF_NAT                                policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_IP_NF_RAW                                policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_IP_NF_SECURITY                           policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_IP_NF_TARGET_MASQUERADE                  policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_IP_NF_TARGET_NETMAP                      policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_IP_NF_TARGET_REDIRECT                    policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_IP_NF_TARGET_TTL                         policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_IRQ_BYPASS_MANAGER                       policy<{'amd64': 'm', 'arm64': 'm'}>
 CONFIG_IR_GPIO_TX                               policy<{'arm64': '-'}>
 CONFIG_KVM_COMMON                               policy<{'amd64': 'y', 'arm64': '-'}>
 CONFIG_KVM_GENERIC_DIRTYLOG_READ_PROTECT        policy<{'amd64': 'y', 'arm64': '-'}>
@@ -106,9 +133,16 @@ CONFIG_KVM_VFIO                                 policy<{'amd64': 'y', 'arm64': '
 CONFIG_KVM_XFER_TO_GUEST_WORK                   policy<{'amd64': 'y', 'arm64': '-'}>
 CONFIG_LEDS_TRIGGER_CPU                         policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_MARVELL_GTI_WDT                          policy<{'arm64': 'y'}>
+CONFIG_MM_ID                                    policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_MSHV_ROOT                                policy<{'amd64': 'm', 'arm64': 'n'}>
 CONFIG_NEED_KVM_DIRTY_RING_WITH_BITMAP          policy<{'arm64': '-'}>
+CONFIG_NETFILTER_XTABLES_LEGACY                 policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_NETFILTER_XT_TARGET_NOTRACK              policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_NETFILTER_XT_TARGET_TRACE                policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_NO_PAGE_MAPCOUNT                         policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_NUMA_BALANCING                           policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_NVHE_EL2_DEBUG                           policy<{'arm64': '-'}>
+CONFIG_OVMF_DEBUG_LOG                           policy<{'amd64': 'y', 'arm64': 'n'}>
 CONFIG_PAGE_SHIFT                               policy<{'amd64': '12', 'arm64': '12'}>
 CONFIG_PAGE_SIZE_4KB                            policy<{'amd64': 'y', 'arm64': 'y'}>
 CONFIG_PREEMPT                                  policy<{'amd64': 'y', 'arm64': 'y'}>
@@ -116,6 +150,7 @@ CONFIG_PREEMPT_AUTO                             policy<{'amd64': '-'}>
 CONFIG_PREEMPT_BUILD_AUTO                       policy<{'amd64': '-'}>
 CONFIG_PREEMPT_NONE                             policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_PREEMPT_NOTIFIERS                        policy<{'amd64': 'y', 'arm64': '-'}>
+CONFIG_PREEMPT_RT_NEEDS_BH_LOCK                 policy<{'amd64': 'n', 'arm64': 'n'}>
 CONFIG_PREEMPT_VOLUNTARY                        policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_PTDUMP_STAGE2_DEBUGFS                    policy<{'arm64': '-'}>
 CONFIG_QUEUED_RWLOCKS                           policy<{'amd64': '-', 'arm64': '-'}>
@@ -123,6 +158,8 @@ CONFIG_RCU_BOOST                                policy<{'amd64': 'y', 'arm64': '
 CONFIG_RCU_BOOST_DELAY                          policy<{'amd64': '500', 'arm64': '500'}>
 CONFIG_RCU_NOCB_CPU_CB_BOOST                    policy<{'amd64': 'y', 'arm64': 'y'}>
 CONFIG_READ_ONLY_THP_FOR_FS                     policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_RUSTC_HAS_SPAN_FILE                      policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_RUSTC_HAS_UNNECESSARY_TRANSMUTES         policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_RUSTC_VERSION_TEXT                       policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_RUST_BUILD_ASSERT_ALLOW                  policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_RUST_DEBUG_ASSERTIONS                    policy<{'amd64': '-', 'arm64': '-'}>
