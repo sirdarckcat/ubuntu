@@ -590,7 +590,8 @@ static struct ivc_info_page *validate_ivc_info_page(void __iomem *mapped_mem, si
 
 static int tegra_hv_setup(struct tegra_hv_data *hvd)
 {
-	const uint32_t intr_property_size = 3u;
+	uint32_t intr_property_size;
+	struct device_node *p;
 	void __iomem *mapped_mem;
 	uint64_t info_page;
 	uint32_t i, result;
@@ -603,6 +604,20 @@ static int tegra_hv_setup(struct tegra_hv_data *hvd)
 		ERR("could not find hv node\n");
 		return -ENODEV;
 	}
+
+	p = of_irq_find_parent(hvd->dev);
+	if (p) {
+		if (of_property_read_u32(p, "#interrupt-cells", &intr_property_size)) {
+			ERR("Get interrupt-cells failed\n");
+			intr_property_size = 3;
+		}
+		of_node_put(p);
+	} else {
+		ERR("Null device parent node\n");
+		intr_property_size = 3;
+	}
+
+	INFO("Get interrupt-cells=%d\n", intr_property_size);
 
 	ret = hyp_read_gid(&hvd->guestid);
 	if (ret != 0) {
@@ -757,6 +772,14 @@ static int tegra_hv_setup(struct tegra_hv_data *hvd)
 			(__force uint32_t)cpu_to_be32(qd->irq - 32); /* Id in SPI namespace */
 		/* 0x1 == low-to-high edge */
 		hvd->interrupts_arr[result + 2] = (__force uint32_t)cpu_to_be32(0x1);
+		/* The 4th cell is a phandle to a node describing a set of CPUs this
+		 * interrupt is affine to. The interrupt must be a PPI, and the node
+		 * pointed must be a subnode of the "ppi-partitions" subnode. For
+		 * interrupt types other than PPI or PPIs that are not partitioned,
+		 * this cell must be zero. See the "ppi-partitions" node description below.
+		 */
+		if (intr_property_size > 3)
+			hvd->interrupts_arr[result + 3] = (__force uint32_t)cpu_to_be32(0);
 	}
 
 	interrupts_prop.length =
