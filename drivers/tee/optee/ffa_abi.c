@@ -17,6 +17,23 @@
 #include "optee_ffa.h"
 #include "optee_rpc_cmd.h"
 
+#if defined(CONFIG_ARCH_TEGRA_264_SOC) && IS_ENABLED(CONFIG_TEGRA_HV_DRIVER)
+#include <soc/tegra/virt/tegra_hv.h>
+#include <soc/tegra/virt/syscalls.h>
+
+#define OPTEE_SHM_ID	110
+#endif
+
+/*
+ * A typical OP-TEE private shm allocation is 224 bytes (argument struct
+ * with 6 parameters, needed for open session). So with an alignment of 512
+ * we'll waste a bit more than 50%. However, it's only expected that we'll
+ * have a handful of these structs allocated at a time. Most memory will
+ * be allocated aligned to the page size, So all in all this should scale
+ * up and down quite well.
+ */
+#define OPTEE_MIN_STATIC_POOL_SHIFT    9 /* 512 bytes aligned */
+
 /*
  * This file implement the FF-A ABI used when communicating with secure world
  * OP-TEE OS via FF-A.
@@ -24,7 +41,8 @@
  * 1. Maintain a hash table for lookup of a global FF-A memory handle
  * 2. Convert between struct tee_param and struct optee_msg_param
  * 3. Low level support functions to register shared memory in secure world
- * 4. Dynamic shared memory pool based on alloc_pages()
+ * 4-1. Dynamic shared memory pool based on alloc_pages()
+ * 4-2. Static shared memory pool based on alloc_pages()
  * 5. Do a normal scheduled call into secure world
  * 6. Driver initialization.
  */
@@ -289,6 +307,14 @@ static int optee_ffa_shm_register(struct tee_context *ctx, struct tee_shm *shm,
 	if (rc)
 		return rc;
 
+	if (optee->ffa.sec_caps & OPTEE_FFA_SEC_CAP_STATIC_SHM) {
+		u64 offset = (u32)(shm->paddr - optee->ffa.reserved_shm_paddr);
+
+		shm->sec_world_id = PFN_UP(shm->size) << 32 | offset;
+
+		return optee_shm_add_ffa_handle(optee, shm, shm->sec_world_id);
+	}
+
 	rc = sg_alloc_table_from_pages(&sgt, pages, num_pages, 0,
 				       num_pages * PAGE_SIZE, GFP_KERNEL);
 	if (rc)
@@ -332,6 +358,9 @@ static int optee_ffa_shm_unregister(struct tee_context *ctx,
 	if (rc)
 		pr_err("Unregister SHM id 0x%llx rc %d\n", global_handle, rc);
 
+	if (optee->ffa.sec_caps & OPTEE_FFA_SEC_CAP_STATIC_SHM)
+		return rc;
+
 	rc = mem_ops->memory_reclaim(global_handle, 0);
 	if (rc)
 		pr_err("mem_reclaim: 0x%llx %d", global_handle, rc);
@@ -355,17 +384,22 @@ static int optee_ffa_shm_unregister_supp(struct tee_context *ctx,
 
 	optee_shm_rem_ffa_handle(optee, global_handle);
 	mem_ops = optee->ffa.ffa_dev->ops->mem_ops;
+
+	if (optee->ffa.sec_caps & OPTEE_FFA_SEC_CAP_STATIC_SHM)
+		goto out;
+
 	rc = mem_ops->memory_reclaim(global_handle, 0);
 	if (rc)
 		pr_err("mem_reclaim: 0x%llx %d", global_handle, rc);
 
+out:
 	shm->sec_world_id = 0;
 
 	return rc;
 }
 
 /*
- * 4. Dynamic shared memory pool based on alloc_pages()
+ * 4-1. Dynamic shared memory pool based on alloc_pages()
  *
  * Implements an OP-TEE specific shared memory pool.
  * The main function is optee_ffa_shm_pool_alloc_pages().
@@ -411,6 +445,188 @@ static struct tee_shm_pool *optee_ffa_shm_pool_alloc_pages(void)
 	pool->ops = &pool_ffa_ops;
 
 	return pool;
+}
+
+/*
+ * 4-2. Static shared memory pool based on reserved shared memory
+ *
+ * Implements an OP-TEE specific shared memory pool.
+ * The main function is optee_ffa_shm_pool_res_mem().
+ */
+static int pool_ffa_res_mem_op_alloc(struct tee_shm_pool *pool,
+				     struct tee_shm *shm, size_t size,
+				     size_t align)
+{
+	struct tee_shm_pool *res_mem = pool->private_data;
+	size_t nr_pages = roundup(size, PAGE_SIZE) >> PAGE_SHIFT;
+	struct page **pages;
+	unsigned int i;
+	int rc;
+
+	rc = res_mem->ops->alloc(res_mem, shm, size, align);
+	if (rc)
+		goto err;
+
+	pages = kcalloc(nr_pages, sizeof(*pages), GFP_KERNEL);
+	if (!pages) {
+		rc = -ENOMEM;
+		goto err_alloc;
+	}
+
+	for (i = 0; i < nr_pages; i++)
+		pages[i] = virt_to_page((u8 *)shm->kaddr + i * PAGE_SIZE);
+
+	shm->pages = pages;
+	shm->num_pages = nr_pages;
+
+	rc = optee_ffa_shm_register(shm->ctx, shm, pages, nr_pages,
+					 (unsigned long)shm->kaddr);
+	if (rc)
+		goto err_alloc;
+
+	return 0;
+
+err_alloc:
+	kfree(pages);
+	shm->pages = NULL;
+	res_mem->ops->free(res_mem, shm);
+	shm->kaddr = NULL;
+err:
+	return rc;
+}
+
+static void pool_ffa_res_mem_op_free(struct tee_shm_pool *pool,
+				     struct tee_shm *shm)
+{
+	struct tee_shm_pool *res_mem = pool->private_data;
+	int rc;
+
+	rc = optee_ffa_shm_unregister(shm->ctx, shm);
+	if (rc)
+		pr_err("Failed to unregister a shared memory %d\n", rc);
+
+	res_mem->ops->free(res_mem, shm);
+}
+
+static void pool_ffa_res_mem_op_destroy_pool(struct tee_shm_pool *pool)
+{
+	struct tee_shm_pool *res_mem = pool->private_data;
+
+	res_mem->ops->destroy_pool(res_mem);
+	kfree(res_mem);
+}
+
+static const struct tee_shm_pool_ops pool_ffa_res_mem_ops = {
+	.alloc = pool_ffa_res_mem_op_alloc,
+	.free = pool_ffa_res_mem_op_free,
+	.destroy_pool = pool_ffa_res_mem_op_destroy_pool,
+};
+
+/**
+ * get_reserved_shm_region() - get reserved shared memory region
+ */
+static int get_reserved_shm_region(phys_addr_t *paddr, size_t *size)
+{
+#if defined(CONFIG_ARCH_TEGRA_264_SOC) && IS_ENABLED(CONFIG_TEGRA_HV_DRIVER)
+	const struct ivc_mempool *mp = NULL;
+	struct ivc_info_page *info;
+	uint64_t info_page;
+	int ret;
+	int i;
+
+	ret = hyp_read_ivc_info(&info_page);
+	if (ret != 0) {
+		pr_err("Failed to obtain IVC info page: %d\n", ret);
+		return ret;
+	}
+
+	info = ioremap_cache(info_page, IVC_INFO_PAGE_SIZE);
+	if (IS_ERR(info)) {
+		pr_err("Unexpected error ioremap %ld\n", PTR_ERR(info));
+		return PTR_ERR(info);
+	}
+
+	for (i = 0; i < info->nr_mempools; i++) {
+		mp = &ivc_info_mempool_array(info)[i];
+		if (mp->id == OPTEE_SHM_ID)
+			break;
+	}
+
+	if (mp->id != OPTEE_SHM_ID) {
+		pr_err("Not found mempool id %d", OPTEE_SHM_ID);
+		ret = -ENODEV;
+		goto err_nr_mempools;
+	}
+
+	*paddr = mp->pa;
+	*size = mp->size;
+
+	pr_info("Populated reserved shared memory (size: %zu)\n", *size);
+
+err_nr_mempools:
+	iounmap(info);
+
+	return ret;
+#else
+	return -ENOTSUP;
+#endif
+}
+
+/**
+ * optee_ffa_shm_pool_res_mem() - create reserved shared memory allocator pool
+ */
+static struct tee_shm_pool *optee_ffa_shm_pool_res_mem(struct ffa_device *ffa_dev,
+					const struct ffa_ops *ops,
+					void **reserved_shm,
+					phys_addr_t *reserved_shm_paddr,
+					size_t *reserved_shm_size)
+{
+	struct tee_shm_pool *pool, *res_mem_pool;
+	phys_addr_t paddr;
+	void *vaddr;
+	size_t size;
+	int rc;
+
+	pool = kzalloc(sizeof(*pool), GFP_KERNEL);
+	if (!pool)
+		goto err;
+
+	pool->ops = &pool_ffa_res_mem_ops;
+
+	rc = get_reserved_shm_region(&paddr, &size);
+	if (rc) {
+		pr_err("Unexpected error %d\n", rc);
+		goto err_get_pages;
+	}
+
+	vaddr = ioremap_wc(paddr, size);
+	if (IS_ERR(vaddr)) {
+		pr_err("Unexpected error ioremap %ld\n", PTR_ERR(vaddr));
+		goto err_get_pages;
+	}
+
+	res_mem_pool = tee_shm_pool_alloc_res_mem((unsigned long)vaddr, paddr,
+					size, OPTEE_MIN_STATIC_POOL_SHIFT);
+	if (IS_ERR(res_mem_pool)) {
+		pr_err("Unexpected error res_mem %ld\n", PTR_ERR(res_mem_pool));
+		goto err_alloc_res_mem_pool;
+	}
+
+	pool->private_data = res_mem_pool;
+	*reserved_shm = vaddr;
+	*reserved_shm_size = size;
+	*reserved_shm_paddr = paddr;
+
+	return pool;
+
+err_alloc_res_mem_pool:
+	iounmap(vaddr);
+
+err_get_pages:
+	kfree(pool);
+
+err:
+	return ERR_PTR(-ENOMEM);
 }
 
 /*
@@ -764,12 +980,15 @@ static int enable_async_notif(struct optee *optee)
 static void optee_ffa_get_version(struct tee_device *teedev,
 				  struct tee_ioctl_version_data *vers)
 {
+	struct optee *optee = tee_get_drvdata(teedev);
 	struct tee_ioctl_version_data v = {
 		.impl_id = TEE_IMPL_ID_OPTEE,
 		.impl_caps = TEE_OPTEE_CAP_TZ,
-		.gen_caps = TEE_GEN_CAP_GP | TEE_GEN_CAP_REG_MEM |
-			    TEE_GEN_CAP_MEMREF_NULL,
+		.gen_caps = TEE_GEN_CAP_GP | TEE_GEN_CAP_MEMREF_NULL,
 	};
+
+	if (!(optee->ffa.sec_caps & OPTEE_FFA_SEC_CAP_STATIC_SHM))
+		v.gen_caps |= TEE_GEN_CAP_REG_MEM;
 
 	*vers = v;
 }
@@ -920,7 +1139,15 @@ static int optee_ffa_probe(struct ffa_device *ffa_dev)
 	if (!optee)
 		return -ENOMEM;
 
-	pool = optee_ffa_shm_pool_alloc_pages();
+	optee->ffa.sec_caps = sec_caps;
+
+	if (sec_caps & OPTEE_FFA_SEC_CAP_STATIC_SHM)
+		pool = optee_ffa_shm_pool_res_mem(ffa_dev, ffa_ops,
+					&optee->ffa.reserved_shm,
+					&optee->ffa.reserved_shm_paddr,
+					&optee->ffa.reserved_shm_size);
+	else
+		pool = optee_ffa_shm_pool_alloc_pages();
 	if (IS_ERR(pool)) {
 		rc = PTR_ERR(pool);
 		goto err_free_optee;
