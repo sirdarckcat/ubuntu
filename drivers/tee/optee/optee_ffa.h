@@ -92,6 +92,8 @@
 #define OPTEE_FFA_SEC_CAP_ARG_OFFSET	BIT(0)
 /* OP-TEE supports asynchronous notification via FF-A */
 #define OPTEE_FFA_SEC_CAP_ASYNC_NOTIF	BIT(1)
+/* OP-TEE supports static shared memory */
+#define OPTEE_FFA_SEC_CAP_STATIC_SHM   BIT(3)
 
 #define OPTEE_FFA_EXCHANGE_CAPABILITIES OPTEE_FFA_BLOCKING_CALL(2)
 
