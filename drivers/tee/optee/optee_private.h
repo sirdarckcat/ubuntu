@@ -154,6 +154,12 @@ struct optee_smc {
  *			U32_MAX if unused
  * @mutex		Serializes access to @global_ids
  * @global_ids		FF-A shared memory global handle translation
+ * @sec_caps:           Secure world capabilities defined by
+ *                      OPTEE_FFA_SEC_CAP_* in optee_ffa.h
+ * @reserved_shm        Virtual address of memory in reserved shared memory pool
+ * @reserved_shm_size   Size of memory in reserved shared memory pool
+ * @reserved_shm_paddr  Physical address of memory in reserved shared memory
+ * 			pool
  */
 struct optee_ffa {
 	struct ffa_device *ffa_dev;
@@ -163,6 +169,10 @@ struct optee_ffa {
 	struct rhashtable global_ids;
 	struct workqueue_struct *notif_wq;
 	struct work_struct notif_work;
+	u32 sec_caps;
+	void *reserved_shm;
+	size_t reserved_shm_size;
+	phys_addr_t reserved_shm_paddr;
 };
 
 struct optee;
