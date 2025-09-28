@@ -712,15 +712,14 @@ ALLOW_ERROR_INJECTION(wait_for_lmem_ready, ERRNO); /* See xe_pci_probe() */
 
 static void sriov_update_device_info(struct xe_device *xe)
 {
+	xe_assert(xe, IS_SRIOV_VF(xe));
 	/* disable features that are not available/applicable to VFs */
-	if (IS_SRIOV_VF(xe)) {
-		xe->info.probe_display = 0;
-		xe->info.has_heci_cscfi = 0;
-		xe->info.has_heci_gscfi = 0;
-		xe->info.has_late_bind = 0;
-		xe->info.skip_guc_pc = 1;
-		xe->info.skip_pcode = 1;
-	}
+	xe->info.probe_display = 0;
+	xe->info.has_heci_cscfi = 0;
+	xe->info.has_heci_gscfi = 0;
+	xe->info.has_late_bind = 0;
+	xe->info.skip_guc_pc = 1;
+	xe->info.skip_pcode = 1;
 }
 
 static int xe_device_vram_alloc(struct xe_device *xe)
@@ -761,7 +760,8 @@ int xe_device_probe_early(struct xe_device *xe)
 
 	xe_sriov_probe_early(xe);
 
-	sriov_update_device_info(xe);
+	if (IS_SRIOV_VF(xe))
+		sriov_update_device_info(xe);
 
 	prelim_xe_eudebug_init(xe);
 
