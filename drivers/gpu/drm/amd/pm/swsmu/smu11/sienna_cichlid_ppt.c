@@ -2099,6 +2099,10 @@ static int sienna_cichlid_display_disable_memory_clock_switch(struct smu_context
 	return ret;
 }
 
+#ifndef MAX
+#define MAX(a, b)	((a) > (b) ? (a) : (b))
+#endif
+
 static int sienna_cichlid_update_pcie_parameters(struct smu_context *smu,
 						 uint8_t pcie_gen_cap,
 						 uint8_t pcie_width_cap)
