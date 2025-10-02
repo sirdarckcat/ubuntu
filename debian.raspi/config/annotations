@@ -294,6 +294,7 @@ CONFIG_GPIO_SYSFS                               policy<{'arm64': 'n'}> note<'LP:
 CONFIG_GPIO_TWL4030                             policy<{'arm64': '-'}> note<'Master note override'>
 CONFIG_GPIO_XGENE                               policy<{'arm64': 'n'}> note<'Different from master'>
 CONFIG_GPIO_XILINX                              policy<{'arm64': 'n'}> note<'Different from master'>
+CONFIG_HARDLOCKUP_DETECTOR                      policy<{'arm64': 'n'}> note<'Not supported on Pi (different from master)'>
 CONFIG_HID                                      policy<{'arm64': 'y'}> note<'Different from master'>
 CONFIG_HID_BPF                                  policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
 CONFIG_HID_CREATIVE_SB0540                      policy<{'arm64': 'n'}> note<'Different from master'>
@@ -710,6 +711,7 @@ CONFIG_SND_SOC_UDA1334                          policy<{'arm64': 'n'}> note<'Dif
 CONFIG_SND_SOC_WM5102                           policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
 CONFIG_SOC_BRCMSTB                              policy<{'arm64': 'y'}> note<'Required for Pi (not in master)'>
 CONFIG_SOC_TI                                   policy<{'arm64': 'n'}> note<'Different from master'>
+CONFIG_SOFTLOCKUP_DETECTOR                      policy<{'arm64': 'n'}> note<'Not supported on Pi (different from master)'>
 CONFIG_SOUND                                    policy<{'arm64': 'y'}> note<'Required for Pi (different from master)'>
 CONFIG_SPI_BCM2835                              policy<{'arm64': 'm'}> note<'Required for Pi (not in master)'>
 CONFIG_SPI_BCM2835AUX                           policy<{'arm64': 'm'}> note<'Required for Pi (not in master)'>
@@ -1119,6 +1121,8 @@ CONFIG_BINDGEN_VERSION_TEXT                     policy<{'arm64': '-'}>
 CONFIG_BLK_DEV_RUST_NULL                        policy<{'arm64': '-'}>
 CONFIG_BLK_RQ_ALLOC_TIME                        policy<{'arm64': '-'}>
 CONFIG_BNA                                      policy<{'arm64': '-'}>
+CONFIG_BOOTPARAM_HARDLOCKUP_PANIC               policy<{'arm64': '-'}>
+CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC               policy<{'arm64': '-'}>
 CONFIG_BPF_KPROBE_OVERRIDE                      policy<{'arm64': '-'}>
 CONFIG_BT_QCOMSMD                               policy<{'arm64': '-'}>
 CONFIG_CAN_BXCAN                                policy<{'arm64': '-'}>
@@ -1916,6 +1920,11 @@ CONFIG_GPIO_ZYNQ                                policy<{'arm64': '-'}>
 CONFIG_GPIO_ZYNQMP_MODEPIN                      policy<{'arm64': '-'}>
 CONFIG_HAMACHI                                  policy<{'arm64': '-'}>
 CONFIG_HAPPYMEAL                                policy<{'arm64': '-'}>
+CONFIG_HARDLOCKUP_DETECTOR_ARCH                 policy<{'arm64': '-'}>
+CONFIG_HARDLOCKUP_DETECTOR_BUDDY                policy<{'arm64': '-'}>
+CONFIG_HARDLOCKUP_DETECTOR_COUNTS_HRTIMER       policy<{'arm64': '-'}>
+CONFIG_HARDLOCKUP_DETECTOR_PERF                 policy<{'arm64': '-'}>
+CONFIG_HARDLOCKUP_DETECTOR_PREFER_BUDDY         policy<{'arm64': '-'}>
 CONFIG_HAVE_ACPI_APEI                           policy<{'arm64': '-'}>
 CONFIG_HAVE_KERNEL_GZIP                         policy<{'arm64': '-'}>
 CONFIG_HAVE_KERNEL_ZSTD                         policy<{'arm64': '-'}>
@@ -2227,6 +2236,7 @@ CONFIG_LEDS_SUN50I_A100                         policy<{'arm64': '-'}>
 CONFIG_LEDS_WM831X_STATUS                       policy<{'arm64': '-'}>
 CONFIG_LEDS_WM8350                              policy<{'arm64': '-'}>
 CONFIG_LOAD_UEFI_KEYS                           policy<{'arm64': '-'}>
+CONFIG_LOCKUP_DETECTOR                          policy<{'arm64': '-'}>
 CONFIG_LP8788_ADC                               policy<{'arm64': '-'}>
 CONFIG_LS_EXTIRQ                                policy<{'arm64': '-'}>
 CONFIG_LS_SCFG_MSI                              policy<{'arm64': '-'}>
