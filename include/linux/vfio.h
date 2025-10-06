@@ -276,6 +276,11 @@ static inline void vfio_put_device(struct vfio_device *device)
 	put_device(&device->device);
 }
 
+static inline void vfio_device_get(struct vfio_device *device)
+{
+       refcount_inc(&device->refcount);
+}
+
 int vfio_register_group_dev(struct vfio_device *device);
 int vfio_register_emulated_iommu_dev(struct vfio_device *device);
 void vfio_unregister_group_dev(struct vfio_device *device);
