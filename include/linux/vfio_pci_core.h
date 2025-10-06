@@ -102,6 +102,7 @@ struct vfio_pci_core_device {
 	struct mutex		vma_lock;
 	struct list_head	vma_list;
 	struct rw_semaphore	memory_lock;
+	struct list_head	dmabufs;
 };
 
 enum vfio_pci_io_width {
