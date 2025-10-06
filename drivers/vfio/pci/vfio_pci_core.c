@@ -1223,8 +1223,7 @@ static int vfio_pci_ioctl_set_irqs(struct vfio_pci_core_device *vdev,
 	return ret;
 }
 
-static int vfio_pci_ioctl_reset(struct vfio_pci_core_device *vdev,
-				void __user *arg)
+int vfio_pci_ioctl_reset(struct vfio_pci_core_device *vdev, void __user *arg)
 {
 	int ret;
 
