@@ -58,7 +58,7 @@ static ssize_t tegra_efuse_odm_id_0_data_show(struct device *dev,
 				    char *buf)
 {
 	struct tegra_efuse *efuse = dev_get_drvdata(dev);
-	int i, count = 0;
+	int count = 0;
 	u32 val;
 
 	val = tegra_efuse_readl(efuse, TEGRA_EFUSE_ODM_0_OFFSET);
@@ -72,7 +72,7 @@ static ssize_t tegra_efuse_odm_id_1_data_show(struct device *dev,
 				    char *buf)
 {
 	struct tegra_efuse *efuse = dev_get_drvdata(dev);
-	int i, count = 0;
+	int count = 0;
 	u32 val;
 
 	val = tegra_efuse_readl(efuse, TEGRA_EFUSE_ODM_1_OFFSET);
@@ -86,7 +86,7 @@ static ssize_t tegra_efuse_odm_info_show(struct device *dev,
 				    char *buf)
 {
 	struct tegra_efuse *efuse = dev_get_drvdata(dev);
-	int i, count = 0;
+	int count = 0;
 	u32 val;
 
 	val = tegra_efuse_readl(efuse, TEGRA_EFUSE_ODM_INFO_OFFSET);
