@@ -1123,6 +1123,15 @@ void mt76_mmio_wed_reset_complete(struct mtk_wed_device *wed);
 	for (i = 0; i < ARRAY_SIZE((dev)->q_rx); i++)	\
 		if ((dev)->q_rx[i].ndesc)
 
+static inline struct mt76_dev *mt76_wed_to_dev(struct mtk_wed_device *wed)
+{
+#ifdef CONFIG_NET_MEDIATEK_SOC_WED
+	if (wed->wlan.hif2)
+		return container_of(wed, struct mt76_dev, mmio.wed_hif2);
+#endif /* CONFIG_NET_MEDIATEK_SOC_WED */
+	return container_of(wed, struct mt76_dev, mmio.wed);
+}
+
 static inline struct mt76_wcid *
 __mt76_wcid_ptr(struct mt76_dev *dev, u16 idx)
 {
