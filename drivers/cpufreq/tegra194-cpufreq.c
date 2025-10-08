@@ -25,6 +25,7 @@
 #define MAX_CNT                 ~0U
 
 #define MAX_DELTA_KHZ          115200
+#define MAX_DELTA_REFCLK_CNT   300 /* 300 ns */
 
 #define NDIV_MASK              0x1FF
 
@@ -243,6 +244,63 @@ static void tegra264_set_cpu_ndiv(struct cpufreq_policy *policy, u64 ndiv)
 	writel(ndiv, freq_core_reg);
 }
 
+static inline uint64_t tegra264_get_counter_delta(uint64_t max_cnt,
+	uint64_t cnt_before, uint64_t cnt_after)
+{
+	uint64_t delta;
+
+	if (cnt_after < cnt_before)
+		delta = cnt_after + (max_cnt - cnt_before);
+	else
+		delta = cnt_after - cnt_before;
+
+	return delta;
+}
+
+/*
+ * This function reads the AMU counters for the core and reference clock.
+ * We do a double-read on the reference clock to ensure that the counters
+ * are captured without significant overhead or interruption.
+ * This addresses the case in a hypervised environment where the OS itself may
+ * be pre-empted by the hypervisor.
+ *
+ * The function returns 0 if the counters are captured successfully, otherwise
+ * it returns -EIO.
+ *
+ * @max_cnt: The maximum value of the counters.
+ * @coreclk_cnt: The core clock counter.
+ * @refclk_cnt: The reference clock counter.
+ */
+static int tegra264_get_amu_counters(uint64_t max_cnt, uint64_t *coreclk_cnt, uint64_t *refclk_cnt)
+{
+	int ret = 0;
+	int cnt = 0;
+	u64 refclk_cnt_int_before, refclk_cnt_int_after;
+	u64 coreclk_cnt_int;
+	u64 delta_refclk_cnt;
+
+	do {
+		/* SYS_AMEVCNTR0_CORE_EL0 and SYS_AMEVCNTR0_CORE_EL1 */
+		/* Event 1 is the reference clock, Event 0 is the core clock */
+		asm volatile("mrs %0, S3_3_C13_C4_1" : "=r" (refclk_cnt_int_before) : );
+		asm volatile("mrs %0, S3_3_C13_C4_0" : "=r" (coreclk_cnt_int) : );
+		asm volatile("mrs %0, S3_3_C13_C4_1" : "=r" (refclk_cnt_int_after) : );
+
+		delta_refclk_cnt = tegra264_get_counter_delta(max_cnt,
+			refclk_cnt_int_before, refclk_cnt_int_after);
+
+		if (unlikely(++cnt >= 0xF)) {
+			ret = -EIO;
+			break;
+		}
+	} while (delta_refclk_cnt > MAX_DELTA_REFCLK_CNT);
+
+	*coreclk_cnt = coreclk_cnt_int;
+	*refclk_cnt = refclk_cnt_int_after;
+
+	return ret;
+}
+
 /**
  * We make the assumption the function runs on the core it is trying to read.
  * This allows for us to directly use the asm mrs instructions.
@@ -255,38 +313,45 @@ static void tegra264_read_counters(struct tegra_cpu_ctr *c)
 	struct tegra194_cpufreq_data *data = cpufreq_get_driver_data();
 	u32 delta_refcnt;
 	int cnt = 0;
+	int ret;
 
 	/**
 	 * Bug 4934006 observes that we under-read the CPU Frequency compared
-	 * to our clock-source HW counters. Disabling IRQs to avoid preemption
-	 * and make this a critical section.
+	 * to our clock-source HW counters.
+	 * Instead of IRQ-disable, which does not work in a hypervised environment,
+	 * using a double-read on the reference counters. This is implemented in
+	 * tegra264_get_amu_counters().
 	 */
 
-	local_irq_disable();
-	/* SYS_AMEVCNTR0_CORE_EL0 and SYS_AMEVCNTR0_CORE_EL1 */
-	asm volatile("mrs %0, S3_3_C13_C4_0" : "=r" (c->last_coreclk_cnt) : );
-	asm volatile("mrs %0, S3_3_C13_C4_1" : "=r" (c->last_refclk_cnt) : );
+	ret = tegra264_get_amu_counters(data->soc->max_cnt,
+			&c->last_coreclk_cnt, &c->last_refclk_cnt);
+	if (ret) {
+		pr_warn("cpufreq: unable to capture amu counters on cpu:%d, ret:%d\n",
+			c->cpu, ret);
+		return;
+	}
 
 	/*
 	 * The sampling window is based on the minimum number of reference
 	 * clock cycles which is known to give a stable value of CPU frequency.
 	 */
 	do {
-		asm volatile("mrs %0, S3_3_C13_C4_0" : "=r" (c->coreclk_cnt) : );
-		asm volatile("mrs %0, S3_3_C13_C4_1" : "=r" (c->refclk_cnt) : );
+		ret = tegra264_get_amu_counters(data->soc->max_cnt,
+			&c->coreclk_cnt, &c->refclk_cnt);
+		if (ret) {
+			pr_warn("cpufreq: unable to capture amu counters on cpu:%d, ret:%d\n",
+				c->cpu, ret);
+			break;
+		}
 
-		if (c->refclk_cnt < c->last_refclk_cnt)
-			delta_refcnt = c->refclk_cnt
-				+ (data->soc->max_cnt - c->last_refclk_cnt);
-		else
-			delta_refcnt = c->refclk_cnt - c->last_refclk_cnt;
+		delta_refcnt = tegra264_get_counter_delta(data->soc->max_cnt,
+			c->last_refclk_cnt, c->refclk_cnt);
 		if (++cnt >= 0xFFFF) {
 			pr_warn("cpufreq: problem with refclk on cpu:%d, delta_refcnt:%u, cnt:%d\n",
 				c->cpu, delta_refcnt, cnt);
 			break;
 		}
 	} while (delta_refcnt < data->soc->refclk_delta_min);
-	local_irq_enable();
 }
 
 static struct tegra_cpufreq_ops tegra264_cpufreq_ops = {
