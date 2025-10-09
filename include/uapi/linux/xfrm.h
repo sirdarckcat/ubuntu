@@ -321,6 +321,7 @@ enum xfrm_attr_type_t {
 	XFRMA_IF_ID,		/* __u32 */
 	XFRMA_MTIMER_THRESH,	/* __u32 in seconds for input SA */
 	XFRMA_SA_DIR,		/* __u8 */
+	XFRMA_NAT_KEEPALIVE_INTERVAL,	/* __u32 in seconds for NAT keepalive */
 	XFRMA_SA_PCPU,		/* __u32 */
 	__XFRMA_MAX
 
