@@ -193,7 +193,7 @@ static int ipmb_handle_response(struct ipmb_master *master)
 			RSP_QUEUE_MAX_LEN)
 		return -EFAULT;
 
-	queue_elem = kmalloc(sizeof(*queue_elem), GFP_KERNEL);
+	queue_elem = kmalloc(sizeof(*queue_elem), GFP_ATOMIC);
 	if (!queue_elem)
 		return -ENOMEM;
 	memcpy(&queue_elem->rsp, &master->rsp,
@@ -621,6 +621,7 @@ static int ipmb_slave_cb(struct i2c_client *client,
 			enum i2c_slave_event event, u8 *val)
 {
 	struct ipmb_master *master = i2c_get_clientdata(client);
+	unsigned long flags;
 	u8 *buf;
 
 	if (!handshake_rsp) {
@@ -628,7 +629,7 @@ static int ipmb_slave_cb(struct i2c_client *client,
 		return 0;
 	}
 
-	spin_lock(&master->lock);
+	spin_lock_irqsave(&master->lock, flags);
 
 	switch (event) {
 	case I2C_SLAVE_WRITE_REQUESTED:
@@ -663,7 +664,7 @@ static int ipmb_slave_cb(struct i2c_client *client,
 	default:
 		break;
 	}
-	spin_unlock(&master->lock);
+	spin_unlock_irqrestore(&master->lock, flags);
 
 	return 0;
 }
