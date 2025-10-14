@@ -1014,7 +1014,7 @@ static int tx_macro_enable_dec(struct snd_soc_dapm_widget *w,
 static int tx_macro_dec_mode_get(struct snd_kcontrol *kcontrol,
 				 struct snd_ctl_elem_value *ucontrol)
 {
-	struct snd_soc_component *component = snd_soc_kcontrol_component(kcontrol);
+	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
 	struct tx_macro *tx = snd_soc_component_get_drvdata(component);
 	struct soc_enum *e = (struct soc_enum *)kcontrol->private_value;
 	int path = e->shift_l;
@@ -1027,7 +1027,7 @@ static int tx_macro_dec_mode_get(struct snd_kcontrol *kcontrol,
 static int tx_macro_dec_mode_put(struct snd_kcontrol *kcontrol,
 				 struct snd_ctl_elem_value *ucontrol)
 {
-	struct snd_soc_component *component = snd_soc_kcontrol_component(kcontrol);
+	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
 	int value = ucontrol->value.integer.value[0];
 	struct soc_enum *e = (struct soc_enum *)kcontrol->private_value;
 	int path = e->shift_l;
@@ -1044,7 +1044,7 @@ static int tx_macro_dec_mode_put(struct snd_kcontrol *kcontrol,
 static int tx_macro_get_bcs(struct snd_kcontrol *kcontrol,
 			    struct snd_ctl_elem_value *ucontrol)
 {
-	struct snd_soc_component *component = snd_soc_kcontrol_component(kcontrol);
+	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
 	struct tx_macro *tx = snd_soc_component_get_drvdata(component);
 
 	ucontrol->value.integer.value[0] = tx->bcs_enable;
@@ -1055,7 +1055,7 @@ static int tx_macro_get_bcs(struct snd_kcontrol *kcontrol,
 static int tx_macro_set_bcs(struct snd_kcontrol *kcontrol,
 			    struct snd_ctl_elem_value *ucontrol)
 {
-	struct snd_soc_component *component = snd_soc_kcontrol_component(kcontrol);
+	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
 	int value = ucontrol->value.integer.value[0];
 	struct tx_macro *tx = snd_soc_component_get_drvdata(component);
 
