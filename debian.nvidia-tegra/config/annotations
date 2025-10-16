@@ -114,6 +114,9 @@ CONFIG_IP_SET                                   note<'LP: #2120190'>
 CONFIG_ISO9660_FS                               policy<{'arm64': 'y'}>
 CONFIG_ISO9660_FS                               note<'LP: #2080908'>
 
+CONFIG_KVM                                      policy<{'arm64': 'y'}>
+CONFIG_KVM                                      note<'LP: #2127981'>
+
 CONFIG_LATENCYTOP                               policy<{'arm64': 'y'}>
 CONFIG_LATENCYTOP                               note<'https://lists.ubuntu.com/archives/kernel-team/2014-July/045006.html, LP#1655986'>
 
@@ -289,18 +292,39 @@ CONFIG_ZRAM                                     note<'LP: #2120190'>
 # ---- Annotations without notes ----
 
 CONFIG_A11Y_BRAILLE_CONSOLE                     policy<{'arm64': '-'}>
+CONFIG_ARM64_ERRATUM_834220                     policy<{'arm64': 'y'}>
 CONFIG_CC_HAS_UBSAN_BOUNDS_STRICT               policy<{'arm64': '-'}>
 CONFIG_COMPACT_UNEVICTABLE_DEFAULT              policy<{'arm64': '0', 'arm64-nvidia-tegra': '1'}>
 CONFIG_CRYPTO_DEV_TEGRA                         policy<{'arm64': 'm'}>
 CONFIG_CRYPTO_SUPPORT_TEGRA_TESTS               policy<{'arm64': 'y'}>
 CONFIG_DEBUG_MUTEXES                            policy<{'arm64': '-', 'arm64-nvidia-tegra': 'n'}>
 CONFIG_DRM_GEM_SHMEM_HELPER                     policy<{'arm64': 'm'}>
+CONFIG_GUEST_PERF_EVENTS                        policy<{'arm64': 'y'}>
+CONFIG_HAVE_KVM_CPU_RELAX_INTERCEPT             policy<{'arm64': 'y'}>
+CONFIG_HAVE_KVM_DIRTY_RING                      policy<{'arm64': 'y'}>
+CONFIG_HAVE_KVM_DIRTY_RING_ACQ_REL              policy<{'arm64': 'y'}>
+CONFIG_HAVE_KVM_IRQCHIP                         policy<{'arm64': 'y'}>
+CONFIG_HAVE_KVM_IRQ_BYPASS                      policy<{'arm64': 'y'}>
+CONFIG_HAVE_KVM_IRQ_ROUTING                     policy<{'arm64': 'y'}>
+CONFIG_HAVE_KVM_MSI                             policy<{'arm64': 'y'}>
+CONFIG_HAVE_KVM_VCPU_RUN_PID_CHANGE             policy<{'arm64': 'y'}>
+CONFIG_IRQ_BYPASS_MANAGER                       policy<{'arm64': 'y'}>
+CONFIG_KVM_COMMON                               policy<{'arm64': 'y'}>
+CONFIG_KVM_GENERIC_DIRTYLOG_READ_PROTECT        policy<{'arm64': 'y'}>
+CONFIG_KVM_GENERIC_HARDWARE_ENABLING            policy<{'arm64': 'y'}>
+CONFIG_KVM_GENERIC_MMU_NOTIFIER                 policy<{'arm64': 'y'}>
+CONFIG_KVM_MMIO                                 policy<{'arm64': 'y'}>
+CONFIG_KVM_VFIO                                 policy<{'arm64': 'y'}>
+CONFIG_KVM_XFER_TO_GUEST_WORK                   policy<{'arm64': 'y'}>
 CONFIG_LEDS_TRIGGER_CPU                         policy<{'arm64': '-', 'arm64-nvidia-tegra': 'n'}>
 CONFIG_MMC_CQHCI                                policy<{'arm64': 'y'}>
+CONFIG_NEED_KVM_DIRTY_RING_WITH_BITMAP          policy<{'arm64': 'y'}>
 CONFIG_NUMA_BALANCING                           policy<{'arm64': '-', 'arm64-nvidia-tegra': 'n'}>
+CONFIG_NVHE_EL2_DEBUG                           policy<{'arm64': 'n'}>
 CONFIG_PREEMPT_BUILD                            policy<{'arm64': '-', 'arm64-nvidia-tegra': 'y'}>
 CONFIG_PREEMPT_NONE                             policy<{'arm64': 'n', 'arm64-nvidia-tegra': 'y'}>
 CONFIG_PREEMPT_NONE_BUILD                       policy<{'arm64-nvidia-tegra': '-'}>
+CONFIG_PREEMPT_NOTIFIERS                        policy<{'arm64': 'y'}>
 CONFIG_PSTORE_BLK_CONSOLE_SIZE                  policy<{'arm64': '64'}>
 CONFIG_PSTORE_ZONE                              policy<{'arm64': 'y'}>
 CONFIG_QUEUED_RWLOCKS                           policy<{'arm64': '-', 'arm64-nvidia-tegra': 'y'}>
