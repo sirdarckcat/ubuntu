@@ -105,7 +105,20 @@ static inline uint32_t epl_get_current_timestamp(void)
 /* Helper function to convert SoC TSC timestamp ticks to nanoseconds */
 static inline uint64_t epl_ticks_to_ns(uint64_t ticks)
 {
-	return ticks * timestamp_resolution_ns;
+	/* Check for multiplication overflow (CERT INT08-C/INT30-C) */
+	/* timestamp_resolution_ns is either 1 or 32, so overflow is extremely unlikely */
+	if (timestamp_resolution_ns == 0) {
+		/* Avoid division by zero - return 0 */
+		return 0;
+	}
+
+	if (ticks > (U64_MAX / timestamp_resolution_ns)) {
+		/* Overflow would occur - return max value */
+		return U64_MAX;
+	} else {
+		/* Safe to perform multiplication - no overflow possible */
+		return ticks * timestamp_resolution_ns;
+	}
 }
 
 static void tegra_hsp_tx_empty_notify(struct mbox_client *cl,
@@ -176,8 +189,8 @@ int epl_get_misc_ec_err_status(struct device *dev, uint8_t err_number, bool *sta
 		if (miscerr_cfg[err_number].dev_configured == NULL || isAddrMappOk == false)
 			return -ENODEV;
 
-		/* Validate mission error status register mapping */
-		if (!mission_err_status_va)
+		/* Validate mission error status register mapping (DOS_ASU_144) */
+		if (IS_ERR_OR_NULL(mission_err_status_va))
 			return -ENODEV;
 
 		dev_str = dev_driver_string(dev);
@@ -185,7 +198,17 @@ int epl_get_misc_ec_err_status(struct device *dev, uint8_t err_number, bool *sta
 		if (strcmp(dev_str, miscerr_cfg[err_number].dev_configured) != 0)
 			return -EACCES;
 
-		mask = (1U << ((error_index_offset + err_number) % 32U));
+		/* Check for overflow before addition (CERT INT08-C/INT30-C) */
+		/* Note: With current bounds (offset max 24, err_number max 4), this should never trigger */
+		if (err_number > (U32_MAX - error_index_offset)) {
+			dev_err(dev, "Invalid error number %u causing overflow\n", err_number);
+			return -EINVAL;
+		} else {
+			/* Safe to perform addition - no overflow possible */
+			uint32_t bit_index = error_index_offset + err_number;
+			mask = (1U << (bit_index % 32U));
+		}
+
 		mission_err_status = readl(mission_err_status_va);
 
 		if ((mission_err_status & mask) != 0U)
@@ -214,8 +237,9 @@ int epl_report_misc_ec_error(struct device *dev, uint8_t err_number,
 	if (status == false)
 		return -EAGAIN;
 
-	/* Validate register mappings before writing */
-	if (!miscerr_cfg[err_number].err_code_va || !miscerr_cfg[err_number].err_assert_va)
+	/* Validate register mappings before writing (DOS_ASU_144) */
+	if (IS_ERR_OR_NULL(miscerr_cfg[err_number].err_code_va) ||
+	    IS_ERR_OR_NULL(miscerr_cfg[err_number].err_assert_va))
 		return -ENODEV;
 
 	/* Updating error code */
@@ -234,13 +258,19 @@ int epl_report_error(struct epl_error_report_frame error_report)
 	uint64_t current_timestamp_64;
 	uint64_t reported_timestamp_64;
 
-	/* Validate input parameters */
+	/* Validate input parameters (DOS_ASU_143) */
 	if (epl_hsp_v == NULL || hs_state != HANDSHAKE_DONE)
 		return -ENODEV;
 
-	/* Validate HSP channel */
+	/* Validate HSP channel (DOS_ASU_143) */
 	if (!epl_hsp_v->tx.chan)
 		return -ENODEV;
+
+	/* Validate reporter_id is not zero (DOS_ASU_143) */
+	if (error_report.reporter_id == 0) {
+		dev_err(&epl_hsp_v->dev, "epl_report_error: Invalid reporter_id (0)\n");
+		return -EINVAL;
+	}
 
 	/* Plausibility check for timestamp - only if timestamp is not zero */
 	if (error_report.timestamp != 0) {
@@ -454,7 +484,7 @@ static int epl_client_probe(struct platform_device *pdev)
 			dev_info(dev, "Misc Sw Generic Err #%d configured to client %s\n",
 					iterator, miscerr_cfg[iterator].dev_configured);
 
-			/* Mapping registers to process address space */
+			/* Mapping registers to process address space (DOS_ASU_144) */
 			miscerr_cfg[iterator].err_code_va =
 				devm_platform_ioremap_resource(pdev, (iterator * 2));
 			miscerr_cfg[iterator].err_assert_va =
@@ -462,6 +492,9 @@ static int epl_client_probe(struct platform_device *pdev)
 
 			if (IS_ERR(miscerr_cfg[iterator].err_code_va) ||
 					IS_ERR(miscerr_cfg[iterator].err_assert_va)) {
+				/* Clear error pointers to prevent accidental access (DOS_ASU_144) */
+				miscerr_cfg[iterator].err_code_va = NULL;
+				miscerr_cfg[iterator].err_assert_va = NULL;
 				isAddrMappOk = false;
 				ret = -1;
 				dev_err(&pdev->dev, "error in mapping misc err register for err #%d\n",
@@ -498,9 +531,12 @@ static int epl_client_probe(struct platform_device *pdev)
 	if (is_misc_ec_mapped == true) {
 		mission_err_status_va = devm_platform_ioremap_resource(pdev, NUM_SW_GENERIC_ERR * 2);
 		if (IS_ERR(mission_err_status_va)) {
+			/* Clear error pointer to prevent accidental access (DOS_ASU_144) */
+			ret = PTR_ERR(mission_err_status_va);
+			mission_err_status_va = NULL;
 			isAddrMappOk = false;
 			dev_err(&pdev->dev, "error in mapping mission error status register\n");
-			return PTR_ERR(mission_err_status_va);
+			return ret;
 		}
 	}
 
