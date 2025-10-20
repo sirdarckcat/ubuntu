@@ -253,6 +253,8 @@ static u64 get_corrected_val(struct rdt_resource *r, struct rdt_domain *d,
 int resctrl_arch_rmid_read(struct rdt_resource *r, struct rdt_domain *d,
 			   u32 rmid, enum resctrl_event_id eventid, u64 *val)
 {
+	struct rdt_hw_domain *hw_dom = resctrl_to_arch_dom(d);
+	struct arch_mbm_state *am;
 	u64 msr_val;
 	int ret;
 
@@ -260,12 +262,16 @@ int resctrl_arch_rmid_read(struct rdt_resource *r, struct rdt_domain *d,
 		return -EINVAL;
 
 	ret = __rmid_read(rmid, eventid, &msr_val);
-	if (ret)
-		return ret;
 
-	*val = get_corrected_val(r, d, rmid, eventid, msr_val);
+	if (!ret) {
+		*val = get_corrected_val(r, d, rmid, eventid, msr_val);
+	} else if (ret == -EINVAL) {
+		am = get_arch_mbm_state(hw_dom, rmid, eventid);
+		if (am)
+			am->prev_msr = 0;
+	}
 
-	return 0;
+	return ret;
 }
 
 /*
