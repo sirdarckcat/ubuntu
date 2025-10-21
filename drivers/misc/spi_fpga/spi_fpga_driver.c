@@ -361,15 +361,17 @@ static ssize_t pps_dbg_show(struct device *dev,
                        " freq_err_threshold: %03u"
                        " sync_err_threshold: %03u"
                        " pps_phase_offset: %+04d"
-                       " freq_monitor_delta: %+04d\n",
+                       " freq_monitor_delta: %04d"
+                       " drdy_pps_distance: %04u\n",
                        data.slice_3_err,
                        data.slice_2_err,
                        data.slice_1_err,
                        data.slice_0_err,
-                       data.freq_err_threshold, /* unsigned */
+                       data.freq_err_threshold * 4, /* unsigned */
                        data.sync_err_threshold, /* unsigned */
                        data.pps_phase_offset,
-                       data.freq_monitor_delta
+                       data.freq_monitor_delta,
+                       data.drdy_pps_distance
                        );
 }
 
@@ -1783,50 +1785,116 @@ int get_pps_data(struct fpga_data *pd, struct fpga_pps_dbg *data)
 
         data->pps_phase_offset = (int8_t)regval;
 
-        ret = fpga_spi_reg_read(pd, FPGA_FREQ_MONITOR_DELTA, &regval);
+        /* FPGA_FREQ_ERR */
+        ret = fpga_spi_reg_read(pd, FPGA_FREQ_ERR_LSB, &regval);
         if (ret < 0) {
-                pr_err( "Failed to read FPGA freq monitor delta\n");
+                pr_err( "Failed to read FPGA freq monitor delta LSB\n");
                 mutex_unlock(&pd->lock);
                 return ret;
         }
 
-        data->freq_monitor_delta = (int8_t)regval;
+        data->freq_monitor_delta = (uint16_t)regval;
 
-        ret = fpga_spi_reg_read(pd, FPGA_SYNC_ERROR_3, &regval);
+        ret = fpga_spi_reg_read(pd, FPGA_FREQ_ERR_MSB, &regval);
         if (ret < 0) {
-                pr_err( "Failed to read FPGA sync error 3\n");
+                pr_err( "Failed to read FPGA freq monitor delta MSB\n");
                 mutex_unlock(&pd->lock);
                 return ret;
         }
 
-        data->slice_3_err = (int8_t)regval;
+        data->freq_monitor_delta |= ((int16_t)regval << 8);
 
-        ret = fpga_spi_reg_read(pd, FPGA_SYNC_ERROR_2, &regval);
+        /* ADR_DRDY_PPS */
+        ret = fpga_spi_reg_read(pd, ADR_DRDY_PPS_LSB, &regval);
         if (ret < 0) {
-                pr_err( "Failed to read FPGA sync error 2\n");
+                pr_err( "Failed to read FPGA ddrdy pps distance LSB\n");
                 mutex_unlock(&pd->lock);
                 return ret;
         }
 
-        data->slice_2_err = (int8_t)regval;
+        data->drdy_pps_distance = (uint16_t)regval;
 
-        ret = fpga_spi_reg_read(pd, FPGA_SYNC_ERROR_1, &regval);
+        ret = fpga_spi_reg_read(pd, ADR_DRDY_PPS_MSB, &regval);
         if (ret < 0) {
-                pr_err( "Failed to read FPGA sync error 1\n");
+                pr_err( "Failed to read FPGA ddrdy pps distance MSB\n");
                 mutex_unlock(&pd->lock);
                 return ret;
         }
 
-        data->slice_1_err = (int8_t)regval;
+        data->drdy_pps_distance |= ((uint16_t)regval << 8);
 
-        ret = fpga_spi_reg_read(pd, FPGA_SYNC_ERROR_0, &regval);
+        /* FPGA_SYNC_ERROR_3 */
+        ret = fpga_spi_reg_read(pd, FPGA_SYNC_ERROR_3_LSB, &regval);
         if (ret < 0) {
-                pr_err( "Failed to read FPGA sync error 0\n");
+                pr_err( "Failed to read FPGA sync error 3 LSB\n");
                 mutex_unlock(&pd->lock);
                 return ret;
         }
 
-        data->slice_0_err = (int8_t)regval;
+        data->slice_3_err = (uint16_t)regval;
+
+        ret = fpga_spi_reg_read(pd, FPGA_SYNC_ERROR_3_MSB, &regval);
+        if (ret < 0) {
+                pr_err( "Failed to read FPGA sync error 3 MSB\n");
+                mutex_unlock(&pd->lock);
+                return ret;
+        }
+
+        data->slice_3_err |= ((int16_t)regval << 8);
+
+        ret = fpga_spi_reg_read(pd, FPGA_SYNC_ERROR_2_LSB, &regval);
+        if (ret < 0) {
+                pr_err( "Failed to read FPGA sync error 2 LSB\n");
+                mutex_unlock(&pd->lock);
+                return ret;
+        }
+
+        data->slice_2_err = (uint16_t)regval;
+
+        ret = fpga_spi_reg_read(pd, FPGA_SYNC_ERROR_2_MSB, &regval);
+        if (ret < 0) {
+                pr_err( "Failed to read FPGA sync error 2 MSB\n");
+                mutex_unlock(&pd->lock);
+                return ret;
+        }
+
+        data->slice_2_err |= ((int16_t)regval << 8);
+
+        ret = fpga_spi_reg_read(pd, FPGA_SYNC_ERROR_1_LSB, &regval);
+        if (ret < 0) {
+                pr_err( "Failed to read FPGA sync error 1 LSB\n");
+                mutex_unlock(&pd->lock);
+                return ret;
+        }
+
+        data->slice_1_err = (uint16_t)regval;
+
+        ret = fpga_spi_reg_read(pd, FPGA_SYNC_ERROR_1_MSB, &regval);
+        if (ret < 0) {
+                pr_err( "Failed to read FPGA sync error 1 MSB\n");
+                mutex_unlock(&pd->lock);
+                return ret;
+        }
+
+        data->slice_1_err |= ((int16_t)regval << 8);
+
+        ret = fpga_spi_reg_read(pd, FPGA_SYNC_ERROR_0_LSB, &regval);
+        if (ret < 0) {
+                pr_err( "Failed to read FPGA sync error 0 LSB\n");
+                mutex_unlock(&pd->lock);
+                return ret;
+        }
+
+        data->slice_0_err = (uint16_t)regval;
+
+        ret = fpga_spi_reg_read(pd, FPGA_SYNC_ERROR_0_MSB, &regval);
+        if (ret < 0) {
+                pr_err( "Failed to read FPGA sync error 0 MSB\n");
+                mutex_unlock(&pd->lock);
+                return ret;
+        }
+
+        data->slice_0_err |= ((int16_t)regval << 8);
 
         ret = fpga_spi_reg_read(pd, FPGA_FREQ_ERROR_TRH, &regval);
         if (ret < 0) {
