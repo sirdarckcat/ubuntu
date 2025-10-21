@@ -36,14 +36,15 @@ enum fpga_type {
 };
 
 struct fpga_pps_dbg {
-        int8_t slice_3_err;
-        int8_t slice_2_err;
-        int8_t slice_1_err;
-        int8_t slice_0_err;
+        int16_t slice_3_err;
+        int16_t slice_2_err;
+        int16_t slice_1_err;
+        int16_t slice_0_err;
         uint8_t freq_err_threshold;
         uint8_t sync_err_threshold;
         int8_t pps_phase_offset;
-        int8_t freq_monitor_delta;
+        int16_t freq_monitor_delta;
+        uint16_t drdy_pps_distance;
 };
 
 #define FPGA_CFG_MODE_RESET 0x00
@@ -205,10 +206,14 @@ struct fpga_pps_dbg {
 #define FPGA_DBG_OCCUPANCY_B_MIN 0x5d
 
 /* FPGA_SYNC_ERROR */
-#define FPGA_SYNC_ERROR_0 0x5c
-#define FPGA_SYNC_ERROR_1 0x5b
-#define FPGA_SYNC_ERROR_2 0x5a
-#define FPGA_SYNC_ERROR_3 0x59
+#define FPGA_SYNC_ERROR_0_LSB 0x30
+#define FPGA_SYNC_ERROR_0_MSB 0x31
+#define FPGA_SYNC_ERROR_1_LSB 0x32
+#define FPGA_SYNC_ERROR_1_MSB 0x33
+#define FPGA_SYNC_ERROR_2_LSB 0x34
+#define FPGA_SYNC_ERROR_2_MSB 0x35
+#define FPGA_SYNC_ERROR_3_LSB 0x36
+#define FPGA_SYNC_ERROR_3_MSB 0x37
 
 /* FPGA_*_ERROR_TRH */
 #define FPGA_FREQ_ERROR_TRH 0x57
@@ -217,6 +222,11 @@ struct fpga_pps_dbg {
 /* FPGA_*_ERROR_TRH */
 #define FPGA_PPS_PHASE_OFFSET 0x55
 #define FPGA_FREQ_MONITOR_DELTA 0x54
+#define FPGA_FREQ_ERR_LSB 0x54
+#define FPGA_FREQ_ERR_MSB 0x70
+
+#define ADR_DRDY_PPS_LSB  0x72
+#define ADR_DRDY_PPS_MSB  0x73
 
 #define FPGA_FW_VERSION 0x71
 
