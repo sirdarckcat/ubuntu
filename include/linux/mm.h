@@ -2984,6 +2984,13 @@ static inline struct ptdesc *pagetable_alloc(gfp_t gfp, unsigned int order)
 	return page_ptdesc(page);
 }
 
+static inline void __pagetable_free(struct ptdesc *pt)
+{
+	struct page *page = ptdesc_page(pt);
+
+	__free_pages(page, compound_order(page));
+}
+
 /**
  * pagetable_free - Free pagetables
  * @pt:	The page table descriptor
@@ -2993,12 +3000,10 @@ static inline struct ptdesc *pagetable_alloc(gfp_t gfp, unsigned int order)
  */
 static inline void pagetable_free(struct ptdesc *pt)
 {
-	struct page *page = ptdesc_page(pt);
-
 	if (ptdesc_test_kernel(pt))
 		ptdesc_clear_kernel(pt);
 
-	__free_pages(page, compound_order(page));
+	__pagetable_free(pt);
 }
 
 #if USE_SPLIT_PTE_PTLOCKS
