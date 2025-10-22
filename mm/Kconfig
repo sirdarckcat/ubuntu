@@ -879,6 +879,9 @@ config READ_ONLY_THP_FOR_FS
 
 endif # TRANSPARENT_HUGEPAGE
 
+config ASYNC_KERNEL_PGTABLE_FREE
+	def_bool n
+
 #
 # UP and nommu archs use km based percpu allocator
 #
