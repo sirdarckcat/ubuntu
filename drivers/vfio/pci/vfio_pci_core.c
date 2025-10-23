@@ -1505,13 +1505,14 @@ long vfio_pci_core_ioctl(struct vfio_device *core_vdev, unsigned int cmd,
 		return vfio_pci_ioctl_reset(vdev, uarg);
 	case VFIO_DEVICE_SET_IRQS:
 		return vfio_pci_ioctl_set_irqs(vdev, uarg);
-	case VFIO_DEVICE_P2P_DMA_BUF:
+	case VFIO_DEVICE_P2P_DMA_BUF: {
 		struct vfio_device_p2p_dma_buf p2p_dma_buf;
 
 		if (copy_from_user(&p2p_dma_buf, uarg, sizeof(p2p_dma_buf)))
 			return -EFAULT;
 
 		return vfio_pci_core_feature_dma_buf(vdev, &p2p_dma_buf);
+	}
 	default:
 		return -ENOTTY;
 	}
