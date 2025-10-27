@@ -5,7 +5,6 @@
 
 #include "xe_guc.h"
 
-#include <linux/iopoll.h>
 #include <drm/drm_managed.h>
 
 #include <generated/xe_wa_oob.h>
@@ -35,6 +34,7 @@
 #include "xe_guc_pc.h"
 #include "xe_guc_relay.h"
 #include "xe_guc_submit.h"
+#include "xe_iopoll.h"
 #include "xe_memirq.h"
 #include "xe_mmio.h"
 #include "xe_platform_types.h"

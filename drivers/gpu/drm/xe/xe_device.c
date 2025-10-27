@@ -8,7 +8,6 @@
 #include <linux/aperture.h>
 #include <linux/delay.h>
 #include <linux/fault-inject.h>
-#include <linux/iopoll.h>
 #include <linux/units.h>
 
 #include <drm/drm_atomic_helper.h>
@@ -48,6 +47,7 @@
 #include "xe_hwmon.h"
 #include "xe_i2c.h"
 #include "xe_irq.h"
+#include "xe_iopoll.h"
 #include "xe_late_bind_fw.h"
 #include "xe_mmio.h"
 #include "xe_module.h"
