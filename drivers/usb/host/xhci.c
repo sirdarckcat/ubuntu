@@ -5194,11 +5194,58 @@ static void xhci_hcd_init_usb3_data(struct xhci_hcd *xhci, struct usb_hcd *hcd)
 
 	switch (minor_rev) {
 	case 2:
+		struct xhci_port_cap *port_cap = NULL;
+		int i;
+
 		hcd->speed = HCD_USB32;
 		hcd->self.root_hub->speed = USB_SPEED_SUPER_PLUS;
 		hcd->self.root_hub->rx_lanes = 2;
 		hcd->self.root_hub->tx_lanes = 2;
+		/*
+		 * Determine the SSP rate based on the PSIM value from PSI table.
+		 * USB 3.2 can be either Gen 1x2 (10 Gbps) or Gen 2x2 (20 Gbps).
+		 * Default to Gen 2x2 if PSI information is not available.
+		 */
 		hcd->self.root_hub->ssp_rate = USB_SSP_GEN_2x2;
+
+		/* Find the USB 3.x port capability */
+		for (i = 0; i < xhci->num_port_caps; i++) {
+			if (xhci->port_caps[i].maj_rev == 0x03) {
+				port_cap = &xhci->port_caps[i];
+				break;
+			}
+		}
+
+		if (port_cap && port_cap->psi_count) {
+			u16 max_rate = 0;
+			u8 psie;
+			u16 psim;
+
+			/* Find the maximum speed from PSI entries */
+			for (i = 0; i < port_cap->psi_count; i++) {
+				psie = XHCI_EXT_PORT_PSIE(port_cap->psi[i]);
+				psim = XHCI_EXT_PORT_PSIM(port_cap->psi[i]);
+
+				/* Convert to Gbps */
+				while (psie < 3) { /* 3 = Gbps */
+					psim /= 1000;
+					psie++;
+				}
+
+				if (psim > max_rate)
+					max_rate = psim;
+			}
+
+			/*
+			 * Set SSP rate based on maximum speed:
+			 * 10 Gbps = USB 3.2 Gen 1x2 (2 lanes @ 5 Gbps each)
+			 * 20 Gbps = USB 3.2 Gen 2x2 (2 lanes @ 10 Gbps each)
+			 */
+			if (max_rate == 10)
+				hcd->self.root_hub->ssp_rate = USB_SSP_GEN_1x2;
+			else if (max_rate == 20)
+				hcd->self.root_hub->ssp_rate = USB_SSP_GEN_2x2;
+		}
 		break;
 	case 1:
 		hcd->speed = HCD_USB31;
