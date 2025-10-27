@@ -142,7 +142,7 @@ enum system_function_id {
 };
 
 /** @brief Represents VM state and send to System Manager to maintian VM state */
-typedef enum  {
+enum vm_state {
 	/** @brief Represents VM state as Booted */
 	VM_STATE_BOOT,
 	/** @brief Represents VM state as Halted */
@@ -161,7 +161,7 @@ typedef enum  {
 	VM_STATE_INVALID,
 	/** @brief Represents VM state as Max possible */
 	VM_STATE_MAX
-} vm_state;
+};
 
 /** @brief Macro to create Command using function id and vmid */
 #define CREATE_CMD(func_id, vmid)	((func_id << 24U) | vmid)
