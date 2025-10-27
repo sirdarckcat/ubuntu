@@ -7,7 +7,6 @@
 
 #include <linux/cleanup.h>
 #include <linux/delay.h>
-#include <linux/iopoll.h>
 #include <linux/jiffies.h>
 #include <linux/ktime.h>
 #include <linux/wait_bit.h>
@@ -31,6 +30,7 @@
 #include "xe_guc_ct.h"
 #include "xe_map.h"
 #include "xe_mmio.h"
+#include "xe_iopoll.h"
 #include "xe_pcode.h"
 #include "xe_pm.h"
 #include "xe_sriov.h"
