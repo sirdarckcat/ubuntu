@@ -808,10 +808,10 @@ static void tegra_i2c_set_clk_params(struct tegra_i2c_dev *i2c_dev)
 		 * Whereas when HS mode is not supported, allow the highest speed mode capable.
 		 */
 		if (i2c_dev->hw->has_hs_mode_support) {
-			tlow = i2c_dev->hw->tlow_hs_mode;
-			thigh = i2c_dev->hw->thigh_hs_mode;
-			tsu_thd = i2c_dev->hw->setup_hold_time_hs_mode;
-			non_hs_mode = i2c_dev->hw->clk_divisor_hs_mode;
+			tlow = i2c_dev->hw->tlow_fast_mode;
+			thigh = i2c_dev->hw->thigh_fast_mode;
+			tsu_thd = i2c_dev->hw->setup_hold_time_fast_mode;
+			non_hs_mode = i2c_dev->hw->clk_divisor_fast_mode;
 			break;
 		}
 		fallthrough;
