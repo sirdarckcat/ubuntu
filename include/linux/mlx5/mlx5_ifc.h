@@ -10198,9 +10198,7 @@ struct mlx5_ifc_mtutc_reg_bits {
 struct mlx5_ifc_pcam_enhanced_features_bits {
 	u8         reserved_at_0[0x48];
 	u8         fec_100G_per_lane_in_pplm[0x1];
-	u8         reserved_at_49[0xa];
-	u8	   buffer_ownership[0x1];
-	u8	   resereved_at_54[0x14];
+	u8         reserved_at_49[0x1f];
 	u8         fec_50G_per_lane_in_pplm[0x1];
 	u8         reserved_at_69[0x4];
 	u8         rx_icrc_encapsulated_counter[0x1];
