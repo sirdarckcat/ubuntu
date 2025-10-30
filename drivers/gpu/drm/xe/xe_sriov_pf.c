@@ -15,6 +15,7 @@
 #include "xe_sriov_pf.h"
 #include "xe_sriov_pf_helpers.h"
 #include "xe_sriov_pf_service.h"
+#include "xe_sriov_pf_sysfs.h"
 #include "xe_sriov_printk.h"
 
 static unsigned int wanted_max_vfs(struct xe_device *xe)
@@ -124,6 +125,10 @@ int xe_sriov_pf_init_late(struct xe_device *xe)
 		if (err)
 			return err;
 	}
+
+	err = xe_sriov_pf_sysfs_init(xe);
+	if (err)
+		return err;
 
 	return 0;
 }
