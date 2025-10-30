@@ -16,3 +16,8 @@ rustc			= rustc-1.80
 rustfmt			= /usr/lib/rust-1.80/bin/rustfmt
 bindgen			= bindgen-0.65
 EOD
+
+#
+# Re-enable producing linux-modules-extra for backwards compatibility.
+#
+echo "do_extras_package = true" >>${DEBIAN}/rules.d/amd64.mk
