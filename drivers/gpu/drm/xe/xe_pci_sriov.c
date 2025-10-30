@@ -21,6 +21,7 @@
 #include "xe_sriov_pf_control.h"
 #include "xe_sriov_pf_helpers.h"
 #include "xe_sriov_pf_provision.h"
+#include "xe_sriov_pf_sysfs.h"
 #include "xe_sriov_printk.h"
 
 static void pf_reset_vfs(struct xe_device *xe, unsigned int num_vfs)
@@ -143,6 +144,8 @@ static int pf_enable_vfs(struct xe_device *xe, int num_vfs)
 	xe_sriov_info(xe, "Enabled %u of %u VF%s\n",
 		      num_vfs, total_vfs, str_plural(total_vfs));
 
+	xe_sriov_pf_sysfs_link_vfs(xe, num_vfs);
+
 	pf_engine_activity_stats(xe, num_vfs, true);
 
 	return num_vfs;
@@ -170,6 +173,8 @@ static int pf_disable_vfs(struct xe_device *xe)
 		return 0;
 
 	pf_engine_activity_stats(xe, num_vfs, false);
+
+	xe_sriov_pf_sysfs_unlink_vfs(xe, num_vfs);
 
 	pci_disable_sriov(pdev);
 
