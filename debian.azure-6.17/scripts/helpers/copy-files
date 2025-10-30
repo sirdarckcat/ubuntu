@@ -48,10 +48,18 @@ if [ -d "${DEBIAN}/modprobe.d/" ]; then
 	rsync -avc --delete "${DEBIAN_MASTER}/modprobe.d/" "${DEBIAN}/modprobe.d"
 fi
 
-cp -p "${DEBIAN_MASTER}/control.d/"*.inclusion-list "${DEBIAN}/control.d"
+# Starting with questing, there is no longer the modules split
+# cp -p "${DEBIAN_MASTER}/control.d/"*.inclusion-list "${DEBIAN}/control.d"
 
 cp -p "${DEBIAN_MASTER}/reconstruct" "${DEBIAN}/reconstruct"
 
 if [ -x "${DEBIAN}/scripts/helpers/local-mangle" ]; then
 	"./${DEBIAN}/scripts/helpers/local-mangle"
 fi
+
+#
+# Re-enable producing linux-modules-extra for backwards compatibility.
+#
+for i in amd64 arm64; do
+	echo "do_extras_package = true" >>${DEBIAN}/rules.d/${i}.mk
+done
