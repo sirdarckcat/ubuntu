@@ -1033,20 +1033,6 @@ static int ionic_tx_tso(struct ionic_queue *q, struct sk_buff *skb)
 	bool encap;
 	int err;
 
-	desc_info = &q->info[q->head_idx];
-	buf_info = desc_info->bufs;
-
-	if (unlikely(ionic_tx_map_skb(q, skb, desc_info)))
-		return -EIO;
-
-	len = skb->len;
-	mss = skb_shinfo(skb)->gso_size;
-	outer_csum = (skb_shinfo(skb)->gso_type & (SKB_GSO_GRE |
-						   SKB_GSO_GRE_CSUM |
-						   SKB_GSO_IPXIP4 |
-						   SKB_GSO_IPXIP6 |
-						   SKB_GSO_UDP_TUNNEL |
-						   SKB_GSO_UDP_TUNNEL_CSUM));
 	has_vlan = !!skb_vlan_tag_present(skb);
 	vlan_tci = skb_vlan_tag_get(skb);
 	encap = skb->encapsulation;
@@ -1060,12 +1046,22 @@ static int ionic_tx_tso(struct ionic_queue *q, struct sk_buff *skb)
 		err = ionic_tx_tcp_inner_pseudo_csum(skb);
 	else
 		err = ionic_tx_tcp_pseudo_csum(skb);
-	if (err) {
-		/* clean up mapping from ionic_tx_map_skb */
-		ionic_tx_desc_unmap_bufs(q, desc_info);
+	if (err)
 		return err;
-	}
 
+	desc_info = &q->info[q->head_idx];
+	buf_info = desc_info->bufs;
+	if (unlikely(ionic_tx_map_skb(q, skb, desc_info)))
+		return -EIO;
+
+	len = skb->len;
+	mss = skb_shinfo(skb)->gso_size;
+	outer_csum = (skb_shinfo(skb)->gso_type & (SKB_GSO_GRE |
+						   SKB_GSO_GRE_CSUM |
+						   SKB_GSO_IPXIP4 |
+						   SKB_GSO_IPXIP6 |
+						   SKB_GSO_UDP_TUNNEL |
+						   SKB_GSO_UDP_TUNNEL_CSUM));
 	if (encap)
 		hdrlen = skb_inner_tcp_all_headers(skb);
 	else
