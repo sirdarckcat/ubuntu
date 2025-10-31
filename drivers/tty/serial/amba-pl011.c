@@ -288,9 +288,7 @@ struct pl011_dmarx_data {
 
 struct pl011_dmatx_data {
 	struct dma_chan		*chan;
-	dma_addr_t		dma;
-	size_t			len;
-	char			*buf;
+	struct pl011_dmabuf	dbuf;
 	bool			queued;
 };
 
@@ -415,10 +413,10 @@ static int pl011_fifo_to_tty(struct uart_amba_port *uap)
 
 #define PL011_DMA_BUFFER_SIZE PAGE_SIZE
 
-static int pl011_dmabuf_init(struct dma_chan *chan, struct pl011_dmabuf *db,
+static int pl011_dmabuf_init(struct device *dev, struct pl011_dmabuf *db,
 			     enum dma_data_direction dir)
 {
-	db->buf = dma_alloc_coherent(chan->device->dev, PL011_DMA_BUFFER_SIZE,
+	db->buf = dma_alloc_coherent(dev, PL011_DMA_BUFFER_SIZE,
 				     &db->dma, GFP_KERNEL);
 	if (!db->buf)
 		return -ENOMEM;
@@ -427,11 +425,11 @@ static int pl011_dmabuf_init(struct dma_chan *chan, struct pl011_dmabuf *db,
 	return 0;
 }
 
-static void pl011_dmabuf_free(struct dma_chan *chan, struct pl011_dmabuf *db,
+static void pl011_dmabuf_free(struct device *dev, struct pl011_dmabuf *db,
 			      enum dma_data_direction dir)
 {
 	if (db->buf) {
-		dma_free_coherent(chan->device->dev,
+		dma_free_coherent(dev,
 				  PL011_DMA_BUFFER_SIZE, db->buf, db->dma);
 	}
 }
@@ -585,14 +583,10 @@ static void pl011_start_tx_pio(struct uart_amba_port *uap);
 static void pl011_dma_tx_callback(void *data)
 {
 	struct uart_amba_port *uap = data;
-	struct pl011_dmatx_data *dmatx = &uap->dmatx;
 	unsigned long flags;
 	u16 dmacr;
 
 	uart_port_lock_irqsave(&uap->port, &flags);
-	if (uap->dmatx.queued)
-		dma_unmap_single(dmatx->chan->device->dev, dmatx->dma,
-				 dmatx->len, DMA_TO_DEVICE);
 
 	dmacr = uap->dmacr;
 	uap->dmacr = dmacr & ~UART011_TXDMAE;
@@ -636,7 +630,6 @@ static int pl011_dma_tx_refill(struct uart_amba_port *uap)
 {
 	struct pl011_dmatx_data *dmatx = &uap->dmatx;
 	struct dma_chan *chan = dmatx->chan;
-	struct dma_device *dma_dev = chan->device;
 	struct dma_async_tx_descriptor *desc;
 	struct circ_buf *xmit = &uap->port.state->xmit;
 	unsigned int count;
@@ -676,9 +669,9 @@ static int pl011_dma_tx_refill(struct uart_amba_port *uap)
 	if (count > PL011_DMA_BUFFER_SIZE)
 		count = PL011_DMA_BUFFER_SIZE;
 
-	if (xmit->tail < xmit->head) {
-		memcpy(&dmatx->buf[0], &xmit->buf[xmit->tail], count);
-	} else {
+	if (xmit->tail < xmit->head)
+		memcpy(&dmatx->dbuf.buf[0], &xmit->buf[xmit->tail], count);
+	else {
 		size_t first = UART_XMIT_SIZE - xmit->tail;
 		size_t second;
 
@@ -686,24 +679,16 @@ static int pl011_dma_tx_refill(struct uart_amba_port *uap)
 			first = count;
 		second = count - first;
 
-		memcpy(&dmatx->buf[0], &xmit->buf[xmit->tail], first);
+		memcpy(&dmatx->dbuf.buf[0], &xmit->buf[xmit->tail], first);
 		if (second)
-			memcpy(&dmatx->buf[first], &xmit->buf[0], second);
+			memcpy(&dmatx->dbuf.buf[first], &xmit->buf[0], second);
 	}
 
-	dmatx->len = count;
-	dmatx->dma = dma_map_single(dma_dev->dev, dmatx->buf, count,
-				    DMA_TO_DEVICE);
-	if (dma_mapping_error(dma_dev->dev, dmatx->dma)) {
-		uap->dmatx.queued = false;
-		dev_dbg(uap->port.dev, "unable to map TX DMA\n");
-		return -EBUSY;
-	}
+	dmatx->dbuf.len = count;
 
-	desc = dmaengine_prep_slave_single(chan, dmatx->dma, dmatx->len, DMA_MEM_TO_DEV,
-					   DMA_PREP_INTERRUPT | DMA_CTRL_ACK);
+	desc = dmaengine_prep_slave_single(chan, dmatx->dbuf.dma, dmatx->dbuf.len, DMA_MEM_TO_DEV,
+					     DMA_PREP_INTERRUPT | DMA_CTRL_ACK);
 	if (!desc) {
-		dma_unmap_single(dma_dev->dev, dmatx->dma, dmatx->len, DMA_TO_DEVICE);
 		uap->dmatx.queued = false;
 		/*
 		 * If DMA cannot be used right now, we complete this
@@ -721,7 +706,7 @@ static int pl011_dma_tx_refill(struct uart_amba_port *uap)
 	dmaengine_submit(desc);
 
 	/* Fire the DMA transaction */
-	dma_dev->device_issue_pending(chan);
+	chan->device->device_issue_pending(chan);
 
 	uap->dmacr |= UART011_TXDMAE;
 	pl011_write(uap->dmacr, uap, REG_DMACR);
@@ -867,8 +852,6 @@ __acquires(&uap->port.lock)
 	dmaengine_terminate_async(uap->dmatx.chan);
 
 	if (uap->dmatx.queued) {
-		dma_unmap_single(uap->dmatx.chan->device->dev, uap->dmatx.dma,
-				 uap->dmatx.len, DMA_TO_DEVICE);
 		uap->dmatx.queued = false;
 		uap->dmacr &= ~UART011_TXDMAE;
 		pl011_write(uap->dmacr, uap, REG_DMACR);
@@ -1167,13 +1150,14 @@ static void pl011_dma_startup(struct uart_amba_port *uap)
 	if (!uap->dmatx.chan)
 		return;
 
-	uap->dmatx.buf = kmalloc(PL011_DMA_BUFFER_SIZE, GFP_KERNEL | __GFP_DMA);
-	if (!uap->dmatx.buf) {
+	/* Allocate coherent TX DMA buffer */
+	ret = pl011_dmabuf_init(uap->port.dev, &uap->dmatx.dbuf, DMA_TO_DEVICE);
+	if (ret) {
+		dev_err(uap->port.dev, "failed to init DMA %s: %d\n",
+			"TX buffer", ret);
 		uap->port.fifosize = uap->fifosize;
 		return;
 	}
-
-	uap->dmatx.len = PL011_DMA_BUFFER_SIZE;
 
 	/* The DMA buffer is now the FIFO the TTY subsystem can use */
 	uap->port.fifosize = PL011_DMA_BUFFER_SIZE;
@@ -1183,7 +1167,7 @@ static void pl011_dma_startup(struct uart_amba_port *uap)
 		goto skip_rx;
 
 	/* Allocate and map DMA RX buffers */
-	ret = pl011_dmabuf_init(uap->dmarx.chan, &uap->dmarx.dbuf_a,
+	ret = pl011_dmabuf_init(uap->port.dev, &uap->dmarx.dbuf_a,
 				DMA_FROM_DEVICE);
 	if (ret) {
 		dev_err(uap->port.dev, "failed to init DMA %s: %d\n",
@@ -1191,12 +1175,12 @@ static void pl011_dma_startup(struct uart_amba_port *uap)
 		goto skip_rx;
 	}
 
-	ret = pl011_dmabuf_init(uap->dmarx.chan, &uap->dmarx.dbuf_b,
+	ret = pl011_dmabuf_init(uap->port.dev, &uap->dmarx.dbuf_b,
 				DMA_FROM_DEVICE);
 	if (ret) {
 		dev_err(uap->port.dev, "failed to init DMA %s: %d\n",
 			"RX buffer B", ret);
-		pl011_dmabuf_free(uap->dmarx.chan, &uap->dmarx.dbuf_a,
+		pl011_dmabuf_free(uap->port.dev, &uap->dmarx.dbuf_a,
 				  DMA_FROM_DEVICE);
 		goto skip_rx;
 	}
@@ -1256,22 +1240,18 @@ static void pl011_dma_shutdown(struct uart_amba_port *uap)
 	if (uap->using_tx_dma) {
 		/* In theory, this should already be done by pl011_dma_flush_buffer */
 		dmaengine_terminate_all(uap->dmatx.chan);
-		if (uap->dmatx.queued) {
-			dma_unmap_single(uap->dmatx.chan->device->dev,
-					 uap->dmatx.dma, uap->dmatx.len,
-					 DMA_TO_DEVICE);
-			uap->dmatx.queued = false;
-		}
+		uap->dmatx.queued = false;
 
-		kfree(uap->dmatx.buf);
+		/* Free coherent TX DMA buffer */
+		pl011_dmabuf_free(uap->port.dev, &uap->dmatx.dbuf, DMA_TO_DEVICE);
 		uap->using_tx_dma = false;
 	}
 
 	if (uap->using_rx_dma) {
 		dmaengine_terminate_all(uap->dmarx.chan);
 		/* Clean up the RX DMA */
-		pl011_dmabuf_free(uap->dmarx.chan, &uap->dmarx.dbuf_a, DMA_FROM_DEVICE);
-		pl011_dmabuf_free(uap->dmarx.chan, &uap->dmarx.dbuf_b, DMA_FROM_DEVICE);
+		pl011_dmabuf_free(uap->port.dev, &uap->dmarx.dbuf_a, DMA_FROM_DEVICE);
+		pl011_dmabuf_free(uap->port.dev, &uap->dmarx.dbuf_b, DMA_FROM_DEVICE);
 		if (uap->dmarx.poll_rate)
 			del_timer_sync(&uap->dmarx.timer);
 		uap->using_rx_dma = false;
