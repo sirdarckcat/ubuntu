@@ -21,6 +21,7 @@
 #include <linux/stringify.h>
 #include <linux/uaccess.h>
 #include <linux/vmalloc.h>
+#include <linux/moduleloader.h>
 
 #include <asm/cacheflush.h>
 #include <asm/daifflags.h>
@@ -138,7 +139,10 @@ void *alloc_insn_page(void)
 			NUMA_NO_NODE, __builtin_return_address(0));
 	if (!addr)
 		return NULL;
-	set_memory_rox((unsigned long)addr, 1);
+	if (set_memory_rox((unsigned long)addr, 1)) {
+		module_memfree(addr);
+		return NULL;
+	}
 	return addr;
 }
 
