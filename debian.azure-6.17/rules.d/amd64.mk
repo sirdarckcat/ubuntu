@@ -15,6 +15,6 @@ do_tools_perf   = true
 do_tools_bpftool = false
 do_tools_x86	= true
 do_tools_hyperv	= true
-do_extras_package = true
 do_zfs		= true
 disable_d_i=true
+do_extras_package = true
