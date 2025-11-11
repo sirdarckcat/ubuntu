@@ -3830,6 +3830,21 @@ static struct tegra_xudc_soc tegra264_xudc_soc_data = {
 	.xudc_device_params_init = tegra264_xudc_device_params_init,
 };
 
+static struct tegra_xudc_soc tegra264_hv_xudc_soc_data = {
+	.num_clks = 0, /* no clock access */
+	.num_phys = 4,
+	.u1_enable = true,
+	.u2_enable = true,
+	.lpm_enable = true,
+	.invalid_seq_num = false,
+	.pls_quirk = false,
+	.port_reset_quirk = false,
+	.has_ipfs = false,
+	.has_pg_support = true,
+	.xudc_device_params_init = tegra264_xudc_device_params_init,
+	.is_hv_guest = true,
+};
+
 static const struct of_device_id tegra_xudc_of_match[] = {
 	{
 		.compatible = "nvidia,tegra210-xudc",
@@ -3854,6 +3869,10 @@ static const struct of_device_id tegra_xudc_of_match[] = {
 	{
 		.compatible = "nvidia,tegra264-xudc",
 		.data = &tegra264_xudc_soc_data
+	},
+	{
+		.compatible = "nvidia,tegra264-hv-xudc",
+		.data = &tegra264_hv_xudc_soc_data
 	},
 	{ }
 };
