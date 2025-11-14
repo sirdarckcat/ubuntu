@@ -2584,7 +2584,7 @@ skip_clock_and_reg:
 	pm_runtime_mark_last_busy(tegra->dev);
 	pm_runtime_set_active(tegra->dev);
 
-	if (tegra->padctl_irq) {
+	if ((tegra->padctl_irq) || (tegra->soc->is_xhci_vf)) {
 		device_init_wakeup(tegra->dev, true);
 		pm_runtime_enable(tegra->dev);
 	}
@@ -2657,7 +2657,7 @@ static void tegra_xusb_remove(struct platform_device *pdev)
 
 	fw_log_deinit(tegra);
 
-	if (tegra->padctl_irq)
+	if ((tegra->padctl_irq) || (tegra->soc->is_xhci_vf))
 		pm_runtime_disable(&pdev->dev);
 
 	pm_runtime_put(&pdev->dev);
