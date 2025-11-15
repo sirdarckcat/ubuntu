@@ -123,7 +123,7 @@ static void unix_update_graph(struct unix_vertex *vertex)
 	if (!vertex)
 		return;
 
-	unix_graph_maybe_cyclic = true;
+	WRITE_ONCE(unix_graph_maybe_cyclic, true);
 	unix_graph_grouped = false;
 }
 
@@ -522,7 +522,7 @@ prev_vertex:
 				unix_vertex_max_scc_index = vertex->scc_index;
 
 			if (!unix_graph_maybe_cyclic)
-				unix_graph_maybe_cyclic = unix_scc_cyclic(&scc);
+				WRITE_ONCE(unix_graph_maybe_cyclic, unix_scc_cyclic(&scc));
 		}
 
 		list_del(&scc);
@@ -537,7 +537,7 @@ static void unix_walk_scc(struct sk_buff_head *hitlist)
 {
 	unsigned long last_index = UNIX_VERTEX_INDEX_START;
 
-	unix_graph_maybe_cyclic = false;
+	WRITE_ONCE(unix_graph_maybe_cyclic, false);
 	unix_vertex_max_scc_index = UNIX_VERTEX_INDEX_START;
 
 	/* Visit every vertex exactly once.
@@ -558,7 +558,7 @@ static void unix_walk_scc(struct sk_buff_head *hitlist)
 
 static void unix_walk_scc_fast(struct sk_buff_head *hitlist)
 {
-	unix_graph_maybe_cyclic = false;
+	WRITE_ONCE(unix_graph_maybe_cyclic, false);
 
 	while (!list_empty(&unix_unvisited_vertices)) {
 		struct unix_vertex *vertex;
@@ -570,7 +570,7 @@ static void unix_walk_scc_fast(struct sk_buff_head *hitlist)
 		if (unix_scc_dead(&scc, true))
 			unix_collect_skb(&scc, hitlist);
 		else if (!unix_graph_maybe_cyclic)
-			unix_graph_maybe_cyclic = unix_scc_cyclic(&scc);
+			WRITE_ONCE(unix_graph_maybe_cyclic, unix_scc_cyclic(&scc));
 
 		list_del(&scc);
 	}
@@ -617,20 +617,16 @@ void unix_gc(void)
 	queue_work(system_unbound_wq, &unix_gc_work);
 }
 
-#define UNIX_INFLIGHT_TRIGGER_GC 16000
-#define UNIX_INFLIGHT_SANE_USER (SCM_MAX_FD * 8)
+#define UNIX_INFLIGHT_SANE_USER		(SCM_MAX_FD * 8)
 
 void wait_for_unix_gc(struct scm_fp_list *fpl)
 {
-	/* If number of inflight sockets is insane,
-	 * force a garbage collect right now.
-	 *
-	 * Paired with the WRITE_ONCE() in unix_inflight(),
-	 * unix_notinflight(), and __unix_gc().
+	/* GC only helps unreferenced cyclic SCM_RIGHTS references.
+	 * If no such reference could have been formed, there is
+	 * nothing to wait for.
 	 */
-	if (READ_ONCE(unix_tot_inflight) > UNIX_INFLIGHT_TRIGGER_GC &&
-	    !READ_ONCE(gc_in_progress))
-		unix_gc();
+	if (!READ_ONCE(unix_graph_maybe_cyclic))
+		return;
 
 	/* Penalise users who want to send AF_UNIX sockets
 	 * but whose sockets have not been received yet.
@@ -639,6 +635,8 @@ void wait_for_unix_gc(struct scm_fp_list *fpl)
 	    READ_ONCE(fpl->user->unix_inflight) < UNIX_INFLIGHT_SANE_USER)
 		return;
 
-	if (READ_ONCE(gc_in_progress))
-		flush_work(&unix_gc_work);
+	if (!READ_ONCE(gc_in_progress))
+		unix_gc();
+
+	flush_work(&unix_gc_work);
 }
