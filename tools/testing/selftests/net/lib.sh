@@ -36,7 +36,7 @@ __ksft_status_merge()
 		weights[$i]=$((weight++))
 	done
 
-	if [[ ${weights[$a]} > ${weights[$b]} ]]; then
+	if [[ ${weights[$a]} -ge ${weights[$b]} ]]; then
 		echo "$a"
 		return 0
 	else
