@@ -406,20 +406,14 @@ static int __maybe_unused firmware_load (struct platform_device *pdev)
 {
 	struct device *dev = &pdev->dev;
 	const struct firmware *fw = NULL;
-	const char *fw_name = ECP5_FM;
+	const char *fw_name = NULL;
 	struct	spi_master *fw_master;
 	unsigned char cmd;
 	unsigned int val;
 	u8 retries = QED_ECP5_FW_LOAD_ITER;
+	int rc = 0;
 
 	struct fpga_data *state = platform_get_drvdata(pdev);
-
-	int rc = request_firmware(&fw, fw_name, dev);
-
-	if (rc) {
-		dev_err(dev, "Failed request firmware\n");
-		return -1;
-	}
 
 	fw_master = spi_busnum_to_master(state->fw_info.bus_num);
 
@@ -427,7 +421,7 @@ static int __maybe_unused firmware_load (struct platform_device *pdev)
 		spi_deinit_fw(pdev);
 		rc = -1;
 		dev_err(dev, "SPI fw_master not found.\n");
-		goto err_release_fw;
+		return rc;
 	}
 
 	state->spi_fw = spi_new_device(fw_master, &state->fw_info);
@@ -436,7 +430,7 @@ static int __maybe_unused firmware_load (struct platform_device *pdev)
 		spi_deinit_fw(pdev);
 		rc = -1;
 		dev_err(dev, "Failed to create slave.\n");
-		goto err_release_fw;
+		return rc;
 	}
 
 	rc = spi_setup(state->spi_fw);
@@ -444,7 +438,7 @@ static int __maybe_unused firmware_load (struct platform_device *pdev)
 	if (rc) {
 		spi_deinit_fw(pdev);
 		dev_err(dev, "Failed to setup slave.\n");
-		goto err_release_fw;
+		return rc;
 	}
 
 	while (--retries) {
@@ -466,15 +460,33 @@ static int __maybe_unused firmware_load (struct platform_device *pdev)
 
 		dev_info(dev, "ecp5 id: 0x%08x", val);
 
-		if ((val != LFE5U_45_ID) && (val != LFE5UM_45_ID)) {
+		/* Select firmware based on FPGA ID */
+		switch (val) {
+		case LFE5U_45_ID:
+		case LFE5UM_45_ID:
+			fw_name = ECP5_FM;
+			break;
+		case LFE5U_25_ID:
+		case LFE5UM_25_ID:
+			fw_name = ECP5_FM_25;
+			break;
+		default:
 			dev_err(dev,
-				"Read FPGA_ID: 0x%08x does "
-				"not match LFE5U_45_ID: 0x%08x "
-				"nor LFE5UM_45_ID: 0x%08x",
+				"Read FPGA_ID: 0x%08x does not match known IDs "
+				"(LFE5U_45_ID: 0x%08x, LFE5UM_45_ID: 0x%08x)",
 				val, LFE5U_45_ID, LFE5UM_45_ID);
-
 			rc = -1;
 			continue;
+		}
+
+		if (fw == NULL) {
+			rc = request_firmware(&fw, fw_name, dev);
+			if (rc) {
+				dev_err(dev, "Failed to request firmware %s\n", fw_name);
+				break;
+			}
+
+			dev_info(dev, "Loaded firmware: %s\n", fw_name);
 		}
 
 		cmd = CMD_ISC_ENABLE;
@@ -538,8 +550,10 @@ static int __maybe_unused firmware_load (struct platform_device *pdev)
 	if (state->spi_fw) {
 		spi_unregister_device(state->spi_fw);
 	}
-err_release_fw:
-	release_firmware(fw);
+
+	if (fw) {
+		release_firmware(fw);
+	}
 
 	return rc;
 }
