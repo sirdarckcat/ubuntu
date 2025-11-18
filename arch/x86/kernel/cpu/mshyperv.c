@@ -406,6 +406,43 @@ static void __init reduced_hw_init(void)
 	x86_init.irqs.pre_vector_init	= x86_init_noop;
 }
 
+/*
+ * It's been reported that very rarely the raw TSC reading during early boot
+ * on the CPUs below may be slightly smaller than expected:
+ * AMD EPYC 7452 32-Core Processor (family: 0x17, model: 0x31, stepping: 0x0)
+ * AMD EPYC 7763 64-Core Processor (family: 0x19, model: 0x1, stepping: 0x1)
+ * As a result, the calculated time from the Hyper-V TSC page is smaller than
+ * expected, meaning that when we use the time of the Hyper-V TSC page to
+ * program the Hyper-V timer, the timer may fire immediately and cause a
+ * timer interrupt storm during early boot: during Linux's early boot,
+ * Linux stays in periodic timer mode (i.e. Linux keeps programming the timer
+ * in single-shot mode at a frequency of CONFIG_HZ) for a short while before
+ * it switches the timer to the on-demand tickless mode; in the periodic timer
+ * mode, Linux timer interrupt handler reprograms the timer before the handler
+ * finishes, causing a new timer interrupt and hence the handler runs again,
+ * which causes another timer interrupt and the handler runs over and over
+ * again, and consequently the vCPU ends up in soft lockup.
+ *
+ * It looks like the smaller-than-expected TSC reading only rarely happens
+ * during early boot, and later the TSC reading becomes normal. While we're
+ * trying to understand why this happens, let's hide the Hyper-V timer
+ * capability in favor of the local APIC timer, which doesn't rely on TSC,
+ * and hence does not suffer from the rare timer interrupt storm.
+ */
+static bool tsc_is_unreliable(void)
+{
+	if (boot_cpu_data.x86_vendor != X86_VENDOR_AMD)
+		return false;
+
+	if (boot_cpu_data.x86 == 0x17 && boot_cpu_data.x86_model == 0x31)
+		return true;
+
+	if (boot_cpu_data.x86 == 0x19 && boot_cpu_data.x86_model == 0x1)
+		return true;
+
+	return false;
+}
+
 static void __init ms_hyperv_init_platform(void)
 {
 	int hv_max_functions_eax;
@@ -431,6 +468,12 @@ static void __init ms_hyperv_init_platform(void)
 	pr_info("Hyper-V: privilege flags low 0x%x, high 0x%x, hints 0x%x, misc 0x%x\n",
 		ms_hyperv.features, ms_hyperv.priv_high, ms_hyperv.hints,
 		ms_hyperv.misc_features);
+
+	if ((ms_hyperv.features & HV_MSR_SYNTIMER_AVAILABLE) &&
+	    tsc_is_unreliable()) {
+		ms_hyperv.features &= ~HV_MSR_SYNTIMER_AVAILABLE;
+		pr_info("Hyper-V: HV timer won't be used due to unstable TSC\n");
+	}
 
 	ms_hyperv.max_vp_index = cpuid_eax(HYPERV_CPUID_IMPLEMENT_LIMITS);
 	ms_hyperv.max_lp_index = cpuid_ebx(HYPERV_CPUID_IMPLEMENT_LIMITS);
