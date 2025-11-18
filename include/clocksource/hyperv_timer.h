@@ -77,6 +77,10 @@ hv_read_tsc_page_tsc(const struct ms_hyperv_tsc_page *tsc_pg,
 		offset = READ_ONCE(tsc_pg->tsc_offset);
 		*cur_tsc = hv_get_raw_timer();
 
+		/* In case the TSC is insanely big, do not use it. */
+		if (((s64)*cur_tsc) < 0)
+			return false;
+
 		/*
 		 * Make sure we read sequence after we read all other values
 		 * from TSC page.
