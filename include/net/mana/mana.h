@@ -540,7 +540,7 @@ u32 mana_run_xdp(struct net_device *ndev, struct mana_rxq *rxq,
 struct bpf_prog *mana_xdp_get(struct mana_port_context *apc);
 void mana_chn_setxdp(struct mana_port_context *apc, struct bpf_prog *prog);
 int mana_bpf(struct net_device *ndev, struct netdev_bpf *bpf);
-int mana_pre_alloc_rxbufs(struct mana_port_context *apc, int mtu, int num_queues);
+int mana_pre_alloc_rxbufs(struct mana_port_context *apc, int mtu);
 void mana_query_phy_stats(struct mana_port_context *apc);
 void mana_pre_dealloc_rxbufs(struct mana_port_context *apc);
 void mana_query_gf_stats(struct mana_port_context *apc);
