@@ -44,15 +44,6 @@ static const struct file_operations mana_dbg_q_fops = {
 	.read   = mana_dbg_q_read,
 };
 
-static void mana_put_rx_page(struct mana_rxq *rxq, struct page *page,
-			     bool from_pool)
-{
-	if (from_pool)
-		page_pool_put_full_page(rxq->page_pool, page, false);
-	else
-		put_page(page);
-}
-
 /* Microsoft Azure Network Adapter (MANA) functions */
 
 static int mana_open(struct net_device *ndev)
@@ -623,40 +614,21 @@ static void *mana_get_rxbuf_pre(struct mana_rxq *rxq, dma_addr_t *da)
 }
 
 /* Get RX buffer's data size, alloc size, XDP headroom based on MTU */
-static void mana_get_rxbuf_cfg(struct mana_port_context *apc,
-			       int mtu, u32 *datasize, u32 *alloc_size,
-			       u32 *headroom, u32 *frag_count)
+static void mana_get_rxbuf_cfg(int mtu, u32 *datasize, u32 *alloc_size,
+			       u32 *headroom)
 {
-	u32 len, buf_size;
+	if (mtu > MANA_XDP_MTU_MAX)
+		*headroom = 0; /* no support for XDP */
+	else
+		*headroom = XDP_PACKET_HEADROOM;
 
-	/* Calculate datasize first (consistent across all cases) */
+	*alloc_size = SKB_DATA_ALIGN(mtu + MANA_RXBUF_PAD + *headroom);
+
+	/* Using page pool in this case, so alloc_size is PAGE_SIZE */
+	if (*alloc_size < PAGE_SIZE)
+		*alloc_size = PAGE_SIZE;
+
 	*datasize = mtu + ETH_HLEN;
-
-	/* For xdp and jumbo frames make sure only one packet fits per page */
-	if (mtu + MANA_RXBUF_PAD > PAGE_SIZE / 2 || mana_xdp_get(apc)) {
-		if (mana_xdp_get(apc)) {
-			*headroom = XDP_PACKET_HEADROOM;
-			*alloc_size = PAGE_SIZE;
-		} else {
-			*headroom = 0; /* no support for XDP */
-			*alloc_size = SKB_DATA_ALIGN(mtu + MANA_RXBUF_PAD +
-						     *headroom);
-		}
-
-		*frag_count = 1;
-		return;
-	}
-
-	/* Standard MTU case - optimize for multiple packets per page */
-	*headroom = 0;
-
-	/* Calculate base buffer size needed */
-	len = SKB_DATA_ALIGN(mtu + MANA_RXBUF_PAD + *headroom);
-	buf_size = ALIGN(len, MANA_RX_FRAG_ALIGNMENT);
-
-	/* Calculate how many packets can fit in a page */
-	*frag_count = PAGE_SIZE / buf_size;
-	*alloc_size = buf_size;
 }
 
 int mana_pre_alloc_rxbufs(struct mana_port_context *mpc, int new_mtu)
@@ -668,9 +640,8 @@ int mana_pre_alloc_rxbufs(struct mana_port_context *mpc, int new_mtu)
 	void *va;
 	int i;
 
-	mana_get_rxbuf_cfg(mpc, new_mtu, &mpc->rxbpre_datasize,
-			   &mpc->rxbpre_alloc_size, &mpc->rxbpre_headroom,
-			   &mpc->rxbpre_frag_count);
+	mana_get_rxbuf_cfg(new_mtu, &mpc->rxbpre_datasize,
+			   &mpc->rxbpre_alloc_size, &mpc->rxbpre_headroom);
 
 	dev = mpc->ac->gdma_dev->gdma_context->dev;
 
@@ -1674,11 +1645,8 @@ drop_xdp:
 
 drop:
 	if (from_pool) {
-		if (rxq->frag_count == 1)
-			page_pool_recycle_direct(rxq->page_pool,
-						 virt_to_head_page(buf_va));
-		else
-			page_pool_put_page(rxq->page_pool, virt_to_head_page(buf_va), -1, true);
+		page_pool_recycle_direct(rxq->page_pool,
+					 virt_to_head_page(buf_va));
 	} else {
 		WARN_ON_ONCE(rxq->xdp_save_va);
 		/* Save for reuse */
@@ -1694,46 +1662,33 @@ static void *mana_get_rxfrag(struct mana_rxq *rxq, struct device *dev,
 			     dma_addr_t *da, bool *from_pool)
 {
 	struct page *page;
-	u32 offset;
 	void *va;
+
 	*from_pool = false;
 
-	/* Don't use fragments for jumbo frames or XDP where it's 1 fragment
-	 * per page.
-	 */
-	if (rxq->frag_count == 1) {
-		/* Reuse XDP dropped page if available */
-		if (rxq->xdp_save_va) {
-			va = rxq->xdp_save_va;
-			page = virt_to_head_page(va);
-			rxq->xdp_save_va = NULL;
-		} else {
-			page = page_pool_dev_alloc_pages(rxq->page_pool);
-			if (!page)
-				return NULL;
-
-			*from_pool = true;
-			va = page_to_virt(page);
-		}
-
-		*da = dma_map_single(dev, va + rxq->headroom, rxq->datasize,
-				     DMA_FROM_DEVICE);
-		if (dma_mapping_error(dev, *da)) {
-			mana_put_rx_page(rxq, page, *from_pool);
+	/* Reuse XDP dropped page if available */
+	if (rxq->xdp_save_va) {
+		va = rxq->xdp_save_va;
+		rxq->xdp_save_va = NULL;
+	} else {
+		page = page_pool_dev_alloc_pages(rxq->page_pool);
+		if (!page)
 			return NULL;
-		}
 
-		return va;
+		*from_pool = true;
+		va = page_to_virt(page);
 	}
 
-	page =  page_pool_dev_alloc_frag(rxq->page_pool, &offset,
-					 rxq->alloc_size);
-	if (!page)
-		return NULL;
+	*da = dma_map_single(dev, va + rxq->headroom, rxq->datasize,
+			     DMA_FROM_DEVICE);
+	if (dma_mapping_error(dev, *da)) {
+		if (*from_pool)
+			page_pool_put_full_page(rxq->page_pool, page, false);
+		else
+			put_page(virt_to_head_page(va));
 
-	va  = page_to_virt(page) + offset;
-	*da = page_pool_get_dma_addr(page) + offset + rxq->headroom;
-	*from_pool = true;
+		return NULL;
+	}
 
 	return va;
 }
@@ -1750,9 +1705,9 @@ static void mana_refill_rx_oob(struct device *dev, struct mana_rxq *rxq,
 	va = mana_get_rxfrag(rxq, dev, &da, &from_pool);
 	if (!va)
 		return;
-	if (!rxoob->from_pool || rxq->frag_count == 1)
-		dma_unmap_single(dev, rxoob->sgl[0].address, rxq->datasize,
-				 DMA_FROM_DEVICE);
+
+	dma_unmap_single(dev, rxoob->sgl[0].address, rxq->datasize,
+			 DMA_FROM_DEVICE);
 	*old_buf = rxoob->buf_va;
 	*old_fp = rxoob->from_pool;
 
@@ -2158,15 +2113,15 @@ static void mana_destroy_rxq(struct mana_port_context *apc,
 		if (!rx_oob->buf_va)
 			continue;
 
+		dma_unmap_single(dev, rx_oob->sgl[0].address,
+				 rx_oob->sgl[0].size, DMA_FROM_DEVICE);
+
 		page = virt_to_head_page(rx_oob->buf_va);
 
-		if (rxq->frag_count == 1 || !rx_oob->from_pool) {
-			dma_unmap_single(dev, rx_oob->sgl[0].address,
-					 rx_oob->sgl[0].size, DMA_FROM_DEVICE);
-			mana_put_rx_page(rxq, page, rx_oob->from_pool);
-		} else {
-			page_pool_put_page(rxq->page_pool, virt_to_head_page(rx_oob->buf_va), -1, true);
-		}
+		if (rx_oob->from_pool)
+			page_pool_put_full_page(rxq->page_pool, page, false);
+		else
+			put_page(page);
 
 		rx_oob->buf_va = NULL;
 	}
@@ -2272,19 +2227,9 @@ static int mana_create_page_pool(struct mana_rxq *rxq, struct gdma_context *gc)
 	struct page_pool_params pprm = {};
 	int ret;
 
-	pprm.pool_size = mpc->rx_queue_size / rxq->frag_count + 1;
+	pprm.pool_size = mpc->rx_queue_size;
 	pprm.nid = gc->numa_node;
 	pprm.order = get_order(rxq->alloc_size);
-	pprm.dev = gc->dev;
-
-	/* Let the page pool do the dma map when page sharing with multiple
-	 * fragments enabled for rx buffers.
-	 */
-	if (rxq->frag_count > 1) {
-		pprm.flags =  PP_FLAG_DMA_MAP | PP_FLAG_DMA_SYNC_DEV;
-		pprm.max_len = PAGE_SIZE;
-		pprm.dma_dir = DMA_FROM_DEVICE;
-	}
 
 	rxq->page_pool = page_pool_create(&pprm);
 
@@ -2323,8 +2268,9 @@ static struct mana_rxq *mana_create_rxq(struct mana_port_context *apc,
 	rxq->rxq_idx = rxq_idx;
 	rxq->rxobj = INVALID_MANA_HANDLE;
 
-	mana_get_rxbuf_cfg(apc, ndev->mtu, &rxq->datasize, &rxq->alloc_size,
-			   &rxq->headroom, &rxq->frag_count);
+	mana_get_rxbuf_cfg(ndev->mtu, &rxq->datasize, &rxq->alloc_size,
+			   &rxq->headroom);
+
 	/* Create page pool for RX queue */
 	err = mana_create_page_pool(rxq, gc);
 	if (err) {
