@@ -432,8 +432,10 @@ static __always_inline u64 read_hv_clock_tsc(void)
 	 * times are in sync and monotonic. Therefore we can fall back
 	 * to the MSR in case the TSC page indicates unavailability.
 	 */
-	if (!hv_read_tsc_page_tsc(tsc_page, &cur_tsc, &time))
+	if (!hv_read_tsc_page_tsc(tsc_page, &cur_tsc, &time)) {
+		WARN_ONCE(((s64)cur_tsc) < 0, "TSC is too big: %llx\n", cur_tsc);
 		time = read_hv_clock_msr();
+	}
 
 	return time;
 }
