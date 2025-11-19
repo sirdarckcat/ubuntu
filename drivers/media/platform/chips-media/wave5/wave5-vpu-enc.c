@@ -1537,6 +1537,7 @@ static int wave5_vpu_open_enc(struct file *filp)
 	struct vpu_device *dev = video_drvdata(filp);
 	struct vpu_instance *inst = NULL;
 	struct v4l2_ctrl_handler *v4l2_ctrl_hdl;
+	unsigned long flags;
 	int ret = 0;
 
 	inst = kzalloc(sizeof(*inst), GFP_KERNEL);
@@ -1559,7 +1560,6 @@ static int wave5_vpu_open_enc(struct file *filp)
 	v4l2_fh_add(&inst->v4l2_fh);
 
 	INIT_LIST_HEAD(&inst->list);
-	list_add_tail(&inst->list, &dev->instances);
 
 	inst->v4l2_m2m_dev = inst->dev->v4l2_m2m_enc_dev;
 	inst->v4l2_fh.m2m_ctx =
@@ -1724,6 +1724,11 @@ static int wave5_vpu_open_enc(struct file *filp)
 	inst->frame_rate = 30;
 
 	init_completion(&inst->irq_done);
+	ret = wave5_kfifo_alloc(inst);
+	if (ret) {
+		dev_err(inst->dev->dev, "failed to allocate fifo\n");
+		goto cleanup_inst;
+	}
 
 	inst->id = ida_alloc(&inst->dev->inst_ida, GFP_KERNEL);
 	if (inst->id < 0) {
@@ -1731,6 +1736,17 @@ static int wave5_vpu_open_enc(struct file *filp)
 		ret = inst->id;
 		goto cleanup_inst;
 	}
+
+	ret = mutex_lock_interruptible(&dev->irq_lock);
+	if (ret) {
+		v4l2_m2m_ctx_release(inst->v4l2_fh.m2m_ctx);
+		goto cleanup_inst;
+	}
+
+	spin_lock_irqsave(&dev->irq_spinlock, flags);
+	list_add_tail(&inst->list, &dev->instances);
+	spin_unlock_irqrestore(&dev->irq_spinlock, flags);
+	mutex_unlock(&dev->irq_lock);
 
 	wave5_vdi_allocate_sram(inst->dev);
 

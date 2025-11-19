@@ -40,20 +40,24 @@ int wave5_vpu_wait_interrupt(struct vpu_instance *inst, unsigned int timeout)
 	return 0;
 }
 
-static irqreturn_t wave5_vpu_irq_thread(int irq, void *dev_id)
+static irqreturn_t wave5_vpu_irq(int irq, void *dev_id)
 {
 	u32 seq_done;
 	u32 cmd_done;
 	u32 irq_reason;
-	struct vpu_instance *inst;
+	u32 irq_subreason;
+	struct vpu_instance *inst, *tmp;
 	struct vpu_device *dev = dev_id;
+	int val;
+	unsigned long flags;
 
 	if (wave5_vdi_read_register(dev, W5_VPU_VPU_INT_STS)) {
 		irq_reason = wave5_vdi_read_register(dev, W5_VPU_VINT_REASON);
 		wave5_vdi_write_register(dev, W5_VPU_VINT_REASON_CLR, irq_reason);
 		wave5_vdi_write_register(dev, W5_VPU_VINT_CLEAR, 0x1);
 
-		list_for_each_entry(inst, &dev->instances, list) {
+		spin_lock_irqsave(&dev->irq_spinlock, flags);
+		list_for_each_entry_safe(inst, tmp, &dev->instances, list) {
 			seq_done = wave5_vdi_read_register(dev, W5_RET_SEQ_DONE_INSTANCE_INFO);
 			cmd_done = wave5_vdi_read_register(dev, W5_RET_QUEUE_CMD_DONE_INST);
 
@@ -71,15 +75,42 @@ static irqreturn_t wave5_vpu_irq_thread(int irq, void *dev_id)
 			    irq_reason & BIT(INT_WAVE5_ENC_PIC)) {
 				if (cmd_done & BIT(inst->id)) {
 					cmd_done &= ~BIT(inst->id);
-					wave5_vdi_write_register(dev, W5_RET_QUEUE_CMD_DONE_INST,
-								 cmd_done);
-					inst->ops->finish_process(inst);
+					irq_subreason =
+						wave5_vdi_read_register(dev, W5_VPU_VINT_REASON);
+					if (!(irq_subreason & BIT(INT_WAVE5_DEC_PIC)))
+						wave5_vdi_write_register(dev,
+									 W5_RET_QUEUE_CMD_DONE_INST,
+									 cmd_done);
+					val = BIT(INT_WAVE5_DEC_PIC);
+					kfifo_in(&inst->irq_status, &val, sizeof(int));
 				}
 			}
+		}
+		spin_unlock_irqrestore(&dev->irq_spinlock, flags);
 
-			wave5_vpu_clear_interrupt(inst, irq_reason);
+		return IRQ_WAKE_THREAD;
+	}
+
+	return IRQ_HANDLED;
+}
+
+static irqreturn_t wave5_vpu_irq_thread(int irq, void *dev_id)
+{
+	struct vpu_device *dev = dev_id;
+	struct vpu_instance *inst, *tmp;
+	int irq_status, ret;
+
+	mutex_lock(&dev->irq_lock);
+	list_for_each_entry_safe(inst, tmp, &dev->instances, list) {
+		while (kfifo_len(&inst->irq_status)) {
+			ret = kfifo_out(&inst->irq_status, &irq_status, sizeof(int));
+			if (!ret)
+				break;
+
+			inst->ops->finish_process(inst);
 		}
 	}
+	mutex_unlock(&dev->irq_lock);
 
 	return IRQ_HANDLED;
 }
@@ -148,6 +179,8 @@ static int wave5_vpu_probe(struct platform_device *pdev)
 
 	mutex_init(&dev->dev_lock);
 	mutex_init(&dev->hw_lock);
+	mutex_init(&dev->irq_lock);
+	spin_lock_init(&dev->irq_spinlock);
 	dev_set_drvdata(&pdev->dev, dev);
 	dev->dev = &pdev->dev;
 
@@ -214,7 +247,7 @@ static int wave5_vpu_probe(struct platform_device *pdev)
 		goto err_enc_unreg;
 	}
 
-	ret = devm_request_threaded_irq(&pdev->dev, dev->irq, NULL,
+	ret = devm_request_threaded_irq(&pdev->dev, dev->irq, wave5_vpu_irq,
 					wave5_vpu_irq_thread, IRQF_ONESHOT, "vpu_irq", dev);
 	if (ret) {
 		dev_err(&pdev->dev, "Register interrupt handler, fail: %d\n", ret);
@@ -256,6 +289,7 @@ static int wave5_vpu_remove(struct platform_device *pdev)
 
 	mutex_destroy(&dev->dev_lock);
 	mutex_destroy(&dev->hw_lock);
+	mutex_destroy(&dev->irq_lock);
 	clk_bulk_disable_unprepare(dev->num_clks, dev->clks);
 	wave5_vpu_enc_unregister_device(dev);
 	wave5_vpu_dec_unregister_device(dev);
