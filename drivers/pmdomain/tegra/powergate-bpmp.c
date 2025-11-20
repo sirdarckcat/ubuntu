@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
- * Copyright (c) 2016-2017, NVIDIA CORPORATION. All rights reserved
+ * Copyright (c) 2016-2025, NVIDIA CORPORATION. All rights reserved
  */
 
 #include <linux/of.h>
@@ -136,6 +136,10 @@ static char *tegra_bpmp_powergate_get_name(struct tegra_bpmp *bpmp,
 	err = tegra_bpmp_transfer(bpmp, &msg);
 	if (err < 0 || msg.rx.ret < 0)
 		return NULL;
+
+	if (dev_to_node(bpmp->dev) != NUMA_NO_NODE)
+		return kasprintf(GFP_KERNEL, "%s.%d", response.get_name.name,
+				 dev_to_node(bpmp->dev));
 
 	return kstrdup(response.get_name.name, GFP_KERNEL);
 }
