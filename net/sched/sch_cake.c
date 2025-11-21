@@ -1420,7 +1420,7 @@ static u32 cake_overhead(struct cake_sched_data *q, const struct sk_buff *skb)
 	if (!shinfo->gso_size)
 		return cake_calc_overhead(q, len, off);
 
-	/* borrowed from qdisc_pkt_len_init() */
+	/* borrowed from qdisc_pkt_len_segs_init() */
 	hdr_len = skb_transport_offset(skb);
 
 	/* + transport layer */
