@@ -74,6 +74,7 @@ for arch_flavour in ${FLAVOURS} ; do
 
 	# Arch-specific compiler, if any
 	arch_gcc=$(cat <<EOF | make -s -f - all
+-include ${DEBIAN}/rules.d/toolchain.mk
 include ${DEBIAN}/rules.d/${arch}.mk
 all:
 	@echo \$(if \$(gcc),\$(gcc),${gcc})
