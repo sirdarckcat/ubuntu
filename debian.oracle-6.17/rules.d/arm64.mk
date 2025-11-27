@@ -20,3 +20,4 @@ do_zfs			= true
 disable_d_i		= true
 do_dtbs			= false
 do_common_headers_indep = false
+do_extras_package =   true
