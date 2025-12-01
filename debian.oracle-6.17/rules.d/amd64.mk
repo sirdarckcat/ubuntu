@@ -23,4 +23,4 @@ disable_d_i		= true
 do_dtbs			= false
 do_common_headers_indep = false
 do_lib_rust		= false
-do_extras_package =   true
+do_extras_package =	true
