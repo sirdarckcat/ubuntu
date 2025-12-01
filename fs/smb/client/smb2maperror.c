@@ -10,7 +10,6 @@
 #include <linux/errno.h>
 #include "cifsglob.h"
 #include "cifs_debug.h"
-#include "smb2pdu.h"
 #include "smb2proto.h"
 #include "smb2status.h"
 #include "smb2glob.h"
