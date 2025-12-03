@@ -43,8 +43,20 @@ DECLARE_STATIC_KEY_FALSE(force_printkthreads_key);
  */
 #define PRINTK_MESSAGE_MAX	2048
 
+#ifdef CONFIG_PREEMPT_RT
+
+/* Size of timestamp string having format [TS:<TS Value of Max Length 28>]*/
+#define NVLOG_TS_STR_LEN	34
+
+/* the maximum size allowed to be reserved for a record */
+#define PRINTKRB_RECORD_MAX	(1024 - NVLOG_TS_STR_LEN)
+
+#else
+
 /* the maximum size allowed to be reserved for a record */
 #define PRINTKRB_RECORD_MAX	1024
+
+#endif
 
 /* Flags for a single printk record. */
 enum printk_info_flags {
