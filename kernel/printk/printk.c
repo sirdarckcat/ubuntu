@@ -2204,12 +2204,21 @@ u16 printk_parse_prefix(const char *text, int *level,
 	return prefix_len;
 }
 
+#ifdef CONFIG_PREEMPT_RT
+__printf(6, 0)
+static u16 printk_sprint(char *text, u16 size, u64 ts_counter, int facility,
+#else
 __printf(5, 0)
 static u16 printk_sprint(char *text, u16 size, int facility,
+#endif
 			 enum printk_info_flags *flags, const char *fmt,
 			 va_list args)
 {
 	u16 text_len;
+#ifdef CONFIG_PREEMPT_RT
+	u16 ts_prefix_len;
+	char ts_prefix_buff[NVLOG_TS_STR_LEN];
+#endif
 
 	text_len = vscnprintf(text, size, fmt, args);
 
@@ -2229,6 +2238,22 @@ static u16 printk_sprint(char *text, u16 size, int facility,
 			memmove(text, text + prefix_len, text_len);
 		}
 	}
+
+#ifdef CONFIG_PREEMPT_RT
+	if (!(*flags & LOG_CONT) && text_len > 0) {
+		/* calculate TS prefix length */
+		ts_prefix_len = snprintf(ts_prefix_buff, sizeof(ts_prefix_buff), "[TS:%llu] ", ts_counter);
+
+		/* truncate text to fit timestamp prefix if overflow */
+		if (text_len + ts_prefix_len > size) {
+			text_len = size - ts_prefix_len;
+		}
+
+		memmove(text + ts_prefix_len, text, text_len);
+		memcpy(text, ts_prefix_buff, ts_prefix_len);
+		text_len += ts_prefix_len;
+	}
+#endif
 
 	trace_console(text, text_len);
 
@@ -2253,6 +2278,9 @@ int vprintk_store(int facility, int level,
 	u16 text_len;
 	int ret = 0;
 	u64 ts_nsec;
+#ifdef CONFIG_PREEMPT_RT
+	u64 ts_counter;
+#endif
 
 	if (!printk_enter_irqsave(recursion_ptr, irqflags))
 		return 0;
@@ -2264,6 +2292,9 @@ int vprintk_store(int facility, int level,
 	 * timestamp with respect to the caller.
 	 */
 	ts_nsec = local_clock();
+#ifdef CONFIG_PREEMPT_RT
+	ts_counter = __arch_counter_get_cntvct();
+#endif
 
 	caller_id = printk_caller_id();
 
@@ -2280,6 +2311,11 @@ int vprintk_store(int facility, int level,
 	if (reserve_size > PRINTKRB_RECORD_MAX)
 		reserve_size = PRINTKRB_RECORD_MAX;
 
+#ifdef CONFIG_PREEMPT_RT
+	/* Size of timestamp string having format [TS:<TS Value of Max Length 28>]*/
+	reserve_size += NVLOG_TS_STR_LEN;
+#endif
+
 	/* Extract log level or control flags. */
 	if (facility == 0)
 		printk_parse_prefix(&prefix_buf[0], &level, &flags);
@@ -2293,7 +2329,11 @@ int vprintk_store(int facility, int level,
 	if (flags & LOG_CONT) {
 		prb_rec_init_wr(&r, reserve_size);
 		if (prb_reserve_in_last(&e, prb, &r, caller_id, PRINTKRB_RECORD_MAX)) {
+#ifdef CONFIG_PREEMPT_RT
+			text_len = printk_sprint(&r.text_buf[r.info->text_len], reserve_size, ts_counter,
+#else
 			text_len = printk_sprint(&r.text_buf[r.info->text_len], reserve_size,
+#endif
 						 facility, &flags, fmt, args);
 			r.info->text_len += text_len;
 
@@ -2325,7 +2365,11 @@ int vprintk_store(int facility, int level,
 	}
 
 	/* fill message */
+#ifdef CONFIG_PREEMPT_RT
+	text_len = printk_sprint(&r.text_buf[0], reserve_size, ts_counter, facility, &flags, fmt, args);
+#else
 	text_len = printk_sprint(&r.text_buf[0], reserve_size, facility, &flags, fmt, args);
+#endif
 	if (trunc_msg_len)
 		memcpy(&r.text_buf[text_len], trunc_msg, trunc_msg_len);
 	r.info->text_len = text_len + trunc_msg_len;
