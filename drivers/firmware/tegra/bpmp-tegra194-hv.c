@@ -18,8 +18,22 @@
  */
 #define to_hv_ivc(ivc) ((struct tegra_hv_ivc_cookie *)ivc)
 
-static struct tegra_hv_ivc_cookie **hv_bpmp_ivc_cookies;
-static struct device_node *hv_of_node;
+/**
+ * struct tegra_bpmp_hv_priv - per-instance hypervisor BPMP private data
+ * @ivc_cookies: Array of IVC cookie pointers for all channels
+ * @of_node: Device tree node for hypervisor IVC configuration
+ * @num_ivc_queues: Number of IVC queues allocated
+ */
+struct tegra_bpmp_hv_priv {
+	struct tegra_hv_ivc_cookie **ivc_cookies;
+	struct device_node *of_node;
+	unsigned int num_ivc_queues;
+};
+
+static inline struct tegra_bpmp_hv_priv *bpmp_to_hv_priv(struct tegra_bpmp *bpmp)
+{
+	return (struct tegra_bpmp_hv_priv *)bpmp->priv;
+}
 
 static irqreturn_t tegra194_hv_bpmp_rx_handler(int irq, void *bpmp)
 {
@@ -29,13 +43,14 @@ static irqreturn_t tegra194_hv_bpmp_rx_handler(int irq, void *bpmp)
 
 static int tegra194_hv_bpmp_channel_init(struct tegra_bpmp_channel *channel,
 				      struct tegra_bpmp *bpmp,
-				      unsigned int queue_id, bool threaded)
+				      unsigned int queue_id, bool threaded,
+				      unsigned int cookie_idx)
 {
-	static int cookie_idx;
+	struct tegra_bpmp_hv_priv *priv = bpmp_to_hv_priv(bpmp);
 	struct tegra_hv_ivc_cookie *hv_ivc;
 	int err;
 
-	hv_ivc = tegra_hv_ivc_reserve(hv_of_node, queue_id, NULL);
+	hv_ivc = tegra_hv_ivc_reserve(priv->of_node, queue_id, NULL);
 	channel->ivc = (void *)hv_ivc;
 
 	if (IS_ERR_OR_NULL(hv_ivc)) {
@@ -49,7 +64,7 @@ static int tegra194_hv_bpmp_channel_init(struct tegra_bpmp_channel *channel,
 		goto request_cleanup;
 	}
 
-	hv_bpmp_ivc_cookies[cookie_idx++] = hv_ivc;
+	priv->ivc_cookies[cookie_idx] = hv_ivc;
 
 	/* init completion */
 	init_completion(&channel->completion);
@@ -156,22 +171,31 @@ static int tegra194_hv_ivc_notify(struct tegra_bpmp *bpmp)
 static int tegra194_hv_bpmp_init(struct tegra_bpmp *bpmp)
 {
 	struct device_node *of_node = bpmp->dev->of_node;
-	int err, index;
+	struct tegra_bpmp_hv_priv *priv;
+	int err, index, cookie_idx = 0;
 	uint32_t first_ivc_queue, num_ivc_queues;
 
+	/* Allocate per-instance private data */
+	priv = devm_kzalloc(bpmp->dev, sizeof(*priv), GFP_KERNEL);
+	if (!priv) {
+		pr_err("%s: Failed to allocate private data\n", __func__);
+		return -ENOMEM;
+	}
+	bpmp->priv = priv;
+
 	/* get starting ivc queue id & ivc queue count */
-	hv_of_node = of_parse_phandle(of_node, "ivc_queue", 0);
-	if (!hv_of_node) {
+	priv->of_node = of_parse_phandle(of_node, "ivc_queue", 0);
+	if (!priv->of_node) {
 		pr_err("%s: Unable to find hypervisor node\n", __func__);
 		return -EINVAL;
 	}
-	of_node_put(hv_of_node);
 
 	err = of_property_read_u32_index(of_node, "ivc_queue", 1,
 			&first_ivc_queue);
 	if (err) {
 		pr_err("%s: Failed to read start IVC queue\n",
 				__func__);
+		of_node_put(priv->of_node);
 		return err;
 	}
 
@@ -180,6 +204,7 @@ static int tegra194_hv_bpmp_init(struct tegra_bpmp *bpmp)
 	if (err) {
 		pr_err("%s: Failed to read range of IVC queues\n",
 				__func__);
+		of_node_put(priv->of_node);
 		return err;
 	}
 
@@ -187,19 +212,23 @@ static int tegra194_hv_bpmp_init(struct tegra_bpmp *bpmp)
 	if (num_ivc_queues < (bpmp->soc->channels.thread.count +
 			bpmp->soc->channels.cpu_tx.count + bpmp->soc->channels.cpu_rx.count)) {
 		pr_err("%s: no of ivc queues in DT < required no of channels\n", __func__);
+		of_node_put(priv->of_node);
 		return -EINVAL;
 	}
 
-	hv_bpmp_ivc_cookies = kzalloc(sizeof(struct tegra_hv_ivc_cookie *) *
-					num_ivc_queues, GFP_KERNEL);
+	priv->num_ivc_queues = num_ivc_queues;
+	priv->ivc_cookies = devm_kcalloc(bpmp->dev, num_ivc_queues,
+					 sizeof(*priv->ivc_cookies), GFP_KERNEL);
 
-	if (!hv_bpmp_ivc_cookies) {
+	if (!priv->ivc_cookies) {
 		pr_err("%s: Failed to allocate memory\n", __func__);
+		of_node_put(priv->of_node);
 		return -ENOMEM;
 	}
 
 	err = tegra194_hv_bpmp_channel_init(bpmp->tx_channel, bpmp,
-					bpmp->soc->channels.cpu_tx.offset + first_ivc_queue, false);
+					bpmp->soc->channels.cpu_tx.offset + first_ivc_queue,
+					false, cookie_idx++);
 	if (err < 0) {
 		pr_err("%s: Failed initialize tx channel\n", __func__);
 		goto cleanup;
@@ -209,7 +238,8 @@ static int tegra194_hv_bpmp_init(struct tegra_bpmp *bpmp)
 		unsigned int idx = bpmp->soc->channels.thread.offset + index;
 
 		err = tegra194_hv_bpmp_channel_init(&bpmp->threaded_channels[index],
-						    bpmp, idx + first_ivc_queue, true);
+						    bpmp, idx + first_ivc_queue,
+						    true, cookie_idx++);
 		if (err < 0) {
 			pr_err("%s: Failed initialize tx channel\n", __func__);
 			goto cleanup;
@@ -222,12 +252,12 @@ static int tegra194_hv_bpmp_init(struct tegra_bpmp *bpmp)
 
 cleanup:
 	for (index = 0; index < num_ivc_queues; index++) {
-		if (hv_bpmp_ivc_cookies[index]) {
-			tegra_hv_ivc_unreserve(hv_bpmp_ivc_cookies[index]);
-			hv_bpmp_ivc_cookies[index] = NULL;
+		if (priv->ivc_cookies[index]) {
+			tegra_hv_ivc_unreserve(priv->ivc_cookies[index]);
+			priv->ivc_cookies[index] = NULL;
 		}
 	}
-	kfree(hv_bpmp_ivc_cookies);
+	of_node_put(priv->of_node);
 
 	return err;
 }
@@ -243,12 +273,24 @@ static void tegra194_hv_bpmp_channel_cleanup(struct tegra_bpmp_channel *channel)
 
 static void tegra194_hv_bpmp_deinit(struct tegra_bpmp *bpmp)
 {
+	struct tegra_bpmp_hv_priv *priv = bpmp_to_hv_priv(bpmp);
 	unsigned int i;
+
+	if (!priv)
+		return;
 
 	tegra194_hv_bpmp_channel_cleanup(bpmp->tx_channel);
 
 	for (i = 0; i < bpmp->threaded.count; i++)
 		tegra194_hv_bpmp_channel_cleanup(&bpmp->threaded_channels[i]);
+
+	/* Release device tree node reference */
+	if (priv->of_node)
+		of_node_put(priv->of_node);
+
+	/* Note: priv->ivc_cookies and priv itself are devm allocated,
+	 * so they will be automatically freed when device is removed
+	 */
 }
 
 const struct tegra_bpmp_ops tegra194_bpmp_hv_ops = {
