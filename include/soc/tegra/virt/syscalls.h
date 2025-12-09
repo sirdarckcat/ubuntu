@@ -1,6 +1,6 @@
 /*
  * SPDX-License-Identifier: GPL-2.0-only
- * SPDX-FileCopyrightText: Copyright (c) 2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * SPDX-FileCopyrightText: Copyright (c) 2025-2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  */
 
 #ifndef TEGRA_SYSCALLS_H
@@ -65,6 +65,8 @@
 #define GUEST_IVC_SERVER	0
 /* @brief Max number of nvlog producers */
 #define MAX_NVLOG_PRODUCERS	32U
+/* @brief Max number of nvlog entities */
+#define MAX_NVLOG_ENTITIES	3U
 /* @brief Immediate hypercall value used in
  * - hyp_read_freq_feedback() wrapper
  * - hyp_read_freq_request() wrapper
@@ -116,6 +118,20 @@ struct nvlog_producer {
 	char name[32];
 };
 
+/*
+ * @brief Structure to store information about an NvLog entity. An entity is
+ * generally an operating system deployment. Log producers belonging to an
+ * entity will inhabit the same PID space and share a log level region.
+ */
+struct nvlog_entity {
+	/* @brief The NvLog entity ID. */
+	uint16_t id;
+	/* @brief IPA of shared memory used to request NvLog log level changes. */
+	uint64_t log_level_region_ipa;
+	/* @brief Size of shared memory used to request NvLog log level changes. */
+	uint64_t log_level_region_size;
+} __attribute__((packed, aligned(8)));
+
 /* @brief
  * Data structure for the VM Information Region.
  *
@@ -131,6 +147,11 @@ struct vm_info_region {
 	 * and buf_count' fields.
 	 */
 	struct nvlog_producer nvlog_producers[MAX_NVLOG_PRODUCERS];
+
+	/**
+	 * @brief NvLog Entity Info.
+	 */
+	struct nvlog_entity nvlog_entities[MAX_NVLOG_ENTITIES];
 };
 
 /**
