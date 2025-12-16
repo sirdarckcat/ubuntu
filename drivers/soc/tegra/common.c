@@ -24,6 +24,7 @@ static const struct of_device_id tegra_machine_match[] = {
 	{ .compatible = "nvidia,tegra210", },
 	{ .compatible = "nvidia,tegra234", },
 	{ .compatible = "nvidia,tegra264", },
+	{ .compatible = "nvidia,tegra268", },
 	{ }
 };
 
