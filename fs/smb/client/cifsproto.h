@@ -332,10 +332,6 @@ extern int CIFSSMBNegotiate(const unsigned int xid,
 			    struct cifs_ses *ses,
 			    struct TCP_Server_Info *server);
 
-extern int CIFSTCon(const unsigned int xid, struct cifs_ses *ses,
-		    const char *tree, struct cifs_tcon *tcon,
-		    const struct nls_table *);
-
 extern int CIFSFindFirst(const unsigned int xid, struct cifs_tcon *tcon,
 		const char *searchName, struct cifs_sb_info *cifs_sb,
 		__u16 *searchHandle, __u16 search_flags,
@@ -378,9 +374,6 @@ extern int parse_dfs_referrals(struct get_dfs_referral_rsp *rsp, u32 rsp_size,
 			       struct dfs_info3_param **target_nodes,
 			       const struct nls_table *nls_codepage, int remap,
 			       const char *searchName, bool is_unicode);
-extern void reset_cifs_unix_caps(unsigned int xid, struct cifs_tcon *tcon,
-				 struct cifs_sb_info *cifs_sb,
-				 struct smb3_fs_context *ctx);
 extern int CIFSSMBQFSInfo(const unsigned int xid, struct cifs_tcon *tcon,
 			struct kstatfs *FSData);
 extern int SMBOldQFSInfo(const unsigned int xid, struct cifs_tcon *tcon,
@@ -764,5 +757,11 @@ static inline void cifs_free_open_info(struct cifs_open_info_data *data)
 	free_rsp_buf(data->reparse.io.buftype, data->reparse.io.iov.iov_base);
 	memset(data, 0, sizeof(*data));
 }
+
+#define smb_EIO2(_trace, _info, _info2) \
+({ \
+	trace_smb3_eio((_trace), (_info), (_info2)); \
+	-EIO; \
+})
 
 #endif			/* _CIFSPROTO_H */

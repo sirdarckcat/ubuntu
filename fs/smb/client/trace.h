@@ -20,6 +20,18 @@
 /*
  * Specify enums for tracing information.
  */
+#define smb_eio_traces \
+	EM(smb_eio_trace_sym_slash,			"sym_slash") \
+	EM(smb_eio_trace_sym_target_len,		"sym_target_len") \
+	EM(smb_eio_trace_symlink_file_size,		"symlink_file_size") \
+	EM(smb_eio_trace_tdis_in_reconnect,		"tdis_in_reconnect") \
+	EM(smb_eio_trace_tx_chained_async,		"tx_chained_async") \
+	EM(smb_eio_trace_tx_compress_failed,		"tx_compress_failed") \
+	E_(smb_eio_trace_tx_copy_iter_to_buf,		"tx_copy_iter_to_buf")
+
+#define smb3_rw_credits_traces \
+	E_(cifs_trace_rw_credits_call_readv_adjust,	"rd-call-adj")
+
 #define smb3_tcon_ref_traces					      \
 	EM(netfs_trace_tcon_ref_dec_dfs_refer,		"DEC DfsRef") \
 	EM(netfs_trace_tcon_ref_free,			"FRE       ") \
@@ -67,7 +79,9 @@
 #define EM(a, b) a,
 #define E_(a, b) a
 
-enum smb3_tcon_ref_trace { smb3_tcon_ref_traces } __mode(byte);
+enum smb_eio_trace		{ smb_eio_traces } __mode(byte);
+enum smb3_rw_credits_trace	{ smb3_rw_credits_traces } __mode(byte);
+enum smb3_tcon_ref_trace	{ smb3_tcon_ref_traces } __mode(byte);
 
 #undef EM
 #undef E_
@@ -79,6 +93,8 @@ enum smb3_tcon_ref_trace { smb3_tcon_ref_traces } __mode(byte);
 #define EM(a, b) TRACE_DEFINE_ENUM(a);
 #define E_(a, b) TRACE_DEFINE_ENUM(a);
 
+smb_eio_traces;
+smb3_rw_credits_traces;
 smb3_tcon_ref_traces;
 
 #undef EM
@@ -1180,6 +1196,24 @@ TRACE_EVENT(smb3_tcon_ref,
 		      __entry->tcon,
 		      __print_symbolic(__entry->trace, smb3_tcon_ref_traces),
 		      __entry->ref)
+	    );
+
+TRACE_EVENT(smb3_eio,
+	    TP_PROTO(enum smb_eio_trace trace, unsigned long info, unsigned long info2),
+	    TP_ARGS(trace, info, info2),
+	    TP_STRUCT__entry(
+		    __field(enum smb_eio_trace,	trace)
+		    __field(unsigned long,	info)
+		    __field(unsigned long,	info2)
+			     ),
+	    TP_fast_assign(
+		    __entry->trace	= trace;
+		    __entry->info	= info;
+		    __entry->info2	= info2;
+			   ),
+	    TP_printk("%s info=%lx,%lx",
+		      __print_symbolic(__entry->trace, smb_eio_traces),
+		      __entry->info, __entry->info2)
 	    );
 
 

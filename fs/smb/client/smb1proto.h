@@ -23,12 +23,17 @@ struct cifs_unix_set_info_args {
 /*
  * cifssmb.c
  */
+int CIFSTCon(const unsigned int xid, struct cifs_ses *ses, const char *tree,
+	     struct cifs_tcon *tcon, const struct nls_table *nls_codepage);
 
 /*
  * smb1ops.c
  */
 extern struct smb_version_operations smb1_operations;
 extern struct smb_version_values smb1_values;
+void reset_cifs_unix_caps(unsigned int xid, struct cifs_tcon *tcon,
+			  struct cifs_sb_info *cifs_sb,
+			  struct smb3_fs_context *ctx);
 
 /*
  * smb1transport.c
