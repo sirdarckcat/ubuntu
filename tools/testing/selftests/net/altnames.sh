@@ -1,7 +1,7 @@
 #!/bin/bash
 # SPDX-License-Identifier: GPL-2.0
 
-lib_dir=$(dirname $0)/forwarding
+lib_dir=$(dirname $0)
 
 ALL_TESTS="altnames_test"
 NUM_NETIFS=0
