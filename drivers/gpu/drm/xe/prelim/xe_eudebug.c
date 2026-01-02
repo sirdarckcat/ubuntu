@@ -1754,10 +1754,6 @@ static int xe_eudebug_handle_gt_attention(struct xe_gt *gt)
 {
 	int ret;
 
-	ret = prelim_xe_gt_eu_threads_needing_attention(gt);
-	if (ret <= 0)
-		return ret;
-
 	ret = xe_send_gt_attention(gt);
 
 	/* Discovery in progress, fake it */
@@ -1905,10 +1901,6 @@ static int handle_gt_queued_pagefault(struct xe_gt *gt)
 	struct xe_eudebug *d;
 	int ret, lrc_idx;
 
-	ret = prelim_xe_gt_eu_threads_needing_attention(gt);
-	if (ret <= 0)
-		return ret;
-
 	if (list_empty_careful(&gt_to_xe(gt)->eudebug.list))
 		return -ENOTCONN;
 
@@ -1943,6 +1935,16 @@ out_exec_queue_put:
 	return ret;
 }
 
+static void _handle_attention_fail(struct xe_gt *gt, u8 gt_id, int ret)
+{
+	/* TODO: error capture */
+	drm_info(&gt_to_xe(gt)->drm,
+		 "gt:%d unable to handle eu attention ret=%d\n",
+		 gt_id, ret);
+
+	xe_gt_reset_async(gt);
+}
+
 #define XE_EUDEBUG_ATTENTION_INTERVAL 100
 static void attention_scan_fn(struct work_struct *work)
 {
@@ -1959,21 +1961,25 @@ static void attention_scan_fn(struct work_struct *work)
 
 	if (xe_pm_runtime_get_if_active(xe)) {
 		for_each_gt(gt, xe, gt_id) {
-			int ret;
+			int ret, attns_count;
 
 			if (gt->info.type != XE_GT_TYPE_MAIN)
 				continue;
 
-			handle_gt_queued_pagefault(gt);
+			attns_count = prelim_xe_gt_eu_threads_needing_attention(gt);
+			if (!attns_count)
+				continue;
+
+			ret = handle_gt_queued_pagefault(gt);
+			if (ret) {
+				_handle_attention_fail(gt, gt_id, ret);
+				continue;
+			}
 
 			ret = xe_eudebug_handle_gt_attention(gt);
 			if (ret) {
-				/* TODO: error capture */
-				drm_info(&gt_to_xe(gt)->drm,
-					 "gt:%d unable to handle eu attention ret=%d\n",
-					 gt_id, ret);
-
-				xe_gt_reset_async(gt);
+				_handle_attention_fail(gt, gt_id, ret);
+				continue;
 			}
 		}
 
