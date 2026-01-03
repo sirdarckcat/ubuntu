@@ -4,7 +4,7 @@
  * Tegra194
  * Tegra234
  *
- * Copyright (C) 2019-2022 NVIDIA Corporation.
+ * Copyright (C) 2019-2026 NVIDIA Corporation.
  *
  * Author: Vidya Sagar <vidyas@nvidia.com>
  */
@@ -1540,8 +1540,9 @@ static void tegra_pcie_dw_stop_link(struct dw_pcie *pci)
 {
 	struct tegra_pcie_dw *pcie = to_tegra_pcie(pci);
 
-	if (pcie->pex_prsnt_gpiod)
-		gpiod_set_value_cansleep(pcie->pex_prsnt_gpiod, 0);
+	if (pcie->of_data->mode == DW_PCIE_EP_TYPE)
+		if (pcie->pex_prsnt_gpiod)
+			gpiod_set_value_cansleep(pcie->pex_prsnt_gpiod, 0);
 }
 
 static const struct dw_pcie_ops tegra_dw_pcie_ops = {
