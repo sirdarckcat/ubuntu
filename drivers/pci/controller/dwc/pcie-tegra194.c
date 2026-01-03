@@ -4,7 +4,7 @@
  * Tegra194
  * Tegra234
  *
- * Copyright (C) 2019-2022 NVIDIA Corporation.
+ * Copyright (C) 2019-2026 NVIDIA Corporation.
  *
  * Author: Vidya Sagar <vidyas@nvidia.com>
  */
