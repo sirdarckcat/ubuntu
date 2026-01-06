@@ -638,7 +638,7 @@ void nfsd_shutdown_threads(struct net *net)
 	}
 
 	/* Kill outstanding nfsd threads */
-	svc_set_num_threads(serv, NULL, 0);
+	svc_set_num_threads(serv, 0);
 	nfsd_destroy_serv(net);
 	mutex_unlock(&nfsd_mutex);
 }
@@ -753,9 +753,9 @@ int nfsd_set_nrthreads(int n, int *nthreads, struct net *net)
 
 	/* apply the new numbers */
 	for (i = 0; i < n; i++) {
-		err = svc_set_num_threads(nn->nfsd_serv,
-					  &nn->nfsd_serv->sv_pools[i],
-					  nthreads[i]);
+		err = svc_set_pool_threads(nn->nfsd_serv,
+					   &nn->nfsd_serv->sv_pools[i],
+					   nthreads[i]);
 		if (err)
 			break;
 	}
@@ -796,7 +796,7 @@ nfsd_svc(int nrservs, struct net *net, const struct cred *cred, const char *scop
 	error = nfsd_startup_net(net, cred);
 	if (error)
 		goto out_put;
-	error = svc_set_num_threads(serv, NULL, nrservs);
+	error = svc_set_num_threads(serv, nrservs);
 	if (error)
 		goto out_put;
 	error = serv->sv_nrthreads;
