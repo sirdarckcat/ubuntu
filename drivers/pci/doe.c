@@ -25,7 +25,7 @@
 #define PCI_DOE_PROTOCOL_DISCOVERY 0
 
 /* Timeout of 1 second from 6.30.2 Operation, PCI Spec r6.0 */
-#define PCI_DOE_TIMEOUT HZ
+#define PCI_DOE_TIMEOUT ((HZ) << 4)
 #define PCI_DOE_POLL_INTERVAL	(PCI_DOE_TIMEOUT / 128)
 
 #define PCI_DOE_FLAG_CANCEL	0
