@@ -54,10 +54,21 @@
 #define HVC_NR_TRACE_SET_EVENT_DATA		0x8004U
 /* @brief Immediate hypercall value used in the hyp_smmu_diagnostic() wrapper */
 #define HVC_NR_SMMU_DIAG		0x8009U
+/* @brief Immediate hypercall value used in the hyp_smmu_buffer_mapping_control() wrapper */
+#define HVC_NR_SMMU_MAPPING_CONTROL		0x8130U
+/* @brief Immediate hypercall value used in the hyp_smmu_get_tlb_invalidate_handle() wrapper */
+#define HVC_NR_SMMU_GET_TLB_INVALIDATE_HANDLE	0x8131U
+/* @brief Immediate hypercall value used in the hyp_smmu_buffer_invalidate_tlb_status() wrapper */
+#define HVC_NR_SMMU_CB_TLB_INVALIDATE_STATUS	0x8132U
 /* @brief Immediate hypercall value used in the hyp_cbb_err_diagnostic() wrapper */
 #define HVC_NR_CBB_DIAG		0x8133U
 /* @brief Immediate hypercall value used in the hyp_mc_err_diagnostic() wrapper */
 #define HVC_NR_MC_DIAG		0x8134U
+
+/* @brief Flag to map IPA to IOVA via hyp_smmu_buffer_mapping_control() */
+#define HVC_SMMU_FLAG_MAP           0x0U
+/* @brief Flag to unmap IOVA via hyp_smmu_buffer_mapping_control() */
+#define HVC_SMMU_FLAG_UNMAP         0x1U
 
 /* @brief FIXME Not being Used */
 #define GUEST_PRIMARY		0
@@ -1112,6 +1123,133 @@ NO_SANITIZE_ADDRESS static inline long int hyp_lcpu0_mpidr(void)
 	hyp_call44(HVC_NR_LCPU0_MPIDR, args);
 
 	return args[0];
+}
+
+/*
+ * @brief Map/Unmap the client buffers into SMMU page table.
+ *
+ * @details This API is a HVC wrapper function responsible for transforming
+ * hyp_smmu_buffer_mapping_control to HVC binary interface with
+ * imm16 = HVC_NR_SMMU_MAPPING_CONTROL.
+ *
+ * @param [in] sid StreamId of the client, passed as X0 to the HVC.
+ *
+ * @param [in] iova Starting IOVA, passed as X1 to the HVC. Valid range for
+ * this is defined in PCT.
+ *
+ * @param [in] len Length in bytes of the IOVA range, passed as X2 to the HVC
+ *
+ * @param [in] ipa Starting IPA to map the IOVA, passed as X3 to the HVC,
+ * ignored unless mapping is enabled.
+ *
+ * @param [in] flag Valid values are : @b HVC_SMMU_FLAG_MAP to map the buffer,
+ * @b HVC_SMMU_FLAG_UNMAP to unmap buffer. Passed as X4 to the HVC.
+ *
+ * @param [out] return_len Memory region length from start IOVA that has
+ * been successfully processed. X1 holds this out value from the HVC. return_len might
+ * be smaller than len.
+ *
+ * @return uint64_t    The function returns an unsigned integer value.
+ * @retval 0           If the mapping control operation is successful.
+ * @retval 1           If the mapping control operation is unsuccessful.
+ */
+NO_SANITIZE_ADDRESS static inline uint64_t hyp_smmu_buffer_mapping_control(
+        uint64_t const sid, uint64_t const iova, uint64_t const len, uint64_t const ipa,
+        uint64_t const flag, uint64_t *const return_len)
+{
+    register uint64_t r0 asm("x0") = sid;
+    register uint64_t r1 asm("x1") = iova;
+    register uint64_t const r2 asm("x2") = len;
+    register uint64_t const r3 asm("x3") = ipa;
+    register uint64_t const r4 asm("x4") = flag;
+
+    __asm volatile("hvc %2"
+        : "+r"(r0), "+r"(r1)
+        : "i"(HVC_NR_SMMU_MAPPING_CONTROL), "r"(r2), "r"(r3), "r"(r4));
+
+    if ((r0 == 0U) && (return_len != NULL)) {
+        *return_len = r1;
+        return 0U;
+    }
+    return 1U;
+}
+
+/*
+ * @brief Get handle to query to TLB invalidation status.
+ *
+ * @details This API is a HVC wrapper function responsible for transforming
+ * hyp_smmu_get_tlb_invalidate_handle to HVC binary interface with
+ * imm16 = HVC_NR_SMMU_GET_TLB_INVALIDATE_HANDLE.
+ *
+ * @param [in] sid StreamId representing the client, passed as X0 to the HVC.
+ *
+ * @param [out] handle Handle which will be used to query the TLB invalidaton completion status.
+ * X1 holds this out value from the HVC.
+ *
+ * @return Returns 0 if TLB invalidation operation initiation succeeded, 1 otherwise.
+ */
+NO_SANITIZE_ADDRESS static inline uint64_t hyp_smmu_get_tlb_invalidate_handle(uint64_t const sid,
+        uint64_t *const handle)
+{
+    register uint64_t r0 asm("x0") = sid;
+    register uint64_t r1 asm("x1");
+
+    __asm volatile("hvc %2"
+        : "+r"(r0), "=r"(r1)
+        : "i"(HVC_NR_SMMU_GET_TLB_INVALIDATE_HANDLE));
+
+    if (handle ==NULL) {
+        return 1U;
+    }
+
+    if (r0 == 0U) {
+        *handle = r1;
+        return 0U;
+    }
+    return 1U;
+}
+
+/*
+ * @brief Check status of Context Bank TLB invalidation started earlier.
+ *
+ * @details This API is a HVC wrapper function responsible for transforming
+ * hyp_smmu_buffer_invalidate_tlb_status to HVC binary interface with
+ * imm16 = HVC_NR_SMMU_CB_TLB_INVALIDATE_STATUS.
+ *
+ * @param [in] sid StreamId representing the client, passed as X0 to the HVC.
+ *
+ * @param [in] Handle to a previously requested TLB invalidate initiation operation for which
+ * the completion status is being queried, passed as X1 to the HVC.
+ *
+ * @param [out] completed true if TLB invalidate operation is completed, false otherwise.
+ * X1 holds this out value from the HVC.
+ *
+ * @return Returns 0 if TLB invalidation operation status is queried successfully, 1 otherwise.
+ */
+NO_SANITIZE_ADDRESS static inline uint64_t hyp_smmu_buffer_invalidate_tlb_status(
+        uint64_t const sid, uint64_t const handle, bool *const completed)
+{
+    register uint64_t r0 asm("x0") = sid;
+    register uint64_t r1 asm("x1") = handle;
+
+    __asm volatile("hvc %2"
+        : "+r"(r0), "+r"(r1)
+        : "i"(HVC_NR_SMMU_CB_TLB_INVALIDATE_STATUS));
+
+    if (completed == NULL) {
+        return 1U;
+    }
+
+    *completed = false;
+
+    if (r0 == 0U) {
+        if (r1 == 1U) {
+            *completed = true;
+        }
+        return 0U;
+    } else {
+        return 1U;
+    }
 }
 
 #undef _X3_X17
