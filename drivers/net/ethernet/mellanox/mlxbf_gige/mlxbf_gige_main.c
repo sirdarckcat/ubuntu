@@ -27,8 +27,7 @@
 #define MLXBF_GIGE_DEF_MSG_ENABLE  \
 	(NETIF_MSG_IFUP          | \
 	 NETIF_MSG_LINK          | \
-	 NETIF_MSG_TX_ERR        | \
-	 NETIF_MSG_RX_ERR)
+	 NETIF_MSG_TX_ERR)
 static int mlxbf_gige_debug = -1;
 module_param(mlxbf_gige_debug, int, 0);
 MODULE_PARM_DESC(mlxbf_gige_debug, "Debug level (0=none,...,16=all)");
