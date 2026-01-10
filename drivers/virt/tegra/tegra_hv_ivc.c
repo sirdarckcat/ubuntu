@@ -103,7 +103,6 @@ static int tegra_hv_add_ivc(struct tegra_hv_data *hvd,
 	int rx_first;
 	struct iosys_map rx_map, tx_map;
 	uint32_t i;
-	struct irq_data *d;
 	uint64_t va_offset;
 
 	ivc = &hvd->ivc_devs[qd->id];
@@ -163,17 +162,7 @@ static int tegra_hv_add_ivc(struct tegra_hv_data *hvd,
 	if (ret < 0)
 		return -EINVAL;
 
-	ivc->irq = of_irq_get(hvd->dev, index);
-	if (ivc->irq < 0) {
-		ERR("Unable to get irq for ivc%u\n", qd->id);
-		return ivc->irq;
-	}
-	d = irq_get_irq_data(ivc->irq);
-	if (!d) {
-		ERR("Failed to get data for irq %d (ivc%u)\n", ivc->irq,
-				qd->id);
-		return -ENODEV;
-	}
+	ivc->queue_index = index;
 
 	if (qd->msi_ipa != 0U) {
 		if (WARN_ON(ivc_notify.msi_region_size == 0UL))
@@ -689,6 +678,19 @@ struct tegra_hv_ivc_cookie *tegra_hv_ivc_reserve(struct device_node *dn,
 
 	if (ret != 0)
 		return ERR_PTR(ret);
+
+	/* Get IRQ from device tree on first reserve */
+	if (ivc->irq == 0) {
+		ret = of_irq_get(hvd->dev, ivc->queue_index);
+		if (ret <= 0) {
+			ERR("Unable to get irq for ivc%u\n", ivc->qd->id);
+			mutex_lock(&ivc->lock);
+			ivc->reserved = 0;
+			mutex_unlock(&ivc->lock);
+			return ERR_PTR(ret);
+		}
+		ivc->irq = ret;
+	}
 
 	ivc->cookie_ops = ops;
 
