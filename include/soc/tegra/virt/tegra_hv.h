@@ -213,6 +213,62 @@ const struct ivc_info_page *tegra_hv_get_ivc_info(void);
 int tegra_hv_get_vmid(void);
 
 /**
+ * @brief          Reserve an IVC queue by ID
+ * @param[in]      id Queue ID to reserve
+ *
+ * @retval         true If the queue was successfully reserved
+ * @retval         false If already reserved or if the queue doesn't exist
+ *
+ * @pre
+ *                 - Tegra hypervisor driver should have been initialized.
+ *                 - This API should be invoked on virtual/hypervisor environment only.
+ *
+ * @post
+ *                 - Queue will be marked reserved with reserved_by_external flag set
+ *
+ * @usage
+ *                 - Used by tegra_hv_nvscicom to prevent double reservation of queues.
+ *                 - Allowed context for the API call
+ *                   - Interrupt handler: No
+ *                   - Signal handler: N/A
+ *                   - Thread-safe: Yes
+ *                   - Async/Sync: Sync
+ *                   - Re-entrant: No
+ *                 - API Group
+ *                   - Init: No
+ *                   - Runtime: Yes
+ *                   - De-Init: No
+ */
+bool tegra_hv_ivc_reserve_id(uint32_t id);
+
+/**
+ * @brief          Unreserve an IVC queue by ID
+ * @param[in]      id Queue ID to unreserve
+ *
+ * @pre
+ *                 - Tegra hypervisor driver should have been initialized.
+ *                 - This API should be invoked on virtual/hypervisor environment only.
+ *                 - Queue should have been reserved via tegra_hv_ivc_reserve_id.
+ *
+ * @post
+ *                 - Queue reservation will be cleared if reserved_by_external flag was set
+ *
+ * @usage
+ *                 - Used by tegra_hv_nvscicom to release the reservation.
+ *                 - Allowed context for the API call
+ *                   - Interrupt handler: No
+ *                   - Signal handler: N/A
+ *                   - Thread-safe: Yes
+ *                   - Async/Sync: Sync
+ *                   - Re-entrant: No
+ *                 - API Group
+ *                   - Init: No
+ *                   - Runtime: Yes
+ *                   - De-Init: No
+ */
+void tegra_hv_ivc_unreserve_id(uint32_t id);
+
+/**
  * @brief          Initialize IVC layout structure
  * @param[in,out]  layout Pointer to layout structure to initialize
  * @param[in]      read_ivc_info Function pointer to read IVC info page address
