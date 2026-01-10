@@ -57,9 +57,11 @@ struct hv_ivc {
 	/* This lock synchronizes the reserved flag. */
 	struct mutex		lock;
 	int			reserved;
+	int			reserved_by_external;
 
 	char			name[16];
 	int			irq;
+	uint32_t		queue_index;
 };
 
 #define cookie_to_ivc_dev(_cookie) \
@@ -784,6 +786,52 @@ int tegra_hv_ivc_unreserve(struct tegra_hv_ivc_cookie *ivck)
 	return ret;
 }
 EXPORT_SYMBOL(tegra_hv_ivc_unreserve);
+
+bool tegra_hv_ivc_reserve_id(uint32_t id)
+{
+	struct tegra_hv_data *hvd = tegra_hv_get_hvd();
+	struct hv_ivc *ivc;
+	bool reserved = false;
+
+	if (IS_ERR(hvd))
+		return false;
+
+	ivc = tegra_hv_ivc_device_by_id(hvd, id);
+	if (ivc == NULL)
+		return false;
+
+	mutex_lock(&ivc->lock);
+	if (!ivc->reserved) {
+		ivc->reserved = 1;
+		ivc->reserved_by_external = 1;
+		reserved = true;
+	}
+	mutex_unlock(&ivc->lock);
+
+	return reserved;
+}
+EXPORT_SYMBOL(tegra_hv_ivc_reserve_id);
+
+void tegra_hv_ivc_unreserve_id(uint32_t id)
+{
+	struct tegra_hv_data *hvd = tegra_hv_get_hvd();
+	struct hv_ivc *ivc;
+
+	if (IS_ERR(hvd))
+		return;
+
+	ivc = tegra_hv_ivc_device_by_id(hvd, id);
+	if (ivc == NULL)
+		return;
+
+	mutex_lock(&ivc->lock);
+	if (ivc->reserved_by_external) {
+		ivc->reserved = 0;
+		ivc->reserved_by_external = 0;
+	}
+	mutex_unlock(&ivc->lock);
+}
+EXPORT_SYMBOL(tegra_hv_ivc_unreserve_id);
 
 int tegra_hv_ivc_write(struct tegra_hv_ivc_cookie *ivck, const void *buf,
 		int size)
