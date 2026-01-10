@@ -15,6 +15,7 @@
 #include <linux/of.h>
 #include <linux/of_device.h>
 #include <linux/platform_device.h>
+#include <linux/string.h>
 
 #include <soc/tegra/virt/hv-ivc.h>
 #include <soc/tegra/virt/tegra_hv.h>
@@ -25,19 +26,13 @@
 #define DRV_NAME	"tegra_hv_ivc"
 
 struct tegra_hv_data {
+	struct tegra_hv_ivc_layout layout;
 	const struct ivc_info_page *info;
 	int guestid;
-	struct guest_ivc_info *guest_ivc_info;
-	uint32_t *interrupts_arr;
+	struct tegra_hv_guest_area *guest_ivc_info;
 	struct hv_ivc *ivc_devs;
 	uint32_t max_qid;
 	struct device_node *dev;
-};
-
-/* Describe all info needed to do IVC to one particular guest */
-struct guest_ivc_info {
-	uintptr_t shmem;	/* IO remapped shmem */
-	size_t length;		/* length of shmem */
 };
 
 struct hv_ivc {
@@ -53,7 +48,7 @@ struct hv_ivc {
 	struct tegra_ivc	ivc;
 	const struct tegra_hv_queue_data *qd;
 	const struct ivc_shared_area *area;
-	const struct guest_ivc_info *givci;
+	const struct tegra_hv_guest_area *givci;
 	int			other_guestid;
 
 	const struct tegra_hv_ivc_ops *cookie_ops;
@@ -67,25 +62,12 @@ struct hv_ivc {
 	int			irq;
 };
 
-struct ivc_notify_info {
-	// Trap based notification
-	uintptr_t trap_region_base_va;
-	uintptr_t trap_region_base_ipa;
-	uintptr_t trap_region_end_ipa;
-	uint64_t trap_region_size;
-	// MSI based notification
-	uintptr_t msi_region_base_va;
-	uintptr_t msi_region_base_ipa;
-	uintptr_t msi_region_end_ipa;
-	uint64_t msi_region_size;
-};
-
 #define cookie_to_ivc_dev(_cookie) \
 	container_of(_cookie, struct hv_ivc, cookie)
 
 static struct tegra_hv_data *tegra_hv_data;
 
-static struct ivc_notify_info ivc_notify;
+static struct tegra_hv_notify_info ivc_notify;
 
 static struct property interrupts_prop = {
 	.name = "interrupts",
@@ -277,14 +259,260 @@ static struct ivc_info_page *validate_ivc_info_page(void __iomem *mapped_mem,
 	return info;
 }
 
+int tegra_hv_ivc_layout_init(struct tegra_hv_ivc_layout *layout,
+			     int (*read_ivc_info)(uint64_t *ivc_info_page_pa))
+{
+	uint64_t info_page;
+	void __iomem *mapped_mem;
+	uint32_t i;
+	int ret;
+
+	if (!layout || !read_ivc_info)
+		return -EINVAL;
+
+	memset(layout, 0, sizeof(*layout));
+
+	ret = read_ivc_info(&info_page);
+	if (ret != 0)
+		return ret;
+
+	mapped_mem = ioremap_cache(info_page, IVC_INFO_PAGE_SIZE);
+	if (mapped_mem == NULL) {
+		ERR("failed to map IVC info page (%llx)\n", info_page);
+		return -ENOMEM;
+	}
+
+	/* Validate tainted data before assignment */
+	layout->info = validate_ivc_info_page(mapped_mem, IVC_INFO_PAGE_SIZE);
+	if (layout->info == NULL) {
+		ERR("IVC info page validation failed\n");
+		iounmap(mapped_mem);
+		return -EINVAL;
+	}
+
+	/*
+	 *  Map IVC Trap MMIO Notification region
+	 */
+	layout->notify.trap_region_base_ipa =
+		layout->info->trap_region_base_ipa;
+	layout->notify.trap_region_size = layout->info->trap_region_size;
+	if (layout->notify.trap_region_size != 0UL) {
+		if (WARN_ON(layout->notify.trap_region_base_ipa == 0UL)) {
+			ret = -EINVAL;
+			goto err;
+		}
+		if (WARN_ON(layout->notify.trap_region_base_va != 0UL)) {
+			ret = -EINVAL;
+			goto err;
+		}
+		layout->notify.trap_region_end_ipa =
+			layout->notify.trap_region_base_ipa +
+			layout->notify.trap_region_size - 1UL;
+		layout->notify.trap_region_base_va =
+			(uintptr_t)ioremap_cache(
+				layout->notify.trap_region_base_ipa,
+				layout->notify.trap_region_size);
+		if (layout->notify.trap_region_base_va == 0UL) {
+			ERR("failed to map trap ipa notification page\n");
+			ret = -ENOMEM;
+			goto err;
+		}
+	}
+
+	/*
+	 *  Map IVC MSI Notification region
+	 */
+	layout->notify.msi_region_base_ipa = layout->info->msi_region_base_ipa;
+	layout->notify.msi_region_size = layout->info->msi_region_size;
+	if (layout->notify.msi_region_size != 0UL) {
+		if (WARN_ON(layout->notify.msi_region_base_ipa == 0UL)) {
+			ret = -EINVAL;
+			goto err;
+		}
+		if (WARN_ON(layout->notify.msi_region_base_va != 0UL)) {
+			ret = -EINVAL;
+			goto err;
+		}
+		layout->notify.msi_region_end_ipa =
+			layout->notify.msi_region_base_ipa +
+			layout->notify.msi_region_size - 1UL;
+		layout->notify.msi_region_base_va =
+			(uintptr_t)ioremap_cache(
+				layout->notify.msi_region_base_ipa,
+				layout->notify.msi_region_size);
+		if (layout->notify.msi_region_base_va == 0UL) {
+			ERR("failed to map msi ipa notification page\n");
+			ret = -ENOMEM;
+			goto err;
+		}
+	}
+
+	layout->guest_ivc_info = kzalloc(layout->info->nr_areas *
+			sizeof(*layout->guest_ivc_info), GFP_KERNEL);
+	if (layout->guest_ivc_info == NULL) {
+		ERR("failed to allocate %u-entry givci\n",
+				layout->info->nr_areas);
+		ret = -ENOMEM;
+		goto err;
+	}
+
+	for (i = 0; i < layout->info->nr_areas; i++) {
+		layout->guest_ivc_info[i].shmem = (uintptr_t)ioremap_cache(
+				layout->info->areas[i].pa,
+				layout->info->areas[i].size);
+		if (layout->guest_ivc_info[i].shmem == 0) {
+			ERR("can't map area for guest %u (%llx)\n",
+					layout->info->areas[i].guest,
+					layout->info->areas[i].pa);
+			ret = -ENOMEM;
+			goto err;
+		}
+		layout->guest_ivc_info[i].length =
+			layout->info->areas[i].size;
+	}
+
+	return 0;
+err:
+	tegra_hv_ivc_layout_release(layout);
+
+	return ret;
+}
+EXPORT_SYMBOL(tegra_hv_ivc_layout_init);
+
+void tegra_hv_ivc_layout_release(struct tegra_hv_ivc_layout *layout)
+{
+	uint32_t i;
+
+	if (!layout)
+		return;
+
+	if (layout->guest_ivc_info && layout->info) {
+		for (i = 0; i < layout->info->nr_areas; i++) {
+			if (layout->guest_ivc_info[i].shmem)
+				iounmap((void __iomem *)layout->guest_ivc_info[i].shmem);
+		}
+	}
+
+	kfree(layout->guest_ivc_info);
+	layout->guest_ivc_info = NULL;
+
+	if (layout->notify.trap_region_base_va) {
+		iounmap((void __iomem *)layout->notify.trap_region_base_va);
+		layout->notify.trap_region_base_va = 0UL;
+		layout->notify.trap_region_base_ipa = 0;
+		layout->notify.trap_region_end_ipa = 0;
+		layout->notify.trap_region_size = 0;
+	}
+
+	if (layout->notify.msi_region_base_va) {
+		iounmap((void __iomem *)layout->notify.msi_region_base_va);
+		layout->notify.msi_region_base_va = 0UL;
+		layout->notify.msi_region_base_ipa = 0;
+		layout->notify.msi_region_end_ipa = 0;
+		layout->notify.msi_region_size = 0;
+	}
+
+	if (layout->info) {
+		iounmap((void __iomem *)layout->info);
+		layout->info = NULL;
+	}
+}
+EXPORT_SYMBOL(tegra_hv_ivc_layout_release);
+
+uint32_t tegra_hv_get_max_qid(const struct ivc_info_page *info)
+{
+	uint32_t max_qid = 0;
+	uint32_t i;
+
+	for (i = 0; i < info->nr_queues; i++) {
+		const struct tegra_hv_queue_data *qd =
+				&ivc_info_queue_array(info)[i];
+
+		if (qd->id > max_qid)
+			max_qid = qd->id;
+	}
+
+	return max_qid;
+}
+EXPORT_SYMBOL(tegra_hv_get_max_qid);
+
+int tegra_hv_add_ivc_interrupts(struct device_node *dev,
+				const struct ivc_info_page *info,
+				struct property *prop)
+{
+	struct device_node *p;
+	uint32_t intr_property_size;
+	uint32_t *interrupts_arr;
+	uint32_t i, result;
+
+	p = of_irq_find_parent(dev);
+	if (!p) {
+		ERR("Get interrupt parent failed\n");
+		return -ENODEV;
+	}
+
+	if (of_property_read_u32(p, "#interrupt-cells", &intr_property_size)) {
+		ERR("Get interrupt-cells failed\n");
+		return -ENODEV;
+	}
+
+	if (check_mul_overflow(info->nr_queues, intr_property_size, &result)) {
+		ERR("%s: operation got overflown.\n", __func__);
+		return -EAGAIN;
+	}
+
+	/*
+	 * Allocate array for interrupts property.
+	 * Note: Do not free this, of_add_property does not copy the structure.
+	 */
+	interrupts_arr = kzalloc(result * sizeof(uint32_t), GFP_KERNEL);
+	if (!interrupts_arr) {
+		ERR("failed to allocate array for interrupts property\n");
+		return -ENOMEM;
+	}
+
+	for (i = 0; i < info->nr_queues; i++) {
+		const struct tegra_hv_queue_data *qd =
+				&ivc_info_queue_array(info)[i];
+
+		/* 0 => SPI */
+		interrupts_arr[(i * intr_property_size)] =
+			(__force uint32_t)cpu_to_be32(0);
+		/* IRQ id in SPI namespace */
+		interrupts_arr[(i * intr_property_size) + 1] =
+			(__force uint32_t)cpu_to_be32(qd->irq - 32);
+		/* 0x1 == low-to-high edge */
+		interrupts_arr[(i * intr_property_size) + 2] =
+			(__force uint32_t)cpu_to_be32(0x1);
+		/* The 4th cell is a phandle to a node describing a set of CPUs this
+		 * interrupt is affine to. The interrupt must be a PPI, and the node
+		 * pointed must be a subnode of the "ppi-partitions" subnode. For
+		 * interrupt types other than PPI or PPIs that are not partitioned,
+		 * this cell must be zero. See the "ppi-partitions" node description below.
+		 */
+		if (intr_property_size > 3)
+			interrupts_arr[(i * intr_property_size) + 3] =
+				(__force uint32_t)cpu_to_be32(0);
+	}
+
+	prop->name = "interrupts";
+	prop->length = info->nr_queues * sizeof(uint32_t) * intr_property_size;
+	prop->value = interrupts_arr;
+
+	if (of_add_property(dev, prop)) {
+		ERR("failed to add interrupts property\n");
+		kfree(interrupts_arr);
+		return -EACCES;
+	}
+
+	return 0;
+}
+EXPORT_SYMBOL(tegra_hv_add_ivc_interrupts);
+
 static int tegra_hv_ivc_setup(struct tegra_hv_data *hvd)
 {
-	uint32_t intr_property_size;
-	struct device_node *p;
-	uint32_t i, result;
+	uint32_t i;
 	uint64_t ivcsize = 0;
-	void __iomem *mapped_mem;
-	uint64_t info_page;
 	int ret;
 
 	hvd->dev = of_find_compatible_node(NULL, NULL, "nvidia,tegra_hv_ivc");
@@ -292,21 +520,6 @@ static int tegra_hv_ivc_setup(struct tegra_hv_data *hvd)
 		ERR("could not find hv node\n");
 		return -ENODEV;
 	}
-
-	p = of_irq_find_parent(hvd->dev);
-	if (p) {
-		if (of_property_read_u32(p, "#interrupt-cells",
-					 &intr_property_size)) {
-			ERR("Get interrupt-cells failed\n");
-			intr_property_size = 3;
-		}
-		of_node_put(p);
-	} else {
-		ERR("Null device parent node\n");
-		intr_property_size = 3;
-	}
-
-	INFO("Get interrupt-cells=%d\n", intr_property_size);
 
 	ret = hyp_read_gid(&hvd->guestid);
 	if (ret != 0) {
@@ -319,139 +532,22 @@ static int tegra_hv_ivc_setup(struct tegra_hv_data *hvd)
 		return -EINVAL;
 	}
 
-	ret = hyp_read_ivc_info(&info_page);
+	ret = tegra_hv_ivc_layout_init(&hvd->layout, hyp_read_ivc_info);
 	if (ret != 0) {
 		ERR("failed to obtain IVC info page: %d\n", ret);
 		return ret;
 	}
 
-	mapped_mem = ioremap_cache(info_page, IVC_INFO_PAGE_SIZE);
-	if (mapped_mem == NULL) {
-		ERR("failed to map IVC info page (%llx)\n", info_page);
-		return -ENOMEM;
-	}
+	hvd->info = hvd->layout.info;
+	hvd->guest_ivc_info = hvd->layout.guest_ivc_info;
+	ivc_notify = hvd->layout.notify;
 
-	/* Validate tainted data before assignment */
-	hvd->info = validate_ivc_info_page(mapped_mem, IVC_INFO_PAGE_SIZE);
-	if (hvd->info == NULL) {
-		ERR("IVC info page validation failed\n");
-		iounmap(mapped_mem);
-		return -EINVAL;
-	}
+	hvd->max_qid = tegra_hv_get_max_qid(hvd->info);
 
-	hvd->guest_ivc_info = kzalloc(hvd->info->nr_areas *
-				      sizeof(*hvd->guest_ivc_info), GFP_KERNEL);
-	if (hvd->guest_ivc_info == NULL) {
-		ERR("failed to allocate %u-entry givci\n",
-		    hvd->info->nr_areas);
-		return -ENOMEM;
-	}
-
-	for (i = 0; i < hvd->info->nr_areas; i++) {
-		hvd->guest_ivc_info[i].shmem = (uintptr_t)ioremap_cache(
-						hvd->info->areas[i].pa,
-						hvd->info->areas[i].size);
-		if (hvd->guest_ivc_info[i].shmem == 0) {
-			ERR("can't map area for guest %u (%llx)\n",
-			    hvd->info->areas[i].guest,
-			    hvd->info->areas[i].pa);
-			return -ENOMEM;
-		}
-		hvd->guest_ivc_info[i].length = hvd->info->areas[i].size;
-	}
-
-	/*
-	 *  Map IVC Trap MMIO Notification region
-	 */
-	ivc_notify.trap_region_base_ipa = hvd->info->trap_region_base_ipa;
-	ivc_notify.trap_region_size = hvd->info->trap_region_size;
-	if (ivc_notify.trap_region_size != 0UL) {
-		if (WARN_ON(ivc_notify.trap_region_base_ipa == 0UL))
-			return -EINVAL;
-		if (WARN_ON(ivc_notify.trap_region_base_va != 0UL))
-			return -EINVAL;
-		ivc_notify.trap_region_end_ipa =
-			ivc_notify.trap_region_base_ipa +
-			ivc_notify.trap_region_size - 1UL;
-		ivc_notify.trap_region_base_va =
-			(uintptr_t)ioremap_cache(
-				ivc_notify.trap_region_base_ipa,
-				ivc_notify.trap_region_size);
-		if (ivc_notify.trap_region_base_va == 0UL) {
-			ERR("failed to map trap ipa notification page\n");
-			return -ENOMEM;
-		}
-	}
-
-	/*
-	 *  Map IVC MSI Notification region
-	 */
-	ivc_notify.msi_region_base_ipa = hvd->info->msi_region_base_ipa;
-	ivc_notify.msi_region_size = hvd->info->msi_region_size;
-	if (ivc_notify.msi_region_size != 0UL) {
-		if (WARN_ON(ivc_notify.msi_region_base_ipa == 0UL))
-			return -EINVAL;
-		if (WARN_ON(ivc_notify.msi_region_base_va != 0UL))
-			return -EINVAL;
-		ivc_notify.msi_region_end_ipa = ivc_notify.msi_region_base_ipa +
-				ivc_notify.msi_region_size - 1UL;
-		ivc_notify.msi_region_base_va =
-			(uintptr_t)ioremap_cache(ivc_notify.msi_region_base_ipa,
-			ivc_notify.msi_region_size);
-		if (ivc_notify.msi_region_base_va == 0UL) {
-			ERR("failed to map msi ipa notification page\n");
-			return -ENOMEM;
-		}
-	}
-
-	/* Do not free this, of_add_property does not copy the structure */
-	hvd->interrupts_arr = kzalloc(hvd->info->nr_queues * sizeof(uint32_t)
-			* intr_property_size, GFP_KERNEL);
-	if (hvd->interrupts_arr == NULL) {
-		ERR("failed to allocate array for interrupts property\n");
-		return -ENOMEM;
-	}
-
-	/*
-	 * Determine the largest queue id in order to allocate a queue id-
-	 * indexed array and device nodes, and create interrupts property
-	 */
-	hvd->max_qid = 0;
-	for (i = 0; i < hvd->info->nr_queues; i++) {
-		const struct tegra_hv_queue_data *qd =
-				&ivc_info_queue_array(hvd->info)[i];
-		if (qd->id > hvd->max_qid)
-			hvd->max_qid = qd->id;
-
-		if (check_mul_overflow(i, intr_property_size, &result)) {
-			ERR("%s: operation got overflown.\n", __func__);
-			return -EAGAIN;
-		}
-
-		/* 0 => SPI */
-		hvd->interrupts_arr[result] = (__force uint32_t)cpu_to_be32(0);
-		hvd->interrupts_arr[result + 1] =
-			(__force uint32_t)cpu_to_be32(qd->irq - 32); /* Id in SPI namespace */
-		/* 0x1 == low-to-high edge */
-		hvd->interrupts_arr[result + 2] = (__force uint32_t)cpu_to_be32(0x1);
-		/* The 4th cell is a phandle to a node describing a set of CPUs this
-		 * interrupt is affine to. The interrupt must be a PPI, and the node
-		 * pointed must be a subnode of the "ppi-partitions" subnode. For
-		 * interrupt types other than PPI or PPIs that are not partitioned,
-		 * this cell must be zero. See the "ppi-partitions" node description below.
-		 */
-		if (intr_property_size > 3)
-			hvd->interrupts_arr[result + 3] = (__force uint32_t)cpu_to_be32(0);
-	}
-
-	interrupts_prop.length =
-		hvd->info->nr_queues * sizeof(uint32_t) * intr_property_size;
-	interrupts_prop.value = hvd->interrupts_arr;
-
-	if (of_add_property(hvd->dev, &interrupts_prop)) {
+	ret = tegra_hv_add_ivc_interrupts(hvd->dev, hvd->info, &interrupts_prop);
+	if (ret != 0) {
 		ERR("failed to add interrupts property\n");
-		kfree(hvd->interrupts_arr);
-		return -EACCES;
+		return ret;
 	}
 
 	hvd->ivc_devs = kzalloc((hvd->max_qid + 1) * sizeof(*hvd->ivc_devs),
@@ -512,6 +608,11 @@ static void tegra_hv_ivc_cleanup(struct tegra_hv_data *hvd)
 
 	kfree(hvd->ivc_devs);
 	hvd->ivc_devs = NULL;
+
+	tegra_hv_ivc_layout_release(&hvd->layout);
+	hvd->guest_ivc_info = NULL;
+	hvd->info = NULL;
+	memset(&ivc_notify, 0, sizeof(ivc_notify));
 }
 
 static int ivc_dump(struct hv_ivc *ivc)
