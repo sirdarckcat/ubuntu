@@ -11,6 +11,7 @@
  * @{
  */
 
+#include <linux/types.h>
 #include <soc/tegra/virt/syscalls.h>
 
 /** @brief Supports trap notification to peer end via MSI irqs */
@@ -25,6 +26,44 @@
 #define PCT_MAX_NUM_IVC_QUEUES	512U
 /** @brief The maximum number of mempools supported by the PCT. */
 #define PCT_MAX_NUM_MEMPOOLS	120U
+
+/** @brief structure representing guest IVC area info */
+struct tegra_hv_guest_area {
+	/** @brief IO remapped shared memory address */
+	uintptr_t shmem;
+	/** @brief length of shared memory */
+	size_t length;
+};
+
+/** @brief structure representing IVC notification info */
+struct tegra_hv_notify_info {
+	/** @brief trap region base virtual address */
+	uintptr_t trap_region_base_va;
+	/** @brief trap region base IPA */
+	uint64_t trap_region_base_ipa;
+	/** @brief trap region end IPA */
+	uint64_t trap_region_end_ipa;
+	/** @brief trap region size */
+	uint64_t trap_region_size;
+	/** @brief MSI region base virtual address */
+	uintptr_t msi_region_base_va;
+	/** @brief MSI region base IPA */
+	uint64_t msi_region_base_ipa;
+	/** @brief MSI region end IPA */
+	uint64_t msi_region_end_ipa;
+	/** @brief MSI region size */
+	uint64_t msi_region_size;
+};
+
+/** @brief structure representing IVC layout */
+struct tegra_hv_ivc_layout {
+	/** @brief pointer to IVC info page */
+	const struct ivc_info_page *info;
+	/** @brief pointer to guest IVC area info array */
+	struct tegra_hv_guest_area *guest_ivc_info;
+	/** @brief notification info */
+	struct tegra_hv_notify_info notify;
+};
 
 /** @brief structure representing mempool cookie in hypervisor driver */
 struct tegra_hv_ivm_cookie {
@@ -172,6 +211,112 @@ const struct ivc_info_page *tegra_hv_get_ivc_info(void);
  *                   - De-Init: No
  */
 int tegra_hv_get_vmid(void);
+
+/**
+ * @brief          Initialize IVC layout structure
+ * @param[in,out]  layout Pointer to layout structure to initialize
+ * @param[in]      read_ivc_info Function pointer to read IVC info page address
+ *
+ * @retval         0 On success, negative error code on failure
+ *
+ * @pre
+ *                 - layout must be a valid pointer
+ *                 - read_ivc_info must be a valid function pointer
+ *
+ * @post
+ *                 - layout structure will be initialized with IVC info
+ *
+ * @usage
+ *                 - Allowed context for the API call
+ *                   - Interrupt handler: No
+ *                   - Signal handler: N/A
+ *                   - Thread-safe: No
+ *                   - Async/Sync: Sync
+ *                   - Re-entrant: No
+ *                 - API Group
+ *                   - Init: Yes
+ *                   - Runtime: No
+ *                   - De-Init: No
+ */
+int tegra_hv_ivc_layout_init(struct tegra_hv_ivc_layout *layout,
+			     int (*read_ivc_info)(uint64_t *ivc_info_page_pa));
+
+/**
+ * @brief          Release IVC layout resources
+ * @param[in]      layout Pointer to layout structure to release
+ *
+ * @pre
+ *                 - layout should have been initialized via tegra_hv_ivc_layout_init
+ *
+ * @post
+ *                 - All resources in layout will be released
+ *
+ * @usage
+ *                 - Allowed context for the API call
+ *                   - Interrupt handler: No
+ *                   - Signal handler: N/A
+ *                   - Thread-safe: No
+ *                   - Async/Sync: Sync
+ *                   - Re-entrant: No
+ *                 - API Group
+ *                   - Init: No
+ *                   - Runtime: No
+ *                   - De-Init: Yes
+ */
+void tegra_hv_ivc_layout_release(struct tegra_hv_ivc_layout *layout);
+
+/**
+ * @brief          Get maximum queue ID from IVC info
+ * @param[in]      info Pointer to IVC info page
+ *
+ * @retval         Maximum queue ID found in IVC info page
+ *
+ * @pre
+ *                 - info must be a valid pointer to IVC info page
+ *
+ * @usage
+ *                 - Allowed context for the API call
+ *                   - Interrupt handler: Yes
+ *                   - Signal handler: N/A
+ *                   - Thread-safe: Yes
+ *                   - Async/Sync: Sync
+ *                   - Re-entrant: Yes
+ *                 - API Group
+ *                   - Init: Yes
+ *                   - Runtime: Yes
+ *                   - De-Init: No
+ */
+uint32_t tegra_hv_get_max_qid(const struct ivc_info_page *info);
+
+/**
+ * @brief          Add interrupts property to device node
+ * @param[in]      dev Device node to add property to
+ * @param[in]      info Pointer to IVC info page
+ * @param[in]      prop Property structure to use (caller must keep alive)
+ *
+ * @retval         0 On success, negative error code on failure
+ *
+ * @pre
+ *                 - dev, info, prop must be valid pointers
+ *
+ * @post
+ *                 - Interrupts property will be added to device node
+ *
+ * @usage
+ *                 - Allowed context for the API call
+ *                   - Interrupt handler: No
+ *                   - Signal handler: N/A
+ *                   - Thread-safe: No
+ *                   - Async/Sync: Sync
+ *                   - Re-entrant: No
+ *                 - API Group
+ *                   - Init: Yes
+ *                   - Runtime: No
+ *                   - De-Init: No
+ */
+int tegra_hv_add_ivc_interrupts(struct device_node *dev,
+				const struct ivc_info_page *info,
+				struct property *prop);
 
 /** @} */
 
