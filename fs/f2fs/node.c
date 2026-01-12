@@ -1474,6 +1474,42 @@ void f2fs_ra_node_page(struct f2fs_sb_info *sbi, nid_t nid)
 	f2fs_put_page(apage, err ? 1 : 0);
 }
 
+int f2fs_sanity_check_node_footer(struct f2fs_sb_info *sbi,
+					struct page *page, pgoff_t nid,
+					enum node_type ntype, bool in_irq)
+{
+	if (unlikely(nid != nid_of_node(page)))
+		goto out_err;
+
+	switch (ntype) {
+	case NODE_TYPE_INODE:
+		if (!IS_INODE(page))
+			goto out_err;
+		break;
+	case NODE_TYPE_XATTR:
+		if (!f2fs_has_xattr_block(ofs_of_node(page)))
+			goto out_err;
+		break;
+	case NODE_TYPE_NON_INODE:
+		if (IS_INODE(page))
+			goto out_err;
+		break;
+	default:
+		break;
+	}
+	return 0;
+out_err:
+	set_sbi_flag(sbi, SBI_NEED_FSCK);
+	f2fs_warn_ratelimited(sbi, "inconsistent node block, node_type:%d, nid:%lu, "
+		"node_footer[nid:%u,ino:%u,ofs:%u,cpver:%llu,blkaddr:%u]",
+		ntype, nid, nid_of_node(page), ino_of_node(page),
+		ofs_of_node(page), cpver_of_node(page),
+		next_blkaddr_of_node(page));
+
+	f2fs_handle_error(sbi, ERROR_INCONSISTENT_FOOTER);
+	return -EFSCORRUPTED;
+}
+
 static struct page *__get_node_page(struct f2fs_sb_info *sbi, pgoff_t nid,
 					struct page *parent, int start,
 					enum node_type ntype)
@@ -1518,17 +1554,9 @@ repeat:
 		goto out_err;
 	}
 page_hit:
-	if (likely(nid == nid_of_node(page) &&
-			!(ntype == NODE_TYPE_NON_INODE && IS_INODE(page))))
+	err = f2fs_sanity_check_node_footer(sbi, page, nid, ntype, false);
+	if (!err)
 		return page;
-
-	f2fs_warn(sbi, "inconsistent node block, nid:%lu, node_footer[nid:%u,ino:%u,ofs:%u,cpver:%llu,blkaddr:%u]",
-			  nid, nid_of_node(page), ino_of_node(page),
-			  ofs_of_node(page), cpver_of_node(page),
-			  next_blkaddr_of_node(page));
-	set_sbi_flag(sbi, SBI_NEED_FSCK);
-	f2fs_handle_error(sbi, ERROR_INCONSISTENT_FOOTER);
-	err = -EFSCORRUPTED;
 out_err:
 	ClearPageUptodate(page);
 out_put_err:

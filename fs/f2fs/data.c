@@ -152,6 +152,12 @@ static void f2fs_finish_read_bio(struct bio *bio, bool in_task)
 			continue;
 		}
 
+		if (F2FS_P_SB(page)->node_inode &&
+			page->mapping == NODE_MAPPING(F2FS_P_SB(page)) &&
+			f2fs_sanity_check_node_footer(F2FS_P_SB(page),
+				page, page->index, NODE_TYPE_REGULAR, true))
+			bio->bi_status = BLK_STS_IOERR;
+
 		if (bio->bi_status)
 			ClearPageUptodate(page);
 		else
@@ -354,8 +360,11 @@ static void f2fs_write_end_io(struct bio *bio)
 						STOP_CP_REASON_WRITE_FAIL);
 		}
 
-		f2fs_bug_on(sbi, page->mapping == NODE_MAPPING(sbi) &&
-					page->index != nid_of_node(page));
+		if (page->mapping == NODE_MAPPING(sbi)) {
+			f2fs_sanity_check_node_footer(sbi, page,
+				page->index, NODE_TYPE_REGULAR, true);
+			f2fs_bug_on(sbi, page->index != nid_of_node(page));
+		}
 		if (f2fs_in_warm_node_list(sbi, page))
 			f2fs_del_fsync_node_entry(sbi, page);
 
