@@ -56,7 +56,7 @@ static struct erofs_attr erofs_attr_##_name = {			\
 #define ATTR_LIST(name) (&erofs_attr_##name.attr)
 
 #ifdef CONFIG_EROFS_FS_ZIP
-EROFS_ATTR_RW_UI(sync_decompress, erofs_mount_opts);
+EROFS_ATTR_RW_UI(sync_decompress, erofs_sb_info);
 #endif
 
 static struct attribute *erofs_attrs[] = {
