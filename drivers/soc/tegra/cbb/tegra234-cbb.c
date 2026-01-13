@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0
+// SPDX-FileCopyrightText: Copyright (c) 2021-2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 /*
- * Copyright (c) 2021-2025, NVIDIA CORPORATION. All rights reserved
- *
  * The driver handles Error's from Control Backbone(CBB) version 2.0.
  * generated due to illegal accesses. The driver prints debug information
  * about failed transaction on receiving interrupt from Error Notifier.
@@ -1396,6 +1395,7 @@ static const struct of_device_id tegra234_cbb_dt_ids[] = {
 };
 MODULE_DEVICE_TABLE(of, tegra234_cbb_dt_ids);
 
+#ifdef CONFIG_ACPI
 struct tegra234_cbb_acpi_uid {
 	const char *hid;
 	const char *uid;
@@ -1409,9 +1409,15 @@ static const struct tegra234_cbb_acpi_uid tegra234_cbb_acpi_uids[] = {
 };
 
 static const struct
-tegra234_cbb_fabric *tegra234_cbb_acpi_get_fabric(struct acpi_device *adev)
+tegra234_cbb_fabric *tegra234_cbb_acpi_get_fabric(struct device *dev)
 {
 	const struct tegra234_cbb_acpi_uid *entry;
+	struct acpi_device *adev = ACPI_COMPANION(dev);
+
+	if (!adev) {
+		dev_err(dev, "acpi_device is NULL\n");
+		return NULL;
+	}
 
 	for (entry = tegra234_cbb_acpi_uids; entry->hid; entry++) {
 		if (acpi_dev_hid_uid_match(adev, entry->hid, entry->uid))
@@ -1420,6 +1426,7 @@ tegra234_cbb_fabric *tegra234_cbb_acpi_get_fabric(struct acpi_device *adev)
 
 	return NULL;
 }
+#endif /* CONFIG_ACPI */
 
 static const struct acpi_device_id tegra241_cbb_acpi_ids[] = {
 	{ "NVDA1070" },
@@ -1434,18 +1441,16 @@ static int tegra234_cbb_probe(struct platform_device *pdev)
 	unsigned long flags = 0;
 	int err;
 
-	if (pdev->dev.of_node) {
+	if (pdev->dev.of_node)
 		fabric = of_device_get_match_data(&pdev->dev);
-	} else {
-		struct acpi_device *device = ACPI_COMPANION(&pdev->dev);
-		if (!device)
-			return -ENODEV;
+#ifdef CONFIG_ACPI
+	else
+		fabric = tegra234_cbb_acpi_get_fabric(&pdev->dev);
+#endif
 
-		fabric = tegra234_cbb_acpi_get_fabric(device);
-		if (!fabric) {
-			dev_err(&pdev->dev, "no device match found\n");
-			return -ENODEV;
-		}
+	if (!fabric) {
+		dev_err(&pdev->dev, "no device match found\n");
+		return -ENODEV;
 	}
 
 	cbb = devm_kzalloc(&pdev->dev, sizeof(*cbb), GFP_KERNEL);
@@ -1511,7 +1516,7 @@ static struct platform_driver tegra234_cbb_driver = {
 	.driver = {
 		.name = "tegra234-cbb",
 		.of_match_table = tegra234_cbb_dt_ids,
-		.acpi_match_table = tegra241_cbb_acpi_ids,
+		.acpi_match_table = ACPI_PTR(tegra241_cbb_acpi_ids),
 		.pm = &tegra234_cbb_pm,
 	},
 };
