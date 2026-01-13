@@ -5097,6 +5097,7 @@ nfsd_break_deleg_cb(struct file_lock *fl)
 static bool nfsd_breaker_owns_lease(struct file_lock *fl)
 {
 	struct nfs4_delegation *dl = fl->fl_owner;
+	struct nfsd_thread_local_info *ntli;
 	struct svc_rqst *rqst;
 	struct nfs4_client *clp;
 
@@ -5106,7 +5107,8 @@ static bool nfsd_breaker_owns_lease(struct file_lock *fl)
 	/* Note rq_prog == NFS_ACL_PROGRAM is also possible: */
 	if (rqst->rq_prog != NFS_PROGRAM || rqst->rq_vers < 4)
 		return false;
-	clp = *(rqst->rq_lease_breaker);
+	ntli = rqst->rq_private;
+	clp = *ntli->ntli_lease_breaker;
 	return dl->dl_stid.sc_client == clp;
 }
 
@@ -8733,6 +8735,7 @@ nfsd4_deleg_getattr_conflict(struct svc_rqst *rqstp, struct inode *inode)
 {
 	__be32 status;
 	struct nfsd_net *nn = net_generic(SVC_NET(rqstp), nfsd_net_id);
+	struct nfsd_thread_local_info *ntli = rqstp->rq_private;
 	struct file_lock_context *ctx;
 	struct file_lock *fl;
 	struct nfs4_delegation *dp;
@@ -8756,7 +8759,7 @@ nfsd4_deleg_getattr_conflict(struct svc_rqst *rqstp, struct inode *inode)
 		}
 		if (fl->fl_type == F_WRLCK) {
 			dp = fl->fl_owner;
-			if (dp->dl_recall.cb_clp == *(rqstp->rq_lease_breaker)) {
+			if (dp->dl_recall.cb_clp == *(ntli->ntli_lease_breaker)) {
 				spin_unlock(&ctx->flc_lock);
 				return 0;
 			}
