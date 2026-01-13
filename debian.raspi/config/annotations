@@ -366,11 +366,11 @@ CONFIG_LEDS_GPIO                                policy<{'arm64': 'y'}> note<'Req
 CONFIG_LEDS_LM3692X                             policy<{'arm64': 'n'}> note<'Different from master'>
 CONFIG_LEDS_SPI_BYTE                            policy<{'arm64': 'n'}> note<'Different from master'>
 CONFIG_LEDS_SYSCON                              policy<{'arm64': 'n'}> note<'Not supported on Pi (different from master)'>
-CONFIG_LEDS_TRIGGER_ACTPWR                      policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
+CONFIG_LEDS_TRIGGER_ACTPWR                      policy<{'arm64': 'y'}> note<'Required for Pi (LP: #2060942)'>
 CONFIG_LEDS_TRIGGER_BACKLIGHT                   policy<{'arm64': 'y'}> note<'Required for Pi (different from master)'>
 CONFIG_LEDS_TRIGGER_DEFAULT_ON                  policy<{'arm64': 'y'}> note<'Required for Pi (different from master)'>
 CONFIG_LEDS_TRIGGER_HEARTBEAT                   policy<{'arm64': 'y'}> note<'Required for Pi (different from master)'>
-CONFIG_LEDS_TRIGGER_INPUT                       policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
+CONFIG_LEDS_TRIGGER_INPUT                       policy<{'arm64': 'y'}> note<'Required for Pi (LP: #2060942)'>
 CONFIG_LEDS_TRIGGER_ONESHOT                     policy<{'arm64': 'y'}> note<'Required for Pi (different from master)'>
 CONFIG_LEDS_TRIGGER_TIMER                       policy<{'arm64': 'y'}> note<'Required for Pi (different from master)'>
 CONFIG_LEGACY_PTY_COUNT                         policy<{'arm64': '256'}> note<'Different from master'>
