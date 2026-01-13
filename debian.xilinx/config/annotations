@@ -591,8 +591,12 @@ CONFIG_COMMON_CLK_XLNX_CLKWZRD                  policy<{'arm64': 'y'}>
 CONFIG_COMMON_CLK_XLNX_CLKWZRD_V                policy<{'arm64': '-'}>
 CONFIG_COMMON_RESET_HI3660                      policy<{'arm64': '-'}>
 CONFIG_COMMON_RESET_HI6220                      policy<{'arm64': '-'}>
+CONFIG_CPU_FREQ                                 policy<{'arm64': 'n'}>
+CONFIG_CPU_FREQ                                 note<'{LP: #2138276 Disable CPU governor due to unstable state switching}'>
 CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND            policy<{'arm64': 'n'}>
-CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE           policy<{'arm64': 'y'}>
+CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE           policy<{'arm64': 'n'}>
+CONFIG_CPU_IDLE                                 policy<{'arm64': 'n'}>
+CONFIG_CPU_IDLE                                 note<'{LP: #2138276 Disable CPU governor due to unstable state switching}'>
 CONFIG_CRYPTO_BLAKE2B                           policy<{'arm64': 'y'}>
 CONFIG_CRYPTO_DEV_ALLWINNER                     policy<{'arm64': '-'}>
 CONFIG_CRYPTO_DEV_BCM_SPU                       policy<{'arm64': '-'}>
