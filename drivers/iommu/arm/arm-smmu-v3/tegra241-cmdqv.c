@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-only
-/* Copyright (C) 2021-2024 NVIDIA CORPORATION & AFFILIATES. */
+// SPDX-FileCopyrightText: Copyright (c) 2021-2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 
 #define dev_fmt(fmt) "tegra241_cmdqv: " fmt
 
@@ -693,7 +693,7 @@ static struct arm_smmu_impl_ops tegra241_cmdqv_impl_ops = {
 };
 
 /* Probe Functions */
-
+#ifdef CONFIG_ACPI
 static int tegra241_cmdqv_acpi_is_memory(struct acpi_resource *res, void *data)
 {
 	struct resource_win win;
@@ -756,6 +756,7 @@ free_list:
 	acpi_dev_free_resource_list(&resource_list);
 	return res;
 }
+#endif /* CONFIG_ACPI */
 
 static struct resource *
 tegra241_cmdqv_find_dt_resource(struct device *dev, int *irq)
@@ -902,10 +903,12 @@ struct arm_smmu_device *tegra241_cmdqv_probe(struct arm_smmu_device *smmu)
 	struct resource *res = NULL;
 	int irq;
 
-	if (!smmu->dev->of_node)
-		res = tegra241_cmdqv_find_acpi_resource(smmu->impl_dev, &irq);
-	else
+	if (smmu->dev->of_node)
 		res = tegra241_cmdqv_find_dt_resource(smmu->impl_dev, &irq);
+#ifdef CONFIG_ACPI
+	else
+		res = tegra241_cmdqv_find_acpi_resource(smmu->impl_dev, &irq);
+#endif
 	if (!res)
 		goto out_fallback;
 
