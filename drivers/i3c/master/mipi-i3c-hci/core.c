@@ -164,8 +164,6 @@ static void i3c_hci_bus_cleanup(struct i3c_master_controller *m)
 	reg_clear(HC_CONTROL, HC_CONTROL_BUS_ENABLE);
 	synchronize_irq(platform_get_irq(pdev, 0));
 	hci->io->cleanup(hci);
-	if (hci->cmd == &mipi_i3c_hci_cmd_v1)
-		mipi_i3c_hci_dat_v1.cleanup(hci);
 }
 
 void mipi_i3c_hci_resume(struct i3c_hci *hci)
