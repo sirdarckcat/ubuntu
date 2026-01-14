@@ -101,5 +101,9 @@ long cxl_pci_get_latency(struct pci_dev *pdev);
 
 struct cxl_dev_state;
 bool cxl_handle_ras(struct cxl_dev_state *cxlds, void __iomem *ras_base);
+void cxl_handle_cor_ras(struct cxl_dev_state *cxlds, void __iomem *ras_base);
+
+/* Restricted CXL Host specific RAS functions */
+void cxl_handle_rdport_errors(struct cxl_dev_state *cxlds);
 
 #endif /* __CXL_CORE_H__ */
