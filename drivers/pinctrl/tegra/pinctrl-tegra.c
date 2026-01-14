@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
+// SPDX-FileCopyrightText: Copyright (c) 2011-2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 /*
  * Driver for the NVIDIA Tegra pinmux
- *
- * Copyright (c) 2011-2025, NVIDIA CORPORATION.  All rights reserved.
  *
  * Derived from code:
  * Copyright (C) 2010 Google, Inc.
@@ -22,7 +21,7 @@
 #include <linux/pinctrl/pinconf.h>
 #include <linux/pinctrl/pinctrl.h>
 #include <linux/pinctrl/pinmux.h>
-#include <soc/tegra/virt/hv-ivc.h>
+#include <soc/tegra/virt/tegra_hv.h>
 
 #include "../core.h"
 #include "../pinctrl-utils.h"
