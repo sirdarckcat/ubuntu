@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
+// SPDX-FileCopyrightText: Copyright (c) 2016-2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 /*
- * Copyright (c) 2016-2022 NVIDIA Corporation
  *
  * Author: Thierry Reding <treding@nvidia.com>
  *	   Dipen Patel <dpatel@nvidia.com>
@@ -16,7 +16,7 @@
 #include <linux/seq_file.h>
 #include <asm/delay.h>
 #include <linux/delay.h>
-#include <soc/tegra/virt/hv-ivc.h>
+#include <soc/tegra/virt/tegra_hv.h>
 
 #include <dt-bindings/gpio/tegra186-gpio.h>
 #include <dt-bindings/gpio/tegra194-gpio.h>
