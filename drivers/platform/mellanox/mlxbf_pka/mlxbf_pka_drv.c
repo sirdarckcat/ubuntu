@@ -20,7 +20,7 @@
 #include "mlxbf_pka_dev.h"
 
 
-#define PKA_DRIVER_VERSION      "v3.0"
+#define PKA_DRIVER_VERSION      "v3.1"
 #define PKA_DRIVER_NAME         "pka-mlxbf"
 
 #define PKA_DRIVER_DESCRIPTION  "BlueField PKA driver"
@@ -762,11 +762,29 @@ err_alloc_chrdev:
 
 static void pka_drv_destroy_class(void)
 {
+	int id;
+	struct pka_ring_device *ring_dev;
+
+	/* Best-effort: destroy any leftover ring devices before tearing down class */
+	if (pka.class) {
+		/*
+		 * Note: device_destroy() might indirectly trigger callbacks that update
+		 * the ring IDR. This loop is used in a module unload/cleanup path where
+		 * best-effort teardown is acceptable.
+		 */
+		idr_for_each_entry(&pka.ring_idr, ring_dev, id) {
+			device_destroy(pka.class, MKDEV(MAJOR(pka.ring_devt),
+							ring_dev->minor));
+		}
+	}
+
 	idr_destroy(&pka.ring_idr);
 	cdev_del(&pka.ring_cdev);
 	unregister_chrdev_region(pka.ring_devt, MINORMASK);
-	class_destroy(pka.class);
-	pka.class = NULL;
+	if (pka.class) {
+		class_destroy(pka.class);
+		pka.class = NULL;
+	}
 }
 #endif
 
@@ -840,7 +858,7 @@ static int pka_drv_register_device(struct pka_device *pka_dev,
 	pka_drv_get_mem_res(pka_dev, &mem_res, wndw_ram_off_mask);
 
 	pka_dev->shim = pka_dev_register_shim(pka_shim_id, pka_shim_fw_id,
-					      &mem_res);
+					      &mem_res, pka_dev->device);
 	if (!pka_dev->shim) {
 		PKA_DEBUG(PKA_DRIVER,
 		  "failed to register shim id=%u\n", pka_shim_id);
@@ -1107,6 +1125,15 @@ static int pka_drv_probe_ring_device(struct pka_info *info)
 	ring_dev->device = dev;
 	info->flag       = PKA_DRIVER_FLAG_RING_DEVICE;
 	mutex_init(&ring_dev->mutex);
+
+	/* Ensure parent shim exists before creating ring device nodes */
+	if (!pka_dev_get_shim(ring_dev->parent_device_id)) {
+		PKA_DEBUG(PKA_DRIVER,
+			  "parent shim %u not present, skip ring %u\n",
+			  ring_dev->parent_device_id, ring_dev->device_id);
+		kfree(ring_dev);
+		return -ENODEV;
+	}
 
 	ret = pka_drv_add_ring_device(ring_dev);
 	if (ret) {
@@ -1397,6 +1424,8 @@ static int __init pka_drv_register(void)
 	ret = platform_driver_register(&pka_drv);
 	if (ret) {
 		PKA_ERROR(PKA_DRIVER, "failed to register platform driver\n");
+		/* Ensure class is destroyed on init failure to avoid -EEXIST on reload */
+		pka_drv_destroy_class();
 		return ret;
 	}
 
