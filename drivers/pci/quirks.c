@@ -1961,6 +1961,13 @@ DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ATI, 0x4389, quirk_no_msi);
 DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ATI, 0x438a, quirk_no_msi);
 DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ATI, 0x438b, quirk_no_msi);
 
+/*
+ * ASPEED AST2600 USB controller (Device 2603) : Bug 5510907
+ * Disable MSI to force fallback to legacy interrupts (INTx)
+ * Device: 0001:9a:02.0 USB controller: ASPEED Technology, Inc. Device 2603 (EHCI)
+ */
+DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ASPEED, 0x2603, quirk_no_msi);
+
 static void quirk_pcie_mch(struct pci_dev *pdev)
 {
 	pdev->no_msi = 1;
