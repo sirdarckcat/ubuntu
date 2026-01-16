@@ -164,6 +164,16 @@ icc_provider_to_tegra_mc(struct icc_provider *provider)
 	return container_of(provider, struct tegra_mc, provider);
 }
 
+static inline struct icc_node *tegra_icc_node_create(int node_id, int id)
+{
+	return icc_node_create(tegra_mc_get_client_id(node_id, id));
+}
+
+static inline int tegra_icc_link_create(struct icc_node *node, int node_id, int id)
+{
+	return icc_link_create(node, tegra_mc_get_client_id(node_id, id));
+}
+
 static inline u32 mc_ch_readl(const struct tegra_mc *mc, int ch,
 			      unsigned long offset)
 {

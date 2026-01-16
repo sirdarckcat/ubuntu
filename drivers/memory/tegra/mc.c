@@ -21,6 +21,8 @@
 
 #include "mc.h"
 
+static struct dentry *mc_debugfs_root;
+
 static const struct of_device_id tegra_mc_of_match[] = {
 #ifdef CONFIG_ARCH_TEGRA_2x_SOC
 	{ .compatible = "nvidia,tegra20-mc-gart", .data = &tegra20_mc_soc },
@@ -841,6 +843,7 @@ const struct tegra_mc_icc_ops tegra_mc_icc_ops = {
  */
 static int tegra_mc_interconnect_setup(struct tegra_mc *mc)
 {
+	int node_id = dev_to_node(mc->dev);
 	struct icc_node *node;
 	unsigned int i;
 	int err;
@@ -861,31 +864,36 @@ static int tegra_mc_interconnect_setup(struct tegra_mc *mc)
 	icc_provider_init(&mc->provider);
 
 	/* create Memory Controller node */
-	node = icc_node_create(TEGRA_ICC_MC);
+	node = tegra_icc_node_create(node_id, TEGRA_ICC_MC);
 	if (IS_ERR(node))
 		return PTR_ERR(node);
 
-	node->name = "Memory Controller";
+	node->name = dev_name(mc->dev);
 	icc_node_add(node, &mc->provider);
 
 	/* link Memory Controller to External Memory Controller */
-	err = icc_link_create(node, TEGRA_ICC_EMC);
+	err = tegra_icc_link_create(node, node_id, TEGRA_ICC_EMC);
 	if (err)
 		goto remove_nodes;
 
 	for (i = 0; i < mc->soc->num_clients; i++) {
 		/* create MC client node */
-		node = icc_node_create(mc->soc->clients[i].id);
+		node = tegra_icc_node_create(node_id, mc->soc->clients[i].id);
 		if (IS_ERR(node)) {
 			err = PTR_ERR(node);
 			goto remove_nodes;
 		}
 
-		node->name = mc->soc->clients[i].name;
+		if (node_id == NUMA_NO_NODE)
+			node->name = mc->soc->clients[i].name;
+		else
+			node->name = devm_kasprintf(mc->dev, GFP_KERNEL, "%d-%s",
+						    node_id, mc->soc->clients[i].name);
+
 		icc_node_add(node, &mc->provider);
 
 		/* link Memory Client to Memory Controller */
-		err = icc_link_create(node, TEGRA_ICC_MC);
+		err = tegra_icc_link_create(node, node_id, TEGRA_ICC_MC);
 		if (err)
 			goto remove_nodes;
 
@@ -956,7 +964,14 @@ static int tegra_mc_probe(struct platform_device *pdev)
 	if (IS_ERR(mc->regs))
 		return PTR_ERR(mc->regs);
 
-	mc->debugfs.root = debugfs_create_dir("mc", NULL);
+	if (!mc_debugfs_root)
+		mc_debugfs_root = debugfs_create_dir("mc", NULL);
+
+	if (dev_to_node(mc->dev) == NUMA_NO_NODE) {
+		mc->debugfs.root = mc_debugfs_root;
+	} else {
+		mc->debugfs.root = debugfs_create_dir(dev_name(mc->dev), mc_debugfs_root);
+	}
 
 	if (mc->soc->ops && mc->soc->ops->probe) {
 		err = mc->soc->ops->probe(mc);

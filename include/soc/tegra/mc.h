@@ -20,6 +20,9 @@ struct clk;
 struct device;
 struct page;
 
+/* Create unique client ID: upper 16 bits = socket ID, lower 16 bits = client ID */
+#define tegra_mc_get_client_id(node_id, id) ((((node_id) + 1) << 16) | (id))
+
 struct tegra_mc_timing {
 	unsigned long rate;
 
