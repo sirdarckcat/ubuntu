@@ -1,6 +1,6 @@
 build_arch		= arm64
 defconfig		= defconfig
-flavours		= raspi
+flavours		= raspi raspi-realtime
 build_image		= Image.gz
 kernel_file		= arch/$(build_arch)/boot/Image.gz
 install_file		= vmlinuz
