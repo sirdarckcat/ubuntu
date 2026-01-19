@@ -1,6 +1,6 @@
 build_arch	= x86
 defconfig	= defconfig
-flavours	= generic
+flavours	= vmware
 build_image	= bzImage
 kernel_file	= arch/$(build_arch)/boot/bzImage
 install_file	= vmlinuz
@@ -19,3 +19,9 @@ do_tools_rtla = true
 do_tools_acpidbg = true
 do_lib_rust     = true
 do_extras_package = true
+
+do_lib_rust		= true
+gcc			= gcc-13
+rustc			= rustc-1.82
+rustfmt			= /usr/lib/rust-1.82/bin/rustfmt
+bindgen			= bindgen-0.65
