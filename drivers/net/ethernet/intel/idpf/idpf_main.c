@@ -61,7 +61,6 @@ destroy_wqs:
 	for (i = 0; i < adapter->max_vports; i++) {
 		if (!adapter->vport_config[i])
 			continue;
-		kfree(adapter->vport_config[i]->user_config.q_coalesce);
 		kfree(adapter->vport_config[i]);
 		adapter->vport_config[i] = NULL;
 	}
