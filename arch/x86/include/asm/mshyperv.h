@@ -219,6 +219,11 @@ static inline void hv_set_register(unsigned int reg, u64 value)
 	}
 }
 
+static __always_inline u64 hv_raw_get_register(unsigned int reg)
+{
+	return __rdmsr(reg);
+}
+
 #else /* CONFIG_HYPERV */
 static inline void hyperv_init(void) {}
 static inline void hyperv_setup_mmu_ops(void) {}
