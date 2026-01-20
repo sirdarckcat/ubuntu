@@ -381,9 +381,11 @@ static union {
 	u8 reserved[PAGE_SIZE];
 } tsc_pg __aligned(PAGE_SIZE);
 
+static struct ms_hyperv_tsc_page *tsc_page = &tsc_pg.page;
+
 struct ms_hyperv_tsc_page *hv_get_tsc_page(void)
 {
-	return &tsc_pg.page;
+	return tsc_page;
 }
 EXPORT_SYMBOL_GPL(hv_get_tsc_page);
 
@@ -427,7 +429,7 @@ static void suspend_hv_clock_tsc(struct clocksource *arg)
 
 static void resume_hv_clock_tsc(struct clocksource *arg)
 {
-	phys_addr_t phys_addr = virt_to_phys(&tsc_pg);
+	phys_addr_t phys_addr = virt_to_phys(tsc_page);
 	u64 tsc_msr;
 
 	/* Re-enable the TSC page */
