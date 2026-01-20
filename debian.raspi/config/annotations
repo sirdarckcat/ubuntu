@@ -105,6 +105,7 @@ CONFIG_BCM_VCIO                                 policy<{'arm64': 'y'}> note<'Add
 CONFIG_BCM_VC_SM_CMA                            policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
 CONFIG_BCM_VIDEOCORE                            policy<{'arm64': 'y'}> note<'Required for Pi (not in master)'>
 CONFIG_BLK_CGROUP_IOCOST                        policy<{'arm64': 'n'}> note<'Different from master'>
+CONFIG_BLK_CGROUP_IOLATENCY                     policy<{'arm64': 'n', 'arm64-raspi-realtime': 'y'}> note<'LP: #1961588'>
 CONFIG_BLK_DEV_DM                               policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
 CONFIG_BLK_DEV_MD                               policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
 CONFIG_BLK_DEV_SR                               policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
@@ -347,6 +348,7 @@ CONFIG_IP_PNP                                   policy<{'arm64': 'y'}> note<'Req
 CONFIG_IP_PNP_BOOTP                             policy<{'arm64': 'n'}> note<'Required for Pi (not in master)'>
 CONFIG_IP_PNP_DHCP                              policy<{'arm64': 'y'}> note<'Required for Pi (not in master)'>
 CONFIG_IP_PNP_RARP                              policy<{'arm64': 'y'}> note<'Required for Pi (not in master)'>
+CONFIG_IRQ_TIME_ACCOUNTING                      policy<{'arm64': 'n', 'arm64-raspi-realtime': 'y'}> note<'LP: #1961588'>
 CONFIG_IR_RCMM_DECODER                          policy<{'arm64': 'n'}> note<'Different from master'>
 CONFIG_IR_SPI                                   policy<{'arm64': 'n'}> note<'Different from master'>
 CONFIG_IXGBEVF                                  policy<{'arm64': 'n'}> note<'Different from master'>
@@ -502,7 +504,7 @@ CONFIG_OF_CONFIGFS                              policy<{'arm64': 'y'}> note<'Add
 CONFIG_OF_FPGA_REGION                           policy<{'arm64': 'n'}> note<'Different from master'>
 CONFIG_OPTEE                                    policy<{'arm64': 'n'}> note<'Different from master'>
 CONFIG_OSF_PARTITION                            policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
-CONFIG_OSNOISE_TRACER                           policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
+CONFIG_OSNOISE_TRACER                           policy<{'arm64': 'n', 'arm64-raspi-realtime': 'y'}> note<'LP: #1961588'>
 CONFIG_PARPORT_1284                             policy<{'arm64': 'n'}> note<'Different from master'>
 CONFIG_PARPORT_PC_FIFO                          policy<{'arm64': 'n'}> note<'Different from master'>
 CONFIG_PC104                                    policy<{'arm64': 'n'}> note<'Different from master'>
@@ -556,8 +558,11 @@ CONFIG_POWER_RESET_SYSCON                       policy<{'arm64': 'n'}> note<'Not
 CONFIG_POWER_RESET_SYSCON_POWEROFF              policy<{'arm64': 'n'}> note<'Not supported on Pi (different from master)'>
 CONFIG_POWER_RESET_TPS65086                     policy<{'arm64': 'n'}> note<'Not supported on Pi (different from master)'>
 CONFIG_PPP                                      policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
-CONFIG_PREEMPT                                  policy<{'arm64': 'y'}> note<'LP: #1890808 (different from master)'>
-CONFIG_PREEMPT_VOLUNTARY                        policy<{'arm64': 'n'}> note<'Different from master'>
+CONFIG_PREEMPT                                  policy<{'arm64': 'y'}> note<'LP: #1890808'>
+CONFIG_PREEMPT_DYNAMIC                          policy<{'arm64': 'y', 'arm64-raspi-realtime': 'n'}> note<'LP: #1890808, LP: #2138734'>
+CONFIG_PREEMPT_NONE                             policy<{'arm64': 'n', 'arm64-raspi-realtime': '-'}> note<'LP: #1890808'>
+CONFIG_PREEMPT_RT                               policy<{'arm64': 'n', 'arm64-raspi-realtime': 'y'}> note<'LP: #2138734'>
+CONFIG_PREEMPT_VOLUNTARY                        policy<{'arm64': 'y', 'arm64-raspi': 'n', 'arm64-raspi-realtime': '-'}> note<'LP: #1890808'>
 CONFIG_PVPANIC                                  policy<{'arm64': 'n'}> note<'Different from master'>
 CONFIG_PWM_BCM2835                              policy<{'arm64': 'm'}> note<'Required for Pi (not in master)'>
 CONFIG_PWM_BRCMSTB                              policy<{'arm64': 'm'}> note<'Required for Pi (not in master)'>
@@ -575,6 +580,8 @@ CONFIG_RASPBERRYPI_GPIOMEM                      policy<{'arm64': 'm'}> note<'Add
 CONFIG_RASPBERRYPI_POWER                        policy<{'arm64': 'y'}> note<'Required for Pi (not in master)'>
 CONFIG_RCU_CPU_STALL_TIMEOUT                    policy<{'arm64': '21'}> note<'Different from master'>
 CONFIG_RCU_EXP_CPU_STALL_TIMEOUT                policy<{'arm64': '20'}> note<'Required for Pi (different from master)'>
+CONFIG_RCU_LAZY                                 policy<{'arm64': 'y', 'arm64-raspi-realtime': 'n'}> note<'LP: #2051342'>
+CONFIG_RCU_LAZY_DEFAULT_OFF                     policy<{'arm64': 'y', 'arm64-raspi-realtime': '-'}> note<'LP: #2051342'>
 CONFIG_RC_CORE                                  policy<{'arm64': 'y'}> note<'Required for Pi (different from master)'>
 CONFIG_RDMA_SIW                                 policy<{'arm64': 'n'}> note<'Different from master'>
 CONFIG_REGMAP_SPI                               policy<{'arm64': 'm'}> note<'Required for Pi (different from master)'>
@@ -732,7 +739,7 @@ CONFIG_TCG_TIS_CORE                             policy<{'arm64': 'm'}> note<'Not
 CONFIG_TCG_TIS_SPI                              policy<{'arm64': 'm'}> note<'Required for Pi (different from master)'>
 CONFIG_TEST_DIV64                               policy<{'arm64': 'm'}> note<'Required for Pi (different from master)'>
 CONFIG_THERMAL_MMIO                             policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_TIMERLAT_TRACER                          policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
+CONFIG_TIMERLAT_TRACER                          policy<{'arm64': 'n', 'arm64-raspi-realtime': 'y'}> note<'LP: #1961588'>
 CONFIG_TOUCHSCREEN_APPLE_Z2                     policy<{'arm64': '-'}> note<'Not available on Pi (master note override)'>
 CONFIG_TOUCHSCREEN_RASPBERRYPI_FW               policy<{'arm64': 'm'}> note<'Required for Pi (not in master)'>
 CONFIG_TUN                                      policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
@@ -874,6 +881,7 @@ CONFIG_VMWARE_VMCI                              policy<{'arm64': 'n'}> note<'Dif
 CONFIG_W1_MASTER_SGI                            policy<{'arm64': 'n'}> note<'Different from master'>
 CONFIG_W1_SLAVE_DS250X                          policy<{'arm64': 'n'}> note<'Different from master'>
 CONFIG_WATCHDOG_PRETIMEOUT_GOV_NOOP             policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
+CONFIG_WQ_POWER_EFFICIENT_DEFAULT               policy<{'arm64': 'y', 'arm64-raspi-realtime': 'n'}> note<'LP: #1961588'>
 CONFIG_WS2812_PIO_RP1                           policy<{'arm64': 'm'}> note<'Required for Pi (not in master)'>
 CONFIG_XEN                                      policy<{'arm64': 'n'}> note<'Different from master'>
 CONFIG_XEN_BLKDEV_FRONTEND                      policy<{'arm64': '-'}> note<'Master note override'>
@@ -970,6 +978,7 @@ CONFIG_APPLE_PMGR_PWRSTATE                      policy<{'arm64': '-'}>
 CONFIG_APPLE_RTKIT                              policy<{'arm64': '-'}>
 CONFIG_APPLE_SART                               policy<{'arm64': '-'}>
 CONFIG_APPLE_WATCHDOG                           policy<{'arm64': '-'}>
+CONFIG_ARCH_ENABLE_THP_MIGRATION                policy<{'arm64': 'y', 'arm64-raspi-realtime': '-'}>
 CONFIG_ARCH_FORCE_MAX_ORDER                     policy<{'arm64': '10'}>
 CONFIG_ARCH_HAS_ACPI_TABLE_UPGRADE              policy<{'arm64': '-'}>
 CONFIG_ARCH_HAS_DMA_OPS                         policy<{'arm64': '-'}>
@@ -1005,7 +1014,9 @@ CONFIG_ARCH_RCAR_GEN3                           policy<{'arm64': '-'}>
 CONFIG_ARCH_RCAR_GEN4                           policy<{'arm64': '-'}>
 CONFIG_ARCH_RZG2L                               policy<{'arm64': '-'}>
 CONFIG_ARCH_S32                                 policy<{'arm64': '-'}>
+CONFIG_ARCH_SUPPORTS_HUGE_PFNMAP                policy<{'arm64': 'y', 'arm64-raspi-realtime': '-'}>
 CONFIG_ARCH_SUPPORTS_KEXEC                      policy<{'arm64': '-'}>
+CONFIG_ARCH_SUPPORTS_PMD_PFNMAP                 policy<{'arm64': 'y', 'arm64-raspi-realtime': '-'}>
 CONFIG_ARCH_TEGRA_132_SOC                       policy<{'arm64': '-'}>
 CONFIG_ARCH_TEGRA_186_SOC                       policy<{'arm64': '-'}>
 CONFIG_ARCH_TEGRA_194_SOC                       policy<{'arm64': '-'}>
@@ -1013,8 +1024,10 @@ CONFIG_ARCH_TEGRA_210_SOC                       policy<{'arm64': '-'}>
 CONFIG_ARCH_TEGRA_234_SOC                       policy<{'arm64': '-'}>
 CONFIG_ARCH_TEGRA_241_SOC                       policy<{'arm64': '-'}>
 CONFIG_ARCH_TEGRA_264_SOC                       policy<{'arm64': '-'}>
+CONFIG_ARCH_WANT_PMD_MKWRITE                    policy<{'arm64': 'y', 'arm64-raspi-realtime': '-'}>
 CONFIG_ARC_EMAC_CORE                            policy<{'arm64': '-'}>
 CONFIG_ARM64_ACPI_PARKING_PROTOCOL              policy<{'arm64': '-'}>
+CONFIG_ARM64_CONTPTE                            policy<{'arm64': 'y', 'arm64-raspi-realtime': '-'}>
 CONFIG_ARMADA_37XX_CLK                          policy<{'arm64': '-'}>
 CONFIG_ARMADA_37XX_RWTM_MBOX                    policy<{'arm64': '-'}>
 CONFIG_ARMADA_37XX_WATCHDOG                     policy<{'arm64': '-'}>
@@ -1116,6 +1129,10 @@ CONFIG_BNA                                      policy<{'arm64': '-'}>
 CONFIG_BOOTPARAM_HARDLOCKUP_PANIC               policy<{'arm64': '-'}>
 CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC               policy<{'arm64': '-'}>
 CONFIG_BPF_KPROBE_OVERRIDE                      policy<{'arm64': '-'}>
+CONFIG_BRIDGE_EBT_BROUTE                        policy<{'arm64': 'm', 'arm64-raspi-realtime': '-'}>
+CONFIG_BRIDGE_EBT_T_FILTER                      policy<{'arm64': 'm', 'arm64-raspi-realtime': '-'}>
+CONFIG_BRIDGE_EBT_T_NAT                         policy<{'arm64': 'm', 'arm64-raspi-realtime': '-'}>
+CONFIG_BRIDGE_NF_EBTABLES_LEGACY                policy<{'arm64': 'm', 'arm64-raspi-realtime': '-'}>
 CONFIG_BT_QCOMSMD                               policy<{'arm64': '-'}>
 CONFIG_CAN_BXCAN                                policy<{'arm64': '-'}>
 CONFIG_CAN_RCAR                                 policy<{'arm64': '-'}>
@@ -1459,6 +1476,7 @@ CONFIG_COMMON_CLK_WM831X                        policy<{'arm64': '-'}>
 CONFIG_COMMON_CLK_ZYNQMP                        policy<{'arm64': '-'}>
 CONFIG_COMMON_RESET_HI3660                      policy<{'arm64': '-'}>
 CONFIG_COMMON_RESET_HI6220                      policy<{'arm64': '-'}>
+CONFIG_COMPACT_UNEVICTABLE_DEFAULT              policy<{'arm64': '1', 'arm64-raspi-realtime': '0'}>
 CONFIG_CPM_TSA                                  policy<{'arm64': '-'}>
 CONFIG_CPUFREQ_DT_RUST                          policy<{'arm64': '-'}>
 CONFIG_CPUMASK_OFFSTACK                         policy<{'arm64': '-'}>
@@ -1581,10 +1599,14 @@ CONFIG_DA_MON_EVENTS_ID                         policy<{'arm64': '-'}>
 CONFIG_DE2104X                                  policy<{'arm64': '-'}>
 CONFIG_DE2104X_DSL                              policy<{'arm64': '-'}>
 CONFIG_DEBUG_KERNEL_DC                          policy<{'arm64': '-'}>
+CONFIG_DEBUG_MUTEXES                            policy<{'arm64': 'n', 'arm64-raspi-realtime': '-'}>
+CONFIG_DEBUG_RWSEMS                             policy<{'arm64': 'n', 'arm64-raspi-realtime': '-'}>
 CONFIG_DEFXX                                    policy<{'arm64': '-'}>
+CONFIG_DETECT_HUNG_TASK_BLOCKER                 policy<{'arm64': 'y', 'arm64-raspi-realtime': '-'}>
 CONFIG_DEVFREQ_EVENT_ROCKCHIP_DFI               policy<{'arm64': '-'}>
 CONFIG_DEVICE_MIGRATION                         policy<{'arm64': '-'}>
 CONFIG_DEVICE_PRIVATE                           policy<{'arm64': '-'}>
+CONFIG_DEV_DAX                                  policy<{'arm64': 'm', 'arm64-raspi-realtime': '-'}>
 CONFIG_DEV_DAX_CXL                              policy<{'arm64': '-'}>
 CONFIG_DEV_DAX_HMEM                             policy<{'arm64': '-'}>
 CONFIG_DEV_DAX_HMEM_DEVICES                     policy<{'arm64': '-'}>
@@ -1644,6 +1666,7 @@ CONFIG_DRM_MEDIATEK_HDMI                        policy<{'arm64': '-'}>
 CONFIG_DRM_MESON                                policy<{'arm64': '-'}>
 CONFIG_DRM_MESON_DW_HDMI                        policy<{'arm64': '-'}>
 CONFIG_DRM_MESON_DW_MIPI_DSI                    policy<{'arm64': '-'}>
+CONFIG_DRM_MGAG200_DISABLE_WRITECOMBINE         policy<{'arm64-raspi-realtime': 'n'}>
 CONFIG_DRM_MSM                                  policy<{'arm64': '-'}>
 CONFIG_DRM_MSM_DP                               policy<{'arm64': '-'}>
 CONFIG_DRM_MSM_DPU                              policy<{'arm64': '-'}>
@@ -1921,6 +1944,7 @@ CONFIG_HAVE_KERNEL_GZIP                         policy<{'arm64': '-'}>
 CONFIG_HAVE_KERNEL_ZSTD                         policy<{'arm64': '-'}>
 CONFIG_HAVE_PWRCTL                              policy<{'arm64': '-'}>
 CONFIG_HAVE_PWRCTRL                             policy<{'arm64': '-'}>
+CONFIG_HAVE_SCHED_AVG_IRQ                       policy<{'arm64-raspi-realtime': 'y'}>
 CONFIG_HAVE_SETUP_PER_CPU_AREA                  policy<{'arm64': '-'}>
 CONFIG_HBMC_AM654                               policy<{'arm64': '-'}>
 CONFIG_HI3660_MBOX                              policy<{'arm64': '-'}>
@@ -2143,6 +2167,14 @@ CONFIG_INTERCONNECT_QCOM_SM8750                 policy<{'arm64': '-'}>
 CONFIG_INTERCONNECT_QCOM_SMD_RPM                policy<{'arm64': '-'}>
 CONFIG_INTERCONNECT_QCOM_X1E80100               policy<{'arm64': '-'}>
 CONFIG_IOMMU_IO_PGTABLE_ARMV7S_SELFTEST         policy<{'arm64': '-'}>
+CONFIG_IP6_NF_FILTER                            policy<{'arm64': 'm', 'arm64-raspi-realtime': '-'}>
+CONFIG_IP6_NF_IPTABLES_LEGACY                   policy<{'arm64': 'm', 'arm64-raspi-realtime': '-'}>
+CONFIG_IP6_NF_MANGLE                            policy<{'arm64': 'm', 'arm64-raspi-realtime': '-'}>
+CONFIG_IP6_NF_NAT                               policy<{'arm64': 'm', 'arm64-raspi-realtime': '-'}>
+CONFIG_IP6_NF_RAW                               policy<{'arm64': 'm', 'arm64-raspi-realtime': '-'}>
+CONFIG_IP6_NF_SECURITY                          policy<{'arm64': 'm', 'arm64-raspi-realtime': '-'}>
+CONFIG_IP6_NF_TARGET_HL                         policy<{'arm64': 'm', 'arm64-raspi-realtime': '-'}>
+CONFIG_IP6_NF_TARGET_MASQUERADE                 policy<{'arm64': 'm', 'arm64-raspi-realtime': '-'}>
 CONFIG_IPE_POLICY_SIG_PLATFORM_KEYRING          policy<{'arm64': '-'}>
 CONFIG_IPE_PROP_DM_VERITY_SIGNATURE             policy<{'arm64': '-'}>
 CONFIG_IPE_PROP_FS_VERITY                       policy<{'arm64': '-'}>
@@ -2173,9 +2205,22 @@ CONFIG_IPQ_GCC_9574                             policy<{'arm64': '-'}>
 CONFIG_IPQ_NSSCC_9574                           policy<{'arm64': '-'}>
 CONFIG_IPQ_NSSCC_QCA8K                          policy<{'arm64': '-'}>
 CONFIG_IPU_BRIDGE                               policy<{'arm64': '-'}>
+CONFIG_IP_NF_ARPFILTER                          policy<{'arm64': 'm', 'arm64-raspi-realtime': '-'}>
+CONFIG_IP_NF_ARPTABLES                          policy<{'arm64': 'm', 'arm64-raspi-realtime': '-'}>
+CONFIG_IP_NF_FILTER                             policy<{'arm64': 'm', 'arm64-raspi-realtime': '-'}>
+CONFIG_IP_NF_IPTABLES_LEGACY                    policy<{'arm64': 'm', 'arm64-raspi-realtime': '-'}>
+CONFIG_IP_NF_MANGLE                             policy<{'arm64': 'm', 'arm64-raspi-realtime': '-'}>
+CONFIG_IP_NF_NAT                                policy<{'arm64': 'm', 'arm64-raspi-realtime': '-'}>
+CONFIG_IP_NF_RAW                                policy<{'arm64': 'm', 'arm64-raspi-realtime': '-'}>
+CONFIG_IP_NF_SECURITY                           policy<{'arm64': 'm', 'arm64-raspi-realtime': '-'}>
+CONFIG_IP_NF_TARGET_MASQUERADE                  policy<{'arm64': 'm', 'arm64-raspi-realtime': '-'}>
+CONFIG_IP_NF_TARGET_NETMAP                      policy<{'arm64': 'm', 'arm64-raspi-realtime': '-'}>
+CONFIG_IP_NF_TARGET_REDIRECT                    policy<{'arm64': 'm', 'arm64-raspi-realtime': '-'}>
+CONFIG_IP_NF_TARGET_TTL                         policy<{'arm64': 'm', 'arm64-raspi-realtime': '-'}>
 CONFIG_IRQ_FASTEOI_HIERARCHY_HANDLERS           policy<{'arm64': '-'}>
 CONFIG_IR_ENE                                   policy<{'arm64': '-'}>
 CONFIG_IR_FINTEK                                policy<{'arm64': '-'}>
+CONFIG_IR_GPIO_TX                               policy<{'arm64': 'm', 'arm64-raspi-realtime': '-'}>
 CONFIG_IR_ITE_CIR                               policy<{'arm64': '-'}>
 CONFIG_IR_MESON                                 policy<{'arm64': '-'}>
 CONFIG_IR_MESON_TX                              policy<{'arm64': '-'}>
@@ -2223,6 +2268,7 @@ CONFIG_LEDS_MAX8997                             policy<{'arm64': '-'}>
 CONFIG_LEDS_QCOM_FLASH                          policy<{'arm64': '-'}>
 CONFIG_LEDS_SC27XX_BLTC                         policy<{'arm64': '-'}>
 CONFIG_LEDS_SUN50I_A100                         policy<{'arm64': '-'}>
+CONFIG_LEDS_TRIGGER_CPU                         policy<{'arm64': 'y', 'arm64-raspi-realtime': '-'}>
 CONFIG_LEDS_WM831X_STATUS                       policy<{'arm64': '-'}>
 CONFIG_LEDS_WM8350                              policy<{'arm64': '-'}>
 CONFIG_LOAD_UEFI_KEYS                           policy<{'arm64': '-'}>
@@ -2333,6 +2379,7 @@ CONFIG_MMC_SDHI_SYS_DMAC                        policy<{'arm64': '-'}>
 CONFIG_MMC_SH_MMCIF                             policy<{'arm64': '-'}>
 CONFIG_MMC_SUNXI                                policy<{'arm64': '-'}>
 CONFIG_MMC_TMIO_CORE                            policy<{'arm64': '-'}>
+CONFIG_MM_ID                                    policy<{'arm64': 'y', 'arm64-raspi-realtime': '-'}>
 CONFIG_MSHV_ROOT                                policy<{'arm64': '-'}>
 CONFIG_MSM_GCC_8916                             policy<{'arm64': '-'}>
 CONFIG_MSM_GCC_8917                             policy<{'arm64': '-'}>
@@ -2415,6 +2462,9 @@ CONFIG_NCSI_OEM_CMD_KEEP_PHY                    policy<{'arm64': '-'}>
 CONFIG_ND_PFN                                   policy<{'arm64': '-'}>
 CONFIG_NEED_PER_CPU_EMBED_FIRST_CHUNK           policy<{'arm64': '-'}>
 CONFIG_NEED_PER_CPU_PAGE_FIRST_CHUNK            policy<{'arm64': '-'}>
+CONFIG_NETFILTER_XTABLES_LEGACY                 policy<{'arm64': 'y', 'arm64-raspi-realtime': '-'}>
+CONFIG_NETFILTER_XT_TARGET_NOTRACK              policy<{'arm64': 'm', 'arm64-raspi-realtime': '-'}>
+CONFIG_NETFILTER_XT_TARGET_TRACE                policy<{'arm64': 'm', 'arm64-raspi-realtime': '-'}>
 CONFIG_NETXEN_NIC                               policy<{'arm64': '-'}>
 CONFIG_NET_9P_XEN                               policy<{'arm64': '-'}>
 CONFIG_NET_DSA_MSCC_FELIX                       policy<{'arm64': '-'}>
@@ -2431,6 +2481,7 @@ CONFIG_NITRO_ENCLAVES                           policy<{'arm64': '-'}>
 CONFIG_NIU                                      policy<{'arm64': '-'}>
 CONFIG_NODES_SHIFT                              policy<{'arm64': '-'}>
 CONFIG_NOUVEAU_PLATFORM_DRIVER                  policy<{'arm64': '-'}>
+CONFIG_NO_PAGE_MAPCOUNT                         policy<{'arm64': 'n', 'arm64-raspi-realtime': '-'}>
 CONFIG_NPCM7XX_KCS_IPMI_BMC                     policy<{'arm64': '-'}>
 CONFIG_NPCM7XX_TIMER                            policy<{'arm64': '-'}>
 CONFIG_NPCM7XX_WATCHDOG                         policy<{'arm64': '-'}>
@@ -3036,6 +3087,7 @@ CONFIG_QLCNIC_HWMON                             policy<{'arm64': '-'}>
 CONFIG_QLCNIC_SRIOV                             policy<{'arm64': '-'}>
 CONFIG_QORIQ_CPUFREQ                            policy<{'arm64': '-'}>
 CONFIG_QORIQ_THERMAL                            policy<{'arm64': '-'}>
+CONFIG_QUEUED_RWLOCKS                           policy<{'arm64': 'y', 'arm64-raspi-realtime': '-'}>
 CONFIG_R6040                                    policy<{'arm64': '-'}>
 CONFIG_RAPIDIO_CHMAN                            policy<{'arm64': '-'}>
 CONFIG_RAPIDIO_CPS_GEN2                         policy<{'arm64': '-'}>
@@ -3053,6 +3105,10 @@ CONFIG_RCAR_DMAC                                policy<{'arm64': '-'}>
 CONFIG_RCAR_GEN3_THERMAL                        policy<{'arm64': '-'}>
 CONFIG_RCAR_REMOTEPROC                          policy<{'arm64': '-'}>
 CONFIG_RCAR_THERMAL                             policy<{'arm64': '-'}>
+CONFIG_RCU_BOOST                                policy<{'arm64-raspi-realtime': 'y'}>
+CONFIG_RCU_BOOST_DELAY                          policy<{'arm64-raspi-realtime': '500'}>
+CONFIG_RCU_NOCB_CPU_CB_BOOST                    policy<{'arm64-raspi-realtime': 'y'}>
+CONFIG_READ_ONLY_THP_FOR_FS                     policy<{'arm64': 'n', 'arm64-raspi-realtime': '-'}>
 CONFIG_REGMAP_AC97                              policy<{'arm64': '-'}>
 CONFIG_REGMAP_SCCB                              policy<{'arm64': '-'}>
 CONFIG_REGULATOR_88PM8607                       policy<{'arm64': '-'}>
@@ -3750,6 +3806,7 @@ CONFIG_SOC_TEGRA_FLOWCTRL                       policy<{'arm64': '-'}>
 CONFIG_SOC_TEGRA_FUSE                           policy<{'arm64': '-'}>
 CONFIG_SOC_TEGRA_PMC                            policy<{'arm64': '-'}>
 CONFIG_SOC_TEGRA_POWERGATE_BPMP                 policy<{'arm64': '-'}>
+CONFIG_SOFTIRQ_ON_OWN_STACK                     policy<{'arm64': 'y', 'arm64-raspi-realtime': '-'}>
 CONFIG_SOUNDWIRE_AMD                            policy<{'arm64': '-'}>
 CONFIG_SOUNDWIRE_CADENCE                        policy<{'arm64': '-'}>
 CONFIG_SOUNDWIRE_GENERIC_ALLOCATION             policy<{'arm64': '-'}>
@@ -3959,6 +4016,7 @@ CONFIG_TEHUTI_TN40                              policy<{'arm64': '-'}>
 CONFIG_TEST_HMM                                 policy<{'arm64': '-'}>
 CONFIG_THERMAL_DEFAULT_GOV_POWER_ALLOCATOR      policy<{'arm64': '-'}>
 CONFIG_THERMAL_GOV_POWER_ALLOCATOR              policy<{'arm64': '-'}>
+CONFIG_THP_SWAP                                 policy<{'arm64': 'y', 'arm64-raspi-realtime': '-'}>
 CONFIG_THUNDERX2_PMU                            policy<{'arm64': '-'}>
 CONFIG_TIMER_ACPI                               policy<{'arm64': '-'}>
 CONFIG_TIMER_IMX_SYS_CTR                        policy<{'arm64': '-'}>
@@ -4005,6 +4063,10 @@ CONFIG_TOUCHSCREEN_PCAP                         policy<{'arm64': '-'}>
 CONFIG_TOUCHSCREEN_SUN4I                        policy<{'arm64': '-'}>
 CONFIG_TOUCHSCREEN_TI_AM335X_TSC                policy<{'arm64': '-'}>
 CONFIG_TOUCHSCREEN_WM831X                       policy<{'arm64': '-'}>
+CONFIG_TRANSPARENT_HUGEPAGE                     policy<{'arm64': 'y', 'arm64-raspi-realtime': '-'}>
+CONFIG_TRANSPARENT_HUGEPAGE_ALWAYS              policy<{'arm64': 'n', 'arm64-raspi-realtime': '-'}>
+CONFIG_TRANSPARENT_HUGEPAGE_MADVISE             policy<{'arm64': 'y', 'arm64-raspi-realtime': '-'}>
+CONFIG_TRANSPARENT_HUGEPAGE_NEVER               policy<{'arm64': 'n', 'arm64-raspi-realtime': '-'}>
 CONFIG_TSM_MEASUREMENTS                         policy<{'arm64': '-'}>
 CONFIG_TULIP                                    policy<{'arm64': '-'}>
 CONFIG_TULIP_MMIO                               policy<{'arm64': '-'}>
