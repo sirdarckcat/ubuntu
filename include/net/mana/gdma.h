@@ -382,6 +382,10 @@ struct gdma_irq_context {
 	char name[MANA_IRQ_NAME_SZ];
 };
 
+enum gdma_context_flags {
+	GC_PROBE_SUCCEEDED	= 0,
+};
+
 struct gdma_context {
 	struct device		*dev;
 	struct dentry		*mana_pci_debugfs;
@@ -430,6 +434,8 @@ struct gdma_context {
 	u64 pf_cap_flags1;
 
 	struct workqueue_struct *service_wq;
+
+	unsigned long		flags;
 };
 
 static inline bool mana_gd_is_mana(struct gdma_dev *gd)
@@ -591,6 +597,9 @@ enum {
 /* Driver can self reset on FPGA Reconfig EQE notification */
 #define GDMA_DRV_CAP_FLAG_1_HANDLE_RECONFIG_EQE BIT(17)
 
+/* Driver can handle hardware recovery events during probe */
+#define GDMA_DRV_CAP_FLAG_1_PROBE_RECOVERY BIT(22)
+
 #define GDMA_DRV_CAP_FLAGS1 \
 	(GDMA_DRV_CAP_FLAG_1_EQ_SHARING_MULTI_VPORT | \
 	 GDMA_DRV_CAP_FLAG_1_NAPI_WKDONE_FIX | \
@@ -599,7 +608,8 @@ enum {
 	 GDMA_DRV_CAP_FLAG_1_DEV_LIST_HOLES_SUP | \
 	 GDMA_DRV_CAP_FLAG_1_DYNAMIC_IRQ_ALLOC_SUPPORT | \
 	 GDMA_DRV_CAP_FLAG_1_SELF_RESET_ON_EQE | \
-	 GDMA_DRV_CAP_FLAG_1_HANDLE_RECONFIG_EQE)
+	 GDMA_DRV_CAP_FLAG_1_HANDLE_RECONFIG_EQE | \
+	 GDMA_DRV_CAP_FLAG_1_PROBE_RECOVERY)
 
 #define GDMA_DRV_CAP_FLAGS2 0
 
