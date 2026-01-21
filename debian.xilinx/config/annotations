@@ -26,6 +26,36 @@ CONFIG_COMMON_CLK_IDT8T49N24X                   note<'LP: #2092435'>
 CONFIG_COMMON_CLK_PROXO                         policy<{'arm64': 'y'}>
 CONFIG_COMMON_CLK_PROXO                         note<'LP: 2069790'>
 
+CONFIG_CPUFREQ_DT                               policy<{'arm64': '-'}>
+CONFIG_CPUFREQ_DT                               note<'{LP: #2138276 Disable CPU governor due to unstable state switching}'>
+
+CONFIG_CPU_FREQ                                 policy<{'arm64': 'n'}>
+CONFIG_CPU_FREQ                                 note<'{LP: #2138276 Disable CPU governor due to unstable state switching}'>
+
+CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE         policy<{'arm64': '-'}>
+CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE         note<'{LP: #2138276 Disable CPU governor due to unstable state switching}'>
+
+CONFIG_CPU_FREQ_GOV_CONSERVATIVE                policy<{'arm64': '-'}>
+CONFIG_CPU_FREQ_GOV_CONSERVATIVE                note<'{LP: #2138276 Disable CPU governor due to unstable state switching}'>
+
+CONFIG_CPU_FREQ_GOV_ONDEMAND                    policy<{'arm64': '-'}>
+CONFIG_CPU_FREQ_GOV_ONDEMAND                    note<'{LP: #2138276 Disable CPU governor due to unstable state switching}'>
+
+CONFIG_CPU_FREQ_GOV_PERFORMANCE                 policy<{'arm64': '-'}>
+CONFIG_CPU_FREQ_GOV_PERFORMANCE                 note<'{LP: #2138276 Disable CPU governor due to unstable state switching}'>
+
+CONFIG_CPU_FREQ_GOV_POWERSAVE                   policy<{'arm64': '-'}>
+CONFIG_CPU_FREQ_GOV_POWERSAVE                   note<'{LP: #2138276 Disable CPU governor due to unstable state switching}'>
+
+CONFIG_CPU_FREQ_GOV_USERSPACE                   policy<{'arm64': '-'}>
+CONFIG_CPU_FREQ_GOV_USERSPACE                   note<'{LP: #2138276 Disable CPU governor due to unstable state switching}'>
+
+CONFIG_CPU_FREQ_STAT                            policy<{'arm64': '-'}>
+CONFIG_CPU_FREQ_STAT                            note<'{LP: #2138276 Disable CPU governor due to unstable state switching}'>
+
+CONFIG_CPU_IDLE                                 policy<{'arm64': 'y'}>
+CONFIG_CPU_IDLE                                 note<'{LP: #2138276 Disable CPU governor due to unstable state switching}'>
+
 CONFIG_CRYPTO_DEV_ZYNQMP_SHA3                   policy<{'arm64': 'y'}>
 CONFIG_CRYPTO_DEV_ZYNQMP_SHA3                   note<'LP: 2069790'>
 
@@ -166,6 +196,9 @@ CONFIG_XILINX_WINDOW_WATCHDOG                   note<'LP: 2069790'>
 
 CONFIG_A11Y_BRAILLE_CONSOLE                     policy<{'arm64': '-'}>
 CONFIG_AC97_BUS                                 policy<{'arm64': 'y'}>
+CONFIG_ACPI_CPPC_CPUFREQ                        policy<{'arm64': '-'}>
+CONFIG_ACPI_CPPC_CPUFREQ_FIE                    policy<{'arm64': '-'}>
+CONFIG_ACPI_CPPC_LIB                            policy<{'arm64': '-'}>
 CONFIG_AHCI_BRCM                                policy<{'arm64': '-'}>
 CONFIG_AHCI_IMX                                 policy<{'arm64': '-'}>
 CONFIG_AHCI_MTK                                 policy<{'arm64': '-'}>
@@ -274,6 +307,8 @@ CONFIG_ARM_QCOM_CPUFREQ_HW                      policy<{'arm64': '-'}>
 CONFIG_ARM_QCOM_CPUFREQ_NVMEM                   policy<{'arm64': '-'}>
 CONFIG_ARM_RASPBERRYPI_CPUFREQ                  policy<{'arm64': '-'}>
 CONFIG_ARM_RK3399_DMC_DEVFREQ                   policy<{'arm64': '-'}>
+CONFIG_ARM_SCMI_CPUFREQ                         policy<{'arm64': '-'}>
+CONFIG_ARM_SCPI_CPUFREQ                         policy<{'arm64': '-'}>
 CONFIG_ARM_SMMU                                 policy<{'arm64': 'n'}>
 CONFIG_ARM_SMMU_LEGACY_DT_BINDINGS              policy<{'arm64': '-'}>
 CONFIG_ARM_SMMU_QCOM                            policy<{'arm64': '-'}>
@@ -591,12 +626,16 @@ CONFIG_COMMON_CLK_XLNX_CLKWZRD                  policy<{'arm64': 'y'}>
 CONFIG_COMMON_CLK_XLNX_CLKWZRD_V                policy<{'arm64': '-'}>
 CONFIG_COMMON_RESET_HI3660                      policy<{'arm64': '-'}>
 CONFIG_COMMON_RESET_HI6220                      policy<{'arm64': '-'}>
-CONFIG_CPU_FREQ                                 policy<{'arm64': 'n'}>
-CONFIG_CPU_FREQ                                 note<'{LP: #2138276 Disable CPU governor due to unstable state switching}'>
-CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND            policy<{'arm64': 'n'}>
-CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE           policy<{'arm64': 'n'}>
-CONFIG_CPU_IDLE                                 policy<{'arm64': 'n'}>
-CONFIG_CPU_IDLE                                 note<'{LP: #2138276 Disable CPU governor due to unstable state switching}'>
+CONFIG_CPUFREQ_DT_PLATDEV                       policy<{'arm64': '-'}>
+CONFIG_CPU_FREQ_DEFAULT_GOV_CONSERVATIVE        policy<{'arm64': '-'}>
+CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND            policy<{'arm64': '-'}>
+CONFIG_CPU_FREQ_DEFAULT_GOV_POWERSAVE           policy<{'arm64': '-'}>
+CONFIG_CPU_FREQ_DEFAULT_GOV_SCHEDUTIL           policy<{'arm64': '-'}>
+CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE           policy<{'arm64': '-'}>
+CONFIG_CPU_FREQ_GOV_ATTR_SET                    policy<{'arm64': '-'}>
+CONFIG_CPU_FREQ_GOV_COMMON                      policy<{'arm64': '-'}>
+CONFIG_CPU_FREQ_GOV_SCHEDUTIL                   policy<{'arm64': '-'}>
+CONFIG_CPU_FREQ_THERMAL                         policy<{'arm64': '-'}>
 CONFIG_CRYPTO_BLAKE2B                           policy<{'arm64': 'y'}>
 CONFIG_CRYPTO_DEV_ALLWINNER                     policy<{'arm64': '-'}>
 CONFIG_CRYPTO_DEV_BCM_SPU                       policy<{'arm64': '-'}>
@@ -780,6 +819,8 @@ CONFIG_DRM_XLNX_MIXER                           policy<{'arm64': 'y'}>
 CONFIG_DRM_XLNX_PL_DISP                         policy<{'arm64': 'y'}>
 CONFIG_DRM_XLNX_SDI                             policy<{'arm64': 'y'}>
 CONFIG_DRM_ZOCL                                 policy<{'arm64': '-'}>
+CONFIG_DTPM_CPU                                 policy<{'arm64': '-'}>
+CONFIG_DTPM_DEVFREQ                             policy<{'arm64': '-'}>
 CONFIG_DVB_CORE                                 policy<{'arm64': 'y'}>
 CONFIG_DVB_MAX_ADAPTERS                         policy<{'arm64': '16'}>
 CONFIG_DWMAC_IMX8                               policy<{'arm64': '-'}>
@@ -816,6 +857,7 @@ CONFIG_EFI_ARMSTUB_DTB_LOADER                   policy<{'arm64': 'y'}>
 CONFIG_EINT_MTK                                 policy<{'arm64': '-'}>
 CONFIG_EMAC_ROCKCHIP                            policy<{'arm64': '-'}>
 CONFIG_EMBEDDED                                 policy<{'arm64': '-'}>
+CONFIG_ENERGY_MODEL                             policy<{'arm64': '-'}>
 CONFIG_EXT3_FS_POSIX_ACL                        policy<{'arm64': 'n'}>
 CONFIG_EXT3_FS_SECURITY                         policy<{'arm64': 'n'}>
 CONFIG_EXTCON_QCOM_SPMI_MISC                    policy<{'arm64': '-'}>
@@ -1927,6 +1969,9 @@ CONFIG_SA_GCC_8775P                             policy<{'arm64': '-'}>
 CONFIG_SA_GPUCC_8775P                           policy<{'arm64': '-'}>
 CONFIG_SC27XX_ADC                               policy<{'arm64': '-'}>
 CONFIG_SC27XX_EFUSE                             policy<{'arm64': '-'}>
+CONFIG_SCHED_THERMAL_PRESSURE                   policy<{'arm64': '-'}>
+CONFIG_SCSI_LPFC                                policy<{'arm64': '-'}>
+CONFIG_SCSI_LPFC_DEBUG_FS                       policy<{'arm64': '-'}>
 CONFIG_SCSI_UFS_HISI                            policy<{'arm64': '-'}>
 CONFIG_SCSI_UFS_MEDIATEK                        policy<{'arm64': '-'}>
 CONFIG_SCSI_UFS_QCOM                            policy<{'arm64': '-'}>
@@ -2424,6 +2469,8 @@ CONFIG_TEGRA_TIMER                              policy<{'arm64': '-'}>
 CONFIG_TEGRA_VDE                                policy<{'arm64': '-'}>
 CONFIG_TEGRA_WATCHDOG                           policy<{'arm64': '-'}>
 CONFIG_TEST_UBSAN                               policy<{'arm64': '-'}>
+CONFIG_THERMAL_DEFAULT_GOV_POWER_ALLOCATOR      policy<{'arm64': '-'}>
+CONFIG_THERMAL_GOV_POWER_ALLOCATOR              policy<{'arm64': '-'}>
 CONFIG_THUNDERX2_PMU                            policy<{'arm64': '-'}>
 CONFIG_TIMER_IMX_SYS_CTR                        policy<{'arm64': '-'}>
 CONFIG_TI_AM335X_ADC                            policy<{'arm64': '-'}>
@@ -2475,6 +2522,9 @@ CONFIG_UBSAN_SANITIZE_ALL                       policy<{'arm64': '-'}>
 CONFIG_UBSAN_SHIFT                              policy<{'arm64': '-'}>
 CONFIG_UBSAN_TRAP                               policy<{'arm64': '-'}>
 CONFIG_UBSAN_UNREACHABLE                        policy<{'arm64': '-'}>
+CONFIG_UCLAMP_BUCKETS_COUNT                     policy<{'arm64': '-'}>
+CONFIG_UCLAMP_TASK                              policy<{'arm64': '-'}>
+CONFIG_UCLAMP_TASK_GROUP                        policy<{'arm64': '-'}>
 CONFIG_UIO                                      policy<{'arm64': 'y'}>
 CONFIG_UIO_XILINX_AI_ENGINE                     policy<{'arm64': 'm'}>
 CONFIG_UIO_XILINX_APM                           policy<{'arm64': 'y'}>
