@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
-/* SPDX-FileCopyrightText: Copyright (c) 2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved. */
+/* SPDX-FileCopyrightText: Copyright (c) 2025-2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved. */
 
 #include <linux/interrupt.h>
 #include <linux/of_address.h>
@@ -7,7 +7,7 @@
 
 #include <soc/tegra/bpmp.h>
 #include <soc/tegra/ivc.h>
-#include <soc/tegra/virt/hv-ivc.h>
+#include <soc/tegra/virt/tegra_hv_ivc.h>
 #include "bpmp-private.h"
 
 /* utilizing the struct tegra_ivc *ivc in struct tegra_bpmp_channel
