@@ -1972,13 +1972,13 @@ static void cqspi_remove(struct platform_device *pdev)
 	if (cqspi->rx_chan)
 		dma_release_channel(cqspi->rx_chan);
 
+	if (cqspi->is_jh7110)
+		cqspi_jh7110_disable_clk(pdev, cqspi);
+
 	if (pm_runtime_get_sync(&pdev->dev) >= 0) {
 		cqspi_controller_enable(cqspi, 0);
 		clk_disable(cqspi->clk);
 	}
-
-	if (cqspi->is_jh7110)
-		cqspi_jh7110_disable_clk(pdev, cqspi);
 
 	pm_runtime_put_sync(&pdev->dev);
 	pm_runtime_disable(&pdev->dev);
