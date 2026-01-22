@@ -17,7 +17,7 @@
 #include <linux/platform_device.h>
 #include <linux/string.h>
 
-#include <soc/tegra/virt/hv-ivc.h>
+#include <soc/tegra/virt/tegra_hv_ivc.h>
 #include <soc/tegra/virt/tegra_hv.h>
 #include <soc/tegra/ivc.h>
 
