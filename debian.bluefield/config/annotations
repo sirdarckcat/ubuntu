@@ -129,7 +129,7 @@ CONFIG_ARM64_CONT_PTE_SHIFT                     policy<{'arm64': '4', 'arm64-blu
 CONFIG_ARM64_ERRATUM_1418040                    policy<{'arm64': 'y', 'arm64-bluefield-64k': '-'}>
 CONFIG_ARM64_ERRATUM_1742098                    policy<{'arm64': 'y', 'arm64-bluefield-64k': '-'}>
 CONFIG_ARM64_ERRATUM_845719                     policy<{'arm64': 'y', 'arm64-bluefield-64k': '-'}>
-CONFIG_ARM64_PAGE_SHIFT                         policy<{'arm64': '-'}>
+CONFIG_ARM64_PAGE_SHIFT                         policy<{'arm64': '12', 'arm64-bluefield-64k': '16'}>
 CONFIG_ARM64_PA_BITS_52                         policy<{'arm64-bluefield-64k': 'n'}>
 CONFIG_ARM64_VA_BITS_39                         policy<{'arm64': 'n', 'arm64-bluefield-64k': '-'}>
 CONFIG_ARM64_VA_BITS_42                         policy<{'arm64-bluefield-64k': 'n'}>
@@ -260,25 +260,6 @@ CONFIG_DRM_I2C_ADV7511_AUDIO                    policy<{'arm64': '-'}>
 CONFIG_DRM_RCAR_VSP                             policy<{'arm64': '-'}>
 CONFIG_DRM_VC4                                  policy<{'arm64': '-'}>
 CONFIG_DRM_VC4_HDMI_CEC                         policy<{'arm64': '-'}>
-CONFIG_DRM_XE                                   policy<{'arm64': 'n', 'arm64-bluefield-64k': '-'}>
-CONFIG_DRM_XE_DEBUG                             policy<{'arm64': '-'}>
-CONFIG_DRM_XE_DEBUG_MEM                         policy<{'arm64': '-'}>
-CONFIG_DRM_XE_DEBUG_SRIOV                       policy<{'arm64': '-'}>
-CONFIG_DRM_XE_DEBUG_VM                          policy<{'arm64': '-'}>
-CONFIG_DRM_XE_DISPLAY                           policy<{'arm64': '-'}>
-CONFIG_DRM_XE_ENABLE_SCHEDTIMEOUT_LIMIT         policy<{'arm64': '-'}>
-CONFIG_DRM_XE_FORCE_PROBE                       policy<{'arm64': '-'}>
-CONFIG_DRM_XE_JOB_TIMEOUT_MAX                   policy<{'arm64': '-'}>
-CONFIG_DRM_XE_JOB_TIMEOUT_MIN                   policy<{'arm64': '-'}>
-CONFIG_DRM_XE_LARGE_GUC_BUFFER                  policy<{'arm64': '-'}>
-CONFIG_DRM_XE_PREEMPT_TIMEOUT                   policy<{'arm64': '-'}>
-CONFIG_DRM_XE_PREEMPT_TIMEOUT_MAX               policy<{'arm64': '-'}>
-CONFIG_DRM_XE_PREEMPT_TIMEOUT_MIN               policy<{'arm64': '-'}>
-CONFIG_DRM_XE_SIMPLE_ERROR_CAPTURE              policy<{'arm64': '-'}>
-CONFIG_DRM_XE_TIMESLICE_MAX                     policy<{'arm64': '-'}>
-CONFIG_DRM_XE_TIMESLICE_MIN                     policy<{'arm64': '-'}>
-CONFIG_DRM_XE_USERPTR_INVAL_INJECT              policy<{'arm64': '-'}>
-CONFIG_DRM_XE_WERROR                            policy<{'arm64': '-'}>
 CONFIG_DUMMY_IRQ                                policy<{'arm64': 'n'}>
 CONFIG_DVB_A8293                                policy<{'arm64': '-'}>
 CONFIG_DVB_AF9013                               policy<{'arm64': '-'}>
@@ -543,8 +524,6 @@ CONFIG_GVE                                      policy<{'arm64': '-'}>
 CONFIG_HAMACHI                                  policy<{'arm64': '-'}>
 CONFIG_HAPPYMEAL                                policy<{'arm64': '-'}>
 CONFIG_HAVE_ARCH_MMAP_RND_COMPAT_BITS           policy<{'arm64': 'y', 'arm64-bluefield-64k': '-'}>
-CONFIG_HAVE_PAGE_SIZE_4KB                       policy<{'arm64-bluefield': 'y'}>
-CONFIG_HAVE_PAGE_SIZE_64KB                      policy<{'arm64-bluefield-64k': 'y'}>
 CONFIG_HAVE_UID16                               policy<{'arm64': 'y', 'arm64-bluefield-64k': '-'}>
 CONFIG_HI13X1_GMAC                              policy<{'arm64': '-'}>
 CONFIG_HI6421V600_IRQ                           policy<{'arm64': 'n'}>
@@ -908,9 +887,6 @@ CONFIG_OCTEON_EP                                policy<{'arm64': '-'}>
 CONFIG_OLD_SIGSUSPEND3                          policy<{'arm64': 'y', 'arm64-bluefield-64k': '-'}>
 CONFIG_OPTEE_SHM_NUM_PRIV_PAGES                 policy<{'arm64': '-'}>
 CONFIG_OWL_EMAC                                 policy<{'arm64': '-'}>
-CONFIG_PAGE_SHIFT                               policy<{'arm64-bluefield': '12', 'arm64-bluefield-64k': '16'}>
-CONFIG_PAGE_SIZE_4KB                            policy<{'arm64-bluefield': 'y'}>
-CONFIG_PAGE_SIZE_64KB                           policy<{'arm64-bluefield-64k': 'y'}>
 CONFIG_PAGE_SIZE_LESS_THAN_64KB                 policy<{'arm64': 'y', 'arm64-bluefield-64k': '-'}>
 CONFIG_PARMAN                                   policy<{'arm64': '-'}>
 CONFIG_PATA_PARPORT_COMM                        policy<{'arm64': 'n', 'arm64-bluefield-64k': 'm'}>
@@ -2220,7 +2196,6 @@ CONFIG_VIDEO_ZORAN_LML33                        policy<{'arm64': '-'}>
 CONFIG_VIDEO_ZORAN_LML33R10                     policy<{'arm64': '-'}>
 CONFIG_VIDEO_ZORAN_ZR36060                      policy<{'arm64': '-'}>
 CONFIG_VISL_DEBUGFS                             policy<{'arm64': '-'}>
-CONFIG_VMAP_PFN                                 policy<{'arm64': '-'}>
 CONFIG_VMXNET3                                  policy<{'arm64': 'm', 'arm64-bluefield-64k': '-'}>
 CONFIG_VORTEX                                   policy<{'arm64': '-'}>
 CONFIG_VXGE                                     policy<{'arm64': '-'}>
