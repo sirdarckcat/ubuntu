@@ -6,7 +6,7 @@
 
 #include <linux/of.h>
 #include <soc/tegra/nvscicom_kernel_api.h>
-#include <soc/tegra/virt/hv-ivc.h>
+#include <soc/tegra/virt/tegra_hv_ivc.h>
 
 /**
  * tegra_hv_nvscicom_reserve - Reserve an NvSciCom IVC queue for use
