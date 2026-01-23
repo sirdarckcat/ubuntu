@@ -233,12 +233,6 @@ CONFIG_SATA_VITESSE                             note<'modules reduction'>
 CONFIG_SATA_ZPODD                               policy<{'amd64': 'n', 'arm64': 'n'}>
 CONFIG_SATA_ZPODD                               note<'modules reduction'>
 
-CONFIG_SERIAL_DEV_BUS                           policy<{'amd64': 'n', 'arm64': 'y'}>
-CONFIG_SERIAL_DEV_BUS                           note<'LP: #1739939'>
-
-CONFIG_SERIAL_DEV_CTRL_TTYPORT                  policy<{'amd64': '-', 'arm64': 'y'}>
-CONFIG_SERIAL_DEV_CTRL_TTYPORT                  note<'LP: #1739939'>
-
 CONFIG_SND                                      policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_SND                                      note<'not autoloadable on omap'>
 
@@ -1557,10 +1551,10 @@ CONFIG_GCC_SUPPORTS_DYNAMIC_FTRACE_WITH_REGS    policy<{'arm64': '-'}>
 CONFIG_GENERIC_ADC_BATTERY                      policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_GENERIC_ADC_THERMAL                      policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_GENERIC_MSI_IRQ_DOMAIN                   policy<{'amd64': '-', 'arm64': '-'}>
-CONFIG_GNSS_MTK_SERIAL                          policy<{'amd64': '-', 'arm64': 'm'}>
+CONFIG_GNSS_MTK_SERIAL                          policy<{'amd64': 'n', 'arm64': 'm'}>
 CONFIG_GNSS_SERIAL                              policy<{'amd64': '-', 'arm64': 'm'}>
-CONFIG_GNSS_SIRF_SERIAL                         policy<{'amd64': '-', 'arm64': 'm'}>
-CONFIG_GNSS_UBX_SERIAL                          policy<{'amd64': '-', 'arm64': 'm'}>
+CONFIG_GNSS_SIRF_SERIAL                         policy<{'amd64': 'n', 'arm64': 'm'}>
+CONFIG_GNSS_UBX_SERIAL                          policy<{'amd64': 'n', 'arm64': 'm'}>
 CONFIG_GP2AP002                                 policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_GP2AP020A00F                             policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_GPIO_AAEON                               policy<{'amd64': '-'}>
@@ -2667,7 +2661,7 @@ CONFIG_NFC_MRVL_UART                            policy<{'amd64': 'n', 'arm64': '
 CONFIG_NFC_MRVL_USB                             policy<{'amd64': 'n', 'arm64': 'm'}>
 CONFIG_NFC_NXP_NCI                              policy<{'amd64': 'n', 'arm64': 'm'}>
 CONFIG_NFC_NXP_NCI_I2C                          policy<{'amd64': '-', 'arm64': 'm'}>
-CONFIG_NFC_PN532_UART                           policy<{'amd64': '-', 'arm64': 'm'}>
+CONFIG_NFC_PN532_UART                           policy<{'amd64': 'n', 'arm64': 'm'}>
 CONFIG_NFC_PN533                                policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_NFC_PN533_I2C                            policy<{'amd64': 'n', 'arm64': 'm'}>
 CONFIG_NFC_PN533_USB                            policy<{'amd64': 'n', 'arm64': 'm'}>
@@ -2675,7 +2669,7 @@ CONFIG_NFC_PN544_I2C                            policy<{'amd64': 'n', 'arm64': '
 CONFIG_NFC_PORT100                              policy<{'amd64': 'n', 'arm64': 'm'}>
 CONFIG_NFC_S3FWRN5                              policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_NFC_S3FWRN5_I2C                          policy<{'amd64': 'n', 'arm64': 'm'}>
-CONFIG_NFC_S3FWRN82_UART                        policy<{'amd64': '-', 'arm64': 'm'}>
+CONFIG_NFC_S3FWRN82_UART                        policy<{'amd64': 'n', 'arm64': 'm'}>
 CONFIG_NFC_SIM                                  policy<{'amd64': 'n', 'arm64': 'm'}>
 CONFIG_NFC_ST21NFCA                             policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_NFC_ST21NFCA_I2C                         policy<{'amd64': 'n', 'arm64': 'm'}>
@@ -2858,7 +2852,7 @@ CONFIG_RAPIDIO_CPS_XX                           policy<{'amd64': 'n', 'arm64': '
 CONFIG_RAPIDIO_RXS_GEN3                         policy<{'amd64': 'n', 'arm64': 'm'}>
 CONFIG_RASPBERRYPI_FIRMWARE                     policy<{'arm64': 'y'}>
 CONFIG_RASPBERRYPI_POWER                        policy<{'arm64': 'y'}>
-CONFIG_RAVE_SP_CORE                             policy<{'amd64': '-', 'arm64': 'm'}>
+CONFIG_RAVE_SP_CORE                             policy<{'amd64': 'n', 'arm64': 'm'}>
 CONFIG_RAVE_SP_EEPROM                           policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_RAVE_SP_WATCHDOG                         policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_RC_ATI_REMOTE                            policy<{'amd64': 'n', 'arm64': 'm'}>
@@ -5231,7 +5225,7 @@ CONFIG_WLCORE_SDIO                              policy<{'amd64': '-', 'arm64': '
 CONFIG_WM831X_BACKUP                            policy<{'amd64': 'n', 'arm64': 'm'}>
 CONFIG_WM831X_POWER                             policy<{'amd64': 'n', 'arm64': 'm'}>
 CONFIG_X86_AMD_PSTATE_UT                        policy<{'amd64': 'm'}>
-CONFIG_X86_ANDROID_TABLETS                      policy<{'amd64': '-'}>
+CONFIG_X86_ANDROID_TABLETS                      policy<{'amd64': 'n'}>
 CONFIG_X9250                                    policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_XEN                                      policy<{'amd64': 'n', 'arm64': 'y'}>
 CONFIG_XENFS                                    policy<{'amd64': '-', 'arm64': 'm'}>
