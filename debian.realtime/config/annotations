@@ -116,6 +116,7 @@ CONFIG_HAVE_KVM_IRQ_BYPASS                      policy<{'amd64': 'y', 'arm64': '
 CONFIG_HAVE_KVM_IRQ_ROUTING                     policy<{'amd64': 'y', 'arm64': '-'}>
 CONFIG_HAVE_KVM_MSI                             policy<{'amd64': 'y', 'arm64': '-'}>
 CONFIG_HAVE_KVM_VCPU_RUN_PID_CHANGE             policy<{'arm64': '-'}>
+CONFIG_HAVE_PAGE_SIZE_4KB                       policy<{'amd64': 'y', 'arm64': 'y'}>
 CONFIG_HAVE_PREEMPT_AUTO                        policy<{'amd64': 'y'}>
 CONFIG_HAVE_PREEMPT_LAZY                        policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_HAVE_SCHED_AVG_IRQ                       policy<{'amd64': 'y', 'arm64': 'y'}>
@@ -162,6 +163,8 @@ CONFIG_MFD_AAEON                                policy<{'amd64': 'n'}>
 CONFIG_NEED_KVM_DIRTY_RING_WITH_BITMAP          policy<{'arm64': '-'}>
 CONFIG_NUMA_BALANCING                           policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_NVHE_EL2_DEBUG                           policy<{'arm64': '-'}>
+CONFIG_PAGE_SHIFT                               policy<{'amd64': '12', 'arm64': '12'}>
+CONFIG_PAGE_SIZE_4KB                            policy<{'amd64': 'y', 'arm64': 'y'}>
 CONFIG_PREEMPTIRQ_TRACEPOINTS                   policy<{'amd64': 'y'}>
 CONFIG_PREEMPT_AUTO                             policy<{'amd64': 'n'}>
 CONFIG_PREEMPT_BUILD                            policy<{'amd64': 'y', 'arm64': '-'}>
