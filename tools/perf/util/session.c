@@ -2661,7 +2661,7 @@ bool perf_session__has_traces(struct perf_session *session, const char *msg)
 
 int map__set_kallsyms_ref_reloc_sym(struct map *map, const char *symbol_name, u64 addr)
 {
-	char *bracket;
+	char *bracket, *name;
 	struct ref_reloc_sym *ref;
 	struct kmap *kmap;
 
@@ -2669,13 +2669,13 @@ int map__set_kallsyms_ref_reloc_sym(struct map *map, const char *symbol_name, u6
 	if (ref == NULL)
 		return -ENOMEM;
 
-	ref->name = strdup(symbol_name);
+	ref->name = name = strdup(symbol_name);
 	if (ref->name == NULL) {
 		free(ref);
 		return -ENOMEM;
 	}
 
-	bracket = strchr(ref->name, ']');
+	bracket = strchr(name, ']');
 	if (bracket)
 		*bracket = '\0';
 
