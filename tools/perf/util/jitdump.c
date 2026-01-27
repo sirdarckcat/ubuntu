@@ -739,7 +739,7 @@ jit_inject(struct jit_buf_desc *jd, char *path)
 static int
 jit_detect(char *mmap_name, pid_t pid, struct nsinfo *nsi)
  {
-	char *p;
+	const char *p;
 	char *end = NULL;
 	pid_t pid2;
 
