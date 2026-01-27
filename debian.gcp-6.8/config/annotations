@@ -1,7 +1,8 @@
 # Menu: HEADER
 # FORMAT: 4
 # ARCH: amd64 arm64
-# FLAVOUR: amd64-gcp-6.8 arm64-gcp-6.8 arm64-gcp-6.8-64k
+# FLAVOUR: amd64-gcp arm64-gcp arm64-gcp-64k
+# FLAVOUR_DEP: {'amd64-gcp': 'amd64-generic', 'arm64-gcp': 'arm64-generic', 'arm64-gcp-64k': 'arm64-generic-64k'}
 
 include "../../debian.gcp/config/annotations"
 
@@ -25,8 +26,8 @@ CONFIG_CC_VERSION_TEXT                          policy<{'amd64': '"x86_64-linux-
 CONFIG_DEBUG_INFO_COMPRESSED_ZSTD               policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_GCC_ASM_GOTO_OUTPUT_WORKAROUND           policy<{'amd64': 'y', 'arm64': 'y'}>
 CONFIG_GCC_VERSION                              policy<{'amd64': '120300', 'arm64': '120300'}>
-CONFIG_HAVE_PAGE_SIZE_4KB                       policy<{'amd64': 'y', 'arm64': 'y'}>
+CONFIG_HAVE_PAGE_SIZE_4KB                       policy<{'amd64': 'y', 'arm64': 'y', 'arm64-gcp-64k': '-'}>
 CONFIG_LD_VERSION                               policy<{'amd64': '23800', 'arm64': '23800'}>
-CONFIG_PAGE_SHIFT                               policy<{'amd64': '12', 'arm64': '12'}>
-CONFIG_PAGE_SIZE_4KB                            policy<{'amd64': 'y', 'arm64': 'y'}>
+CONFIG_PAGE_SHIFT                               policy<{'amd64': '12', 'arm64': '12', 'arm64-gcp-64k': '16'}>
+CONFIG_PAGE_SIZE_4KB                            policy<{'amd64': 'y', 'arm64': 'y', 'arm64-gcp-64k': '-'}>
 CONFIG_RUST_IS_AVAILABLE                        policy<{'amd64': '-', 'arm64': '-'}>
