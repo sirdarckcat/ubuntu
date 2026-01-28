@@ -6448,3 +6448,48 @@ static void quirk_realtek_mask_aer_rcv_err(struct pci_dev *dev)
 }
 DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_REALTEK, PCI_DEVICE_ID_REALTEK_RTL8126,
 			quirk_realtek_mask_aer_rcv_err);
+
+/*
+ * Pericom PI7C9X2G608GP PCIe switch with bus holes (unpopulated downstream
+ * ports) generates spurious Advisory Non-Fatal correctable errors during
+ * device enumeration (e.g., lspci). Mask these errors on the switch and all
+ * downstream devices to prevent AER log spam.
+ *
+ * Advisory Non-Fatal Error (bit 13) indicates a correctable error that was
+ * originally classified as uncorrectable but has been masked to be advisory.
+ * This commonly occurs with bus holes where config reads to non-existent
+ * devices return all-1s.
+ */
+static int pci_mask_aer_adv_nonfatal(struct pci_dev *dev, void *data)
+{
+	int aer_pos;
+	u32 val;
+
+	aer_pos = pci_find_ext_capability(dev, PCI_EXT_CAP_ID_ERR);
+	if (!aer_pos)
+		return 0;
+
+	pci_read_config_dword(dev, aer_pos + PCI_ERR_COR_MASK, &val);
+	if (!(val & PCI_ERR_COR_ADV_NFAT)) {
+		val |= PCI_ERR_COR_ADV_NFAT;
+		pci_write_config_dword(dev, aer_pos + PCI_ERR_COR_MASK, val);
+		pci_info(dev, "Masked Advisory Non-Fatal AER errors\n");
+	}
+
+	return 0;
+}
+
+static void quirk_pericom_mask_aer_adv_nonfatal(struct pci_dev *pdev)
+{
+	/* Mask on the switch itself */
+	pci_mask_aer_adv_nonfatal(pdev, NULL);
+
+	/* Mask on all downstream devices */
+	if (pdev->subordinate)
+		pci_walk_bus(pdev->subordinate, pci_mask_aer_adv_nonfatal, NULL);
+}
+/* PI7C9X2G608GP 6-Port/8-Lane Packet Switch */
+DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_PERICOM, 0x2608,
+			quirk_pericom_mask_aer_adv_nonfatal);
+DECLARE_PCI_FIXUP_RESUME(PCI_VENDOR_ID_PERICOM, 0x2608,
+			 quirk_pericom_mask_aer_adv_nonfatal);
