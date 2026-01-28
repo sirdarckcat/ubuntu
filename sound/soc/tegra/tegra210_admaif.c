@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-only
-// SPDX-FileCopyrightText: Copyright (c) 2020-2025 NVIDIA CORPORATION & AFFILIATES.
+// SPDX-FileCopyrightText: Copyright (c) 2020-2026 NVIDIA CORPORATION & AFFILIATES.
 // All rights reserved.
 //
 // tegra210_admaif.c - Tegra ADMAIF driver
@@ -113,6 +113,15 @@ static const struct reg_default tegra264_admaif_reg_defaults[] = {
 	ADMAIF_REG_DEFAULTS(30, TEGRA264),
 	ADMAIF_REG_DEFAULTS(31, TEGRA264),
 	ADMAIF_REG_DEFAULTS(32, TEGRA264)
+};
+
+static const struct reg_default tegra268_admaif_reg_defaults[] = {
+	{(TEGRA_ADMAIF_GLOBAL_CG_0 + TEGRA264_ADMAIF_GLOBAL_BASE), 0x00000003},
+	ADMAIF_REG_DEFAULTS(1, TEGRA264),
+	ADMAIF_REG_DEFAULTS(2, TEGRA264),
+	ADMAIF_REG_DEFAULTS(3, TEGRA264),
+	ADMAIF_REG_DEFAULTS(4, TEGRA264),
+	ADMAIF_REG_DEFAULTS(5, TEGRA264)
 };
 
 static bool tegra_admaif_wr_reg(struct device *dev, unsigned int reg)
@@ -267,6 +276,19 @@ static const struct regmap_config tegra264_admaif_regmap_config = {
 	.volatile_reg		= tegra_admaif_volatile_reg,
 	.reg_defaults		= tegra264_admaif_reg_defaults,
 	.num_reg_defaults	= TEGRA264_ADMAIF_CHANNEL_COUNT * 6 + 1,
+	.cache_type		= REGCACHE_FLAT,
+};
+
+static const struct regmap_config tegra268_admaif_regmap_config = {
+	.reg_bits		= 32,
+	.reg_stride		= 4,
+	.val_bits		= 32,
+	.max_register		= TEGRA264_ADMAIF_LAST_REG,
+	.writeable_reg		= tegra_admaif_wr_reg,
+	.readable_reg		= tegra_admaif_rd_reg,
+	.volatile_reg		= tegra_admaif_volatile_reg,
+	.reg_defaults		= tegra268_admaif_reg_defaults,
+	.num_reg_defaults	= TEGRA268_ADMAIF_CHANNEL_COUNT * 6 + 1,
 	.cache_type		= REGCACHE_FLAT,
 };
 
@@ -862,6 +884,16 @@ static const struct snd_soc_component_driver tegra264_admaif_cmpnt = {
 	.pointer		= tegra_pcm_pointer,
 };
 
+static const struct snd_soc_component_driver tegra268_admaif_cmpnt = {
+	.controls		= tegra264_admaif_controls,
+	.num_controls		= TEGRA268_ADMAIF_CHANNEL_COUNT * 4,
+	.pcm_construct		= tegra_pcm_construct,
+	.open			= tegra_pcm_open,
+	.close			= tegra_pcm_close,
+	.hw_params		= tegra_pcm_hw_params,
+	.pointer		= tegra_pcm_pointer,
+};
+
 static const struct tegra_admaif_soc_data soc_data_tegra210 = {
 	.num_ch		= TEGRA210_ADMAIF_CHANNEL_COUNT,
 	.max_ch		= TEGRA210_ADMAIF_MAX_CHANNEL,
@@ -895,10 +927,22 @@ static const struct tegra_admaif_soc_data soc_data_tegra264 = {
 	.rx_base	= TEGRA264_ADMAIF_RX_BASE,
 };
 
+static const struct tegra_admaif_soc_data soc_data_tegra268 = {
+	.num_ch		= TEGRA268_ADMAIF_CHANNEL_COUNT,
+	.max_ch		= TEGRA264_ADMAIF_MAX_CHANNEL,
+	.cmpnt		= &tegra268_admaif_cmpnt,
+	.dais		= tegra264_admaif_cmpnt_dais,
+	.regmap_conf	= &tegra268_admaif_regmap_config,
+	.global_base	= TEGRA264_ADMAIF_GLOBAL_BASE,
+	.tx_base	= TEGRA264_ADMAIF_TX_BASE,
+	.rx_base	= TEGRA264_ADMAIF_RX_BASE,
+};
+
 static const struct of_device_id tegra_admaif_of_match[] = {
 	{ .compatible = "nvidia,tegra210-admaif", .data = &soc_data_tegra210 },
 	{ .compatible = "nvidia,tegra186-admaif", .data = &soc_data_tegra186 },
 	{ .compatible = "nvidia,tegra264-admaif", .data = &soc_data_tegra264 },
+	{ .compatible = "nvidia,tegra268-admaif", .data = &soc_data_tegra268 },
 	{},
 };
 MODULE_DEVICE_TABLE(of, tegra_admaif_of_match);
