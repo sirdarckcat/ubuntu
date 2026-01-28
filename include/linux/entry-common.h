@@ -53,10 +53,10 @@ bool syscall_user_dispatch(struct pt_regs *regs);
 long syscall_enter_audit(struct pt_regs *regs, long syscall,
 			 unsigned long work);
 
-static __always_inline long syscall_trace_enter(struct pt_regs *regs, long syscall,
+static __always_inline long syscall_trace_enter(struct pt_regs *regs,
 						unsigned long work)
 {
-	long ret = 0;
+	long syscall, ret = 0;
 
 	/*
 	 * Handle Syscall User Dispatch.  This must comes first, since
@@ -116,7 +116,7 @@ static __always_inline long syscall_enter_from_user_mode_work(struct pt_regs *re
 	unsigned long work = READ_ONCE(current_thread_info()->syscall_work);
 
 	if (work & SYSCALL_WORK_ENTER)
-		syscall = syscall_trace_enter(regs, syscall, work);
+		syscall = syscall_trace_enter(regs, work);
 
 	return syscall;
 }
