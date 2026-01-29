@@ -1381,7 +1381,8 @@ static int iommu_dma_map_sg(struct device *dev, struct scatterlist *sg,
 		size_t s_length = s->length;
 		size_t pad_len = (mask - iova_len + 1) & mask;
 
-		if (is_pci_p2pdma_page(sg_page(s))) {
+		if (pfn_valid(page_to_pfn(sg_page(s))) &&
+		    is_pci_p2pdma_page(sg_page(s))) {
 			map = pci_p2pdma_map_segment(&p2pdma_state, dev, s);
 			switch (map) {
 			case PCI_P2PDMA_MAP_BUS_ADDR:
