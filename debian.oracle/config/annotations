@@ -102,7 +102,7 @@ CONFIG_ARCH_WANT_HUGE_PMD_SHARE                 policy<{'amd64': 'y', 'arm64': '
 CONFIG_ARM64_4K_PAGES                           policy<{'arm64': 'y', 'arm64-oracle-64k': 'n'}>
 CONFIG_ARM64_CONT_PMD_SHIFT                     policy<{'arm64': '4', 'arm64-oracle-64k': '5'}>
 CONFIG_ARM64_CONT_PTE_SHIFT                     policy<{'arm64': '4', 'arm64-oracle-64k': '5'}>
-CONFIG_ARM64_PAGE_SHIFT                         policy<{'arm64': '12', 'arm64-oracle-64k': '16'}>
+CONFIG_ARM64_PAGE_SHIFT                         policy<{'arm64': '-'}>
 CONFIG_ARM64_PA_BITS_52                         policy<{'arm64-oracle-64k': 'n'}>
 CONFIG_ARM64_VA_BITS_39                         policy<{'arm64': 'n', 'arm64-oracle-64k': '-'}>
 CONFIG_ARM64_VA_BITS_42                         policy<{'arm64-oracle-64k': 'n'}>
@@ -169,6 +169,25 @@ CONFIG_DRM_USE_DYNAMIC_DEBUG                    policy<{'amd64': '-', 'arm64': '
 CONFIG_DRM_V3D                                  policy<{'arm64': 'm'}>
 CONFIG_DRM_VC4                                  policy<{'arm64': 'm'}>
 CONFIG_DRM_VC4_HDMI_CEC                         policy<{'arm64': 'y'}>
+CONFIG_DRM_XE                                   policy<{'amd64': 'm', 'arm64': 'm', 'arm64-oracle-64k': '-'}>
+CONFIG_DRM_XE_DEBUG                             policy<{'amd64': 'n', 'arm64': 'n', 'arm64-oracle-64k': '-'}>
+CONFIG_DRM_XE_DEBUG_MEM                         policy<{'amd64': 'n', 'arm64': 'n', 'arm64-oracle-64k': '-'}>
+CONFIG_DRM_XE_DEBUG_SRIOV                       policy<{'amd64': 'n', 'arm64': 'n', 'arm64-oracle-64k': '-'}>
+CONFIG_DRM_XE_DEBUG_VM                          policy<{'amd64': 'n', 'arm64': 'n', 'arm64-oracle-64k': '-'}>
+CONFIG_DRM_XE_DISPLAY                           policy<{'amd64': 'y', 'arm64': 'y', 'arm64-oracle-64k': '-'}>
+CONFIG_DRM_XE_ENABLE_SCHEDTIMEOUT_LIMIT         policy<{'amd64': 'y', 'arm64': 'y', 'arm64-oracle-64k': '-'}>
+CONFIG_DRM_XE_FORCE_PROBE                       policy<{'amd64': '""', 'arm64': '""', 'arm64-oracle-64k': '-'}>
+CONFIG_DRM_XE_JOB_TIMEOUT_MAX                   policy<{'amd64': '10000', 'arm64': '10000', 'arm64-oracle-64k': '-'}>
+CONFIG_DRM_XE_JOB_TIMEOUT_MIN                   policy<{'amd64': '1', 'arm64': '1', 'arm64-oracle-64k': '-'}>
+CONFIG_DRM_XE_LARGE_GUC_BUFFER                  policy<{'amd64': 'n', 'arm64': 'n', 'arm64-oracle-64k': '-'}>
+CONFIG_DRM_XE_PREEMPT_TIMEOUT                   policy<{'amd64': '640000', 'arm64': '640000', 'arm64-oracle-64k': '-'}>
+CONFIG_DRM_XE_PREEMPT_TIMEOUT_MAX               policy<{'amd64': '10000000', 'arm64': '10000000', 'arm64-oracle-64k': '-'}>
+CONFIG_DRM_XE_PREEMPT_TIMEOUT_MIN               policy<{'amd64': '1', 'arm64': '1', 'arm64-oracle-64k': '-'}>
+CONFIG_DRM_XE_SIMPLE_ERROR_CAPTURE              policy<{'amd64': 'n', 'arm64': 'n', 'arm64-oracle-64k': '-'}>
+CONFIG_DRM_XE_TIMESLICE_MAX                     policy<{'amd64': '10000000', 'arm64': '10000000', 'arm64-oracle-64k': '-'}>
+CONFIG_DRM_XE_TIMESLICE_MIN                     policy<{'amd64': '1', 'arm64': '1', 'arm64-oracle-64k': '-'}>
+CONFIG_DRM_XE_USERPTR_INVAL_INJECT              policy<{'amd64': 'n', 'arm64': 'n', 'arm64-oracle-64k': '-'}>
+CONFIG_DRM_XE_WERROR                            policy<{'amd64': 'n', 'arm64': 'n', 'arm64-oracle-64k': '-'}>
 CONFIG_DTPM_DEVFREQ                             policy<{'arm64': 'y'}>
 CONFIG_EROFS_FS_ZIP_LZMA                        policy<{'amd64': 'y', 'arm64': 'y'}>
 CONFIG_FORCE_MAX_ZONEORDER                      policy<{'arm64': '-'}>
@@ -179,6 +198,8 @@ CONFIG_GPIO_AAEON                               policy<{'amd64': '-', 'arm64': '
 CONFIG_GPIO_BCM_XGS_IPROC                       policy<{'arm64': 'm'}>
 CONFIG_GPIO_BRCMSTB                             policy<{'arm64': 'm'}>
 CONFIG_GPIO_RASPBERRYPI_EXP                     policy<{'arm64': 'm'}>
+CONFIG_HAVE_PAGE_SIZE_4KB                       policy<{'amd64': 'y', 'arm64-oracle': 'y'}>
+CONFIG_HAVE_PAGE_SIZE_64KB                      policy<{'arm64-oracle-64k': 'y'}>
 CONFIG_HID_NINTENDO                             policy<{'amd64': 'n', 'arm64': 'n'}>
 CONFIG_HW_RANDOM_BCM2835                        policy<{'arm64': 'm'}>
 CONFIG_HW_RANDOM_IPROC_RNG200                   policy<{'arm64': 'm'}>
@@ -235,6 +256,9 @@ CONFIG_NTFS_RW                                  policy<{'amd64': 'n', 'arm64': '
 CONFIG_NVMEM_BCM_OCOTP                          policy<{'arm64': 'm'}>
 CONFIG_NVMEM_MESON_EFUSE                        policy<{'arm64': '-'}>
 CONFIG_OMAP_GPMC                                policy<{'arm64': 'm'}>
+CONFIG_PAGE_SHIFT                               policy<{'amd64': '12', 'arm64-oracle': '12', 'arm64-oracle-64k': '16'}>
+CONFIG_PAGE_SIZE_4KB                            policy<{'amd64': 'y', 'arm64-oracle': 'y'}>
+CONFIG_PAGE_SIZE_64KB                           policy<{'arm64-oracle-64k': 'y'}>
 CONFIG_PAGE_SIZE_LESS_THAN_64KB                 policy<{'amd64': 'y', 'arm64': 'y', 'arm64-oracle-64k': '-'}>
 CONFIG_PCIE_BRCMSTB                             policy<{'arm64': 'm'}>
 CONFIG_PCIE_IPROC                               policy<{'arm64': 'm'}>
@@ -297,6 +321,7 @@ CONFIG_SERIAL_BCM63XX                           policy<{'arm64': 'm'}>
 CONFIG_SND_BCM2835                              policy<{'arm64': 'm'}>
 CONFIG_SND_BCM2835_SOC_I2S                      policy<{'arm64': 'm'}>
 CONFIG_SND_CTL_FAST_LOOKUP                      policy<{'amd64': 'y', 'arm64': 'y'}>
+CONFIG_SND_HDA_I915                             policy<{'amd64': 'y', 'arm64': 'y', 'arm64-oracle-64k': '-'}>
 CONFIG_SND_SOC_AMD_PS                           policy<{'amd64': 'n'}>
 CONFIG_SND_SOC_AMD_PS_MACH                      policy<{'amd64': '-'}>
 CONFIG_SOC_BRCMSTB                              policy<{'arm64': 'y'}>
@@ -349,5 +374,6 @@ CONFIG_VIDEO_ZORAN_DC30                         policy<{'amd64': 'y', 'arm64': '
 CONFIG_VIDEO_ZORAN_LML33                        policy<{'amd64': 'y', 'arm64': 'y'}>
 CONFIG_VIDEO_ZORAN_LML33R10                     policy<{'amd64': 'y', 'arm64': 'y'}>
 CONFIG_VIDEO_ZORAN_ZR36060                      policy<{'amd64': 'y', 'arm64': 'y'}>
+CONFIG_VMAP_PFN                                 policy<{'amd64': 'y', 'arm64': 'y', 'arm64-oracle-64k': '-'}>
 CONFIG_VMGENID                                  policy<{'amd64': 'y', 'arm64': 'm'}>
 CONFIG_VMXNET3                                  policy<{'amd64': 'm', 'arm64': 'm', 'arm64-oracle-64k': '-'}>
