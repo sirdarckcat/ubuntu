@@ -177,13 +177,6 @@ config SOC_TEGRA_CBB
 	  This driver handles the errors from CBB and prints debug
 	  information about the failed transactions.
 
-config SOC_TEGRA_PLATFORM_HELPER
-	def_bool y
-	help
-	  This config enables support of the platform helpers APIs which can
-	  be used by the out-tree. If this config is y then the helper APIs
-	  are available else not.
-
 config SOC_TEGRA_MSSNVLINK
 	bool "MSSNVLINK driver for virtualization"
 	depends on ARCH_TEGRA_234_SOC
