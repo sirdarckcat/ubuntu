@@ -65,7 +65,8 @@ CONFIG_TOUCHSCREEN_APPLE_Z2                     note<'LP: #2115758'>
 CONFIG_A11Y_BRAILLE_CONSOLE                     policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_AAEON_IWMI_WDT                           policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_AHCI_BRCM                                policy<{'arm64': 'm'}>
-CONFIG_AMCC_QT2025_PHY                          policy<{'amd64': '-'}>
+CONFIG_AMCC_QT2025_PHY                          policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_ANDROID_BINDER_IPC_RUST                  policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_ARCH_BCM                                 policy<{'arm64': 'y'}>
 CONFIG_ARCH_BCM2835                             policy<{'arm64': 'y'}>
 CONFIG_ARCH_BCMBCA                              policy<{'arm64': 'y'}>
@@ -179,6 +180,7 @@ CONFIG_DRM_GPUSVM                               policy<{'amd64': 'm', 'arm64': '
 CONFIG_DRM_NOMODESET                            policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_DRM_NOVA                                 policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_DRM_PANIC_SCREEN_QR_CODE                 policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_DRM_TYR                                  policy<{'arm64': '-'}>
 CONFIG_DRM_USE_DYNAMIC_DEBUG                    policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_DRM_V3D                                  policy<{'arm64': 'm'}>
 CONFIG_DRM_VC4                                  policy<{'arm64': 'm'}>
@@ -206,6 +208,7 @@ CONFIG_DRM_XE_USERPTR_INVAL_INJECT              policy<{'amd64': 'n', 'arm64': '
 CONFIG_DRM_XE_WERROR                            policy<{'amd64': 'n', 'arm64': 'n', 'arm64-oracle-64k': '-'}>
 CONFIG_DTPM_DEVFREQ                             policy<{'arm64': 'y'}>
 CONFIG_EC_LENOVO_YOGA_C630                      policy<{'arm64': 'm'}>
+CONFIG_FIND_BIT_BENCHMARK_RUST                  policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_FORCE_MAX_ZONEORDER                      policy<{'arm64': '-'}>
 CONFIG_FPGA_M10_BMC_SEC_UPDATE                  policy<{'amd64': 'm', 'arm64': 'm'}>
 CONFIG_GCC_SUPPORTS_DYNAMIC_FTRACE_WITH_REGS    policy<{'arm64': '-'}>
@@ -271,6 +274,7 @@ CONFIG_MTD_OF_PARTS_BCM4908                     policy<{'arm64': 'y'}>
 CONFIG_MTD_OF_PARTS_LINKSYS_NS                  policy<{'arm64': 'y'}>
 CONFIG_NFSD_V2_ACL                              policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_NINTENDO_FF                              policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_NOVA_CORE                                policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_NPCM7XX_WATCHDOG                         policy<{'arm64': 'm'}>
 CONFIG_NTFS_RW                                  policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_NVMEM_BCM_OCOTP                          policy<{'arm64': 'm'}>
@@ -297,6 +301,7 @@ CONFIG_PHY_NS2_PCIE                             policy<{'arm64': 'y'}>
 CONFIG_PHY_NS2_USB_DRD                          policy<{'arm64': 'm'}>
 CONFIG_PINCTRL_BCM2835                          policy<{'arm64': 'y'}>
 CONFIG_PINCTRL_BCM4908                          policy<{'arm64': 'm'}>
+CONFIG_PINCTRL_BRCMSTB                          policy<{'arm64': 'n'}>
 CONFIG_PINCTRL_IPROC_GPIO                       policy<{'arm64': 'y'}>
 CONFIG_PINCTRL_MESON_S4                         policy<{'arm64': 'y'}>
 CONFIG_PINCTRL_NS2_MUX                          policy<{'arm64': 'y'}>
@@ -322,6 +327,7 @@ CONFIG_RESET_BRCMSTB_RESCAL                     policy<{'arm64': 'y'}>
 CONFIG_RESET_RASPBERRYPI                        policy<{'arm64': 'm'}>
 CONFIG_RTC_DRV_BRCMSTB                          policy<{'arm64': 'm'}>
 CONFIG_RUSTC_VERSION_TEXT                       policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_RUST_BITMAP_HARDENED                     policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_RUST_BUILD_ASSERT_ALLOW                  policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_RUST_DEBUG_ASSERTIONS                    policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_RUST_FW_LOADER_ABSTRACTIONS              policy<{'amd64': '-', 'arm64': '-'}>
@@ -339,6 +345,7 @@ CONFIG_SCSI_UFS_HWMON                           policy<{'amd64': 'n', 'arm64': '
 CONFIG_SENSORS_AAEON                            policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_SENSORS_IR38064_REGULATOR                policy<{'amd64': 'n', 'arm64': 'y'}>
 CONFIG_SENSORS_LM25066_REGULATOR                policy<{'amd64': 'n', 'arm64': 'y'}>
+CONFIG_SENSORS_MAX17616                         policy<{'amd64': 'm', 'arm64': 'n'}>
 CONFIG_SENSORS_PLI1209BC_REGULATOR              policy<{'amd64': 'n', 'arm64': 'y'}>
 CONFIG_SENSORS_RASPBERRYPI_HWMON                policy<{'arm64': 'm'}>
 CONFIG_SENSORS_XDPE122_REGULATOR                policy<{'amd64': 'n', 'arm64': 'y'}>
@@ -396,7 +403,7 @@ CONFIG_USB_EHCI_BRCMSTB                         policy<{'arm64': 'm'}>
 CONFIG_VCHIQ_CDEV                               policy<{'arm64': 'y'}>
 CONFIG_VFIO_PLATFORM_BCMFLEXRM_RESET            policy<{'arm64': 'm'}>
 CONFIG_VIDEO_ADV7511_CEC                        policy<{'amd64': 'y'}>
-CONFIG_VIDEO_BCM2835                            policy<{'arm64': 'm'}>
+CONFIG_VIDEO_BCM2835                            policy<{'arm64': '-'}>
 CONFIG_VIDEO_BCM2835_UNICAM                     policy<{'arm64': 'm'}>
 CONFIG_VIDEO_RASPBERRYPI_PISP_BE                policy<{'arm64': 'n'}>
 CONFIG_VIDEO_ZORAN                              policy<{'amd64': 'm', 'arm64': 'm'}>
@@ -410,3 +417,4 @@ CONFIG_VIDEO_ZORAN_ZR36060                      policy<{'amd64': 'y', 'arm64': '
 CONFIG_VMAP_PFN                                 policy<{'amd64': 'y', 'arm64': 'y', 'arm64-oracle-64k': '-'}>
 CONFIG_VMGENID                                  policy<{'amd64': 'y', 'arm64': 'm'}>
 CONFIG_VMXNET3                                  policy<{'amd64': 'm', 'arm64': 'm', 'arm64-oracle-64k': '-'}>
+CONFIG_XE_VFIO_PCI                              policy<{'amd64': 'm', 'arm64-oracle': 'n'}>
