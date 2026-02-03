@@ -23,7 +23,7 @@
 /** @brief Maximum Guest VM count */
 #define MAX_NUM_GUESTS		16U
 /** @brief The maximum number of IVC queues supported by the PCT. */
-#define PCT_MAX_NUM_IVC_QUEUES	512U
+#define PCT_MAX_NUM_IVC_QUEUES	800U
 /** @brief The maximum number of mempools supported by the PCT. */
 #define PCT_MAX_NUM_MEMPOOLS	120U
 
