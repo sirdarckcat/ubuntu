@@ -12,7 +12,6 @@
 #include <linux/platform_device.h>
 
 #include <soc/tegra/mc.h>
-#include <soc/tegra/tegra-platform-helper.h>
 
 #if defined(CONFIG_ARCH_TEGRA_186_SOC)
 #include <dt-bindings/memory/tegra186-mc.h>
@@ -132,7 +131,7 @@ int tegra186_mc_probe_device(struct tegra_mc *mc, struct device *dev)
 	if (!tegra_dev_iommu_get_stream_id(dev, &sid))
 		return 0;
 
-	if (tegra_is_hypervisor_mode() == true) {
+	if (of_property_present(of_chosen, "nvidia,tegra-hypervisor-mode")) {
 		pr_debug("MC register access not allowed in Guest Linux\n");
 		return 0;
 	}
