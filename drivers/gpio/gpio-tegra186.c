@@ -1441,6 +1441,31 @@ static const struct tegra_gpio_soc tegra264_aon_soc = {
 	.has_gte = true,
 };
 
+
+static const struct tegra186_pin_range tegra268_uphy_pin_ranges[] = {
+	{ TEGRA264_UPHY_GPIO(B, 0), "pex_l1_clkreq_n_pb0" },
+	{ TEGRA264_UPHY_GPIO(B, 1), "pex_l1_rst_n_pb1" },
+	{ TEGRA264_UPHY_GPIO(B, 2), "pex_l2_clkreq_n_pb2" },
+	{ TEGRA264_UPHY_GPIO(B, 3), "pex_l2_rst_n_pb3" },
+	{ TEGRA264_UPHY_GPIO(B, 4), "pex_l3_clkreq_n_pb4" },
+	{ TEGRA264_UPHY_GPIO(B, 5), "pex_l3_rst_n_pb5" },
+	{ TEGRA264_UPHY_GPIO(D, 0), "pex_l4_clkreq_n_pd0" },
+	{ TEGRA264_UPHY_GPIO(D, 1), "pex_l4_rst_n_pd1" },
+};
+
+static const struct tegra_gpio_soc tegra268_uphy_soc = {
+	.num_ports = ARRAY_SIZE(tegra264_uphy_ports),
+	.ports = tegra264_uphy_ports,
+	.name = "tegra268-gpio-uphy",
+	.instance = 0,
+	.num_pin_ranges = ARRAY_SIZE(tegra268_uphy_pin_ranges),
+	.pinmux = "nvidia,tegra268-pinmux-uphy",
+	.pin_ranges = tegra268_uphy_pin_ranges,
+	.num_irqs_per_bank = 8,
+	.has_vm_support = true,
+};
+
+
 #define TEGRA256S_MAIN_GPIO_PORT(_name, _bank, _port, _pins)	\
 	[TEGRA256S_MAIN_GPIO_PORT_##_name] = {			\
 		.name = #_name,					\
@@ -1493,6 +1518,9 @@ static const struct of_device_id tegra186_gpio_of_match[] = {
 	}, {
 		.compatible = "nvidia,tegra264-gpio-aon",
 		.data = &tegra264_aon_soc
+	}, {
+		.compatible = "nvidia,tegra268-gpio-uphy",
+		.data = &tegra268_uphy_soc
 	}, {
 		.compatible = "nvidia,tegra256s-gpio",
 		.data = &tegra256s_main_soc
