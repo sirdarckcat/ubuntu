@@ -1961,13 +1961,6 @@ DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ATI, 0x4389, quirk_no_msi);
 DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ATI, 0x438a, quirk_no_msi);
 DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ATI, 0x438b, quirk_no_msi);
 
-/*
- * ASPEED AST2600 USB controller (Device 2603) : Bug 5510907
- * Disable MSI to force fallback to legacy interrupts (INTx)
- * Device: 0001:9a:02.0 USB controller: ASPEED Technology, Inc. Device 2603 (EHCI)
- */
-DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ASPEED, 0x2603, quirk_no_msi);
-
 static void quirk_pcie_mch(struct pci_dev *pdev)
 {
 	pdev->no_msi = 1;
@@ -2742,6 +2735,22 @@ DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_8131_BRIDGE, quirk_
 DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_VIA, 0xa238, quirk_disable_msi);
 DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ATI, 0x5a3f, quirk_disable_msi);
 DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_RDC, 0x1031, quirk_disable_msi);
+
+/*
+ * ASPEED AST1150 PCIe-to-PCI bridge: Bug 5510907
+ *
+ * The AST1150 bridge violates the PCIe specification by not overriding the
+ * Requester ID for MSI transactions from devices on its secondary (conventional
+ * PCI) bus. Per the PCI Express to PCI/PCI-X Bridge Specification, a bridge
+ * operating in conventional PCI mode must replace the Requester ID with
+ * (Secondary Bus Number, Device 0, Function 0).
+ *
+ * Because the AST1150 passes through the original device's RID instead, the
+ * GIC ITS programs the wrong DeviceID and MSI interrupts are silently dropped.
+ * Disable MSI for all devices behind this bridge to force legacy INTx.
+ */
+DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ASPEED, PCI_DEVICE_ID_ASPEED_AST1150,
+			quirk_disable_msi);
 
 /*
  * The APC bridge device in AMD 780 family northbridges has some random
