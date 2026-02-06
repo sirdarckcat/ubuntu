@@ -13,9 +13,8 @@
 
 /* Reed-Solomon(M, N) parameters */
 #define DM_VERITY_FEC_RSM		255
-#define DM_VERITY_FEC_MAX_RSN		253
-#define DM_VERITY_FEC_MIN_RSN		231	/* ~10% space overhead */
-#define DM_VERITY_FEC_MAX_ROOTS		(DM_VERITY_FEC_RSM - DM_VERITY_FEC_MIN_RSN)
+#define DM_VERITY_FEC_MIN_ROOTS	2	/* RS(255, 253): ~0.8% space overhead */
+#define DM_VERITY_FEC_MAX_ROOTS	24	/* RS(255, 231): ~10% space overhead */
 
 /* buffers for deinterleaving and decoding */
 #define DM_VERITY_FEC_BUF_PREALLOC	1	/* buffers to preallocate */
