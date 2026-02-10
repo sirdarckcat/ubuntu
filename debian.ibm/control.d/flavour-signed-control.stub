@@ -1,6 +1,5 @@
 # Items that get replaced:
 # FLAVOUR
-# DESC
 # ARCH
 # SUPPORTED
 # TARGET
@@ -16,7 +15,7 @@
 # debian/rules. PGGVER, ABINUM, and SRCPKGNAME are all converted in the
 # process of creating debian/control.
 #
-# The flavour specific strings (ARCH, DESC, etc) are converted using values from the various
+# The flavour specific strings (ARCH, etc) are converted using values from the various
 # flavour files in debian/control.d/vars.*
 #
 # XXX: Leave the blank line before the first package!!
@@ -31,9 +30,8 @@ Depends: ${misc:Depends}, ${shlibs:Depends}, kmod, linux-base (>= 4.5ubuntu1~16.
 Recommends: BOOTLOADER, initramfs-tools | linux-initramfs-tool
 Conflicts: linux-image=SIGN-PEER-PKG=-PKGVER-ABINUM-FLAVOUR
 Suggests: bpftool, linux-perf, SRCPKGNAME-doc-PKGVER | SRCPKGNAME-source-PKGVER, SRCPKGNAME-tools, linux-headers-PKGVER-ABINUM-FLAVOUR
-Description: Linux kernel image for version PKGVER on DESC
- This package contains the=SIGN-ME-TXT= Linux kernel image for version PKGVER on
- DESC.
+Description: Linux kernel image for version PKGVER.
+ This package contains the=SIGN-ME-TXT= Linux kernel image for version PKGVER.
  .
  Supports SUPPORTED processors.
  .
@@ -50,9 +48,8 @@ Section: devel
 Priority: optional
 Depends: ${misc:Depends}
 Provides: SRCPKGNAME-debug
-Description: Linux kernel debug image for version PKGVER on DESC
- This package provides the=SIGN-ME-TXT= kernel debug image for version PKGVER on
- DESC.
+Description: Linux kernel debug image for version PKGVER.
+ This package provides the=SIGN-ME-TXT= kernel debug image for version PKGVER.
  .
  This is for sites that wish to debug the kernel.
  .
