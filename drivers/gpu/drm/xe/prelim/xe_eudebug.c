@@ -41,6 +41,7 @@
 #include "xe_reg_sr.h"
 #include "xe_rtp.h"
 #include "xe_sched_job.h"
+#include "xe_sriov_pf.h"
 #include "xe_sync.h"
 #include "xe_vm.h"
 #include "xe_wa.h"
@@ -2354,36 +2355,6 @@ bool prelim_xe_eudebug_is_enabled(struct xe_device *xe)
 	return xe->eudebug.state == XE_EUDEBUG_ENABLED;
 }
 
-static int __xe_eudebug_toggle_support(struct xe_device *xe, bool enable)
-{
-	down_write(&xe->eudebug.discovery_lock);
-	if (XE_WARN_ON(xe->eudebug.state <= XE_EUDEBUG_NOT_AVAILABLE)) {
-		up_write(&xe->eudebug.discovery_lock);
-		return -EINVAL;
-	}
-
-	if (!enable && prelim_xe_eudebug_is_enabled(xe)) {
-		up_write(&xe->eudebug.discovery_lock);
-		return -EPERM;
-	}
-
-	xe->eudebug.state = enable ? XE_EUDEBUG_SUPPORTED : XE_EUDEBUG_NOT_SUPPORTED;
-
-	up_write(&xe->eudebug.discovery_lock);
-
-	return 0;
-}
-
-void prelim_xe_eudebug_support_enable(struct xe_device *xe)
-{
-	__xe_eudebug_toggle_support(xe, true);
-}
-
-int prelim_xe_eudebug_support_disable(struct xe_device *xe)
-{
-	return __xe_eudebug_toggle_support(xe, false);
-}
-
 static void add_sr_entry(struct xe_hw_engine *hwe,
 			 struct xe_reg_mcr mcr_reg,
 			 u32 mask, bool enable)
@@ -2430,6 +2401,7 @@ static void xe_eudebug_reinit_hw_engine(struct xe_hw_engine *hwe, bool enable)
 static int xe_eudebug_enable(struct xe_device *xe, bool enable)
 {
 	struct xe_gt *gt;
+	int ret;
 	int i;
 	u8 id;
 
@@ -2454,6 +2426,16 @@ static int xe_eudebug_enable(struct xe_device *xe, bool enable)
 		return 0;
 	}
 
+	if (enable && IS_SRIOV_PF(xe)) {
+		ret = xe_sriov_pf_lockdown(xe);
+		if (ret) {
+			up_write(&xe->eudebug.discovery_lock);
+			return 0;
+		}
+	}
+
+	xe_pm_runtime_get(xe);
+
 	for_each_gt(gt, xe, id) {
 		for (i = 0; i < ARRAY_SIZE(gt->hw_engines); i++) {
 			if (!(gt->info.engine_mask & BIT(i)))
@@ -2466,13 +2448,18 @@ static int xe_eudebug_enable(struct xe_device *xe, bool enable)
 		flush_work(&gt->reset.worker);
 	}
 
+	xe_pm_runtime_put(xe);
+
 	xe->eudebug.state = enable ? XE_EUDEBUG_ENABLED : XE_EUDEBUG_SUPPORTED;
 	up_write(&xe->eudebug.discovery_lock);
 
-	if (enable)
+	if (enable) {
 		attention_scan_flush(xe);
-	else
+	} else {
 		attention_scan_cancel(xe);
+		if (IS_SRIOV_PF(xe))
+			xe_sriov_pf_end_lockdown(xe);
+	}
 
 	return 0;
 }
@@ -2534,7 +2521,7 @@ void prelim_xe_eudebug_init(struct xe_device *xe)
 	INIT_LIST_HEAD(&xe->clients.list);
 	init_rwsem(&xe->eudebug.discovery_lock);
 	INIT_DELAYED_WORK(&xe->eudebug.attention_scan, attention_scan_fn);
-	xe->eudebug.state = XE_EUDEBUG_NOT_AVAILABLE;
+	xe->eudebug.state = XE_EUDEBUG_NOT_SUPPORTED;
 
 	if (IS_SRIOV_VF(xe)) {
 		drm_info(&xe->drm, "eudebug not available in SR-IOV VF mode\n");

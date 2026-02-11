@@ -9,7 +9,6 @@
 #include "regs/xe_bars.h"
 #include "xe_assert.h"
 #include "xe_device.h"
-#include "prelim/xe_eudebug.h"
 #include "xe_gt_sriov_pf_config.h"
 #include "xe_gt_sriov_pf_control.h"
 #include "xe_gt_sriov_printk.h"
@@ -124,10 +123,6 @@ static int pf_enable_vfs(struct xe_device *xe, int num_vfs)
 	if (err)
 		goto out;
 
-	err = prelim_xe_eudebug_support_disable(xe);
-	if (err < 0)
-		goto out;
-
 	err = pf_prepare_vfs_enabling(xe);
 	if (err)
 		goto out;
@@ -171,7 +166,6 @@ static int pf_enable_vfs(struct xe_device *xe, int num_vfs)
 failed:
 	xe_sriov_pf_unprovision_vfs(xe, num_vfs);
 	xe_pm_runtime_put(xe);
-	prelim_xe_eudebug_support_enable(xe);
 	pf_finish_vfs_enabling(xe);
 out:
 	xe_sriov_notice(xe, "Failed to enable %u VF%s (%pe)\n",
@@ -203,8 +197,6 @@ static int pf_disable_vfs(struct xe_device *xe)
 
 	/* not needed anymore - see pf_enable_vfs() */
 	xe_pm_runtime_put(xe);
-
-	prelim_xe_eudebug_support_enable(xe);
 
 	pf_finish_vfs_enabling(xe);
 

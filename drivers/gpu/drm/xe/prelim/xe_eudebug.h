@@ -29,8 +29,6 @@ int prelim_xe_eudebug_connect_ioctl(struct drm_device *dev,
 			     void *data,
 			     struct drm_file *file);
 
-void prelim_xe_eudebug_support_enable(struct xe_device *xe);
-int prelim_xe_eudebug_support_disable(struct xe_device *xe);
 bool prelim_xe_eudebug_is_enabled(struct xe_device *xe);
 
 void prelim_xe_eudebug_init(struct xe_device *xe);
@@ -73,8 +71,6 @@ static inline int prelim_xe_eudebug_connect_ioctl(struct drm_device *dev,
 					   void *data,
 					   struct drm_file *file) { return 0; }
 
-static inline void prelim_xe_eudebug_support_enable(struct xe_device *xe) { }
-static inline int prelim_xe_eudebug_support_disable(struct xe_device *xe) { return 0; }
 static inline bool prelim_xe_eudebug_is_enabled(struct xe_device *xe) { return false; }
 
 static inline void prelim_xe_eudebug_init(struct xe_device *xe) { }
