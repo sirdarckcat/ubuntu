@@ -476,6 +476,8 @@ struct mana_context {
 	struct mana_eq *eqs;
 	struct dentry *mana_eqs_debugfs;
 
+	struct workqueue_struct *per_port_queue_reset_wq;
+
 	struct net_device *ports[MAX_PORTS_IN_MANA_DEV];
 
 	/* Link state change work */
@@ -486,6 +488,7 @@ struct mana_context {
 struct mana_port_context {
 	struct mana_context *ac;
 	struct net_device *ndev;
+	struct work_struct queue_reset_work;
 
 	u8 mac_addr[ETH_ALEN];
 
