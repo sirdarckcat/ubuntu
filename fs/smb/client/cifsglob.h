@@ -465,8 +465,10 @@ struct smb_version_operations {
 	/* check for STATUS_NETWORK_SESSION_EXPIRED */
 	bool (*is_session_expired)(char *);
 	/* send oplock break response */
-	int (*oplock_response)(struct cifs_tcon *tcon, __u64 persistent_fid, __u64 volatile_fid,
-			__u16 net_fid, struct cifsInodeInfo *cifs_inode);
+	int (*oplock_response)(struct cifs_tcon *tcon, __u64 persistent_fid,
+			       __u64 volatile_fid, __u16 net_fid,
+			       struct cifsInodeInfo *cifs_inode,
+			       unsigned int oplock);
 	/* query remote filesystem */
 	int (*queryfs)(const unsigned int, struct cifs_tcon *,
 		       const char *, struct cifs_sb_info *, struct kstatfs *);
@@ -1514,10 +1516,6 @@ void cifsFileInfo_put(struct cifsFileInfo *cifs_file);
 #define CIFS_CACHE_RW_FLG	(CIFS_CACHE_READ_FLG | CIFS_CACHE_WRITE_FLG)
 #define CIFS_CACHE_RHW_FLG	(CIFS_CACHE_RW_FLG | CIFS_CACHE_HANDLE_FLG)
 
-#define CIFS_CACHE_READ(cinode) ((cinode->oplock & CIFS_CACHE_READ_FLG) || (CIFS_SB(cinode->netfs.inode.i_sb)->mnt_cifs_flags & CIFS_MOUNT_RO_CACHE))
-#define CIFS_CACHE_HANDLE(cinode) (cinode->oplock & CIFS_CACHE_HANDLE_FLG)
-#define CIFS_CACHE_WRITE(cinode) ((cinode->oplock & CIFS_CACHE_WRITE_FLG) || (CIFS_SB(cinode->netfs.inode.i_sb)->mnt_cifs_flags & CIFS_MOUNT_RW_CACHE))
-
 /*
  * One of these for each file inode
  */
@@ -2278,6 +2276,32 @@ static inline int cifs_open_create_options(unsigned int oflags, int opts)
 	if (oflags & O_DIRECT)
 		opts |= CREATE_NO_BUFFER;
 	return opts;
+}
+
+static inline bool __cifs_cache_state_check(struct cifsInodeInfo *cinode,
+					    unsigned int oplock_flags,
+					    unsigned int sb_flags)
+{
+	struct cifs_sb_info *cifs_sb = CIFS_SB(cinode->netfs.inode.i_sb);
+	unsigned int oplock = READ_ONCE(cinode->oplock);
+	unsigned int sflags = cifs_sb->mnt_cifs_flags;
+
+	return (oplock & oplock_flags) || (sflags & sb_flags);
+}
+
+#define CIFS_CACHE_READ(cinode) \
+	__cifs_cache_state_check(cinode, CIFS_CACHE_READ_FLG, \
+				 CIFS_MOUNT_RO_CACHE)
+#define CIFS_CACHE_HANDLE(cinode) \
+	__cifs_cache_state_check(cinode, CIFS_CACHE_HANDLE_FLG, 0)
+#define CIFS_CACHE_WRITE(cinode) \
+	__cifs_cache_state_check(cinode, CIFS_CACHE_WRITE_FLG, \
+				 CIFS_MOUNT_RW_CACHE)
+
+static inline void cifs_reset_oplock(struct cifsInodeInfo *cinode)
+{
+	scoped_guard(spinlock, &cinode->open_file_lock)
+		WRITE_ONCE(cinode->oplock, 0);
 }
 
 #endif	/* _CIFS_GLOB_H */
