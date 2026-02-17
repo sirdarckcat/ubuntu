@@ -32,7 +32,7 @@ int mlx5e_xsk_wakeup(struct net_device *dev, u32 qid, u32 flags)
 		if (test_and_set_bit(MLX5E_SQ_STATE_PENDING_XSK_TX, &c->async_icosq.state))
 			return 0;
 
-		mlx5e_trigger_napi_icosq(c);
+		mlx5e_trigger_napi_async_icosq(c);
 	}
 
 	return 0;
