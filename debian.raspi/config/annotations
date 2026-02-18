@@ -284,12 +284,16 @@ CONFIG_MELLANOX_PLATFORM                        policy<{'arm64': 'n'}> note<'Dif
 CONFIG_MEMORY_FAILURE                           policy<{'arm64': 'n'}> note<'Different from master'>
 CONFIG_MEMORY_HOTPLUG                           policy<{'arm64': 'n'}> note<'Different from master'>
 CONFIG_MFD_88PM860X                             policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
+CONFIG_MFD_88PM886_PMIC                         policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
 CONFIG_MFD_AAT2870_CORE                         policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
 CONFIG_MFD_AS3711                               policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
 CONFIG_MFD_AS3722                               policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
+CONFIG_MFD_CS47L15                              policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
+CONFIG_MFD_CS47L24                              policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
 CONFIG_MFD_CS47L35                              policy<{'arm64': 'n'}> note<'Different from master'>
 CONFIG_MFD_CS47L85                              policy<{'arm64': 'n'}> note<'Different from master'>
 CONFIG_MFD_CS47L90                              policy<{'arm64': 'n'}> note<'Different from master'>
+CONFIG_MFD_CS47L92                              policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
 CONFIG_MFD_DA9052_I2C                           policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
 CONFIG_MFD_DA9052_SPI                           policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
 CONFIG_MFD_DA9055                               policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
@@ -297,6 +301,7 @@ CONFIG_MFD_DA9063                               policy<{'arm64': 'm'}> note<'Not
 CONFIG_MFD_LOCHNAGAR                            policy<{'arm64': 'n'}> note<'Different from master'>
 CONFIG_MFD_LP8788                               policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
 CONFIG_MFD_MAX14577                             policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
+CONFIG_MFD_MAX77620                             policy<{'arm64': 'm'}> note<'Not required on Pi (different from master)'>
 CONFIG_MFD_MAX77686                             policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
 CONFIG_MFD_MAX77693                             policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
 CONFIG_MFD_MAX77843                             policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
@@ -307,6 +312,7 @@ CONFIG_MFD_PALMAS                               policy<{'arm64': 'm'}> note<'Not
 CONFIG_MFD_RASPBERRYPI_POE_HAT                  policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
 CONFIG_MFD_RC5T583                              policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
 CONFIG_MFD_RP1                                  policy<{'arm64': 'y'}> note<'Added by rpi-6.6.y patchset (needs to be built-in)'>
+CONFIG_MFD_STMPE                                policy<{'arm64': 'm'}> note<'Not required on Pi (different from master)'>
 CONFIG_MFD_TC3589X                              policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
 CONFIG_MFD_TPS65090                             policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
 CONFIG_MFD_TPS6586X                             policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
@@ -314,10 +320,13 @@ CONFIG_MFD_TPS65910                             policy<{'arm64': 'n'}> note<'Not
 CONFIG_MFD_TPS65912                             policy<{'arm64': 'm'}> note<'Required for Pi (different from master)'>
 CONFIG_MFD_TPS65912_I2C                         policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
 CONFIG_MFD_TPS65912_SPI                         policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
+CONFIG_MFD_WM5110                               policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
 CONFIG_MFD_WM831X_I2C                           policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
 CONFIG_MFD_WM831X_SPI                           policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
 CONFIG_MFD_WM8350_I2C                           policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
 CONFIG_MFD_WM8400                               policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
+CONFIG_MFD_WM8997                               policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
+CONFIG_MFD_WM8998                               policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
 CONFIG_MHP_DEFAULT_ONLINE_TYPE_OFFLINE          policy<{'arm64': '-'}> note<'Master note override'>
 CONFIG_MHP_MEMMAP_ON_MEMORY                     policy<{'arm64': '-'}> note<'Introduced by LP: #2051835 (not required on Pi)'>
 CONFIG_MMC_ARMMMCI                              policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
@@ -540,6 +549,8 @@ CONFIG_SPI_BCM_QSPI                             policy<{'arm64': 'm'}> note<'Req
 CONFIG_SPI_FSL_LIB                              policy<{'arm64': 'm'}> note<'Required for Pi (different from master)'>
 CONFIG_SPI_FSL_SPI                              policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
 CONFIG_SPI_RP2040_GPIO_BRIDGE                   policy<{'arm64': 'm'}> note<'Required for Pi (not in master)'>
+CONFIG_STMPE_I2C                                policy<{'arm64': 'm'}> note<'Not required on Pi (different from master)'>
+CONFIG_STMPE_SPI                                policy<{'arm64': 'm'}> note<'Not required on Pi (different from master)'>
 CONFIG_SUN_PARTITION                            policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
 CONFIG_SURFACE_PLATFORMS                        policy<{'arm64': 'n'}> note<'Required for Pi (different from master)'>
 CONFIG_SUSPEND                                  policy<{'arm64': 'n'}> note<'Required for Pi (different from master)'>
@@ -629,6 +640,7 @@ CONFIG_ZERO_CALL_USED_REGS                      policy<{'arm64': 'n'}> note<'Dif
 
 # ---- Annotations without notes ----
 
+CONFIG_88PM886_GPADC                            policy<{'arm64': '-'}>
 CONFIG_A64FX_DIAG                               policy<{'arm64': '-'}>
 CONFIG_ACPI_AC                                  policy<{'arm64': '-'}>
 CONFIG_ACPI_AGDI                                policy<{'arm64': '-'}>
@@ -1792,6 +1804,7 @@ CONFIG_IMX_SDMA                                 policy<{'arm64': '-'}>
 CONFIG_IMX_THERMAL                              policy<{'arm64': '-'}>
 CONFIG_IMX_WEIM                                 policy<{'arm64': '-'}>
 CONFIG_INPUT_88PM860X_ONKEY                     policy<{'arm64': '-'}>
+CONFIG_INPUT_88PM886_ONKEY                      policy<{'arm64': '-'}>
 CONFIG_INPUT_BBNSM_PWRKEY                       policy<{'arm64': '-'}>
 CONFIG_INPUT_DA9052_ONKEY                       policy<{'arm64': '-'}>
 CONFIG_INPUT_DA9055_ONKEY                       policy<{'arm64': '-'}>
@@ -2442,9 +2455,11 @@ CONFIG_PINCTRL_AS370                            policy<{'arm64': '-'}>
 CONFIG_PINCTRL_BERLIN                           policy<{'arm64': '-'}>
 CONFIG_PINCTRL_BERLIN_BG4CT                     policy<{'arm64': '-'}>
 CONFIG_PINCTRL_BM1880                           policy<{'arm64': '-'}>
+CONFIG_PINCTRL_CS47L15                          policy<{'arm64': '-'}>
 CONFIG_PINCTRL_CS47L35                          policy<{'arm64': '-'}>
 CONFIG_PINCTRL_CS47L85                          policy<{'arm64': '-'}>
 CONFIG_PINCTRL_CS47L90                          policy<{'arm64': '-'}>
+CONFIG_PINCTRL_CS47L92                          policy<{'arm64': '-'}>
 CONFIG_PINCTRL_GLYMUR                           policy<{'arm64': '-'}>
 CONFIG_PINCTRL_IMX                              policy<{'arm64': '-'}>
 CONFIG_PINCTRL_IMX8DXL                          policy<{'arm64': '-'}>
@@ -2834,7 +2849,9 @@ CONFIG_RCAR_REMOTEPROC                          policy<{'arm64': '-'}>
 CONFIG_RCAR_THERMAL                             policy<{'arm64': '-'}>
 CONFIG_READ_ONLY_THP_FOR_FS                     policy<{'arm64': 'n', 'arm64-raspi-realtime': '-'}>
 CONFIG_REGMAP_AC97                              policy<{'arm64': '-'}>
+CONFIG_REGMAP_I2C                               policy<{'arm64': 'm'}>
 CONFIG_REGULATOR_88PM8607                       policy<{'arm64': '-'}>
+CONFIG_REGULATOR_88PM886                        policy<{'arm64': '-'}>
 CONFIG_REGULATOR_AAT2870                        policy<{'arm64': '-'}>
 CONFIG_REGULATOR_ANATOP                         policy<{'arm64': '-'}>
 CONFIG_REGULATOR_ARM_SCMI                       policy<{'arm64': '-'}>
@@ -2943,6 +2960,7 @@ CONFIG_RPMSG_QCOM_GLINK_SMEM                    policy<{'arm64': '-'}>
 CONFIG_RPMSG_QCOM_SMD                           policy<{'arm64': '-'}>
 CONFIG_RST_RCAR                                 policy<{'arm64': '-'}>
 CONFIG_RTC_DRV_88PM860X                         policy<{'arm64': '-'}>
+CONFIG_RTC_DRV_88PM886                          policy<{'arm64': '-'}>
 CONFIG_RTC_DRV_AMLOGIC_A4                       policy<{'arm64': '-'}>
 CONFIG_RTC_DRV_ARMADA38X                        policy<{'arm64': '-'}>
 CONFIG_RTC_DRV_BBNSM                            policy<{'arm64': '-'}>
@@ -3429,6 +3447,7 @@ CONFIG_SND_SOC_TI_SDMA_PCM                      policy<{'arm64': '-'}>
 CONFIG_SND_SOC_TI_UDMA_PCM                      policy<{'arm64': '-'}>
 CONFIG_SND_SOC_TOPOLOGY                         policy<{'arm64': '-'}>
 CONFIG_SND_SOC_WM8994                           policy<{'arm64': '-'}>
+CONFIG_SND_SOC_WM8998                           policy<{'arm64': '-'}>
 CONFIG_SND_SOC_WM9712                           policy<{'arm64': '-'}>
 CONFIG_SND_SOC_WM_HUBS                          policy<{'arm64': '-'}>
 CONFIG_SND_SOC_X1E80100                         policy<{'arm64': '-'}>
