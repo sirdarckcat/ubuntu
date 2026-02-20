@@ -116,6 +116,9 @@ CONFIG_CORESIGHT_TPDM                           note<'{Required for Grace enable
 CONFIG_CORESIGHT_TRBE                           policy<{'arm64': 'm'}>
 CONFIG_CORESIGHT_TRBE                           note<'{Required for Grace enablement}'>
 
+CONFIG_CXL_MEM_RAW_COMMANDS                     policy<{'arm64': 'y'}>
+CONFIG_CXL_MEM_RAW_COMMANDS                     note<'Enable CXL raw commands for memory devices'>
+
 CONFIG_DMA_MAP_BENCHMARK                        policy<{'arm64': 'y'}>
 CONFIG_DMA_MAP_BENCHMARK                        note<'{Required for Azure Grace enablement}'>
 
@@ -240,7 +243,6 @@ CONFIG_MESON_SECURE_PM_DOMAINS                  policy<{'arm64': '-'}>
 CONFIG_MESON_SM                                 policy<{'arm64': '-'}>
 CONFIG_MSHV_ROOT                                policy<{'arm64': '-'}>
 CONFIG_MTD_INTEL_DG                             policy<{'arm64': '-'}>
-CONFIG_MTK_PCIE_HOTPLUG                         policy<{'arm64': 'm'}>
 CONFIG_NTFS_RW                                  policy<{'arm64': '-'}>
 CONFIG_NVGRACE_EGM                              policy<{'arm64': 'm'}>
 CONFIG_NVIDIA_FFA_EC                            policy<{'arm64': 'n'}>
