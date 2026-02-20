@@ -143,6 +143,9 @@ CONFIG_IOMMU_DEFAULT_DMA_STRICT                 note<'On Nvidia CPU passthrough 
 CONFIG_IOMMU_DEFAULT_PASSTHROUGH                policy<{'arm64': 'y'}>
 CONFIG_IOMMU_DEFAULT_PASSTHROUGH                note<'On Nvidia CPU passthrough mode is recommend so set passthrough mode as default for better performance'>
 
+CONFIG_MTK_PCIE_HOTPLUG                         policy<{'arm64': 'm'}>
+CONFIG_MTK_PCIE_HOTPLUG                         note<'CX7 PCIe hotplug driver for NVIDIA DGX Spark systems with GB10 SoC.'>
+
 CONFIG_PID_IN_CONTEXTIDR                        policy<{'arm64': 'y'}>
 CONFIG_PID_IN_CONTEXTIDR                        note<'{Required for Grace enablement}'>
 
