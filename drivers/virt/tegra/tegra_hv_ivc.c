@@ -85,6 +85,68 @@ static struct tegra_hv_data *tegra_hv_get_hvd(void)
 	}
 }
 
+/**
+ * @brief Validate IPA address is within MSI region bounds
+ *
+ * Checks if the provided IPA falls within the MSI notification region.
+ * Performs overflow detection on region boundary calculation.
+ *
+ * @param[in] ipa    IPA address to validate
+ * @param[in] notify Notification info containing MSI region bounds
+ *
+ * @return true if IPA is within MSI region, false otherwise
+ */
+static bool is_valid_msi_ipa(uint64_t ipa, const struct tegra_hv_notify_info *notify)
+{
+	uint64_t region_end;
+
+	if (notify == NULL)
+		return false;
+
+	if (notify->msi_region_size == 0UL)
+		return false;
+
+	if (ipa < notify->msi_region_base_ipa)
+		return false;
+
+	region_end = notify->msi_region_base_ipa + notify->msi_region_size;
+	if (region_end < notify->msi_region_base_ipa)
+		return false;
+
+	return ipa < region_end;
+}
+
+/**
+ * @brief Validate IPA address is within trap region bounds
+ *
+ * Checks if the provided IPA falls within the trap notification region.
+ * Performs overflow detection on region boundary calculation.
+ *
+ * @param[in] ipa    IPA address to validate
+ * @param[in] notify Notification info containing trap region bounds
+ *
+ * @return true if IPA is within trap region, false otherwise
+ */
+static bool is_valid_trap_ipa(uint64_t ipa, const struct tegra_hv_notify_info *notify)
+{
+	uint64_t region_end;
+
+	if (notify == NULL)
+		return false;
+
+	if (notify->trap_region_size == 0UL)
+		return false;
+
+	if (ipa < notify->trap_region_base_ipa)
+		return false;
+
+	region_end = notify->trap_region_base_ipa + notify->trap_region_size;
+	if (region_end < notify->trap_region_base_ipa)
+		return false;
+
+	return ipa < region_end;
+}
+
 static void ivc_raise_irq(struct tegra_ivc *ivc_channel, void *data)
 {
 	struct hv_ivc *ivc = container_of(ivc_channel, struct hv_ivc, ivc);
@@ -164,25 +226,13 @@ static int tegra_hv_add_ivc(struct tegra_hv_data *hvd,
 
 	ivc->queue_index = index;
 
-	if (qd->msi_ipa != 0U) {
-		if (WARN_ON(ivc_notify.msi_region_size == 0UL))
-			return -EINVAL;
-		if (WARN_ON(!(qd->msi_ipa >= ivc_notify.msi_region_base_ipa &&
-			qd->msi_ipa <= ivc_notify.msi_region_end_ipa))) {
-			return -EINVAL;
-		}
-		va_offset = qd->msi_ipa - ivc_notify.msi_region_base_ipa;
+	if (is_valid_msi_ipa(qd->notify_addr, &ivc_notify)) {
+		va_offset = qd->notify_addr - ivc_notify.msi_region_base_ipa;
 		ivc->cookie.notify_va =
 			(uint32_t *)(ivc_notify.msi_region_base_va +
 			va_offset);
-	} else if (qd->trap_ipa != 0U) {
-		if (WARN_ON(ivc_notify.trap_region_size == 0UL))
-			return -EINVAL;
-		if (WARN_ON(!(qd->trap_ipa >= ivc_notify.trap_region_base_ipa &&
-			qd->trap_ipa <= ivc_notify.trap_region_end_ipa))) {
-			return -EINVAL;
-		}
-		va_offset = qd->trap_ipa - ivc_notify.trap_region_base_ipa;
+	} else if (is_valid_trap_ipa(qd->notify_addr, &ivc_notify)) {
+		va_offset = qd->notify_addr - ivc_notify.trap_region_base_ipa;
 		ivc->cookie.notify_va =
 			(uint32_t *)(ivc_notify.trap_region_base_va +
 			va_offset);

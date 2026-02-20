@@ -8,6 +8,8 @@
 
 #include <soc/tegra/virt/tegra_hv_sysmgr.h>
 
+#define ENABLE_MSI_NOTIFY_FEATURE	1U
+
 /**
  * @defgroup hypervisor_calls Hypervisor Calls
  * @{
@@ -192,12 +194,14 @@ struct tegra_hv_queue_data {
 	uint32_t	offset;
 	/* @brief virtual IRQ ID associated to this queue */
 	uint16_t	irq;
-	/* @brief reserved for internal use */
+	/* @brief used as the value written to notify peer endpoint */
 	uint16_t	raise_irq;
 	/* @brief IO address used to notify peer endpoint */
-	uint64_t	trap_ipa;
-	/* @brief MSI address used to notify peer endpoint */
-	uint64_t	msi_ipa;
+	uint64_t	notify_addr;
+	/* @brief MSI device ID used to identify incoming MSI */
+	uint32_t	msi_device_id;
+	/* @brief MSI event ID used to identify incoming MSI */
+	uint16_t	msi_event_id;
 };
 
 /**
