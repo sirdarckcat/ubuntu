@@ -27,6 +27,36 @@ CONFIG_BINFMT_MISC                              note<'LP: #2080908'>
 CONFIG_CFS_BANDWIDTH                            policy<{'arm64': 'y'}>
 CONFIG_CFS_BANDWIDTH                            note<'LP: #2120190'>
 
+CONFIG_CORESIGHT                                policy<{'arm64': 'm'}>
+CONFIG_CORESIGHT                                note<'LP: #2142340'>
+
+CONFIG_CORESIGHT_CATU                           policy<{'arm64': 'm'}>
+CONFIG_CORESIGHT_CATU                           note<'LP: #2142340'>
+
+CONFIG_CORESIGHT_CPU_DEBUG                      policy<{'arm64': 'm'}>
+CONFIG_CORESIGHT_CPU_DEBUG                      note<'LP: #2142340'>
+
+CONFIG_CORESIGHT_CTI                            policy<{'arm64': 'm'}>
+CONFIG_CORESIGHT_CTI                            note<'LP: #2142340'>
+
+CONFIG_CORESIGHT_LINK_AND_SINK_TMC              policy<{'arm64': 'm'}>
+CONFIG_CORESIGHT_LINK_AND_SINK_TMC              note<'LP: #2142340'>
+
+CONFIG_CORESIGHT_SINK_ETBV10                    policy<{'arm64': 'm'}>
+CONFIG_CORESIGHT_SINK_ETBV10                    note<'LP: #2142340'>
+
+CONFIG_CORESIGHT_SINK_TPIU                      policy<{'arm64': 'm'}>
+CONFIG_CORESIGHT_SINK_TPIU                      note<'LP: #2142340'>
+
+CONFIG_CORESIGHT_SOURCE_ETM4X                   policy<{'arm64': 'm'}>
+CONFIG_CORESIGHT_SOURCE_ETM4X                   note<'LP: #2142340'>
+
+CONFIG_CORESIGHT_STM                            policy<{'arm64': 'm'}>
+CONFIG_CORESIGHT_STM                            note<'LP: #2142340'>
+
+CONFIG_CORESIGHT_TRBE                           policy<{'arm64': 'm'}>
+CONFIG_CORESIGHT_TRBE                           note<'LP: #2142340'>
+
 CONFIG_CRYPTO_USER_API                          policy<{'arm64': 'm'}>
 CONFIG_CRYPTO_USER_API                          note<'LP: #2120190'>
 
@@ -346,13 +376,29 @@ CONFIG_ZRAM                                     note<'LP: #2120190'>
 # ---- Annotations without notes ----
 
 CONFIG_A11Y_BRAILLE_CONSOLE                     policy<{'arm64': '-'}>
+CONFIG_ARM64_ERRATUM_1902691                    policy<{'arm64': 'y'}>
+CONFIG_ARM64_ERRATUM_2038923                    policy<{'arm64': 'y'}>
+CONFIG_ARM64_ERRATUM_2064142                    policy<{'arm64': 'y'}>
+CONFIG_ARM64_ERRATUM_2119858                    policy<{'arm64': 'y'}>
+CONFIG_ARM64_ERRATUM_2139208                    policy<{'arm64': 'y'}>
+CONFIG_ARM64_ERRATUM_2224489                    policy<{'arm64': 'y'}>
+CONFIG_ARM64_ERRATUM_2253138                    policy<{'arm64': 'y'}>
 CONFIG_ARM64_ERRATUM_834220                     policy<{'arm64': 'y'}>
+CONFIG_ARM64_WORKAROUND_TRBE_OVERWRITE_FILL_MODE policy<{'arm64': 'y'}>
+CONFIG_ARM64_WORKAROUND_TRBE_WRITE_OUT_OF_RANGE policy<{'arm64': 'y'}>
 CONFIG_CC_HAS_UBSAN_BOUNDS_STRICT               policy<{'arm64': '-'}>
 CONFIG_COMPACT_UNEVICTABLE_DEFAULT              policy<{'arm64': '0', 'arm64-nvidia-tegra': '1'}>
+CONFIG_CORESIGHT_CPU_DEBUG_DEFAULT_ON           policy<{'arm64': 'n'}>
+CONFIG_CORESIGHT_CTI_INTEGRATION_REGS           policy<{'arm64': 'n'}>
+CONFIG_CORESIGHT_DUMMY                          policy<{'arm64': 'n'}>
+CONFIG_CORESIGHT_LINKS_AND_SINKS                policy<{'arm64': 'm'}>
+CONFIG_CORESIGHT_TPDA                           policy<{'arm64': 'n'}>
+CONFIG_CORESIGHT_TPDM                           policy<{'arm64': 'n'}>
 CONFIG_CRYPTO_DEV_TEGRA                         policy<{'arm64': 'm'}>
 CONFIG_CRYPTO_SUPPORT_TEGRA_TESTS               policy<{'arm64': 'y'}>
 CONFIG_CXL_PORT                                 policy<{'arm64': 'y'}>
 CONFIG_DEBUG_MUTEXES                            policy<{'arm64': '-', 'arm64-nvidia-tegra': 'n'}>
+CONFIG_ETM4X_IMPDEF_FEATURE                     policy<{'arm64': 'n'}>
 CONFIG_GUEST_PERF_EVENTS                        policy<{'arm64': 'y'}>
 CONFIG_HAVE_KVM_CPU_RELAX_INTERCEPT             policy<{'arm64': 'y'}>
 CONFIG_HAVE_KVM_DIRTY_RING                      policy<{'arm64': 'y'}>
@@ -376,6 +422,7 @@ CONFIG_MMC_CQHCI                                policy<{'arm64': 'y'}>
 CONFIG_NEED_KVM_DIRTY_RING_WITH_BITMAP          policy<{'arm64': 'y'}>
 CONFIG_NUMA_BALANCING                           policy<{'arm64': '-', 'arm64-nvidia-tegra': 'n'}>
 CONFIG_NVHE_EL2_DEBUG                           policy<{'arm64': 'n'}>
+CONFIG_PID_IN_CONTEXTIDR                        policy<{'arm64': 'y'}>
 CONFIG_PREEMPT_BUILD                            policy<{'arm64': '-', 'arm64-nvidia-tegra': 'y'}>
 CONFIG_PREEMPT_NONE                             policy<{'arm64': 'n', 'arm64-nvidia-tegra': 'y'}>
 CONFIG_PREEMPT_NONE_BUILD                       policy<{'arm64-nvidia-tegra': '-'}>
@@ -387,6 +434,7 @@ CONFIG_R8169_LEDS                               policy<{'arm64': '-'}>
 CONFIG_RCU_BOOST                                policy<{'arm64': 'y', 'arm64-nvidia-tegra': '-'}>
 CONFIG_RCU_BOOST_DELAY                          policy<{'arm64': '500', 'arm64-nvidia-tegra': '-'}>
 CONFIG_RCU_NOCB_CPU_CB_BOOST                    policy<{'arm64': 'y', 'arm64-nvidia-tegra': '-'}>
+CONFIG_SAMPLE_CORESIGHT_SYSCFG                  policy<{'arm64': 'n'}>
 CONFIG_SCSI_UFSHCD_QUERY_EXPORT                 policy<{'arm64': 'y'}>
 CONFIG_SOC_TEGRA_MSSNVLINK                      policy<{'arm64': 'y'}>
 CONFIG_SOC_TEGRA_PLATFORM_HELPER                policy<{'arm64': '-'}>
@@ -417,6 +465,7 @@ CONFIG_UBSAN_SANITIZE_ALL                       policy<{'arm64': '-'}>
 CONFIG_UBSAN_SHIFT                              policy<{'arm64': '-'}>
 CONFIG_UBSAN_TRAP                               policy<{'arm64': '-'}>
 CONFIG_UBSAN_UNREACHABLE                        policy<{'arm64': '-'}>
+CONFIG_ULTRASOC_SMB                             policy<{'arm64': 'n'}>
 CONFIG_UNINLINE_SPIN_UNLOCK                     policy<{'arm64': '-', 'arm64-nvidia-tegra': 'y'}>
 CONFIG_USB_CONN_GPIO                            policy<{'arm64': 'y'}>
 CONFIG_USB_GPIO_VBUS                            policy<{'arm64': '-'}>
