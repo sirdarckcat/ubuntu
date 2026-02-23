@@ -3003,14 +3003,13 @@ static int tegra_pcie_dw_suspend_late(struct device *dev)
 	u32 val;
 
 	if (pcie->of_data->mode == DW_PCIE_EP_TYPE) {
-		disable_irq(pcie->pex_rst_irq);
-
 		if (pcie->ep_state == EP_STATE_ENABLED) {
 			dev_err(dev, "Tegra PCIe is in EP mode, suspend not allowed");
 			return -EPERM;
-		} else {
-			return 0;
 		}
+
+		disable_irq(pcie->pex_rst_irq);
+		return 0;
 	}
 
 	if (!pcie->link_state)
