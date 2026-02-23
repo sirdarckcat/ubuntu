@@ -1766,8 +1766,12 @@ static int tegra_qspi_probe(struct platform_device *pdev)
 	init_completion(&tqspi->rx_dma_complete);
 	init_completion(&tqspi->xfer_completion);
 
-	/* TODO: Optimise autosuspend delay */
-	pm_runtime_set_autosuspend_delay(&pdev->dev, 3000);
+	/*
+	 * Set autosuspend delay to 500ms. Testing shows this value eliminates
+	 * suspend/resume overhead during burst operations while allowing quick
+	 * suspension during idle. For longer operations, the overhead is negligible.
+	 */
+	pm_runtime_set_autosuspend_delay(&pdev->dev, 500);
 	pm_runtime_use_autosuspend(&pdev->dev);
 
 	pm_runtime_enable(&pdev->dev);
