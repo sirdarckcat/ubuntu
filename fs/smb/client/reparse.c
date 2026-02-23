@@ -25,6 +25,7 @@ int smb2_create_reparse_symlink(const unsigned int xid, struct inode *inode,
 	__le16 *path;
 	char *sym, sep = CIFS_DIR_SEP(cifs_sb);
 	u16 len, plen;
+	unsigned int sbflags = cifs_sb_flags(cifs_sb);
 	int rc = 0;
 
 	if (strlen(symname) > REPARSE_SYM_PATH_MAX)
@@ -41,6 +42,18 @@ int smb2_create_reparse_symlink(const unsigned int xid, struct inode *inode,
 	};
 
 	convert_delimiter(sym, sep);
+
+	/*
+	 * For absolute NT symlinks it is required to pass also leading
+	 * backslash and to not mangle NT object prefix "\\??\\" and not to
+	 * mangle colon in drive letter. But cifs_convert_path_to_utf16()
+	 * removes leading backslash and replaces '?' and ':'. So temporary
+	 * mask these characters in NT object prefix by '_' and then change
+	 * them back.
+	 */
+	if (!(sbflags & CIFS_MOUNT_POSIX_PATHS) && symname[0] == '/')
+		sym[0] = sym[1] = sym[2] = sym[5] = '_';
+
 	path = cifs_convert_path_to_utf16(sym, cifs_sb);
 	if (!path) {
 		rc = -ENOMEM;

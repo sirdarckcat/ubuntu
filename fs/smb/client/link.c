@@ -573,8 +573,8 @@ cifs_symlink(struct mnt_idmap *idmap, struct inode *inode,
 	struct tcon_link *tlink;
 	struct cifs_tcon *pTcon;
 	const char *full_path;
-	void *page;
 	struct inode *newinode = NULL;
+	void *page;
 
 	if (unlikely(cifs_forced_shutdown(cifs_sb)))
 		return -EIO;
@@ -603,7 +603,7 @@ cifs_symlink(struct mnt_idmap *idmap, struct inode *inode,
 	cifs_dbg(FYI, "symname is %s\n", symname);
 
 	/* BB what if DFS and this volume is on different share? BB */
-	if (cifs_sb->mnt_cifs_flags & CIFS_MOUNT_MF_SYMLINKS) {
+	if (cifs_sb_flags(cifs_sb) & CIFS_MOUNT_MF_SYMLINKS) {
 		rc = create_mf_symlink(xid, pTcon, cifs_sb, full_path, symname);
 #ifdef CONFIG_CIFS_ALLOW_INSECURE_LEGACY
 	} else if (pTcon->unix_ext) {
