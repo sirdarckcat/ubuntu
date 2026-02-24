@@ -1315,9 +1315,15 @@ static struct dma_chan *tegra_dma_get_slave_channel(struct tegra_dma *tdma,
 	struct dma_chan *chan;
 	unsigned int chan_id;
 
-
 	chan_id = dma_spec->args[1];
-	if (!(tdma->chan_mask & (1 << (chan_id)))) {
+
+	if (chan_id >= tdma->chip_data->nr_channels) {
+		dev_err(tdma->dev, "Channel %d is invalid!\n", chan_id);
+		return NULL;
+	}
+
+	if (!(tdma->chan_mask & BIT(chan_id))) {
+		dev_err(tdma->dev, "Channel %d is unavailable!\n", chan_id);
 		return NULL;
 	}
 
