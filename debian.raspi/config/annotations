@@ -6,637 +6,637 @@
 
 include "../../debian.master/config/annotations"
 
-CONFIG_ACPI                                     policy<{'arm64': 'n'}> note<'Different from master (LP: #2053147)'>
-CONFIG_AHCI_BRCM                                policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
-CONFIG_AIX_PARTITION                            policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
-CONFIG_AL_FIC                                   policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_AMBA_PL08X                               policy<{'arm64': 'n'}> note<'Not supported on Pi (different from master)'>
-CONFIG_AMD_XGBE_DCB                             policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_AMIGA_PARTITION                          policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
-CONFIG_ARCH_ACTIONS                             policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_ARCH_AIROHA                              policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
-CONFIG_ARCH_APPLE                               policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_ARCH_AXIADO                              policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
-CONFIG_ARCH_BCM                                 policy<{'arm64': 'y'}> note<'Required for Pi (different from master)'>
-CONFIG_ARCH_BCM2835                             policy<{'arm64': 'y'}> note<'Required for Pi (not in master)'>
-CONFIG_ARCH_BCMBCA                              policy<{'arm64': 'n'}> note<'Required for Pi (not in master)'>
-CONFIG_ARCH_BCM_IPROC                           policy<{'arm64': 'n'}> note<'Required for Pi (not in master)'>
-CONFIG_ARCH_BERLIN                              policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_ARCH_BITMAIN                             policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_ARCH_BLAIZE                              policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
-CONFIG_ARCH_BRCMSTB                             policy<{'arm64': 'y'}> note<'Required for Pi 5B (not in master)'>
-CONFIG_ARCH_BST                                 policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
-CONFIG_ARCH_CIX                                 policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
-CONFIG_ARCH_HISI                                policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_ARCH_INTEL_SOCFPGA                       policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_ARCH_K3                                  policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_ARCH_KEEMBAY                             policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_ARCH_LAN969X                             policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
-CONFIG_ARCH_LG1K                                policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_ARCH_MA35                                policy<{'arm64': 'n'}> note<'Not supported on Pi (different from master)'>
-CONFIG_ARCH_MEDIATEK                            policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_ARCH_MESON                               policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_ARCH_MMAP_RND_BITS                       policy<{'arm64': '18'}> note<'Different from master'>
-CONFIG_ARCH_MMAP_RND_COMPAT_BITS                policy<{'arm64': '11'}> note<'Different from master'>
-CONFIG_ARCH_MMP                                 policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
-CONFIG_ARCH_MVEBU                               policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_ARCH_NPCM                                policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_ARCH_NXP                                 policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_ARCH_PENSANDO                            policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_ARCH_QCOM                                policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_ARCH_REALTEK                             policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_ARCH_RENESAS                             policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_ARCH_ROCKCHIP                            policy<{'arm64': 'n'}> note<'Not supported on Pi (different from master)'>
-CONFIG_ARCH_SEATTLE                             policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_ARCH_SOPHGO                              policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
-CONFIG_ARCH_SPARX5                              policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_ARCH_SPRD                                policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_ARCH_STM32                               policy<{'arm64': 'n'}> note<'Not supported on Pi (different from master)'>
-CONFIG_ARCH_SUNXI                               policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_ARCH_SYNQUACER                           policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_ARCH_TEGRA                               policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_ARCH_THUNDER                             policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_ARCH_THUNDER2                            policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_ARCH_VEXPRESS                            policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_ARCH_VISCONTI                            policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_ARCH_XGENE                               policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_ARCH_ZYNQMP                              policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_ARM_BRCMSTB_AVS_CPUFREQ                  policy<{'arm64': 'm'}> note<'Required for Pi (not in master)'>
-CONFIG_ARM_CCI_PMU                              policy<{'arm64': 'n'}> note<'Not supported on Pi (different from master)'>
-CONFIG_ARM_CCN                                  policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
-CONFIG_ARM_PSCI_CPUIDLE                         policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_ARM_RASPBERRYPI_CPUFREQ                  policy<{'arm64': 'y'}> note<'Required for Pi (not in master)'>
-CONFIG_ARM_SCMI_PROTOCOL                        policy<{'arm64': 'n'}> note<'Not supported on Pi (different from master)'>
-CONFIG_ARM_SMMU                                 policy<{'arm64': 'm'}> note<'Different from master'>
-CONFIG_ARM_SMMU_V3                              policy<{'arm64': 'm'}> note<'Different from master'>
-CONFIG_ATA                                      policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
-CONFIG_ATARI_PARTITION                          policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
-CONFIG_ATH11K_DEBUGFS                           policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_ATH11K_TRACING                           policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_BACKLIGHT_CLASS_DEVICE                   policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
-CONFIG_BACKLIGHT_RPI                            policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_BATTERY_SAMSUNG_SDI                      policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_BCM2708_VCMEM                            policy<{'arm64': 'y'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_BCM2711_THERMAL                          policy<{'arm64': 'y'}> note<'Required for Pi (not in master)'>
-CONFIG_BCM2712_IOMMU                            policy<{'arm64': 'y'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_BCM2712_MIP                              policy<{'arm64': 'y'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_BCM2835_MBOX                             policy<{'arm64': 'y'}> note<'Required for Pi (not in master)'>
-CONFIG_BCM2835_POWER                            policy<{'arm64': 'y'}> note<'Required for Pi (not in master)'>
-CONFIG_BCM2835_SMI                              policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_BCM2835_SMI_DEV                          policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_BCM2835_THERMAL                          policy<{'arm64': 'y'}> note<'Required for Pi (not in master)'>
-CONFIG_BCM2835_VCHIQ                            policy<{'arm64': 'y'}> note<'Required for Pi (not in master)'>
-CONFIG_BCM2835_VCHIQ_MMAL                       policy<{'arm64': 'm'}> note<'Required for Pi (not in master)'>
-CONFIG_BCM2835_WDT                              policy<{'arm64': 'y'}> note<'Required for Pi (not in master)'>
-CONFIG_BCM7038_L1_IRQ                           policy<{'arm64': 'm'}> note<'Required for Pi (not in master)'>
-CONFIG_BCM7038_WDT                              policy<{'arm64': 'm'}> note<'Required for Pi (not in master)'>
-CONFIG_BCM7120_L2_IRQ                           policy<{'arm64': 'm'}> note<'Required for Pi (not in master)'>
-CONFIG_BCM74110_MAILBOX                         policy<{'arm64': 'n'}> note<'Not required for Pi (not in master)'>
-CONFIG_BCM84881_PHY                             policy<{'arm64': 'm'}> note<'Required for Pi (different from master)'>
-CONFIG_BCMASP                                   policy<{'arm64': 'm'}> note<'Required for Pi (not in master)'>
-CONFIG_BCMGENET                                 policy<{'arm64': 'y'}> note<'Required for Pi (different from master)'>
-CONFIG_BCM_VCIO                                 policy<{'arm64': 'y'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_BCM_VC_SM_CMA                            policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_BCM_VIDEOCORE                            policy<{'arm64': 'y'}> note<'Required for Pi (not in master)'>
-CONFIG_BLK_CGROUP_IOCOST                        policy<{'arm64': 'n'}> note<'Different from master'>
+CONFIG_ACPI                                     policy<{'arm64': 'n'}> note<'Must-Be-Disabled, LP: #2053147'>
+CONFIG_AHCI_BRCM                                policy<{'arm64': 'n'}> note<'Not-In-Parent, Must-Be-Disabled'>
+CONFIG_AIX_PARTITION                            policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_AL_FIC                                   policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_AMBA_PL08X                               policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_AMD_XGBE_DCB                             policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_AMIGA_PARTITION                          policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_ARCH_ACTIONS                             policy<{'arm64': 'n'}> note<'Parent-Override, Must-Be-Disabled'>
+CONFIG_ARCH_AIROHA                              policy<{'arm64': 'n'}> note<'Parent-Override, Must-Be-Disabled'>
+CONFIG_ARCH_APPLE                               policy<{'arm64': 'n'}> note<'Parent-Override, Must-Be-Disabled'>
+CONFIG_ARCH_AXIADO                              policy<{'arm64': 'n'}> note<'Parent-Override, Must-Be-Disabled'>
+CONFIG_ARCH_BCM                                 policy<{'arm64': 'y'}> note<'Parent-Override, Must-Be-Enabled'>
+CONFIG_ARCH_BCM2835                             policy<{'arm64': 'y'}> note<'Not-In-Parent, Must-Be-Enabled'>
+CONFIG_ARCH_BCMBCA                              policy<{'arm64': 'n'}> note<'Not-In-Parent, Must-Be-Disabled'>
+CONFIG_ARCH_BCM_IPROC                           policy<{'arm64': 'n'}> note<'Not-In-Parent, Must-Be-Disabled'>
+CONFIG_ARCH_BERLIN                              policy<{'arm64': 'n'}> note<'Parent-Override, Must-Be-Disabled'>
+CONFIG_ARCH_BITMAIN                             policy<{'arm64': 'n'}> note<'Parent-Override, Must-Be-Disabled'>
+CONFIG_ARCH_BLAIZE                              policy<{'arm64': 'n'}> note<'Parent-Override, Must-Be-Disabled'>
+CONFIG_ARCH_BRCMSTB                             policy<{'arm64': 'y'}> note<'Not-In-Parent, Must-Be-Enabled'>
+CONFIG_ARCH_BST                                 policy<{'arm64': 'n'}> note<'Parent-Override, Must-Be-Disabled'>
+CONFIG_ARCH_CIX                                 policy<{'arm64': 'n'}> note<'Parent-Override, Must-Be-Disabled'>
+CONFIG_ARCH_HISI                                policy<{'arm64': 'n'}> note<'Parent-Override, Must-Be-Disabled'>
+CONFIG_ARCH_INTEL_SOCFPGA                       policy<{'arm64': 'n'}> note<'Parent-Override, Must-Be-Disabled'>
+CONFIG_ARCH_K3                                  policy<{'arm64': 'n'}> note<'Parent-Override, Must-Be-Disabled'>
+CONFIG_ARCH_KEEMBAY                             policy<{'arm64': 'n'}> note<'Parent-Override, Must-Be-Disabled'>
+CONFIG_ARCH_LAN969X                             policy<{'arm64': 'n'}> note<'Parent-Override, Must-Be-Disabled'>
+CONFIG_ARCH_LG1K                                policy<{'arm64': 'n'}> note<'Parent-Override, Must-Be-Disabled'>
+CONFIG_ARCH_MA35                                policy<{'arm64': 'n'}> note<'Parent-Override, Must-Be-Disabled'>
+CONFIG_ARCH_MEDIATEK                            policy<{'arm64': 'n'}> note<'Parent-Override, Must-Be-Disabled'>
+CONFIG_ARCH_MESON                               policy<{'arm64': 'n'}> note<'Parent-Override, Must-Be-Disabled'>
+CONFIG_ARCH_MMAP_RND_BITS                       policy<{'arm64': '18'}> note<'Parent-Override, Must-Be-18'>
+CONFIG_ARCH_MMAP_RND_COMPAT_BITS                policy<{'arm64': '11'}> note<'Parent-Override, Must-Be-11'>
+CONFIG_ARCH_MMP                                 policy<{'arm64': 'n'}> note<'Parent-Override, Must-Be-Disabled'>
+CONFIG_ARCH_MVEBU                               policy<{'arm64': 'n'}> note<'Parent-Override, Must-Be-Disabled'>
+CONFIG_ARCH_NPCM                                policy<{'arm64': 'n'}> note<'Parent-Override, Must-Be-Disabled'>
+CONFIG_ARCH_NXP                                 policy<{'arm64': 'n'}> note<'Parent-Override, Must-Be-Disabled'>
+CONFIG_ARCH_PENSANDO                            policy<{'arm64': 'n'}> note<'Parent-Override, Must-Be-Disabled'>
+CONFIG_ARCH_QCOM                                policy<{'arm64': 'n'}> note<'Parent-Override, Must-Be-Disabled'>
+CONFIG_ARCH_REALTEK                             policy<{'arm64': 'n'}> note<'Parent-Override, Must-Be-Disabled'>
+CONFIG_ARCH_RENESAS                             policy<{'arm64': 'n'}> note<'Parent-Override, Must-Be-Disabled'>
+CONFIG_ARCH_ROCKCHIP                            policy<{'arm64': 'n'}> note<'Parent-Override, Must-Be-Disabled'>
+CONFIG_ARCH_SEATTLE                             policy<{'arm64': 'n'}> note<'Parent-Override, Must-Be-Disabled'>
+CONFIG_ARCH_SOPHGO                              policy<{'arm64': 'n'}> note<'Parent-Override, Must-Be-Disabled'>
+CONFIG_ARCH_SPARX5                              policy<{'arm64': 'n'}> note<'Parent-Override, Must-Be-Disabled'>
+CONFIG_ARCH_SPRD                                policy<{'arm64': 'n'}> note<'Parent-Override, Must-Be-Disabled'>
+CONFIG_ARCH_STM32                               policy<{'arm64': 'n'}> note<'Parent-Override, Must-Be-Disabled'>
+CONFIG_ARCH_SUNXI                               policy<{'arm64': 'n'}> note<'Parent-Override, Must-Be-Disabled'>
+CONFIG_ARCH_SYNQUACER                           policy<{'arm64': 'n'}> note<'Parent-Override, Must-Be-Disabled'>
+CONFIG_ARCH_TEGRA                               policy<{'arm64': 'n'}> note<'Parent-Override, Must-Be-Disabled'>
+CONFIG_ARCH_THUNDER                             policy<{'arm64': 'n'}> note<'Parent-Override, Must-Be-Disabled'>
+CONFIG_ARCH_THUNDER2                            policy<{'arm64': 'n'}> note<'Parent-Override, Must-Be-Disabled'>
+CONFIG_ARCH_VEXPRESS                            policy<{'arm64': 'n'}> note<'Parent-Override, Must-Be-Disabled'>
+CONFIG_ARCH_VISCONTI                            policy<{'arm64': 'n'}> note<'Parent-Override, Must-Be-Disabled'>
+CONFIG_ARCH_XGENE                               policy<{'arm64': 'n'}> note<'Parent-Override, Must-Be-Disabled'>
+CONFIG_ARCH_ZYNQMP                              policy<{'arm64': 'n'}> note<'Parent-Override, Must-Be-Disabled'>
+CONFIG_ARM_BRCMSTB_AVS_CPUFREQ                  policy<{'arm64': 'm'}> note<'Not-In-Parent, Can-Be-Module'>
+CONFIG_ARM_CCI_PMU                              policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_ARM_CCN                                  policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_ARM_PSCI_CPUIDLE                         policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_ARM_RASPBERRYPI_CPUFREQ                  policy<{'arm64': 'y'}> note<'Not-In-Parent, Must-Be-Enabled'>
+CONFIG_ARM_SCMI_PROTOCOL                        policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_ARM_SMMU                                 policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_ARM_SMMU_V3                              policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_ATA                                      policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_ATARI_PARTITION                          policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_ATH11K_DEBUGFS                           policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_ATH11K_TRACING                           policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_BACKLIGHT_CLASS_DEVICE                   policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_BACKLIGHT_RPI                            policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_BATTERY_SAMSUNG_SDI                      policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_BCM2708_VCMEM                            policy<{'arm64': 'y'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Must-Be-Enabled'>
+CONFIG_BCM2711_THERMAL                          policy<{'arm64': 'y'}> note<'Not-In-Parent, Must-Be-Enabled'>
+CONFIG_BCM2712_IOMMU                            policy<{'arm64': 'y'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Must-Be-Enabled'>
+CONFIG_BCM2712_MIP                              policy<{'arm64': 'y'}> note<'Not-In-Parent, Must-Be-Enabled'>
+CONFIG_BCM2835_MBOX                             policy<{'arm64': 'y'}> note<'Not-In-Parent, Must-Be-Enabled'>
+CONFIG_BCM2835_POWER                            policy<{'arm64': 'y'}> note<'Not-In-Parent, Must-Be-Enabled'>
+CONFIG_BCM2835_SMI                              policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_BCM2835_SMI_DEV                          policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_BCM2835_THERMAL                          policy<{'arm64': 'y'}> note<'Not-In-Parent, Must-Be-Enabled'>
+CONFIG_BCM2835_VCHIQ                            policy<{'arm64': 'y'}> note<'Not-In-Parent, Must-Be-Enabled'>
+CONFIG_BCM2835_VCHIQ_MMAL                       policy<{'arm64': 'm'}> note<'Not-In-Parent, Can-Be-Module'>
+CONFIG_BCM2835_WDT                              policy<{'arm64': 'y'}> note<'Not-In-Parent, Must-Be-Enabled'>
+CONFIG_BCM7038_L1_IRQ                           policy<{'arm64': 'm'}> note<'Not-In-Parent, Can-Be-Module'>
+CONFIG_BCM7038_WDT                              policy<{'arm64': 'm'}> note<'Not-In-Parent, Can-Be-Module'>
+CONFIG_BCM7120_L2_IRQ                           policy<{'arm64': 'm'}> note<'Not-In-Parent, Can-Be-Module'>
+CONFIG_BCM74110_MAILBOX                         policy<{'arm64': 'n'}> note<'Not-In-Parent, Can-Be-Disabled'>
+CONFIG_BCM84881_PHY                             policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_BCMASP                                   policy<{'arm64': 'm'}> note<'Not-In-Parent, Can-Be-Module'>
+CONFIG_BCMGENET                                 policy<{'arm64': 'y'}> note<'Parent-Override, Must-Be-Enabled'>
+CONFIG_BCM_VCIO                                 policy<{'arm64': 'y'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Must-Be-Enabled'>
+CONFIG_BCM_VC_SM_CMA                            policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_BCM_VIDEOCORE                            policy<{'arm64': 'y'}> note<'Not-In-Parent, Must-Be-Enabled'>
+CONFIG_BLK_CGROUP_IOCOST                        policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
 CONFIG_BLK_CGROUP_IOLATENCY                     policy<{'arm64': 'n', 'arm64-raspi-realtime': 'y'}> note<'LP: #1961588'>
-CONFIG_BLK_DEV_DM                               policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
-CONFIG_BLK_DEV_MD                               policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
-CONFIG_BLK_DEV_SR                               policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
-CONFIG_BPF_LIRC_MODE2                           policy<{'arm64': 'n'}> note<'Required for Pi (not in master)'>
-CONFIG_BPF_LSM                                  policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_BRCMDBG                                  policy<{'arm64': 'y'}> note<'Required for Pi (different from master)'>
-CONFIG_BRCMSTB_DPFE                             policy<{'arm64': 'm'}> note<'Required for Pi (not in master)'>
-CONFIG_BRCMSTB_GISB_ARB                         policy<{'arm64': 'm'}> note<'Required for Pi (not in master)'>
-CONFIG_BRCMSTB_L2_IRQ                           policy<{'arm64': 'y'}> note<'Required for Pi (not in master)'>
-CONFIG_BRCMSTB_MEMC                             policy<{'arm64': 'm'}> note<'Required for Pi (not in master)'>
-CONFIG_BRCMSTB_THERMAL                          policy<{'arm64': 'm'}> note<'Required for Pi (not in master)'>
-CONFIG_BRCM_CHAR_DRIVERS                        policy<{'arm64': 'y'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_BRCM_TRACING                             policy<{'arm64': 'n'}> note<'LP: #1893905 (different from master)'>
-CONFIG_BRCM_USB_PINMAP                          policy<{'arm64': 'm'}> note<'Required for Pi (not in master)'>
-CONFIG_CACHEFILES_ERROR_INJECTION               policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_CAVIUM_ERRATUM_22375                     policy<{'arm64': 'n'}> note<'Required for Pi (different from master)'>
-CONFIG_CAVIUM_ERRATUM_23154                     policy<{'arm64': 'n'}> note<'Required for Pi (different from master)'>
-CONFIG_CAVIUM_ERRATUM_27456                     policy<{'arm64': 'n'}> note<'Required for Pi (different from master)'>
-CONFIG_CAVIUM_TX2_ERRATUM_219                   policy<{'arm64': 'n'}> note<'Required for Pi (different from master)'>
-CONFIG_CDROM                                    policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
-CONFIG_CDX_BUS                                  policy<{'arm64': 'n'}> note<'Not supported on Pi (different from master)'>
-CONFIG_CEPH_FS_SECURITY_LABEL                   policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_CHARGER_MANAGER                          policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
-CONFIG_CHROME_PLATFORMS                         policy<{'arm64': 'n'}> note<'Not supported on Pi (different from master)'>
-CONFIG_CLK_BCM2711_DVP                          policy<{'arm64': 'y'}> note<'Required for Pi (not in master)'>
-CONFIG_CLK_BCM2835                              policy<{'arm64': 'y'}> note<'Required for Pi (not in master)'>
-CONFIG_CLK_ICST                                 policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_CLK_RASPBERRYPI                          policy<{'arm64': 'y'}> note<'Required for Pi (not in master)'>
-CONFIG_CLK_SP810                                policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_CMA_SIZE_MBYTES                          policy<{'arm64': '5'}> note<'Required for Pi (different from master)'>
-CONFIG_CMDLINE_PARTITION                        policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
-CONFIG_COMMON_CLK_FIXED_MMIO                    policy<{'arm64': 'n'}> note<'Not supported on Pi (different from master)'>
-CONFIG_COMMON_CLK_HIFIBERRY_DACPLUSHD           policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_COMMON_CLK_HIFIBERRY_DACPRO              policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_COMMON_CLK_RP1                           policy<{'arm64': 'y'}> note<'Added by rpi-6.6.y patchset (needs to be built-in'>
-CONFIG_COMMON_CLK_RP1_SDIO                      policy<{'arm64': 'y'}> note<'Added by rpi-6.6.y patchset (needs to be built-in)'>
-CONFIG_COMMON_CLK_XGENE                         policy<{'arm64': 'n'}> note<'Not supported on Pi (different from master)'>
-CONFIG_CONNECTOR                                policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
-CONFIG_CRC8                                     policy<{'arm64': 'm'}> note<'Different from master'>
-CONFIG_CRYPTO_AEAD                              policy<{'arm64': 'm'}> note<'Required for Pi (different from master)'>
-CONFIG_CRYPTO_DEV_CCP                           policy<{'arm64': 'n'}> note<'Not supported on Pi (different from master)'>
-CONFIG_CRYPTO_GCM                               policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
-CONFIG_CRYPTO_GENIV                             policy<{'arm64': 'm'}> note<'Required for Pi (different from master)'>
-CONFIG_CRYPTO_GHASH                             policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
-CONFIG_CRYPTO_LIB_GF128MUL                      policy<{'arm64': 'm'}> note<'Required for Pi (different from master)'>
-CONFIG_CRYPTO_NULL                              policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
-CONFIG_CRYPTO_SEQIV                             policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
-CONFIG_DAX                                      policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
-CONFIG_DEVFREQ_GOV_PASSIVE                      policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
-CONFIG_DEVFREQ_GOV_PERFORMANCE                  policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
-CONFIG_DEVFREQ_GOV_POWERSAVE                    policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
-CONFIG_DEVFREQ_GOV_SIMPLE_ONDEMAND              policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
-CONFIG_DEVFREQ_GOV_USERSPACE                    policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
-CONFIG_DMABUF_MOVE_NOTIFY                       policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_DMA_BCM2708                              policy<{'arm64': 'y'}> note<'Added by rpi-6.6.y patchset (needs to be built-in)'>
-CONFIG_DMA_BCM2835                              policy<{'arm64': 'y'}> note<'Required for Pi (not in master)'>
-CONFIG_DMA_NUMA_CMA                             policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
-CONFIG_DMA_RESTRICTED_POOL                      policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_DM_VERITY_VERIFY_ROOTHASH_SIG            policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_DM_VERITY_VERIFY_ROOTHASH_SIG_SECONDARY_KEYRING policy<{'arm64': '-'}> note<'Master note override'>
-CONFIG_DRM_CLIENT_LIB                           policy<{'arm64': 'm'}> note<'Required for Pi (different from master)'>
-CONFIG_DRM_CLIENT_SELECTION                     policy<{'arm64': 'm'}> note<'Required for Pi (different from master)'>
-CONFIG_DRM_GEM_SHMEM_HELPER                     policy<{'arm64': 'm'}> note<'Required for Pi (different from master)'>
-CONFIG_DRM_KMS_HELPER                           policy<{'arm64': 'm'}> note<'Required for Pi (different from master)'>
-CONFIG_DRM_MGAG200_DISABLE_WRITECOMBINE         policy<{'arm64-raspi-realtime': 'n'}> note<'Required for realtime (not in master)'>
-CONFIG_DRM_PANEL_ILITEK_IL79600A                policy<{'arm64': 'm'}> note<'Required for Pi (not in master)'>
-CONFIG_DRM_PANEL_ILITEK_ILI9806E_SPI            policy<{'arm64': 'm'}> note<'Required for Pi (not in master)'>
-CONFIG_DRM_PANEL_TPO_Y17P                       policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_DRM_PANEL_WAVESHARE_TOUCHSCREEN          policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_DRM_PANEL_WAVESHARE_TOUCHSCREEN_V2       policy<{'arm64': 'm'}> note<'Required for Pi (not in master)'>
-CONFIG_DRM_RP1_DPI                              policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_DRM_RP1_DSI                              policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_DRM_RP1_VEC                              policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_DRM_SIMPLEDRM                            policy<{'arm64': 'n'}> note<'LP: #1976147 (different from master)'>
-CONFIG_DRM_V3D                                  policy<{'arm64': 'm'}> note<'Required for Pi (not in master)'>
-CONFIG_DRM_VC4                                  policy<{'arm64': 'm'}> note<'Required for Pi (not in master)'>
-CONFIG_DRM_VC4_HDMI_CEC                         policy<{'arm64': 'y'}> note<'Required for Pi (not in master)'>
-CONFIG_DW_AXI_DMAC                              policy<{'arm64': 'y'}> note<'Needs to be built-in for Pi (LP: #2060240)'>
-CONFIG_ECRYPT_FS                                policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
-CONFIG_EFIVAR_FS                                policy<{'arm64': 'm'}> note<'Different from master (LP: #2053147)'>
-CONFIG_EFI_COCO_SECRET                          policy<{'arm64': 'n'}> note<'Different from master (LP: #2053147)'>
-CONFIG_EFI_ZBOOT                                policy<{'arm64': 'n'}> note<'Different from master (LP: #2053147)'>
-CONFIG_ENERGY_MODEL                             policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_EZX_PCAP                                 policy<{'arm64': 'n'}> note<'Not supported on Pi (different from master)'>
-CONFIG_FAILOVER                                 policy<{'arm64': 'm'}> note<'Different from master'>
-CONFIG_FAT_DEFAULT_IOCHARSET                    policy<{'arm64': '"ascii"'}> note<'Required for Pi (different from master)'>
-CONFIG_FB_ASILIANT                              policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_FB_BCM2708                               policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_FB_IMSTT                                 policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_FB_RPISENSE                              policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_FB_SIMPLE                                policy<{'arm64': 'y'}> note<'LP: #1976147 (different from master)'>
-CONFIG_FDDI                                     policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_FIRMWARE_MEMMAP                          policy<{'arm64': 'n'}> note<'Not supported on Pi (different from master)'>
-CONFIG_FIRMWARE_RP1                             policy<{'arm64': 'm'}> note<'Required for Pi (not in master)'>
-CONFIG_FONT_TER16x32                            policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_FRAMEBUFFER_CONSOLE_DEFERRED_TAKEOVER    policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_FS_VERITY                                policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_FUNCTION_ERROR_INJECTION                 policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
-CONFIG_FUSE_FS                                  policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
-CONFIG_FUSION                                   policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_FW_LOADER_USER_HELPER                    policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_FW_LOADER_USER_HELPER_FALLBACK           policy<{'arm64': '-'}> note<'Master note override'>
-CONFIG_GADGET_UAC1                              policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_GPIO_BCM_VIRT                            policy<{'arm64': 'y'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_GPIO_BRCMSTB                             policy<{'arm64': 'm'}> note<'Required for Pi (not in master)'>
-CONFIG_GPIO_FSM                                 policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_GPIO_FTGPIO010                           policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_GPIO_GENERIC                             policy<{'arm64': 'm'}> note<'Required for Pi (different from master)'>
-CONFIG_GPIO_GENERIC_PLATFORM                    policy<{'arm64': 'm'}> note<'Required for Pi (different from master)'>
-CONFIG_GPIO_PALMAS                              policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
-CONFIG_GPIO_PL061                               policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
-CONFIG_GPIO_RASPBERRYPI_EXP                     policy<{'arm64': 'y'}> note<'Required for Pi (not in master)'>
-CONFIG_GPIO_SIFIVE                              policy<{'arm64': 'n'}> note<'Not supported on Pi (different from master)'>
-CONFIG_GPIO_STMPE                               policy<{'arm64': 'n'}> note<'Not supported on Pi (different from master)'>
-CONFIG_GPIO_SYSFS                               policy<{'arm64': 'n'}> note<'LP: #1918583 (different from master)'>
-CONFIG_GPIO_TWL4030                             policy<{'arm64': '-'}> note<'Master note override'>
-CONFIG_GPIO_XGENE                               policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_GPIO_XILINX                              policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_HARDLOCKUP_DETECTOR                      policy<{'arm64': 'n'}> note<'Not supported on Pi (different from master)'>
-CONFIG_HID                                      policy<{'arm64': 'y'}> note<'Different from master'>
-CONFIG_HID_BPF                                  policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
-CONFIG_HOTPLUG_CPU                              policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_HOTPLUG_PCI                              policy<{'arm64': 'n'}> note<'Required for Pi (different from master)'>
-CONFIG_HOTPLUG_PCI_PCIE                         policy<{'arm64': '-'}> note<'Master note override'>
-CONFIG_HOTPLUG_PCI_SHPC                         policy<{'arm64': '-'}> note<'Master note override'>
-CONFIG_HSA_AMD_P2P                              policy<{'arm64': '-'}> note<'Master note override'>
-CONFIG_HTE                                      policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_HWSPINLOCK                               policy<{'arm64': 'n'}> note<'Not supported on Pi (different from master)'>
-CONFIG_HW_RANDOM_BCM2835                        policy<{'arm64': 'y'}> note<'Required for Pi (not in master)'>
-CONFIG_HW_RANDOM_BCM74110                       policy<{'arm64': 'm'}> note<'Required for Pi (not in master)'>
-CONFIG_HW_RANDOM_IPROC_RNG200                   policy<{'arm64': 'y'}> note<'Required for Pi (not in master)'>
-CONFIG_I2C_BCM2708                              policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_I2C_BCM2708_BAUDRATE                     policy<{'arm64': '100000'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_I2C_BCM2835                              policy<{'arm64': 'm'}> note<'Required for Pi (not in master)'>
-CONFIG_I2C_BRCMSTB                              policy<{'arm64': 'm'}> note<'Required for Pi (not in master)'>
-CONFIG_I2C_DESIGNWARE_CORE                      policy<{'arm64': 'm'}> note<'Required for Pi (different from master)'>
-CONFIG_I2C_DESIGNWARE_PLATFORM                  policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
-CONFIG_IDLE_PAGE_TRACKING                       policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
-CONFIG_IMA_APPRAISE_MODSIG                      policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_IMA_ARCH_POLICY                          policy<{'arm64': 'n'}> note<'LP: #1982090 (different from master)'>
-CONFIG_IMA_SECURE_AND_OR_TRUSTED_BOOT           policy<{'arm64': 'n'}> note<'Different from master (LP: #2053147)'>
-CONFIG_INDIRECT_PIO                             policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_INIT_ON_ALLOC_DEFAULT_ON                 policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_INPUT_UINPUT                             policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
-CONFIG_INPUT_VIVALDIFMAP                        policy<{'arm64': 'm'}> note<'Required for Pi (different from master)'>
-CONFIG_INTEGRITY_PLATFORM_KEYRING               policy<{'arm64': 'n'}> note<'Not (yet) required on Pi (different from master)'>
-CONFIG_INTERCONNECT                             policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_IOMMU_IO_PGTABLE_ARMV7S                  policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_IOMMU_IO_PGTABLE_DART                    policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_IPMMU_VMSA                               policy<{'arm64': '-'}> note<'Master note override'>
-CONFIG_IP_PNP                                   policy<{'arm64': 'y'}> note<'Required for Pi (different from master)'>
-CONFIG_IP_PNP_BOOTP                             policy<{'arm64': 'n'}> note<'Required for Pi (not in master)'>
-CONFIG_IP_PNP_DHCP                              policy<{'arm64': 'y'}> note<'Required for Pi (not in master)'>
-CONFIG_IP_PNP_RARP                              policy<{'arm64': 'y'}> note<'Required for Pi (not in master)'>
+CONFIG_BLK_DEV_DM                               policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_BLK_DEV_MD                               policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_BLK_DEV_SR                               policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_BPF_LIRC_MODE2                           policy<{'arm64': 'n'}> note<'Not-In-Parent, Can-Be-Disabled'>
+CONFIG_BPF_LSM                                  policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_BRCMDBG                                  policy<{'arm64': 'y'}> note<'Parent-Override, Must-Be-Enabled'>
+CONFIG_BRCMSTB_DPFE                             policy<{'arm64': 'm'}> note<'Not-In-Parent, Can-Be-Module'>
+CONFIG_BRCMSTB_GISB_ARB                         policy<{'arm64': 'm'}> note<'Not-In-Parent, Can-Be-Module'>
+CONFIG_BRCMSTB_L2_IRQ                           policy<{'arm64': 'y'}> note<'Not-In-Parent, Must-Be-Enabled'>
+CONFIG_BRCMSTB_MEMC                             policy<{'arm64': 'm'}> note<'Not-In-Parent, Can-Be-Module'>
+CONFIG_BRCMSTB_THERMAL                          policy<{'arm64': 'm'}> note<'Not-In-Parent, Can-Be-Module'>
+CONFIG_BRCM_CHAR_DRIVERS                        policy<{'arm64': 'y'}> note<'Not-In-Parent, Must-Be-Enabled'>
+CONFIG_BRCM_TRACING                             policy<{'arm64': 'n'}> note<'Must-Be-Disabled, LP: #1893905'>
+CONFIG_BRCM_USB_PINMAP                          policy<{'arm64': 'm'}> note<'Not-In-Parent, Can-Be-Module'>
+CONFIG_CACHEFILES_ERROR_INJECTION               policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_CAVIUM_ERRATUM_22375                     policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_CAVIUM_ERRATUM_23154                     policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_CAVIUM_ERRATUM_27456                     policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_CAVIUM_TX2_ERRATUM_219                   policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_CDROM                                    policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_CDX_BUS                                  policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_CEPH_FS_SECURITY_LABEL                   policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_CHARGER_MANAGER                          policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_CHROME_PLATFORMS                         policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_CLK_BCM2711_DVP                          policy<{'arm64': 'y'}> note<'Not-In-Parent, Must-Be-Enabled'>
+CONFIG_CLK_BCM2835                              policy<{'arm64': 'y'}> note<'Not-In-Parent, Must-Be-Enabled'>
+CONFIG_CLK_ICST                                 policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_CLK_RASPBERRYPI                          policy<{'arm64': 'y'}> note<'Not-In-Parent, Must-Be-Enabled'>
+CONFIG_CLK_SP810                                policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_CMA_SIZE_MBYTES                          policy<{'arm64': '5'}> note<'Parent-Override, Must-Be-5'>
+CONFIG_CMDLINE_PARTITION                        policy<{'arm64': 'n'}> note<'Parent-Override, Must-Be-Disabled'>
+CONFIG_COMMON_CLK_FIXED_MMIO                    policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_COMMON_CLK_HIFIBERRY_DACPLUSHD           policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_COMMON_CLK_HIFIBERRY_DACPRO              policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_COMMON_CLK_RP1                           policy<{'arm64': 'y'}> note<'Parent-Override, Must-Be-Enabled'>
+CONFIG_COMMON_CLK_RP1_SDIO                      policy<{'arm64': 'y'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Must-Be-Enabled'>
+CONFIG_COMMON_CLK_XGENE                         policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_CONNECTOR                                policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_CRC8                                     policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_CRYPTO_AEAD                              policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_CRYPTO_DEV_CCP                           policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_CRYPTO_GCM                               policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_CRYPTO_GENIV                             policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_CRYPTO_GHASH                             policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_CRYPTO_LIB_GF128MUL                      policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_CRYPTO_NULL                              policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_CRYPTO_SEQIV                             policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_DAX                                      policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_DEVFREQ_GOV_PASSIVE                      policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_DEVFREQ_GOV_PERFORMANCE                  policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_DEVFREQ_GOV_POWERSAVE                    policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_DEVFREQ_GOV_SIMPLE_ONDEMAND              policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_DEVFREQ_GOV_USERSPACE                    policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_DMABUF_MOVE_NOTIFY                       policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_DMA_BCM2708                              policy<{'arm64': 'y'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Must-Be-Enabled'>
+CONFIG_DMA_BCM2835                              policy<{'arm64': 'y'}> note<'Not-In-Parent, Must-Be-Enabled'>
+CONFIG_DMA_NUMA_CMA                             policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_DMA_RESTRICTED_POOL                      policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_DM_VERITY_VERIFY_ROOTHASH_SIG            policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_DM_VERITY_VERIFY_ROOTHASH_SIG_SECONDARY_KEYRING policy<{'arm64': '-'}> note<'Parent-Note-Override'>
+CONFIG_DRM_CLIENT_LIB                           policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_DRM_CLIENT_SELECTION                     policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_DRM_GEM_SHMEM_HELPER                     policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_DRM_KMS_HELPER                           policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_DRM_MGAG200_DISABLE_WRITECOMBINE         policy<{'arm64-raspi-realtime': 'n'}> note<'LP: #2138734'>
+CONFIG_DRM_PANEL_ILITEK_IL79600A                policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_DRM_PANEL_ILITEK_ILI9806E_SPI            policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_DRM_PANEL_TPO_Y17P                       policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_DRM_PANEL_WAVESHARE_TOUCHSCREEN          policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_DRM_PANEL_WAVESHARE_TOUCHSCREEN_V2       policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_DRM_RP1_DPI                              policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_DRM_RP1_DSI                              policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_DRM_RP1_VEC                              policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_DRM_SIMPLEDRM                            policy<{'arm64': 'n'}> note<'Must-Be-Disabled, LP: #1976147'>
+CONFIG_DRM_V3D                                  policy<{'arm64': 'm'}> note<'Not-In-Parent, Can-Be-Module'>
+CONFIG_DRM_VC4                                  policy<{'arm64': 'm'}> note<'Not-In-Parent, Can-Be-Module'>
+CONFIG_DRM_VC4_HDMI_CEC                         policy<{'arm64': 'y'}> note<'Not-In-Parent, Must-Be-Enabled'>
+CONFIG_DW_AXI_DMAC                              policy<{'arm64': 'y'}> note<'Must-Be-Enabled, LP: #2060240'>
+CONFIG_ECRYPT_FS                                policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_EFIVAR_FS                                policy<{'arm64': 'm'}> note<'Must-Be-Module, LP: #2053147'>
+CONFIG_EFI_COCO_SECRET                          policy<{'arm64': 'n'}> note<'Must-Be-Disabled, LP: #2053147'>
+CONFIG_EFI_ZBOOT                                policy<{'arm64': 'n'}> note<'Must-Be-Disabled, LP: #2053147'>
+CONFIG_ENERGY_MODEL                             policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_EZX_PCAP                                 policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_FAILOVER                                 policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_FAT_DEFAULT_IOCHARSET                    policy<{'arm64': '"ascii"'}> note<'Parent-Override, Must-Be-ascii'>
+CONFIG_FB_ASILIANT                              policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_FB_BCM2708                               policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_FB_IMSTT                                 policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_FB_RPISENSE                              policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_FB_SIMPLE                                policy<{'arm64': 'y'}> note<'Must-Be-Enabled, LP: #1976147'>
+CONFIG_FDDI                                     policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_FIRMWARE_MEMMAP                          policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_FIRMWARE_RP1                             policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_FONT_TER16x32                            policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_FRAMEBUFFER_CONSOLE_DEFERRED_TAKEOVER    policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_FS_VERITY                                policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_FUNCTION_ERROR_INJECTION                 policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_FUSE_FS                                  policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_FUSION                                   policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_FW_LOADER_USER_HELPER                    policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_FW_LOADER_USER_HELPER_FALLBACK           policy<{'arm64': '-'}> note<'Parent-Note-Override'>
+CONFIG_GADGET_UAC1                              policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_GPIO_BCM_VIRT                            policy<{'arm64': 'y'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Must-Be-Enabled'>
+CONFIG_GPIO_BRCMSTB                             policy<{'arm64': 'm'}> note<'Not-In-Parent, Can-Be-Module'>
+CONFIG_GPIO_FSM                                 policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_GPIO_FTGPIO010                           policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_GPIO_GENERIC                             policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_GPIO_GENERIC_PLATFORM                    policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_GPIO_PALMAS                              policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_GPIO_PL061                               policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_GPIO_RASPBERRYPI_EXP                     policy<{'arm64': 'y'}> note<'Not-In-Parent, Must-Be-Enabled'>
+CONFIG_GPIO_SIFIVE                              policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_GPIO_STMPE                               policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_GPIO_SYSFS                               policy<{'arm64': 'n'}> note<'Must-Be-Disabled, LP: #1918583'>
+CONFIG_GPIO_TWL4030                             policy<{'arm64': '-'}> note<'Parent-Note-Override'>
+CONFIG_GPIO_XGENE                               policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_GPIO_XILINX                              policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_HARDLOCKUP_DETECTOR                      policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_HID                                      policy<{'arm64': 'y'}> note<'Parent-Override, Must-Be-Enabled'>
+CONFIG_HID_BPF                                  policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_HOTPLUG_CPU                              policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_HOTPLUG_PCI                              policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_HOTPLUG_PCI_PCIE                         policy<{'arm64': '-'}> note<'Parent-Note-Override'>
+CONFIG_HOTPLUG_PCI_SHPC                         policy<{'arm64': '-'}> note<'Parent-Note-Override'>
+CONFIG_HSA_AMD_P2P                              policy<{'arm64': '-'}> note<'Parent-Note-Override'>
+CONFIG_HTE                                      policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_HWSPINLOCK                               policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_HW_RANDOM_BCM2835                        policy<{'arm64': 'y'}> note<'Not-In-Parent, Must-Be-Enabled'>
+CONFIG_HW_RANDOM_BCM74110                       policy<{'arm64': 'm'}> note<'Not-In-Parent, Can-Be-Module'>
+CONFIG_HW_RANDOM_IPROC_RNG200                   policy<{'arm64': 'y'}> note<'Not-In-Parent, Must-Be-Enabled'>
+CONFIG_I2C_BCM2708                              policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_I2C_BCM2708_BAUDRATE                     policy<{'arm64': '100000'}> note<'Not-In-Parent, Can-Be-Default'>
+CONFIG_I2C_BCM2835                              policy<{'arm64': 'm'}> note<'Not-In-Parent, Can-Be-Module'>
+CONFIG_I2C_BRCMSTB                              policy<{'arm64': 'm'}> note<'Not-In-Parent, Can-Be-Module'>
+CONFIG_I2C_DESIGNWARE_CORE                      policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_I2C_DESIGNWARE_PLATFORM                  policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_IDLE_PAGE_TRACKING                       policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_IMA_APPRAISE_MODSIG                      policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_IMA_ARCH_POLICY                          policy<{'arm64': 'n'}> note<'Must-Be-Disabled, LP: #1982090'>
+CONFIG_IMA_SECURE_AND_OR_TRUSTED_BOOT           policy<{'arm64': 'n'}> note<'Must-Be-Disabled, LP: #2053147'>
+CONFIG_INDIRECT_PIO                             policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_INIT_ON_ALLOC_DEFAULT_ON                 policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_INPUT_UINPUT                             policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_INPUT_VIVALDIFMAP                        policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_INTEGRITY_PLATFORM_KEYRING               policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_INTERCONNECT                             policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_IOMMU_IO_PGTABLE_ARMV7S                  policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_IOMMU_IO_PGTABLE_DART                    policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_IPMMU_VMSA                               policy<{'arm64': '-'}> note<'Parent-Note-Override'>
+CONFIG_IP_PNP                                   policy<{'arm64': 'y'}> note<'Parent-Override, Must-Be-Enabled'>
+CONFIG_IP_PNP_BOOTP                             policy<{'arm64': 'n'}> note<'Not-In-Parent, Must-Be-Disabled'>
+CONFIG_IP_PNP_DHCP                              policy<{'arm64': 'y'}> note<'Not-In-Parent, Must-Be-Enabled'>
+CONFIG_IP_PNP_RARP                              policy<{'arm64': 'y'}> note<'Not-In-Parent, Must-Be-Enabled'>
 CONFIG_IRQ_TIME_ACCOUNTING                      policy<{'arm64': 'n', 'arm64-raspi-realtime': 'y'}> note<'LP: #1961588'>
-CONFIG_KARMA_PARTITION                          policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
-CONFIG_KERNEL_ZSTD                              policy<{'arm64': '-'}> note<'Master note override'>
-CONFIG_KEYBOARD_ATKBD                           policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
-CONFIG_KEYS_REQUEST_CACHE                       policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_KFENCE                                   policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_KFENCE_STATIC_KEYS                       policy<{'arm64': '-'}> note<'Master note override'>
-CONFIG_KSM                                      policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
-CONFIG_LDM_PARTITION                            policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
-CONFIG_LEDS_GPIO                                policy<{'arm64': 'y'}> note<'Required for Pi (different from master)'>
-CONFIG_LEDS_SYSCON                              policy<{'arm64': 'n'}> note<'Not supported on Pi (different from master)'>
-CONFIG_LEDS_TRIGGER_ACTPWR                      policy<{'arm64': 'y'}> note<'Required for Pi (LP: #2060942)'>
-CONFIG_LEDS_TRIGGER_BACKLIGHT                   policy<{'arm64': 'y'}> note<'Required for Pi (different from master)'>
-CONFIG_LEDS_TRIGGER_DEFAULT_ON                  policy<{'arm64': 'y'}> note<'Required for Pi (different from master)'>
-CONFIG_LEDS_TRIGGER_HEARTBEAT                   policy<{'arm64': 'y'}> note<'Required for Pi (different from master)'>
-CONFIG_LEDS_TRIGGER_INPUT                       policy<{'arm64': 'y'}> note<'Required for Pi (LP: #2060942)'>
-CONFIG_LEDS_TRIGGER_ONESHOT                     policy<{'arm64': 'y'}> note<'Required for Pi (different from master)'>
-CONFIG_LEDS_TRIGGER_TIMER                       policy<{'arm64': 'y'}> note<'Required for Pi (different from master)'>
-CONFIG_LIBNVDIMM                                policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
-CONFIG_LOCK_DOWN_IN_SECURE_BOOT                 policy<{'arm64': 'n'}> note<'Different from master (LP: #2053147)'>
-CONFIG_LOG_BUF_SHIFT                            policy<{'arm64': '17'}> note<'Different from master'>
-CONFIG_LSM                                      policy<{'arm64': '"landlock,yama,integrity,apparmor"'}> note<'Different from master'>
-CONFIG_MBOX_RP1                                 policy<{'arm64': 'm'}> note<'Required for Pi (not in master)'>
-CONFIG_MCTP                                     policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_MDIO_BITBANG                             policy<{'arm64': 'm'}> note<'Different from master'>
-CONFIG_MEGARAID_NEWGEN                          policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_MELLANOX_PLATFORM                        policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_MEMORY_FAILURE                           policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_MEMORY_HOTPLUG                           policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_MFD_88PM860X                             policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
-CONFIG_MFD_88PM886_PMIC                         policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
-CONFIG_MFD_AAT2870_CORE                         policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
-CONFIG_MFD_AS3711                               policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
-CONFIG_MFD_AS3722                               policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
-CONFIG_MFD_CS47L15                              policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
-CONFIG_MFD_CS47L24                              policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
-CONFIG_MFD_CS47L35                              policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_MFD_CS47L85                              policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_MFD_CS47L90                              policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_MFD_CS47L92                              policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
-CONFIG_MFD_DA9052_I2C                           policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
-CONFIG_MFD_DA9052_SPI                           policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
-CONFIG_MFD_DA9055                               policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
-CONFIG_MFD_DA9063                               policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
-CONFIG_MFD_LOCHNAGAR                            policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_MFD_LP8788                               policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
-CONFIG_MFD_MAX14577                             policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
-CONFIG_MFD_MAX77620                             policy<{'arm64': 'm'}> note<'Not required on Pi (different from master)'>
-CONFIG_MFD_MAX77686                             policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
-CONFIG_MFD_MAX77693                             policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
-CONFIG_MFD_MAX77843                             policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
-CONFIG_MFD_MAX8925                              policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
-CONFIG_MFD_MAX8997                              policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
-CONFIG_MFD_MAX8998                              policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
-CONFIG_MFD_PALMAS                               policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
-CONFIG_MFD_RASPBERRYPI_POE_HAT                  policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_MFD_RC5T583                              policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
-CONFIG_MFD_RP1                                  policy<{'arm64': 'y'}> note<'Added by rpi-6.6.y patchset (needs to be built-in)'>
-CONFIG_MFD_STMPE                                policy<{'arm64': 'm'}> note<'Not required on Pi (different from master)'>
-CONFIG_MFD_TC3589X                              policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
-CONFIG_MFD_TPS65090                             policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
-CONFIG_MFD_TPS6586X                             policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
-CONFIG_MFD_TPS65910                             policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
-CONFIG_MFD_TPS65912                             policy<{'arm64': 'm'}> note<'Required for Pi (different from master)'>
-CONFIG_MFD_TPS65912_I2C                         policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
-CONFIG_MFD_TPS65912_SPI                         policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
-CONFIG_MFD_WM5110                               policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
-CONFIG_MFD_WM831X_I2C                           policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
-CONFIG_MFD_WM831X_SPI                           policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
-CONFIG_MFD_WM8350_I2C                           policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
-CONFIG_MFD_WM8400                               policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
-CONFIG_MFD_WM8997                               policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
-CONFIG_MFD_WM8998                               policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
-CONFIG_MHP_DEFAULT_ONLINE_TYPE_OFFLINE          policy<{'arm64': '-'}> note<'Master note override'>
-CONFIG_MHP_MEMMAP_ON_MEMORY                     policy<{'arm64': '-'}> note<'Introduced by LP: #2051835 (not required on Pi)'>
-CONFIG_MMC_ARMMMCI                              policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
-CONFIG_MMC_BCM2835                              policy<{'arm64': 'y'}> note<'Needs to be built-in for Pi (LP: #2106230)'>
-CONFIG_MMC_BCM2835_DMA                          policy<{'arm64': 'y'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_MMC_BCM2835_MMC                          policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_MMC_BCM2835_PIO_DMA_BARRIER              policy<{'arm64': '2'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_MMC_BLOCK_MINORS                         policy<{'arm64': '32'}> note<'Required for Pi (different from master)'>
-CONFIG_MMC_HSQ                                  policy<{'arm64': 'y'}> note<'Required for Pi (different from master)'>
-CONFIG_MMC_SDHCI                                policy<{'arm64': 'y'}> note<'Required for Pi (different from master)'>
-CONFIG_MMC_SDHCI_BRCMSTB                        policy<{'arm64': 'm'}> note<'Required for Pi (not in master)'>
-CONFIG_MMC_SDHCI_IPROC                          policy<{'arm64': 'y'}> note<'Required for Pi (not in master)'>
-CONFIG_MMC_SDHCI_PLTFM                          policy<{'arm64': 'y'}> note<'Required for Pi (different from master)'>
-CONFIG_MTD_NAND_ECC_MXIC                        policy<{'arm64': 'n'}> note<'Required for Pi (different from master)'>
-CONFIG_MTD_PHYSMAP_OF                           policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_MV_XOR_V2                                policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_NET_DROP_MONITOR                         policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
-CONFIG_NET_DSA_SJA1105_TAS                      policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_NET_FAILOVER                             policy<{'arm64': 'm'}> note<'Different from master'>
-CONFIG_NET_FC                                   policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_NET_NCSI                                 policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
-CONFIG_NET_TC_SKB_EXT                           policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_NLS_ASCII                                policy<{'arm64': 'y'}> note<'Required for Pi (different from master)'>
-CONFIG_NR_CPUS                                  policy<{'arm64': '16'}> note<'Different from master'>
-CONFIG_NUMA_BALANCING                           policy<{'arm64': 'y', 'arm64-raspi': 'n', 'arm64-raspi-realtime': '-'}> note<'Not desired on Pi (different from master)'>
-CONFIG_NUMA_BALANCING_DEFAULT_ENABLED           policy<{'arm64': '-'}> note<'Master note override'>
-CONFIG_NVMEM_RASPBERRYPI_OTP                    policy<{'arm64': 'y'}> note<'Required for Pi (not in master)'>
-CONFIG_NVME_MULTIPATH                           policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_OF_CONFIGFS                              policy<{'arm64': 'y'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_OSF_PARTITION                            policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
+CONFIG_KARMA_PARTITION                          policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_KERNEL_ZSTD                              policy<{'arm64': '-'}> note<'Parent-Note-Override'>
+CONFIG_KEYBOARD_ATKBD                           policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_KEYS_REQUEST_CACHE                       policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_KFENCE                                   policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_KFENCE_STATIC_KEYS                       policy<{'arm64': '-'}> note<'Parent-Note-Override'>
+CONFIG_KSM                                      policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_LDM_PARTITION                            policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_LEDS_GPIO                                policy<{'arm64': 'y'}> note<'Parent-Override, Must-Be-Enabled'>
+CONFIG_LEDS_SYSCON                              policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_LEDS_TRIGGER_ACTPWR                      policy<{'arm64': 'y'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Must-Be-Enabled, LP: #2060942'>
+CONFIG_LEDS_TRIGGER_BACKLIGHT                   policy<{'arm64': 'y'}> note<'Parent-Override, Must-Be-Enabled'>
+CONFIG_LEDS_TRIGGER_DEFAULT_ON                  policy<{'arm64': 'y'}> note<'Parent-Override, Must-Be-Enabled'>
+CONFIG_LEDS_TRIGGER_HEARTBEAT                   policy<{'arm64': 'y'}> note<'Parent-Override, Must-Be-Enabled'>
+CONFIG_LEDS_TRIGGER_INPUT                       policy<{'arm64': 'y'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Must-Be-Enabled, LP: #2060942'>
+CONFIG_LEDS_TRIGGER_ONESHOT                     policy<{'arm64': 'y'}> note<'Parent-Override, Must-Be-Enabled'>
+CONFIG_LEDS_TRIGGER_TIMER                       policy<{'arm64': 'y'}> note<'Parent-Override, Must-Be-Enabled'>
+CONFIG_LIBNVDIMM                                policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_LOCK_DOWN_IN_SECURE_BOOT                 policy<{'arm64': 'n'}> note<'Must-Be-Disabled, LP: #2053147'>
+CONFIG_LOG_BUF_SHIFT                            policy<{'arm64': '17'}> note<'Parent-Override, Must-Be-17'>
+CONFIG_LSM                                      policy<{'arm64': '"landlock,yama,integrity,apparmor"'}> note<'Parent-Override'>
+CONFIG_MBOX_RP1                                 policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_MCTP                                     policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_MDIO_BITBANG                             policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_MEGARAID_NEWGEN                          policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_MELLANOX_PLATFORM                        policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_MEMORY_FAILURE                           policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_MEMORY_HOTPLUG                           policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_MFD_88PM860X                             policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_MFD_88PM886_PMIC                         policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_MFD_AAT2870_CORE                         policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_MFD_AS3711                               policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_MFD_AS3722                               policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_MFD_CS47L15                              policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_MFD_CS47L24                              policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_MFD_CS47L35                              policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_MFD_CS47L85                              policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_MFD_CS47L90                              policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_MFD_CS47L92                              policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_MFD_DA9052_I2C                           policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_MFD_DA9052_SPI                           policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_MFD_DA9055                               policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_MFD_DA9063                               policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_MFD_LOCHNAGAR                            policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_MFD_LP8788                               policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_MFD_MAX14577                             policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_MFD_MAX77620                             policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_MFD_MAX77686                             policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_MFD_MAX77693                             policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_MFD_MAX77843                             policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_MFD_MAX8925                              policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_MFD_MAX8997                              policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_MFD_MAX8998                              policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_MFD_PALMAS                               policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_MFD_RASPBERRYPI_POE_HAT                  policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_MFD_RC5T583                              policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_MFD_RP1                                  policy<{'arm64': 'y'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Must-Be-Enabled'>
+CONFIG_MFD_STMPE                                policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_MFD_TC3589X                              policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_MFD_TPS65090                             policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_MFD_TPS6586X                             policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_MFD_TPS65910                             policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_MFD_TPS65912                             policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_MFD_TPS65912_I2C                         policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_MFD_TPS65912_SPI                         policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_MFD_WM5110                               policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_MFD_WM831X_I2C                           policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_MFD_WM831X_SPI                           policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_MFD_WM8350_I2C                           policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_MFD_WM8400                               policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_MFD_WM8997                               policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_MFD_WM8998                               policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_MHP_DEFAULT_ONLINE_TYPE_OFFLINE          policy<{'arm64': '-'}> note<'Parent-Note-Override, LP: #2051835'>
+CONFIG_MHP_MEMMAP_ON_MEMORY                     policy<{'arm64': '-'}> note<'Parent-Note-Override, LP: #2051835'>
+CONFIG_MMC_ARMMMCI                              policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_MMC_BCM2835                              policy<{'arm64': 'y'}> note<'Not-In-Parent, Must-Be-Enabled, LP: #2106230'>
+CONFIG_MMC_BCM2835_DMA                          policy<{'arm64': 'y'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Must-Be-Enabled'>
+CONFIG_MMC_BCM2835_MMC                          policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_MMC_BCM2835_PIO_DMA_BARRIER              policy<{'arm64': '2'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Default'>
+CONFIG_MMC_BLOCK_MINORS                         policy<{'arm64': '32'}> note<'Parent-Override, Must-Be-32'>
+CONFIG_MMC_HSQ                                  policy<{'arm64': 'y'}> note<'Parent-Override, Must-Be-Enabled'>
+CONFIG_MMC_SDHCI                                policy<{'arm64': 'y'}> note<'Parent-Override, Must-Be-Enabled'>
+CONFIG_MMC_SDHCI_BRCMSTB                        policy<{'arm64': 'm'}> note<'Not-In-Parent, Can-Be-Module'>
+CONFIG_MMC_SDHCI_IPROC                          policy<{'arm64': 'y'}> note<'Not-In-Parent, Must-Be-Enabled'>
+CONFIG_MMC_SDHCI_PLTFM                          policy<{'arm64': 'y'}> note<'Parent-Override, Must-Be-Enabled'>
+CONFIG_MTD_NAND_ECC_MXIC                        policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_MTD_PHYSMAP_OF                           policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_MV_XOR_V2                                policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_NET_DROP_MONITOR                         policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_NET_DSA_SJA1105_TAS                      policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_NET_FAILOVER                             policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_NET_FC                                   policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_NET_NCSI                                 policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_NET_TC_SKB_EXT                           policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_NLS_ASCII                                policy<{'arm64': 'y'}> note<'Parent-Override, Must-Be-Enabled'>
+CONFIG_NR_CPUS                                  policy<{'arm64': '16'}> note<'Parent-Override, Must-Be-16'>
+CONFIG_NUMA_BALANCING                           policy<{'arm64': 'y', 'arm64-raspi': 'n', 'arm64-raspi-realtime': '-'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_NUMA_BALANCING_DEFAULT_ENABLED           policy<{'arm64': '-'}> note<'Parent-Note-Override'>
+CONFIG_NVMEM_RASPBERRYPI_OTP                    policy<{'arm64': 'y'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Must-Be-Enabled'>
+CONFIG_NVME_MULTIPATH                           policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_OF_CONFIGFS                              policy<{'arm64': 'y'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Must-Be-Enabled'>
+CONFIG_OSF_PARTITION                            policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
 CONFIG_OSNOISE_TRACER                           policy<{'arm64': 'n', 'arm64-raspi-realtime': 'y'}> note<'LP: #1961588'>
-CONFIG_PARPORT_1284                             policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_PARPORT_PC_FIFO                          policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_PC104                                    policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_PCIE_AL                                  policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_PCIE_ALTERA                              policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_PCIE_BRCMSTB                             policy<{'arm64': 'y'}> note<'Required for Pi (not in master)'>
-CONFIG_PCIE_CADENCE_PLAT_HOST                   policy<{'arm64': 'n'}> note<'Not supported on Pi (different from master)'>
-CONFIG_PCIE_DW_PLAT_HOST                        policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_PCIE_KIRIN                               policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_PCIE_MICROCHIP_HOST                      policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_PCIE_XILINX                              policy<{'arm64': 'n'}> note<'Not supported on Pi (different from master)'>
-CONFIG_PCI_ENDPOINT                             policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_PCI_FTPCI100                             policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_PCI_HISI                                 policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_PCI_HOST_GENERIC                         policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
-CONFIG_PCI_HOST_THUNDER_ECAM                    policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_PCI_HOST_THUNDER_PEM                     policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_PCI_XGENE                                policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_PCS_LYNX                                 policy<{'arm64': 'm'}> note<'Required for Pi (different from master)'>
-CONFIG_PHY_BRCM_SATA                            policy<{'arm64': 'm'}> note<'Required for Pi (not in master)'>
-CONFIG_PHY_BRCM_USB                             policy<{'arm64': 'm'}> note<'Required for Pi (not in master)'>
-CONFIG_PINCTRL_AS3722                           policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
-CONFIG_PINCTRL_BCM2712                          policy<{'arm64': 'y'}> note<'Required for Pi (not in master)'>
-CONFIG_PINCTRL_BCM2835                          policy<{'arm64': 'y'}> note<'Required for Pi (not in master)'>
-CONFIG_PINCTRL_BRCMSTB                          policy<{'arm64': 'y'}> note<'Required for Pi (not in master)'>
-CONFIG_PINCTRL_MICROCHIP_SGPIO                  policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
-CONFIG_PINCTRL_OCELOT                           policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_PINCTRL_PALMAS                           policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
-CONFIG_PINCTRL_RP1                              policy<{'arm64': 'y'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_PINCTRL_SX150X                           policy<{'arm64': 'n'}> note<'Not supported on Pi (different from master)'>
-CONFIG_PL320_MBOX                               policy<{'arm64': 'n'}> note<'Not supported on Pi (different from master)'>
-CONFIG_PMIC_ADP5520                             policy<{'arm64': 'n'}> note<'Not supported on Pi (different from master)'>
-CONFIG_PMIC_DA903X                              policy<{'arm64': 'n'}> note<'Not supported on Pi (different from master)'>
-CONFIG_POWERCAP                                 policy<{'arm64': 'n'}> note<'Not supported on Pi (different from master)'>
-CONFIG_POWER_RESET_AS3722                       policy<{'arm64': 'n'}> note<'Not supported on Pi (different from master)'>
-CONFIG_POWER_RESET_BRCMSTB                      policy<{'arm64': 'n'}> note<'Required for Pi (not in master)'>
-CONFIG_POWER_RESET_GPIO_RESTART                 policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_POWER_RESET_LTC2952                      policy<{'arm64': 'n'}> note<'Not supported on Pi (different from master)'>
-CONFIG_POWER_RESET_MT6323                       policy<{'arm64': 'n'}> note<'Not supported on Pi (different from master)'>
-CONFIG_POWER_RESET_REGULATOR                    policy<{'arm64': 'n'}> note<'Not supported on Pi (different from master)'>
-CONFIG_POWER_RESET_RESTART                      policy<{'arm64': 'n'}> note<'Not supported on Pi (different from master)'>
-CONFIG_POWER_RESET_SYSCON                       policy<{'arm64': 'n'}> note<'Not supported on Pi (different from master)'>
-CONFIG_POWER_RESET_SYSCON_POWEROFF              policy<{'arm64': 'n'}> note<'Not supported on Pi (different from master)'>
-CONFIG_POWER_RESET_TPS65086                     policy<{'arm64': 'n'}> note<'Not supported on Pi (different from master)'>
-CONFIG_PPP                                      policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
-CONFIG_PREEMPT                                  policy<{'arm64': 'n'}> note<'Upstream recommends LAZY for distros'>
+CONFIG_PARPORT_1284                             policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_PARPORT_PC_FIFO                          policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_PC104                                    policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_PCIE_AL                                  policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_PCIE_ALTERA                              policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_PCIE_BRCMSTB                             policy<{'arm64': 'y'}> note<'Not-In-Parent, Must-Be-Enabled'>
+CONFIG_PCIE_CADENCE_PLAT_HOST                   policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_PCIE_DW_PLAT_HOST                        policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_PCIE_KIRIN                               policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_PCIE_MICROCHIP_HOST                      policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_PCIE_XILINX                              policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_PCI_ENDPOINT                             policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_PCI_FTPCI100                             policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_PCI_HISI                                 policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_PCI_HOST_GENERIC                         policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_PCI_HOST_THUNDER_ECAM                    policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_PCI_HOST_THUNDER_PEM                     policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_PCI_XGENE                                policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_PCS_LYNX                                 policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_PHY_BRCM_SATA                            policy<{'arm64': 'm'}> note<'Not-In-Parent, Can-Be-Module'>
+CONFIG_PHY_BRCM_USB                             policy<{'arm64': 'm'}> note<'Not-In-Parent, Can-Be-Module'>
+CONFIG_PINCTRL_AS3722                           policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_PINCTRL_BCM2712                          policy<{'arm64': 'y'}> note<'Not-In-Parent, Must-Be-Enabled'>
+CONFIG_PINCTRL_BCM2835                          policy<{'arm64': 'y'}> note<'Not-In-Parent, Must-Be-Enabled'>
+CONFIG_PINCTRL_BRCMSTB                          policy<{'arm64': 'y'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Must-Be-Enabled'>
+CONFIG_PINCTRL_MICROCHIP_SGPIO                  policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_PINCTRL_OCELOT                           policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_PINCTRL_PALMAS                           policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_PINCTRL_RP1                              policy<{'arm64': 'y'}> note<'Parent-Override, Must-Be-Enabled'>
+CONFIG_PINCTRL_SX150X                           policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_PL320_MBOX                               policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_PMIC_ADP5520                             policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_PMIC_DA903X                              policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_POWERCAP                                 policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_POWER_RESET_AS3722                       policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_POWER_RESET_BRCMSTB                      policy<{'arm64': 'n'}> note<'Not-In-Parent, Can-Be-Disabled'>
+CONFIG_POWER_RESET_GPIO_RESTART                 policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_POWER_RESET_LTC2952                      policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_POWER_RESET_MT6323                       policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_POWER_RESET_REGULATOR                    policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_POWER_RESET_RESTART                      policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_POWER_RESET_SYSCON                       policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_POWER_RESET_SYSCON_POWEROFF              policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_POWER_RESET_TPS65086                     policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_PPP                                      policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_PREEMPT                                  policy<{'arm64': 'n'}> note<'Parent-Override, Upstream recommends LAZY for distros'>
 CONFIG_PREEMPT_DYNAMIC                          policy<{'arm64': 'y', 'arm64-raspi-realtime': 'n'}> note<'LP: #1890808, LP: #2138734'>
-CONFIG_PREEMPT_LAZY                             policy<{'arm64': 'y'}> note<'Upstream recommends LAZY for distros'>
-CONFIG_PREEMPT_NONE                             policy<{'arm64': '-'}> note<'Upstream recommends LAZY for distros'>
+CONFIG_PREEMPT_LAZY                             policy<{'arm64': 'y'}> note<'Parent-Override, Upstream recommends LAZY for distros'>
+CONFIG_PREEMPT_NONE                             policy<{'arm64': '-'}> note<'Parent-Override, Upstream recommends LAZY for distros'>
 CONFIG_PREEMPT_RT                               policy<{'arm64': 'n', 'arm64-raspi-realtime': 'y'}> note<'LP: #2138734'>
-CONFIG_PREEMPT_RT_NEEDS_BH_LOCK                 policy<{'arm64-raspi-realtime': 'n'}> note<'Required for realtime (not in master)'>
-CONFIG_PREEMPT_VOLUNTARY                        policy<{'arm64': '-'}> note<'Upstream recommends LAZY for distros'>
-CONFIG_PVPANIC                                  policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_PWM_BCM2835                              policy<{'arm64': 'm'}> note<'Required for Pi (not in master)'>
-CONFIG_PWM_BRCMSTB                              policy<{'arm64': 'm'}> note<'Required for Pi (not in master)'>
-CONFIG_PWM_PIO_RP1                              policy<{'arm64': 'm'}> note<'Required for Pi (not in master)'>
-CONFIG_PWM_RASPBERRYPI_POE                      policy<{'arm64': 'm'}> note<'Required for Pi (not in master)'>
-CONFIG_PWM_RP1                                  policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_PWM_STMPE                                policy<{'arm64': 'n'}> note<'Not supported on Pi (different from master)'>
-CONFIG_PWRSEQ_EMMC                              policy<{'arm64': 'y'}> note<'Different from master'>
-CONFIG_PWRSEQ_SIMPLE                            policy<{'arm64': 'y'}> note<'Different from master'>
-CONFIG_QUICC_ENGINE                             policy<{'arm64': 'n'}> note<'Not supported on Pi (different from master)'>
-CONFIG_RANDOMIZE_KSTACK_OFFSET_DEFAULT          policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_RAPIDIO                                  policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_RASPBERRYPI_FIRMWARE                     policy<{'arm64': 'y'}> note<'Required for Pi (not in master)'>
-CONFIG_RASPBERRYPI_GPIOMEM                      policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_RASPBERRYPI_POWER                        policy<{'arm64': 'y'}> note<'Required for Pi (not in master)'>
-CONFIG_RCU_BOOST                                policy<{'arm64-raspi-realtime': 'y'}> note<'Required for realtime (not in master)'>
-CONFIG_RCU_BOOST_DELAY                          policy<{'arm64-raspi-realtime': '500'}> note<'Required for realtime (not in master)'>
-CONFIG_RCU_CPU_STALL_TIMEOUT                    policy<{'arm64': '21'}> note<'Different from master'>
+CONFIG_PREEMPT_RT_NEEDS_BH_LOCK                 policy<{'arm64-raspi-realtime': 'n'}> note<'LP: #2138734'>
+CONFIG_PREEMPT_VOLUNTARY                        policy<{'arm64': '-'}> note<'Parent-Override, Upstream recommends LAZY for distros'>
+CONFIG_PVPANIC                                  policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_PWM_BCM2835                              policy<{'arm64': 'm'}> note<'Not-In-Parent, Can-Be-Module'>
+CONFIG_PWM_BRCMSTB                              policy<{'arm64': 'm'}> note<'Not-In-Parent, Can-Be-Module'>
+CONFIG_PWM_PIO_RP1                              policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_PWM_RASPBERRYPI_POE                      policy<{'arm64': 'm'}> note<'Not-In-Parent, Can-Be-Module'>
+CONFIG_PWM_RP1                                  policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_PWM_STMPE                                policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_PWRSEQ_EMMC                              policy<{'arm64': 'y'}> note<'Parent-Override, Must-Be-Enabled'>
+CONFIG_PWRSEQ_SIMPLE                            policy<{'arm64': 'y'}> note<'Parent-Override, Must-Be-Enabled'>
+CONFIG_QUICC_ENGINE                             policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_RANDOMIZE_KSTACK_OFFSET_DEFAULT          policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_RAPIDIO                                  policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_RASPBERRYPI_FIRMWARE                     policy<{'arm64': 'y'}> note<'Not-In-Parent, Must-Be-Enabled'>
+CONFIG_RASPBERRYPI_GPIOMEM                      policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_RASPBERRYPI_POWER                        policy<{'arm64': 'y'}> note<'Not-In-Parent, Must-Be-Enabled'>
+CONFIG_RCU_BOOST                                policy<{'arm64-raspi-realtime': 'y'}> note<'LP: #2138734'>
+CONFIG_RCU_BOOST_DELAY                          policy<{'arm64-raspi-realtime': '500'}> note<'LP: #2138734'>
+CONFIG_RCU_CPU_STALL_TIMEOUT                    policy<{'arm64': '21'}> note<'Parent-Override, Must-Be-21'>
 CONFIG_RCU_LAZY                                 policy<{'arm64': 'y', 'arm64-raspi-realtime': 'n'}> note<'LP: #2051342'>
 CONFIG_RCU_LAZY_DEFAULT_OFF                     policy<{'arm64': 'y', 'arm64-raspi-realtime': '-'}> note<'LP: #2051342'>
-CONFIG_RCU_NOCB_CPU_CB_BOOST                    policy<{'arm64-raspi-realtime': 'y'}> note<'Required for realtime (not in master)'>
-CONFIG_RC_CORE                                  policy<{'arm64': 'y'}> note<'Required for Pi (different from master)'>
-CONFIG_REGMAP_SPI                               policy<{'arm64': 'm'}> note<'Required for Pi (different from master)'>
-CONFIG_REGULATOR_FIXED_VOLTAGE                  policy<{'arm64': 'y'}> note<'Required for Pi (different from master)'>
-CONFIG_REGULATOR_GPIO                           policy<{'arm64': 'y'}> note<'Required for Pi (different from master)'>
-CONFIG_REGULATOR_TWL4030                        policy<{'arm64': '-'}> note<'Master note override'>
-CONFIG_REGULATOR_WAVESHARE_TOUCHSCREEN          policy<{'arm64': 'm'}> note<'Required for Pi (not in master)'>
-CONFIG_REMOTEPROC                               policy<{'arm64': 'n'}> note<'Not supported on Pi (different from master)'>
-CONFIG_RESET_ATTACK_MITIGATION                  policy<{'arm64': 'n'}> note<'Different from master (LP: #2053147)'>
-CONFIG_RESET_BRCMSTB                            policy<{'arm64': 'm'}> note<'Required for Pi (not in master)'>
-CONFIG_RESET_BRCMSTB_RESCAL                     policy<{'arm64': 'm'}> note<'Required for Pi (not in master)'>
-CONFIG_RESET_RASPBERRYPI                        policy<{'arm64': 'y'}> note<'Required for Pi (not in master)'>
-CONFIG_RFKILL                                   policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
-CONFIG_ROCKCHIP_ERRATUM_3588001                 policy<{'arm64': 'n'}> note<'Not essential on Pi (different from master)'>
-CONFIG_RP1_PIO                                  policy<{'arm64': 'm'}> note<'Required for Pi (not in master)'>
-CONFIG_RPI_AXIPERF                              policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_RPI_POE_POWER                            policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_RTC_DRV_BRCMSTB                          policy<{'arm64': 'm'}> note<'Required for Pi (not in master)'>
-CONFIG_RTC_DRV_EFI                              policy<{'arm64': 'm'}> note<'Different from master (LP: #2053147)'>
-CONFIG_RTC_DRV_RPI                              policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_RTC_DRV_TWL4030                          policy<{'arm64': '-'}> note<'Master note override'>
-CONFIG_RUST                                     policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
-CONFIG_RV                                       policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
-CONFIG_SAMPLES                                  policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_SAMPLE_TRACE_PRINTK                      policy<{'arm64': '-'}> note<'Master note override'>
-CONFIG_SCSI_SPI_ATTRS                           policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
-CONFIG_SCSI_SYM53C8XX_2                         policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
-CONFIG_SCSI_VIRTIO                              policy<{'arm64': 'm'}> note<'Required for Pi (different from master)'>
-CONFIG_SECURITY_INFINIBAND                      policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_SENSORS_LIS3_SPI                         policy<{'arm64': 'm'}> note<'Required for Pi (different from master)'>
-CONFIG_SENSORS_RASPBERRYPI_HWMON                policy<{'arm64': 'm'}> note<'Required for Pi (not in master)'>
-CONFIG_SENSORS_RP1_ADC                          policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_SERIAL_8250_BCM2835AUX                   policy<{'arm64': 'y'}> note<'Required for Pi (not in master)'>
-CONFIG_SERIAL_8250_BCM7271                      policy<{'arm64': 'm'}> note<'Required for Pi (not in master)'>
-CONFIG_SERIAL_8250_DMA                          policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
-CONFIG_SERIAL_8250_DW                           policy<{'arm64': 'm'}> note<'Required for Pi (different from master)'>
-CONFIG_SERIAL_8250_FINTEK                       policy<{'arm64': 'n'}> note<'Not supported on Pi (different from master)'>
-CONFIG_SERIAL_8250_RUNTIME_UARTS                policy<{'arm64': '0'}> note<'Required for Pi (different from master)'>
-CONFIG_SERIAL_MAX310X                           policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
-CONFIG_SERIAL_RPI_FW                            policy<{'arm64': 'm'}> note<'Required for Pi (not in master)'>
-CONFIG_SERIAL_SCCNXP                            policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
-CONFIG_SERIAL_SH_SCI                            policy<{'arm64': '-'}> note<'Master note override'>
-CONFIG_SERIAL_SH_SCI_CONSOLE                    policy<{'arm64': '-'}> note<'Master note override'>
-CONFIG_SERIAL_SH_SCI_EARLYCON                   policy<{'arm64': '-'}> note<'Master note override'>
-CONFIG_SERIO                                    policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
-CONFIG_SERIO_LIBPS2                             policy<{'arm64': 'm'}> note<'Different from master'>
-CONFIG_SGI_PARTITION                            policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
-CONFIG_SHADOW_CALL_STACK                        policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_SHUFFLE_PAGE_ALLOCATOR                   policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_SLHC                                     policy<{'arm64': 'm'}> note<'Required for Pi (different from master)'>
-CONFIG_SMC91X                                   policy<{'arm64': 'm'}> note<'Required for Pi (different from master)'>
-CONFIG_SND_AUDIOINJECTOR_ISOLATED_SOUNDCARD     policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_SND_AUDIOINJECTOR_OCTO_SOUNDCARD         policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_SND_AUDIOINJECTOR_PI_SOUNDCARD           policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_SND_AUDIOSENSE_PI                        policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_SND_BCM2708_SOC_ADAU1977_ADC             policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_SND_BCM2708_SOC_ALLO_BOSS2_DAC           policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_SND_BCM2708_SOC_ALLO_BOSS_DAC            policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_SND_BCM2708_SOC_ALLO_DIGIONE             policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_SND_BCM2708_SOC_ALLO_KATANA_DAC          policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_SND_BCM2708_SOC_ALLO_PIANO_DAC           policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_SND_BCM2708_SOC_ALLO_PIANO_DAC_PLUS      policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_SND_BCM2708_SOC_CHIPDIP_DAC              policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_SND_BCM2708_SOC_DIONAUDIO_LOCO           policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_SND_BCM2708_SOC_DIONAUDIO_LOCO_V2        policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_SND_BCM2708_SOC_FE_PI_AUDIO              policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_SND_BCM2708_SOC_GOOGLEVOICEHAT_SOUNDCARD policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_SND_BCM2708_SOC_HIFIBERRY_ADC            policy<{'arm64': 'm'}> note<'Required for Pi (not in master)'>
-CONFIG_SND_BCM2708_SOC_HIFIBERRY_ADC8X          policy<{'arm64': 'm'}> note<'Required for Pi (not in master)'>
-CONFIG_SND_BCM2708_SOC_HIFIBERRY_AMP            policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_SND_BCM2708_SOC_HIFIBERRY_DAC            policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_SND_BCM2708_SOC_HIFIBERRY_DACPLUS        policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_SND_BCM2708_SOC_HIFIBERRY_DACPLUSADC     policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_SND_BCM2708_SOC_HIFIBERRY_DACPLUSADCPRO  policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_SND_BCM2708_SOC_HIFIBERRY_DACPLUSDSP     policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_SND_BCM2708_SOC_HIFIBERRY_DACPLUSHD      policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_SND_BCM2708_SOC_HIFIBERRY_DIGI           policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_SND_BCM2708_SOC_HIFIBERRY_STUDIO_DAC8X   policy<{'arm64': 'm'}> note<'Required for Pi (not in master)'>
-CONFIG_SND_BCM2708_SOC_IQAUDIO_CODEC            policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_SND_BCM2708_SOC_IQAUDIO_DAC              policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_SND_BCM2708_SOC_IQAUDIO_DIGI             policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_SND_BCM2708_SOC_I_SABRE_Q2M              policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_SND_BCM2708_SOC_JUSTBOOM_BOTH            policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_SND_BCM2708_SOC_JUSTBOOM_DAC             policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_SND_BCM2708_SOC_JUSTBOOM_DIGI            policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_SND_BCM2708_SOC_PIFI_40                  policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_SND_BCM2708_SOC_RPI_CIRRUS               policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_SND_BCM2708_SOC_RPI_DAC                  policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_SND_BCM2708_SOC_RPI_PROTO                policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_SND_BCM2835                              policy<{'arm64': 'm'}> note<'Required for Pi (not in master)'>
-CONFIG_SND_BCM2835_SOC_I2S                      policy<{'arm64': 'm'}> note<'Required for Pi (not in master)'>
-CONFIG_SND_DACBERRY400                          policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_SND_DIGIDAC1_SOUNDCARD                   policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_SND_PIMIDI                               policy<{'arm64': 'm'}> note<'Required for Pi (not in master)'>
-CONFIG_SND_PISOUND                              policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_SND_PISOUND_MICRO                        policy<{'arm64': 'm'}> note<'Required for Pi (not in master)'>
-CONFIG_SND_RP1_AUDIO_OUT                        policy<{'arm64': 'm'}> note<'Required for Pi (not in master)'>
-CONFIG_SND_RPI_SIMPLE_SOUNDCARD                 policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_SND_RPI_WM8804_SOUNDCARD                 policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_SND_SOC_AD193X                           policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_SND_SOC_AD193X_I2C                       policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_SND_SOC_AD193X_SPI                       policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_SND_SOC_ADAU1977                         policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_SND_SOC_ADAU1977_I2C                     policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_SND_SOC_I_SABRE_CODEC                    policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_SND_SOC_MA120X0P                         policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_SND_SOC_PCM1794A                         policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_SND_SOC_TAS5713                          policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_SND_SOC_WM5102                           policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_SOC_BRCMSTB                              policy<{'arm64': 'y'}> note<'Required for Pi (not in master)'>
-CONFIG_SOC_TI                                   policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_SOFTLOCKUP_DETECTOR                      policy<{'arm64': 'n'}> note<'Not supported on Pi (different from master)'>
-CONFIG_SOUND                                    policy<{'arm64': 'y'}> note<'Required for Pi (different from master)'>
-CONFIG_SPI_BCM2835                              policy<{'arm64': 'm'}> note<'Required for Pi (not in master)'>
-CONFIG_SPI_BCM2835AUX                           policy<{'arm64': 'm'}> note<'Required for Pi (not in master)'>
-CONFIG_SPI_BCM_QSPI                             policy<{'arm64': 'm'}> note<'Required for Pi (not in master)'>
-CONFIG_SPI_FSL_LIB                              policy<{'arm64': 'm'}> note<'Required for Pi (different from master)'>
-CONFIG_SPI_FSL_SPI                              policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
-CONFIG_SPI_RP2040_GPIO_BRIDGE                   policy<{'arm64': 'm'}> note<'Required for Pi (not in master)'>
-CONFIG_STMPE_I2C                                policy<{'arm64': 'm'}> note<'Not required on Pi (different from master)'>
-CONFIG_STMPE_SPI                                policy<{'arm64': 'm'}> note<'Not required on Pi (different from master)'>
-CONFIG_SUN_PARTITION                            policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
-CONFIG_SURFACE_PLATFORMS                        policy<{'arm64': 'n'}> note<'Required for Pi (different from master)'>
-CONFIG_SUSPEND                                  policy<{'arm64': 'n'}> note<'Required for Pi (different from master)'>
-CONFIG_SWIOTLB_DYNAMIC                          policy<{'arm64': 'n'}> note<'Disabled for Pi (prevent vc4 compile error)'>
-CONFIG_SW_SYNC                                  policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
-CONFIG_SYSV68_PARTITION                         policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
-CONFIG_TCG_TIS                                  policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
-CONFIG_TCG_TIS_CORE                             policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
-CONFIG_TCG_TIS_SPI                              policy<{'arm64': 'm'}> note<'Required for Pi (different from master)'>
+CONFIG_RCU_NOCB_CPU_CB_BOOST                    policy<{'arm64-raspi-realtime': 'y'}> note<'LP: #2138734'>
+CONFIG_RC_CORE                                  policy<{'arm64': 'y'}> note<'Parent-Override, Must-Be-Enabled'>
+CONFIG_REGMAP_SPI                               policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_REGULATOR_FIXED_VOLTAGE                  policy<{'arm64': 'y'}> note<'Parent-Override, Must-Be-Enabled'>
+CONFIG_REGULATOR_GPIO                           policy<{'arm64': 'y'}> note<'Parent-Override, Must-Be-Enabled'>
+CONFIG_REGULATOR_TWL4030                        policy<{'arm64': '-'}> note<'Parent-Note-Override'>
+CONFIG_REGULATOR_WAVESHARE_TOUCHSCREEN          policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_REMOTEPROC                               policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_RESET_ATTACK_MITIGATION                  policy<{'arm64': 'n'}> note<'Must-Be-Disabled, LP: #2053147'>
+CONFIG_RESET_BRCMSTB                            policy<{'arm64': 'm'}> note<'Not-In-Parent, Can-Be-Module'>
+CONFIG_RESET_BRCMSTB_RESCAL                     policy<{'arm64': 'm'}> note<'Not-In-Parent, Can-Be-Module'>
+CONFIG_RESET_RASPBERRYPI                        policy<{'arm64': 'y'}> note<'Not-In-Parent, Must-Be-Enabled'>
+CONFIG_RFKILL                                   policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_ROCKCHIP_ERRATUM_3588001                 policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_RP1_PIO                                  policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_RPI_AXIPERF                              policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_RPI_POE_POWER                            policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_RTC_DRV_BRCMSTB                          policy<{'arm64': 'm'}> note<'Not-In-Parent, Can-Be-Module'>
+CONFIG_RTC_DRV_EFI                              policy<{'arm64': 'm'}> note<'Must-Be-Module, LP: #2053147'>
+CONFIG_RTC_DRV_RPI                              policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_RTC_DRV_TWL4030                          policy<{'arm64': '-'}> note<'Parent-Note-Override'>
+CONFIG_RUST                                     policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_RV                                       policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_SAMPLES                                  policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_SAMPLE_TRACE_PRINTK                      policy<{'arm64': '-'}> note<'Parent-Note-Override'>
+CONFIG_SCSI_SPI_ATTRS                           policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_SCSI_SYM53C8XX_2                         policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_SCSI_VIRTIO                              policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_SECURITY_INFINIBAND                      policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_SENSORS_LIS3_SPI                         policy<{'arm64': 'm'}> note<'Not-In-Parent, Can-Be-Module'>
+CONFIG_SENSORS_RASPBERRYPI_HWMON                policy<{'arm64': 'm'}> note<'Not-In-Parent, Can-Be-Module'>
+CONFIG_SENSORS_RP1_ADC                          policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_SERIAL_8250_BCM2835AUX                   policy<{'arm64': 'y'}> note<'Not-In-Parent, Must-Be-Enabled'>
+CONFIG_SERIAL_8250_BCM7271                      policy<{'arm64': 'm'}> note<'Not-In-Parent, Can-Be-Module'>
+CONFIG_SERIAL_8250_DMA                          policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_SERIAL_8250_DW                           policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_SERIAL_8250_FINTEK                       policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_SERIAL_8250_RUNTIME_UARTS                policy<{'arm64': '0'}> note<'Parent-Override, Must-Be-0'>
+CONFIG_SERIAL_MAX310X                           policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_SERIAL_RPI_FW                            policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_SERIAL_SCCNXP                            policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_SERIAL_SH_SCI                            policy<{'arm64': '-'}> note<'Parent-Note-Override'>
+CONFIG_SERIAL_SH_SCI_CONSOLE                    policy<{'arm64': '-'}> note<'Parent-Note-Override'>
+CONFIG_SERIAL_SH_SCI_EARLYCON                   policy<{'arm64': '-'}> note<'Parent-Note-Override'>
+CONFIG_SERIO                                    policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_SERIO_LIBPS2                             policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_SGI_PARTITION                            policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_SHADOW_CALL_STACK                        policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_SHUFFLE_PAGE_ALLOCATOR                   policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_SLHC                                     policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_SMC91X                                   policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_SND_AUDIOINJECTOR_ISOLATED_SOUNDCARD     policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_SND_AUDIOINJECTOR_OCTO_SOUNDCARD         policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_SND_AUDIOINJECTOR_PI_SOUNDCARD           policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_SND_AUDIOSENSE_PI                        policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_SND_BCM2708_SOC_ADAU1977_ADC             policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_SND_BCM2708_SOC_ALLO_BOSS2_DAC           policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_SND_BCM2708_SOC_ALLO_BOSS_DAC            policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_SND_BCM2708_SOC_ALLO_DIGIONE             policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_SND_BCM2708_SOC_ALLO_KATANA_DAC          policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_SND_BCM2708_SOC_ALLO_PIANO_DAC           policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_SND_BCM2708_SOC_ALLO_PIANO_DAC_PLUS      policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_SND_BCM2708_SOC_CHIPDIP_DAC              policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_SND_BCM2708_SOC_DIONAUDIO_LOCO           policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_SND_BCM2708_SOC_DIONAUDIO_LOCO_V2        policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_SND_BCM2708_SOC_FE_PI_AUDIO              policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_SND_BCM2708_SOC_GOOGLEVOICEHAT_SOUNDCARD policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_SND_BCM2708_SOC_HIFIBERRY_ADC            policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_SND_BCM2708_SOC_HIFIBERRY_ADC8X          policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_SND_BCM2708_SOC_HIFIBERRY_AMP            policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_SND_BCM2708_SOC_HIFIBERRY_DAC            policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_SND_BCM2708_SOC_HIFIBERRY_DACPLUS        policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_SND_BCM2708_SOC_HIFIBERRY_DACPLUSADC     policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_SND_BCM2708_SOC_HIFIBERRY_DACPLUSADCPRO  policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_SND_BCM2708_SOC_HIFIBERRY_DACPLUSDSP     policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_SND_BCM2708_SOC_HIFIBERRY_DACPLUSHD      policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_SND_BCM2708_SOC_HIFIBERRY_DIGI           policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_SND_BCM2708_SOC_HIFIBERRY_STUDIO_DAC8X   policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_SND_BCM2708_SOC_IQAUDIO_CODEC            policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_SND_BCM2708_SOC_IQAUDIO_DAC              policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_SND_BCM2708_SOC_IQAUDIO_DIGI             policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_SND_BCM2708_SOC_I_SABRE_Q2M              policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_SND_BCM2708_SOC_JUSTBOOM_BOTH            policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_SND_BCM2708_SOC_JUSTBOOM_DAC             policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_SND_BCM2708_SOC_JUSTBOOM_DIGI            policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_SND_BCM2708_SOC_PIFI_40                  policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_SND_BCM2708_SOC_RPI_CIRRUS               policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_SND_BCM2708_SOC_RPI_DAC                  policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_SND_BCM2708_SOC_RPI_PROTO                policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_SND_BCM2835                              policy<{'arm64': 'm'}> note<'Not-In-Parent, Can-Be-Module'>
+CONFIG_SND_BCM2835_SOC_I2S                      policy<{'arm64': 'm'}> note<'Not-In-Parent, Can-Be-Module'>
+CONFIG_SND_DACBERRY400                          policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_SND_DIGIDAC1_SOUNDCARD                   policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_SND_PIMIDI                               policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_SND_PISOUND                              policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_SND_PISOUND_MICRO                        policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_SND_RP1_AUDIO_OUT                        policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_SND_RPI_SIMPLE_SOUNDCARD                 policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_SND_RPI_WM8804_SOUNDCARD                 policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_SND_SOC_AD193X                           policy<{'arm64': 'm'}> note<'Not-In-Parent, Can-Be-Module'>
+CONFIG_SND_SOC_AD193X_I2C                       policy<{'arm64': 'm'}> note<'Not-In-Parent, Can-Be-Module'>
+CONFIG_SND_SOC_AD193X_SPI                       policy<{'arm64': 'm'}> note<'Not-In-Parent, Can-Be-Module'>
+CONFIG_SND_SOC_ADAU1977                         policy<{'arm64': 'm'}> note<'Not-In-Parent, Can-Be-Module'>
+CONFIG_SND_SOC_ADAU1977_I2C                     policy<{'arm64': 'm'}> note<'Not-In-Parent, Can-Be-Module'>
+CONFIG_SND_SOC_I_SABRE_CODEC                    policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_SND_SOC_MA120X0P                         policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_SND_SOC_PCM1794A                         policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_SND_SOC_TAS5713                          policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_SND_SOC_WM5102                           policy<{'arm64': 'm'}> note<'Not-In-Parent, Can-Be-Module'>
+CONFIG_SOC_BRCMSTB                              policy<{'arm64': 'y'}> note<'Not-In-Parent, Must-Be-Enabled'>
+CONFIG_SOC_TI                                   policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_SOFTLOCKUP_DETECTOR                      policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_SOUND                                    policy<{'arm64': 'y'}> note<'Parent-Override, Must-Be-Enabled'>
+CONFIG_SPI_BCM2835                              policy<{'arm64': 'm'}> note<'Not-In-Parent, Can-Be-Module'>
+CONFIG_SPI_BCM2835AUX                           policy<{'arm64': 'm'}> note<'Not-In-Parent, Can-Be-Module'>
+CONFIG_SPI_BCM_QSPI                             policy<{'arm64': 'm'}> note<'Not-In-Parent, Can-Be-Module'>
+CONFIG_SPI_FSL_LIB                              policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_SPI_FSL_SPI                              policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_SPI_RP2040_GPIO_BRIDGE                   policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_STMPE_I2C                                policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_STMPE_SPI                                policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_SUN_PARTITION                            policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_SURFACE_PLATFORMS                        policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_SUSPEND                                  policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_SWIOTLB_DYNAMIC                          policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_SW_SYNC                                  policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_SYSV68_PARTITION                         policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_TCG_TIS                                  policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_TCG_TIS_CORE                             policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_TCG_TIS_SPI                              policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
 CONFIG_TIMERLAT_TRACER                          policy<{'arm64': 'n', 'arm64-raspi-realtime': 'y'}> note<'LP: #1961588'>
-CONFIG_TOUCHSCREEN_APPLE_Z2                     policy<{'arm64': '-'}> note<'Not available on Pi (master note override)'>
-CONFIG_TOUCHSCREEN_ILITEK_V3                    policy<{'arm64': 'm'}> note<'Required for Pi (not in master)'>
-CONFIG_TOUCHSCREEN_RASPBERRYPI_FW               policy<{'arm64': 'm'}> note<'Required for Pi (not in master)'>
-CONFIG_TUN                                      policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
-CONFIG_TWL4030_CORE                             policy<{'arm64': 'n'}> note<'Not supported on Pi (different from master)'>
-CONFIG_TWL6040_CORE                             policy<{'arm64': 'n'}> note<'Not supported on Pi (different from master)'>
-CONFIG_UCLAMP_TASK_GROUP                        policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_ULTRIX_PARTITION                         policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
-CONFIG_USB_BRCMSTB                              policy<{'arm64': 'm'}> note<'Required for Pi (not in master)'>
-CONFIG_USB_CHIPIDEA_HOST                        policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_USB_CHIPIDEA_UDC                         policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_USB_DWC2_DUAL_ROLE                       policy<{'arm64': 'y'}> note<'Required for Pi (not in master)'>
-CONFIG_USB_DWC2_HOST                            policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_USB_DWC2_PERIPHERAL                      policy<{'arm64': 'n'}> note<'Required for Pi (not in master)'>
-CONFIG_USB_DWCOTG                               policy<{'arm64': 'n'}> note<'Added by rpi-6.6.y patchset (LP: #2048861)'>
-CONFIG_USB_EHCI_BRCMSTB                         policy<{'arm64': 'm'}> note<'Required for Pi (not in master)'>
-CONFIG_USB_EHCI_HCD                             policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
-CONFIG_USB_EHCI_PCI                             policy<{'arm64': 'm'}> note<'Required for Pi (different from master)'>
-CONFIG_USB_ETH_EEM                              policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_USB_GADGET                               policy<{'arm64': 'y'}> note<'Required for Pi (not in master)'>
-CONFIG_USB_G_MULTI                              policy<{'arm64': 'm'}> note<'Required for Pi (different from master)'>
-CONFIG_USB_G_MULTI_CDC                          policy<{'arm64': 'n'}> note<'Required for Pi (not in master)'>
-CONFIG_USB_G_MULTI_RNDIS                        policy<{'arm64': 'y'}> note<'Required for Pi (not in master)'>
-CONFIG_USB_LAN78XX                              policy<{'arm64': 'y'}> note<'Required for Pi (different from master)'>
-CONFIG_USB_NET_DRIVERS                          policy<{'arm64': 'y'}> note<'Different from master'>
-CONFIG_USB_NET_SMSC95XX                         policy<{'arm64': 'y'}> note<'Required for Pi (different from master)'>
-CONFIG_USB_OHCI_HCD                             policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
-CONFIG_USB_OHCI_HCD_PCI                         policy<{'arm64': 'm'}> note<'Different from master'>
-CONFIG_USB_OHCI_HCD_SSB                         policy<{'arm64': 'n'}> note<'Required for Pi (not in master)'>
-CONFIG_USB_UHCI_HCD                             policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
-CONFIG_USB_ULPI                                 policy<{'arm64': 'n'}> note<'Not supported on Pi (different from master)'>
-CONFIG_USB_USBNET                               policy<{'arm64': 'y'}> note<'Required for Pi (different from master)'>
-CONFIG_USB_XHCI_DBGCAP                          policy<{'arm64': 'n'}> note<'Not desired on Pi (different from master)'>
-CONFIG_U_SERIAL_CONSOLE                         policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_VCHIQ_CDEV                               policy<{'arm64': 'y'}> note<'Required for Pi (not in master)'>
-CONFIG_VEXPRESS_CONFIG                          policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_VFIO_NOIOMMU                             policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_VIDEO_AD5398                             policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_VIDEO_ARDUCAM_64MP                       policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_VIDEO_ARDUCAM_PIVARIETY                  policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_VIDEO_BCM2835                            policy<{'arm64': 'm'}> note<'Required for Pi (not in master)'>
-CONFIG_VIDEO_BCM2835_UNICAM                     policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_VIDEO_BCM2835_UNICAM_LEGACY              policy<{'arm64': 'm'}> note<'Required for Pi (not in master)'>
-CONFIG_VIDEO_BU64754                            policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_VIDEO_CODEC_BCM2835                      policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_VIDEO_IMX477                             policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_VIDEO_IMX500                             policy<{'arm64': 'm'}> note<'Required for Pi (not in master)'>
-CONFIG_VIDEO_IMX519                             policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_VIDEO_IMX708                             policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_VIDEO_IRS1125                            policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_VIDEO_ISP_BCM2835                        policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_VIDEO_MIRA220                            policy<{'arm64': 'm'}> note<'Required for Pi (not in master)'>
-CONFIG_VIDEO_OV2311                             policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_VIDEO_RASPBERRYPI_PISP_BE                policy<{'arm64': 'm'}> note<'Added by rpi-6.6.y patchset'>
-CONFIG_VIDEO_RP1_CFE_DOWNSTREAM                 policy<{'arm64': 'm'}> note<'Required for Pi (not in master)'>
-CONFIG_VIDEO_RPI_HEVC_DEC                       policy<{'arm64': 'm'}> note<'Required for Pi (not in master)'>
-CONFIG_VIRTIO                                   policy<{'arm64': 'm'}> note<'Required for Pi (different from master)'>
-CONFIG_VIRTIO_BALLOON                           policy<{'arm64': 'm'}> note<'Required for Pi (different from master)'>
-CONFIG_VIRTIO_BLK                               policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
-CONFIG_VIRTIO_CONSOLE                           policy<{'arm64': 'm'}> note<'Required for Pi (different from master)'>
-CONFIG_VIRTIO_IOMMU                             policy<{'arm64': 'm'}> note<'Different from master'>
-CONFIG_VIRTIO_MMIO                              policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
-CONFIG_VIRTIO_MMIO_CMDLINE_DEVICES              policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_VIRTIO_NET                               policy<{'arm64': 'm'}> note<'Can be a module on Pi (different from master)'>
-CONFIG_VIRTIO_PCI                               policy<{'arm64': 'm'}> note<'LP: #1959102 (different from master)'>
-CONFIG_VIRTIO_PCI_LIB                           policy<{'arm64': 'm'}> note<'Required for Pi (different from master)'>
-CONFIG_VIRTIO_PCI_LIB_LEGACY                    policy<{'arm64': 'm'}> note<'Required for Pi (different from master)'>
-CONFIG_VME_BUS                                  policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_WATCHDOG_PRETIMEOUT_GOV_NOOP             policy<{'arm64': 'm'}> note<'Not essential on Pi (different from master)'>
+CONFIG_TOUCHSCREEN_APPLE_Z2                     policy<{'arm64': '-'}> note<'Parent-Note-Override'>
+CONFIG_TOUCHSCREEN_ILITEK_V3                    policy<{'arm64': 'm'}> note<'Not-In-Parent, Can-Be-Module'>
+CONFIG_TOUCHSCREEN_RASPBERRYPI_FW               policy<{'arm64': 'm'}> note<'Not-In-Parent, Can-Be-Module'>
+CONFIG_TUN                                      policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_TWL4030_CORE                             policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_TWL6040_CORE                             policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_UCLAMP_TASK_GROUP                        policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_ULTRIX_PARTITION                         policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_USB_BRCMSTB                              policy<{'arm64': 'm'}> note<'Not-In-Parent, Can-Be-Module'>
+CONFIG_USB_CHIPIDEA_HOST                        policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_USB_CHIPIDEA_UDC                         policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_USB_DWC2_DUAL_ROLE                       policy<{'arm64': 'y'}> note<'Not-In-Parent, Must-Be-Enabled'>
+CONFIG_USB_DWC2_HOST                            policy<{'arm64': 'n'}> note<'Parent-Override, Must-Be-Disabled'>
+CONFIG_USB_DWC2_PERIPHERAL                      policy<{'arm64': 'n'}> note<'Parent-Override, Must-Be-Disabled'>
+CONFIG_USB_DWCOTG                               policy<{'arm64': 'n'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Must-Be-Disabled, LP: #2048861'>
+CONFIG_USB_EHCI_BRCMSTB                         policy<{'arm64': 'm'}> note<'Not-In-Parent, Can-Be-Module'>
+CONFIG_USB_EHCI_HCD                             policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_USB_EHCI_PCI                             policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_USB_ETH_EEM                              policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_USB_GADGET                               policy<{'arm64': 'y'}> note<'Parent-Override, Must-Be-Enabled'>
+CONFIG_USB_G_MULTI                              policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_USB_G_MULTI_CDC                          policy<{'arm64': 'n'}> note<'Not-In-Parent, Can-Be-Disabled'>
+CONFIG_USB_G_MULTI_RNDIS                        policy<{'arm64': 'y'}> note<'Not-In-Parent, Must-Be-Enabled'>
+CONFIG_USB_LAN78XX                              policy<{'arm64': 'y'}> note<'Parent-Override, Must-Be-Enabled'>
+CONFIG_USB_NET_DRIVERS                          policy<{'arm64': 'y'}> note<'Parent-Override, Must-Be-Enabled'>
+CONFIG_USB_NET_SMSC95XX                         policy<{'arm64': 'y'}> note<'Parent-Override, Must-Be-Enabled'>
+CONFIG_USB_OHCI_HCD                             policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_USB_OHCI_HCD_PCI                         policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_USB_OHCI_HCD_SSB                         policy<{'arm64': 'n'}> note<'Not-In-Parent, Can-Be-Disabled'>
+CONFIG_USB_UHCI_HCD                             policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_USB_ULPI                                 policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_USB_USBNET                               policy<{'arm64': 'y'}> note<'Parent-Override, Must-Be-Enabled'>
+CONFIG_USB_XHCI_DBGCAP                          policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_U_SERIAL_CONSOLE                         policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_VCHIQ_CDEV                               policy<{'arm64': 'y'}> note<'Not-In-Parent, Must-Be-Enabled'>
+CONFIG_VEXPRESS_CONFIG                          policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_VFIO_NOIOMMU                             policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_VIDEO_AD5398                             policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_VIDEO_ARDUCAM_64MP                       policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_VIDEO_ARDUCAM_PIVARIETY                  policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_VIDEO_BCM2835                            policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_VIDEO_BCM2835_UNICAM                     policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_VIDEO_BCM2835_UNICAM_LEGACY              policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_VIDEO_BU64754                            policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_VIDEO_CODEC_BCM2835                      policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_VIDEO_IMX477                             policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_VIDEO_IMX500                             policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_VIDEO_IMX519                             policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_VIDEO_IMX708                             policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_VIDEO_IRS1125                            policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_VIDEO_ISP_BCM2835                        policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_VIDEO_MIRA220                            policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_VIDEO_OV2311                             policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_VIDEO_RASPBERRYPI_PISP_BE                policy<{'arm64': 'm'}> note<'Not-In-Parent, Can-Be-Module'>
+CONFIG_VIDEO_RP1_CFE_DOWNSTREAM                 policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_VIDEO_RPI_HEVC_DEC                       policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_VIRTIO                                   policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_VIRTIO_BALLOON                           policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_VIRTIO_BLK                               policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_VIRTIO_CONSOLE                           policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_VIRTIO_IOMMU                             policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_VIRTIO_MMIO                              policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_VIRTIO_MMIO_CMDLINE_DEVICES              policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_VIRTIO_NET                               policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_VIRTIO_PCI                               policy<{'arm64': 'm'}> note<'Must-Be-Module, LP: #1959102'>
+CONFIG_VIRTIO_PCI_LIB                           policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_VIRTIO_PCI_LIB_LEGACY                    policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
+CONFIG_VME_BUS                                  policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_WATCHDOG_PRETIMEOUT_GOV_NOOP             policy<{'arm64': 'm'}> note<'Parent-Override, Can-Be-Module'>
 CONFIG_WQ_POWER_EFFICIENT_DEFAULT               policy<{'arm64': 'y', 'arm64-raspi-realtime': 'n'}> note<'LP: #1961588'>
-CONFIG_WS2812_PIO_RP1                           policy<{'arm64': 'm'}> note<'Required for Pi (not in master)'>
-CONFIG_XEN                                      policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_XEN_BLKDEV_FRONTEND                      policy<{'arm64': '-'}> note<'Master note override'>
-CONFIG_XEN_NETDEV_FRONTEND                      policy<{'arm64': '-'}> note<'Master note override'>
-CONFIG_XILINX_INTC                              policy<{'arm64': 'n'}> note<'Different from master'>
-CONFIG_ZERO_CALL_USED_REGS                      policy<{'arm64': 'n'}> note<'Different from master'>
+CONFIG_WS2812_PIO_RP1                           policy<{'arm64': 'm'}> note<'Not-In-Parent, Added-By-Pi-Patchset, Can-Be-Module'>
+CONFIG_XEN                                      policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_XEN_BLKDEV_FRONTEND                      policy<{'arm64': '-'}> note<'Parent-Note-Override'>
+CONFIG_XEN_NETDEV_FRONTEND                      policy<{'arm64': '-'}> note<'Parent-Note-Override'>
+CONFIG_XILINX_INTC                              policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
+CONFIG_ZERO_CALL_USED_REGS                      policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
 
 # ---- Annotations without notes ----
 
