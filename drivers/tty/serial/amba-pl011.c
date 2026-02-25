@@ -645,6 +645,14 @@ static int pl011_dma_tx_refill(struct uart_amba_port *uap)
 			memcpy(&dmatx->dbuf.buf[first], &xmit->buf[0], second);
 	}
 
+	/*
+	 * Align the TX buffer length to the DMA controller's copy_align
+	 * requirements. Some DMA controllers (e.g., Tegra GPC DMA) require
+	 * word-aligned transfers. Unaligned bytes will be sent via PIO.
+	 */
+	if (chan->device->copy_align)
+		count = ALIGN_DOWN(count, 1 << chan->device->copy_align);
+
 	dmatx->dbuf.len = count;
 
 	desc = dmaengine_prep_slave_single(chan, dmatx->dbuf.dma, dmatx->dbuf.len, DMA_MEM_TO_DEV,
