@@ -2737,22 +2737,6 @@ DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ATI, 0x5a3f, quirk_disable_msi);
 DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_RDC, 0x1031, quirk_disable_msi);
 
 /*
- * ASPEED AST1150 PCIe-to-PCI bridge: Bug 5510907
- *
- * The AST1150 bridge violates the PCIe specification by not overriding the
- * Requester ID for MSI transactions from devices on its secondary (conventional
- * PCI) bus. Per the PCI Express to PCI/PCI-X Bridge Specification, a bridge
- * operating in conventional PCI mode must replace the Requester ID with
- * (Secondary Bus Number, Device 0, Function 0).
- *
- * Because the AST1150 passes through the original device's RID instead, the
- * GIC ITS programs the wrong DeviceID and MSI interrupts are silently dropped.
- * Disable MSI for all devices behind this bridge to force legacy INTx.
- */
-DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ASPEED, PCI_DEVICE_ID_ASPEED_AST1150,
-			quirk_disable_msi);
-
-/*
  * The APC bridge device in AMD 780 family northbridges has some random
  * OEM subsystem ID in its vendor ID register (erratum 18), so instead
  * we use the possible vendor/device IDs of the host bridge for the
