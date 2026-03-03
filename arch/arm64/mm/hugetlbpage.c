@@ -406,28 +406,24 @@ pte_t huge_ptep_get_and_clear(struct mm_struct *mm, unsigned long addr,
 }
 
 /*
- * huge_ptep_set_access_flags will update access flags (dirty, accesssed)
+ * huge_ptep_set_access_flags will update access flags (dirty, accessed)
  * and write permission.
  *
- * For a contiguous huge pte range we need to check whether or not write
- * permission has to change only on the first pte in the set. Then for
- * all the contiguous ptes we need to check whether or not there is a
- * discrepancy between dirty or young.
+ * Check all sub-PTEs' raw access flag bits rather than using the abstracted
+ * pte_dirty()/pte_young() helpers which conflate HW-dirty and SW-dirty.
+ * This ensures PTE_RDONLY is checked directly: a sub-PTE that is SW-dirty
+ * (PTE_DIRTY set) but still has PTE_RDONLY would be missed by pte_dirty()
+ * but will cause an SMMU without HTTU to keep faulting.  The access flag
+ * mask matches the one used by __ptep_set_access_flags().
  */
 static int __cont_access_flags_changed(pte_t *ptep, pte_t pte, int ncontig)
 {
+	const pteval_t access_mask = PTE_RDONLY | PTE_AF | PTE_WRITE | PTE_DIRTY;
+	pteval_t pte_access = pte_val(pte) & access_mask;
 	int i;
 
-	if (pte_write(pte) != pte_write(ptep_get(ptep)))
-		return 1;
-
 	for (i = 0; i < ncontig; i++) {
-		pte_t orig_pte = ptep_get(ptep + i);
-
-		if (pte_dirty(pte) != pte_dirty(orig_pte))
-			return 1;
-
-		if (pte_young(pte) != pte_young(orig_pte))
+		if ((pte_val(ptep_get(ptep + i)) & access_mask) != pte_access)
 			return 1;
 	}
 
