@@ -302,9 +302,15 @@ def do_check(args):
     c = KConfig(args.check_file)
     c_configs = c.config.keys()
 
+    # Get Rust setting
+    rust = a.search_config(config="CONFIG_RUST", arch=args.arch, flavour=args.flavour)
+    rust_disabled = (rust["CONFIG_RUST"] if rust else "n") == "n"
+
     # Validate .config against annotations
     for conf in sorted(a_configs | c_configs):
         if conf in SKIP_CONFIGS:
+            continue
+        if rust_disabled and conf.startswith("CONFIG_RUSTC_"):
             continue
         entry = a.search_config(config=conf, arch=args.arch, flavour=args.flavour)
         expected = entry[conf] if entry else "-"
