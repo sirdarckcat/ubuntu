@@ -113,7 +113,8 @@ void pci_msi_update_mask(struct msi_desc *desc, u32 clear, u32 set)
 	raw_spinlock_t *lock = &to_pci_dev(desc->dev)->msi_lock;
 	unsigned long flags;
 
-	if (!desc->pci.msi_attrib.can_mask)
+	if (!desc->pci.msi_attrib.can_mask ||
+	    unlikely(pci_dev_is_disconnected(msi_desc_to_pci_dev(desc))))
 		return;
 
 	raw_spin_lock_irqsave(lock, flags);
@@ -509,7 +510,7 @@ void __pci_restore_msi_state(struct pci_dev *dev)
 	struct msi_desc *entry;
 	u16 control;
 
-	if (!dev->msi_enabled)
+	if (!dev->msi_enabled || unlikely(pci_dev_is_disconnected(dev)))
 		return;
 
 	entry = irq_get_msi_desc(dev->irq);
@@ -857,7 +858,7 @@ void __pci_restore_msix_state(struct pci_dev *dev)
 	struct msi_desc *entry;
 	bool write_msg;
 
-	if (!dev->msix_enabled)
+	if (!dev->msix_enabled || unlikely(pci_dev_is_disconnected(dev)))
 		return;
 
 	/* route the table */
