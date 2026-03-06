@@ -782,6 +782,7 @@ static int i3c_hci_probe(struct platform_device *pdev)
 		return -ENOMEM;
 
 	spin_lock_init(&hci->lock);
+	mutex_init(&hci->control_mutex);
 
 	hci->base_regs = devm_platform_ioremap_resource(pdev, 0);
 	if (IS_ERR(hci->base_regs))
