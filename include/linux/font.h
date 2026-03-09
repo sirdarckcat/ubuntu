@@ -74,4 +74,7 @@ struct font_data {
 	const unsigned char data[];
 } __packed;
 
+void font_data_get(const unsigned char *fd);
+bool font_data_put(const unsigned char *fd);
+
 #endif /* _VIDEO_FONT_H */
