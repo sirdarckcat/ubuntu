@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-only
-// SPDX-FileCopyrightText: Copyright (c) 2024-2025, NVIDIA CORPORATION. All rights reserved.
+// SPDX-FileCopyrightText: Copyright (c) 2024-2026 NVIDIA CORPORATION. All rights reserved.
 /*
  * drivers/soc/tegra/tegra264-pmc.c
  */
@@ -41,68 +41,6 @@ static int tegra_pmc_reboot_notify(struct notifier_block *this,
 
 	return NOTIFY_DONE;
 }
-
-/**
- * devm_tegra_pmc_get() - get Tegra PMC pointer
- * @dev: device pointer of the Client device
- *
- * Return: ERR_PTR() on error or a valid pointer to Tegra PMC.
- */
-static struct tegra_pmc *devm_tegra_pmc_get(struct device *dev)
-{
-	struct platform_device *pdev;
-	struct tegra_pmc *pmc;
-	struct device_node *np;
-
-	np = of_parse_phandle(dev->of_node, "nvidia,pmc", 0);
-	if (!np)
-		return ERR_PTR(-ENOENT);
-
-	pdev = of_find_device_by_node(np);
-	of_node_put(np);
-	if (!pdev)
-		return ERR_PTR(-ENODEV);
-
-	pmc = platform_get_drvdata(pdev);
-	if (!pmc)
-		return ERR_PTR(-EPROBE_DEFER);
-
-	return pmc;
-}
-
-/**
- * tegra264_io_pad_power_enable() - enable power to I/O pad
- * @dev: device pointer of the Client device
- * @id: Tegra I/O pad ID for which to enable power
- *
- * Returns: 0 on success or a negative error code on failure.
- */
-int tegra264_io_pad_power_enable(struct device *dev, enum tegra_io_pad id)
-{
-	struct tegra_pmc *pmc = devm_tegra_pmc_get(dev);
-	if (IS_ERR(pmc))
-		return PTR_ERR(pmc);
-
-	return tegra186_io_pad_power_enable(pmc, id);
-}
-EXPORT_SYMBOL(tegra264_io_pad_power_enable);
-
-/**
- * tegra264_io_pad_power_disable() - disable power to I/O pad
- * @dev: device pointer of the Client device
- * @id: Tegra I/O pad ID for which to enable power
- *
- * Returns: 0 on success or a negative error code on failure.
- */
-int tegra264_io_pad_power_disable(struct device *dev, enum tegra_io_pad id)
-{
-	struct tegra_pmc *pmc = devm_tegra_pmc_get(dev);
-	if (IS_ERR(pmc))
-		return PTR_ERR(pmc);
-
-	return tegra186_io_pad_power_disable(pmc, id);
-}
-EXPORT_SYMBOL(tegra264_io_pad_power_disable);
 
 static int tegra_pmc_probe(struct platform_device *pdev)
 {
