@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-only
-// SPDX-FileCopyrightText: Copyright (c) 2018-2025, NVIDIA CORPORATION. All rights reserved.
+// SPDX-FileCopyrightText: Copyright (c) 2018-2026 NVIDIA CORPORATION. All rights reserved.
 /*
  * drivers/soc/tegra/pmc.c
  *
@@ -1456,7 +1456,13 @@ static void tegra_io_pad_unprepare(struct tegra_pmc *pmc)
 		tegra_pmc_writel(pmc, DPD_SAMPLE_DISABLE, DPD_SAMPLE);
 }
 
-int tegra186_io_pad_power_enable(struct tegra_pmc *pmc, enum tegra_io_pad id)
+/**
+ * tegra_io_pad_power_enable() - enable power to I/O pad
+ * @id: Tegra I/O pad ID for which to enable power
+ *
+ * Returns: 0 on success or a negative error code on failure.
+ */
+int tegra_io_pad_power_enable(enum tegra_io_pad id)
 {
 	const struct tegra_io_pad_soc *pad;
 	unsigned long request, status;
@@ -1491,8 +1497,15 @@ unlock:
 	mutex_unlock(&pmc->powergates_lock);
 	return err;
 }
+EXPORT_SYMBOL(tegra_io_pad_power_enable);
 
-int tegra186_io_pad_power_disable(struct tegra_pmc *pmc, enum tegra_io_pad id)
+/**
+ * tegra_io_pad_power_disable() - disable power to I/O pad
+ * @id: Tegra I/O pad ID for which to disable power
+ *
+ * Returns: 0 on success or a negative error code on failure.
+ */
+int tegra_io_pad_power_disable(enum tegra_io_pad id)
 {
 	const struct tegra_io_pad_soc *pad;
 	unsigned long request, status;
@@ -1526,29 +1539,6 @@ int tegra186_io_pad_power_disable(struct tegra_pmc *pmc, enum tegra_io_pad id)
 unlock:
 	mutex_unlock(&pmc->powergates_lock);
 	return err;
-}
-
-/**
- * tegra_io_pad_power_enable() - enable power to I/O pad
- * @id: Tegra I/O pad ID for which to enable power
- *
- * Returns: 0 on success or a negative error code on failure.
- */
-int tegra_io_pad_power_enable(enum tegra_io_pad id)
-{
-	return tegra186_io_pad_power_enable(pmc, id);
-}
-EXPORT_SYMBOL(tegra_io_pad_power_enable);
-
-/**
- * tegra_io_pad_power_disable() - disable power to I/O pad
- * @id: Tegra I/O pad ID for which to disable power
- *
- * Returns: 0 on success or a negative error code on failure.
- */
-int tegra_io_pad_power_disable(enum tegra_io_pad id)
-{
-	return tegra186_io_pad_power_disable(pmc, id);
 }
 EXPORT_SYMBOL(tegra_io_pad_power_disable);
 
@@ -2058,11 +2048,9 @@ static int tegra_io_pad_pinconf_set(struct pinctrl_dev *pctl_dev,
 		switch (param) {
 		case PIN_CONFIG_MODE_LOW_POWER:
 			if (arg)
-				err = tegra186_io_pad_power_disable(pmc,
-								pad->id);
+				err = tegra_io_pad_power_disable(pad->id);
 			else
-				err = tegra186_io_pad_power_enable(pmc,
-								pad->id);
+				err = tegra_io_pad_power_enable(pad->id);
 			if (err)
 				return err;
 			break;
