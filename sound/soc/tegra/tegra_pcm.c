@@ -1,9 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
-// SPDX-FileCopyrightText: Copyright (c) 2010-2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
-//
-// tegra_pcm.c - Tegra PCM driver
-
 /*
+ * tegra_pcm.c - Tegra PCM driver
+ *
  * Author: Stephen Warren <swarren@nvidia.com>
  * Copyright (C) 2010,2012 - NVIDIA, Inc.
  *
@@ -26,32 +24,22 @@
 #include <sound/dmaengine_pcm.h>
 #include "tegra_pcm.h"
 
-/* For 32 channels, 32 bit playback the frame size is 128 bytes */
-#define MAX_FRAME_SIZE_BYTES 128
-#define MAX_FRAMES_PER_PERIOD 1024
-#define MAX_PERIODS_PER_BUFFER 4
-
-/* It is also needed to align to Linux PAGE_SIZE boundary. */
-#define MAX_PERIOD_SIZE_BYTES \
-	ALIGN((MAX_FRAME_SIZE_BYTES * MAX_FRAMES_PER_PERIOD), PAGE_SIZE)
-#define MAX_BUFFER_SIZE_BYTES (MAX_PERIOD_SIZE_BYTES * MAX_PERIODS_PER_BUFFER)
-
 static const struct snd_pcm_hardware tegra_pcm_hardware = {
 	.info			= SNDRV_PCM_INFO_MMAP |
 				  SNDRV_PCM_INFO_MMAP_VALID |
 				  SNDRV_PCM_INFO_INTERLEAVED,
-	.period_bytes_min	= 128,
-	.period_bytes_max	= MAX_PERIOD_SIZE_BYTES,
+	.period_bytes_min	= 1024,
+	.period_bytes_max	= PAGE_SIZE,
 	.periods_min		= 2,
-	.periods_max		= MAX_PERIODS_PER_BUFFER,
-	.buffer_bytes_max	= MAX_BUFFER_SIZE_BYTES,
+	.periods_max		= 8,
+	.buffer_bytes_max	= PAGE_SIZE * 8,
 	.fifo_size		= 4,
 };
 
 static const struct snd_dmaengine_pcm_config tegra_dmaengine_pcm_config = {
 	.pcm_hardware = &tegra_pcm_hardware,
 	.prepare_slave_config = snd_dmaengine_pcm_prepare_slave_config,
-	.prealloc_buffer_size = MAX_BUFFER_SIZE_BYTES,
+	.prealloc_buffer_size = PAGE_SIZE * 8,
 };
 
 int tegra_pcm_platform_register(struct device *dev)
