@@ -502,6 +502,12 @@ attribute-sets:
       -
         name: tx-aggr-time-usecs
         type: u32
+      -
+        name: rx-cqe-frames
+        type: u32
+      -
+        name: rx-cqe-nsecs
+        type: u32
   -
     name: pause-stat
     attributes:
@@ -1297,6 +1303,8 @@ operations:
             - tx-aggr-max-bytes
             - tx-aggr-max-frames
             - tx-aggr-time-usecs
+            - rx-cqe-frames
+            - rx-cqe-nsecs
       dump: *coalesce-get-op
     -
       name: coalesce-set
