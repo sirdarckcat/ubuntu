@@ -1756,42 +1756,52 @@ redirty_out:
 	return AOP_WRITEPAGE_ACTIVATE;
 }
 
-int f2fs_move_node_page(struct page *node_page, int gc_type)
+static int f2fs_write_single_node_page(struct page *node_page, int sync_mode,
+			bool mark_dirty, enum iostat_type io_type)
 {
 	int err = 0;
+	struct writeback_control wbc = {
+		.sync_mode = WB_SYNC_ALL,
+		.nr_to_write = 1,
+		.for_reclaim = 0,
+	};
 
-	if (gc_type == FG_GC) {
-		struct writeback_control wbc = {
-			.sync_mode = WB_SYNC_ALL,
-			.nr_to_write = 1,
-			.for_reclaim = 0,
-		};
-
-		f2fs_wait_on_page_writeback(node_page, NODE, true, true);
-
-		set_page_dirty(node_page);
-
-		if (!clear_page_dirty_for_io(node_page)) {
-			err = -EAGAIN;
-			goto out_page;
-		}
-
-		if (__write_node_page(node_page, false, NULL,
-					&wbc, false, FS_GC_NODE_IO, NULL)) {
-			err = -EAGAIN;
-			unlock_page(node_page);
-		}
-		goto release_page;
-	} else {
+	if (!sync_mode) {
 		/* set page dirty and write it */
 		if (!PageWriteback(node_page))
 			set_page_dirty(node_page);
+		goto out_page;
 	}
+
+	f2fs_wait_on_page_writeback(node_page, NODE, true, true);
+
+	if (mark_dirty)
+		set_page_dirty(node_page);
+	else if (!PageDirty(node_page))
+		goto out_page;
+
+	if (!clear_page_dirty_for_io(node_page)) {
+		err = -EAGAIN;
+		goto out_page;
+	}
+
+	if (__write_node_page(node_page, false, NULL,
+				&wbc, false, FS_GC_NODE_IO, NULL)) {
+		err = -EAGAIN;
+		unlock_page(node_page);
+	}
+	goto release_page;
 out_page:
 	unlock_page(node_page);
 release_page:
 	f2fs_put_page(node_page, 0);
 	return err;
+}
+
+int f2fs_move_node_page(struct page *node_page, int gc_type)
+{
+	return f2fs_write_single_node_page(node_page, gc_type == FG_GC,
+			true, FS_GC_NODE_IO);
 }
 
 static int f2fs_write_node_page(struct page *page,
