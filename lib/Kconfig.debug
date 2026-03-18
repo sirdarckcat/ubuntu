@@ -528,8 +528,17 @@ config DEBUG_FORCE_FUNCTION_ALIGN_64B
 # is preferred to always offer frame pointers as a config
 # option on the architecture (regardless of KERNEL_DEBUG):
 #
+
+config ARM64_CHAINC_MINIMAL
+	bool "Omit debug options"
+	default n
+	help
+	  Say Y to disable unused debug options for chain-C kernel.
+          This reduces kernel size and can improve performance.
+
 config ARCH_WANT_FRAME_POINTERS
 	bool
+        depends on !ARM64_CHAINC_MINIMAL
 
 config FRAME_POINTER
 	bool "Compile the kernel with frame pointers"
@@ -876,6 +885,7 @@ config DEBUG_NOMMU_REGIONS
 config DEBUG_MEMORY_INIT
 	bool "Debug memory initialisation" if EXPERT
 	default !EXPERT
+	depends on !ARM64_CHAINC_MINIMAL
 	help
 	  Enable this for additional checks during memory initialisation.
 	  The sanity checks verify aspects of the VM such as the memory model
