@@ -2330,7 +2330,6 @@ static int xe_vma_op_commit(struct xe_vm *vm, struct xe_vma_op *op)
 			if (!err && op->remap.skip_prev) {
 				op->remap.prev->tile_present =
 					tile_present;
-				op->remap.prev = NULL;
 			}
 		}
 		if (op->remap.next) {
@@ -2340,11 +2339,13 @@ static int xe_vma_op_commit(struct xe_vm *vm, struct xe_vma_op *op)
 			if (!err && op->remap.skip_next) {
 				op->remap.next->tile_present =
 					tile_present;
-				op->remap.next = NULL;
 			}
 		}
 
-		/* Adjust for partial unbind after removin VMA from VM */
+		/*
+		 * Adjust for partial unbind after removing VMA from VM. In case
+		 * of unwind we might need to undo this later.
+		 */
 		if (!err) {
 			op->base.remap.unmap->va->va.addr = op->remap.start;
 			op->base.remap.unmap->va->va.range = op->remap.range;
@@ -2415,6 +2416,8 @@ static int vm_bind_ioctl_ops_parse(struct xe_vm *vm, struct xe_exec_queue *q,
 
 			op->remap.start = xe_vma_start(old);
 			op->remap.range = xe_vma_size(old);
+			op->remap.old_start = op->remap.start;
+			op->remap.old_range = op->remap.range;
 
 			if (op->base.remap.prev) {
 				flags |= op->base.remap.unmap->va->flags &
@@ -2533,8 +2536,8 @@ static int op_execute(struct drm_exec *exec, struct xe_vm *vm,
 		break;
 	case DRM_GPUVA_OP_REMAP:
 	{
-		bool prev = !!op->remap.prev;
-		bool next = !!op->remap.next;
+		bool prev = op->remap.prev && !op->remap.skip_prev;
+		bool next = op->remap.next && !op->remap.skip_next;
 
 		if (!op->remap.unmap_done) {
 			if (prev || next)
@@ -2619,7 +2622,7 @@ retry_userptr:
 		if (op->base.op == DRM_GPUVA_OP_REMAP) {
 			if (!op->remap.unmap_done)
 				vma = gpuva_to_vma(op->base.remap.unmap->va);
-			else if (op->remap.prev)
+			else if (op->remap.prev && !op->remap.skip_prev)
 				vma = op->remap.prev;
 			else
 				vma = op->remap.next;
@@ -2653,7 +2656,7 @@ static int xe_vma_op_execute(struct xe_vm *vm, struct xe_vma_op *op)
 
 		if (!op->remap.unmap_done)
 			vma = gpuva_to_vma(op->base.remap.unmap->va);
-		else if (op->remap.prev)
+		else if (op->remap.prev && !op->remap.skip_prev)
 			vma = op->remap.prev;
 		else
 			vma = op->remap.next;
@@ -2738,8 +2741,19 @@ static void xe_vma_op_unwind(struct xe_vm *vm, struct xe_vma_op *op,
 			down_read(&vm->userptr.notifier_lock);
 			vma->gpuva.flags &= ~XE_VMA_DESTROYED;
 			up_read(&vm->userptr.notifier_lock);
-			if (post_commit)
+			if (post_commit) {
+				/*
+				 * Restore the old va range, in case of the
+				 * prev/next skip optimisation. Otherwise what
+				 * we re-insert here could be smaller than the
+				 * original range.
+				 */
+				op->base.remap.unmap->va->va.addr =
+					op->remap.old_start;
+				op->base.remap.unmap->va->va.range =
+					op->remap.old_range;
 				xe_vm_insert_vma(vm, vma);
+			}
 		}
 		break;
 	}
