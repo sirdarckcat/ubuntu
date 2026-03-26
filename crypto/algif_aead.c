@@ -193,7 +193,11 @@ static int _aead_recvmsg(struct socket *sock, struct msghdr *msg,
 
 	/* Initialize the crypto operation */
 	aead_request_set_crypt(&areq->cra_u.aead_req, tsgl_src,
+<<<<<<< HEAD
 			       areq->first_rsgl.sgl.sgt.sgl, used, iv);
+=======
+			       areq->first_rsgl.sgl.sgt.sgl, used, ctx->iv);
+>>>>>>> cc4d2bf72772 (crypto: algif_aead - Revert to operating out-of-place)
 	aead_request_set_ad(&areq->cra_u.aead_req, ctx->aead_assoclen);
 	aead_request_set_tfm(&areq->cra_u.aead_req, tfm);
 
