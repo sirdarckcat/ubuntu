@@ -703,8 +703,13 @@ void af_alg_pull_tsgl(struct sock *sk, size_t used, struct scatterlist *dst)
 			 * Assumption: caller created af_alg_count_tsgl(len)
 			 * SG entries in dst.
 			 */
+<<<<<<< HEAD
 			if (dst && plen) {
 				/* reassign page to dst */
+=======
+			if (dst) {
+				/* reassign page to dst after offset */
+>>>>>>> cc4d2bf72772 (crypto: algif_aead - Revert to operating out-of-place)
 				get_page(page);
 				sg_set_page(dst + j, page, plen, sg[i].offset);
 				j++;
