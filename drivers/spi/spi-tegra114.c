@@ -673,16 +673,30 @@ static int tegra_spi_init_dma_param(struct tegra_spi_data *tspi,
 	struct dma_chan *dma_chan;
 	u32 *dma_buf;
 	dma_addr_t dma_phys;
+	int err;
+
+	if (tspi->dev->of_node &&
+	    !of_property_present(tspi->dev->of_node, "dmas"))
+		return 0;
 
 	dma_chan = dma_request_chan(tspi->dev, dma_to_memory ? "rx" : "tx");
-	if (IS_ERR(dma_chan))
-		return dev_err_probe(tspi->dev, PTR_ERR(dma_chan),
-				     "Dma channel is not available\n");
+	if (IS_ERR(dma_chan)) {
+		err = PTR_ERR(dma_chan);
+		if (err == -ENODEV) {
+			dev_info(tspi->dev,
+				 "DMA %s channel unavailable, falling back to PIO\n",
+				 dma_to_memory ? "rx" : "tx");
+			return 0;
+		}
+		return dev_err_probe(tspi->dev, err,
+				     "DMA %s channel request failed\n",
+				     dma_to_memory ? "rx" : "tx");
+	}
 
 	dma_buf = dma_alloc_coherent(tspi->dev, tspi->dma_buf_size,
 				&dma_phys, GFP_KERNEL);
 	if (!dma_buf) {
-		dev_err(tspi->dev, " Not able to allocate the dma buffer\n");
+		dev_err(tspi->dev, "Not able to allocate the dma buffer\n");
 		dma_release_channel(dma_chan);
 		return -ENOMEM;
 	}
@@ -962,7 +976,8 @@ static int tegra_spi_start_transfer_one(struct spi_device *spi,
 	ret = tegra_spi_flush_fifos(tspi);
 	if (ret < 0)
 		return ret;
-	if (total_fifo_words > SPI_FIFO_DEPTH)
+	if (total_fifo_words > SPI_FIFO_DEPTH &&
+	    tspi->tx_dma_chan && tspi->rx_dma_chan)
 		ret = tegra_spi_start_dma_based_transfer(tspi, t);
 	else
 		ret = tegra_spi_start_cpu_based_transfer(tspi, t);
@@ -1481,9 +1496,16 @@ static int tegra_spi_probe(struct platform_device *pdev)
 	ret = tegra_spi_init_dma_param(tspi, false);
 	if (ret < 0)
 		goto exit_rx_dma_free;
-	tspi->max_buf_size = tspi->dma_buf_size;
-	init_completion(&tspi->tx_dma_complete);
-	init_completion(&tspi->rx_dma_complete);
+
+	if (tspi->rx_dma_chan && tspi->tx_dma_chan) {
+		tspi->max_buf_size = tspi->dma_buf_size;
+		init_completion(&tspi->tx_dma_complete);
+		init_completion(&tspi->rx_dma_complete);
+	} else if (tspi->rx_dma_chan || tspi->tx_dma_chan) {
+		/* Partial DMA is unusable; release the orphan, stay in PIO. */
+		tegra_spi_deinit_dma_param(tspi, true);
+		tegra_spi_deinit_dma_param(tspi, false);
+	}
 
 	init_completion(&tspi->xfer_completion);
 
