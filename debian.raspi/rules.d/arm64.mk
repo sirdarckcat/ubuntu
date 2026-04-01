@@ -15,4 +15,3 @@ do_tools_bpftool	= true
 do_common_headers_indep	= false
 
 do_dtbs			= true
-do_zfs			= true
