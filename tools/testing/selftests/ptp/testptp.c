@@ -135,7 +135,6 @@ static void usage(char *progname)
 		"            1 - external time stamp\n"
 		"            2 - periodic output\n"
 		" -n val     shift the ptp clock time by 'val' nanoseconds\n"
-		" -o val     phase offset (in nanoseconds) to be provided to the PHC servo\n"
 		" -p val     enable output with a period of 'val' nanoseconds\n"
 		" -H val     set output phase to 'val' nanoseconds (requires -p)\n"
 		" -w val     set output pulse width to 'val' nanoseconds (requires -p)\n"
@@ -175,7 +174,6 @@ int main(int argc, char *argv[])
 	int adjfreq = 0x7fffffff;
 	int adjtime = 0;
 	int adjns = 0;
-	int adjphase = 0;
 	int capabilities = 0;
 	int extts = 0;
 	int flagtest = 0;
@@ -202,7 +200,7 @@ int main(int argc, char *argv[])
 
 	progname = strrchr(argv[0], '/');
 	progname = progname ? 1+progname : argv[0];
-	while (EOF != (c = getopt(argc, argv, "cd:e:f:F:ghH:i:k:lL:n:o:p:P:rsSt:T:w:x:Xy:z"))) {
+	while (EOF != (c = getopt(argc, argv, "cd:e:f:F:ghH:i:k:lL:n:p:P:rsSt:T:w:x:Xy:z"))) {
 		switch (c) {
 		case 'c':
 			capabilities = 1;
@@ -244,9 +242,6 @@ int main(int argc, char *argv[])
 			break;
 		case 'n':
 			adjns = atoi(optarg);
-			break;
-		case 'o':
-			adjphase = atoi(optarg);
 			break;
 		case 'p':
 			perout = atoll(optarg);
@@ -374,18 +369,6 @@ int main(int argc, char *argv[])
 			perror("clock_adjtime");
 		} else {
 			puts("time shift okay");
-		}
-	}
-
-	if (adjphase) {
-		memset(&tx, 0, sizeof(tx));
-		tx.modes = ADJ_OFFSET | ADJ_NANO;
-		tx.offset = adjphase;
-
-		if (clock_adjtime(clkid, &tx) < 0) {
-			perror("clock_adjtime");
-		} else {
-			puts("phase adjustment okay");
 		}
 	}
 
