@@ -83,8 +83,17 @@ CONFIG_HSA_AMD_P2P                              note<'LP: #1987394'>
 CONFIG_HYPERV                                   policy<{'amd64': 'y', 'arm64': 'y'}>
 CONFIG_HYPERV                                   note<'LP:#1690136'>
 
-CONFIG_HYPERV_STORAGE                           policy<{'amd64': 'm', 'arm64': 'm'}>
+CONFIG_HYPERV_BALLOON                           policy<{'amd64': 'y', 'arm64': 'y'}>
+CONFIG_HYPERV_BALLOON                           note<'LP:#1690136'>
+
+CONFIG_HYPERV_STORAGE                           policy<{'amd64': 'y', 'arm64': 'y'}>
 CONFIG_HYPERV_STORAGE                           note<'LP:#1690136'>
+
+CONFIG_HYPERV_UTILS                             policy<{'amd64': 'y', 'arm64': 'y'}>
+CONFIG_HYPERV_UTILS                             note<'LP:#1690136'>
+
+CONFIG_HYPERV_VMBUS                             policy<{'amd64': 'y', 'arm64': 'y'}>
+CONFIG_HYPERV_VMBUS                             note<'LP:#1690136'>
 
 CONFIG_I2C_CHARDEV                              policy<{'amd64': 'm', 'arm64': 'y'}>
 CONFIG_I2C_CHARDEV                              note<'LP: #1417032'>
@@ -116,7 +125,7 @@ CONFIG_KERNEL_ZSTD                              note<'LP: #1931725'>
 CONFIG_MANA_INFINIBAND                          policy<{'amd64': 'm', 'arm64': 'm'}>
 CONFIG_MANA_INFINIBAND                          note<'LP: #2024917, LP:2066982'>
 
-CONFIG_MICROSOFT_MANA                           policy<{'amd64': 'm', 'arm64': 'm'}>
+CONFIG_MICROSOFT_MANA                           policy<{'amd64': 'y', 'arm64': 'y'}>
 CONFIG_MICROSOFT_MANA                           note<'LP:1949357, LP:2066982'>
 
 CONFIG_MMC_BLOCK                                policy<{'amd64': '-', 'arm64': 'm'}>
@@ -164,7 +173,7 @@ CONFIG_NO_HZ_IDLE                               note<'Azure reports 10% of perfo
 CONFIG_OVERLAY_FS_REDIRECT_DIR                  policy<{'amd64': 'y', 'arm64': 'y'}>
 CONFIG_OVERLAY_FS_REDIRECT_DIR                  note<'LP:#1711230'>
 
-CONFIG_PCI_HYPERV                               policy<{'amd64': 'm', 'arm64': 'm'}>
+CONFIG_PCI_HYPERV                               policy<{'amd64': 'y', 'arm64': 'y'}>
 CONFIG_PCI_HYPERV                               note<'LP:#1908571'>
 
 CONFIG_PCI_MESON                                policy<{'amd64': 'y', 'arm64': 'n'}>
