@@ -66,6 +66,24 @@
  */
 
 /*
+ * Default marker for PRELIM values in shared flags/extensions
+ */
+#define PRELIM_DRM_XE_VALUE_INDICATOR		(1 << 16)
+
+/*
+ * Default mask for PRELIM values created by PRELIM_DRM_XE_VALUE_INDICATOR.
+ * The PRELIM value shall be created by:
+ * PRELIM_DRM_XE_VALUE_INDICATOR | value
+ * and 'value' shall be smaller than MASK value.
+ */
+#define PRELIM_DRM_XE_VALUE_MASK		0xffff
+
+/*
+ * Value of the PRELIM flag/extension without PRELIM INDICATOR
+ */
+#define PRELIM_DRM_XE_VALUE(val)		((val) & PRELIM_DRM_XE_VALUE_MASK)
+
+/*
  * IOCTL numbers listed below are reserved, they are taken up by other
  * components. Please add an unreserved ioctl number here to reserve that
  * number.
