@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-only
-// SPDX-FileCopyrightText: Copyright (c) 2021-2024 NVIDIA CORPORATION & AFFILIATES.
+// SPDX-FileCopyrightText: Copyright (c) 2021-2026 NVIDIA CORPORATION & AFFILIATES.
 // All rights reserved.
 //
 // tegra210_mvc.c - Tegra210 MVC driver
@@ -438,6 +438,9 @@ static int tegra210_mvc_set_audio_cif(struct tegra210_mvc *mvc,
 	channels = params_channels(params);
 
 	switch (params_format(params)) {
+	case SNDRV_PCM_FORMAT_S8:
+		audio_bits = TEGRA_ACIF_BITS_8;
+		break;
 	case SNDRV_PCM_FORMAT_S16_LE:
 		audio_bits = TEGRA_ACIF_BITS_16;
 		break;
