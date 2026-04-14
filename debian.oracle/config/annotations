@@ -148,7 +148,6 @@ CONFIG_BRCMSTB_THERMAL                          policy<{'arm64': 'm'}>
 CONFIG_BRCM_USB_PINMAP                          policy<{'arm64': 'm'}>
 CONFIG_BUILD_BIN2C                              policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_CACHEFILES_ERROR_INJECTION               policy<{'amd64': 'n', 'arm64': 'n'}>
-CONFIG_CC_VERSION_TEXT                          policy<{'amd64': '"x86_64-linux-gnu-gcc (Ubuntu 15.2.0-16ubuntu1) 15.2.0"', 'arm64': '"aarch64-linux-gnu-gcc (Ubuntu 15.2.0-15ubuntu2) 15.2.0"'}>
 CONFIG_CLK_BCM2711_DVP                          policy<{'arm64': 'm'}>
 CONFIG_CLK_BCM2835                              policy<{'arm64': 'y'}>
 CONFIG_CLK_BCM_63XX                             policy<{'arm64': 'y'}>
@@ -248,11 +247,17 @@ CONFIG_INLINE_WRITE_UNLOCK                      policy<{'amd64': '-', 'arm64': '
 CONFIG_INLINE_WRITE_UNLOCK_BH                   policy<{'arm64': '-'}>
 CONFIG_INLINE_WRITE_UNLOCK_IRQ                  policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_INLINE_WRITE_UNLOCK_IRQRESTORE           policy<{'arm64': '-'}>
+CONFIG_INTEL_MEI                                policy<{'amd64': 'm', 'arm64': 'm', 'arm64-oracle-64k': '-'}>
 CONFIG_INTEL_MEI_GSC                            policy<{'amd64': 'm', 'arm64-oracle': 'm'}>
 CONFIG_INTEL_MEI_GSC_PROXY                      policy<{'amd64': 'm', 'arm64-oracle': 'm'}>
 CONFIG_INTEL_MEI_HDCP                           policy<{'amd64': 'm', 'arm64-oracle': 'm'}>
 CONFIG_INTEL_MEI_LB                             policy<{'amd64': 'm', 'arm64-oracle': 'm'}>
+CONFIG_INTEL_MEI_ME                             policy<{'amd64': 'm', 'arm64': 'm', 'arm64-oracle-64k': '-'}>
 CONFIG_INTEL_MEI_PXP                            policy<{'amd64': 'm', 'arm64-oracle': 'm'}>
+CONFIG_INTEL_MEI_TXE                            policy<{'amd64': 'm', 'arm64': 'm', 'arm64-oracle-64k': '-'}>
+CONFIG_INTEL_MEI_VSC                            policy<{'amd64': 'm', 'arm64': 'm', 'arm64-oracle-64k': '-'}>
+CONFIG_INTEL_MEI_VSC_HW                         policy<{'amd64': 'm', 'arm64': 'm', 'arm64-oracle-64k': '-'}>
+CONFIG_INTEL_VSC                                policy<{'amd64': 'm', 'arm64': 'm', 'arm64-oracle-64k': '-'}>
 CONFIG_LEDS_AAEON                               policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_LEDS_BCM63138                            policy<{'arm64': 'm'}>
 CONFIG_MARVELL_GTI_WDT                          policy<{'arm64': 'm'}>
@@ -271,6 +276,9 @@ CONFIG_MTD_BRCM_U_BOOT                          policy<{'arm64': 'm'}>
 CONFIG_MTD_INTEL_DG                             policy<{'amd64': 'm', 'arm64': 'm', 'arm64-oracle-64k': '-'}>
 CONFIG_MTD_OF_PARTS_BCM4908                     policy<{'arm64': 'y'}>
 CONFIG_MTD_OF_PARTS_LINKSYS_NS                  policy<{'arm64': 'y'}>
+CONFIG_NFC_MEI_PHY                              policy<{'amd64': 'm', 'arm64': 'm', 'arm64-oracle-64k': '-'}>
+CONFIG_NFC_MICROREAD_MEI                        policy<{'amd64': 'm', 'arm64': 'm', 'arm64-oracle-64k': '-'}>
+CONFIG_NFC_PN544_MEI                            policy<{'amd64': 'm', 'arm64': 'm', 'arm64-oracle-64k': '-'}>
 CONFIG_NFSD_V2_ACL                              policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_NINTENDO_FF                              policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_NOVA_CORE                                policy<{'amd64': '-', 'arm64': '-'}>
