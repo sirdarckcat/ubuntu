@@ -147,7 +147,7 @@ static void vfio_pci_dma_buf_release(struct dma_buf *dmabuf)
 		down_write(&priv->vdev->memory_lock);
 		list_del_init(&priv->dmabufs_elm);
 		up_write(&priv->vdev->memory_lock);
-		vfio_put_device(&priv->vdev->vdev);
+		vfio_device_put_registration(&priv->vdev->vdev);
 	}
 	kfree(priv);
 }
@@ -258,7 +258,7 @@ void vfio_pci_dma_buf_cleanup(struct vfio_pci_core_device *vdev)
 		priv->revoked = true;
 		dma_buf_move_notify(priv->dmabuf);
 		dma_resv_unlock(priv->dmabuf->resv);
-		vfio_put_device(&vdev->vdev);
+		vfio_device_put_registration(&vdev->vdev);
 		dma_buf_put(priv->dmabuf);
 	}
 	up_write(&vdev->memory_lock);
