@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
- * Copyright (C) 2014-2024 NVIDIA CORPORATION.  All rights reserved.
+ * Copyright (C) 2014-2026 NVIDIA CORPORATION.  All rights reserved.
  */
 
 #include <linux/clk.h>
@@ -13,6 +13,7 @@
 #include <linux/of.h>
 #include <linux/of_platform.h>
 #include <linux/platform_device.h>
+#include <linux/pm.h>
 #include <linux/slab.h>
 #include <linux/sort.h>
 #include <linux/tegra-icc.h>
@@ -934,6 +935,29 @@ static void tegra_mc_num_channel_enabled(struct tegra_mc *mc)
 	}
 }
 
+static void tegra_mc_setup_intmask(struct tegra_mc *mc)
+{
+	if (mc->soc->has_chiplet_arch) {
+		mc_ch_writel(mc, MC_BROADCAST_CHANNEL, mc->soc->mcf_intmask, MCF_INTMASK_0);
+		mc_ch_writel(mc, MC_BROADCAST_CHANNEL, mc->soc->mcf_intmask, MCF_INTPRIORITY_0);
+		mc_ch_writel(mc, MC_BROADCAST_CHANNEL, mc->soc->hub_intmask, MSS_HUB_INTRMASK_0);
+		mc_ch_writel(mc, MC_BROADCAST_CHANNEL, mc->soc->hub_intmask,
+						MSS_HUB_INTRPRIORITY_0);
+		mc_ch_writel(mc, MC_BROADCAST_CHANNEL, mc->soc->hubc_intmask,
+						MSS_HUB_HUBC_INTMASK_0);
+		mc_ch_writel(mc, MC_BROADCAST_CHANNEL, mc->soc->hubc_intmask,
+						MSS_HUB_HUBC_INTPRIORITY_0);
+		mc_ch_writel(mc, MC_BROADCAST_CHANNEL, mc->soc->sbs_intmask, MSS_SBS_INTMASK_0);
+		mc_ch_writel(mc, MC_BROADCAST_CHANNEL, mc->soc->mc_ch_intmask, MC_CH_INTMASK_0);
+	} else {
+		if (mc->soc->num_channels)
+			mc_ch_writel(mc, MC_BROADCAST_CHANNEL, mc->soc->intmask,
+					MC_INTMASK);
+		else
+			mc_writel(mc, mc->soc->intmask, MC_INTMASK);
+	}
+}
+
 static int tegra_mc_probe(struct platform_device *pdev)
 {
 	struct tegra_mc *mc;
@@ -1001,32 +1025,7 @@ static int tegra_mc_probe(struct platform_device *pdev)
 		}
 	}
 
-	if (mc->soc->has_chiplet_arch) {
-		/* Unmask MCF interrupts */
-		mc_ch_writel(mc, MC_BROADCAST_CHANNEL, mc->soc->mcf_intmask, MCF_INTMASK_0);
-		mc_ch_writel(mc, MC_BROADCAST_CHANNEL, mc->soc->mcf_intmask, MCF_INTPRIORITY_0);
-
-		/* Unmask HUB and HUBC interrupts */
-		mc_ch_writel(mc, MC_BROADCAST_CHANNEL, mc->soc->hub_intmask, MSS_HUB_INTRMASK_0);
-		mc_ch_writel(mc, MC_BROADCAST_CHANNEL, mc->soc->hub_intmask,
-						MSS_HUB_INTRPRIORITY_0);
-		mc_ch_writel(mc, MC_BROADCAST_CHANNEL, mc->soc->hubc_intmask,
-						MSS_HUB_HUBC_INTMASK_0);
-		mc_ch_writel(mc, MC_BROADCAST_CHANNEL, mc->soc->hubc_intmask,
-						MSS_HUB_HUBC_INTPRIORITY_0);
-
-		/* Unmask SBS interrupts */
-		mc_ch_writel(mc, MC_BROADCAST_CHANNEL, mc->soc->sbs_intmask, MSS_SBS_INTMASK_0);
-
-		/* Unmask MC channel interrupt */
-		mc_ch_writel(mc, MC_BROADCAST_CHANNEL, mc->soc->mc_ch_intmask, MC_CH_INTMASK_0);
-	} else {
-		if (mc->soc->num_channels)
-			mc_ch_writel(mc, MC_BROADCAST_CHANNEL, mc->soc->intmask,
-					MC_INTMASK);
-		else
-			mc_writel(mc, mc->soc->intmask, MC_INTMASK);
-	}
+	tegra_mc_setup_intmask(mc);
 
 	if (mc->soc->reset_ops) {
 		err = tegra_mc_reset_setup(mc);
@@ -1060,10 +1059,34 @@ static void tegra_mc_sync_state(struct device *dev)
 		icc_sync_state(dev);
 }
 
+static int tegra_mc_resume(struct device *dev)
+{
+	struct tegra_mc *mc = dev_get_drvdata(dev);
+	int err;
+
+	if (mc->soc->ops && mc->soc->ops->resume) {
+		err = mc->soc->ops->resume(mc);
+		if (err)
+			return err;
+	}
+
+	tegra_mc_setup_intmask(mc);
+
+	return 0;
+}
+
+/*
+ * No suspend callback is needed because the resume path reinitializes all
+ * necessary MC register state (SID overrides, interrupt masks) from static
+ * SoC data tables rather than from saved runtime state.
+ */
+static DEFINE_SIMPLE_DEV_PM_OPS(tegra_mc_pm_ops, NULL, tegra_mc_resume);
+
 static struct platform_driver tegra_mc_driver = {
 	.driver = {
 		.name = "tegra-mc",
 		.of_match_table = tegra_mc_of_match,
+		.pm = pm_sleep_ptr(&tegra_mc_pm_ops),
 		.suppress_bind_attrs = true,
 		.sync_state = tegra_mc_sync_state,
 	},
