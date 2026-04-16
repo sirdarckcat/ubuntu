@@ -5,10 +5,10 @@ Section: kernel
 Priority: optional
 Provides: linux-image, fuse-module, =PROVIDES=${linux:rprovides}
 Depends: ${misc:Depends}, ${shlibs:Depends}, kmod, linux-base (>= 4.5ubuntu1~16.04.1), linux-modules-PKGVER-ABINUM-FLAVOUR
-Recommends: BOOTLOADER
-Breaks: flash-kernel (<< 3.0~rc.4ubuntu64) [arm64]
+Recommends: BOOTLOADER, dracut | linux-initramfs-tool
+Breaks: flash-kernel (<< 3.90ubuntu2) [arm64 armhf]
 Conflicts: linux-image=SIGN-PEER-PKG=-PKGVER-ABINUM-FLAVOUR
-Suggests: fdutils, SRCPKGNAME-doc-PKGVER | SRCPKGNAME-source-PKGVER, SRCPKGNAME-tools, linux-headers-PKGVER-ABINUM-FLAVOUR, initramfs-tools | linux-initramfs-tool
+Suggests: fdutils, bpftool, linux-perf, SRCPKGNAME-tools, linux-headers-PKGVER-ABINUM-FLAVOUR
 Description: Linux kernel image for version PKGVER
  This package contains the=SIGN-ME-TXT= Linux kernel image for version PKGVER.
  .
