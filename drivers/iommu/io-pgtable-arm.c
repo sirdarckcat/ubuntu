@@ -644,7 +644,7 @@ static size_t arm_lpae_split_blk_unmap(struct arm_lpae_io_pgtable *data,
 		if (i >= unmap_idx_start && i < (unmap_idx_start + num_entries))
 			continue;
 
-		__arm_lpae_init_pte(data, blk_paddr, pte, iova + i * split_sz, lvl, 1, &tablep[i]);
+		__arm_lpae_init_pte(data, iova + i * split_sz, blk_paddr, pte, lvl, 1, &tablep[i]);
 	}
 
 	pte = arm_lpae_install_table(tablep, ptep, blk_pte, data);
