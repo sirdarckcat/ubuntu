@@ -1134,20 +1134,34 @@ static int tegra_spi_transfer_one_message(struct spi_controller *host,
 
 complete_xfer:
 		if (ret < 0 || skip) {
-			tegra_spi_transfer_end(spi);
 			spi_transfer_delay_exec(xfer);
+			tegra_spi_transfer_end(spi);
 			goto exit;
 		} else if (list_is_last(&xfer->transfer_list,
 					&msg->transfers)) {
 			if (xfer->cs_change)
 				tspi->cs_control = spi;
 			else {
-				tegra_spi_transfer_end(spi);
 				spi_transfer_delay_exec(xfer);
+				tegra_spi_transfer_end(spi);
 			}
 		} else if (xfer->cs_change) {
-			tegra_spi_transfer_end(spi);
 			spi_transfer_delay_exec(xfer);
+			tegra_spi_transfer_end(spi);
+			if (xfer->cs_change_delay.value)
+				spi_delay_exec(&xfer->cs_change_delay, xfer);
+			else
+				udelay(10);
+			if (spi_get_csgpiod(spi, 0))
+				gpiod_set_value(spi_get_csgpiod(spi, 0), 1);
+			if (!tspi->use_hw_based_cs) {
+				if (spi->mode & SPI_CS_HIGH)
+					tspi->command1_reg |= SPI_CS_SW_VAL;
+				else
+					tspi->command1_reg &= ~SPI_CS_SW_VAL;
+				tegra_spi_writel(tspi, tspi->command1_reg,
+						SPI_COMMAND1);
+			}
 		}
 
 	}
