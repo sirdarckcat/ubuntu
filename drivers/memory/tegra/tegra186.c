@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
- * Copyright (C) 2017-2021 NVIDIA CORPORATION.  All rights reserved.
+ * Copyright (C) 2017-2026 NVIDIA CORPORATION.  All rights reserved.
  */
 
 #include <linux/io.h>
@@ -79,6 +79,8 @@ void tegra186_mc_remove(struct tegra_mc *mc)
 }
 
 #if IS_ENABLED(CONFIG_IOMMU_API)
+static bool tegra186_mc_hv_mode;
+
 static void tegra186_mc_client_sid_override(struct tegra_mc *mc,
 					    const struct tegra_mc_client *client,
 					    unsigned int sid)
@@ -131,10 +133,10 @@ int tegra186_mc_probe_device(struct tegra_mc *mc, struct device *dev)
 	if (!tegra_dev_iommu_get_stream_id(dev, &sid))
 		return 0;
 
-	if (of_property_present(of_chosen, "nvidia,tegra-hypervisor-mode")) {
-		pr_debug("MC register access not allowed in Guest Linux\n");
+	tegra186_mc_hv_mode = of_property_present(of_chosen,
+						  "nvidia,tegra-hypervisor-mode");
+	if (tegra186_mc_hv_mode)
 		return 0;
-	}
 
 	while (!of_parse_phandle_with_args(dev->of_node, "interconnects", "#interconnect-cells",
 					   index, &args)) {
@@ -160,6 +162,9 @@ int tegra186_mc_resume(struct tegra_mc *mc)
 {
 #if IS_ENABLED(CONFIG_IOMMU_API)
 	unsigned int i;
+
+	if (tegra186_mc_hv_mode)
+		return 0;
 
 	for (i = 0; i < mc->soc->num_clients; i++) {
 		const struct tegra_mc_client *client = &mc->soc->clients[i];
