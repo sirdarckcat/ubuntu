@@ -919,6 +919,7 @@ CONFIG_BRCMSTB_PM                               policy<{'arm64': '-'}>
 CONFIG_BRCMSTB_THERMAL                          policy<{'arm64': '-'}>
 CONFIG_BRCM_TRACING                             policy<{'arm64': 'n'}>
 CONFIG_BRCM_USB_PINMAP                          policy<{'arm64': '-'}>
+CONFIG_BRIDGE                                   policy<{'arm64': 'm', 'arm64-capilano': 'y'}>
 CONFIG_BRIDGE_CFM                               policy<{'arm64': 'n'}>
 CONFIG_BRIDGE_EBT_802_3                         policy<{'arm64': 'n'}>
 CONFIG_BRIDGE_EBT_AMONG                         policy<{'arm64': 'n'}>
@@ -940,6 +941,7 @@ CONFIG_BRIDGE_EBT_STP                           policy<{'arm64': 'n'}>
 CONFIG_BRIDGE_EBT_T_FILTER                      policy<{'arm64': 'n'}>
 CONFIG_BRIDGE_EBT_T_NAT                         policy<{'arm64': 'n'}>
 CONFIG_BRIDGE_MRP                               policy<{'arm64': 'n'}>
+CONFIG_BRIDGE_NETFILTER                         policy<{'arm64': 'm', 'arm64-capilano': 'y'}>
 CONFIG_BSD_DISKLABEL                            policy<{'arm64': '-'}>
 CONFIG_BTREE                                    policy<{'arm64': '-'}>
 CONFIG_BT_AOSPEXT                               policy<{'arm64': 'n'}>
@@ -1112,8 +1114,8 @@ CONFIG_CLEANCACHE                               policy<{'arm64': 'n'}>
 CONFIG_CLK_GFM_LPASS_SM8250                     policy<{'arm64': 'y'}>
 CONFIG_CLK_RASPBERRYPI                          policy<{'arm64': '-'}>
 CONFIG_CLK_TWL6040                              policy<{'arm64': '-'}>
-CONFIG_CLS_U32_MARK                             policy<{'arm64': '-'}>
-CONFIG_CLS_U32_PERF                             policy<{'arm64': '-'}>
+CONFIG_CLS_U32_MARK                             policy<{'arm64': '-', 'arm64-capilano': 'n', 'arm64-capilano-debug': 'y'}>
+CONFIG_CLS_U32_PERF                             policy<{'arm64': '-', 'arm64-capilano': 'n', 'arm64-capilano-debug': 'y'}>
 CONFIG_CM32181                                  policy<{'arm64': 'n'}>
 CONFIG_CM3232                                   policy<{'arm64': 'n'}>
 CONFIG_CM3323                                   policy<{'arm64': 'n'}>
@@ -1405,9 +1407,6 @@ CONFIG_CRYPTO_ECHAINIV                          policy<{'arm64': 'y'}>
 CONFIG_CRYPTO_ECRDSA                            policy<{'arm64': 'n'}>
 CONFIG_CRYPTO_ESSIV                             policy<{'arm64': 'y'}>
 CONFIG_CRYPTO_FCRYPT                            policy<{'arm64': 'n'}>
-CONFIG_CRYPTO_GCM                               policy<{'arm64': 'm'}>
-CONFIG_CRYPTO_GF128MUL                          policy<{'arm64': 'm'}>
-CONFIG_CRYPTO_GHASH                             policy<{'arm64': 'm'}>
 CONFIG_CRYPTO_KEYWRAP                           policy<{'arm64': 'n'}>
 CONFIG_CRYPTO_KHAZAD                            policy<{'arm64': 'n'}>
 CONFIG_CRYPTO_KPP                               policy<{'arm64': 'm'}>
@@ -1421,7 +1420,6 @@ CONFIG_CRYPTO_LZ4                               policy<{'arm64': 'n'}>
 CONFIG_CRYPTO_LZ4HC                             policy<{'arm64': 'n'}>
 CONFIG_CRYPTO_LZO                               policy<{'arm64': 'n'}>
 CONFIG_CRYPTO_MD4                               policy<{'arm64': 'n'}>
-CONFIG_CRYPTO_MD5                               policy<{'arm64': 'm'}>
 CONFIG_CRYPTO_NHPOLY1305                        policy<{'arm64': '-'}>
 CONFIG_CRYPTO_NHPOLY1305_NEON                   policy<{'arm64': 'n'}>
 CONFIG_CRYPTO_OFB                               policy<{'arm64': 'n'}>
@@ -2862,6 +2860,7 @@ CONFIG_IOMMU_IO_PGTABLE_FAST                    policy<{'arm64': 'n'}>
 CONFIG_IOMMU_TLBSYNC_DEBUG                      policy<{'arm64': 'n'}>
 CONFIG_IONIC                                    policy<{'arm64': 'n'}>
 CONFIG_IOSCHED_BFQ                              policy<{'arm64': 'n'}>
+CONFIG_IP6_NF_IPTABLES                          policy<{'arm64': 'm', 'arm64-capilano': 'y'}>
 CONFIG_IPACK_BUS                                policy<{'arm64': 'n'}>
 CONFIG_IPMB_DEVICE_INTERFACE                    policy<{'arm64': 'n'}>
 CONFIG_IPMI_POWEROFF                            policy<{'arm64': 'n'}>
@@ -2899,15 +2898,28 @@ CONFIG_IP_DCCP_DEBUG                            policy<{'arm64': '-'}>
 CONFIG_IP_FIB_TRIE_STATS                        policy<{'arm64': 'n'}>
 CONFIG_IP_MROUTE                                policy<{'arm64': 'n'}>
 CONFIG_IP_MROUTE_MULTIPLE_TABLES                policy<{'arm64': '-'}>
+CONFIG_IP_NF_FILTER                             policy<{'arm64': 'm', 'arm64-capilano': 'y'}>
+CONFIG_IP_NF_IPTABLES                           policy<{'arm64': 'm', 'arm64-capilano': 'y'}>
+CONFIG_IP_NF_MANGLE                             policy<{'arm64': 'm', 'arm64-capilano': 'y'}>
+CONFIG_IP_NF_MATCH_AH                           policy<{'arm64': 'm', 'arm64-capilano': 'y'}>
+CONFIG_IP_NF_MATCH_TTL                          policy<{'arm64': 'm', 'arm64-capilano': 'y'}>
+CONFIG_IP_NF_NAT                                policy<{'arm64': 'm', 'arm64-capilano': 'y'}>
+CONFIG_IP_NF_RAW                                policy<{'arm64': 'm', 'arm64-capilano': 'y'}>
+CONFIG_IP_NF_TARGET_ECN                         policy<{'arm64': 'm', 'arm64-capilano': 'y'}>
+CONFIG_IP_NF_TARGET_MASQUERADE                  policy<{'arm64': 'm', 'arm64-capilano': 'y'}>
+CONFIG_IP_NF_TARGET_NETMAP                      policy<{'arm64': 'm', 'arm64-capilano': 'y'}>
+CONFIG_IP_NF_TARGET_REDIRECT                    policy<{'arm64': 'm', 'arm64-capilano': 'y'}>
+CONFIG_IP_NF_TARGET_REJECT                      policy<{'arm64': 'm', 'arm64-capilano': 'y'}>
 CONFIG_IP_PIMSM_V1                              policy<{'arm64': '-'}>
 CONFIG_IP_PIMSM_V2                              policy<{'arm64': '-'}>
 CONFIG_IP_PNP_BOOTP                             policy<{'arm64': 'y'}>
 CONFIG_IP_PNP_DHCP                              policy<{'arm64': 'y'}>
 CONFIG_IP_PNP_RARP                              policy<{'arm64': 'n'}>
-CONFIG_IP_ROUTE_CLASSID                         policy<{'arm64': '-'}>
 CONFIG_IP_ROUTE_MULTIPATH                       policy<{'arm64': 'n'}>
 CONFIG_IP_ROUTE_VERBOSE                         policy<{'arm64': 'n'}>
 CONFIG_IP_SCTP                                  policy<{'arm64': 'n'}>
+CONFIG_IP_SET                                   policy<{'arm64': 'm', 'arm64-capilano': 'y'}>
+CONFIG_IP_VS                                    policy<{'arm64': 'm', 'arm64-capilano': 'y'}>
 CONFIG_IP_VS_DH                                 policy<{'arm64': 'n'}>
 CONFIG_IP_VS_FO                                 policy<{'arm64': 'n'}>
 CONFIG_IP_VS_FTP                                policy<{'arm64': '-'}>
@@ -3239,6 +3251,7 @@ CONFIG_LIB80211_CRYPT_CCMP                      policy<{'arm64': '-'}>
 CONFIG_LIB80211_CRYPT_TKIP                      policy<{'arm64': '-'}>
 CONFIG_LIB80211_CRYPT_WEP                       policy<{'arm64': '-'}>
 CONFIG_LIB80211_DEBUG                           policy<{'arm64': '-'}>
+CONFIG_LIBCRC32C                                policy<{'arm64': 'm', 'arm64-capilano': 'y'}>
 CONFIG_LIBERTAS                                 policy<{'arm64': 'n'}>
 CONFIG_LIBERTAS_DEBUG                           policy<{'arm64': '-'}>
 CONFIG_LIBERTAS_MESH                            policy<{'arm64': '-'}>
@@ -3260,6 +3273,7 @@ CONFIG_LIRC                                     policy<{'arm64': 'n'}>
 CONFIG_LITEX                                    policy<{'arm64': '-'}>
 CONFIG_LITEX_LITEETH                            policy<{'arm64': 'n'}>
 CONFIG_LITEX_SOC_CONTROLLER                     policy<{'arm64': 'n'}>
+CONFIG_LLC                                      policy<{'arm64': 'm', 'arm64-capilano': 'y'}>
 CONFIG_LLC2                                     policy<{'arm64': 'n'}>
 CONFIG_LMK04832                                 policy<{'arm64': 'n'}>
 CONFIG_LMP91000                                 policy<{'arm64': 'n'}>
@@ -3303,7 +3317,7 @@ CONFIG_MAC80211_MESH                            policy<{'arm64': 'n'}>
 CONFIG_MAC80211_MESSAGE_TRACING                 policy<{'arm64': 'n'}>
 CONFIG_MACB                                     policy<{'arm64': 'y'}>
 CONFIG_MACB_PCI                                 policy<{'arm64': 'n'}>
-CONFIG_MACSEC                                   policy<{'arm64': 'n'}>
+CONFIG_MACSEC                                   policy<{'arm64': 'y'}>
 CONFIG_MAC_PARTITION                            policy<{'arm64': '-'}>
 CONFIG_MADERA_IRQ                               policy<{'arm64': '-'}>
 CONFIG_MAG3110                                  policy<{'arm64': 'n'}>
@@ -3686,9 +3700,8 @@ CONFIG_MP2629_ADC                               policy<{'arm64': '-'}>
 CONFIG_MPL115                                   policy<{'arm64': '-'}>
 CONFIG_MPL115_I2C                               policy<{'arm64': 'n'}>
 CONFIG_MPL115_SPI                               policy<{'arm64': 'n'}>
-CONFIG_MPLS                                     policy<{'arm64': 'n'}>
-CONFIG_MPLS_IPTUNNEL                            policy<{'arm64': '-'}>
-CONFIG_MPLS_ROUTING                             policy<{'arm64': '-'}>
+CONFIG_MPLS_IPTUNNEL                            policy<{'arm64': 'y'}>
+CONFIG_MPLS_ROUTING                             policy<{'arm64': 'y'}>
 CONFIG_MPTCP                                    policy<{'arm64': 'n'}>
 CONFIG_MPTCP_IPV6                               policy<{'arm64': '-'}>
 CONFIG_MPU3050                                  policy<{'arm64': '-'}>
@@ -3849,61 +3862,86 @@ CONFIG_NETCONSOLE                               policy<{'arm64': 'n'}>
 CONFIG_NETCONSOLE_DYNAMIC                       policy<{'arm64': '-'}>
 CONFIG_NETDEVSIM                                policy<{'arm64': 'n'}>
 CONFIG_NETDEV_NOTIFIER_ERROR_INJECT             policy<{'arm64': '-'}>
+CONFIG_NETFILTER_CONNCOUNT                      policy<{'arm64': 'm', 'arm64-capilano': 'y'}>
+CONFIG_NETFILTER_NETLINK                        policy<{'arm64': 'y'}>
 CONFIG_NETFILTER_NETLINK_ACCT                   policy<{'arm64': 'n'}>
 CONFIG_NETFILTER_NETLINK_HOOK                   policy<{'arm64': 'n'}>
-CONFIG_NETFILTER_NETLINK_LOG                    policy<{'arm64': 'n'}>
-CONFIG_NETFILTER_XT_CONNMARK                    policy<{'arm64': 'n'}>
+CONFIG_NETFILTER_NETLINK_LOG                    policy<{'arm64': 'y'}>
+CONFIG_NETFILTER_NETLINK_QUEUE                  policy<{'arm64': 'm', 'arm64-capilano': 'y'}>
+CONFIG_NETFILTER_XTABLES                        policy<{'arm64': 'm', 'arm64-capilano': 'y'}>
+CONFIG_NETFILTER_XT_CONNMARK                    policy<{'arm64': 'y', 'arm64-capilano-debug': 'm'}>
+CONFIG_NETFILTER_XT_MARK                        policy<{'arm64': 'm', 'arm64-capilano': 'y'}>
+CONFIG_NETFILTER_XT_MATCH_ADDRTYPE              policy<{'arm64': 'm', 'arm64-capilano': 'y'}>
+CONFIG_NETFILTER_XT_MATCH_BPF                   policy<{'arm64': 'm', 'arm64-capilano': 'y'}>
+CONFIG_NETFILTER_XT_MATCH_CGROUP                policy<{'arm64': 'm', 'arm64-capilano': 'y'}>
 CONFIG_NETFILTER_XT_MATCH_CLUSTER               policy<{'arm64': 'n'}>
-CONFIG_NETFILTER_XT_MATCH_CONNBYTES             policy<{'arm64': 'n'}>
-CONFIG_NETFILTER_XT_MATCH_CONNLABEL             policy<{'arm64': 'n'}>
-CONFIG_NETFILTER_XT_MATCH_CONNLIMIT             policy<{'arm64': 'n'}>
-CONFIG_NETFILTER_XT_MATCH_CONNMARK              policy<{'arm64': 'n'}>
+CONFIG_NETFILTER_XT_MATCH_COMMENT               policy<{'arm64': 'm', 'arm64-capilano': 'y'}>
+CONFIG_NETFILTER_XT_MATCH_CONNBYTES             policy<{'arm64': 'y', 'arm64-capilano-debug': 'm'}>
+CONFIG_NETFILTER_XT_MATCH_CONNLABEL             policy<{'arm64': 'y', 'arm64-capilano-debug': 'm'}>
+CONFIG_NETFILTER_XT_MATCH_CONNLIMIT             policy<{'arm64': 'y', 'arm64-capilano-debug': 'm'}>
+CONFIG_NETFILTER_XT_MATCH_CONNMARK              policy<{'arm64': 'y', 'arm64-capilano-debug': 'm'}>
+CONFIG_NETFILTER_XT_MATCH_CONNTRACK             policy<{'arm64': 'm', 'arm64-capilano': 'y'}>
 CONFIG_NETFILTER_XT_MATCH_CPU                   policy<{'arm64': 'n'}>
-CONFIG_NETFILTER_XT_MATCH_DCCP                  policy<{'arm64': 'n'}>
-CONFIG_NETFILTER_XT_MATCH_DSCP                  policy<{'arm64': 'n'}>
-CONFIG_NETFILTER_XT_MATCH_ESP                   policy<{'arm64': 'n'}>
-CONFIG_NETFILTER_XT_MATCH_HELPER                policy<{'arm64': 'n'}>
+CONFIG_NETFILTER_XT_MATCH_DCCP                  policy<{'arm64': 'y', 'arm64-capilano-debug': 'm'}>
+CONFIG_NETFILTER_XT_MATCH_DSCP                  policy<{'arm64': 'y', 'arm64-capilano-debug': 'm'}>
+CONFIG_NETFILTER_XT_MATCH_ECN                   policy<{'arm64': 'm', 'arm64-capilano': 'y'}>
+CONFIG_NETFILTER_XT_MATCH_ESP                   policy<{'arm64': 'y', 'arm64-capilano-debug': 'm'}>
+CONFIG_NETFILTER_XT_MATCH_HASHLIMIT             policy<{'arm64': 'm', 'arm64-capilano': 'y'}>
+CONFIG_NETFILTER_XT_MATCH_HELPER                policy<{'arm64': 'y', 'arm64-capilano-debug': 'm'}>
+CONFIG_NETFILTER_XT_MATCH_HL                    policy<{'arm64': 'm', 'arm64-capilano': 'y'}>
 CONFIG_NETFILTER_XT_MATCH_IPCOMP                policy<{'arm64': 'n'}>
-CONFIG_NETFILTER_XT_MATCH_IPRANGE               policy<{'arm64': 'n'}>
-CONFIG_NETFILTER_XT_MATCH_IPVS                  policy<{'arm64': 'n'}>
+CONFIG_NETFILTER_XT_MATCH_IPRANGE               policy<{'arm64': 'y', 'arm64-capilano-debug': 'm'}>
+CONFIG_NETFILTER_XT_MATCH_IPVS                  policy<{'arm64': 'y', 'arm64-capilano-debug': 'm'}>
 CONFIG_NETFILTER_XT_MATCH_L2TP                  policy<{'arm64': 'n'}>
-CONFIG_NETFILTER_XT_MATCH_LENGTH                policy<{'arm64': 'n'}>
-CONFIG_NETFILTER_XT_MATCH_LIMIT                 policy<{'arm64': 'n'}>
-CONFIG_NETFILTER_XT_MATCH_MAC                   policy<{'arm64': 'n'}>
+CONFIG_NETFILTER_XT_MATCH_LENGTH                policy<{'arm64': 'y', 'arm64-capilano-debug': 'm'}>
+CONFIG_NETFILTER_XT_MATCH_LIMIT                 policy<{'arm64': 'y', 'arm64-capilano-debug': 'm'}>
+CONFIG_NETFILTER_XT_MATCH_MAC                   policy<{'arm64': 'y', 'arm64-capilano-debug': 'm'}>
+CONFIG_NETFILTER_XT_MATCH_MARK                  policy<{'arm64': 'm', 'arm64-capilano': 'y'}>
+CONFIG_NETFILTER_XT_MATCH_MULTIPORT             policy<{'arm64': 'm', 'arm64-capilano': 'y'}>
 CONFIG_NETFILTER_XT_MATCH_NFACCT                policy<{'arm64': 'n'}>
 CONFIG_NETFILTER_XT_MATCH_OSF                   policy<{'arm64': 'n'}>
-CONFIG_NETFILTER_XT_MATCH_OWNER                 policy<{'arm64': 'n'}>
-CONFIG_NETFILTER_XT_MATCH_PHYSDEV               policy<{'arm64': 'n'}>
-CONFIG_NETFILTER_XT_MATCH_PKTTYPE               policy<{'arm64': 'n'}>
-CONFIG_NETFILTER_XT_MATCH_POLICY                policy<{'arm64': 'n'}>
-CONFIG_NETFILTER_XT_MATCH_QUOTA                 policy<{'arm64': 'n'}>
+CONFIG_NETFILTER_XT_MATCH_OWNER                 policy<{'arm64': 'y', 'arm64-capilano-debug': 'm'}>
+CONFIG_NETFILTER_XT_MATCH_PHYSDEV               policy<{'arm64': 'y', 'arm64-capilano-debug': 'm'}>
+CONFIG_NETFILTER_XT_MATCH_PKTTYPE               policy<{'arm64': 'y', 'arm64-capilano-debug': 'm'}>
+CONFIG_NETFILTER_XT_MATCH_POLICY                policy<{'arm64': 'y', 'arm64-capilano-debug': 'm'}>
+CONFIG_NETFILTER_XT_MATCH_QUOTA                 policy<{'arm64': 'y', 'arm64-capilano-debug': 'm'}>
 CONFIG_NETFILTER_XT_MATCH_RATEEST               policy<{'arm64': 'n'}>
-CONFIG_NETFILTER_XT_MATCH_REALM                 policy<{'arm64': 'n'}>
-CONFIG_NETFILTER_XT_MATCH_RECENT                policy<{'arm64': 'n'}>
+CONFIG_NETFILTER_XT_MATCH_REALM                 policy<{'arm64': 'y', 'arm64-capilano-debug': 'm'}>
+CONFIG_NETFILTER_XT_MATCH_RECENT                policy<{'arm64': 'y', 'arm64-capilano-debug': 'm'}>
 CONFIG_NETFILTER_XT_MATCH_SCTP                  policy<{'arm64': 'n'}>
-CONFIG_NETFILTER_XT_MATCH_SOCKET                policy<{'arm64': 'n'}>
-CONFIG_NETFILTER_XT_MATCH_STATE                 policy<{'arm64': 'n'}>
-CONFIG_NETFILTER_XT_MATCH_STATISTIC             policy<{'arm64': 'n'}>
-CONFIG_NETFILTER_XT_MATCH_STRING                policy<{'arm64': 'n'}>
-CONFIG_NETFILTER_XT_MATCH_TCPMSS                policy<{'arm64': 'n'}>
+CONFIG_NETFILTER_XT_MATCH_SOCKET                policy<{'arm64': 'y', 'arm64-capilano-debug': 'm'}>
+CONFIG_NETFILTER_XT_MATCH_STATE                 policy<{'arm64': 'y', 'arm64-capilano-debug': 'm'}>
+CONFIG_NETFILTER_XT_MATCH_STATISTIC             policy<{'arm64': 'y', 'arm64-capilano-debug': 'm'}>
+CONFIG_NETFILTER_XT_MATCH_STRING                policy<{'arm64': 'y', 'arm64-capilano-debug': 'm'}>
+CONFIG_NETFILTER_XT_MATCH_TCPMSS                policy<{'arm64': 'y', 'arm64-capilano-debug': 'm'}>
 CONFIG_NETFILTER_XT_MATCH_TIME                  policy<{'arm64': 'n'}>
 CONFIG_NETFILTER_XT_MATCH_U32                   policy<{'arm64': 'n'}>
+CONFIG_NETFILTER_XT_NAT                         policy<{'arm64': 'm', 'arm64-capilano': 'y'}>
+CONFIG_NETFILTER_XT_SET                         policy<{'arm64': 'm', 'arm64-capilano': 'y'}>
 CONFIG_NETFILTER_XT_TARGET_AUDIT                policy<{'arm64': 'n'}>
-CONFIG_NETFILTER_XT_TARGET_CLASSIFY             policy<{'arm64': 'n'}>
-CONFIG_NETFILTER_XT_TARGET_CONNMARK             policy<{'arm64': 'n'}>
+CONFIG_NETFILTER_XT_TARGET_CHECKSUM             policy<{'arm64': 'm', 'arm64-capilano': 'y'}>
+CONFIG_NETFILTER_XT_TARGET_CLASSIFY             policy<{'arm64': 'y', 'arm64-capilano-debug': 'm'}>
+CONFIG_NETFILTER_XT_TARGET_CONNMARK             policy<{'arm64': 'y', 'arm64-capilano-debug': 'm'}>
 CONFIG_NETFILTER_XT_TARGET_CONNSECMARK          policy<{'arm64': 'n'}>
-CONFIG_NETFILTER_XT_TARGET_CT                   policy<{'arm64': 'n'}>
+CONFIG_NETFILTER_XT_TARGET_CT                   policy<{'arm64': 'y', 'arm64-capilano-debug': 'm'}>
+CONFIG_NETFILTER_XT_TARGET_DSCP                 policy<{'arm64': 'm', 'arm64-capilano': 'y'}>
+CONFIG_NETFILTER_XT_TARGET_HL                   policy<{'arm64': 'm', 'arm64-capilano': 'y'}>
 CONFIG_NETFILTER_XT_TARGET_HMARK                policy<{'arm64': 'n'}>
 CONFIG_NETFILTER_XT_TARGET_IDLETIMER            policy<{'arm64': 'n'}>
-CONFIG_NETFILTER_XT_TARGET_LED                  policy<{'arm64': 'n'}>
-CONFIG_NETFILTER_XT_TARGET_NFLOG                policy<{'arm64': 'n'}>
-CONFIG_NETFILTER_XT_TARGET_NFQUEUE              policy<{'arm64': 'n'}>
+CONFIG_NETFILTER_XT_TARGET_LED                  policy<{'arm64': 'y', 'arm64-capilano-debug': 'm'}>
+CONFIG_NETFILTER_XT_TARGET_LOG                  policy<{'arm64': 'm', 'arm64-capilano': 'y'}>
+CONFIG_NETFILTER_XT_TARGET_MARK                 policy<{'arm64': 'm', 'arm64-capilano': 'y'}>
+CONFIG_NETFILTER_XT_TARGET_MASQUERADE           policy<{'arm64': 'm', 'arm64-capilano': 'y'}>
+CONFIG_NETFILTER_XT_TARGET_NETMAP               policy<{'arm64': 'm', 'arm64-capilano': 'y'}>
+CONFIG_NETFILTER_XT_TARGET_NFLOG                policy<{'arm64': 'y', 'arm64-capilano-debug': 'm'}>
+CONFIG_NETFILTER_XT_TARGET_NFQUEUE              policy<{'arm64': 'y', 'arm64-capilano-debug': 'm'}>
 CONFIG_NETFILTER_XT_TARGET_RATEEST              policy<{'arm64': 'n'}>
+CONFIG_NETFILTER_XT_TARGET_REDIRECT             policy<{'arm64': 'm', 'arm64-capilano': 'y'}>
 CONFIG_NETFILTER_XT_TARGET_SECMARK              policy<{'arm64': 'n'}>
-CONFIG_NETFILTER_XT_TARGET_TCPMSS               policy<{'arm64': 'n'}>
+CONFIG_NETFILTER_XT_TARGET_TCPMSS               policy<{'arm64': 'y', 'arm64-capilano-debug': 'm'}>
 CONFIG_NETFILTER_XT_TARGET_TCPOPTSTRIP          policy<{'arm64': 'n'}>
 CONFIG_NETFILTER_XT_TARGET_TEE                  policy<{'arm64': 'n'}>
-CONFIG_NETFILTER_XT_TARGET_TPROXY               policy<{'arm64': 'n'}>
+CONFIG_NETFILTER_XT_TARGET_TPROXY               policy<{'arm64': 'y', 'arm64-capilano-debug': 'm'}>
 CONFIG_NETFILTER_XT_TARGET_TRACE                policy<{'arm64': 'n'}>
 CONFIG_NETFS_STATS                              policy<{'arm64': '-'}>
 CONFIG_NETFS_SUPPORT                            policy<{'arm64': '-'}>
@@ -3926,12 +3964,14 @@ CONFIG_NET_ACT_SIMP                             policy<{'arm64': 'n'}>
 CONFIG_NET_ACT_SKBEDIT                          policy<{'arm64': 'n'}>
 CONFIG_NET_ACT_SKBMOD                           policy<{'arm64': 'n'}>
 CONFIG_NET_ACT_TUNNEL_KEY                       policy<{'arm64': 'n'}>
+CONFIG_NET_CLS_BASIC                            policy<{'arm64': 'm', 'arm64-capilano': 'y'}>
 CONFIG_NET_CLS_FLOW                             policy<{'arm64': 'n'}>
-CONFIG_NET_CLS_FW                               policy<{'arm64': 'n'}>
+CONFIG_NET_CLS_FLOWER                           policy<{'arm64': 'm', 'arm64-capilano': 'y'}>
+CONFIG_NET_CLS_FW                               policy<{'arm64': 'y'}>
 CONFIG_NET_CLS_MATCHALL                         policy<{'arm64': 'n'}>
-CONFIG_NET_CLS_ROUTE4                           policy<{'arm64': 'n'}>
+CONFIG_NET_CLS_ROUTE4                           policy<{'arm64': 'y'}>
 CONFIG_NET_CLS_TCINDEX                          policy<{'arm64': '-'}>
-CONFIG_NET_CLS_U32                              policy<{'arm64': 'n'}>
+CONFIG_NET_CLS_U32                              policy<{'arm64': 'y'}>
 CONFIG_NET_DSA_AR9331                           policy<{'arm64': 'n'}>
 CONFIG_NET_DSA_BCM_SF2                          policy<{'arm64': 'n'}>
 CONFIG_NET_DSA_HIRSCHMANN_HELLCREEK             policy<{'arm64': 'n'}>
@@ -4002,7 +4042,7 @@ CONFIG_NET_IPVTI                                policy<{'arm64': 'n'}>
 CONFIG_NET_IP_TUNNEL                            policy<{'arm64': 'y'}>
 CONFIG_NET_KEY                                  policy<{'arm64': 'n'}>
 CONFIG_NET_KEY_MIGRATE                          policy<{'arm64': '-'}>
-CONFIG_NET_MPLS_GSO                             policy<{'arm64': '-'}>
+CONFIG_NET_MPLS_GSO                             policy<{'arm64': 'y'}>
 CONFIG_NET_NCSI                                 policy<{'arm64': 'n'}>
 CONFIG_NET_NSH                                  policy<{'arm64': 'n'}>
 CONFIG_NET_PKTGEN                               policy<{'arm64': 'n'}>
@@ -4016,20 +4056,23 @@ CONFIG_NET_SCH_CODEL                            policy<{'arm64': 'n'}>
 CONFIG_NET_SCH_DRR                              policy<{'arm64': 'n'}>
 CONFIG_NET_SCH_DSMARK                           policy<{'arm64': '-'}>
 CONFIG_NET_SCH_ETS                              policy<{'arm64': 'n'}>
+CONFIG_NET_SCH_FQ_CODEL                         policy<{'arm64': 'm', 'arm64-capilano': 'y'}>
 CONFIG_NET_SCH_FQ_PIE                           policy<{'arm64': '-'}>
 CONFIG_NET_SCH_GRED                             policy<{'arm64': 'n'}>
 CONFIG_NET_SCH_HFSC                             policy<{'arm64': 'n'}>
 CONFIG_NET_SCH_HHF                              policy<{'arm64': 'n'}>
-CONFIG_NET_SCH_HTB                              policy<{'arm64': 'n'}>
-CONFIG_NET_SCH_MULTIQ                           policy<{'arm64': 'n'}>
-CONFIG_NET_SCH_NETEM                            policy<{'arm64': 'n'}>
+CONFIG_NET_SCH_HTB                              policy<{'arm64': 'y'}>
+CONFIG_NET_SCH_INGRESS                          policy<{'arm64': 'm', 'arm64-capilano': 'y'}>
+CONFIG_NET_SCH_MQPRIO                           policy<{'arm64': 'm', 'arm64-capilano': 'y'}>
+CONFIG_NET_SCH_MULTIQ                           policy<{'arm64': 'y'}>
+CONFIG_NET_SCH_NETEM                            policy<{'arm64': 'y'}>
 CONFIG_NET_SCH_PIE                              policy<{'arm64': 'n'}>
 CONFIG_NET_SCH_PLUG                             policy<{'arm64': 'n'}>
-CONFIG_NET_SCH_PRIO                             policy<{'arm64': 'n'}>
+CONFIG_NET_SCH_PRIO                             policy<{'arm64': 'y'}>
 CONFIG_NET_SCH_QFQ                              policy<{'arm64': 'n'}>
 CONFIG_NET_SCH_RED                              policy<{'arm64': 'n'}>
 CONFIG_NET_SCH_SFB                              policy<{'arm64': 'n'}>
-CONFIG_NET_SCH_SFQ                              policy<{'arm64': 'n'}>
+CONFIG_NET_SCH_SFQ                              policy<{'arm64': 'y'}>
 CONFIG_NET_SCH_SKBPRIO                          policy<{'arm64': 'n'}>
 CONFIG_NET_SCH_TBF                              policy<{'arm64': 'n'}>
 CONFIG_NET_SCH_TEQL                             policy<{'arm64': 'n'}>
@@ -4041,7 +4084,7 @@ CONFIG_NET_TEAM_MODE_LOADBALANCE                policy<{'arm64': '-'}>
 CONFIG_NET_TEAM_MODE_RANDOM                     policy<{'arm64': '-'}>
 CONFIG_NET_TEAM_MODE_ROUNDROBIN                 policy<{'arm64': '-'}>
 CONFIG_NET_TULIP                                policy<{'arm64': 'n'}>
-CONFIG_NET_VRF                                  policy<{'arm64': 'n'}>
+CONFIG_NET_VRF                                  policy<{'arm64': 'y'}>
 CONFIG_NET_XGENE                                policy<{'arm64': 'n'}>
 CONFIG_NET_XGENE_V2                             policy<{'arm64': 'n'}>
 CONFIG_NFC_DIGITAL                              policy<{'arm64': 'n'}>
@@ -4101,12 +4144,34 @@ CONFIG_NFTL                                     policy<{'arm64': 'n'}>
 CONFIG_NFTL_RW                                  policy<{'arm64': '-'}>
 CONFIG_NFT_FIB_INET                             policy<{'arm64': 'n'}>
 CONFIG_NFT_REJECT_NETDEV                        policy<{'arm64': 'n'}>
+CONFIG_NF_CONNTRACK                             policy<{'arm64': 'm', 'arm64-capilano': 'y'}>
+CONFIG_NF_CONNTRACK_FTP                         policy<{'arm64': 'm', 'arm64-capilano': 'y'}>
 CONFIG_NF_CONNTRACK_PROCFS                      policy<{'arm64': 'y'}>
+CONFIG_NF_CONNTRACK_SIP                         policy<{'arm64': 'm', 'arm64-capilano': 'y'}>
+CONFIG_NF_CONNTRACK_TFTP                        policy<{'arm64': 'm', 'arm64-capilano': 'y'}>
+CONFIG_NF_CT_NETLINK                            policy<{'arm64': 'm', 'arm64-capilano': 'y'}>
 CONFIG_NF_CT_NETLINK_HELPER                     policy<{'arm64': 'n'}>
-CONFIG_NF_FLOW_TABLE_INET                       policy<{'arm64': 'n'}>
-CONFIG_NF_FLOW_TABLE_IPV4                       policy<{'arm64': 'n'}>
-CONFIG_NF_FLOW_TABLE_IPV6                       policy<{'arm64': 'n'}>
-CONFIG_NF_LOG_IPV4                              policy<{'arm64': 'n'}>
+CONFIG_NF_DEFRAG_IPV4                           policy<{'arm64': 'm', 'arm64-capilano': 'y'}>
+CONFIG_NF_DEFRAG_IPV6                           policy<{'arm64': 'm', 'arm64-capilano': 'y'}>
+CONFIG_NF_FLOW_TABLE                            policy<{'arm64': 'm', 'arm64-capilano': 'y'}>
+CONFIG_NF_FLOW_TABLE_INET                       policy<{'arm64': 'y', 'arm64-capilano-debug': 'm'}>
+CONFIG_NF_FLOW_TABLE_IPV4                       policy<{'arm64': 'y', 'arm64-capilano-debug': 'm'}>
+CONFIG_NF_FLOW_TABLE_IPV6                       policy<{'arm64': 'y', 'arm64-capilano-debug': 'm'}>
+CONFIG_NF_LOG_IPV4                              policy<{'arm64': 'y'}>
+CONFIG_NF_LOG_IPV6                              policy<{'arm64': 'm', 'arm64-capilano': 'y'}>
+CONFIG_NF_LOG_SYSLOG                            policy<{'arm64': 'y'}>
+CONFIG_NF_NAT                                   policy<{'arm64': 'm', 'arm64-capilano': 'y'}>
+CONFIG_NF_NAT_FTP                               policy<{'arm64': 'm', 'arm64-capilano': 'y'}>
+CONFIG_NF_NAT_SIP                               policy<{'arm64': 'm', 'arm64-capilano': 'y'}>
+CONFIG_NF_NAT_TFTP                              policy<{'arm64': 'm', 'arm64-capilano': 'y'}>
+CONFIG_NF_REJECT_IPV4                           policy<{'arm64': 'm', 'arm64-capilano': 'y'}>
+CONFIG_NF_REJECT_IPV6                           policy<{'arm64': 'm', 'arm64-capilano': 'y'}>
+CONFIG_NF_SOCKET_IPV4                           policy<{'arm64': 'm', 'arm64-capilano': 'y'}>
+CONFIG_NF_SOCKET_IPV6                           policy<{'arm64': 'm', 'arm64-capilano': 'y'}>
+CONFIG_NF_TABLES                                policy<{'arm64': 'm', 'arm64-capilano': 'y'}>
+CONFIG_NF_TABLES_BRIDGE                         policy<{'arm64': 'm', 'arm64-capilano': 'y'}>
+CONFIG_NF_TPROXY_IPV4                           policy<{'arm64': 'm', 'arm64-capilano': 'y'}>
+CONFIG_NF_TPROXY_IPV6                           policy<{'arm64': 'm', 'arm64-capilano': 'y'}>
 CONFIG_NILFS2_FS                                policy<{'arm64': 'n'}>
 CONFIG_NIU                                      policy<{'arm64': 'n'}>
 CONFIG_NI_XGE_MANAGEMENT_ENET                   policy<{'arm64': 'n'}>
@@ -4244,7 +4309,7 @@ CONFIG_PA12203001                               policy<{'arm64': 'n'}>
 CONFIG_PAGE_EXTENSION                           policy<{'arm64': 'n', 'arm64-capilano-debug': 'y'}>
 CONFIG_PAGE_IDLE_FLAG                           policy<{'arm64': '-'}>
 CONFIG_PAGE_OWNER                               policy<{'arm64': 'n', 'arm64-capilano-debug': 'y'}>
-CONFIG_PAHOLE_HAS_SPLIT_BTF                     policy<{'arm64': 'y', 'arm64-capilano': '-'}>
+CONFIG_PAHOLE_HAS_SPLIT_BTF                     policy<{'arm64': '-', 'arm64-capilano-debug': 'y'}>
 CONFIG_PALMAS_GPADC                             policy<{'arm64': '-'}>
 CONFIG_PANEL                                    policy<{'arm64': '-'}>
 CONFIG_PANEL_PARPORT                            policy<{'arm64': '-'}>
@@ -6222,6 +6287,7 @@ CONFIG_STMPE_I2C                                policy<{'arm64': '-'}>
 CONFIG_STMPE_SPI                                policy<{'arm64': '-'}>
 CONFIG_STM_PROTO_OST                            policy<{'arm64': 'y'}>
 CONFIG_STM_SOURCE_FTRACE                        policy<{'arm64': 'y'}>
+CONFIG_STP                                      policy<{'arm64': 'm', 'arm64-capilano': 'y'}>
 CONFIG_STPMIC1_WATCHDOG                         policy<{'arm64': '-'}>
 CONFIG_ST_UVIS25                                policy<{'arm64': 'n'}>
 CONFIG_ST_UVIS25_I2C                            policy<{'arm64': '-'}>
@@ -6316,7 +6382,6 @@ CONFIG_TCP_CONG_SCALABLE                        policy<{'arm64': 'n'}>
 CONFIG_TCP_CONG_VEGAS                           policy<{'arm64': 'n'}>
 CONFIG_TCP_CONG_VENO                            policy<{'arm64': 'n'}>
 CONFIG_TCP_CONG_YEAH                            policy<{'arm64': 'n'}>
-CONFIG_TCP_MD5SIG                               policy<{'arm64': 'n'}>
 CONFIG_TCS3414                                  policy<{'arm64': 'n'}>
 CONFIG_TCS3472                                  policy<{'arm64': 'n'}>
 CONFIG_TEE                                      policy<{'arm64': 'y'}>
@@ -6328,8 +6393,9 @@ CONFIG_TEST_OBJAGG                              policy<{'arm64': '-'}>
 CONFIG_TEST_PARMAN                              policy<{'arm64': '-'}>
 CONFIG_TEST_POWER                               policy<{'arm64': 'n'}>
 CONFIG_TEST_UBSAN                               policy<{'arm64': '-'}>
-CONFIG_TEXTSEARCH_BM                            policy<{'arm64': '-'}>
-CONFIG_TEXTSEARCH_FSM                           policy<{'arm64': '-'}>
+CONFIG_TEXTSEARCH_BM                            policy<{'arm64': '-', 'arm64-capilano': 'y', 'arm64-capilano-debug': 'm'}>
+CONFIG_TEXTSEARCH_FSM                           policy<{'arm64': '-', 'arm64-capilano': 'y', 'arm64-capilano-debug': 'm'}>
+CONFIG_TEXTSEARCH_KMP                           policy<{'arm64': 'm', 'arm64-capilano': 'y'}>
 CONFIG_THERMAL_GOV_BANG_BANG                    policy<{'arm64': 'n'}>
 CONFIG_THERMAL_GOV_FAIR_SHARE                   policy<{'arm64': 'n'}>
 CONFIG_THERMAL_GOV_USER_SPACE                   policy<{'arm64': 'n'}>
