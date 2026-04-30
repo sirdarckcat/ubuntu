@@ -1712,17 +1712,11 @@ static int tegra_i2c_xfer(struct i2c_adapter *adap, struct i2c_msg msgs[],
 			  int num)
 {
 	struct tegra_i2c_dev *i2c_dev = i2c_get_adapdata(adap);
-	int i, ret;
+	int i, ret = 0;
 
-	if (pm_runtime_enabled(i2c_dev->dev))
-		ret = pm_runtime_get_sync(i2c_dev->dev);
-	else
-		ret = tegra_i2c_runtime_resume(i2c_dev->dev);
-
+	ret = pm_runtime_get_sync(i2c_dev->dev);
 	if (ret < 0) {
-		if (pm_runtime_enabled(i2c_dev->dev))
-			pm_runtime_put_noidle(i2c_dev->dev);
-
+		pm_runtime_put_noidle(i2c_dev->dev);
 		dev_err(i2c_dev->dev, "runtime resume failed %d\n", ret);
 		return ret;
 	}
@@ -1756,10 +1750,7 @@ static int tegra_i2c_xfer(struct i2c_adapter *adap, struct i2c_msg msgs[],
 			break;
 	}
 
-	if (pm_runtime_enabled(i2c_dev->dev))
-		pm_runtime_put(i2c_dev->dev);
-	else
-		tegra_i2c_runtime_suspend(i2c_dev->dev);
+	pm_runtime_put(i2c_dev->dev);
 
 	return ret ?: i;
 }
@@ -2458,8 +2449,10 @@ static int __maybe_unused tegra_i2c_resume_noirq(struct device *dev)
 		return err;
 
 	err = tegra_i2c_init(i2c_dev);
-	if (err)
+	if (err) {
+		tegra_i2c_runtime_suspend(dev);
 		return err;
+	}
 
 	i2c_mark_adapter_resumed(&i2c_dev->adapter);
 
