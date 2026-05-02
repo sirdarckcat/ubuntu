@@ -205,7 +205,7 @@ static struct socket *rxe_setup_udp_tunnel(struct net *net, __be16 port,
 static void rxe_release_udp_tunnel(struct socket *sk)
 {
 	if (sk)
-		udp_tunnel_sock_release(sk);
+		udp_tunnel_sock_release(sk->sk);
 }
 
 static void prepare_udp_hdr(struct sk_buff *skb, __be16 src_port,
