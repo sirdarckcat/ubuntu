@@ -3306,6 +3306,32 @@ static int nvme_resume(struct device *dev)
 {
 	struct nvme_dev *ndev = pci_get_drvdata(to_pci_dev(dev));
 	struct nvme_ctrl *ctrl = &ndev->ctrl;
+	u32 cc;
+
+	/*
+	 * If the controller lost power during suspend (D3cold), CC.EN is
+	 * cleared on power restoration and the admin queue is uninitialized.
+	 * Attempting to send an admin command (e.g. Set Features for power
+	 * state restore) before re-initializing the queue causes a ~60s
+	 * command timeout before the reset path recovers.  Detect this
+	 * condition early and trigger a full reset immediately instead.
+	 *
+	 * Skip this check when last_ps == U32_MAX (simple suspend path):
+	 * the controller may already be in NVME_CTRL_RESETTING state and
+	 * nvme_try_sched_reset() at the reset label handles that correctly.
+	 *
+	 * nvme_pci_reg_read32() always returns 0, so also check for the
+	 * all-ones sentinel (PCI convention for a non-responding device)
+	 * which would otherwise make CC.EN appear set.
+	 */
+	ctrl->ops->reg_read32(ctrl, NVME_REG_CC, &cc);
+	if (ndev->last_ps != U32_MAX && (cc == ~0U || !(cc & NVME_CC_ENABLE))) {
+		if (nvme_ctrl_state(ctrl) == NVME_CTRL_RESETTING)
+			goto reset;
+
+		nvme_reset_ctrl(ctrl);
+		return 0;
+	}
 
 	if (ndev->last_ps == U32_MAX ||
 	    nvme_set_power_state(ctrl, ndev->last_ps) != 0)
