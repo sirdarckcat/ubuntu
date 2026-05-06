@@ -6,6 +6,7 @@
  */
 
 #include <linux/etherdevice.h>
+#include <linux/if.h>
 #include <linux/skbuff.h>
 
 #include "mlxbf_gige.h"
@@ -75,26 +76,22 @@ void mlxbf_gige_get_mac_rx_filter(struct mlxbf_gige *priv,
 		      (index * MLXBF_GIGE_RX_MAC_FILTER_STRIDE));
 }
 
-void mlxbf_gige_enable_promisc(struct mlxbf_gige *priv)
+void mlxbf_gige_enable_mac_rx_range(struct mlxbf_gige *priv,
+				    u64 start_mac, u64 end_mac)
 {
 	void __iomem *base = priv->base;
 	u64 control;
-	u64 end_mac;
+
+	writeq(start_mac, base + MLXBF_GIGE_RX_MAC_FILTER_DMAC_RANGE_START);
+	writeq(end_mac, base + MLXBF_GIGE_RX_MAC_FILTER_DMAC_RANGE_END);
 
 	/* Enable MAC_ID_RANGE match functionality */
 	control = readq(base + MLXBF_GIGE_CONTROL);
 	control |= MLXBF_GIGE_CONTROL_MAC_ID_RANGE_EN;
 	writeq(control, base + MLXBF_GIGE_CONTROL);
-
-	/* Set start of destination MAC range check to 0 */
-	writeq(0, base + MLXBF_GIGE_RX_MAC_FILTER_DMAC_RANGE_START);
-
-	/* Set end of destination MAC range check to all FFs */
-	end_mac = BCAST_MAC_ADDR;
-	writeq(end_mac, base + MLXBF_GIGE_RX_MAC_FILTER_DMAC_RANGE_END);
 }
 
-void mlxbf_gige_disable_promisc(struct mlxbf_gige *priv)
+void mlxbf_gige_disable_mac_rx_range(struct mlxbf_gige *priv)
 {
 	void __iomem *base = priv->base;
 	u64 control;
@@ -107,6 +104,93 @@ void mlxbf_gige_disable_promisc(struct mlxbf_gige *priv)
 	/* NOTE: no need to change DMAC_RANGE_START or END;
 	 * those values are ignored since MAC_ID_RANGE_EN=0
 	 */
+}
+
+void mlxbf_gige_enable_promisc(struct mlxbf_gige *priv)
+{
+	mlxbf_gige_enable_mac_rx_range(priv, 0, BCAST_MAC_ADDR);
+}
+
+void mlxbf_gige_disable_promisc(struct mlxbf_gige *priv)
+{
+	mlxbf_gige_disable_mac_rx_range(priv);
+}
+
+/* Configure data & mask filter to match upper 24-bits of multicast MAC */
+static void mlxbf_gige_write_rx_mcast(struct mlxbf_gige *priv, u32 data, u32 mask)
+{
+	u64 v;
+
+	v = ((u64)(data & 0xffffff) << MLXBF_GIGE_RX_MAC_FILTER_MULTICAST_DATA_SHIFT) |
+	    (mask & 0xffffff);
+	writeq(v, priv->base + MLXBF_GIGE_RX_MAC_FILTER_MULTICAST);
+}
+
+void mlxbf_gige_set_rx_mode_multicast(struct mlxbf_gige *priv,
+				      struct net_device *netdev)
+{
+	const u8 *addr0 = NULL, *addr1 = NULL, *addr2 = NULL;
+	struct netdev_hw_addr *ha;
+	unsigned int mc_count = 0;
+	u64 addr2_u64;
+
+	/* Promiscuous mode: no need to configure multicast filters */
+	if (netdev->flags & IFF_PROMISC)
+		return;
+
+	netdev_for_each_mc_addr(ha, netdev) {
+		if (mc_count == 0)
+			addr0 = ha->addr;
+		else if (mc_count == 1)
+			addr1 = ha->addr;
+		else if (mc_count == 2)
+			addr2 = ha->addr;
+		mc_count++;
+	}
+
+	/* ALLMULTI mode or 4+ multicast MACs: allow all packets with multicast bit set */
+	if ((netdev->flags & IFF_MULTICAST) &&
+	    ((netdev->flags & IFF_ALLMULTI) || mc_count > 3)) {
+		mlxbf_gige_write_rx_mcast(priv, BIT_ULL(40) >> 24, BIT_ULL(40) >> 24);
+		mlxbf_gige_enable_multicast_rx(priv);
+		return;
+	}
+
+	/* No multicast mode: turn off all multicast filter mechanisms */
+	if (((netdev->flags & IFF_MULTICAST) == 0) ||
+	    mc_count == 0) {
+		mlxbf_gige_disable_mac_rx_filter(priv, MLXBF_GIGE_MCAST_MAC_FILTER_IDX0);
+		mlxbf_gige_disable_mac_rx_filter(priv, MLXBF_GIGE_MCAST_MAC_FILTER_IDX1);
+		mlxbf_gige_disable_mac_rx_range(priv);
+		mlxbf_gige_disable_multicast_rx(priv);
+		return;
+	}
+
+	/* Disable ALLMULTI mode for 1-3 multicast MACs */
+	mlxbf_gige_disable_multicast_rx(priv);
+
+	/* Configure up to 2 multicast MACs in direct-match MAC filter slots 2 and 3 */
+	if (addr0) {
+		mlxbf_gige_set_mac_rx_filter(priv, MLXBF_GIGE_MCAST_MAC_FILTER_IDX0,
+					     ether_addr_to_u64(addr0));
+		mlxbf_gige_enable_mac_rx_filter(priv, MLXBF_GIGE_MCAST_MAC_FILTER_IDX0);
+	} else {
+		mlxbf_gige_disable_mac_rx_filter(priv, MLXBF_GIGE_MCAST_MAC_FILTER_IDX0);
+	}
+	if (mc_count > 1 && addr1) {
+		mlxbf_gige_set_mac_rx_filter(priv, MLXBF_GIGE_MCAST_MAC_FILTER_IDX1,
+					     ether_addr_to_u64(addr1));
+		mlxbf_gige_enable_mac_rx_filter(priv, MLXBF_GIGE_MCAST_MAC_FILTER_IDX1);
+	} else {
+		mlxbf_gige_disable_mac_rx_filter(priv, MLXBF_GIGE_MCAST_MAC_FILTER_IDX1);
+	}
+	/* Configure 3rd multicast MAC (if any) into 48-bit range compare */
+	if (mc_count > 2 && addr2) {
+		addr2_u64 = ether_addr_to_u64(addr2);
+		mlxbf_gige_enable_mac_rx_range(priv, addr2_u64, addr2_u64);
+	} else {
+		mlxbf_gige_disable_mac_rx_range(priv);
+	}
 }
 
 /* Receive Initialization
