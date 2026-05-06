@@ -70,6 +70,8 @@
 #define MLXBF_GIGE_RX_MAC_FILTER_COUNT_PASS_EN        BIT(0)
 #define MLXBF_GIGE_RX_PASS_COUNTER_ALL                0x0550
 #define MLXBF_GIGE_RX_DISC_COUNTER_ALL                0x0560
+#define MLXBF_GIGE_RX_MAC_FILTER_MULTICAST            0x0570
+#define MLXBF_GIGE_RX_MAC_FILTER_MULTICAST_DATA_SHIFT 24
 #define MLXBF_GIGE_RX                                 0x0578
 #define MLXBF_GIGE_RX_STRIP_CRC_EN                    BIT(1)
 #define MLXBF_GIGE_RX_DMA                             0x0580
