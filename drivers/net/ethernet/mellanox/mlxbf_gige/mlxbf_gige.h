@@ -34,13 +34,14 @@
 #define MLXBF_GIGE_DMA_PAGE_SZ    4096
 #define MLXBF_GIGE_DMA_PAGE_SHIFT 12
 
-/* There are four individual MAC RX filters. Currently
- * two of them are being used: one for the broadcast MAC
- * (index 0) and one for local MAC (index 1)
+/* There are four individual MAC RX filters. In use: broadcast (0),
+ * local/unicast (1), and up to two exact multicast (2, 3).
  */
 #define MLXBF_GIGE_BCAST_MAC_FILTER_IDX 0
 #define MLXBF_GIGE_LOCAL_MAC_FILTER_IDX 1
-#define MLXBF_GIGE_MAX_FILTER_IDX       3
+#define MLXBF_GIGE_MCAST_MAC_FILTER_IDX0 2
+#define MLXBF_GIGE_MCAST_MAC_FILTER_IDX1 3
+#define MLXBF_GIGE_MAX_FILTER_IDX        3
 
 /* Define for broadcast MAC literal */
 #define BCAST_MAC_ADDR 0xFFFFFFFFFFFF
@@ -194,8 +195,13 @@ void mlxbf_gige_set_mac_rx_filter(struct mlxbf_gige *priv,
 				  unsigned int index, u64 dmac);
 void mlxbf_gige_get_mac_rx_filter(struct mlxbf_gige *priv,
 				  unsigned int index, u64 *dmac);
+void mlxbf_gige_enable_mac_rx_range(struct mlxbf_gige *priv,
+				    u64 start_mac, u64 end_mac);
+void mlxbf_gige_disable_mac_rx_range(struct mlxbf_gige *priv);
 void mlxbf_gige_enable_promisc(struct mlxbf_gige *priv);
 void mlxbf_gige_disable_promisc(struct mlxbf_gige *priv);
+void mlxbf_gige_set_rx_mode_multicast(struct mlxbf_gige *priv,
+				      struct net_device *netdev);
 int mlxbf_gige_rx_init(struct mlxbf_gige *priv);
 void mlxbf_gige_rx_deinit(struct mlxbf_gige *priv);
 int mlxbf_gige_tx_init(struct mlxbf_gige *priv);
