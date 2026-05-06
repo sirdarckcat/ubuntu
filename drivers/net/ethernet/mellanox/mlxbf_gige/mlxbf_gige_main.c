@@ -268,7 +268,6 @@ static int mlxbf_gige_open(struct net_device *netdev)
 
 	mlxbf_gige_enable_mac_rx_filter(priv, MLXBF_GIGE_BCAST_MAC_FILTER_IDX);
 	mlxbf_gige_enable_mac_rx_filter(priv, MLXBF_GIGE_LOCAL_MAC_FILTER_IDX);
-	mlxbf_gige_enable_multicast_rx(priv);
 
 	/* Set bits in INT_EN that we care about */
 	int_en = MLXBF_GIGE_INT_EN_HW_ACCESS_ERROR |
@@ -361,6 +360,8 @@ static void mlxbf_gige_set_rx_mode(struct net_device *netdev)
 		else
 			mlxbf_gige_disable_promisc(priv);
 	}
+
+	mlxbf_gige_set_rx_mode_multicast(priv, netdev);
 }
 
 static void mlxbf_gige_get_stats64(struct net_device *netdev,
