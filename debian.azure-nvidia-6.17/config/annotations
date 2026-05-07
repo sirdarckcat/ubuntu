@@ -5,11 +5,20 @@
 
 include "../../debian.azure-6.17/config/annotations"
 
+CONFIG_ACPI_APEI_EINJ                           policy<{'arm64': 'y'}>
+CONFIG_ACPI_APEI_EINJ                           note<'Required for CONFIG_ACPI_APEI_EINJ_CXL'>
+
+CONFIG_ACPI_APEI_EINJ_CXL                       policy<{'arm64': 'y'}>
+CONFIG_ACPI_APEI_EINJ_CXL                       note<'CXL protocol error injection support via APEI EINJ'>
+
 CONFIG_ACPI_MPAM                                policy<{'arm64': 'y'}>
 CONFIG_ACPI_MPAM                                note<'LP: #2122432'>
 
 CONFIG_AMPERE_ERRATUM_AC04_CPU_23               policy<{'arm64': 'y'}>
 CONFIG_AMPERE_ERRATUM_AC04_CPU_23               note<'LP: #2122432'>
+
+CONFIG_ARCH_HAS_CPU_CACHE_INVALIDATE_MEMREGION  policy<{'arm64': 'y'}>
+CONFIG_ARCH_HAS_CPU_CACHE_INVALIDATE_MEMREGION  note<'Override debian.master amd64-only; arm64 selects this via arch/arm64/Kconfig since 4d873c5dc3ed'>
 
 CONFIG_ARCH_HAS_CPU_RESCTRL                     policy<{'arm64': 'y'}>
 CONFIG_ARCH_HAS_CPU_RESCTRL                     note<'LP: #2122432'>
@@ -71,6 +80,9 @@ CONFIG_ARM_CPU_RESCTRL                          note<'LP: #2122432'>
 CONFIG_ARM_LFA                                  policy<{'arm64': 'y'}>
 CONFIG_ARM_LFA                                  note<'LP: #2138342'>
 
+CONFIG_CACHEMAINT_FOR_HOTPLUG                   policy<{'arm64': 'n'}>
+CONFIG_CACHEMAINT_FOR_HOTPLUG                   note<'Optional HiSilicon HHA cache maintenance driver; depends on GENERIC_CPU_CACHE_MAINTENANCE; not needed for NVIDIA platforms'>
+
 CONFIG_CMA_SIZE_MBYTES                          policy<{'arm64': '1024'}>
 CONFIG_CMA_SIZE_MBYTES                          note<'LP: #2095028'>
 
@@ -122,8 +134,23 @@ CONFIG_CORESIGHT_TPDM                           note<'{Required for Grace enable
 CONFIG_CORESIGHT_TRBE                           policy<{'arm64': 'm'}>
 CONFIG_CORESIGHT_TRBE                           note<'{Required for Grace enablement}'>
 
+CONFIG_CXL_BUS                                  policy<{'arm64': 'y'}>
+CONFIG_CXL_BUS                                  note<'Enable CXL bus support built-in; required for CXL Type-2 device and RAS support'>
+
+CONFIG_CXL_MEM                                  policy<{'arm64': 'y'}>
+CONFIG_CXL_MEM                                  note<'Auto-selected by CXL_PCI; required for CXL memory expansion and Type-2 device support'>
+
 CONFIG_CXL_MEM_RAW_COMMANDS                     policy<{'arm64': 'y'}>
 CONFIG_CXL_MEM_RAW_COMMANDS                     note<'Enable CXL raw commands for memory devices'>
+
+CONFIG_CXL_PCI                                  policy<{'arm64': 'y'}>
+CONFIG_CXL_PCI                                  note<'Enable CXL PCI management built-in; auto-selects CXL_MEM; required for CXL Type-2 device support'>
+
+CONFIG_CXL_PORT                                 policy<{'arm64': 'y'}>
+CONFIG_CXL_PORT                                 note<'Required for CXL port enumeration; defaults to CXL_BUS value'>
+
+CONFIG_CXL_RAS                                  policy<{'arm64': 'y'}>
+CONFIG_CXL_RAS                                  note<'New def_bool replacing PCIEAER_CXL; auto-enabled with ACPI_APEI_GHES+PCIEAER+CXL_BUS; CXL RAS error handling support'>
 
 CONFIG_DMA_MAP_BENCHMARK                        policy<{'arm64': 'y'}>
 CONFIG_DMA_MAP_BENCHMARK                        note<'{Required for Azure Grace enablement}'>
@@ -142,6 +169,12 @@ CONFIG_ETM4X_IMPDEF_FEATURE                     note<'{Required for Grace enable
 
 CONFIG_FTRACE_SORT_STARTUP_TEST                 policy<{'arm64': 'n'}>
 CONFIG_FTRACE_SORT_STARTUP_TEST                 note<'LP: #2122432'>
+
+CONFIG_FWCTL                                    policy<{'arm64': 'y'}>
+CONFIG_FWCTL                                    note<'Selected by CXL_BUS when CXL_FEATURES is enabled; required for CXL feature mailbox access'>
+
+CONFIG_GENERIC_CPU_CACHE_MAINTENANCE            policy<{'arm64': 'y'}>
+CONFIG_GENERIC_CPU_CACHE_MAINTENANCE            note<'Selected by arm64 via arch/arm64/Kconfig since 4d873c5dc3ed; not selected by x86'>
 
 CONFIG_HYPERV_BALLOON                           policy<{'arm64': 'm'}>
 CONFIG_HYPERV_BALLOON                           note<'{Required for Azure Grace enablement}'>
@@ -173,6 +206,9 @@ CONFIG_NVIDIA_TEGRA410_C2C_PMU                  note<'LP: #2139315'>
 CONFIG_NVIDIA_TEGRA410_CMEM_LATENCY_PMU         policy<{'arm64': 'm'}>
 CONFIG_NVIDIA_TEGRA410_CMEM_LATENCY_PMU         note<'LP: #2139315'>
 
+CONFIG_PCIEAER_CXL                              policy<{'arm64': '-'}>
+CONFIG_PCIEAER_CXL                              note<'Removed by commit d18f1b7beadf (PCI/AER: Replace PCIEAER_CXL symbol with CXL_RAS)'>
+
 CONFIG_PID_IN_CONTEXTIDR                        policy<{'arm64': 'y'}>
 CONFIG_PID_IN_CONTEXTIDR                        note<'{Required for Grace enablement}'>
 
@@ -193,6 +229,9 @@ CONFIG_RESCTRL_RMID_DEPENDS_ON_CLOSID           note<'LP: #2122432'>
 
 CONFIG_SAMPLE_CORESIGHT_SYSCFG                  policy<{'arm64': 'n'}>
 CONFIG_SAMPLE_CORESIGHT_SYSCFG                  note<'{Required for Grace enablement}'>
+
+CONFIG_SFC_CXL                                  policy<{'arm64': 'n'}>
+CONFIG_SFC_CXL                                  note<'Solarflare SFC9100-family CXL Type-2 device support; not needed for NVIDIA platforms'>
 
 CONFIG_TEGRA241_CMDQV                           policy<{'arm64': 'y'}>
 CONFIG_TEGRA241_CMDQV                           note<'LP: #2097573'>
