@@ -2,7 +2,7 @@
 /*
  * DMA driver for NVIDIA Tegra GPC DMA controller.
  *
- * Copyright (c) 2014-2023, NVIDIA CORPORATION.  All rights reserved.
+ * Copyright (c) 2014-2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  */
 
 #include <linux/bitfield.h>
@@ -1053,13 +1053,13 @@ tegra_dma_prep_slave_sg(struct dma_chan *dc, struct scatterlist *sgl,
 		return NULL;
 	}
 
-	ret = tegra_dma_sid_reserve(tdc, direction);
-	if (ret)
-		return NULL;
-
 	ret = get_transfer_param(tdc, direction, &apb_ptr, &mmio_seq, &csr,
 				 &burst_size, &slave_bw);
 	if (ret < 0)
+		return NULL;
+
+	ret = tegra_dma_sid_reserve(tdc, direction);
+	if (ret)
 		return NULL;
 
 	/* Enable once or continuous mode */
@@ -1098,7 +1098,7 @@ tegra_dma_prep_slave_sg(struct dma_chan *dc, struct scatterlist *sgl,
 
 	dma_desc = kzalloc(struct_size(dma_desc, sg_req, sg_len), GFP_NOWAIT);
 	if (!dma_desc)
-		return NULL;
+		goto err_free_sid;
 
 	dma_desc->sg_count = sg_len;
 	sg_req = dma_desc->sg_req;
@@ -1114,8 +1114,7 @@ tegra_dma_prep_slave_sg(struct dma_chan *dc, struct scatterlist *sgl,
 		if ((len & 3) || (mem & 3) || len > max_dma_count) {
 			dev_err(tdc2dev(tdc),
 				"DMA length/memory address is not supported\n");
-			kfree(dma_desc);
-			return NULL;
+			goto err_free_desc;
 		}
 
 		mmio_seq |= get_burst_size(tdc, burst_size, slave_bw, len);
@@ -1139,6 +1138,12 @@ tegra_dma_prep_slave_sg(struct dma_chan *dc, struct scatterlist *sgl,
 
 	dma_desc->cyclic = false;
 	return vchan_tx_prep(&tdc->vc, &dma_desc->vd, flags);
+
+err_free_desc:
+	kfree(dma_desc);
+err_free_sid:
+	tegra_dma_sid_free(tdc);
+	return NULL;
 }
 
 static struct dma_async_tx_descriptor *
@@ -1166,10 +1171,6 @@ tegra_dma_prep_dma_cyclic(struct dma_chan *dc, dma_addr_t buf_addr, size_t buf_l
 		return NULL;
 	}
 
-	ret = tegra_dma_sid_reserve(tdc, direction);
-	if (ret)
-		return NULL;
-
 	/*
 	 * We only support cycle transfer when buf_len is multiple of
 	 * period_len.
@@ -1189,6 +1190,10 @@ tegra_dma_prep_dma_cyclic(struct dma_chan *dc, dma_addr_t buf_addr, size_t buf_l
 	ret = get_transfer_param(tdc, direction, &apb_ptr, &mmio_seq, &csr,
 				 &burst_size, &slave_bw);
 	if (ret < 0)
+		return NULL;
+
+	ret = tegra_dma_sid_reserve(tdc, direction);
+	if (ret)
 		return NULL;
 
 	/* Enable once or continuous mode */
@@ -1228,7 +1233,7 @@ tegra_dma_prep_dma_cyclic(struct dma_chan *dc, dma_addr_t buf_addr, size_t buf_l
 	dma_desc = kzalloc(struct_size(dma_desc, sg_req, period_count),
 			   GFP_NOWAIT);
 	if (!dma_desc)
-		return NULL;
+		goto err_free_sid;
 
 	dma_desc->bytes_req = buf_len;
 	dma_desc->sg_count = period_count;
@@ -1257,6 +1262,10 @@ tegra_dma_prep_dma_cyclic(struct dma_chan *dc, dma_addr_t buf_addr, size_t buf_l
 	dma_desc->cyclic = true;
 
 	return vchan_tx_prep(&tdc->vc, &dma_desc->vd, flags);
+
+err_free_sid:
+	tegra_dma_sid_free(tdc);
+	return NULL;
 }
 
 static int tegra_dma_alloc_chan_resources(struct dma_chan *dc)
