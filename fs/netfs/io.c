@@ -570,7 +570,6 @@ netfs_rreq_prepare_read(struct netfs_io_request *rreq,
 			struct iov_iter *io_iter)
 {
 	enum netfs_io_source source = NETFS_DOWNLOAD_FROM_SERVER;
-	struct netfs_inode *ictx = netfs_inode(rreq->inode);
 	size_t lsize;
 
 	_enter("%llx-%llx,%llx", subreq->start, subreq->start + subreq->len, rreq->i_size);
@@ -589,12 +588,14 @@ netfs_rreq_prepare_read(struct netfs_io_request *rreq,
 		 * we will call it again.
 		 */
 		if (rreq->origin != NETFS_DIO_READ) {
-			if (subreq->start >= ictx->zero_point) {
+			unsigned long long zp = netfs_read_zero_point(rreq->inode);
+
+			if (subreq->start >= zp) {
 				source = NETFS_FILL_WITH_ZEROES;
 				goto set;
 			}
-			if (subreq->len > ictx->zero_point - subreq->start)
-				subreq->len = ictx->zero_point - subreq->start;
+			if (subreq->len > zp - subreq->start)
+				subreq->len = zp - subreq->start;
 		}
 		if (subreq->len > rreq->i_size - subreq->start)
 			subreq->len = rreq->i_size - subreq->start;

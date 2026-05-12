@@ -131,7 +131,8 @@ try_next_key:
 	afs_begin_vnode_operation(op);
 
 	op->store.write_iter = iter;
-	op->store.i_size = max(pos + size, vnode->netfs.remote_i_size);
+	op->store.i_size = umax(pos + size,
+				netfs_read_remote_i_size(&vnode->netfs.inode));
 	op->mtime = inode_get_mtime(&vnode->netfs.inode);
 
 	afs_wait_for_operation(op);

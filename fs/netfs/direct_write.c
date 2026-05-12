@@ -17,13 +17,14 @@ static void netfs_cleanup_dio_write(struct netfs_io_request *wreq)
 	if (wreq->error || end <= i_size_read(inode))
 		return;
 
-	spin_lock(&inode->i_lock);
-	if (end > i_size_read(inode)) {
-		if (wreq->netfs_ops->update_i_size)
-			wreq->netfs_ops->update_i_size(inode, end);
-		else
-			i_size_write(inode, end);
+	if (wreq->netfs_ops->update_i_size) {
+		wreq->netfs_ops->update_i_size(inode, end);
+		return;
 	}
+
+	spin_lock(&inode->i_lock);
+	if (end > i_size_read(inode))
+		i_size_write(inode, end);
 	spin_unlock(&inode->i_lock);
 }
 
@@ -190,8 +191,10 @@ ssize_t netfs_unbuffered_write_iter(struct kiocb *iocb, struct iov_iter *from)
 	if (ret < 0)
 		goto out;
 	end = iocb->ki_pos + iov_iter_count(from);
-	if (end > ictx->zero_point)
-		ictx->zero_point = end;
+	spin_lock(&inode->i_lock);
+	if (end > ictx->_zero_point)
+		netfs_write_zero_point(inode, end);
+	spin_unlock(&inode->i_lock);
 
 	fscache_invalidate(netfs_i_cookie(ictx), NULL, i_size_read(inode),
 			   FSCACHE_INVAL_DIO_WRITE);
