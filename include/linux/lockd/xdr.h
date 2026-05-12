@@ -78,7 +78,7 @@ typedef struct nlm_args nlm_args;
 /*
  * Generic lockd result
  */
-struct nlm_res {
+struct lockd_res {
 	struct nlm_cookie	cookie;
 	__be32			status;
 	struct nlm_lock		lock;

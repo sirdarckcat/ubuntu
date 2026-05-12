@@ -232,7 +232,7 @@ out_overflow:
  *	};
  */
 static void encode_nlm_holder(struct xdr_stream *xdr,
-			      const struct nlm_res *result)
+			      const struct lockd_res *result)
 {
 	const struct nlm_lock *lock = &result->lock;
 	u32 l_offset, l_len;
@@ -248,7 +248,7 @@ static void encode_nlm_holder(struct xdr_stream *xdr,
 	*p   = cpu_to_be32(l_len);
 }
 
-static int decode_nlm_holder(struct xdr_stream *xdr, struct nlm_res *result)
+static int decode_nlm_holder(struct xdr_stream *xdr, struct lockd_res *result)
 {
 	struct nlm_lock *lock = &result->lock;
 	struct file_lock *fl = &lock->fl;
@@ -434,7 +434,7 @@ static void nlm_xdr_enc_res(struct rpc_rqst *req,
 			    struct xdr_stream *xdr,
 			    const void *data)
 {
-	const struct nlm_res *result = data;
+	const struct lockd_res *result = data;
 
 	encode_cookie(xdr, &result->cookie);
 	encode_nlm_stat(xdr, result->status);
@@ -454,7 +454,7 @@ static void nlm_xdr_enc_res(struct rpc_rqst *req,
  *	};
  */
 static void encode_nlm_testrply(struct xdr_stream *xdr,
-				const struct nlm_res *result)
+				const struct lockd_res *result)
 {
 	if (result->status == nlm_lck_denied)
 		encode_nlm_holder(xdr, result);
@@ -464,7 +464,7 @@ static void nlm_xdr_enc_testres(struct rpc_rqst *req,
 				struct xdr_stream *xdr,
 				const void *data)
 {
-	const struct nlm_res *result = data;
+	const struct lockd_res *result = data;
 
 	encode_cookie(xdr, &result->cookie);
 	encode_nlm_stat(xdr, result->status);
@@ -493,7 +493,7 @@ static void nlm_xdr_enc_testres(struct rpc_rqst *req,
  *	};
  */
 static int decode_nlm_testrply(struct xdr_stream *xdr,
-			       struct nlm_res *result)
+			       struct lockd_res *result)
 {
 	int error;
 
@@ -510,7 +510,7 @@ static int nlm_xdr_dec_testres(struct rpc_rqst *req,
 			       struct xdr_stream *xdr,
 			       void *data)
 {
-	struct nlm_res *result = data;
+	struct lockd_res *result = data;
 	int error;
 
 	error = decode_cookie(xdr, &result->cookie);
@@ -531,7 +531,7 @@ static int nlm_xdr_dec_res(struct rpc_rqst *req,
 			   struct xdr_stream *xdr,
 			   void *data)
 {
-	struct nlm_res *result = data;
+	struct lockd_res *result = data;
 	int error;
 
 	error = decode_cookie(xdr, &result->cookie);
