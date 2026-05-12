@@ -73,7 +73,7 @@ static enum netfs_how_to_modify netfs_how_to_modify(struct netfs_inode *ctx,
 	if (folio_test_uptodate(folio))
 		return NETFS_FOLIO_IS_UPTODATE;
 
-	if (pos >= ctx->zero_point)
+	if (pos >= netfs_read_zero_point(&ctx->inode))
 		return NETFS_MODIFY_AND_CLEAR;
 
 	if (!maybe_trouble && offset == 0 && len >= flen)

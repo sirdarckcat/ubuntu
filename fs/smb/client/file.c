@@ -2289,7 +2289,8 @@ cifs_update_eof(struct cifsInodeInfo *cifsi, loff_t offset,
 {
 	loff_t end_of_write = offset + bytes_written;
 
-	if (end_of_write > cifsi->netfs.remote_i_size)
+	/* We can read the size directly as we hold i_lock. */
+	if (end_of_write > cifsi->netfs._remote_i_size)
 		netfs_resize_file(&cifsi->netfs, end_of_write, true);
 }
 
@@ -3473,8 +3474,9 @@ cifs_uncached_writev_complete(struct work_struct *work)
 
 	spin_lock(&inode->i_lock);
 	cifs_update_eof(cifsi, wdata->offset, wdata->bytes);
-	if (cifsi->netfs.remote_i_size > inode->i_size)
-		i_size_write(inode, cifsi->netfs.remote_i_size);
+	/* We can read the size directly as we hold i_lock. */
+	if (cifsi->netfs._remote_i_size > inode->i_size)
+		i_size_write(inode, cifsi->netfs._remote_i_size);
 	spin_unlock(&inode->i_lock);
 
 	complete(&wdata->done);
