@@ -48,10 +48,10 @@ static void netfs_folio_start_fscache(bool caching, struct folio *folio)
 
 /*
  * Decide how we should modify a folio.  We might be attempting to do
- * write-streaming, in which case we don't want to a local RMW cycle if we can
- * avoid it.  If we're doing local caching or content crypto, we award that
- * priority over avoiding RMW.  If the file is open readably, then we also
- * assume that we may want to read what we wrote.
+ * write-streaming, as we don't want to a local RMW cycle if we can avoid it.
+ * If we're doing local caching or content crypto, we award that priority over
+ * avoiding RMW.  If the file is open readably, then we let ->read_folio() fill
+ * in the gaps.
  */
 static enum netfs_how_to_modify netfs_how_to_modify(struct netfs_inode *ctx,
 						    struct file *file,
@@ -79,8 +79,6 @@ static enum netfs_how_to_modify netfs_how_to_modify(struct netfs_inode *ctx,
 	if (!maybe_trouble && offset == 0 && len >= flen)
 		return NETFS_WHOLE_FOLIO_MODIFY;
 
-	if (file->f_mode & FMODE_READ)
-		goto no_write_streaming;
 	if (test_bit(NETFS_ICTX_NO_WRITE_STREAMING, &ctx->flags))
 		goto no_write_streaming;
 
