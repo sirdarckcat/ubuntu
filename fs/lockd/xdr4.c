@@ -239,7 +239,7 @@ nlm4svc_decode_res(struct svc_rqst *rqstp, struct xdr_stream *xdr)
 bool
 nlm4svc_decode_reboot(struct svc_rqst *rqstp, struct xdr_stream *xdr)
 {
-	struct nlm_reboot *argp = rqstp->rq_argp;
+	struct lockd_reboot *argp = rqstp->rq_argp;
 	__be32 *p;
 	u32 len;
 
