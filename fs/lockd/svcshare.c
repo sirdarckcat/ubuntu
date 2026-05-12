@@ -18,7 +18,7 @@
 #include <linux/lockd/share.h>
 
 static inline int
-nlm_cmp_owner(struct nlm_share *share, struct xdr_netobj *oh)
+nlm_cmp_owner(struct lockd_share *share, struct xdr_netobj *oh)
 {
 	return share->s_owner.len == oh->len
 	    && !memcmp(share->s_owner.data, oh->data, oh->len);
@@ -28,7 +28,7 @@ __be32
 nlmsvc_share_file(struct nlm_host *host, struct nlm_file *file,
 			struct nlm_args *argp)
 {
-	struct nlm_share	*share;
+	struct lockd_share	*share;
 	struct xdr_netobj	*oh = &argp->lock.oh;
 	u8			*ohdata;
 
@@ -69,7 +69,7 @@ __be32
 nlmsvc_unshare_file(struct nlm_host *host, struct nlm_file *file,
 			struct nlm_args *argp)
 {
-	struct nlm_share	*share, **shpp;
+	struct lockd_share	*share, **shpp;
 	struct xdr_netobj	*oh = &argp->lock.oh;
 
 	for (shpp = &file->f_shares; (share = *shpp) != NULL;
@@ -93,7 +93,7 @@ nlmsvc_unshare_file(struct nlm_host *host, struct nlm_file *file,
 void nlmsvc_traverse_shares(struct nlm_host *host, struct nlm_file *file,
 		nlm_host_match_fn_t match)
 {
-	struct nlm_share	*share, **shpp;
+	struct lockd_share	*share, **shpp;
 
 	shpp = &file->f_shares;
 	while ((share = *shpp) !=  NULL) {

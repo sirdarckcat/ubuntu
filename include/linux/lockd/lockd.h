@@ -157,7 +157,7 @@ struct nlm_file {
 	struct nfs_fh		f_handle;	/* NFS file handle */
 	struct file *		f_file[2];	/* VFS file pointers,
 						   indexed by O_ flags */
-	struct nlm_share *	f_shares;	/* DOS shares */
+	struct lockd_share *	f_shares;	/* DOS shares */
 	struct list_head	f_blocks;	/* blocked locks */
 	unsigned int		f_locks;	/* guesstimate # of locks */
 	unsigned int		f_count;	/* reference count */
