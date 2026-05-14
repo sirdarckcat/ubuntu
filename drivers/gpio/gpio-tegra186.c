@@ -24,6 +24,7 @@
 #include <dt-bindings/gpio/tegra241-gpio.h>
 #include <dt-bindings/gpio/tegra264-gpio.h>
 #include <dt-bindings/gpio/tegra256s-gpio.h>
+#include <dt-bindings/gpio/tegra238-gpio.h>
 
 /* security registers */
 #define TEGRA186_GPIO_CTL_SCR 0x0c
@@ -785,6 +786,7 @@ static const struct of_device_id tegra186_pmc_of_match[] = {
 	{ .compatible = "nvidia,tegra194-pmc" },
 	{ .compatible = "nvidia,tegra234-pmc" },
 	{ .compatible = "nvidia,tegra264-pmc" },
+	{ .compatible = "nvidia,tegra238-pmc" },
 	{ /* sentinel */ }
 };
 
@@ -1546,6 +1548,85 @@ static const struct tegra_gpio_soc tegra410_system_soc = {
 	.instance = 0,
 };
 
+#define TEGRA238_MAIN_GPIO_PORT(_name, _bank, _port, _pins)	\
+	[TEGRA238_MAIN_GPIO_PORT_##_name] = {			\
+		.name = #_name,					\
+		.bank = _bank,					\
+		.port = _port,					\
+		.pins = _pins,					\
+	}
+
+static const struct tegra_gpio_port tegra238_main_ports[] = {
+	TEGRA238_MAIN_GPIO_PORT(A, 0, 0, 8),
+	TEGRA238_MAIN_GPIO_PORT(B, 0, 1, 5),
+	TEGRA238_MAIN_GPIO_PORT(C, 0, 2, 8),
+	TEGRA238_MAIN_GPIO_PORT(D, 0, 3, 8),
+	TEGRA238_MAIN_GPIO_PORT(E, 0, 4, 4),
+	TEGRA238_MAIN_GPIO_PORT(F, 0, 5, 8),
+	TEGRA238_MAIN_GPIO_PORT(G, 0, 6, 8),
+	TEGRA238_MAIN_GPIO_PORT(H, 0, 7, 6),
+	TEGRA238_MAIN_GPIO_PORT(J, 1, 0, 8),
+	TEGRA238_MAIN_GPIO_PORT(K, 1, 1, 4),
+	TEGRA238_MAIN_GPIO_PORT(L, 1, 2, 8),
+	TEGRA238_MAIN_GPIO_PORT(M, 1, 3, 8),
+	TEGRA238_MAIN_GPIO_PORT(N, 1, 4, 3),
+	TEGRA238_MAIN_GPIO_PORT(P, 1, 5, 8),
+	TEGRA238_MAIN_GPIO_PORT(Q, 1, 6, 3),
+	TEGRA238_MAIN_GPIO_PORT(R, 2, 0, 8),
+	TEGRA238_MAIN_GPIO_PORT(S, 2, 1, 8),
+	TEGRA238_MAIN_GPIO_PORT(T, 2, 2, 8),
+	TEGRA238_MAIN_GPIO_PORT(U, 2, 3, 6),
+	TEGRA238_MAIN_GPIO_PORT(V, 2, 4, 2),
+	TEGRA238_MAIN_GPIO_PORT(W, 3, 0, 8),
+	TEGRA238_MAIN_GPIO_PORT(X, 3, 1, 2)
+};
+
+static const struct tegra186_pin_range tegra238_main_pin_ranges[] = {
+	{ TEGRA238_MAIN_GPIO(W, 0), "pex_l0_clkreq_n_pw0" },
+	{ TEGRA238_MAIN_GPIO(W, 1), "pex_l0_rst_n_pw1" },
+};
+
+static const struct tegra_gpio_soc tegra238_main_soc = {
+	.num_ports = ARRAY_SIZE(tegra238_main_ports),
+	.ports = tegra238_main_ports,
+	.name = "tegra238-gpio",
+	.num_pin_ranges = ARRAY_SIZE(tegra238_main_pin_ranges),
+	.pinmux = "nvidia,tegra238-pinmux",
+	.pin_ranges = tegra238_main_pin_ranges,
+	.instance = 0,
+	.num_irqs_per_bank = 8,
+	.has_vm_support = true,
+};
+
+#define TEGRA238_AON_GPIO_PORT(_name, _bank, _port, _pins)	\
+	[TEGRA238_AON_GPIO_PORT_##_name] = {			\
+		.name = #_name,					\
+		.bank = _bank,					\
+		.port = _port,					\
+		.pins = _pins,					\
+	}
+
+static const struct tegra_gpio_port tegra238_aon_ports[] = {
+	TEGRA238_AON_GPIO_PORT(AA, 0, 0, 8),
+	TEGRA238_AON_GPIO_PORT(BB, 0, 1, 1),
+	TEGRA238_AON_GPIO_PORT(CC, 0, 2, 8),
+	TEGRA238_AON_GPIO_PORT(DD, 0, 3, 8),
+	TEGRA238_AON_GPIO_PORT(EE, 0, 4, 6),
+	TEGRA238_AON_GPIO_PORT(FF, 0, 5, 8),
+	TEGRA238_AON_GPIO_PORT(GG, 0, 6, 8),
+	TEGRA238_AON_GPIO_PORT(HH, 0, 7, 4)
+};
+
+static const struct tegra_gpio_soc tegra238_aon_soc = {
+	.num_ports = ARRAY_SIZE(tegra238_aon_ports),
+	.ports = tegra238_aon_ports,
+	.name = "tegra238-gpio-aon",
+	.instance = 1,
+	.num_irqs_per_bank = 8,
+	.has_gte = true,
+	.has_vm_support = false,
+};
+
 static const struct of_device_id tegra186_gpio_of_match[] = {
 	{
 		.compatible = "nvidia,tegra186-gpio",
@@ -1574,6 +1655,12 @@ static const struct of_device_id tegra186_gpio_of_match[] = {
 	}, {
 		.compatible = "nvidia,tegra264-gpio-aon",
 		.data = &tegra264_aon_soc
+	}, {
+		.compatible = "nvidia,tegra238-gpio",
+		.data = &tegra238_main_soc
+	}, {
+		.compatible = "nvidia,tegra238-gpio-aon",
+		.data = &tegra238_aon_soc
 	}, {
 		.compatible = "nvidia,tegra268-gpio-uphy",
 		.data = &tegra268_uphy_soc
