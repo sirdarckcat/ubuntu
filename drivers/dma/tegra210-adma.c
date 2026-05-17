@@ -326,8 +326,16 @@ static int tegra_adma_request_alloc(struct tegra_adma_chan *tdc,
 	struct tegra_adma *tdma = tdc->tdma;
 	unsigned int sreq_index = tdc->sreq_index;
 
-	if (tdc->sreq_reserved)
-		return tdc->sreq_dir == direction ? 0 : -EINVAL;
+	if (tdc->sreq_reserved) {
+		if (tdc->sreq_dir != direction) {
+			dev_err(tdma->dev,
+				"DMA request direction mismatch: reserved=%s, requested=%s\n",
+				dmaengine_get_direction_text(tdc->sreq_dir),
+				dmaengine_get_direction_text(direction));
+			return -EINVAL;
+		}
+		return 0;
+	}
 
 	if (sreq_index > tdma->cdata->ch_req_max) {
 		dev_err(tdma->dev, "invalid DMA request\n");
@@ -656,8 +664,11 @@ static int tegra_adma_set_xfer_params(struct tegra_adma_chan *tdc,
 	const struct tegra_adma_chip_data *cdata = tdc->tdma->cdata;
 	unsigned int burst_size, adma_dir, fifo_size_shift;
 
-	if (desc->num_periods > ADMA_CH_CONFIG_MAX_BUFS)
+	if (desc->num_periods > ADMA_CH_CONFIG_MAX_BUFS) {
+		dev_err(tdc2dev(tdc), "invalid DMA periods %zu (max %u)\n",
+			desc->num_periods, ADMA_CH_CONFIG_MAX_BUFS);
 		return -EINVAL;
+	}
 
 	switch (direction) {
 	case DMA_MEM_TO_DEV:
@@ -1056,10 +1067,9 @@ static int tegra_adma_probe(struct platform_device *pdev)
 	int ret, i;
 
 	cdata = of_device_get_match_data(&pdev->dev);
-	if (!cdata) {
-		dev_err(&pdev->dev, "device match data not found\n");
-		return -ENODEV;
-	}
+	if (!cdata)
+		return dev_err_probe(&pdev->dev, -ENODEV,
+				     "device match data not found\n");
 
 	tdma = devm_kzalloc(&pdev->dev,
 			    struct_size(tdma, channels, cdata->nr_channels),
@@ -1081,13 +1091,16 @@ static int tegra_adma_probe(struct platform_device *pdev)
 		res_base = platform_get_resource_byname(pdev, IORESOURCE_MEM, "global");
 		if (res_base) {
 			if (WARN_ON(res_page->start <= res_base->start))
-				return -EINVAL;
+				return dev_err_probe(&pdev->dev, -EINVAL,
+						     "invalid page/global resource order\n");
 
 			page_offset = res_page->start - res_base->start;
 			page_no = div_u64(page_offset, cdata->ch_base_offset);
 
 			if (WARN_ON(page_no == 0 || page_no > cdata->max_page))
-				return -EINVAL;
+				return dev_err_probe(&pdev->dev, -EINVAL,
+						     "invalid page number %llu\n",
+						     (unsigned long long)page_no);
 
 			tdma->ch_page_no = lower_32_bits(page_no) - 1;
 			tdma->base_addr = devm_ioremap_resource(&pdev->dev, res_base);
@@ -1102,17 +1115,17 @@ static int tegra_adma_probe(struct platform_device *pdev)
 			if (IS_ERR(tdma->base_addr))
 				return PTR_ERR(tdma->base_addr);
 		} else {
-			return -ENODEV;
+			return dev_err_probe(&pdev->dev, -ENODEV,
+					     "failed to get memory resource\n");
 		}
 
 		tdma->ch_base_addr = tdma->base_addr + cdata->ch_base_offset;
 	}
 
 	tdma->ahub_clk = devm_clk_get(&pdev->dev, "d_audio");
-	if (IS_ERR(tdma->ahub_clk)) {
-		dev_err(&pdev->dev, "Error: Missing ahub controller clock\n");
-		return PTR_ERR(tdma->ahub_clk);
-	}
+	if (IS_ERR(tdma->ahub_clk))
+		return dev_err_probe(&pdev->dev, PTR_ERR(tdma->ahub_clk),
+				     "failed to get ahub clock\n");
 
 	tdma->dma_chan_mask = devm_kzalloc(&pdev->dev,
 					   BITS_TO_LONGS(tdma->nr_channels) * sizeof(unsigned long),
@@ -1126,10 +1139,9 @@ static int tegra_adma_probe(struct platform_device *pdev)
 	ret = of_property_read_u32_array(pdev->dev.of_node, "dma-channel-mask",
 					 (u32 *)tdma->dma_chan_mask,
 					 BITS_TO_U32(tdma->nr_channels));
-	if (ret < 0 && (ret != -EINVAL)) {
-		dev_err(&pdev->dev, "dma-channel-mask is not complete.\n");
-		return ret;
-	}
+	if (ret < 0 && (ret != -EINVAL))
+		return dev_err_probe(&pdev->dev, ret,
+				     "dma-channel-mask is not complete.\n");
 
 	INIT_LIST_HEAD(&tdma->dma_dev.channels);
 	for (i = 0; i < tdma->nr_channels; i++) {
@@ -1150,11 +1162,13 @@ static int tegra_adma_probe(struct platform_device *pdev)
 					cdata->global_ch_config_base + (4 * i);
 		}
 
-		tdc->irq = of_irq_get(pdev->dev.of_node, i);
-		if (tdc->irq <= 0) {
-			ret = tdc->irq ?: -ENXIO;
+		ret = of_irq_get(pdev->dev.of_node, i);
+		if (ret <= 0) {
+			ret = dev_err_probe(&pdev->dev, ret ?: -ENXIO,
+					    "failed to get IRQ for channel %d\n", i);
 			goto irq_dispose;
 		}
+		tdc->irq = ret;
 
 		if (!tdma->base_addr)
 			tdc->vc.rt_spinlock_fix_enabled = DMA_RT_SPINLOCK_FIX_ENABLED;
@@ -1169,12 +1183,18 @@ static int tegra_adma_probe(struct platform_device *pdev)
 	pm_runtime_enable(&pdev->dev);
 
 	ret = pm_runtime_resume_and_get(&pdev->dev);
-	if (ret < 0)
+	if (ret < 0) {
+		ret = dev_err_probe(&pdev->dev, ret,
+				    "runtime PM resume failed\n");
 		goto rpm_disable;
+	}
 
 	ret = tegra_adma_init(tdma);
-	if (ret)
+	if (ret) {
+		ret = dev_err_probe(&pdev->dev, ret,
+				    "failed to initialize ADMA\n");
 		goto rpm_put;
+	}
 
 	dma_cap_set(DMA_SLAVE, tdma->dma_dev.cap_mask);
 	dma_cap_set(DMA_PRIVATE, tdma->dma_dev.cap_mask);
@@ -1200,14 +1220,16 @@ static int tegra_adma_probe(struct platform_device *pdev)
 
 	ret = dma_async_device_register(&tdma->dma_dev);
 	if (ret < 0) {
-		dev_err(&pdev->dev, "ADMA registration failed: %d\n", ret);
+		ret = dev_err_probe(&pdev->dev, ret,
+				    "ADMA registration failed\n");
 		goto rpm_put;
 	}
 
 	ret = of_dma_controller_register(pdev->dev.of_node,
 					 tegra_dma_of_xlate, tdma);
 	if (ret < 0) {
-		dev_err(&pdev->dev, "ADMA OF registration failed %d\n", ret);
+		ret = dev_err_probe(&pdev->dev, ret,
+				    "ADMA OF registration failed\n");
 		goto dma_remove;
 	}
 
