@@ -41,7 +41,7 @@ static void smbdirect_connection_legacy_debug_proc_show(struct smbdirect_socket 
 
 	seq_puts(m, "\n");
 	seq_printf(m, "Conn keep_alive_interval: %u ",
-		   sp->keepalive_interval_msec * 1000);
+		   sp->keepalive_interval_msec / 1000);
 	seq_printf(m, "max_readwrite_size: %u rdma_readwrite_threshold: %u",
 		   sp->max_read_write_size,
 		   rdma_readwrite_threshold);
