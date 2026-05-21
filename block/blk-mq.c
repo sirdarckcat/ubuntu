@@ -3034,35 +3034,26 @@ static struct request *blk_mq_get_new_requests(struct request_queue *q,
 }
 
 /*
- * Check if we can use the passed on request for submitting the passed in bio,
- * and remove it from the request list if it can be used.
+ * Check if there is a suitable cached request and return it.
  */
-static bool blk_mq_use_cached_rq(struct request *rq, struct blk_plug *plug,
-		struct bio *bio)
+static struct request *blk_mq_get_cached_request(struct blk_plug *plug,
+		struct request_queue *q, blk_opf_t opf)
 {
-	enum hctx_type type = blk_mq_get_hctx_type(bio->bi_opf);
-	enum hctx_type hctx_type = rq->mq_hctx->type;
+	enum hctx_type type = blk_mq_get_hctx_type(opf);
+	struct request *rq;
 
-	WARN_ON_ONCE(rq_list_peek(&plug->cached_rqs) != rq);
-
-	if (type != hctx_type &&
-	    !(type == HCTX_TYPE_READ && hctx_type == HCTX_TYPE_DEFAULT))
-		return false;
-	if (op_is_flush(rq->cmd_flags) != op_is_flush(bio->bi_opf))
-		return false;
-
-	/*
-	 * If any qos ->throttle() end up blocking, we will have flushed the
-	 * plug and hence killed the cached_rq list as well. Pop this entry
-	 * before we throttle.
-	 */
+	if (!plug)
+		return NULL;
+	rq = rq_list_peek(&plug->cached_rqs);
+	if (!rq || rq->q != q)
+		return NULL;
+	if (type != rq->mq_hctx->type &&
+	    (type != HCTX_TYPE_READ || rq->mq_hctx->type != HCTX_TYPE_DEFAULT))
+		return NULL;
+	if (op_is_flush(rq->cmd_flags) != op_is_flush(opf))
+		return NULL;
 	rq_list_pop(&plug->cached_rqs);
-	rq_qos_throttle(rq->q, bio);
-
-	blk_mq_rq_time_init(rq, ktime_get_ns());
-	rq->cmd_flags = bio->bi_opf;
-	INIT_LIST_HEAD(&rq->queuelist);
-	return true;
+	return rq;
 }
 
 /**
@@ -3090,44 +3081,41 @@ void blk_mq_submit_bio(struct bio *bio)
 
 	bio = blk_queue_bounce(bio, q);
 
-	if (plug) {
-		rq = rq_list_peek(&plug->cached_rqs);
-		if (rq && rq->q != q)
-			rq = NULL;
-	}
+	/*
+	 * If the plug has a cached request for this queue, try to use it.
+	 */
+	rq = blk_mq_get_cached_request(plug, q, bio->bi_opf);
 	if (rq) {
 		if (unlikely(bio_may_exceed_limits(bio, &q->limits))) {
 			bio = __bio_split_to_limits(bio, &q->limits, &nr_segs);
 			if (!bio)
-				return;
+				goto queue_exit;
 		}
 		if (!bio_integrity_prep(bio))
-			return;
+			goto queue_exit;
 		if (blk_mq_attempt_bio_merge(q, bio, nr_segs))
-			return;
-		if (blk_mq_use_cached_rq(rq, plug, bio))
-			goto done;
-		percpu_ref_get(&q->q_usage_counter);
+			goto queue_exit;
+
+		rq_qos_throttle(rq->q, bio);
+		blk_mq_rq_time_init(rq, ktime_get_ns());
+		rq->cmd_flags = bio->bi_opf;
+		INIT_LIST_HEAD(&rq->queuelist);
 	} else {
 		if (unlikely(bio_queue_enter(bio)))
 			return;
 		if (unlikely(bio_may_exceed_limits(bio, &q->limits))) {
 			bio = __bio_split_to_limits(bio, &q->limits, &nr_segs);
 			if (!bio)
-				goto fail;
+				goto queue_exit;
 		}
 		if (!bio_integrity_prep(bio))
-			goto fail;
+			goto queue_exit;
+
+		rq = blk_mq_get_new_requests(q, plug, bio, nr_segs);
+		if (unlikely(!rq))
+			goto queue_exit;
 	}
 
-	rq = blk_mq_get_new_requests(q, plug, bio, nr_segs);
-	if (unlikely(!rq)) {
-fail:
-		blk_queue_exit(q);
-		return;
-	}
-
-done:
 	trace_block_getrq(bio);
 
 	rq_qos_track(q, rq, bio);
@@ -3158,6 +3146,13 @@ done:
 	} else {
 		blk_mq_run_dispatch_ops(q, blk_mq_try_issue_directly(hctx, rq));
 	}
+	return;
+
+queue_exit:
+	if (!rq)
+		blk_queue_exit(q);
+	else
+		blk_mq_free_request(rq);
 }
 
 #ifdef CONFIG_BLK_MQ_STACKING
