@@ -2438,6 +2438,9 @@ static void rb_inc_iter(struct ring_buffer_iter *iter)
 	else
 		rb_inc_page(&iter->head_page);
 
+	if (rb_page_commit(iter->head_page) & RB_MISSED_EVENTS)
+		iter->missed_events = -1;
+
 	iter->page_stamp = iter->read_stamp = iter->head_page->page->time_stamp;
 	iter->head = 0;
 	iter->next_event = 0;
@@ -5711,7 +5714,7 @@ int ring_buffer_read_page(struct trace_buffer *buffer,
 	struct ring_buffer_event *event;
 	struct buffer_data_page *bpage;
 	struct buffer_page *reader;
-	unsigned long missed_events;
+	long missed_events;
 	unsigned long flags;
 	unsigned int commit;
 	unsigned int read;
@@ -5834,6 +5837,8 @@ int ring_buffer_read_page(struct trace_buffer *buffer,
 		local_set(&reader->entries, 0);
 		reader->read = 0;
 		data_page->data = bpage;
+		if (!missed_events && local_read(&bpage->commit) & RB_MISSED_EVENTS)
+			missed_events = -1;
 
 		/*
 		 * Use the real_end for the data size,
@@ -5852,10 +5857,12 @@ int ring_buffer_read_page(struct trace_buffer *buffer,
 	 * Set a flag in the commit field if we lost events
 	 */
 	if (missed_events) {
-		/* If there is room at the end of the page to save the
+		/*
+		 * If there is room at the end of the page to save the
 		 * missed events, then record it there.
 		 */
-		if (buffer->subbuf_size - commit >= sizeof(missed_events)) {
+		if (missed_events > 0 &&
+		    buffer->subbuf_size - commit >= sizeof(missed_events)) {
 			memcpy(&bpage->data[commit], &missed_events,
 			       sizeof(missed_events));
 			local_add(RB_MISSED_STORED, &bpage->commit);
