@@ -950,7 +950,6 @@ int io_recv(struct io_kiocb *req, unsigned int issue_flags)
 	msg.msg_control = NULL;
 	msg.msg_get_inq = 1;
 	msg.msg_controllen = 0;
-	msg.msg_iocb = NULL;
 	msg.msg_ubuf = NULL;
 
 retry_multishot:
