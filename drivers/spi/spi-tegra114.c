@@ -854,11 +854,32 @@ static u32 tegra_spi_setup_transfer_one(struct spi_device *spi,
 			command1 &= ~SPI_BIDIROE;
 
 		if (tspi->cs_control) {
-			if (tspi->cs_control != spi)
+			if (tspi->cs_control != spi) {
 				tegra_spi_writel(tspi, command1, SPI_COMMAND1);
-			tspi->cs_control = NULL;
-		} else
-			tegra_spi_writel(tspi, command1, SPI_COMMAND1);
+				tspi->cs_control = NULL;
+			} else {
+				/*
+				 * The previous message asked the driver to
+				 * keep CS asserted (cs_change=1 on its last
+				 * transfer).  Preserve the SW CS bits from
+				 * the running command1_reg so the COMMAND1
+				 * write in start_transfer_one() does not
+				 * glitch CS, and skip the SW/HW CS mode
+				 * selection block below.
+				 */
+				command1 = (command1 &
+					    ~(SPI_CS_SW_HW | SPI_CS_SW_VAL)) |
+					   (tspi->command1_reg &
+					    (SPI_CS_SW_HW | SPI_CS_SW_VAL));
+				tspi->use_hw_based_cs = false;
+				tspi->cs_control = NULL;
+				goto skip_cs_setup;
+			}
+		} else {
+			if (SPI_MODE_VAL(command1) !=
+				SPI_MODE_VAL(tspi->def_command1_reg))
+				tegra_spi_writel(tspi, command1, SPI_COMMAND1);
+		}
 
 		/* GPIO based chip select control */
 		if (spi_get_csgpiod(spi, 0))
@@ -875,6 +896,7 @@ static u32 tegra_spi_setup_transfer_one(struct spi_device *spi,
 			else
 				command1 &= ~SPI_CS_SW_VAL;
 		}
+skip_cs_setup:
 
 		if (!tspi->prod_list) {
 			if (tspi->last_used_cs != spi_get_chipselect(spi, 0)) {
@@ -1082,16 +1104,25 @@ static int tegra_spi_transfer_one_message(struct spi_controller *host,
 	msg->actual_length = 0;
 
 	/*
-	 * Decide HW vs SW chip-select mode for this message.  Use HW CS only
-	 * for single-transfer messages with cs_change=0 -- the controller can
-	 * then assert and deassert CS atomically around the packet.  Any
-	 * multi-transfer message must use SW CS: the controller treats each
-	 * transfer as a separate packet and would briefly deassert CS between
-	 * them under HW CS mode, which violates SPI slave protocols that
-	 * require CS held across the whole message (e.g. devices that read a
-	 * command byte then return data on a follow-up transfer).
+	 * Decide HW vs SW chip-select mode for this message.
+	 *
+	 * If the previous message left CS asserted for this same device
+	 * (cs_control == spi, set when its last transfer had cs_change=1),
+	 * stay in SW CS mode.  Switching to HW CS would momentarily release
+	 * CS while the controller waits for the next packet to start, which
+	 * breaks protocols that hold CS across multiple spi_message
+	 * submissions under spi_bus_lock(), such as TPM TIS-SPI.
+	 *
+	 * Otherwise, use HW CS only for single-transfer messages with
+	 * cs_change=0 -- the controller can then assert and deassert CS
+	 * atomically around the packet.  Any multi-transfer message must use
+	 * SW CS: the controller treats each transfer as a separate packet
+	 * and would briefly deassert CS between them under HW CS mode, which
+	 * violates SPI slave protocols that require CS held across the whole
+	 * message (e.g. devices that read a command byte then return data on
+	 * a follow-up transfer).
 	 */
-	if (list_is_singular(&msg->transfers)) {
+	if (tspi->cs_control != spi && list_is_singular(&msg->transfers)) {
 		xfer = list_first_entry(&msg->transfers,
 					struct spi_transfer, transfer_list);
 		use_hw_cs = !xfer->cs_change;
