@@ -1,7 +1,7 @@
 build_arch	= x86
 header_arch	= $(build_arch)
 defconfig	= defconfig
-flavours	= gcp
+flavours	= gke
 build_image	= bzImage
 kernel_file	= arch/$(build_arch)/boot/bzImage
 install_file	= vmlinuz
