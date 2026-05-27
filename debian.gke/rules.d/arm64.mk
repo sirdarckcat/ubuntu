@@ -1,7 +1,7 @@
 build_arch	= arm64
 header_arch	= $(build_arch)
 defconfig	= defconfig
-flavours	= gcp gcp-64k
+flavours	= gke gke-64k
 build_image	= Image.gz
 kernel_file	= arch/$(build_arch)/boot/Image.gz
 install_file	= vmlinuz
