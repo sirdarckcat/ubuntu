@@ -3544,6 +3544,37 @@ static const struct tegra_xusb_soc tegra_vf7_soc = {
 	.lpm_support = true,
 };
 
+static const struct tegra_xusb_phy_type tegra238_phy_types[] = {
+	{ .name = "usb3", .num = 3, },
+	{ .name = "usb2", .num = 3, },
+};
+
+static const struct tegra_xusb_soc tegra238_soc = {
+	.supply_names = tegra194_supply_names,
+	.num_supplies = ARRAY_SIZE(tegra194_supply_names),
+	.phy_types = tegra238_phy_types,
+	.num_types = ARRAY_SIZE(tegra238_phy_types),
+	.context = &tegra186_xusb_context,
+	.ports = {
+		.usb3 = { .offset = 0, .count = 3, },
+		.usb2 = { .offset = 3, .count = 3, },
+	},
+	.scale_ss_clock = false,
+	.has_ipfs = false,
+	.otg_reset_sspi = false,
+	.ops = &tegra234_ops,
+	.mbox = {
+		.cmd = XUSB_BAR2_ARU_MBOX_CMD,
+		.data_in = XUSB_BAR2_ARU_MBOX_DATA_IN,
+		.data_out = XUSB_BAR2_ARU_MBOX_DATA_OUT,
+		.owner = XUSB_BAR2_ARU_MBOX_OWNER,
+		.smi_intr = XUSB_BAR2_ARU_SMI_INTR,
+	},
+	.lpm_support = true,
+	.has_bar2 = true,
+	.has_pg_support = false,
+};
+
 static const struct tegra_xusb_soc tegra264_soc = {
 	.supply_names = tegra194_supply_names,
 	.num_supplies = ARRAY_SIZE(tegra194_supply_names),
@@ -3582,6 +3613,7 @@ static const struct of_device_id tegra_xusb_of_match[] = {
 	{ .compatible = "nvidia,tegra234-xusb-vf2", .data = &tegra_vf2_soc },
 	{ .compatible = "nvidia,tegra234-xusb-vf3", .data = &tegra_vf3_soc },
 	{ .compatible = "nvidia,tegra234-xusb-vf4", .data = &tegra_vf4_soc },
+	{ .compatible = "nvidia,tegra238-xusb", .data = &tegra238_soc },
 	{ .compatible = "nvidia,tegra264-xusb", .data = &tegra264_soc },
 	{ .compatible = "nvidia,tegra264-xusb-vf1", .data = &tegra_vf1_soc },
 	{ .compatible = "nvidia,tegra264-xusb-vf2", .data = &tegra_vf2_soc },
