@@ -2,6 +2,7 @@
 # FORMAT: 4
 # ARCH: amd64 arm64
 # FLAVOUR: amd64-realtime arm64-realtime arm64-realtime-64k
+# FLAVOUR_DEP: {'amd64-realtime': 'amd64-generic', 'arm64-realtime': 'arm64-generic', 'arm64-realtime-64k': 'arm64-generic-64k'}
 
 include "../../debian.master/config/annotations"
 
@@ -65,6 +66,7 @@ CONFIG_ARCH_SUPPORTS_PUD_PFNMAP                 policy<{'amd64': '-'}>
 CONFIG_ARCH_WANT_PMD_MKWRITE                    policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_ARM64_ERRATUM_834220                     policy<{'arm64': '-'}>
 CONFIG_AX88796B_RUST_PHY                        policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_BATTERY_LENOVO_YOGA_C630                 policy<{'arm64-realtime': '-'}>
 CONFIG_BINDGEN_VERSION_TEXT                     policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_BLK_DEV_RUST_NULL                        policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_BRIDGE_EBT_BROUTE                        policy<{'amd64': '-', 'arm64': '-'}>
@@ -86,7 +88,7 @@ CONFIG_DM_PCACHE                                policy<{'amd64': '-', 'arm64': '
 CONFIG_DRM_MGAG200_DISABLE_WRITECOMBINE         policy<{'amd64': 'n', 'arm64': 'n'}>
 CONFIG_DRM_PANIC_SCREEN_QR_CODE                 policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_DRM_TYR                                  policy<{'arm64': '-'}>
-CONFIG_DRM_XE_PAGEMAP                           policy<{'amd64': 'y', 'arm64': 'y'}>
+CONFIG_DRM_XE_PAGEMAP                           policy<{'amd64': 'y', 'arm64': 'y', 'arm64-realtime-64k': '-'}>
 CONFIG_EC_LENOVO_YOGA_C630                      policy<{'arm64': 'n'}>
 CONFIG_FIND_BIT_BENCHMARK_RUST                  policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_FS_DAX_PMD                               policy<{'amd64': '-', 'arm64': '-'}>
@@ -100,14 +102,14 @@ CONFIG_HAVE_KVM_IRQ_ROUTING                     policy<{'amd64': 'y', 'arm64': '
 CONFIG_HAVE_KVM_MSI                             policy<{'amd64': 'y', 'arm64': '-'}>
 CONFIG_HAVE_KVM_READONLY_MEM                    policy<{'amd64': 'y', 'arm64': '-'}>
 CONFIG_HAVE_KVM_VCPU_RUN_PID_CHANGE             policy<{'arm64': '-'}>
-CONFIG_HAVE_PAGE_SIZE_4KB                       policy<{'amd64': 'y', 'arm64': 'y'}>
+CONFIG_HAVE_PAGE_SIZE_4KB                       policy<{'amd64': 'y', 'arm64': 'y', 'arm64-realtime-64k': '-'}>
 CONFIG_HAVE_SCHED_AVG_IRQ                       policy<{'amd64': 'y', 'arm64': 'y'}>
-CONFIG_HUGETLB_PMD_PAGE_TABLE_SHARING           policy<{'amd64': 'y', 'arm64': 'y'}>
-CONFIG_INTEL_MEI_GSC                            policy<{'amd64': 'm', 'arm64': 'n'}>
-CONFIG_INTEL_MEI_GSC_PROXY                      policy<{'amd64': 'm', 'arm64': 'n'}>
-CONFIG_INTEL_MEI_HDCP                           policy<{'amd64': 'm', 'arm64': 'n'}>
-CONFIG_INTEL_MEI_LB                             policy<{'amd64': 'm', 'arm64': 'n'}>
-CONFIG_INTEL_MEI_PXP                            policy<{'amd64': 'm', 'arm64': 'n'}>
+CONFIG_HUGETLB_PMD_PAGE_TABLE_SHARING           policy<{'amd64': 'y', 'arm64': 'y', 'arm64-realtime-64k': '-'}>
+CONFIG_INTEL_MEI_GSC                            policy<{'amd64': 'm', 'arm64': 'n', 'arm64-realtime-64k': '-'}>
+CONFIG_INTEL_MEI_GSC_PROXY                      policy<{'amd64': 'm', 'arm64': 'n', 'arm64-realtime-64k': '-'}>
+CONFIG_INTEL_MEI_HDCP                           policy<{'amd64': 'm', 'arm64': 'n', 'arm64-realtime-64k': '-'}>
+CONFIG_INTEL_MEI_LB                             policy<{'amd64': 'm', 'arm64': 'n', 'arm64-realtime-64k': '-'}>
+CONFIG_INTEL_MEI_PXP                            policy<{'amd64': 'm', 'arm64': 'n', 'arm64-realtime-64k': '-'}>
 CONFIG_IP6_NF_FILTER                            policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_IP6_NF_IPTABLES_LEGACY                   policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_IP6_NF_MANGLE                            policy<{'amd64': '-', 'arm64': '-'}>
@@ -139,7 +141,7 @@ CONFIG_KVM_VFIO                                 policy<{'amd64': 'y', 'arm64': '
 CONFIG_LEDS_TRIGGER_CPU                         policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_MARVELL_GTI_WDT                          policy<{'arm64': 'y'}>
 CONFIG_MM_ID                                    policy<{'amd64': '-', 'arm64': '-'}>
-CONFIG_MSHV_ROOT                                policy<{'amd64': 'm', 'arm64': 'n'}>
+CONFIG_MSHV_ROOT                                policy<{'amd64': 'm', 'arm64': 'n', 'arm64-realtime-64k': '-'}>
 CONFIG_NEED_KVM_DIRTY_RING_WITH_BITMAP          policy<{'arm64': '-'}>
 CONFIG_NETFILTER_XTABLES_LEGACY                 policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_NETFILTER_XT_TARGET_NOTRACK              policy<{'amd64': '-', 'arm64': '-'}>
@@ -149,8 +151,8 @@ CONFIG_NO_PAGE_MAPCOUNT                         policy<{'amd64': '-', 'arm64': '
 CONFIG_NUMA_BALANCING                           policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_NVHE_EL2_DEBUG                           policy<{'arm64': '-'}>
 CONFIG_OVMF_DEBUG_LOG                           policy<{'amd64': 'y', 'arm64': 'n'}>
-CONFIG_PAGE_SHIFT                               policy<{'amd64': '12', 'arm64': '12'}>
-CONFIG_PAGE_SIZE_4KB                            policy<{'amd64': 'y', 'arm64': 'y'}>
+CONFIG_PAGE_SHIFT                               policy<{'amd64': '12', 'arm64': '12', 'arm64-realtime-64k': '16'}>
+CONFIG_PAGE_SIZE_4KB                            policy<{'amd64': 'y', 'arm64': 'y', 'arm64-realtime-64k': '-'}>
 CONFIG_PERSISTENT_HUGE_ZERO_FOLIO               policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_PREEMPT_NOTIFIERS                        policy<{'amd64': 'y', 'arm64': '-'}>
 CONFIG_PREEMPT_RT_NEEDS_BH_LOCK                 policy<{'amd64': 'n', 'arm64': 'n'}>
@@ -186,5 +188,6 @@ CONFIG_TRANSPARENT_HUGEPAGE_TMPFS_HUGE_ADVISE   policy<{'amd64': '-', 'arm64': '
 CONFIG_TRANSPARENT_HUGEPAGE_TMPFS_HUGE_ALWAYS   policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_TRANSPARENT_HUGEPAGE_TMPFS_HUGE_NEVER    policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_TRANSPARENT_HUGEPAGE_TMPFS_HUGE_WITHIN_SIZE policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_UCSI_LENOVO_YOGA_C630                    policy<{'arm64-realtime': '-'}>
 CONFIG_VIRT_XFER_TO_GUEST_WORK                  policy<{'amd64': 'y', 'arm64': '-'}>
-CONFIG_XE_VFIO_PCI                              policy<{'amd64': 'm', 'arm64': 'n'}>
+CONFIG_XE_VFIO_PCI                              policy<{'amd64': 'm', 'arm64': 'n', 'arm64-realtime-64k': '-'}>
