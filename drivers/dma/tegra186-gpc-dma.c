@@ -1649,7 +1649,7 @@ static int __maybe_unused tegra_dma_pm_resume(struct device *dev)
 }
 
 static const struct dev_pm_ops tegra_dma_dev_pm_ops = {
-	SET_SYSTEM_SLEEP_PM_OPS(tegra_dma_pm_suspend, tegra_dma_pm_resume)
+	SET_LATE_SYSTEM_SLEEP_PM_OPS(tegra_dma_pm_suspend, tegra_dma_pm_resume)
 };
 
 static struct platform_driver tegra_dma_driver = {
