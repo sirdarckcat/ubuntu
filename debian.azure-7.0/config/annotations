@@ -1,0 +1,12 @@
+# Menu: HEADER
+# FORMAT: 4
+# ARCH: amd64 arm64
+# FLAVOUR: amd64-azure arm64-azure
+
+include "../../debian.azure/config/annotations"
+
+CONFIG_CPUSETS_V1                               policy<{'amd64': 'y', 'arm64': 'y'}>
+CONFIG_CPUSETS_V1                               note<'Leave cpuset v1 enabled on HWE kernels 6.12+ -- LP: #2122368'>
+
+CONFIG_MEMCG_V1                                 policy<{'amd64': 'y', 'arm64': 'y'}>
+CONFIG_MEMCG_V1                                 note<'Leave memcg v1 enabled on HWE kernels 6.12+ -- LP: #2122368'>
