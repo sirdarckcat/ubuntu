@@ -16,4 +16,3 @@ do_tools_perf_python = true
 do_tools_bpftool = true
 do_tools_hyperv	= true
 do_tools_rtla = true
-do_extras_package = true
