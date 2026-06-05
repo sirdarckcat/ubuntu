@@ -23,6 +23,9 @@ CONFIG_ARM_SMMU_V3                              note<'Requested by Oracle after 
 CONFIG_DRM_BOCHS                                policy<{'amd64': 'm', 'arm64': 'm'}>
 CONFIG_DRM_BOCHS                                note<'oracle: Ensure bochs-drm.ko is in inclusion list. needed for virtual display support in VMs - LP #1957744 '>
 
+CONFIG_DRM_NOVA                                 policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_DRM_NOVA                                 note<'LP: #2150845'>
+
 CONFIG_DRM_VIRTIO_GPU                           policy<{'amd64': 'm', 'arm64': 'm'}>
 CONFIG_DRM_VIRTIO_GPU                           note<'oracle: Ensure virtio-gpu.ko is in inclusion list, or set =y'>
 
@@ -171,7 +174,6 @@ CONFIG_DMA_BCM2835                              policy<{'arm64': 'y'}>
 CONFIG_DRM_DISPLAY_DP_TUNNEL                    policy<{'amd64': 'y', 'arm64': 'y', 'arm64-oracle-64k': '-'}>
 CONFIG_DRM_GPUSVM                               policy<{'amd64': 'm', 'arm64': 'm', 'arm64-oracle-64k': '-'}>
 CONFIG_DRM_NOMODESET                            policy<{'amd64': '-', 'arm64': '-'}>
-CONFIG_DRM_NOVA                                 policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_DRM_PANIC_SCREEN_QR_CODE                 policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_DRM_TYR                                  policy<{'arm64': '-'}>
 CONFIG_DRM_USE_DYNAMIC_DEBUG                    policy<{'amd64': '-', 'arm64': '-'}>
