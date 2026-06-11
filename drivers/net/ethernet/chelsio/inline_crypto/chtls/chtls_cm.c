@@ -1251,6 +1251,7 @@ free_dst:
 		neigh_release(n);
 	dst_release(dst);
 free_sk:
+	tcp_clear_sock_ops_cb_flags(newsk);
 	inet_csk_prepare_forced_close(newsk);
 	tcp_done(newsk);
 free_oreq:
