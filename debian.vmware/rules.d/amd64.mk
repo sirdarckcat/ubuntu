@@ -1,7 +1,7 @@
 human_arch	= 64 bit x86
 build_arch	= x86
 defconfig	= defconfig
-flavours	= generic
+flavours	= vmware
 build_image	= bzImage
 kernel_file	= arch/$(build_arch)/boot/bzImage
 install_file	= vmlinuz
@@ -19,4 +19,4 @@ do_tools_hyperv	= true
 do_tools_rtla = true
 do_extras_package = true
 do_tools_acpidbg = true
-do_lib_rust     = true
+do_lib_rust     = false
