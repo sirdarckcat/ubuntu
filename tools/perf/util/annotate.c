@@ -71,7 +71,7 @@ static int call__scnprintf(struct ins *ins, char *bf, size_t size,
 			  struct ins_operands *ops, int max_ins_name);
 static int jump__scnprintf(struct ins *ins, char *bf, size_t size,
 			  struct ins_operands *ops, int max_ins_name);
-static int jump__delete(struct ins_operands *ops);
+static void jump__delete(struct ins_operands *ops);
 
 struct arch {
 	const char	*name;
