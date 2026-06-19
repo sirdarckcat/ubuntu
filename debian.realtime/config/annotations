@@ -24,6 +24,9 @@ CONFIG_IRQ_TIME_ACCOUNTING                      note<'LP: #1961588'>
 CONFIG_KVM                                      policy<{'amd64': 'm', 'arm64': 'n'}>
 CONFIG_KVM                                      note<'must be disabled on arm64 to enable PREEMPT_RT'>
 
+CONFIG_NOVA_CORE                                policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_NOVA_CORE                                note<'LP: #2150845'>
+
 CONFIG_NO_HZ_IDLE                               policy<{'amd64': 'n', 'arm64': 'n'}>
 CONFIG_NO_HZ_IDLE                               note<'LP:1413968'>
 
@@ -146,7 +149,6 @@ CONFIG_NEED_KVM_DIRTY_RING_WITH_BITMAP          policy<{'arm64': '-'}>
 CONFIG_NETFILTER_XTABLES_LEGACY                 policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_NETFILTER_XT_TARGET_NOTRACK              policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_NETFILTER_XT_TARGET_TRACE                policy<{'amd64': '-', 'arm64': '-'}>
-CONFIG_NOVA_CORE                                policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_NO_PAGE_MAPCOUNT                         policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_NUMA_BALANCING                           policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_NVHE_EL2_DEBUG                           policy<{'arm64': '-'}>
