@@ -89,6 +89,9 @@ CONFIG_MTD_DOCG3                                note<'Unnecessary for Azure'>
 CONFIG_NETWORK_PHY_TIMESTAMPING                 policy<{'amd64': 'n', 'arm64': 'y'}>
 CONFIG_NETWORK_PHY_TIMESTAMPING                 note<'Unnecessary for Azure'>
 
+CONFIG_NOVA_CORE                                policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_NOVA_CORE                                note<'LP: #2150845'>
+
 CONFIG_OVERLAY_FS_REDIRECT_DIR                  policy<{'amd64': 'y', 'arm64': 'y'}>
 CONFIG_OVERLAY_FS_REDIRECT_DIR                  note<'LP: #1711230'>
 
@@ -361,7 +364,6 @@ CONFIG_NOUVEAU_DEBUG_DEFAULT                    policy<{'amd64': '-', 'arm64': '
 CONFIG_NOUVEAU_DEBUG_MMU                        policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_NOUVEAU_DEBUG_PUSH                       policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_NOUVEAU_PLATFORM_DRIVER                  policy<{'arm64': '-'}>
-CONFIG_NOVA_CORE                                policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_NVME_AUTH                                policy<{'amd64': 'y', 'arm64': 'y'}>
 CONFIG_NVME_CORE                                policy<{'amd64': 'y', 'arm64': 'y'}>
 CONFIG_NVME_KEYRING                             policy<{'amd64': 'y', 'arm64': 'y'}>
