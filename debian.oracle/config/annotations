@@ -38,6 +38,9 @@ CONFIG_GPIO_CDEV_V1                             note<'LP: #1953613'>
 CONFIG_NET_FAILOVER                             policy<{'amd64': 'y', 'arm64': 'y'}>
 CONFIG_NET_FAILOVER                             note<'OCI requirement'>
 
+CONFIG_NOVA_CORE                                policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_NOVA_CORE                                note<'LP: #2150845'>
+
 CONFIG_NR_CPUS                                  policy<{'amd64': '8192', 'arm64': '512'}>
 CONFIG_NR_CPUS                                  note<'LP: #2046184'>
 
@@ -283,7 +286,6 @@ CONFIG_NFC_MICROREAD_MEI                        policy<{'amd64': 'm', 'arm64': '
 CONFIG_NFC_PN544_MEI                            policy<{'amd64': 'm', 'arm64': 'm', 'arm64-oracle-64k': '-'}>
 CONFIG_NFSD_V2_ACL                              policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_NINTENDO_FF                              policy<{'amd64': '-', 'arm64': '-'}>
-CONFIG_NOVA_CORE                                policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_NPCM7XX_WATCHDOG                         policy<{'arm64': 'm'}>
 CONFIG_NTFS_RW                                  policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_NVMEM_BCM_OCOTP                          policy<{'arm64': 'm'}>
