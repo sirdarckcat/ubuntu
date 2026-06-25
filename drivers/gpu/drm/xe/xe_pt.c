@@ -1389,6 +1389,33 @@ static int xe_pt_pre_commit(struct xe_migrate_pt_update *pt_update)
 				     pt_update_ops, rftree);
 }
 
+/*
+ * Acquire/release the svm notifier_lock around xe_pt_svm_userptr_pre_commit()
+ * and the matching late release in xe_pt_update_ops_run(). Read mode by
+ * default; write mode when CONFIG_DRM_XE_USERPTR_INVAL_INJECT is on,
+ * because a userptr op in this critical section may invoke the injected
+ * xe_vma_userptr_force_invalidate() path that calls
+ * drm_gpusvm_unmap_pages() with ctx->in_notifier=true, which requires the
+ * lock held for write.
+ */
+static void xe_pt_svm_userptr_notifier_lock(struct xe_vm *vm)
+{
+#if IS_ENABLED(CONFIG_DRM_XE_USERPTR_INVAL_INJECT)
+	down_write(&vm->svm.gpusvm.notifier_lock);
+#else
+	xe_svm_notifier_lock(vm);
+#endif
+}
+
+static void xe_pt_svm_userptr_notifier_unlock(struct xe_vm *vm)
+{
+#if IS_ENABLED(CONFIG_DRM_XE_USERPTR_INVAL_INJECT)
+	up_write(&vm->svm.gpusvm.notifier_lock);
+#else
+	xe_svm_notifier_unlock(vm);
+#endif
+}
+
 #if IS_ENABLED(CONFIG_DRM_GPUSVM)
 /*
  * Acquire/release the svm notifier_lock around xe_pt_svm_userptr_pre_commit()
