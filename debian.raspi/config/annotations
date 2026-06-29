@@ -352,6 +352,9 @@ CONFIG_NET_FC                                   policy<{'arm64': 'n'}> note<'Par
 CONFIG_NET_NCSI                                 policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
 CONFIG_NET_TC_SKB_EXT                           policy<{'arm64': 'n'}> note<'Parent-Override, Can-Be-Disabled'>
 CONFIG_NLS_ASCII                                policy<{'arm64': 'y'}> note<'Parent-Override, Must-Be-Enabled'>
+CONFIG_NOVA_CORE                                policy<{'arm64': '-'}>
+CONFIG_NOVA_CORE                                note<'LP: #2150845'>
+
 CONFIG_NR_CPUS                                  policy<{'arm64': '16'}> note<'Parent-Override, Must-Be-16'>
 CONFIG_NUMA_BALANCING                           policy<{'arm64': 'y', 'arm64-raspi': 'n', 'arm64-raspi-realtime': '-'}> note<'Parent-Override, Can-Be-Disabled'>
 CONFIG_NUMA_BALANCING_DEFAULT_ENABLED           policy<{'arm64': '-'}> note<'Parent-Note-Override'>
@@ -2196,7 +2199,6 @@ CONFIG_NFIT_SECURITY_DEBUG                      policy<{'arm64': '-'}>
 CONFIG_NIC7018_WDT                              policy<{'arm64': '-'}>
 CONFIG_NITRO_ENCLAVES                           policy<{'arm64': '-'}>
 CONFIG_NOUVEAU_PLATFORM_DRIVER                  policy<{'arm64': '-'}>
-CONFIG_NOVA_CORE                                policy<{'arm64': '-'}>
 CONFIG_NO_PAGE_MAPCOUNT                         policy<{'arm64': 'n', 'arm64-raspi-realtime': '-'}>
 CONFIG_NPCM7XX_KCS_IPMI_BMC                     policy<{'arm64': '-'}>
 CONFIG_NPCM7XX_TIMER                            policy<{'arm64': '-'}>
