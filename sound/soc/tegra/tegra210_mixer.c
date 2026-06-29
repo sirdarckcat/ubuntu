@@ -632,10 +632,14 @@ static int tegra210_mixer_fade_status_info(struct snd_kcontrol *kcontrol,
 		.info = tegra210_mixer_fade_duration_info,		\
 		.get = tegra210_mixer_get_fade_duration,			\
 		.put = tegra210_mixer_put_fade_duration,			\
-		.private_value = SOC_SINGLE_VALUE((id) - 1, 0,		\
-				TEGRA210_MIXER_FADE_DURATION_MIN,	\
-				TEGRA210_MIXER_FADE_DURATION_MAX,	\
-				0, 0),					\
+		.private_value = (unsigned long)&(struct soc_mixer_control) \
+			{ \
+				.reg = (id) - 1, \
+				.shift = 0, \
+				.min = TEGRA210_MIXER_FADE_DURATION_MIN, \
+				.max = TEGRA210_MIXER_FADE_DURATION_MAX, \
+				.invert = 0, \
+			}, \
 	},								\
 	SOC_SINGLE_EXT("RX" #id " Fade Gain", (id) - 1, 0,		\
 		       TEGRA210_MIXER_GAIN_MAX, 0,			\
