@@ -496,6 +496,7 @@ const struct tegra_mc_soc tegra238_mc_soc = {
 	.clients = tegra238_mc_clients,
 	.num_address_bits = 40,
 	.num_channels = 8,
+	.cfg_channel_enable = MC_EMEM_ADR_CFG_CHANNEL_ENABLE,
 	.client_id_mask = 0x1ff,
 	.intmask = MC_INT_DECERR_ROUTE_SANITY |
 		   MC_INT_DECERR_GENERALIZED_CARVEOUT | MC_INT_DECERR_MTS |
@@ -507,4 +508,6 @@ const struct tegra_mc_soc tegra238_mc_soc = {
 	.ch_intmask = 0x0000ff00,
 	.global_intstatus_channel_shift = 8,
 	.num_carveouts = 32,
+	.has_chiplet_arch = false,
+	.mc_regs = &tegra20_mc_regs,
 };
