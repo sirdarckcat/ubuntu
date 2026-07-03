@@ -379,6 +379,13 @@ impl NV_PFALCON_FALCON_ENGINE {
         time::delay::fsleep(time::Delta::from_micros(10));
 
         Self::read(bar, &E::ID).set_reset(false).write(bar, &E::ID);
+<<<<<<<
+=======
+    /// GA102 and later.
+    pub(crate) NV_PRISCV_RISCV_CPUCTL(u32) @ PFalcon2Base + 0x00000388 {
+        7:7     active_stat => bool;
+        4:4     halted => bool;
+>>>>>>>
     }
 }
 
@@ -421,7 +428,7 @@ register!(NV_PRISCV_RISCV_CORE_SWITCH_RISCV_STATUS @ PFalcon2Base[0x00000240] {
 
 // GA102 and later
 register!(NV_PRISCV_RISCV_CPUCTL @ PFalcon2Base[0x00000388] {
-    0:0     halted as bool;
+    4:4     halted as bool;
     7:7     active_stat as bool;
 });
 
