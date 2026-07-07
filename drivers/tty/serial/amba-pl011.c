@@ -30,6 +30,7 @@
 #include <linux/amba/bus.h>
 #include <linux/amba/serial.h>
 #include <linux/clk.h>
+#include <linux/reset.h>
 #include <linux/slab.h>
 #include <linux/dmaengine.h>
 #include <linux/dma-mapping.h>
@@ -116,6 +117,7 @@ struct vendor_data {
 	bool			fixed_options;
 	bool			skip_ibrd_fbrd;
 	bool			set_uartclk_rate;
+	bool			reset_on_register;
 
 	unsigned int (*get_fifosize)(struct amba_device *dev);
 };
@@ -237,6 +239,7 @@ static struct vendor_data vendor_nvidia = {
 	.fixed_options		= false,
 	.skip_ibrd_fbrd		= true,
 	.set_uartclk_rate	= true,
+	.reset_on_register	= true,
 	.get_fifosize		= get_fifosize_nvidia,
 };
 
@@ -2830,6 +2833,7 @@ static int pl011_probe(struct amba_device *dev, const struct amba_id *id)
 {
 	struct uart_amba_port *uap;
 	struct vendor_data *vendor = id->data;
+	struct reset_control *rst;
 	int portnr, ret;
 	u32 val;
 
@@ -2845,6 +2849,28 @@ static int pl011_probe(struct amba_device *dev, const struct amba_id *id)
 	uap->clk = devm_clk_get(&dev->dev, NULL);
 	if (IS_ERR(uap->clk))
 		return PTR_ERR(uap->clk);
+
+	if (vendor->reset_on_register) {
+		rst = devm_reset_control_get_optional_exclusive(&dev->dev, "serial");
+		if (IS_ERR(rst))
+			return PTR_ERR(rst);
+
+		/*
+		 * Skip the reset if firmware has already deasserted it (or
+		 * no reset is described): a reset pulse here would disable
+		 * an active earlycon and drop the bootloader-programmed
+		 * console configuration. Reset providers that cannot report
+		 * the line status get the pulse unconditionally.
+		 */
+		if (reset_control_status(rst) != 0) {
+			ret = reset_control_reset(rst);
+			if (ret) {
+				dev_err(&dev->dev,
+					"failed to reset UART: %d\n", ret);
+				return ret;
+			}
+		}
+	}
 
 	uap->reg_offset = vendor->reg_offset;
 	uap->vendor = vendor;
