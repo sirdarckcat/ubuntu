@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0
-// Copyright (c) 2021-2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+// SPDX-License-Identifier: GPL-2.0-only
+// SPDX-FileCopyrightText: Copyright (c) 2021-2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 
 #include <linux/module.h>
 #include <linux/fs.h>
@@ -164,11 +164,11 @@ static int epl_periodic_alive_packet_thread(void *data)
 			}
 		}
 
-                /* Wait ~10ms before the next keepalive. Use an interruptible sleep
-                * so this idle delay does not count as a D-state task. (The
-                * mbox_send_message() above may still block in D-state as its tx
-                * client is configured with tx_block=true.)
-                */
+		/* Wait ~10ms before the next keepalive. Use an interruptible sleep
+		 * so this idle delay does not count as a D-state task. (The
+		 * mbox_send_message() above may still block in D-state as its tx
+		 * client is configured with tx_block=true.)
+		 */
 		usleep_range_state(10000, 11000, TASK_INTERRUPTIBLE);
 	}
 
