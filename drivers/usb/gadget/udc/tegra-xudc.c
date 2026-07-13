@@ -3591,7 +3591,7 @@ static void tegra264_xudc_device_params_init(struct tegra_xudc *xudc)
 	 */
 	val = xudc_readl(xudc, SSPX_CORE_CNT32);
 	val &= ~(SSPX_CORE_CNT32_POLL_TBURST_MAX_MASK);
-	val |= SSPX_CORE_CNT32_POLL_TBURST_MAX(0x3a);
+	val |= SSPX_CORE_CNT32_POLL_TBURST_MAX(0x3b);
 	xudc_writel(xudc, val, SSPX_CORE_CNT32);
 #undef SSPX_CORE_CNT32
 
