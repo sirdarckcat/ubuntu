@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
+// SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 /*
  * xHCI host controller driver
  *
@@ -5201,11 +5202,7 @@ static void xhci_hcd_init_usb3_data(struct xhci_hcd *xhci, struct usb_hcd *hcd)
 		hcd->self.root_hub->speed = USB_SPEED_SUPER_PLUS;
 		hcd->self.root_hub->rx_lanes = 2;
 		hcd->self.root_hub->tx_lanes = 2;
-		/*
-		 * Determine the SSP rate based on the PSIM value from PSI table.
-		 * USB 3.2 can be either Gen 1x2 (10 Gbps) or Gen 2x2 (20 Gbps).
-		 * Default to Gen 2x2 if PSI information is not available.
-		 */
+		/* Default to Gen 2x2 if PSI information is not available. */
 		hcd->self.root_hub->ssp_rate = USB_SSP_GEN_2x2;
 
 		/* Find the USB 3.x port capability */
@@ -5237,14 +5234,16 @@ static void xhci_hcd_init_usb3_data(struct xhci_hcd *xhci, struct usb_hcd *hcd)
 			}
 
 			/*
-			 * Set SSP rate based on maximum speed:
-			 * 10 Gbps = USB 3.2 Gen 1x2 (2 lanes @ 5 Gbps each)
-			 * 20 Gbps = USB 3.2 Gen 2x2 (2 lanes @ 10 Gbps each)
+			 * A 10-Gbps PSI rate alone cannot distinguish Gen 2x1 from
+			 * Gen 1x2. Use the single-lane Gen 2x1 topology as fallback.
 			 */
-			if (max_rate == 10)
-				hcd->self.root_hub->ssp_rate = USB_SSP_GEN_1x2;
-			else if (max_rate == 20)
+			if (max_rate == 10) {
+				hcd->self.root_hub->ssp_rate = USB_SSP_GEN_2x1;
+				hcd->self.root_hub->rx_lanes = 1;
+				hcd->self.root_hub->tx_lanes = 1;
+			} else if (max_rate == 20) {
 				hcd->self.root_hub->ssp_rate = USB_SSP_GEN_2x2;
+			}
 		}
 		break;
 	case 1:
