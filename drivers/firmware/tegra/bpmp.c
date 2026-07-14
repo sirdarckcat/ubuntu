@@ -1,9 +1,8 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
-/* SPDX-FileCopyrightText: Copyright (c) 2016-2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved. */
+/* SPDX-FileCopyrightText: Copyright (c) 2016-2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved. */
 
 #include <linux/clk/tegra.h>
 #include <linux/genalloc.h>
-#include <linux/iosys-map.h>
 #include <linux/mailbox_client.h>
 #include <linux/module.h>
 #include <linux/of.h>
@@ -685,10 +684,11 @@ void tegra_bpmp_handle_rx(struct tegra_bpmp *bpmp)
 	count = bpmp->soc->channels.thread.count;
 	busy = bpmp->threaded.busy;
 
-	/* Check if supported incoming channel.
-	 * This won't be called for Guest Linux as channel->ib mapping won't be set.
+	/*
+	 * Handle BPMP-initiated MRQs on the CPU_RX channel.
+	 * Native rx_channel is initialized during probe. HV guest rx_channel is not.
 	 */
-	if (iosys_map_is_set(&channel->ib) && tegra_bpmp_is_request_ready(channel)) {
+	if (channel->bpmp && tegra_bpmp_is_request_ready(channel)) {
 		unsigned int mrq = tegra_bpmp_mb_read_field(&channel->ib, code);
 
 		tegra_bpmp_handle_mrq(bpmp, mrq, channel);
