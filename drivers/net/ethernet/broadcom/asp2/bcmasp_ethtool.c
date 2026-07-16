@@ -10,6 +10,7 @@
 #include "bcmasp_intf_defs.h"
 
 enum bcmasp_stat_type {
+	BCMASP_STAT_RX_EDPKT,
 	BCMASP_STAT_RX_CTRL,
 	BCMASP_STAT_RX_CTRL_PER_INTF,
 	BCMASP_STAT_SOFT,
@@ -32,6 +33,8 @@ struct bcmasp_stats {
 	.reg_offset = offset, \
 }
 
+#define STAT_BCMASP_RX_EDPKT(str, offset) \
+	STAT_BCMASP_OFFSET(str, BCMASP_STAT_RX_EDPKT, offset)
 #define STAT_BCMASP_RX_CTRL(str, offset) \
 	STAT_BCMASP_OFFSET(str, BCMASP_STAT_RX_CTRL, offset)
 #define STAT_BCMASP_RX_CTRL_PER_INTF(str, offset) \
@@ -39,6 +42,11 @@ struct bcmasp_stats {
 
 /* Must match the order of struct bcmasp_mib_counters */
 static const struct bcmasp_stats bcmasp_gstrings_stats[] = {
+	/* EDPKT counters */
+	STAT_BCMASP_RX_EDPKT("RX Time Stamp", ASP_EDPKT_RX_TS_COUNTER),
+	STAT_BCMASP_RX_EDPKT("RX PKT Count", ASP_EDPKT_RX_PKT_CNT),
+	STAT_BCMASP_RX_EDPKT("RX PKT Buffered", ASP_EDPKT_HDR_EXTR_CNT),
+	STAT_BCMASP_RX_EDPKT("RX PKT Pushed to DRAM", ASP_EDPKT_HDR_OUT_CNT),
 	/* ASP RX control */
 	STAT_BCMASP_RX_CTRL_PER_INTF("Frames From Unimac",
 				     ASP_RX_CTRL_UMAC_0_FRAME_COUNT),
@@ -105,6 +113,9 @@ static void bcmasp_update_mib_counters(struct bcmasp_intf *intf)
 		switch (s->type) {
 		case BCMASP_STAT_SOFT:
 			continue;
+		case BCMASP_STAT_RX_EDPKT:
+			val = rx_edpkt_core_rl(intf->parent, offset);
+			break;
 		case BCMASP_STAT_RX_CTRL:
 			val = rx_ctrl_core_rl(intf->parent, offset);
 			break;
@@ -261,7 +272,7 @@ static int bcmasp_flow_get(struct bcmasp_intf *intf, struct ethtool_rxnfc *cmd)
 
 	memcpy(&cmd->fs, &nfilter->fs, sizeof(nfilter->fs));
 
-	cmd->data = intf->parent->num_net_filters;
+	cmd->data = NUM_NET_FILTERS;
 
 	return 0;
 }
@@ -308,7 +319,7 @@ static int bcmasp_get_rxnfc(struct net_device *dev, struct ethtool_rxnfc *cmd,
 		break;
 	case ETHTOOL_GRXCLSRLALL:
 		err = bcmasp_netfilt_get_all_active(intf, rule_locs, &cmd->rule_cnt);
-		cmd->data = intf->parent->num_net_filters;
+		cmd->data = NUM_NET_FILTERS;
 		break;
 	default:
 		err = -EOPNOTSUPP;
