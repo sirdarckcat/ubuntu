@@ -1041,7 +1041,7 @@ static int mc_init_interrupts(struct platform_device *pdev, struct mc_pcie *port
 {
 	struct device *dev = &pdev->dev;
 	int irq;
-	int i, intx_irq, msi_irq, event_irq;
+	int i, intx_irq = 0, msi_irq = 0, event_irq;
 	int ret;
 
 	ret = mc_pcie_init_irq_domains(port);
@@ -1051,21 +1051,24 @@ static int mc_init_interrupts(struct platform_device *pdev, struct mc_pcie *port
 	}
 
 	irq = platform_get_irq(pdev, 0);
-	if (irq < 0)
-		return -ENODEV;
+	if (irq < 0) {
+		ret = -ENODEV;
+		goto err_irq_domain_deinit;
+	}
 
 	for (i = 0; i < NUM_EVENTS; i++) {
 		event_irq = irq_create_mapping(port->event_domain, i);
 		if (!event_irq) {
 			dev_err(dev, "failed to map hwirq %d\n", i);
-			return -ENXIO;
+			ret = -ENXIO;
+			goto err_irq_domain_deinit;
 		}
 
 		ret = devm_request_irq(dev, event_irq, mc_event_handler,
 				       0, event_cause[i].sym, port);
 		if (ret) {
 			dev_err(dev, "failed to request IRQ %d\n", event_irq);
-			return ret;
+			goto err_irq_domain_deinit;
 		}
 	}
 
@@ -1073,7 +1076,8 @@ static int mc_init_interrupts(struct platform_device *pdev, struct mc_pcie *port
 				      EVENT_LOCAL_PM_MSI_INT_INTX);
 	if (!intx_irq) {
 		dev_err(dev, "failed to map INTx interrupt\n");
-		return -ENXIO;
+		ret = -ENXIO;
+		goto err_irq_domain_deinit;
 	}
 
 	/* Plug the INTx chained handler */
@@ -1081,8 +1085,11 @@ static int mc_init_interrupts(struct platform_device *pdev, struct mc_pcie *port
 
 	msi_irq = irq_create_mapping(port->event_domain,
 				     EVENT_LOCAL_PM_MSI_INT_MSI);
-	if (!msi_irq)
-		return -ENXIO;
+	if (!msi_irq) {
+		dev_err(dev, "failed to map MSI interrupt\n");
+		ret = -ENXIO;
+		goto err_irq_domain_deinit;
+	}
 
 	/* Plug the MSI chained handler */
 	irq_set_chained_handler_and_data(msi_irq, mc_handle_msi, port);
@@ -1091,6 +1098,31 @@ static int mc_init_interrupts(struct platform_device *pdev, struct mc_pcie *port
 	irq_set_chained_handler_and_data(irq, mc_handle_event, port);
 
 	return 0;
+
+err_irq_domain_deinit:
+	if (msi_irq > 0)
+		irq_set_chained_handler_and_data(msi_irq, NULL, NULL);
+	if (intx_irq > 0)
+		irq_set_chained_handler_and_data(intx_irq, NULL, NULL);
+
+	for (i = 0; i < NUM_EVENTS; i++) {
+		event_irq = irq_find_mapping(port->event_domain, i);
+		if (event_irq) {
+			devm_free_irq(dev, event_irq, port);
+			irq_dispose_mapping(event_irq);
+		}
+	}
+
+	if (intx_irq)
+		irq_dispose_mapping(intx_irq);
+	if (msi_irq)
+		irq_dispose_mapping(msi_irq);
+
+	irq_domain_remove(port->msi.dev_domain);
+	irq_domain_remove(port->intx_domain);
+	irq_domain_remove(port->event_domain);
+
+	return ret;
 }
 
 static void mc_pcie_setup_inbound_atr(struct mc_pcie *port, int window_index,
