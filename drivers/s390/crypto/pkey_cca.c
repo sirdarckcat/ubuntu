@@ -66,26 +66,20 @@ int pkey_cca_key2protkey(u16 card, u16 dom,
 	if (hdr->type == TOKTYPE_CCA_INTERNAL &&
 	    hdr->version == TOKVER_CCA_AES) {
 		/* CCA AES data key */
-		if (keylen < sizeof(struct secaeskeytoken))
-			return -EINVAL;
-		if (cca_check_secaeskeytoken(pkey_dbf_info, 3, key, 0))
+		if (cca_check_secaeskeytoken(pkey_dbf_info, 3, key, keylen, 0))
 			return -EINVAL;
 		rc = cca_sec2protkey(card, dom, key, protkey,
 				     protkeylen, protkeytype);
 	} else if (hdr->type == TOKTYPE_CCA_INTERNAL &&
 		   hdr->version == TOKVER_CCA_VLSC) {
 		/* CCA AES cipher key */
-		if (keylen < hdr->len)
-			return -EINVAL;
 		if (cca_check_secaescipherkey(pkey_dbf_info,
-					      3, key, 0, 1))
+					      3, key, keylen, 0, 1))
 			return -EINVAL;
 		rc = cca_cipher2protkey(card, dom, key, protkey,
 					protkeylen, protkeytype);
 	} else if (hdr->type == TOKTYPE_CCA_INTERNAL_PKA) {
 		/* CCA ECC (private) key */
-		if (keylen < sizeof(struct eccprivkeytoken))
-			return -EINVAL;
 		if (cca_check_sececckeytoken(pkey_dbf_info, 3, key, keylen, 1))
 			return -EINVAL;
 		rc = cca_ecc2protkey(card, dom, key, protkey,
@@ -244,7 +238,7 @@ int pkey_cca_verifykey(const u8 *key, u32 keylen,
 	    hdr->version == TOKVER_CCA_AES) {
 		struct secaeskeytoken *t = (struct secaeskeytoken *)key;
 
-		rc = cca_check_secaeskeytoken(pkey_dbf_info, 3, key, 0);
+		rc = cca_check_secaeskeytoken(pkey_dbf_info, 3, key, keylen, 0);
 		if (rc)
 			goto out;
 		*keytype = PKEY_TYPE_CCA_DATA;
@@ -271,7 +265,8 @@ int pkey_cca_verifykey(const u8 *key, u32 keylen,
 		   hdr->version == TOKVER_CCA_VLSC) {
 		struct cipherkeytoken *t = (struct cipherkeytoken *)key;
 
-		rc = cca_check_secaescipherkey(pkey_dbf_info, 3, key, 0, 1);
+		rc = cca_check_secaescipherkey(pkey_dbf_info, 3,
+					       key, keylen, 0, 1);
 		if (rc)
 			goto out;
 		*keytype = PKEY_TYPE_CCA_CIPHER;
