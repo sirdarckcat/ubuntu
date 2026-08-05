@@ -1573,7 +1573,7 @@ page_hit:
 	if (!err)
 		return page;
 out_err:
-	ClearPageUptodate(page);
+	clear_node_folio_dirty(page_folio(page));
 out_put_err:
 	/* ENOENT comes from read_node_page which is not an error. */
 	if (err != -ENOENT)
