@@ -19,6 +19,7 @@
 
 static u64 total_comp_calls;
 static u64 total_decomp_calls;
+static u64 total_sw_comp_calls;
 static u64 total_sw_decomp_calls;
 static u64 max_comp_delay_ns;
 static u64 max_decomp_delay_ns;
@@ -45,6 +46,11 @@ void update_total_comp_bytes_out(int n)
 void update_total_decomp_calls(void)
 {
 	total_decomp_calls++;
+}
+
+void update_total_sw_comp_calls(void)
+{
+	total_sw_comp_calls++;
 }
 
 void update_total_sw_decomp_calls(void)
@@ -148,6 +154,7 @@ static void reset_iaa_crypto_stats(void)
 {
 	total_comp_calls = 0;
 	total_decomp_calls = 0;
+	total_sw_comp_calls = 0;
 	total_sw_decomp_calls = 0;
 	max_comp_delay_ns = 0;
 	max_decomp_delay_ns = 0;
@@ -212,6 +219,7 @@ static void global_stats_show(struct seq_file *m)
 	seq_puts(m, "global stats:\n");
 	seq_printf(m, "  total_comp_calls: %llu\n", total_comp_calls);
 	seq_printf(m, "  total_decomp_calls: %llu\n", total_decomp_calls);
+	seq_printf(m, "  total_sw_comp_calls: %llu\n", total_sw_comp_calls);
 	seq_printf(m, "  total_sw_decomp_calls: %llu\n", total_sw_decomp_calls);
 	seq_printf(m, "  total_comp_bytes_out: %llu\n", total_comp_bytes_out);
 	seq_printf(m, "  total_decomp_bytes_in: %llu\n", total_decomp_bytes_in);
