@@ -11,6 +11,9 @@ CONFIG_ACCESSIBILITY                            note<'LP: #1967702'>
 CONFIG_ARCH_ROCKCHIP                            policy<{'arm64': 'n'}>
 CONFIG_ARCH_ROCKCHIP                            note<'LP: #2044554'>
 
+CONFIG_ARM_FFA_TRANSPORT                        policy<{'arm64': 'y'}>
+CONFIG_ARM_FFA_TRANSPORT                        note<'LP: #2164621 Build in so modular OP-TEE can load when FF-A is unavailable'>
+
 CONFIG_ARM_SMMU_DISABLE_BYPASS_BY_DEFAULT       policy<{'arm64': '-'}>
 CONFIG_ARM_SMMU_DISABLE_BYPASS_BY_DEFAULT       note<'LP:1845820'>
 
