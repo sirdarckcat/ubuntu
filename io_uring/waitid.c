@@ -131,7 +131,7 @@ static void io_waitid_remove_wq(struct io_kiocb *req)
 	}
 }
 
-static void io_waitid_complete(struct io_kiocb *req, int ret)
+static void io_waitid_complete(struct io_kiocb *req, int ret, bool copy_si)
 {
 	struct io_waitid *iw = io_kiocb_to_cmd(req, struct io_waitid);
 
@@ -143,7 +143,10 @@ static void io_waitid_complete(struct io_kiocb *req, int ret)
 	hlist_del_init(&req->hash_node);
 	io_waitid_remove_wq(req);
 
-	ret = io_waitid_finish(req, ret);
+	if (copy_si)
+		ret = io_waitid_finish(req, ret);
+	else
+		io_waitid_free(req);
 	if (ret < 0)
 		req_set_fail(req);
 	io_req_set_res(req, ret, 0);
@@ -165,7 +168,7 @@ static bool __io_waitid_cancel(struct io_ring_ctx *ctx, struct io_kiocb *req)
 	if (atomic_fetch_inc(&iw->refs) & IO_WAITID_REF_MASK)
 		return false;
 
-	io_waitid_complete(req, -ECANCELED);
+	io_waitid_complete(req, -ECANCELED, true);
 	io_req_queue_tw_complete(req, -ECANCELED);
 	return true;
 }
@@ -243,6 +246,11 @@ static void io_waitid_cb(struct io_kiocb *req, struct io_tw_state *ts)
 	int ret;
 
 	io_tw_lock(ctx, ts);
+	if (unlikely(ts->cancel)) {
+		io_waitid_complete(req, -ECANCELED, false);
+		io_req_task_complete(req, ts);
+		return;
+	}
 
 	ret = __do_wait(&iwa->wo);
 
@@ -270,7 +278,7 @@ static void io_waitid_cb(struct io_kiocb *req, struct io_tw_state *ts)
 		}
 	}
 
-	io_waitid_complete(req, ret);
+	io_waitid_complete(req, ret, true);
 	io_req_task_complete(req, ts);
 }
 
