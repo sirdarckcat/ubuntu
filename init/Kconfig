@@ -63,6 +63,8 @@ config LLD_VERSION
 config RUST_IS_AVAILABLE
 	def_bool $(success,$(srctree)/scripts/rust_is_available.sh)
 	depends on !PREEMPT_RT
+	# This check does not need to run for nvidia-tegra kernels
+	depends on BROKEN
 	help
 	  This shows whether a suitable Rust toolchain is available (found).
 
