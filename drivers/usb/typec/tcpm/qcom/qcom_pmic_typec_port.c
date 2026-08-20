@@ -498,6 +498,8 @@ void qcom_pmic_typec_port_stop(struct pmic_typec_port *pmic_typec_port)
 
 	for (i = 0; i < pmic_typec_port->nr_irqs; i++)
 		disable_irq(pmic_typec_port->irq_data[i].irq);
+
+	disable_delayed_work_sync(&pmic_typec_port->cc_debounce_dwork);
 }
 
 struct pmic_typec_port *qcom_pmic_typec_port_alloc(struct device *dev)
