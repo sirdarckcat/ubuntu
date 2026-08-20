@@ -1085,7 +1085,7 @@ void mana_uncfg_vport(struct mana_port_context *apc)
 EXPORT_SYMBOL_NS(mana_uncfg_vport, NET_MANA);
 
 int mana_cfg_vport(struct mana_port_context *apc, u32 protection_dom_id,
-		   u32 doorbell_pg_id)
+		   u32 doorbell_pg_id, bool check_channel_changing)
 {
 	struct mana_config_vport_resp resp = {};
 	struct mana_config_vport_req req = {};
@@ -1110,7 +1110,8 @@ int mana_cfg_vport(struct mana_port_context *apc, u32 protection_dom_id,
 	 * Ethernet usage on the same port.
 	 */
 	mutex_lock(&apc->vport_mutex);
-	if (apc->vport_use_count > 0) {
+	if (apc->vport_use_count > 0 ||
+		(check_channel_changing && apc->channel_changing)) {
 		mutex_unlock(&apc->vport_mutex);
 		return -EBUSY;
 	}
@@ -2821,7 +2822,7 @@ static int mana_create_vport(struct mana_port_context *apc,
 			return err;
 	}
 
-	err = mana_cfg_vport(apc, gd->pdid, gd->doorbell);
+	err = mana_cfg_vport(apc, gd->pdid, gd->doorbell, false);
 	if (err)
 		return err;
 
