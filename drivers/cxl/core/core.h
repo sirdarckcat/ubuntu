@@ -99,4 +99,7 @@ enum cxl_poison_trace_type {
 
 long cxl_pci_get_latency(struct pci_dev *pdev);
 
+struct cxl_dev_state;
+bool cxl_handle_ras(struct cxl_dev_state *cxlds, void __iomem *ras_base);
+
 #endif /* __CXL_CORE_H__ */
