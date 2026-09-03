@@ -219,7 +219,12 @@
 #define MLXBF_I2C_MASTER_BUSY_BIT         BIT(30) /* Busy bit. */
 #define MLXBF_I2C_MASTER_START_BIT        BIT(29) /* Control start. */
 #define MLXBF_I2C_MASTER_CTL_WRITE_BIT    BIT(28) /* Control write phase. */
+#define MLXBF_I2C_MASTER_WRITE_MASK       GENMASK(27, 21) /* Control write bytes */
+#define MLXBF_I2C_MASTER_SEND_PEC_BIT     BIT(20) /* Send PEC byte when set to 1 */
 #define MLXBF_I2C_MASTER_CTL_READ_BIT     BIT(19) /* Control read phase. */
+#define MLXBF_I2C_MASTER_SLV_ADDR_MASK    GENMASK(18, 12) /* Slave address */
+#define MLXBF_I2C_MASTER_PARSE_EXP_BIT    BIT(11) /* Control parse expected bytes */
+#define MLXBF_I2C_MASTER_READ_MASK        GENMASK(10, 4) /* Control read bytes */
 #define MLXBF_I2C_MASTER_STOP_BIT         BIT(3)  /* Control stop. */
 
 #define MLXBF_I2C_MASTER_ENABLE \
@@ -231,12 +236,6 @@
 
 #define MLXBF_I2C_MASTER_ENABLE_READ \
 	(MLXBF_I2C_MASTER_ENABLE | MLXBF_I2C_MASTER_CTL_READ_BIT)
-
-#define MLXBF_I2C_MASTER_WRITE_SHIFT      21 /* Control write bytes */
-#define MLXBF_I2C_MASTER_SEND_PEC_SHIFT   20 /* Send PEC byte when set to 1 */
-#define MLXBF_I2C_MASTER_PARSE_EXP_SHIFT  11 /* Control parse expected bytes */
-#define MLXBF_I2C_MASTER_SLV_ADDR_SHIFT   12 /* Slave address */
-#define MLXBF_I2C_MASTER_READ_SHIFT       4  /* Control read bytes */
 
 /* SMBus master GW Data descriptor. */
 #define MLXBF_I2C_MASTER_DATA_DESC_ADDR   0x80
@@ -288,8 +287,7 @@
 #define MLXBF_I2C_SLAVE_ENABLE \
 	(MLXBF_I2C_SLAVE_BUSY_BIT | MLXBF_I2C_SLAVE_WRITE_BIT)
 
-#define MLXBF_I2C_SLAVE_WRITE_BYTES_SHIFT 22 /* Number of bytes to write. */
-#define MLXBF_I2C_SLAVE_SEND_PEC_SHIFT    21 /* Send PEC byte shift. */
+#define MLXBF_I2C_SLAVE_WRITE_BYTES_MASK  GENMASK(28, 22) /* Number of bytes to write. */
 
 /* SMBus slave GW Data descriptor. */
 #define MLXBF_I2C_SLAVE_DATA_DESC_ADDR   0x80
@@ -649,14 +647,19 @@ static int mlxbf_i2c_smbus_enable(struct mlxbf_i2c_priv *priv, u8 slave,
 		command |= MLXBF_I2C_MASTER_STOP_BIT;
 	if (read) {
 		command |= MLXBF_I2C_MASTER_ENABLE_READ;
-		command |= rol32(len, MLXBF_I2C_MASTER_READ_SHIFT);
+		command |= FIELD_PREP(MLXBF_I2C_MASTER_READ_MASK, len);
 	} else {
 		command |= MLXBF_I2C_MASTER_ENABLE_WRITE;
-		command |= rol32(len, MLXBF_I2C_MASTER_WRITE_SHIFT);
+		command |= FIELD_PREP(MLXBF_I2C_MASTER_WRITE_MASK, len);
 	}
-	command |= rol32(slave, MLXBF_I2C_MASTER_SLV_ADDR_SHIFT);
-	command |= rol32(block_en, MLXBF_I2C_MASTER_PARSE_EXP_SHIFT);
-	command |= rol32(pec_en, MLXBF_I2C_MASTER_SEND_PEC_SHIFT);
+
+	if (block_en)
+		command |= MLXBF_I2C_MASTER_PARSE_EXP_BIT;
+
+	if (pec_en)
+		command |= MLXBF_I2C_MASTER_SEND_PEC_BIT;
+
+	command |= FIELD_PREP(MLXBF_I2C_MASTER_SLV_ADDR_MASK, slave);
 
 	/* Clear status bits. */
 	writel(0x0, priv->mst->io + MLXBF_I2C_SMBUS_MASTER_STATUS);
@@ -746,8 +749,8 @@ mlxbf_i2c_smbus_start_transaction(struct mlxbf_i2c_priv *priv,
 		 * submitted by the first operation only.
 		 */
 		if (op_idx == 0 && flags & MLXBF_I2C_F_SMBUS_OPERATION) {
-			block_en = flags & MLXBF_I2C_F_SMBUS_BLOCK;
-			pec_en = flags & MLXBF_I2C_F_SMBUS_PEC;
+			block_en = !!(flags & MLXBF_I2C_F_SMBUS_BLOCK);
+			pec_en = !!(flags & MLXBF_I2C_F_SMBUS_PEC);
 		}
 
 		if (flags & MLXBF_I2C_F_WRITE) {
@@ -1822,7 +1825,7 @@ static struct i2c_client *mlxbf_i2c_get_slave_from_addr(
 static int mlxbf_i2c_irq_send(struct mlxbf_i2c_priv *priv, u8 recv_bytes)
 {
 	u8 data_desc[MLXBF_I2C_SLAVE_DATA_DESC_SIZE] = { 0 };
-	u8 write_size, pec_en, addr, value, byte_cnt;
+	u8 write_size, addr, value, byte_cnt;
 	struct i2c_client *slave;
 	u32 control32, data32;
 	int ret = 0;
@@ -1888,12 +1891,9 @@ static int mlxbf_i2c_irq_send(struct mlxbf_i2c_priv *priv, u8 recv_bytes)
 	mlxbf_i2c_smbus_write_data(priv, data_desc, byte_cnt,
 				   MLXBF_I2C_SLAVE_DATA_DESC_ADDR, false);
 
-	pec_en = 0; /* Disable PEC since it is not supported. */
-
 	/* Prepare control word. */
 	control32 = MLXBF_I2C_SLAVE_ENABLE;
-	control32 |= rol32(write_size, MLXBF_I2C_SLAVE_WRITE_BYTES_SHIFT);
-	control32 |= rol32(pec_en, MLXBF_I2C_SLAVE_SEND_PEC_SHIFT);
+	control32 |= FIELD_PREP(MLXBF_I2C_SLAVE_WRITE_BYTES_MASK, write_size);
 
 	writel(control32, priv->slv->io + MLXBF_I2C_SMBUS_SLAVE_GW);
 
