@@ -525,10 +525,15 @@ static void amdxdna_gem_obj_close(struct drm_gem_object *gobj, struct drm_file *
 
 	if (amdxdna_iova_on(xdna))
 		amdxdna_iommu_unmap_bo(xdna, abo);
+
+static struct dma_buf *amdxdna_gem_dev_obj_export(struct drm_gem_object *gobj, int flags)
+{
+	return ERR_PTR(-EOPNOTSUPP);
 }
 
 static const struct drm_gem_object_funcs amdxdna_gem_dev_obj_funcs = {
 	.free = amdxdna_gem_dev_obj_free,
+	.export = amdxdna_gem_dev_obj_export,
 };
 
 static const struct drm_gem_object_funcs amdxdna_gem_shmem_funcs = {
