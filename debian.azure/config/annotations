@@ -298,6 +298,8 @@ CONFIG_DRM_CROS_EC_ANX7688                      policy<{'arm64': '-'}>
 CONFIG_DRM_DW_HDMI_AHB_AUDIO                    policy<{'arm64': '-'}>
 CONFIG_DRM_DW_HDMI_GP_AUDIO                     policy<{'arm64': '-'}>
 CONFIG_DRM_DW_HDMI_I2S_AUDIO                    policy<{'arm64': 'n'}>
+CONFIG_DRM_EXEC                                 policy<{'amd64': 'm', 'arm64': 'm'}>
+CONFIG_DRM_GPUVM                                policy<{'amd64': 'm', 'arm64': 'm'}>
 CONFIG_DRM_I2C_ADV7511_AUDIO                    policy<{'arm64': '-'}>
 CONFIG_DRM_NOUVEAU_BACKLIGHT                    policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_DRM_NOUVEAU_CH7006                       policy<{'amd64': '-', 'arm64': '-'}>
@@ -393,9 +395,11 @@ CONFIG_RUST_BITMAP_HARDENED                     policy<{'amd64': '-', 'arm64': '
 CONFIG_RUST_BUILD_ASSERT_ALLOW                  policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_RUST_DEBUG_ASSERTIONS                    policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_RUST_DRM_GEM_SHMEM_HELPER                policy<{'arm64': '-'}>
+CONFIG_RUST_DRM_GPUVM                           policy<{'arm64': '-'}>
 CONFIG_RUST_FW_LOADER_ABSTRACTIONS              policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_RUST_OVERFLOW_CHECKS                     policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_RUST_PHYLIB_ABSTRACTIONS                 policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_RUST_SERIAL_DEV_BUS_ABSTRACTIONS         policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_SAMPLES_RUST                             policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_SENSORS_CROS_EC                          policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_SENSORS_MAX17616                         policy<{'amd64': 'm', 'arm64': 'n'}>
@@ -528,6 +532,8 @@ CONFIG_SND_HDA_INTEL                            policy<{'amd64': '-', 'arm64': '
 CONFIG_SND_HDA_INTEL_HDMI_SILENT_STREAM         policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_SND_HDA_PATCH_LOADER                     policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_SND_HDA_PREALLOC_SIZE                    policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_SND_HDA_SCODEC_AW88399                   policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_SND_HDA_SCODEC_AW88399_I2C               policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_SND_HDA_SCODEC_COMPONENT                 policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_SND_HDA_SCODEC_CS35L41                   policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_SND_HDA_SCODEC_CS35L41_I2C               policy<{'amd64': '-', 'arm64': '-'}>
@@ -716,6 +722,7 @@ CONFIG_SND_SOC_AW88261                          policy<{'amd64': '-', 'arm64': '
 CONFIG_SND_SOC_AW88395                          policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_SND_SOC_AW88395_LIB                      policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_SND_SOC_AW88399                          policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_SND_SOC_AW88399_LIB                      policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_SND_SOC_BD28623                          policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_SND_SOC_BT_SCO                           policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_SND_SOC_CHV3_CODEC                       policy<{'amd64': '-', 'arm64': '-'}>
@@ -1074,6 +1081,7 @@ CONFIG_SND_SOC_RT715_SDCA_SDW                   policy<{'amd64': '-', 'arm64': '
 CONFIG_SND_SOC_RT715_SDW                        policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_SND_SOC_RT721_SDCA_SDW                   policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_SND_SOC_RT722_SDCA_SDW                   policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_SND_SOC_RT766_SDCA_SDW                   policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_SND_SOC_RT9120                           policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_SND_SOC_RT9123                           policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_SND_SOC_RT9123P                          policy<{'amd64': '-', 'arm64': '-'}>
@@ -1112,6 +1120,7 @@ CONFIG_SND_SOC_SOF_ACP_PROBES                   policy<{'amd64': '-'}>
 CONFIG_SND_SOC_SOF_ALDERLAKE                    policy<{'amd64': '-'}>
 CONFIG_SND_SOC_SOF_AMD_ACP63                    policy<{'amd64': '-'}>
 CONFIG_SND_SOC_SOF_AMD_ACP70                    policy<{'amd64': '-'}>
+CONFIG_SND_SOC_SOF_AMD_ACP7X                    policy<{'amd64': '-'}>
 CONFIG_SND_SOC_SOF_AMD_COMMON                   policy<{'amd64': '-'}>
 CONFIG_SND_SOC_SOF_AMD_REMBRANDT                policy<{'amd64': '-'}>
 CONFIG_SND_SOC_SOF_AMD_RENOIR                   policy<{'amd64': '-'}>
@@ -1325,6 +1334,7 @@ CONFIG_SND_SOC_WM_HUBS                          policy<{'arm64': '-'}>
 CONFIG_SND_SOC_WSA881X                          policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_SND_SOC_WSA883X                          policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_SND_SOC_WSA884X                          policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_SND_SOC_WSA885X                          policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_SND_SOC_X1E80100                         policy<{'arm64': '-'}>
 CONFIG_SND_SOC_XILINX_AUDIO_FORMATTER           policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_SND_SOC_XILINX_I2S                       policy<{'amd64': '-', 'arm64': '-'}>
