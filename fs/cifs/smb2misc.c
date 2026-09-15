@@ -17,8 +17,6 @@
 #include "smb2glob.h"
 #include "nterr.h"
 
-static unsigned int __smb2_calc_size(void *buf, bool *have_data);
-
 static int
 check_smb2_hdr(struct smb2_hdr *shdr, __u64 mid)
 {
@@ -143,7 +141,6 @@ smb2_check_message(char *buf, unsigned int len, struct TCP_Server_Info *server)
 	int command;
 	__u32 calc_len; /* calculated length */
 	__u64 mid;
-	bool have_data;
 
 	/*
 	 * Add function to do table lookup of StructureSize by command
@@ -224,8 +221,7 @@ smb2_check_message(char *buf, unsigned int len, struct TCP_Server_Info *server)
 		}
 	}
 
-	have_data = false;
-	calc_len = __smb2_calc_size(buf, &have_data);
+	calc_len = smb2_calc_size(buf);
 
 	/* For SMB2_IOCTL, OutputOffset and OutputLength are optional, so might
 	 * be 0, and not a real miscalculation */
@@ -243,13 +239,8 @@ smb2_check_message(char *buf, unsigned int len, struct TCP_Server_Info *server)
 		/* Windows 7 server returns 24 bytes more */
 		if (calc_len + 24 == len && command == SMB2_OPLOCK_BREAK_HE)
 			return 0;
-		/*
-		 * Server can return one byte more due to implied bcc[0].
-		 * Allow it only when there is no data area; if data_length > 0
-		 * the +1 gap indicates an overreported data length rather than
-		 * the bcc[0] omission.
-		 */
-		if (calc_len == len + 1 && !have_data)
+		/* server can return one byte more due to implied bcc[0] */
+		if (calc_len == len + 1)
 			return 0;
 
 		/*
@@ -410,17 +401,14 @@ smb2_get_data_area_len(int *off, int *len, struct smb2_hdr *shdr)
 /*
  * Calculate the size of the SMB message based on the fixed header
  * portion, the number of word parameters and the data portion of the message.
- * If have_data is non-NULL, it is set to true when a non-empty data area was
- * found (data_length > 0), allowing callers to distinguish the implied bcc[0]
- * case (no data area) from an overreported data length.
  */
-static unsigned int
-__smb2_calc_size(void *buf, bool *have_data)
+unsigned int
+smb2_calc_size(void *buf)
 {
 	struct smb2_pdu *pdu = (struct smb2_pdu *)buf;
 	struct smb2_hdr *shdr = &pdu->hdr;
 	int offset; /* the offset from the beginning of SMB to data area */
-	int data_length = 0; /* the length of the variable length data area */
+	int data_length; /* the length of the variable length data area */
 	/* Structure Size has already been checked to make sure it is 64 */
 	int len = le16_to_cpu(shdr->StructureSize);
 
@@ -453,15 +441,7 @@ __smb2_calc_size(void *buf, bool *have_data)
 	}
 calc_size_exit:
 	cifs_dbg(FYI, "SMB2 len %d\n", len);
-	if (have_data)
-		*have_data = (data_length > 0);
 	return len;
-}
-
-unsigned int
-smb2_calc_size(void *buf)
-{
-	return __smb2_calc_size(buf, NULL);
 }
 
 /* Note: caller must free return buffer */
