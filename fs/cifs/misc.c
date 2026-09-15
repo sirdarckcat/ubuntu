@@ -101,10 +101,9 @@ sesInfoFree(struct cifs_ses *buf_to_free)
 }
 
 struct cifs_tcon *
-tconInfoAlloc(enum smb3_tcon_ref_trace trace)
+tconInfoAlloc(void)
 {
 	struct cifs_tcon *ret_buf;
-	static atomic_t tcon_debug_id;
 
 	ret_buf = kzalloc(sizeof(*ret_buf), GFP_KERNEL);
 	if (!ret_buf)
@@ -117,8 +116,7 @@ tconInfoAlloc(enum smb3_tcon_ref_trace trace)
 
 	atomic_inc(&tconInfoAllocCount);
 	ret_buf->tidStatus = CifsNew;
-	ret_buf->debug_id = atomic_inc_return(&tcon_debug_id);
-	ret_buf->tc_count = 1;
+	++ret_buf->tc_count;
 	INIT_LIST_HEAD(&ret_buf->openFileList);
 	INIT_LIST_HEAD(&ret_buf->tcon_list);
 	spin_lock_init(&ret_buf->open_file_lock);
@@ -126,19 +124,17 @@ tconInfoAlloc(enum smb3_tcon_ref_trace trace)
 	spin_lock_init(&ret_buf->stat_lock);
 	atomic_set(&ret_buf->num_local_opens, 0);
 	atomic_set(&ret_buf->num_remote_opens, 0);
-	trace_smb3_tcon_ref(ret_buf->debug_id, ret_buf->tc_count, trace);
 
 	return ret_buf;
 }
 
 void
-tconInfoFree(struct cifs_tcon *buf_to_free, enum smb3_tcon_ref_trace trace)
+tconInfoFree(struct cifs_tcon *buf_to_free)
 {
 	if (buf_to_free == NULL) {
 		cifs_dbg(FYI, "Null buffer passed to tconInfoFree\n");
 		return;
 	}
-	trace_smb3_tcon_ref(buf_to_free->debug_id, buf_to_free->tc_count, trace);
 	atomic_dec(&tconInfoAllocCount);
 	kfree(buf_to_free->nativeFileSystem);
 	kfree_sensitive(buf_to_free->password);
