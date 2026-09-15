@@ -2046,9 +2046,8 @@ smb2_sync_write(const unsigned int xid, struct cifs_fid *pfid,
 }
 
 /* Set or clear the SPARSE_FILE attribute based on value passed in setsparse */
-static int smb2_set_sparse(const unsigned int xid, struct cifs_tcon *tcon,
-			   struct cifsFileInfo *cfile, struct inode *inode,
-			   __u8 setsparse)
+static bool smb2_set_sparse(const unsigned int xid, struct cifs_tcon *tcon,
+		struct cifsFileInfo *cfile, struct inode *inode, __u8 setsparse)
 {
 	struct cifsInodeInfo *cifsi;
 	int rc;
@@ -2057,32 +2056,32 @@ static int smb2_set_sparse(const unsigned int xid, struct cifs_tcon *tcon,
 
 	/* if file already sparse don't bother setting sparse again */
 	if ((cifsi->cifsAttrs & FILE_ATTRIBUTE_SPARSE_FILE) && setsparse)
-		return 0; /* already sparse */
+		return true; /* already sparse */
 
 	if (!(cifsi->cifsAttrs & FILE_ATTRIBUTE_SPARSE_FILE) && !setsparse)
-		return 0; /* already not sparse */
+		return true; /* already not sparse */
 
 	/*
 	 * Can't check for sparse support on share the usual way via the
 	 * FS attribute info (FILE_SUPPORTS_SPARSE_FILES) on the share
 	 * since Samba server doesn't set the flag on the share, yet
 	 * supports the set sparse FSCTL and returns sparse correctly
-	 * in the file attributes. If the server returns EOPNOTSUPP, mark
-	 * that sparse files are not supported on this share to avoid
-	 * repeatedly sending the unsupported FSCTL.
+	 * in the file attributes. If we fail setting sparse though we
+	 * mark that server does not support sparse files for this share
+	 * to avoid repeatedly sending the unsupported fsctl to server
+	 * if the file is repeatedly extended.
 	 */
 	if (tcon->broken_sparse_sup)
-		return -EOPNOTSUPP;
+		return false;
 
 	rc = SMB2_ioctl(xid, tcon, cfile->fid.persistent_fid,
 			cfile->fid.volatile_fid, FSCTL_SET_SPARSE,
 			true /* is_fctl */,
 			&setsparse, 1, CIFSMaxBufSize, NULL, NULL);
 	if (rc) {
-		if (rc == -EOPNOTSUPP)
-			tcon->broken_sparse_sup = true;
+		tcon->broken_sparse_sup = true;
 		cifs_dbg(FYI, "set sparse rc = %d\n", rc);
-		return rc;
+		return false;
 	}
 
 	if (setsparse)
@@ -2090,7 +2089,7 @@ static int smb2_set_sparse(const unsigned int xid, struct cifs_tcon *tcon,
 	else
 		cifsi->cifsAttrs &= (~FILE_ATTRIBUTE_SPARSE_FILE);
 
-	return 0;
+	return true;
 }
 
 static int
@@ -3650,9 +3649,10 @@ static long smb3_punch_hole(struct file *file, struct cifs_tcon *tcon,
 	inode_lock(inode);
 	/* Need to make file sparse, if not already, before freeing range. */
 	/* Consider adding equivalent for compressed since it could also work */
-	rc = smb2_set_sparse(xid, tcon, cfile, inode, set_sparse);
-	if (rc)
+	if (!smb2_set_sparse(xid, tcon, cfile, inode, set_sparse)) {
+		rc = -EOPNOTSUPP;
 		goto out;
+	}
 
 	filemap_invalidate_lock(inode->i_mapping);
 	/*
