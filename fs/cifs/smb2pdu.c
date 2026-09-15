@@ -4567,7 +4567,7 @@ int posix_info_sid_size(const void *beg, const void *end)
 	size_t subauth;
 	int total;
 
-	if (beg + 2 > end)
+	if (beg + 1 > end)
 		return -1;
 
 	subauth = *(u8 *)(beg+1);
