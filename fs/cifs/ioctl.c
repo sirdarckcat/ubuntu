@@ -347,11 +347,13 @@ long cifs_ioctl(struct file *filep, unsigned int command, unsigned long arg)
 					break;
 			}
 #endif /* CONFIG_CIFS_POSIX */
-			if (CIFS_I(inode)->cifsAttrs & FILE_ATTRIBUTE_COMPRESSED)
-				ExtAttrBits |= FS_COMPR_FL;
-
-			rc = put_user(ExtAttrBits & FS_FL_USER_VISIBLE,
-				      (int __user *)arg);
+			rc = 0;
+			if (CIFS_I(inode)->cifsAttrs & ATTR_COMPRESSED) {
+				/* add in the compressed bit */
+				ExtAttrBits = FS_COMPR_FL;
+				rc = put_user(ExtAttrBits & FS_FL_USER_VISIBLE,
+					      (int __user *)arg);
+			}
 			break;
 		case FS_IOC_SETFLAGS:
 			if (pSMBFile == NULL)
