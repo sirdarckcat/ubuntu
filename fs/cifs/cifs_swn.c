@@ -313,15 +313,17 @@ static struct cifs_swn_reg *cifs_get_swn_reg(struct cifs_tcon *tcon)
 	reg = cifs_find_swn_reg(tcon);
 	if (!IS_ERR(reg)) {
 		kref_get(&reg->ref_count);
-		goto unlock;
+		mutex_unlock(&cifs_swnreg_idr_mutex);
+		return reg;
 	} else if (PTR_ERR(reg) != -EEXIST) {
-		goto unlock;
+		mutex_unlock(&cifs_swnreg_idr_mutex);
+		return reg;
 	}
 
 	reg = kmalloc(sizeof(struct cifs_swn_reg), GFP_ATOMIC);
 	if (reg == NULL) {
-		ret = -ENOMEM;
-		goto fail_unlock;
+		mutex_unlock(&cifs_swnreg_idr_mutex);
+		return ERR_PTR(-ENOMEM);
 	}
 
 	kref_init(&reg->ref_count);
@@ -352,7 +354,7 @@ static struct cifs_swn_reg *cifs_get_swn_reg(struct cifs_tcon *tcon)
 	reg->ip_notify = (tcon->capabilities & SMB2_SHARE_CAP_SCALEOUT);
 
 	reg->tcon = tcon;
-unlock:
+
 	mutex_unlock(&cifs_swnreg_idr_mutex);
 
 	return reg;
@@ -363,7 +365,6 @@ fail_idr:
 	idr_remove(&cifs_swnreg_idr, reg->id);
 fail:
 	kfree(reg);
-fail_unlock:
 	mutex_unlock(&cifs_swnreg_idr_mutex);
 	return ERR_PTR(ret);
 }
