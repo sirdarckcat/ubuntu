@@ -890,18 +890,19 @@ int
 cifs_handle_standard(struct TCP_Server_Info *server, struct mid_q_entry *mid)
 {
 	char *buf = server->large_buf ? server->bigbuf : server->smallbuf;
-	int rc;
+	int length;
 
 	/*
 	 * We know that we received enough to get to the MID as we
 	 * checked the pdu_length earlier. Now check to see
-	 * if the rest of the header is OK.
+	 * if the rest of the header is OK. We borrow the length
+	 * var for the rest of the loop to avoid a new stack var.
 	 *
 	 * 48 bytes is enough to display the header and a little bit
 	 * into the payload for debugging purposes.
 	 */
-	rc = server->ops->check_message(buf, server->total_read, server);
-	if (rc)
+	length = server->ops->check_message(buf, server->total_read, server);
+	if (length != 0)
 		cifs_dump_mem("Bad SMB: ", buf,
 			min_t(unsigned int, server->total_read, 48));
 
@@ -916,9 +917,9 @@ cifs_handle_standard(struct TCP_Server_Info *server, struct mid_q_entry *mid)
 		return -1;
 
 	if (!mid)
-		return rc;
+		return length;
 
-	handle_mid(mid, server, buf, rc);
+	handle_mid(mid, server, buf, length);
 	return 0;
 }
 
