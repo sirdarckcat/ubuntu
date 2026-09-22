@@ -1,6 +1,6 @@
 build_arch	= x86
 defconfig	= defconfig
-flavours	= generic
+flavours	= oem
 build_image	= bzImage
 kernel_file	= arch/$(build_arch)/boot/bzImage
 install_file	= vmlinuz
@@ -19,3 +19,7 @@ do_tools_rtla = true
 do_tools_acpidbg = true
 do_lib_rust     = true
 do_sbom         = true
+
+# OEM
+do_lib_rust            = false
+do_tools_hyperv        = false
