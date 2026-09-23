@@ -22,3 +22,6 @@ Azure-specific features that got dropped:
    (merged upstream as 5b5cb75fb86a)
  - net: mana: Extend RX CQE coalescing up to 8 packets
    (merged upstream as 55d20f50a221)
+ - UBUNTU: SAUCE: (no-up) hv: Fix supply vendor ID
+   (now carried by the parent linux 7.3.0-6.6 as c7451e300b3e "UBUNTU: SAUCE:
+   (no-up) hv: Fix supplied vendor ID", LP: #2158462; same patch-id)
