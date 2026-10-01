@@ -380,6 +380,8 @@ CONFIG_ZRAM                                     note<'LP: #2120190'>
 
 CONFIG_A11Y_BRAILLE_CONSOLE                     policy<{'arm64': '-'}>
 CONFIG_ARCH_HAS_TEARDOWN_DMA_OPS                policy<{'arm64': '-'}>
+CONFIG_ARCH_TEGRA_238_SOC                       policy<{'arm64': 'y'}>
+CONFIG_ARM64_CHAINC_MINIMAL                     policy<{'arm64': 'n'}>
 CONFIG_ARM64_ERRATUM_1902691                    policy<{'arm64': 'y'}>
 CONFIG_ARM64_ERRATUM_2038923                    policy<{'arm64': 'y'}>
 CONFIG_ARM64_ERRATUM_2064142                    policy<{'arm64': 'y'}>
@@ -390,6 +392,7 @@ CONFIG_ARM64_ERRATUM_2253138                    policy<{'arm64': 'y'}>
 CONFIG_ARM64_ERRATUM_834220                     policy<{'arm64': 'y'}>
 CONFIG_ARM64_WORKAROUND_TRBE_OVERWRITE_FILL_MODE policy<{'arm64': 'y'}>
 CONFIG_ARM64_WORKAROUND_TRBE_WRITE_OUT_OF_RANGE policy<{'arm64': 'y'}>
+CONFIG_BRIDGE_NF_EBTABLES_LEGACY                policy<{'arm64': 'm'}>
 CONFIG_CC_HAS_UBSAN_BOUNDS_STRICT               policy<{'arm64': '-'}>
 CONFIG_COMPACT_UNEVICTABLE_DEFAULT              policy<{'arm64': '0', 'arm64-nvidia-tegra': '1'}>
 CONFIG_CORESIGHT_CPU_DEBUG_DEFAULT_ON           policy<{'arm64': 'n'}>
@@ -415,7 +418,7 @@ CONFIG_HAVE_KVM_IRQ_ROUTING                     policy<{'arm64': 'y'}>
 CONFIG_HAVE_KVM_MSI                             policy<{'arm64': 'y'}>
 CONFIG_HAVE_KVM_VCPU_RUN_PID_CHANGE             policy<{'arm64': 'y'}>
 CONFIG_IRQ_BYPASS_MANAGER                       policy<{'arm64': 'y'}>
-CONFIG_KERNEL_BUILD_WITH_PROD_DEFCONFIG         policy<{'arm64': 'n'}>
+CONFIG_KERNEL_BUILD_WITH_PROD_DEFCONFIG         policy<{'arm64': '-'}>
 CONFIG_KVM_COMMON                               policy<{'arm64': 'y'}>
 CONFIG_KVM_GENERIC_DIRTYLOG_READ_PROTECT        policy<{'arm64': 'y'}>
 CONFIG_KVM_GENERIC_HARDWARE_ENABLING            policy<{'arm64': 'y'}>
@@ -429,6 +432,7 @@ CONFIG_NEED_KVM_DIRTY_RING_WITH_BITMAP          policy<{'arm64': 'y'}>
 CONFIG_NUMA_BALANCING                           policy<{'arm64': '-', 'arm64-nvidia-tegra': 'n'}>
 CONFIG_NVHE_EL2_DEBUG                           policy<{'arm64': 'n'}>
 CONFIG_PID_IN_CONTEXTIDR                        policy<{'arm64': 'y'}>
+CONFIG_PINCTRL_TEGRA238                         policy<{'arm64': 'y'}>
 CONFIG_PREEMPT_BUILD                            policy<{'arm64': '-', 'arm64-nvidia-tegra': 'y'}>
 CONFIG_PREEMPT_NONE                             policy<{'arm64': 'n', 'arm64-nvidia-tegra': 'y'}>
 CONFIG_PREEMPT_NONE_BUILD                       policy<{'arm64-nvidia-tegra': '-'}>
@@ -441,7 +445,7 @@ CONFIG_RCU_BOOST                                policy<{'arm64': 'y', 'arm64-nvi
 CONFIG_RCU_BOOST_DELAY                          policy<{'arm64': '500', 'arm64-nvidia-tegra': '-'}>
 CONFIG_RCU_NOCB_CPU_CB_BOOST                    policy<{'arm64': 'y', 'arm64-nvidia-tegra': '-'}>
 CONFIG_SAMPLE_CORESIGHT_SYSCFG                  policy<{'arm64': 'n'}>
-CONFIG_SCSI_UFSHCD_QUERY_EXPORT                 policy<{'arm64': 'y'}>
+CONFIG_SCSI_UFSHCD_QUERY_EXPORT                 policy<{'arm64': '-'}>
 CONFIG_SOC_TEGRA_MSSNVLINK                      policy<{'arm64': 'y'}>
 CONFIG_SOC_TEGRA_PLATFORM_HELPER                policy<{'arm64': '-'}>
 CONFIG_SOFTIRQ_ON_OWN_STACK                     policy<{'arm64': '-', 'arm64-nvidia-tegra': 'y'}>
