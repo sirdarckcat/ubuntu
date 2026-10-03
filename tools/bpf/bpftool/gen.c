@@ -198,9 +198,8 @@ static int codegen_datasecs(struct bpf_object *obj, const char *obj_name)
 	int i, err = 0;
 
 	d = btf_dump__new(btf, codegen_btf_dump_printf, NULL, NULL);
-	err = libbpf_get_error(d);
-	if (err)
-		return err;
+	if (IS_ERR(d))
+		return PTR_ERR(d);
 
 	for (i = 1; i <= n; i++) {
 		const struct btf_type *t = btf__type_by_id(btf, i);
@@ -665,11 +664,10 @@ static int do_skeleton(int argc, char **argv)
 		get_obj_name(obj_name, file);
 	opts.object_name = obj_name;
 	obj = bpf_object__open_mem(obj_data, file_sz, &opts);
-	err = libbpf_get_error(obj);
-	if (err) {
+	if (IS_ERR(obj)) {
 		char err_buf[256];
 
-		libbpf_strerror(err, err_buf, sizeof(err_buf));
+		libbpf_strerror(PTR_ERR(obj), err_buf, sizeof(err_buf));
 		p_err("failed to open BPF object file: %s", err_buf);
 		obj = NULL;
 		goto out;

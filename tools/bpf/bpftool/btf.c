@@ -411,9 +411,8 @@ static int dump_btf_c(const struct btf *btf,
 	int err = 0, i;
 
 	d = btf_dump__new(btf, btf_dump_printf, NULL, NULL);
-	err = libbpf_get_error(d);
-	if (err)
-		return err;
+	if (IS_ERR(d))
+		return PTR_ERR(d);
 
 	printf("#ifndef __VMLINUX_H__\n");
 	printf("#define __VMLINUX_H__\n");
@@ -540,8 +539,8 @@ static int do_dump(int argc, char **argv)
 		}
 
 		btf = btf__parse_split(*argv, base ?: base_btf);
-		err = libbpf_get_error(btf);
-		if (err) {
+		if (IS_ERR(btf)) {
+			err = -PTR_ERR(btf);
 			btf = NULL;
 			p_err("failed to load BTF from %s: %s",
 			      *argv, strerror(err));
