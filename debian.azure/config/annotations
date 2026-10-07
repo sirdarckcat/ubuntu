@@ -1,7 +1,7 @@
 # Menu: HEADER
 # FORMAT: 4
 # ARCH: amd64 arm64
-# FLAVOUR: amd64-azure arm64-azure
+# FLAVOUR: amd64-azure arm64-azure arm64-azure-64k
 
 include "../../debian.master/config/annotations"
 
@@ -10,6 +10,18 @@ CONFIG_ACPI_HOTPLUG_MEMORY                      note<'LP: #1671203'>
 
 CONFIG_ACPI_NFIT                                policy<{'amd64': 'y', 'arm64': 'y'}>
 CONFIG_ACPI_NFIT                                note<'LP: #1715755'>
+
+CONFIG_ARCH_MMAP_RND_BITS                       policy<{'amd64': '32', 'arm64': '33', 'arm64-azure-64k': '29'}>
+CONFIG_ARCH_MMAP_RND_BITS                       note<'LP: #2077991'>
+
+CONFIG_ARCH_MMAP_RND_COMPAT_BITS                policy<{'amd64': '16', 'arm64': '16', 'arm64-azure-64k': '-'}>
+CONFIG_ARCH_MMAP_RND_COMPAT_BITS                note<'LP: #2077991'>
+
+CONFIG_ARM64_64K_PAGES                          policy<{'arm64': 'n', 'arm64-azure-64k': 'y'}>
+CONFIG_ARM64_64K_PAGES                          note<'LP: #2077991'>
+
+CONFIG_ARMV8_DEPRECATED                         policy<{'arm64': 'y', 'arm64-azure-64k': '-'}>
+CONFIG_ARMV8_DEPRECATED                         note<'LP: #2077991'>
 
 CONFIG_ATARI_PARTITION                          policy<{'amd64': 'n', 'arm64': 'n'}>
 CONFIG_ATARI_PARTITION                          note<'LP: #1908264'>
@@ -25,6 +37,12 @@ CONFIG_BLK_DEV_PMEM                             note<'LP: #1711230'>
 
 CONFIG_CHROME_PLATFORMS                         policy<{'amd64': 'n', 'arm64': 'n'}>
 CONFIG_CHROME_PLATFORMS                         note<'kernel reduction'>
+
+CONFIG_COMPAT                                   policy<{'amd64': 'y', 'arm64': 'y', 'arm64-azure-64k': 'n'}>
+CONFIG_COMPAT                                   note<'LP: #2077991'>
+
+CONFIG_CP15_BARRIER_EMULATION                   policy<{'arm64': 'y', 'arm64-azure-64k': '-'}>
+CONFIG_CP15_BARRIER_EMULATION                   note<'LP: #2077991'>
 
 CONFIG_DEV_DAX                                  policy<{'amd64': 'y', 'arm64': 'y'}>
 CONFIG_DEV_DAX                                  note<'LP: #1711230'>
@@ -176,6 +194,9 @@ CONFIG_SATA_ZPODD                               note<'modules reduction'>
 CONFIG_SCSI_FC_ATTRS                            policy<{'amd64': 'y', 'arm64': 'y'}>
 CONFIG_SCSI_FC_ATTRS                            note<'LP: #1690136'>
 
+CONFIG_SETEND_EMULATION                         policy<{'arm64': 'y', 'arm64-azure-64k': '-'}>
+CONFIG_SETEND_EMULATION                         note<'LP: #2077991'>
+
 CONFIG_SND                                      policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_SND                                      note<'modules reduction'>
 
@@ -218,6 +239,9 @@ CONFIG_SOUNDWIRE                                note<'modules reduction'>
 CONFIG_SOUND_OSS_CORE_PRECLAIM                  policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_SOUND_OSS_CORE_PRECLAIM                  note<'modules reduction'>
 
+CONFIG_SWP_EMULATION                            policy<{'arm64': 'y', 'arm64-azure-64k': '-'}>
+CONFIG_SWP_EMULATION                            note<'LP: #2077991'>
+
 CONFIG_TDX_GUEST_DRIVER                         policy<{'amd64': 'y'}>
 CONFIG_TDX_GUEST_DRIVER                         note<'LP: #2016995'>
 
@@ -250,7 +274,23 @@ CONFIG_ACPI_NHLT                                policy<{'amd64': '-', 'arm64': '
 CONFIG_AMCC_QT2025_PHY                          policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_ANDROID_BINDER_IPC_RUST                  policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_ARCH_HIBERNATION_HEADER                  policy<{'amd64': 'y', 'arm64': 'y'}>
+CONFIG_ARCH_MMAP_RND_BITS_MAX                   policy<{'amd64': '32', 'arm64': '33', 'arm64-azure-64k': '29'}>
+CONFIG_ARCH_MMAP_RND_BITS_MIN                   policy<{'amd64': '28', 'arm64': '18', 'arm64-azure-64k': '14'}>
+CONFIG_ARCH_MMAP_RND_COMPAT_BITS_MIN            policy<{'amd64': '8', 'arm64': '11', 'arm64-azure-64k': '7'}>
+CONFIG_ARCH_WANTS_THP_SWAP                      policy<{'amd64': 'y', 'arm64': 'y', 'arm64-azure-64k': '-'}>
+CONFIG_ARCH_WANT_COMPAT_IPC_PARSE_VERSION       policy<{'amd64': 'y', 'arm64': 'y', 'arm64-azure-64k': '-'}>
+CONFIG_ARCH_WANT_HUGE_PMD_SHARE                 policy<{'amd64': 'y', 'arm64': 'y', 'arm64-azure-64k': '-'}>
+CONFIG_ARM64_4K_PAGES                           policy<{'arm64': 'y', 'arm64-azure-64k': 'n'}>
+CONFIG_ARM64_CONT_PMD_SHIFT                     policy<{'arm64': '4', 'arm64-azure-64k': '5'}>
+CONFIG_ARM64_CONT_PTE_SHIFT                     policy<{'arm64': '4', 'arm64-azure-64k': '5'}>
+CONFIG_ARM64_ERRATUM_1418040                    policy<{'arm64': 'y', 'arm64-azure-64k': '-'}>
+CONFIG_ARM64_ERRATUM_1742098                    policy<{'arm64': 'y', 'arm64-azure-64k': '-'}>
+CONFIG_ARM64_ERRATUM_845719                     policy<{'arm64': 'y', 'arm64-azure-64k': '-'}>
+CONFIG_ARM64_PA_BITS_52                         policy<{'arm64-azure-64k': 'n'}>
+CONFIG_ARM64_VA_BITS_39                         policy<{'arm64': 'n', 'arm64-azure-64k': '-'}>
+CONFIG_ARM64_VA_BITS_42                         policy<{'arm64-azure-64k': 'n'}>
 CONFIG_ARM_SCMI_POWERCAP                        policy<{'arm64': '-'}>
+CONFIG_AUDIT_COMPAT_GENERIC                     policy<{'arm64': 'y', 'arm64-azure-64k': '-'}>
 CONFIG_AX88796B_RUST_PHY                        policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_BCM_NET_PHYPTP                           policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_BINDGEN_VERSION_TEXT                     policy<{'amd64': '-', 'arm64': '-'}>
@@ -269,6 +309,10 @@ CONFIG_CHROMEOS_PSTORE                          policy<{'amd64': '-'}>
 CONFIG_CHROMEOS_TBMC                            policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_CLK_QCM2290_GPUCC                        policy<{'arm64': 'n'}>
 CONFIG_COMMON_CLK_C3_PERIPHERALS                policy<{'arm64': 'y'}>
+CONFIG_COMPAT_ALIGNMENT_FIXUPS                  policy<{'arm64': 'n', 'arm64-azure-64k': '-'}>
+CONFIG_COMPAT_BINFMT_ELF                        policy<{'amd64': 'y', 'arm64': 'y', 'arm64-azure-64k': '-'}>
+CONFIG_COMPAT_NETLINK_MESSAGES                  policy<{'amd64': 'y', 'arm64': 'y', 'arm64-azure-64k': '-'}>
+CONFIG_COMPAT_OLD_SIGACTION                     policy<{'amd64': 'y', 'arm64': 'y', 'arm64-azure-64k': '-'}>
 CONFIG_CPUFREQ_DT_RUST                          policy<{'arm64': '-'}>
 CONFIG_CPU_IDLE_THERMAL                         policy<{'arm64': '-'}>
 CONFIG_CROS_EC                                  policy<{'amd64': '-', 'arm64': '-'}>
@@ -298,9 +342,11 @@ CONFIG_CROS_USBPD_NOTIFY                        policy<{'amd64': '-', 'arm64': '
 CONFIG_CRYPTO_HKDF                              policy<{'amd64': 'y', 'arm64': 'y'}>
 CONFIG_DP83640_PHY                              policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_DRM_CROS_EC_ANX7688                      policy<{'arm64': '-'}>
+CONFIG_DRM_DISPLAY_DP_TUNNEL                    policy<{'amd64': 'y', 'arm64': 'y', 'arm64-azure-64k': '-'}>
 CONFIG_DRM_DW_HDMI_AHB_AUDIO                    policy<{'arm64': '-'}>
 CONFIG_DRM_DW_HDMI_GP_AUDIO                     policy<{'arm64': '-'}>
 CONFIG_DRM_DW_HDMI_I2S_AUDIO                    policy<{'arm64': 'n'}>
+CONFIG_DRM_GPUSVM                               policy<{'amd64': 'm', 'arm64': 'm', 'arm64-azure-64k': '-'}>
 CONFIG_DRM_I2C_ADV7511_AUDIO                    policy<{'arm64': '-'}>
 CONFIG_DRM_NOUVEAU_BACKLIGHT                    policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_DRM_NOUVEAU_CH7006                       policy<{'amd64': '-', 'arm64': '-'}>
@@ -309,7 +355,27 @@ CONFIG_DRM_NOUVEAU_SVM                          policy<{'amd64': '-', 'arm64': '
 CONFIG_DRM_PANIC_SCREEN_QR_CODE                 policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_DRM_PRIVACY_SCREEN                       policy<{'amd64': 'y', 'arm64': '-'}>
 CONFIG_DRM_TYR                                  policy<{'arm64': '-'}>
-CONFIG_DRM_XE_PAGEMAP                           policy<{'amd64': 'y', 'arm64': 'y'}>
+CONFIG_DRM_XE                                   policy<{'amd64': 'm', 'arm64': 'm', 'arm64-azure-64k': '-'}>
+CONFIG_DRM_XE_DEBUG                             policy<{'amd64': 'n', 'arm64': 'n', 'arm64-azure-64k': '-'}>
+CONFIG_DRM_XE_DEBUG_MEM                         policy<{'amd64': 'n', 'arm64': 'n', 'arm64-azure-64k': '-'}>
+CONFIG_DRM_XE_DEBUG_MEMIRQ                      policy<{'amd64': 'n', 'arm64': 'n', 'arm64-azure-64k': '-'}>
+CONFIG_DRM_XE_DEBUG_SRIOV                       policy<{'amd64': 'n', 'arm64': 'n', 'arm64-azure-64k': '-'}>
+CONFIG_DRM_XE_DEBUG_VM                          policy<{'amd64': 'n', 'arm64': 'n', 'arm64-azure-64k': '-'}>
+CONFIG_DRM_XE_DISPLAY                           policy<{'amd64': 'y', 'arm64': 'y', 'arm64-azure-64k': '-'}>
+CONFIG_DRM_XE_DP_TUNNEL                         policy<{'amd64': 'y', 'arm64': 'y', 'arm64-azure-64k': '-'}>
+CONFIG_DRM_XE_ENABLE_SCHEDTIMEOUT_LIMIT         policy<{'amd64': 'y', 'arm64': 'y', 'arm64-azure-64k': '-'}>
+CONFIG_DRM_XE_FORCE_PROBE                       policy<{'amd64': '""', 'arm64': '""', 'arm64-azure-64k': '-'}>
+CONFIG_DRM_XE_GPUSVM                            policy<{'amd64': 'y', 'arm64': 'y', 'arm64-azure-64k': '-'}>
+CONFIG_DRM_XE_JOB_TIMEOUT_MAX                   policy<{'amd64': '10000', 'arm64': '10000', 'arm64-azure-64k': '-'}>
+CONFIG_DRM_XE_JOB_TIMEOUT_MIN                   policy<{'amd64': '1', 'arm64': '1', 'arm64-azure-64k': '-'}>
+CONFIG_DRM_XE_PAGEMAP                           policy<{'amd64': 'y', 'arm64': 'y', 'arm64-azure-64k': '-'}>
+CONFIG_DRM_XE_PREEMPT_TIMEOUT                   policy<{'amd64': '640000', 'arm64': '640000', 'arm64-azure-64k': '-'}>
+CONFIG_DRM_XE_PREEMPT_TIMEOUT_MAX               policy<{'amd64': '10000000', 'arm64': '10000000', 'arm64-azure-64k': '-'}>
+CONFIG_DRM_XE_PREEMPT_TIMEOUT_MIN               policy<{'amd64': '1', 'arm64': '1', 'arm64-azure-64k': '-'}>
+CONFIG_DRM_XE_TIMESLICE_MAX                     policy<{'amd64': '10000000', 'arm64': '10000000', 'arm64-azure-64k': '-'}>
+CONFIG_DRM_XE_TIMESLICE_MIN                     policy<{'amd64': '1', 'arm64': '1', 'arm64-azure-64k': '-'}>
+CONFIG_DRM_XE_USERPTR_INVAL_INJECT              policy<{'amd64': 'n', 'arm64': 'n', 'arm64-azure-64k': '-'}>
+CONFIG_DRM_XE_WERROR                            policy<{'amd64': 'n', 'arm64': 'n', 'arm64-azure-64k': '-'}>
 CONFIG_DRM_ZYNQMP_DPSUB_AUDIO                   policy<{'arm64': '-'}>
 CONFIG_DTPM                                     policy<{'arm64': '-'}>
 CONFIG_DTPM_CPU                                 policy<{'arm64': '-'}>
@@ -322,7 +388,10 @@ CONFIG_GADGET_UAC1_LEGACY                       policy<{'amd64': '-', 'arm64': '
 CONFIG_GPIO_CROS_EC                             policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_GREYBUS_AUDIO                            policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_GREYBUS_AUDIO_APB_CODEC                  policy<{'amd64': '-', 'arm64': '-'}>
-CONFIG_HAVE_PAGE_SIZE_4KB                       policy<{'amd64': 'y', 'arm64': 'y'}>
+CONFIG_HAVE_ARCH_MMAP_RND_COMPAT_BITS           policy<{'amd64': 'y', 'arm64': 'y', 'arm64-azure-64k': '-'}>
+CONFIG_HAVE_PAGE_SIZE_4KB                       policy<{'amd64': 'y', 'arm64': 'y', 'arm64-azure-64k': '-'}>
+CONFIG_HAVE_PAGE_SIZE_64KB                      policy<{'arm64-azure-64k': 'y'}>
+CONFIG_HAVE_UID16                               policy<{'amd64': 'y', 'arm64': 'y', 'arm64-azure-64k': '-'}>
 CONFIG_HDMI_LPE_AUDIO                           policy<{'amd64': '-'}>
 CONFIG_HIBERNATE_CALLBACKS                      policy<{'amd64': 'y', 'arm64': 'y'}>
 CONFIG_HIBERNATION_COMP_LZ4                     policy<{'amd64': 'n', 'arm64': 'n'}>
@@ -331,7 +400,7 @@ CONFIG_HIBERNATION_DEF_COMP                     policy<{'amd64': '"lzo"', 'arm64
 CONFIG_HIBERNATION_SNAPSHOT_DEV                 policy<{'amd64': 'y', 'arm64': 'y'}>
 CONFIG_HID_GOOGLE_HAMMER                        policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_HID_PRODIKEYS                            policy<{'amd64': '-', 'arm64': '-'}>
-CONFIG_HUGETLB_PMD_PAGE_TABLE_SHARING           policy<{'amd64': 'y', 'arm64': 'y'}>
+CONFIG_HUGETLB_PMD_PAGE_TABLE_SHARING           policy<{'amd64': 'y', 'arm64': 'y', 'arm64-azure-64k': '-'}>
 CONFIG_HYPERV_AZURE_BLOB                        policy<{'amd64': 'n'}>
 CONFIG_I2C_AMD_ASF                              policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_I2C_CROS_EC_TUNNEL                       policy<{'amd64': '-', 'arm64': '-'}>
@@ -344,35 +413,55 @@ CONFIG_IIO_CROS_EC_SENSORS                      policy<{'amd64': '-', 'arm64': '
 CONFIG_IIO_CROS_EC_SENSORS_CORE                 policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_IIO_CROS_EC_SENSORS_LID_ANGLE            policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_INFINIBAND_IPOIB_DEBUG_DATA              policy<{'amd64': 'y', 'arm64': 'y'}>
+CONFIG_INFINIBAND_VMWARE_PVRDMA                 policy<{'amd64': 'm', 'arm64': 'm', 'arm64-azure-64k': '-'}>
 CONFIG_INPUT_ARIZONA_HAPTICS                    policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_INTEL_IOMMU_FLOPPY_WA                    policy<{'amd64': '-'}>
-CONFIG_INTEL_MEI_GSC                            policy<{'amd64': 'm', 'arm64': 'n'}>
-CONFIG_INTEL_MEI_GSC_PROXY                      policy<{'amd64': 'm', 'arm64': 'n'}>
-CONFIG_INTEL_MEI_HDCP                           policy<{'amd64': 'm', 'arm64': 'n'}>
-CONFIG_INTEL_MEI_LB                             policy<{'amd64': 'm', 'arm64': 'n'}>
-CONFIG_INTEL_MEI_PXP                            policy<{'amd64': 'm', 'arm64': 'n'}>
+CONFIG_INTEL_MEI                                policy<{'amd64': 'm', 'arm64': 'm', 'arm64-azure-64k': '-'}>
+CONFIG_INTEL_MEI_GSC                            policy<{'amd64': 'm', 'arm64': 'n', 'arm64-azure-64k': '-'}>
+CONFIG_INTEL_MEI_GSC_PROXY                      policy<{'amd64': 'm', 'arm64': 'n', 'arm64-azure-64k': '-'}>
+CONFIG_INTEL_MEI_HDCP                           policy<{'amd64': 'm', 'arm64': 'n', 'arm64-azure-64k': '-'}>
+CONFIG_INTEL_MEI_LB                             policy<{'amd64': 'm', 'arm64': 'n', 'arm64-azure-64k': '-'}>
+CONFIG_INTEL_MEI_ME                             policy<{'amd64': 'm', 'arm64': 'm', 'arm64-azure-64k': '-'}>
+CONFIG_INTEL_MEI_PXP                            policy<{'amd64': 'm', 'arm64': 'n', 'arm64-azure-64k': '-'}>
+CONFIG_INTEL_MEI_TXE                            policy<{'amd64': 'm', 'arm64': 'm', 'arm64-azure-64k': '-'}>
+CONFIG_INTEL_MEI_VSC                            policy<{'amd64': 'm', 'arm64': 'm', 'arm64-azure-64k': '-'}>
+CONFIG_INTEL_MEI_VSC_HW                         policy<{'amd64': 'm', 'arm64': 'm', 'arm64-azure-64k': '-'}>
+CONFIG_INTEL_VSC                                policy<{'amd64': 'm', 'arm64': 'm', 'arm64-azure-64k': '-'}>
 CONFIG_KEYBOARD_CROS_EC                         policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_KUSER_HELPERS                            policy<{'arm64': 'y', 'arm64-azure-64k': '-'}>
 CONFIG_LEDS_CROS_EC                             policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_MARVELL_GTI_WDT                          policy<{'arm64': 'y'}>
 CONFIG_MEDIA_ALTERA_CI                          policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_MESON_SECURE_PM_DOMAINS                  policy<{'arm64': 'y', 'arm64-azure-64k': '-'}>
+CONFIG_MESON_SM                                 policy<{'arm64': 'y', 'arm64-azure-64k': '-'}>
 CONFIG_MFD_CROS_EC_DEV                          policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_MFD_CS42L43_SDW                          policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_MICROCHIP_PHY_RDS_PTP                    policy<{'amd64': '-', 'arm64': 'm'}>
 CONFIG_MOST_SND                                 policy<{'amd64': '-', 'arm64': '-'}>
-CONFIG_MSHV_ROOT                                policy<{'amd64': 'm', 'arm64': 'y'}>
+CONFIG_MSHV_ROOT                                policy<{'amd64': 'm', 'arm64': 'y', 'arm64-azure-64k': '-'}>
+CONFIG_MTD_INTEL_DG                             policy<{'amd64': 'm', 'arm64': 'm', 'arm64-azure-64k': '-'}>
 CONFIG_ND_BTT                                   policy<{'amd64': 'y', 'arm64': 'y'}>
 CONFIG_ND_PFN                                   policy<{'amd64': 'y', 'arm64': 'y'}>
+CONFIG_NETFILTER_XTABLES_COMPAT                 policy<{'amd64': 'y', 'arm64': 'y', 'arm64-azure-64k': '-'}>
+CONFIG_NFC_MEI_PHY                              policy<{'amd64': 'm', 'arm64': 'm', 'arm64-azure-64k': '-'}>
+CONFIG_NFC_MICROREAD_MEI                        policy<{'amd64': 'm', 'arm64': 'm', 'arm64-azure-64k': '-'}>
+CONFIG_NFC_PN544_MEI                            policy<{'amd64': 'm', 'arm64': 'm', 'arm64-azure-64k': '-'}>
 CONFIG_NOUVEAU_DEBUG                            policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_NOUVEAU_DEBUG_DEFAULT                    policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_NOUVEAU_DEBUG_MMU                        policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_NOUVEAU_DEBUG_PUSH                       policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_NOUVEAU_PLATFORM_DRIVER                  policy<{'arm64': '-'}>
+CONFIG_NVMEM_MESON_EFUSE                        policy<{'arm64': 'm', 'arm64-azure-64k': '-'}>
 CONFIG_NVME_AUTH                                policy<{'amd64': 'y', 'arm64': 'y'}>
 CONFIG_NVME_CORE                                policy<{'amd64': 'y', 'arm64': 'y'}>
 CONFIG_NVME_KEYRING                             policy<{'amd64': 'y', 'arm64': 'y'}>
+CONFIG_OLD_SIGSUSPEND3                          policy<{'amd64': 'y', 'arm64': 'y', 'arm64-azure-64k': '-'}>
 CONFIG_OVMF_DEBUG_LOG                           policy<{'amd64': 'y', 'arm64': 'n'}>
-CONFIG_PAGE_SHIFT                               policy<{'amd64': '12', 'arm64': '12'}>
-CONFIG_PAGE_SIZE_4KB                            policy<{'amd64': 'y', 'arm64': 'y'}>
+CONFIG_PAGE_SHIFT                               policy<{'amd64': '12', 'arm64': '12', 'arm64-azure-64k': '16'}>
+CONFIG_PAGE_SIZE_4KB                            policy<{'amd64': 'y', 'arm64': 'y', 'arm64-azure-64k': '-'}>
+CONFIG_PAGE_SIZE_64KB                           policy<{'arm64-azure-64k': 'y'}>
+CONFIG_PAGE_SIZE_LESS_THAN_64KB                 policy<{'amd64': 'y', 'arm64': 'y', 'arm64-azure-64k': '-'}>
+CONFIG_PGTABLE_LEVELS                           policy<{'amd64': '5', 'arm64': '4', 'arm64-azure-64k': '3'}>
 CONFIG_PM_STD_PARTITION                         policy<{'amd64': '""', 'arm64': '""'}>
 CONFIG_PREEMPT_RCU                              policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_PTP_1588_CLOCK_INES                      policy<{'amd64': '-', 'arm64': 'm'}>
@@ -1377,13 +1466,16 @@ CONFIG_SOUNDWIRE_GENERIC_ALLOCATION             policy<{'amd64': '-', 'arm64': '
 CONFIG_SOUNDWIRE_INTEL                          policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_SOUNDWIRE_QCOM                           policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_SOUND_OSS_CORE                           policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_SYSVIPC_COMPAT                           policy<{'amd64': 'y', 'arm64': 'y', 'arm64-azure-64k': '-'}>
 CONFIG_TEE_STMM_EFI                             policy<{'arm64': 'n'}>
 CONFIG_THINKPAD_ACPI_ALSA_SUPPORT               policy<{'amd64': '-'}>
+CONFIG_THP_SWAP                                 policy<{'amd64': 'y', 'arm64': 'y', 'arm64-azure-64k': '-'}>
 CONFIG_TOUCHSCREEN_WM9705                       policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_TOUCHSCREEN_WM9712                       policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_TOUCHSCREEN_WM9713                       policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_TOUCHSCREEN_WM97XX                       policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_TSM_REPORTS                              policy<{'amd64': 'y', 'arm64': 'm'}>
+CONFIG_UID16                                    policy<{'amd64': 'y', 'arm64': 'y', 'arm64-azure-64k': '-'}>
 CONFIG_USB_AUDIO                                policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_USB_CHIPIDEA_HOST                        policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_USB_CONFIGFS_F_MIDI                      policy<{'amd64': '-', 'arm64': '-'}>
@@ -1426,8 +1518,10 @@ CONFIG_VIDEO_SOLO6X10                           policy<{'amd64': '-', 'arm64': '
 CONFIG_VIDEO_TDA1997X                           policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_VIDEO_TW686X                             policy<{'amd64': '-', 'arm64': '-'}>
 CONFIG_VIDEO_USBTV                              policy<{'amd64': '-', 'arm64': '-'}>
+CONFIG_VMAP_PFN                                 policy<{'amd64': 'y', 'arm64': 'y', 'arm64-azure-64k': '-'}>
+CONFIG_VMXNET3                                  policy<{'amd64': 'm', 'arm64': 'm', 'arm64-azure-64k': '-'}>
 CONFIG_WILCO_EC                                 policy<{'amd64': '-'}>
 CONFIG_WILCO_EC_DEBUGFS                         policy<{'amd64': '-'}>
 CONFIG_WILCO_EC_EVENTS                          policy<{'amd64': '-'}>
 CONFIG_WILCO_EC_TELEMETRY                       policy<{'amd64': '-'}>
-CONFIG_XE_VFIO_PCI                              policy<{'amd64': 'm', 'arm64': 'n'}>
+CONFIG_XE_VFIO_PCI                              policy<{'amd64': 'm', 'arm64': 'n', 'arm64-azure-64k': '-'}>
