@@ -10,6 +10,11 @@ struct grehdr {
 	__be16 protocol;
 };
 
+struct vxlanhdr {
+	__be32 vx_flags;
+	__be32 vx_vni;
+};
+
 SEC("encap_gre")
 int bpf_lwt_encap_gre(struct __sk_buff *skb)
 {
