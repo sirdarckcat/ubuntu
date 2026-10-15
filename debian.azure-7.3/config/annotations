@@ -4,3 +4,14 @@
 # FLAVOUR: amd64-azure arm64-azure arm64-azure-64k
 
 include "../../debian.azure/config/annotations"
+
+
+# ---- Annotations without notes ----
+
+CONFIG_AS_VERSION                               policy<{'amd64': '24600', 'arm64': '24600'}>
+CONFIG_CC_VERSION_TEXT                          policy<{'amd64': '"x86_64-linux-gnu-gcc-15 (Ubuntu 15.2.0-16ubuntu1) 15.2.0"', 'arm64': '"aarch64-linux-gnu-gcc-15 (Ubuntu 15.2.0-16ubuntu1) 15.2.0"'}>
+CONFIG_GCC_VERSION                              policy<{'amd64': '150200', 'arm64': '150200'}>
+CONFIG_LD_VERSION                               policy<{'amd64': '24600', 'arm64': '24600'}>
+CONFIG_RUSTC_LLVM_MAJOR_VERSION                 policy<{'amd64': '21', 'arm64': '21'}>
+CONFIG_RUSTC_LLVM_VERSION                       policy<{'amd64': '210108', 'arm64': '210108'}>
+CONFIG_RUSTC_VERSION                            policy<{'amd64': '109301', 'arm64': '109301'}>
